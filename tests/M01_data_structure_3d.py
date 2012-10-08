@@ -58,6 +58,7 @@ for x in range(100):
 		_y.append(_z)
 	MAP.append(_y)
 
+print 'Printing map'
 for x in range(100):
 	for y in range(100):
 		_top_tile = None
@@ -69,4 +70,11 @@ for x in range(100):
 	
 	print
 
-print MAP[3][3]#,get_tile(MAP[3][3])['cost']
+print 'Timing map fetching for 100x100x2'
+import time
+_stime = time.time()
+for x in range(100):
+	for y in range(100):
+		for z in range(2):
+			get_tile(MAP[x][y][z])
+print time.time()-_stime
