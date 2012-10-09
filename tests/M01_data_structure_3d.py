@@ -24,6 +24,7 @@ DIRT_TILE = {'id':'dirt',
 
 TILES = [SHORT_GRASS_TILE,GRASS_TILE,TALL_GRASS_TILE,DIRT_TILE]
 MAP = []
+MAP_SIZE = (50,50,5)
 
 def create_tile(tile):
 	_ret_tile = {}
@@ -43,11 +44,11 @@ def get_tile(tile):
 	
 import random
 
-for x in range(100):
+for x in range(MAP_SIZE[0]):
 	_y = []
-	for y in range(100):
+	for y in range(MAP_SIZE[1]):
 		_z = []
-		for z in range(5):
+		for z in range(MAP_SIZE[2]):
 			if z == 0:
 				_z.append(create_tile(DIRT_TILE))
 			elif z == 1:
@@ -59,10 +60,10 @@ for x in range(100):
 	MAP.append(_y)
 
 print 'Printing map'
-for x in range(100):
-	for y in range(100):
+for x in range(MAP_SIZE[0]):
+	for y in range(MAP_SIZE[1]):
 		_top_tile = None
-		for z in range(5):
+		for z in range(MAP_SIZE[2]):
 			if MAP[x][y][z]:
 				_top_tile = MAP[x][y][z]
 		
@@ -70,11 +71,12 @@ for x in range(100):
 	
 	print
 
-print 'Timing map fetching for 100x100x2'
+print 'Timing map fetching'
 import time
 _stime = time.time()
-for x in range(100):
-	for y in range(100):
-		for z in range(2):
-			get_tile(MAP[x][y][z])
+for x in range(MAP_SIZE[0]):
+	for y in range(MAP_SIZE[1]):
+		for z in range(MAP_SIZE[2]):
+			if MAP[x][y][z]:
+				get_tile(MAP[x][y][z])
 print time.time()-_stime
