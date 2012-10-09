@@ -42,6 +42,7 @@ KEY = Key()
 MOUSE_POS = (0,0)
 MOUSE_1_DOWN = False
 MOUSE = Mouse()
+CURSOR_POS = [0,0]
 
 def create_tile(tile):
 	_ret_tile = {}
@@ -90,9 +91,22 @@ def get_mouse_input():
 	MOUSE_POS = MOUSE.cx*2,MOUSE.cy
 
 def get_input():
-	global KEY,MOUSE
+	global KEY,MOUSE,CURSOR_POS
 
 	sys_check_for_event(EVENT_KEY_PRESS|EVENT_MOUSE,KEY,MOUSE)
+
+	if KEY.vk == KEY_UP:
+		if CURSOR_POS[1]>0: CURSOR_POS[1]-=1
+	elif KEY.vk == KEY_DOWN:
+		if CURSOR_POS[1]<MAP_SIZE[1]-1: CURSOR_POS[1]+=1
+
+	if KEY.vk == KEY_LEFT:
+		if CURSOR_POS[0]>0: CURSOR_POS[0]-=1
+	elif KEY.vk == KEY_RIGHT:
+		if CURSOR_POS[0]<MAP_SIZE[0]-1: CURSOR_POS[0]+=1
+
+	if KEY.vk == KEY_SPACE:
+		MAP[CURSOR_POS[0]][CURSOR_POS[1]][2] = create_tile(WALL_TILE)
 
 	get_mouse_input()
 
@@ -100,7 +114,6 @@ def handle_input():
 	if MOUSE_1_DOWN:
 		print MOUSE_POS
 		MAP[MOUSE_POS[0]][MOUSE_POS[1]][2] = create_tile(WALL_TILE)
-
 
 TIME_OF_DAY = 6
 TIME_OF_DAY_MAX = 16
@@ -142,5 +155,8 @@ while not console_is_window_closed():
 			TIME_OF_DAY = 0
 
 		TIME_OF_DAY_TIMER = TIME_OF_DAY_TIMER_MAX
+
+	console_set_char_background(None,CURSOR_POS[0],CURSOR_POS[1],black)
+	console_set_char(None,CURSOR_POS[0],CURSOR_POS[1],'X')
 
 	console_flush()
