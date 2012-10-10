@@ -42,6 +42,7 @@ KEY = Key()
 MOUSE_POS = (0,0)
 MOUSE_1_DOWN = False
 MOUSE = Mouse()
+mouse_move(0,0)
 
 def create_tile(tile):
 	_ret_tile = {}

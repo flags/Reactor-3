@@ -6,19 +6,19 @@ sys_set_fps(30)
 
 SHORT_GRASS_TILE = {'id':'short_grass',
                     'icon':'.',
-                    'color':(light_green,light_lime),
+                    'color':(light_green,Color(0,230,0)),
                     'burnable':True,
                     'cost':1}
 
 GRASS_TILE = {'id':'grass',
               'icon':',',
-              'color':(green,light_chartreuse),
+              'color':(green,Color(0,210,0)),
               'burnable':True,
               'cost':1}
 
 TALL_GRASS_TILE = {'id':'tall_grass',
                    'icon':';',
-                   'color':(dark_green,light_green),
+                   'color':(dark_green,Color(0,205,0)),
                    'burnable':True,
                    'cost':1}
 
@@ -43,6 +43,7 @@ MOUSE_POS = (0,0)
 MOUSE_1_DOWN = False
 MOUSE = Mouse()
 CURSOR_POS = [0,0]
+mouse_move(0,0)
 
 def create_tile(tile):
 	_ret_tile = {}
@@ -142,8 +143,8 @@ while not console_is_window_closed():
 
 			_tile = get_tile(_top_tile)
 
-			console_set_char_background(None, x, y, _tile['color'][1]-LIGHT_MAP[TIME_OF_DAY])
-			console_set_char_foreground(None, x, y, _tile['color'][0]-LIGHT_MAP[TIME_OF_DAY])
+			console_set_char_background(None, x, y, _tile['color'][1])
+			console_set_char_foreground(None, x, y, _tile['color'][0])
 			console_set_char(None,x,y,_tile['icon'])
 
 	if TIME_OF_DAY_TIMER:
