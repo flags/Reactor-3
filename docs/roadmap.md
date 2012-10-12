@@ -19,13 +19,13 @@ with being easy to store to disk.
 Tasks
 -----
 [x] Structure of Tiles
-[ ] Structure of Maps
+[x] Structure of Maps
 
 Structure of Tiles
 ------------------
 Items and Tiles will be using dictionaries. To lower data cost, Tiles will specifically
 have two parts: static and dynamic. Static parts will be referenced and not stored
-locally to that tile, and will contain things such as movement cost and icon.
+locally to that Tile, and will contain things such as movement cost and icon.
 The dynamic portion covers changing values, like items contained at that position
 or the depth of water.
 
@@ -34,3 +34,12 @@ Structure of Maps
 Maps will be in the format of [x][y][z], the last of which will hold the array of Tiles
 for a position's Z-levels. There is no need to treat this data any differently than
 a container for Tiles, so maps can easily be dumped to the disk using `JSON.dumps()`
+
+Milestone 2 - Structure and Layout
+==================================
+
+Goal
+----
+To organize the general structure of the engine's core features - meaning that each
+piece of the engine has its own file and are all properly named. In addition, basic
+functions like libtcod setup and input handling should be created in a general class.

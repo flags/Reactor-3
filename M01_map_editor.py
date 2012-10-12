@@ -1,7 +1,7 @@
 from libtcodpy import *
 
 console_init_root(100, 50, 'M01 - Visualization',renderer=RENDERER_OPENGL)
-console_set_custom_font('terminal8x12_gs_tc.png')
+console_set_custom_font('terminal12x12_gs_ro.png',FONT_LAYOUT_ASCII_INCOL)
 sys_set_fps(30)
 
 SHORT_GRASS_TILE = {'id':'short_grass',
@@ -88,7 +88,7 @@ def get_mouse_input():
 	else:
 		MOUSE_1_DOWN = False
 
-	MOUSE_POS = MOUSE.cx*2,MOUSE.cy
+	MOUSE_POS = MOUSE.x/16,MOUSE.y/16
 
 def get_input():
 	global KEY,MOUSE,CURSOR_POS
@@ -111,6 +111,7 @@ def get_input():
 	get_mouse_input()
 
 def handle_input():
+	global MOUSE_POS
 	if MOUSE_1_DOWN:
 		print MOUSE_POS
 		MAP[MOUSE_POS[0]][MOUSE_POS[1]][2] = create_tile(WALL_TILE)

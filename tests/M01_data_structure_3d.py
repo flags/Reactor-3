@@ -80,3 +80,5 @@ for x in range(MAP_SIZE[0]):
 			if MAP[x][y][z]:
 				get_tile(MAP[x][y][z])
 print time.time()-_stime
+
+print MAP[3][3]
