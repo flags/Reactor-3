@@ -15,10 +15,18 @@ def init_libtcod():
 	RGB_FORE_BUFFER[1] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
 	RGB_FORE_BUFFER[2] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
 	CHAR_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
+	DARK_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
+	LIGHT_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
 
 def start_of_frame():
-	console_fill_background(0,RGB_BACK_BUFFER[0],RGB_BACK_BUFFER[1],RGB_BACK_BUFFER[2])
-	console_fill_foreground(0,RGB_FORE_BUFFER[0],RGB_FORE_BUFFER[1],RGB_FORE_BUFFER[2])
+	console_fill_background(0,
+	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
+	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
+	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[2],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255))
+	console_fill_foreground(0,
+	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[0],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
+	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[1],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
+	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255))
 	console_fill_char(0,CHAR_BUFFER[0])
 
 def blit_tile(x,y,tile):
@@ -43,28 +51,30 @@ def blit_string(x,y,text):
 	console_print(0,x,y,text)
 
 def darken_tile(x,y,amt):
-	for r in range(3):
-		if RGB_FORE_BUFFER[r][y,x]-amt<0:
-			RGB_FORE_BUFFER[r][y,x] = 0
-		else:
-			RGB_FORE_BUFFER[r][y,x] -= amt
-
-		if RGB_BACK_BUFFER[r][y,x]-amt<0:
-			RGB_BACK_BUFFER[r][y,x] = 0
-		else:
-			RGB_BACK_BUFFER[r][y,x] -= amt
+	DARK_BUFFER[0][y,x] = amt
+	#	for r in range(3):
+	#		if RGB_FORE_BUFFER[r][y,x]-amt<0:
+	#			RGB_FORE_BUFFER[r][y,x] = 0
+	#		else:
+	#			RGB_FORE_BUFFER[r][y,x] -= amt
+	#
+	#		if RGB_BACK_BUFFER[r][y,x]-amt<0:
+	#			RGB_BACK_BUFFER[r][y,x] = 0
+	#		else:
+	#			RGB_BACK_BUFFER[r][y,x] -= amt
 
 def lighten_tile(x,y,amt):
-	for r in range(3):
-		if RGB_FORE_BUFFER[r][y,x]+amt>255:
-			RGB_FORE_BUFFER[r][y,x] = 255
-		else:
-			RGB_FORE_BUFFER[r][y,x] += amt
-
-		if RGB_BACK_BUFFER[r][y,x]+amt>255:
-			RGB_BACK_BUFFER[r][y,x] = 255
-		else:
-			RGB_BACK_BUFFER[r][y,x] += amt
+	LIGHT_BUFFER[0][y,x] = amt
+	#	for r in range(3):
+	#		if RGB_FORE_BUFFER[r][y,x]+amt>255:
+	#			RGB_FORE_BUFFER[r][y,x] = 255
+	#		else:
+	#			RGB_FORE_BUFFER[r][y,x] += amt
+	#
+	#		if RGB_BACK_BUFFER[r][y,x]+amt>255:
+	#			RGB_BACK_BUFFER[r][y,x] = 255
+	#		else:
+	#			RGB_BACK_BUFFER[r][y,x] += amt
 
 def end_of_frame():
 	console_flush()

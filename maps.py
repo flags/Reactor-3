@@ -72,6 +72,8 @@ def render_map(map):
 						gfx.lighten_tile(x,y,abs((CAMERA_POS[2]-z))*30)
 					elif z == CAMERA_POS[2]:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+						gfx.lighten_tile(x,y,0)
+						gfx.darken_tile(x,y,0)
 					elif z < CAMERA_POS[2]:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.darken_tile(x,y,abs((CAMERA_POS[2]-z))*30)

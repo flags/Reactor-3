@@ -3,12 +3,14 @@ from libtcodpy import *
 WINDOW_TITLE = 'Reactor 3 - Milestone 2'
 WINDOW_SIZE = (100,50)
 MAP_SIZE = (100,50,5)
-MAP_WINDOW = (100,40)
+MAP_WINDOW = (40,40)
 RUNNING = True
 CAMERA_POS = [0,0,2]
 FPS = 300
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = FONT_LAYOUT_ASCII_INCOL
+DARK_BUFFER = [[]]
+LIGHT_BUFFER = [[]]
 RGB_BACK_BUFFER = [[],[],[]]
 RGB_FORE_BUFFER = [[],[],[]]
 CHAR_BUFFER = [[]]
