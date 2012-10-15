@@ -1,20 +1,21 @@
 from libtcodpy import *
+from globals import *
 
 SHORT_GRASS_TILE = {'id':'short_grass',
                     'icon':'.',
-                    'color':(light_green,light_lime),
+                    'color':(GRASS_GREEN_DARK,GRASS_GREEN),
                     'burnable':True,
                     'cost':1}
 
 GRASS_TILE = {'id':'grass',
-              'icon':',',
-              'color':(green,light_chartreuse),
+              'icon':';',
+              'color':(GRASS_GREEN,GRASS_GREEN_DARK),
               'burnable':True,
               'cost':1}
 
 TALL_GRASS_TILE = {'id':'tall_grass',
-                   'icon':';',
-                   'color':(dark_green,light_green),
+                   'icon':'\\',
+                   'color':(GRASS_GREEN,GREEN_ALT),
                    'burnable':True,
                    'cost':1}
 
