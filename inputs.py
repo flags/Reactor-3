@@ -51,6 +51,9 @@ def get_keyboard_input():
 	if KEY.vk == KEY_4:
 		INPUT['4'] = True
 
+	if KEY.vk == KEY_5:
+		INPUT['5'] = True
+
 def get_mouse_input():
 	#TODO: I can't get mouse input to work properly...
 	pass

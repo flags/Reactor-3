@@ -49,6 +49,9 @@ def handle_input():
 	if INPUT['4']:
 		var.CAMERA_POS[2] = 4
 
+	if INPUT['5']:
+		var.CAMERA_POS[2] = 5
+
 	if INPUT['c']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = create_tile(random.choice(
 			[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE]))
@@ -65,6 +68,9 @@ def draw_cursor():
 def draw_bottom_ui():
 	gfx.blit_string(0,var.MAP_WINDOW[1],'X: %s Y: %s Z: %s' %
 	                                    (var.CURSOR[0],var.CURSOR[1],var.CAMERA_POS[2]))
+
+	_fps_string = '%s fps' % str(sys_get_fps())
+	gfx.blit_string(var.WINDOW_SIZE[0]-len(_fps_string),var.MAP_WINDOW[1],_fps_string)
 
 while var.RUNNING:
 	get_input()
