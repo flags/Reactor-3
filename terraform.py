@@ -3,13 +3,18 @@ from inputs import *
 from tiles import *
 import graphics as gfx
 import globals as var
+import random
 import time
 import maps
 
-var.MAP = maps.load_map('map1.dat')
-#var.MAP = maps.create_map()
-#maps.save_map(var.MAP)
+try:
+	var.MAP = maps.load_map('map1.dat')
+except:
+	var.MAP = maps.create_map()
+	maps.save_map(var.MAP)
+
 var.CURSOR = [0,0]
+var.PLACING_TILE = WALL_TILE
 
 gfx.init_libtcod()
 
@@ -30,15 +35,36 @@ def handle_input():
 		var.CURSOR[0]-=1
 
 	if var.INPUT['space']:
-		var.MAP[var.CURSOR[0]][var.CURSOR[1]][2] = create_tile(WALL_TILE)
+		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = create_tile(var.PLACING_TILE)
+
+	if INPUT['1']:
+		var.CAMERA_POS[2] = 1
+
+	if INPUT['2']:
+		var.CAMERA_POS[2] = 2
+
+	if INPUT['3']:
+		var.CAMERA_POS[2] = 3
+
+	if INPUT['4']:
+		var.CAMERA_POS[2] = 4
+
+	if INPUT['c']:
+		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = create_tile(random.choice(
+			[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE]))
+
+	if INPUT['d']:
+		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = None
 
 def draw_cursor():
 	if time.time()%1>=0.5:
-		_fore = white
+		gfx.blit_char(var.CURSOR[0],var.CURSOR[1],'X',white,black)
 	else:
-		_fore = None
+		gfx.blit_tile(var.CURSOR[0],var.CURSOR[1],var.PLACING_TILE)
 
-	gfx.blit_char(var.CURSOR[0],var.CURSOR[1],'X',_fore,back_color=black)
+def draw_bottom_ui():
+	gfx.blit_string(0,var.MAP_WINDOW[1],'X: %s Y: %s Z: %s' %
+	                                    (var.CURSOR[0],var.CURSOR[1],var.CAMERA_POS[2]))
 
 while var.RUNNING:
 	get_input()
@@ -47,6 +73,7 @@ while var.RUNNING:
 	gfx.start_of_frame()
 	maps.render_map(var.MAP)
 	draw_cursor()
+	draw_bottom_ui()
 	gfx.end_of_frame()
 
 maps.save_map(var.MAP)

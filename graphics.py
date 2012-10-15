@@ -39,6 +39,33 @@ def blit_char(x,y,char,fore_color=None,back_color=None):
 
 	CHAR_BUFFER[0][y,x] = ord(char)
 
+def blit_string(x,y,text):
+	console_print(0,x,y,text)
+
+def darken_tile(x,y,amt):
+	for r in range(3):
+		if RGB_FORE_BUFFER[r][y,x]-amt<0:
+			RGB_FORE_BUFFER[r][y,x] = 0
+		else:
+			RGB_FORE_BUFFER[r][y,x] -= amt
+
+		if RGB_BACK_BUFFER[r][y,x]-amt<0:
+			RGB_BACK_BUFFER[r][y,x] = 0
+		else:
+			RGB_BACK_BUFFER[r][y,x] -= amt
+
+def lighten_tile(x,y,amt):
+	for r in range(3):
+		if RGB_FORE_BUFFER[r][y,x]+amt>255:
+			RGB_FORE_BUFFER[r][y,x] = 255
+		else:
+			RGB_FORE_BUFFER[r][y,x] += amt
+
+		if RGB_BACK_BUFFER[r][y,x]+amt>255:
+			RGB_BACK_BUFFER[r][y,x] = 255
+		else:
+			RGB_BACK_BUFFER[r][y,x] += amt
+
 def end_of_frame():
 	console_flush()
 

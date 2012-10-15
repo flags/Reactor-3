@@ -52,8 +52,8 @@ def load_map(map_name):
 			logging.error('FATAL: Map not JSON serializable.')
 
 def render_map(map):
-	_X_MAX = CAMERA_POS[0]+WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+WINDOW_SIZE[1]
+	_X_MAX = CAMERA_POS[0]+MAP_WINDOW[0]
+	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW[1]
 
 	if _X_MAX>MAP_SIZE[0]:
 		_X_MAX = MAP_SIZE[0]
@@ -65,4 +65,13 @@ def render_map(map):
 		_X_POS = x-CAMERA_POS[0]
 		for y in range(CAMERA_POS[1],_Y_MAX):
 			_Y_POS = y-CAMERA_POS[1]
-			gfx.blit_tile(_X_POS,_Y_POS,map[x][y][2])
+			for z in range(MAP_SIZE[2]):
+				if map[x][y][z]:
+					if z > CAMERA_POS[2]:
+						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+						gfx.lighten_tile(x,y,abs((CAMERA_POS[2]-z))*30)
+					elif z == CAMERA_POS[2]:
+						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+					elif z < CAMERA_POS[2]:
+						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+						gfx.darken_tile(x,y,abs((CAMERA_POS[2]-z))*30)
