@@ -25,14 +25,26 @@ def handle_input():
 	if var.INPUT['up']:
 		var.CURSOR[1]-=1
 
+		if var.CAMERA_POS[1]<var.MAP_WINDOW[1]/2 and var.CAMERA_POS[1]>0:
+			var.CAMERA_POS[1]-=1
+
 	if var.INPUT['down']:
 		var.CURSOR[1]+=1
+
+		if var.CURSOR[1]-var.CAMERA_POS[1]>=var.MAP_WINDOW[1]/2:
+			var.CAMERA_POS[1]+=1
 
 	if var.INPUT['right']:
 		var.CURSOR[0]+=1
 
+		if var.CURSOR[0]-var.CAMERA_POS[0]>=var.MAP_WINDOW[0]/2:
+			var.CAMERA_POS[0]+=1
+
 	if var.INPUT['left']:
 		var.CURSOR[0]-=1
+
+		if var.CAMERA_POS[0]<var.CAMERA_POS[0]+var.MAP_WINDOW[0]/2 and var.CAMERA_POS[0]>0:
+			var.CAMERA_POS[0]-=1
 
 	if var.INPUT['space']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = create_tile(var.PLACING_TILE)
@@ -61,9 +73,11 @@ def handle_input():
 
 def draw_cursor():
 	if time.time()%1>=0.5:
-		gfx.blit_char(var.CURSOR[0],var.CURSOR[1],'X',white,black)
+		gfx.blit_char(var.CURSOR[0]-var.CAMERA_POS[0],
+		              var.CURSOR[1]-var.CAMERA_POS[1],'X',white,black)
 	else:
-		gfx.blit_tile(var.CURSOR[0],var.CURSOR[1],var.PLACING_TILE)
+		gfx.blit_tile(var.CURSOR[0]-var.CAMERA_POS[0],
+		              var.CURSOR[1]-var.CAMERA_POS[1],var.PLACING_TILE)
 
 def draw_bottom_ui():
 	gfx.blit_string(0,var.MAP_WINDOW[1],'X: %s Y: %s Z: %s' %

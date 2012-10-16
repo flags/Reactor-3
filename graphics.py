@@ -52,29 +52,9 @@ def blit_string(x,y,text):
 
 def darken_tile(x,y,amt):
 	DARK_BUFFER[0][y,x] = amt
-	#	for r in range(3):
-	#		if RGB_FORE_BUFFER[r][y,x]-amt<0:
-	#			RGB_FORE_BUFFER[r][y,x] = 0
-	#		else:
-	#			RGB_FORE_BUFFER[r][y,x] -= amt
-	#
-	#		if RGB_BACK_BUFFER[r][y,x]-amt<0:
-	#			RGB_BACK_BUFFER[r][y,x] = 0
-	#		else:
-	#			RGB_BACK_BUFFER[r][y,x] -= amt
 
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
-	#	for r in range(3):
-	#		if RGB_FORE_BUFFER[r][y,x]+amt>255:
-	#			RGB_FORE_BUFFER[r][y,x] = 255
-	#		else:
-	#			RGB_FORE_BUFFER[r][y,x] += amt
-	#
-	#		if RGB_BACK_BUFFER[r][y,x]+amt>255:
-	#			RGB_BACK_BUFFER[r][y,x] = 255
-	#		else:
-	#			RGB_BACK_BUFFER[r][y,x] += amt
 
 def end_of_frame():
 	console_flush()
