@@ -8,15 +8,15 @@ def init_libtcod():
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	sys_set_fps(FPS)
 
-	RGB_BACK_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	RGB_BACK_BUFFER[1] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	RGB_BACK_BUFFER[2] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[1] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[2] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	CHAR_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	DARK_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
-	LIGHT_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1],WINDOW_SIZE[0]))
+	RGB_BACK_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	RGB_BACK_BUFFER[1] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	RGB_BACK_BUFFER[2] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	RGB_FORE_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	RGB_FORE_BUFFER[1] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	RGB_FORE_BUFFER[2] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	CHAR_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	DARK_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	LIGHT_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
 
 def start_of_frame():
 	console_fill_background(0,
