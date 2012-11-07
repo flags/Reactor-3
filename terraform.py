@@ -46,12 +46,12 @@ def handle_input():
 		var.CURSOR[0] -= 1
 
 		if var.CAMERA_POS[0]<var.CAMERA_POS[0]+var.MAP_WINDOW[0]/2 and\
-                  var.CAMERA_POS[0]>0:
+				var.CAMERA_POS[0]>0:
 			var.CAMERA_POS[0] -= 1
 
 	if var.INPUT['space']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
-              create_tile(var.PLACING_TILE)
+				create_tile(var.PLACING_TILE)
 
 	if INPUT['1']:
 		var.CAMERA_POS[2] = 1
@@ -70,11 +70,14 @@ def handle_input():
 
 	if INPUT['c']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
-              create_tile(random.choice([TALL_GRASS_TILE,SHORT_GRASS_TILE,
-                                         GRASS_TILE]))
+				create_tile(random.choice(GRASS_TILES))
 
 	if INPUT['d']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = None
+	
+	if INPUT['a']:
+		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
+				create_tile(DIRT_TILE)
 
 def draw_cursor():
 	"""Handles the drawing of the cursor."""
@@ -88,11 +91,11 @@ def draw_cursor():
 def draw_bottom_ui():
 	"""Controls the drawing of the UI under the map."""
 	gfx.blit_string(0, var.MAP_WINDOW[1],'X: %s Y: %s Z: %s' %
-         (var.CURSOR[0],var.CURSOR[1],var.CAMERA_POS[2]))
+		(var.CURSOR[0],var.CURSOR[1],var.CAMERA_POS[2]))
 
 	_fps_string = '%s fps' % str(sys_get_fps())
 	gfx.blit_string(var.WINDOW_SIZE[0]-len(_fps_string), var.MAP_WINDOW[1],
-                 _fps_string)
+					_fps_string)
 
 while var.RUNNING:
 	get_input()

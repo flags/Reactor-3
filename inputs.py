@@ -12,8 +12,8 @@ def get_input():
 	get_mouse_input()
 
 def get_keyboard_input():
-	if KEY.c:
-		print KEY.c,ord('c')
+	#if KEY.c:
+	#	print KEY.c,ord('c')
 
 	if KEY.vk == KEY_UP:
 		INPUT['up'] = True
@@ -33,6 +33,9 @@ def get_keyboard_input():
 	if KEY.vk == KEY_ESCAPE:
 		INPUT['escape'] = True
 
+	if KEY.c == ord('a'):
+		INPUT['a'] = True
+	
 	if KEY.c == ord('c'):
 		INPUT['c'] = True
 

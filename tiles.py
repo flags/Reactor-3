@@ -21,7 +21,7 @@ TALL_GRASS_TILE = {'id':'tall_grass',
 
 DIRT_TILE = {'id':'dirt',
              'icon':'.',
-             'color':(gray,gray),
+             'color':(CLAY,SAND),
              'burnable':False,
              'cost':2}
 
@@ -36,6 +36,9 @@ TILES = [SHORT_GRASS_TILE,
          TALL_GRASS_TILE,
          DIRT_TILE,
          WALL_TILE]
+
+#Groups
+GRASS_TILES = [SMALL_GRASS_TILE, GRASS_TILE, TALL_GRASS_TILE]
 
 def create_tile(tile):
 	_ret_tile = {}
