@@ -77,7 +77,11 @@ def handle_input():
 	
 	if INPUT['a']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
-				create_tile(DIRT_TILE)
+				create_tile(random.choice(SAND_TILES))
+	
+	if INPUT['s']:
+		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
+				create_tile(random.choice(DIRT_TILES))
 
 def draw_cursor():
 	"""Handles the drawing of the cursor."""

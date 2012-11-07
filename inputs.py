@@ -33,14 +33,9 @@ def get_keyboard_input():
 	if KEY.vk == KEY_ESCAPE:
 		INPUT['escape'] = True
 
-	if KEY.c == ord('a'):
-		INPUT['a'] = True
-	
-	if KEY.c == ord('c'):
-		INPUT['c'] = True
-
-	if KEY.c == ord('d'):
-		INPUT['d'] = True
+	for char in range(97,123):
+		if KEY.c == ord(chr(char)):
+			INPUT[chr(char)] = True
 
 	if KEY.vk == KEY_1:
 		INPUT['1'] = True
