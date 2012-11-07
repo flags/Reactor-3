@@ -3,8 +3,8 @@ from libtcodpy import *
 WINDOW_TITLE = 'Reactor 3 - Milestone 2-3'
 WINDOW_SIZE = (100,50)
 MAP_SIZE = (100,100,5)
-MAP_WINDOW = None
 MAP_WINDOW_SIZE = (40,40)
+MAP_WINDOW = None
 RUNNING = True
 CAMERA_POS = [0,0,2]
 FPS = 300

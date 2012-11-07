@@ -4,8 +4,9 @@ from tiles import *
 import numpy
 
 def init_libtcod():
+	global MAP_WINDOW
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
-	MAP_WINDOW = console_new(WINDOW_SIZE[0],WINDOW_SIZE[1])
+	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	sys_set_fps(FPS)
 
@@ -20,6 +21,7 @@ def init_libtcod():
 	LIGHT_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
 
 def start_of_frame():
+	print MAP_WINDOW
 	console_fill_background(MAP_WINDOW,
 	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
 	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
