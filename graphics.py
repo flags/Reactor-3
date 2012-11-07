@@ -5,6 +5,7 @@ import numpy
 
 def init_libtcod():
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
+	MAP_WINDOW = console_new(WINDOW_SIZE[0],WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	sys_set_fps(FPS)
 
@@ -19,15 +20,15 @@ def init_libtcod():
 	LIGHT_BUFFER[0] = numpy.zeros((WINDOW_SIZE[1], WINDOW_SIZE[0]))
 
 def start_of_frame():
-	console_fill_background(0,
+	console_fill_background(MAP_WINDOW,
 	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
 	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
 	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[2],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255))
-	console_fill_foreground(0,
+	console_fill_foreground(MAP_WINDOW,
 	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[0],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
 	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[1],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
 	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],DARK_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255))
-	console_fill_char(0,CHAR_BUFFER[0])
+	console_fill_char(MAP_WINDOW,CHAR_BUFFER[0])
 
 def blit_tile(x,y,tile):
 	_tile = get_tile(tile)
@@ -57,6 +58,7 @@ def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
 def end_of_frame():
+	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	console_flush()
 
 def window_is_closed():

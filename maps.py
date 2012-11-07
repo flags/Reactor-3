@@ -52,8 +52,8 @@ def load_map(map_name):
 			logging.error('FATAL: Map not JSON serializable.')
 
 def render_map(map):
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW[1]
+	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
+	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
 
 	if _X_MAX>MAP_SIZE[0]:
 		_X_MAX = MAP_SIZE[0]

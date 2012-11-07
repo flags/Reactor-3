@@ -27,25 +27,25 @@ def handle_input():
 	if var.INPUT['up']:
 		var.CURSOR[1] -= 1
 
-		if var.CAMERA_POS[1]<var.MAP_WINDOW[1]/2 and var.CAMERA_POS[1]>0:
+		if var.CAMERA_POS[1]<var.MAP_WINDOW_SIZE[1]/2 and var.CAMERA_POS[1]>0:
 			var.CAMERA_POS[1] -= 1
 
 	if var.INPUT['down']:
 		var.CURSOR[1] += 1
 
-		if var.CURSOR[1]-var.CAMERA_POS[1]>=var.MAP_WINDOW[1]/2:
+		if var.CURSOR[1]-var.CAMERA_POS[1]>=var.MAP_WINDOW_SIZE[1]/2:
 			var.CAMERA_POS[1] += 1
 
 	if var.INPUT['right']:
 		var.CURSOR[0] += 1
 
-		if var.CURSOR[0]-var.CAMERA_POS[0]>=var.MAP_WINDOW[0]/2:
+		if var.CURSOR[0]-var.CAMERA_POS[0]>=var.MAP_WINDOW_SIZE[0]/2:
 			var.CAMERA_POS[0]+=1
 
 	if var.INPUT['left']:
 		var.CURSOR[0] -= 1
 
-		if var.CAMERA_POS[0]<var.CAMERA_POS[0]+var.MAP_WINDOW[0]/2 and\
+		if var.CAMERA_POS[0]<var.CAMERA_POS[0]+var.MAP_WINDOW_SIZE[0]/2 and\
 				var.CAMERA_POS[0]>0:
 			var.CAMERA_POS[0] -= 1
 
@@ -94,11 +94,11 @@ def draw_cursor():
 
 def draw_bottom_ui():
 	"""Controls the drawing of the UI under the map."""
-	gfx.blit_string(0, var.MAP_WINDOW[1],'X: %s Y: %s Z: %s' %
+	gfx.blit_string(0, var.MAP_WINDOW_SIZE[1],'X: %s Y: %s Z: %s' %
 		(var.CURSOR[0],var.CURSOR[1],var.CAMERA_POS[2]))
 
 	_fps_string = '%s fps' % str(sys_get_fps())
-	gfx.blit_string(var.WINDOW_SIZE[0]-len(_fps_string), var.MAP_WINDOW[1],
+	gfx.blit_string(var.WINDOW_SIZE[0]-len(_fps_string), var.MAP_WINDOW_SIZE[1],
 					_fps_string)
 
 while var.RUNNING:
