@@ -86,25 +86,19 @@ def render_map(map):
 def flood_select_by_tile(map_array,tile,where):
 	_to_check = [where]
 	_checked = []
-	_selected = []
 	
 	while _to_check:
+		_current = _to_check.pop(0)
+		_checked.append(_current)
+		
 		for _x in range(-1,2):
 			for _y in range(-1,2):
-				if not _x and not _y:
-					continue
-				
-				x = _x+_to_check[0][0]
-				y = _y+_to_check[0][1]
-				z = _to_check[0][2]
+				x = _x+_current[0]
+				y = _y+_current[1]
+				z = _current[2]
 				
 				if map_array[x][y][z]['id'] == tile['id']:
-					if not (x,y,z) in _selected:
-						_selected.append((x,y,z))
-					
-					if not (x,y,z) in _to_check:
+					if not (x,y,z) in _checked:
 						_to_check.append((x,y,z))
-		
-		_to_check.pop(0)
 	
-	return _selected
+	return _checked
