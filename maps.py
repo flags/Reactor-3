@@ -72,13 +72,39 @@ def render_map(map):
 			_Y_POS = y-CAMERA_POS[1]
 			for z in range(MAP_SIZE[2]):
 				if map[x][y][z]:
-					if z > CAMERA_POS[2] and not SETTINGS['view current z-level only']:
+					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above']:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
 					elif z == CAMERA_POS[2]:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,0)
 						gfx.darken_tile(_X_POS,_Y_POS,0)
-					elif z < CAMERA_POS[2] and not SETTINGS['view current z-level only']:
+					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+
+def flood_select_by_tile(map_array,tile,where):
+	_to_check = [where]
+	_checked = []
+	_selected = []
+	
+	while _to_check:
+		for _x in range(-1,2):
+			for _y in range(-1,2):
+				if not _x and not _y:
+					continue
+				
+				x = _x+_to_check[0][0]
+				y = _y+_to_check[0][1]
+				z = _to_check[0][2]
+				
+				if map_array[x][y][z]['id'] == tile['id']:
+					if not (x,y,z) in _selected:
+						_selected.append((x,y,z))
+					
+					if not (x,y,z) in _to_check:
+						_to_check.append((x,y,z))
+		
+		_to_check.pop(0)
+	
+	return _selected

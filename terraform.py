@@ -80,6 +80,9 @@ def handle_input():
 			_current_index = len(TILES)-1
 		
 		PLACING_TILE = TILES[_current_index]
+	
+	if INPUT['f']:
+		print maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2]))
 
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
@@ -111,22 +114,13 @@ def handle_input():
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 
-def draw_cursor():
-	"""Handles the drawing of the cursor."""
-	if time.time()%1>=0.5:
-		gfx.blit_char(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],'X',white,black)
-	else:
-		gfx.blit_tile(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],PLACING_TILE)
-
 while RUNNING:
 	get_input()
 	handle_input()
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)
-	draw_cursor()
+	gfx.draw_cursor(PLACING_TILE)
 	gfx.draw_all_tiles()
 	gfx.draw_bottom_ui()
 	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))

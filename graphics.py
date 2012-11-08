@@ -61,6 +61,15 @@ def darken_tile(x,y,amt):
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
+def draw_cursor(tile):
+	"""Handles the drawing of the cursor."""	
+	if time.time()%1>=0.5:
+		blit_char(CURSOR[0]-CAMERA_POS[0],
+		              CURSOR[1]-CAMERA_POS[1],'X',white,black)
+	else:
+		blit_tile(CURSOR[0]-CAMERA_POS[0],
+		              CURSOR[1]-CAMERA_POS[1],tile)
+
 def draw_bottom_ui():
 	"""Controls the drawing of the UI under the map."""
 	blit_string(0,MAP_WINDOW_SIZE[1]+1,'X: %s Y: %s Z: %s' %

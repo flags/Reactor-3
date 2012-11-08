@@ -1,16 +1,13 @@
 from libtcodpy import *
 
 WINDOW_TITLE = 'Reactor 3 - Milestone 2-3'
+
+#Constants
 WINDOW_SIZE = (100,50)
 MAP_SIZE = (100,100,5)
 MAP_WINDOW_SIZE = (40,40)
-MAP_WINDOW = None
 ITEM_WINDOW_SIZE = (10,1)
-ITEM_WINDOW = None
 CONSOLE_WINDOW_SIZE = (40,30)
-CONSOLE_WINDOW = None
-SETTINGS = {'draw console': False,
-			'view current z-level only': False}
 RUNNING = True
 CURSOR = [0,0]
 CAMERA_POS = [0,0,2]
@@ -27,7 +24,19 @@ CONSOLE_HISTORY_MAX_LINES = 29
 PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
+
+#Consoles
+MAP_WINDOW = None
+ITEM_WINDOW = None
+CONSOLE_WINDOW = None
+
+#Non-constants
+SETTINGS = {'draw console': False,
+			'draw z-levels above': True,
+			'draw z-levels below': True}
 KEYBOARD_STRING = ['']
+
+#Controls
 KEY = Key()
 MOUSE = Mouse()
 INPUT = {'up':False,
@@ -68,6 +77,8 @@ INPUT = {'up':False,
 		'3':False,
 		'4':False,
 		'5':False}
+		
+#Colors
 GREEN_ALT = Color(0,130,0)
 GRASS_GREEN = Color(0, 150, 0)
 GRASS_GREEN_DARK = Color(0, 140, 0)
