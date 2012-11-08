@@ -23,6 +23,7 @@ def create_map():
 			_y.append(_z)
 		_map.append(_y)
 
+	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
 	return _map
 
 def save_map(map):
@@ -36,8 +37,10 @@ def save_map(map):
 	with open(os.path.join(_map_dir,'map1.dat'),'w') as _map_file:
 		try:
 			_map_file.write(json.dumps(map))
+			gfx.log('Map saved.')
 		except TypeError:
 			logging.error('FATAL: Map not JSON serializable.')
+			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
 def load_map(map_name):
 	_map_dir = os.path.join(DATA_DIR,'maps')
@@ -46,10 +49,12 @@ def load_map(map_name):
 		try:
 			_map_string = json.loads(_map_file.readline())
 			logging.info('Map \'%s\' loaded.' % map_name)
+			gfx.log('Loaded map \'%s\' from disk.' % map_name)
 
 			return _map_string
 		except TypeError:
 			logging.error('FATAL: Map not JSON serializable.')
+			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
 def render_map(map):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
@@ -67,13 +72,13 @@ def render_map(map):
 			_Y_POS = y-CAMERA_POS[1]
 			for z in range(MAP_SIZE[2]):
 				if map[x][y][z]:
-					if z > CAMERA_POS[2]:
+					if z > CAMERA_POS[2] and not SETTINGS['view current z-level only']:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
 					elif z == CAMERA_POS[2]:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,0)
 						gfx.darken_tile(_X_POS,_Y_POS,0)
-					elif z < CAMERA_POS[2]:
+					elif z < CAMERA_POS[2] and not SETTINGS['view current z-level only']:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)

@@ -12,8 +12,6 @@ def init_libtcod():
 	CONSOLE_WINDOW = console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	sys_set_fps(FPS)
-	
-	log(WINDOW_TITLE)
 
 	RGB_BACK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	RGB_BACK_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -85,6 +83,8 @@ def draw_console():
 	if not SETTINGS['draw console']:
 		return False
 	
+	console_rect(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	
 	_i = 0
 	for line in CONSOLE_HISTORY[len(CONSOLE_HISTORY)-CONSOLE_HISTORY_MAX_LINES:]:
 		_xoffset = 0
@@ -100,15 +100,12 @@ def draw_console():
 			_xoffset += 1
 			_i += 1
 			
-		#console_print(CONSOLE_WINDOW,0,_i,line)
-		#_i+=1
+	console_print(CONSOLE_WINDOW,0,CONSOLE_WINDOW_SIZE[1]-1,'#'+KEYBOARD_STRING[0])
 
 def log(text):
 	CONSOLE_HISTORY.append(text)
 
 def end_of_frame():
-	#global DRAW_CONSOLE
-	
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	

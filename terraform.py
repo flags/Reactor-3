@@ -8,24 +8,33 @@ import random
 import time
 import maps
 
+gfx.log(WINDOW_TITLE)
+
 try:
 	MAP = maps.load_map('map1.dat')
 except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
-PLACING_TILE = WALL_TILE
-
 gfx.init_libtcod()
 
+PLACING_TILE = WALL_TILE
+
 def handle_input():
-	global PLACING_TILE,RUNNING,SETTINGS
-	
-	#print DRAW_CONSOLE
-	
+	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
+
 	"""Parses input."""
 	if gfx.window_is_closed() or INPUT['\x1b']:
 		RUNNING = False
+	
+	if INPUT['-']:
+		if SETTINGS['draw console']:
+			SETTINGS['draw console'] = False
+		else:
+			SETTINGS['draw console'] = True
+	
+	if SETTINGS['draw console']:
+		return
 
 	if INPUT['up']:
 		CURSOR[1] -= 1
@@ -55,12 +64,6 @@ def handle_input():
 	if INPUT[' ']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
-	
-	if INPUT['[']:
-		if SETTINGS['draw console']:
-			SETTINGS['draw console'] = False
-		else:
-			SETTINGS['draw console'] = True
 	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1

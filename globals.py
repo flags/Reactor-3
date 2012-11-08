@@ -7,9 +7,10 @@ MAP_WINDOW_SIZE = (40,40)
 MAP_WINDOW = None
 ITEM_WINDOW_SIZE = (10,1)
 ITEM_WINDOW = None
-CONSOLE_WINDOW_SIZE = (30,30)
+CONSOLE_WINDOW_SIZE = (40,30)
 CONSOLE_WINDOW = None
-SETTINGS = {'draw console': True}
+SETTINGS = {'draw console': False,
+			'view current z-level only': False}
 RUNNING = True
 CURSOR = [0,0]
 CAMERA_POS = [0,0,2]
@@ -26,6 +27,7 @@ CONSOLE_HISTORY_MAX_LINES = 29
 PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
+KEYBOARD_STRING = ['']
 KEY = Key()
 MOUSE = Mouse()
 INPUT = {'up':False,
@@ -33,7 +35,7 @@ INPUT = {'up':False,
 		'left':False,
 		'right':False,
 		' ':False,
-		'[':False,
+		'-':False,
 		'\x1b':False,
 		'a':False,
 		'b':False,
