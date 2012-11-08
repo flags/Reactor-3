@@ -2,12 +2,12 @@ from libtcodpy import *
 from globals import *
 
 def reset_input():
-	#for key in INPUT:
-	#	INPUT[key] = False
-	INPUT['left'] = False
-	INPUT['right'] = False
-	INPUT['up'] = False
-	INPUT['down'] = False
+	for key in INPUT:
+		INPUT[key] = False
+	#INPUT['left'] = False
+	#INPUT['right'] = False
+	#INPUT['up'] = False
+	#INPUT['down'] = False
 
 def get_input():
 	sys_check_for_event(EVENT_ANY,KEY,MOUSE)

@@ -5,7 +5,13 @@ WINDOW_SIZE = (100,50)
 MAP_SIZE = (100,100,5)
 MAP_WINDOW_SIZE = (40,40)
 MAP_WINDOW = None
+ITEM_WINDOW_SIZE = (10,1)
+ITEM_WINDOW = None
+CONSOLE_WINDOW_SIZE = (30,30)
+CONSOLE_WINDOW = None
+SETTINGS = {'draw console': True}
 RUNNING = True
+CURSOR = [0,0]
 CAMERA_POS = [0,0,2]
 FPS = 300
 FONT = 'terminal12x12_gs_ro.png'
@@ -15,6 +21,9 @@ LIGHT_BUFFER = [[]]
 RGB_BACK_BUFFER = [[],[],[]]
 RGB_FORE_BUFFER = [[],[],[]]
 CHAR_BUFFER = [[]]
+CONSOLE_HISTORY = []
+CONSOLE_HISTORY_MAX_LINES = 29
+PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 KEY = Key()
@@ -24,6 +33,7 @@ INPUT = {'up':False,
 		'left':False,
 		'right':False,
 		' ':False,
+		'[':False,
 		'\x1b':False,
 		'a':False,
 		'b':False,

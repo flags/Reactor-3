@@ -2,13 +2,18 @@ from libtcodpy import *
 from globals import *
 from tiles import *
 import numpy
+import time
 
 def init_libtcod():
-	global MAP_WINDOW
+	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
+	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
+	CONSOLE_WINDOW = console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	sys_set_fps(FPS)
+	
+	log(WINDOW_TITLE)
 
 	RGB_BACK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	RGB_BACK_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -58,8 +63,58 @@ def darken_tile(x,y,amt):
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
+def draw_bottom_ui():
+	"""Controls the drawing of the UI under the map."""
+	blit_string(0,MAP_WINDOW_SIZE[1]+1,'X: %s Y: %s Z: %s' %
+		(CURSOR[0],CURSOR[1],CAMERA_POS[2]))
+
+	_fps_string = '%s fps' % str(sys_get_fps())
+	blit_string(WINDOW_SIZE[0]-len(_fps_string), MAP_WINDOW_SIZE[1]+1,_fps_string)
+
+def draw_selected_tile_in_item_window(pos):
+	if time.time()%1>=0.5:
+		console_print(ITEM_WINDOW,pos,0,chr(15))
+
+def draw_all_tiles():
+	for tile in TILES:
+		console_set_char_foreground(ITEM_WINDOW, TILES.index(tile), 0, tile['color'][0])
+		console_set_char_background(ITEM_WINDOW, TILES.index(tile), 0, tile['color'][1])
+		console_set_char(ITEM_WINDOW, TILES.index(tile), 0, tile['icon'])
+
+def draw_console():
+	if not SETTINGS['draw console']:
+		return False
+	
+	_i = 0
+	for line in CONSOLE_HISTORY[len(CONSOLE_HISTORY)-CONSOLE_HISTORY_MAX_LINES:]:
+		_xoffset = 0
+		
+		if CONSOLE_HISTORY.index(line) % 2:
+			console_set_default_foreground(CONSOLE_WINDOW,Color(185,185,185))
+		else:
+			console_set_default_foreground(CONSOLE_WINDOW,white)
+		
+		while len(line):
+			console_print(CONSOLE_WINDOW,_xoffset,_i,line[:CONSOLE_WINDOW_SIZE[0]])
+			line = line[CONSOLE_WINDOW_SIZE[0]:]
+			_xoffset += 1
+			_i += 1
+			
+		#console_print(CONSOLE_WINDOW,0,_i,line)
+		#_i+=1
+
+def log(text):
+	CONSOLE_HISTORY.append(text)
+
 def end_of_frame():
+	#global DRAW_CONSOLE
+	
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
+	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
+	
+	if SETTINGS['draw console']:
+		console_blit(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],0,0,0,1,0.5)
+	
 	console_flush()
 
 def window_is_closed():
