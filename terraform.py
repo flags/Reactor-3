@@ -21,7 +21,7 @@ gfx.init_libtcod()
 
 def handle_input():
 	"""Parses input."""
-	if gfx.window_is_closed() or var.INPUT['escape']:
+	if gfx.window_is_closed() or var.INPUT['\x1b']:
 		var.RUNNING = False
 
 	if var.INPUT['up']:
@@ -49,7 +49,7 @@ def handle_input():
 				var.CAMERA_POS[0]>0:
 			var.CAMERA_POS[0] -= 1
 
-	if var.INPUT['space']:
+	if var.INPUT[' ']:
 		var.MAP[var.CURSOR[0]][var.CURSOR[1]][var.CAMERA_POS[2]] = \
 				create_tile(var.PLACING_TILE)
 
