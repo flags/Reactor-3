@@ -70,18 +70,28 @@ def render_map(map):
 		_X_POS = x-CAMERA_POS[0]
 		for y in range(CAMERA_POS[1],_Y_MAX):
 			_Y_POS = y-CAMERA_POS[1]
+			_drawn = False
 			for z in range(MAP_SIZE[2]):
 				if map[x][y][z]:
 					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above']:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+						_drawn = True
 					elif z == CAMERA_POS[2]:
 						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
 						gfx.lighten_tile(_X_POS,_Y_POS,0)
 						gfx.darken_tile(_X_POS,_Y_POS,0)
-					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
-						gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+						_drawn = True
+					elif z < CAMERA_POS[2]:
+						if SETTINGS['draw z-levels below']:
+							gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+							gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+						#else:
+						#	gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
+						_drawn = True
+			
+			if not _drawn:
+				gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
 
 def flood_select_by_tile(map_array,tile,where):
 	_stime = time.time()

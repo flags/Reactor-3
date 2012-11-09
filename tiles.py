@@ -1,6 +1,10 @@
 from libtcodpy import *
 from globals import *
 
+BLANK_TILE = {'id':'blank_tile',
+				'icon': '.',
+				'color':(darker_gray,black)}
+
 SHORT_GRASS_TILE = {'id':'short_grass',
                     'icon':'.',
                     'color':(GRASS_GREEN_DARK,GRASS_GREEN),
@@ -62,7 +66,8 @@ WALL_TILE = {'id':'wall',
              'cost':-1}
 
 #Groups
-TILES = [DIRT_TILE,
+TILES = [BLANK_TILE,
+		DIRT_TILE,
 		WALL_TILE]
 
 GRASS_TILES = [SHORT_GRASS_TILE,

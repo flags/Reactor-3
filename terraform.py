@@ -118,6 +118,11 @@ def handle_input():
 while RUNNING:
 	get_input()
 	handle_input()
+	
+	menus.create_menu(title='Commands',test='test here!',
+		yeah='test again',
+		padding=(1,1),
+		position=(MAP_WINDOW_SIZE[0],0))
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)

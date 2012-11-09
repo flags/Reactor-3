@@ -113,11 +113,18 @@ def draw_console():
 
 def draw_menus():
 	for menu in MENUS:
+		_y_offset = (menu['padding'][1])
+		
+		console_print(menu['console'],menu['padding'][0],_y_offset,menu['title'])
+		
+		_y_offset += 2
+		
 		for item in menu:
-			if item in ['console','size','position']:
+			if item in ['console','size','position','title','padding']:
 				continue
 			
-			console_print(menu['console'],MENU_PADDING[0],menu.keys().index(item)+MENU_PADDING[1],'%s: %s' % (item,menu[item]))
+			console_print(menu['console'],menu['padding'][0],_y_offset,'%s: %s' % (item,menu[item]))
+			_y_offset += 1
 
 def log(text):
 	CONSOLE_HISTORY.append(text)
@@ -127,7 +134,7 @@ def end_of_frame():
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	
 	for menu in MENUS:
-		console_blit(menu['console'],0,0,menu['size'][0],menu['size'][1],menu['position'][0],menu['position'][1],0,1,0.5)
+		console_blit(menu['console'],0,0,menu['size'][0],menu['size'][1],0,menu['position'][0],menu['position'][1],1,0.5)
 	
 	if SETTINGS['draw console']:
 		console_blit(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],0,0,0,1,0.5)

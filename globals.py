@@ -28,7 +28,7 @@ DATA_DIR = 'data'
 #Non-constants
 SETTINGS = {'draw console': False,
 			'draw z-levels above': True,
-			'draw z-levels below': True}
+			'draw z-levels below': False}
 KEYBOARD_STRING = ['']
 
 #Consoles
