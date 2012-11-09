@@ -25,16 +25,20 @@ PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 
-#Consoles
-MAP_WINDOW = None
-ITEM_WINDOW = None
-CONSOLE_WINDOW = None
-
 #Non-constants
 SETTINGS = {'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': True}
 KEYBOARD_STRING = ['']
+
+#Consoles
+MAP_WINDOW = None
+ITEM_WINDOW = None
+CONSOLE_WINDOW = None
+
+#Menus
+MENUS = []
+MENU_PADDING = (1,1)
 
 #Controls
 KEY = Key()

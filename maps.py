@@ -84,12 +84,15 @@ def render_map(map):
 						gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
 
 def flood_select_by_tile(map_array,tile,where):
+	_stime = time.time()
 	_to_check = [where]
 	_checked = []
 	
 	while _to_check:
 		_current = _to_check.pop(0)
-		_checked.append(_current)
+		
+		if not _current in _checked:
+			_checked.append(_current)
 		
 		for _x in range(-1,2):
 			for _y in range(-1,2):

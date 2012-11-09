@@ -5,6 +5,7 @@ from inputs import *
 from tiles import *
 import graphics as gfx
 import random
+import menus
 import time
 import maps
 
@@ -84,21 +85,6 @@ def handle_input():
 	if INPUT['f']:
 		print maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2]))
 
-	if INPUT['1']:
-		CAMERA_POS[2] = 1
-
-	if INPUT['2']:
-		CAMERA_POS[2] = 2
-
-	if INPUT['3']:
-		CAMERA_POS[2] = 3
-
-	if INPUT['4']:
-		CAMERA_POS[2] = 4
-
-	if INPUT['5']:
-		CAMERA_POS[2] = 5
-
 	if INPUT['c']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(GRASS_TILES))
@@ -114,6 +100,21 @@ def handle_input():
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 
+	if INPUT['1']:
+		CAMERA_POS[2] = 1
+
+	if INPUT['2']:
+		CAMERA_POS[2] = 2
+
+	if INPUT['3']:
+		CAMERA_POS[2] = 3
+
+	if INPUT['4']:
+		CAMERA_POS[2] = 4
+
+	if INPUT['5']:
+		CAMERA_POS[2] = 5
+
 while RUNNING:
 	get_input()
 	handle_input()
@@ -124,6 +125,7 @@ while RUNNING:
 	gfx.draw_all_tiles()
 	gfx.draw_bottom_ui()
 	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))
+	gfx.draw_menus()
 	gfx.draw_console()
 	gfx.end_of_frame()
 
