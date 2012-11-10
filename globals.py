@@ -30,6 +30,7 @@ SETTINGS = {'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': False}
 KEYBOARD_STRING = ['']
+SELECTED_TILES = []
 
 #Consoles
 MAP_WINDOW = None
@@ -38,6 +39,7 @@ CONSOLE_WINDOW = None
 
 #Menus
 MENUS = []
+ACTIVE_MENU = {'menu': -1,'index': 0}
 MENU_PADDING = (1,1)
 
 #Controls

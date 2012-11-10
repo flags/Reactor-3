@@ -3,6 +3,7 @@ from tiles import *
 import graphics as gfx
 import logging
 import random
+import time
 import json
 import os
 
@@ -78,9 +79,12 @@ def render_map(map):
 						gfx.lighten_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == CAMERA_POS[2]:
-						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
-						gfx.lighten_tile(_X_POS,_Y_POS,0)
-						gfx.darken_tile(_X_POS,_Y_POS,0)
+						if (x,y,z) in SELECTED_TILES and time.time()%1>=0.5:
+							gfx.blit_char(_X_POS,_Y_POS,'X',darker_grey,black)
+						else:
+							gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
+							gfx.lighten_tile(_X_POS,_Y_POS,0)
+							gfx.darken_tile(_X_POS,_Y_POS,0)
 						_drawn = True
 					elif z < CAMERA_POS[2]:
 						if SETTINGS['draw z-levels below']:
@@ -92,7 +96,6 @@ def render_map(map):
 				gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
 
 def flood_select_by_tile(map_array,tile,where):
-	_stime = time.time()
 	_to_check = [where]
 	_checked = []
 	

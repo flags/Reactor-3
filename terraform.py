@@ -38,16 +38,28 @@ def handle_input():
 		return
 
 	if INPUT['up']:
-		CURSOR[1] -= 1
+		if not ACTIVE_MENU['menu'] == -1:
+			if ACTIVE_MENU['index']>0:
+				ACTIVE_MENU['index'] -= 1
+			else:
+				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
+		else:
+			CURSOR[1] -= 1
 
-		if CAMERA_POS[1]<MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
-			CAMERA_POS[1] -= 1
+			if CAMERA_POS[1]<MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
+				CAMERA_POS[1] -= 1
 
 	if INPUT['down']:
-		CURSOR[1] += 1
+		if not ACTIVE_MENU['menu'] == -1:
+			if ACTIVE_MENU['index']<len(MENUS[ACTIVE_MENU['menu']]['menu'])-1:
+				ACTIVE_MENU['index'] += 1
+			else:
+				ACTIVE_MENU['index'] = 0
+		else:
+			CURSOR[1] += 1
 
-		if CURSOR[1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
-			CAMERA_POS[1] += 1
+			if CURSOR[1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
+				CAMERA_POS[1] += 1
 
 	if INPUT['right']:
 		CURSOR[0] += 1
@@ -66,6 +78,10 @@ def handle_input():
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
+	if INPUT['o']:
+		if ACTIVE_MENU['menu'] < len(MENUS):
+			ACTIVE_MENU['menu'] += 1
+	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
 		
@@ -83,7 +99,7 @@ def handle_input():
 		PLACING_TILE = TILES[_current_index]
 	
 	if INPUT['f']:
-		print maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2]))
+		SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
 
 	if INPUT['c']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
@@ -115,8 +131,9 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
-menus.create_menu(title='Commands',test='test here!',
-	yeah='test again',
+menus.create_menu(title='Commands',I='Moved selected up',
+	K='Moved selected down',
+	test='Test',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0))
 
