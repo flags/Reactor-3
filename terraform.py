@@ -82,6 +82,10 @@ def handle_input():
 		if ACTIVE_MENU['menu'] < len(MENUS):
 			ACTIVE_MENU['menu'] += 1
 	
+	if INPUT['j']:
+		if ACTIVE_MENU['menu'] > -1:
+			menus.get_selected_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
 		
@@ -131,11 +135,15 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
+def commands_return(value):
+	print 'Menu item: '+value
+
 menus.create_menu(title='Commands',I='Moved selected up',
 	K='Moved selected down',
 	test='Test',
 	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0))
+	position=(MAP_WINDOW_SIZE[0],0),
+	callback=commands_return)
 
 while RUNNING:
 	get_input()
