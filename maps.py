@@ -2,7 +2,9 @@ from globals import *
 from tiles import *
 import graphics as gfx
 import logging
+import drawing
 import random
+import numpy
 import time
 import json
 import os
@@ -94,8 +96,11 @@ def render_map(map):
 			
 			if not _drawn:
 				gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
+			
+			gfx.darken_tile(_X_POS,_Y_POS,255)
 
 def render_shadows(map):
+	_stime = time.time()
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
 	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
 
@@ -109,21 +114,58 @@ def render_shadows(map):
 		_X_POS = x-CAMERA_POS[0]
 		for y in range(CAMERA_POS[1],_Y_MAX):
 			_Y_POS = y-CAMERA_POS[1]
-			for z in range(MAP_SIZE[2]):
-				if map[x][y][z]:
-					_kill = False
-					for _shadow_x in range(1,z):
-						_shadow_x = -_shadow_x
+			
+			_zlock = -1
+			for pos in drawing.draw_3d_line(SUN_POS,(_X_POS,_Y_POS,2)):
+				if pos[2] >= MAP_SIZE[2]:
+					continue
+				
+				if _zlock>=0 and not pos[2]==_zlock:
+					break
+				
+				if map[pos[0]][pos[1]][pos[2]]:
+					_zlock = pos[2]
+					gfx.darken_tile(pos[0],pos[1],50)
+					gfx.lighten_tile(pos[0],pos[1],(pos[2]*20))
+
+def soften_shadows(map):
+	global DARK_BUFFER
+	
+	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
+	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
+	
+	_DARK_BUFFER_COPY = numpy.copy(DARK_BUFFER)
+
+	if _X_MAX>MAP_SIZE[0]:
+		_X_MAX = MAP_SIZE[0]
+
+	if _Y_MAX>MAP_SIZE[1]:
+		_Y_MAX = MAP_SIZE[1]
+
+	for r in range(1):
+		for x in range(CAMERA_POS[0],_X_MAX):
+			_X_POS = x-CAMERA_POS[0]
+			for y in range(CAMERA_POS[1],_Y_MAX):
+				_Y_POS = y-CAMERA_POS[1]
+				
+				for x1 in range(-1,2):
+					for y1 in range(-1,2):
+						if not x1 and not y1:
+							continue
 						
-						for z2 in range(MAP_SIZE[2]):
-							if map[x+_shadow_x][y+_shadow_x][z2] and z <= z2:
-								_kill = True
-								break
+						if _X_POS+x1<0 or _X_POS+x1>=MAP_WINDOW_SIZE[0]:
+							continue
 						
-						if _kill:
-							break
+						if _Y_POS+y1<0 or _Y_POS+y1>=MAP_WINDOW_SIZE[1]:
+							continue
 						
-						gfx.darken_tile(_X_POS+_shadow_x,_Y_POS+_shadow_x,15*abs(z+_shadow_x))
+						_near_dark = DARK_BUFFER[0][_Y_POS+y1,_X_POS+x1]
+						
+						#print _near_dark,DARK_BUFFER[0][_Y_POS,_X_POS]
+						if _near_dark<DARK_BUFFER[0][_Y_POS,_X_POS]:
+							_DARK_BUFFER_COPY[0][_Y_POS,_X_POS] = 50#255-abs((_DARK_BUFFER_COPY[0][_Y_POS,_X_POS]-_near_dark))
+		
+		DARK_BUFFER[0] = numpy.copy(_DARK_BUFFER_COPY)[0]
 
 def flood_select_by_tile(map_array,tile,where):
 	_to_check = [where]
@@ -134,8 +176,6 @@ def flood_select_by_tile(map_array,tile,where):
 		
 		if not _current in _checked:
 			_checked.append(_current)
-		
-		print _current[2]
 		
 		for _x in range(-1,2):
 			for _y in range(-1,2):
