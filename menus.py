@@ -1,7 +1,7 @@
 from globals import *
 
-def create_menu(position=(0,0),title='Untitled',padding=MENU_PADDING,callback=None,**kvargs):
-	_menu = {'settings': {'position': position,'title': title, 'padding': padding},
+def create_menu(position=[0,0],title='Untitled',padding=MENU_PADDING,callback=None,**kvargs):
+	_menu = {'settings': {'position': list(position),'title': title, 'padding': padding},
 		'callback': callback}
 	_menu['menu'] = kvargs
 	_size = [0,len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
@@ -16,6 +16,8 @@ def create_menu(position=(0,0),title='Untitled',padding=MENU_PADDING,callback=No
 	_menu['settings']['console'] = console_new(_menu['settings']['size'][0],_menu['settings']['size'][1])
 	
 	MENUS.append(_menu)
+	
+	return _menu
 
 def get_selected_item(menu,index):
 	return menu['callback'](menu['menu'].values()[index])

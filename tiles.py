@@ -61,7 +61,19 @@ DIRT_TILE_3 = {'id':'dirt_3',
 
 WALL_TILE = {'id':'wall',
              'icon':'#',
-             'color':(black,gray),
+             'color':(black,dark_gray),
+             'burnable':False,
+             'cost':-1}
+
+CONCRETE_TILE_1 = {'id':'concrete_1',
+             'icon':'.',
+             'color':(Color(130,130,130),Color(70,70,70)),
+             'burnable':False,
+             'cost':-1}
+
+CONCRETE_TILE_2 = {'id':'concrete_2',
+             'icon':'.',
+             'color':(Color(95,95,95),Color(62,62,62)),
              'burnable':False,
              'cost':-1}
 
@@ -81,9 +93,13 @@ DIRT_TILES = [DIRT_TILE_1,
 SAND_TILES = [SAND_TILE_1,
 			SAND_TILE_2]
 
+CONCRETE_TILES = [CONCRETE_TILE_1,
+			CONCRETE_TILE_2]
+
 TILES.extend(GRASS_TILES)
 TILES.extend(DIRT_TILES)
 TILES.extend(SAND_TILES)
+TILES.extend(CONCRETE_TILES)
 
 
 def create_tile(tile):

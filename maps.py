@@ -95,6 +95,36 @@ def render_map(map):
 			if not _drawn:
 				gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
 
+def render_shadows(map):
+	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
+	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
+
+	if _X_MAX>MAP_SIZE[0]:
+		_X_MAX = MAP_SIZE[0]
+
+	if _Y_MAX>MAP_SIZE[1]:
+		_Y_MAX = MAP_SIZE[1]
+
+	for x in range(CAMERA_POS[0],_X_MAX):
+		_X_POS = x-CAMERA_POS[0]
+		for y in range(CAMERA_POS[1],_Y_MAX):
+			_Y_POS = y-CAMERA_POS[1]
+			for z in range(MAP_SIZE[2]):
+				if map[x][y][z]:
+					_kill = False
+					for _shadow_x in range(1,z):
+						_shadow_x = -_shadow_x
+						
+						for z2 in range(MAP_SIZE[2]):
+							if map[x+_shadow_x][y+_shadow_x][z2] and z <= z2:
+								_kill = True
+								break
+						
+						if _kill:
+							break
+						
+						gfx.darken_tile(_X_POS+_shadow_x,_Y_POS+_shadow_x,15*abs(z+_shadow_x))
+
 def flood_select_by_tile(map_array,tile,where):
 	_to_check = [where]
 	_checked = []
@@ -104,6 +134,8 @@ def flood_select_by_tile(map_array,tile,where):
 		
 		if not _current in _checked:
 			_checked.append(_current)
+		
+		print _current[2]
 		
 		for _x in range(-1,2):
 			for _y in range(-1,2):

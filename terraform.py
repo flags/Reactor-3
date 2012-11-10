@@ -81,10 +81,13 @@ def handle_input():
 	if INPUT['o']:
 		if ACTIVE_MENU['menu'] < len(MENUS):
 			ACTIVE_MENU['menu'] += 1
+			ACTIVE_MENU['index'] = 0
 	
 	if INPUT['j']:
 		if ACTIVE_MENU['menu'] > -1:
 			menus.get_selected_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+		
+		ACTIVE_MENU['menu'] = -1
 	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
@@ -119,6 +122,10 @@ def handle_input():
 	if INPUT['s']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
+	
+	if INPUT['z']:
+		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+				create_tile(random.choice(CONCRETE_TILES))
 
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
@@ -138,9 +145,26 @@ def handle_input():
 def commands_return(value):
 	print 'Menu item: '+value
 
-menus.create_menu(title='Commands',I='Moved selected up',
-	K='Moved selected down',
-	test='Test',
+def menu_fix():
+	for menu in MENUS:
+		if not MENUS.index(menu):
+			continue
+		
+		_prev_menu = MENUS[MENUS.index(menu)-1]
+		_size = _prev_menu['settings']['position'][1]+_prev_menu['settings']['size'][1]
+		
+		menu['settings']['position'][1] = _size
+
+menus.create_menu(title='Tile Operations',A='Moved selected up',
+	B='Moved selected down',
+	C='Delete All',
+	padding=(1,1),
+	position=(MAP_WINDOW_SIZE[0],0),
+	callback=commands_return)
+
+menus.create_menu(title='General',S='Save',
+	L='Load',
+	E='Exit',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	callback=commands_return)
@@ -151,6 +175,8 @@ while RUNNING:
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)
+	maps.render_shadows(MAP)
+	menu_fix()
 	gfx.draw_cursor(PLACING_TILE)
 	gfx.draw_all_tiles()
 	gfx.draw_bottom_ui()
