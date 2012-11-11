@@ -77,10 +77,23 @@ CONCRETE_TILE_2 = {'id':'concrete_2',
              'burnable':False,
              'cost':-1}
 
+ROAD_STRIPE_1 = {'id':'road_stripe_1',
+             'icon':'.',
+             'color':(yellow,yellow),
+             'burnable':False,
+             'cost':-1}
+
+ROAD_STRIPE_1 = {'id':'road_stripe_2',
+             'icon':'.',
+             'color':(white,darker_gray),
+             'burnable':False,
+             'cost':-1}
+
 #Groups
 TILES = [BLANK_TILE,
 		DIRT_TILE,
-		WALL_TILE]
+		WALL_TILE,
+		ROAD_STRIPE_1]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,

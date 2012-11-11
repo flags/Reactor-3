@@ -62,17 +62,23 @@ def handle_input():
 				CAMERA_POS[1] += 1
 
 	if INPUT['right']:
-		CURSOR[0] += 1
+		if not ACTIVE_MENU['menu'] == -1:
+			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+		else:
+			CURSOR[0] += 1
 
-		if CURSOR[0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
-			CAMERA_POS[0]+=1
+			if CURSOR[0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
+				CAMERA_POS[0]+=1
 
 	if INPUT['left']:
-		CURSOR[0] -= 1
+		if not ACTIVE_MENU['menu'] == -1:
+			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+		else:
+			CURSOR[0] -= 1
 
-		if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
-				CAMERA_POS[0]>0:
-			CAMERA_POS[0] -= 1
+			if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
+					CAMERA_POS[0]>0:
+				CAMERA_POS[0] -= 1
 
 	if INPUT[' ']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
@@ -96,7 +102,7 @@ def handle_input():
 	
 	if INPUT['j']:
 		if ACTIVE_MENU['menu'] > -1:
-			menus.get_selected_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.run_callback(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		
 		ACTIVE_MENU['menu'] = -1
 	
@@ -168,6 +174,13 @@ def menu_fix():
 
 menus.create_menu(title='Tile Operations',A='Moved selected up',
 	B='Moved selected down',
+	C='Delete All',
+	padding=(1,1),
+	position=(MAP_WINDOW_SIZE[0],0),
+	callback=commands_return)
+
+menus.create_menu(title='Options',A=['Flood select (Current tile)','test'],
+	B=['Moved selected down','derp'],
 	C='Delete All',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),

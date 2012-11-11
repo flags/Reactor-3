@@ -128,10 +128,16 @@ def draw_menus():
 			else:
 				console_set_default_foreground(menu['settings']['console'],dark_grey)
 			
+			if isinstance(menu['menu'][item],list):
+				#print menu['menu'][item][menu['values'][item]]
+				_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
+			else:
+				_line = '%s: %s' % (item,menu['menu'][item])
+
 			console_print(menu['settings']['console'],
 				menu['settings']['padding'][0],
 				_y_offset,
-				'%s: %s' % (item,menu['menu'][item]))
+				_line)
 			_y_offset += 1
 
 def log(text):
