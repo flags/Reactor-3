@@ -62,6 +62,9 @@ def load_map(map_name):
 def render_map(map):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
 	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
+	
+	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 	if _X_MAX>MAP_SIZE[0]:
 		_X_MAX = MAP_SIZE[0]
@@ -70,34 +73,34 @@ def render_map(map):
 		_Y_MAX = MAP_SIZE[1]
 
 	for x in range(CAMERA_POS[0],_X_MAX):
-		_X_POS = x-CAMERA_POS[0]
+		_RENDER_X = x-CAMERA_POS[0]
 		for y in range(CAMERA_POS[1],_Y_MAX):
-			_Y_POS = y-CAMERA_POS[1]
+			_RENDER_Y = y-CAMERA_POS[1]
 			_drawn = False
 			for z in range(MAP_SIZE[2]):
 				if map[x][y][z]:
 					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above']:
-						gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
-						gfx.lighten_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						gfx.lighten_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES and time.time()%1>=0.5:
-							gfx.blit_char(_X_POS,_Y_POS,'X',darker_grey,black)
+							gfx.blit_char(_RENDER_X,_RENDER_Y,'X',darker_grey,black)
 						else:
-							gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
-							gfx.lighten_tile(_X_POS,_Y_POS,0)
-							gfx.darken_tile(_X_POS,_Y_POS,0)
+							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+							gfx.lighten_tile(_RENDER_X,_RENDER_Y,0)
+							gfx.darken_tile(_RENDER_X,_RENDER_Y,0)
 						_drawn = True
 					elif z < CAMERA_POS[2]:
 						if SETTINGS['draw z-levels below']:
-							gfx.blit_tile(_X_POS,_Y_POS,map[x][y][z])
-							gfx.darken_tile(_X_POS,_Y_POS,abs((CAMERA_POS[2]-z))*30)
+							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+							gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 							_drawn = True
 			
 			if not _drawn:
-				gfx.blit_tile(_X_POS,_Y_POS,BLANK_TILE)
+				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
 			
-			gfx.darken_tile(_X_POS,_Y_POS,255)
+			#gfx.darken_tile(_RENDER_X,_RENDER_Y,60)
 
 def render_shadows(map):
 	_stime = time.time()
@@ -111,13 +114,25 @@ def render_shadows(map):
 		_Y_MAX = MAP_SIZE[1]
 
 	for x in range(CAMERA_POS[0],_X_MAX):
-		_X_POS = x-CAMERA_POS[0]
+		_RENDER_X = x-CAMERA_POS[0]
 		for y in range(CAMERA_POS[1],_Y_MAX):
-			_Y_POS = y-CAMERA_POS[1]
-			
+			_RENDER_Y = y-CAMERA_POS[1]
 			_zlock = -1
-			for pos in drawing.draw_3d_line(SUN_POS,(_X_POS,_Y_POS,2)):
+			
+			for pos in drawing.draw_3d_line(SUN_POS,(x,y,2)):
+				pos = list(pos)
+				_actual_pos = (pos[0]-CAMERA_POS[0],pos[1]-CAMERA_POS[1])
+				
+				if _actual_pos[0] < 0:
+					continue
+				
 				if pos[2] >= MAP_SIZE[2]:
+					continue
+				
+				if pos[0] >= MAP_WINDOW_SIZE[0]:
+					continue
+				
+				if pos[1] >= MAP_WINDOW_SIZE[1]:
 					continue
 				
 				if _zlock>=0 and not pos[2]==_zlock:
@@ -125,8 +140,8 @@ def render_shadows(map):
 				
 				if map[pos[0]][pos[1]][pos[2]]:
 					_zlock = pos[2]
-					gfx.darken_tile(pos[0],pos[1],50)
-					gfx.lighten_tile(pos[0],pos[1],(pos[2]*20))
+					gfx.darken_tile(_actual_pos[0],_actual_pos[1],50)
+					gfx.lighten_tile(_actual_pos[0],_actual_pos[1],(pos[2]*20))
 
 def soften_shadows(map):
 	global DARK_BUFFER
@@ -144,26 +159,26 @@ def soften_shadows(map):
 
 	for r in range(1):
 		for x in range(CAMERA_POS[0],_X_MAX):
-			_X_POS = x-CAMERA_POS[0]
+			_RENDER_X = x-CAMERA_POS[0]
 			for y in range(CAMERA_POS[1],_Y_MAX):
-				_Y_POS = y-CAMERA_POS[1]
+				_RENDER_Y = y-CAMERA_POS[1]
 				
 				for x1 in range(-1,2):
 					for y1 in range(-1,2):
 						if not x1 and not y1:
 							continue
 						
-						if _X_POS+x1<0 or _X_POS+x1>=MAP_WINDOW_SIZE[0]:
+						if _RENDER_X+x1<0 or _RENDER_X+x1>=MAP_WINDOW_SIZE[0]:
 							continue
 						
-						if _Y_POS+y1<0 or _Y_POS+y1>=MAP_WINDOW_SIZE[1]:
+						if _RENDER_Y+y1<0 or _RENDER_Y+y1>=MAP_WINDOW_SIZE[1]:
 							continue
 						
-						_near_dark = DARK_BUFFER[0][_Y_POS+y1,_X_POS+x1]
+						_near_dark = DARK_BUFFER[0][_RENDER_Y+y1,_RENDER_X+x1]
 						
-						#print _near_dark,DARK_BUFFER[0][_Y_POS,_X_POS]
-						if _near_dark<DARK_BUFFER[0][_Y_POS,_X_POS]:
-							_DARK_BUFFER_COPY[0][_Y_POS,_X_POS] = 50#255-abs((_DARK_BUFFER_COPY[0][_Y_POS,_X_POS]-_near_dark))
+						#print _near_dark,DARK_BUFFER[0][_RENDER_Y,_RENDER_X]
+						if _near_dark<DARK_BUFFER[0][_RENDER_Y,_RENDER_X]:
+							_DARK_BUFFER_COPY[0][_RENDER_Y,_RENDER_X] = 50#255-abs((_DARK_BUFFER_COPY[0][_RENDER_Y,_RENDER_X]-_near_dark))
 		
 		DARK_BUFFER[0] = numpy.copy(_DARK_BUFFER_COPY)[0]
 

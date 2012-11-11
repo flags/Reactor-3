@@ -45,8 +45,8 @@ def handle_input():
 				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
 		else:
 			CURSOR[1] -= 1
-
-			if CAMERA_POS[1]<MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
+			
+			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 				CAMERA_POS[1] -= 1
 
 	if INPUT['down']:
@@ -186,8 +186,8 @@ while RUNNING:
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)
-	maps.render_shadows(MAP)
-	maps.soften_shadows(MAP)
+	#maps.render_shadows(MAP)
+	#maps.soften_shadows(MAP)
 	menu_fix()
 	gfx.draw_cursor(PLACING_TILE)
 	gfx.draw_all_tiles()
