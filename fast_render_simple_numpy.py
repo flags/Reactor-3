@@ -37,11 +37,17 @@ while not libtcod.console_is_window_closed():
 	if key.vk == libtcod.KEY_ESCAPE: break
 	
 	_R = zeros((SCREEN_H,SCREEN_W))
+	_R = add(_R,255)
 	_G = zeros((SCREEN_H,SCREEN_W))
+	_G = add(_G,255)
 	_B = zeros((SCREEN_H,SCREEN_W))
-	#_R = add(_R,255)
-	#_G = add(_G,255)
-	#_B = add(_B,255)
+	_B = add(_B,255)
+	_RB = zeros((SCREEN_H,SCREEN_W))
+	_GB = zeros((SCREEN_H,SCREEN_W))
+	_BB = zeros((SCREEN_H,SCREEN_W))
+	_RB = add(_RB,255)
+	_GB = add(_GB,255)
+	_BB = add(_BB,255)
 	render = zeros((SCREEN_H,SCREEN_W))
 	
 	for light in lights:
@@ -53,13 +59,17 @@ while not libtcod.console_is_window_closed():
 		brightness = light['brightness'] / sqr_distance
 		brightness = clip(brightness * 255, 0, 255)
 		
-		render = add(brightness,render).clip(0,255)
+		#render = add(brightness,render).clip(0,255)
 	
-		_R = add(brightness,_R).clip(0,255)
-	#_G = add(brightness,_G).clip(0,255)
-	#_B = add(brightness,_B).clip(0,255)
+		_RB = subtract(_RB,brightness).clip(0,255)
+		_GB = subtract(_GB,brightness).clip(0,255)
+		_BB = subtract(_BB,brightness).clip(0,255)
 	
-	libtcod.console_fill_background(0, _R, render, render)	
+	_R = subtract(_R,_RB).clip(0,255)
+	_G = subtract(_G,_GB).clip(0,255)
+	_B = subtract(_B,_BB).clip(0,255)
+	
+	libtcod.console_fill_background(0, _R, _G, _B)	
 	print libtcod.sys_get_fps()
 	libtcod.console_flush()
 
