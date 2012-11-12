@@ -1,6 +1,7 @@
 from globals import *
 from tiles import *
 import graphics as gfx
+import maputils
 import logging
 import drawing
 import random
@@ -51,6 +52,11 @@ def load_map(map_name):
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		try:
 			_map_string = json.loads(_map_file.readline())
+			_map_size = maputils.get_map_size(_map_string)
+			MAP_SIZE[0] = _map_size[0]
+			MAP_SIZE[1] = _map_size[1]
+			MAP_SIZE[2] = _map_size[2]
+			
 			logging.info('Map \'%s\' loaded.' % map_name)
 			gfx.log('Loaded map \'%s\' from disk.' % map_name)
 

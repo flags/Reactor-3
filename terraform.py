@@ -8,6 +8,7 @@ import random
 import menus
 import time
 import maps
+import maputils
 
 gfx.log(WINDOW_TITLE)
 
@@ -179,28 +180,38 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
-menus.create_menu(menu={'A': 'Moved selected up',
+menus.create_menu(title='Tile Operations',
+	menu={'A': 'Moved selected up',
 	'B': 'Moved selected down',
 	'C': 'Delete All'},
-	title='Tile Operations',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
 
-menus.create_menu(title='Options',
+menus.create_menu(title='Map Utils',
+	menu={'Width': MAP_SIZE[0],
+	'Height': MAP_SIZE[1],
+	'Depth': MAP_SIZE[2]},
+	padding=(1,1),
+	position=(MAP_WINDOW_SIZE[0],0),
+	on_select=menu_item_selected)
+
+menus.create_menu(title='View',
 	menu={'Blit z-level below': ['Off','On']},
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected,
 	on_change=options_menu_item_changed)
 
-menus.create_menu({'S': 'Save',
+menus.create_menu(title='General',
+	menu={'S': 'Save',
 	'L': 'Load',
 	'E': 'Exit'},
-	title='General',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
+
+#MAP = maputils.resize_map(MAP,(150,150,5))
 
 while RUNNING:
 	get_input()
