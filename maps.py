@@ -3,7 +3,7 @@ from tiles import *
 import graphics as gfx
 import maputils
 import logging
-import drawing
+#import drawing
 import random
 import numpy
 import time
