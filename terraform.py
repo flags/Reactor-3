@@ -102,7 +102,7 @@ def handle_input():
 	
 	if INPUT['j']:
 		if ACTIVE_MENU['menu'] > -1:
-			menus.run_callback(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.item_selected(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		
 		ACTIVE_MENU['menu'] = -1
 	
@@ -159,10 +159,17 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
-def commands_return(value):
-	print 'Menu item: '+value
+def menu_item_selected(value):
+	if value == 'Save':
+		maps.save_map(MAP)
 
-def menu_fix():
+def options_menu_item_changed(value):
+	if value == 'On':
+		SETTINGS['draw z-levels below'] = True
+	elif value == 'Off':
+		SETTINGS['draw z-levels below'] = False
+
+def menu_align():
 	for menu in MENUS:
 		if not MENUS.index(menu):
 			continue
@@ -172,26 +179,28 @@ def menu_fix():
 		
 		menu['settings']['position'][1] = _size
 
-menus.create_menu(title='Tile Operations',A='Moved selected up',
-	B='Moved selected down',
-	C='Delete All',
+menus.create_menu(menu={'A': 'Moved selected up',
+	'B': 'Moved selected down',
+	'C': 'Delete All'},
+	title='Tile Operations',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
-	callback=commands_return)
+	on_select=menu_item_selected)
 
-menus.create_menu(title='Options',A=['Flood select (Current tile)','test'],
-	B=['Moved selected down','derp'],
-	C='Delete All',
+menus.create_menu(title='Options',
+	menu={'Blit z-level below': ['Off','On']},
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
-	callback=commands_return)
+	on_select=menu_item_selected,
+	on_change=options_menu_item_changed)
 
-menus.create_menu(title='General',S='Save',
-	L='Load',
-	E='Exit',
+menus.create_menu({'S': 'Save',
+	'L': 'Load',
+	'E': 'Exit'},
+	title='General',
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
-	callback=commands_return)
+	on_select=menu_item_selected)
 
 while RUNNING:
 	get_input()
@@ -201,7 +210,7 @@ while RUNNING:
 	maps.render_map(MAP)
 	#maps.render_shadows(MAP)
 	#maps.soften_shadows(MAP)
-	menu_fix()
+	menu_align()
 	gfx.draw_cursor(PLACING_TILE)
 	gfx.draw_all_tiles()
 	gfx.draw_bottom_ui()
