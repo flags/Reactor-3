@@ -4,6 +4,9 @@
 #I adapted it to do the lighting for
 #Reactor 3.
 
+#Original source:
+#http://doryen.eptalys.net/forum/index.php?topic=467.0
+
 import libtcodpy as libtcod
 import os
 
@@ -24,7 +27,7 @@ libtcod.console_init_root(SCREEN_W, SCREEN_H, 'libtcod sample', False)
 (x, y) = meshgrid(range(SCREEN_W), range(SCREEN_H))
 
 lights = []
-lights.append({'x': 40,'y': 20,'brightness': 4.0}) #MUST BE FLOAT
+lights.append({'x': 40,'y': 20,'brightness': 4.0})
 lights.append({'x': 20,'y': 20,'brightness': 3.0})
 
 while not libtcod.console_is_window_closed():
