@@ -164,11 +164,19 @@ def menu_item_selected(value):
 	if value == 'Save':
 		maps.save_map(MAP)
 
-def options_menu_item_changed(value):
-	if value == 'On':
-		SETTINGS['draw z-levels below'] = True
-	elif value == 'Off':
-		SETTINGS['draw z-levels below'] = False
+def options_menu_item_changed(key,value):
+	if key == 'Blit z-level below':
+		if value == 'On':
+			SETTINGS['draw z-levels below'] = True
+		elif value == 'Off':
+			SETTINGS['draw z-levels below'] = False
+	
+	elif key == 'Draw lights':
+		if value == 'On':
+			SETTINGS['draw lights'] = True
+		elif value == 'Off':
+			maps.reset_lights()
+			SETTINGS['draw lights'] = False
 
 def menu_align():
 	for menu in MENUS:
@@ -197,7 +205,8 @@ menus.create_menu(title='Map Utils',
 	on_select=menu_item_selected)
 
 menus.create_menu(title='View',
-	menu={'Blit z-level below': ['Off','On']},
+	menu={'Blit z-level below': ['Off','On'],
+		'Draw lights': ['On','Off']},
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected,

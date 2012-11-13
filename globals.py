@@ -12,6 +12,7 @@ RUNNING = True
 CURSOR = [0,0]
 CAMERA_POS = [0,0,2]
 SUN_POS = [0,0,25]
+SUN_BRIGHTNESS = [200]
 FPS = 300
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = FONT_LAYOUT_ASCII_INCOL
@@ -29,7 +30,8 @@ RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 
 #Non-constants
-SETTINGS = {'draw console': False,
+SETTINGS = {'draw lights': True,
+			'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': False}
 KEYBOARD_STRING = ['']

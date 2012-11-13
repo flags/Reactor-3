@@ -40,7 +40,7 @@ def previous_item(menu,index):
 		if menu['values'][menu['values'].keys()[_key_index]]:
 			key = menu['menu'].keys()[index]
 			menu['values'][menu['values'].keys()[_key_index]] -= 1
-			menu['on_change'](menu['menu'].values()[index][menu['values'][key]])
+			menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
 			return True
 	
 	return False
@@ -54,7 +54,7 @@ def next_item(menu,index):
 		if menu['values'][menu['values'].keys()[_key_index]] < len(menu['values'].keys()):
 			key = menu['menu'].keys()[index]
 			menu['values'][menu['values'].keys()[_key_index]] += 1
-			menu['on_change'](menu['menu'].values()[index][menu['values'][key]])
+			menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
 			return True
 	
 	return False
