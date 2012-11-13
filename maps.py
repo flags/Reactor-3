@@ -3,7 +3,7 @@ from tiles import *
 import graphics as gfx
 import maputils
 import logging
-#import drawing
+import drawing
 import random
 import numpy
 import time
@@ -64,6 +64,26 @@ def load_map(map_name):
 		except TypeError:
 			logging.error('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+
+def render_lights():
+	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	RGB_LIGHT_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], 255)
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], 255)
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], 255)
+
+	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
+	
+	for light in LIGHTS:
+		sqr_distance = (x - light['x'])**2 + (y - light['y'])**2
+		
+		brightness = light['brightness'] / sqr_distance
+		brightness = numpy.clip(brightness * 255, 0, 255)
+	
+		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0,255)
+		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0,255)
+		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0,255)
 
 def render_map(map):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]

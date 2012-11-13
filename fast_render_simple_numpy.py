@@ -1,35 +1,30 @@
+#The majority of this code is not mine.
+#It was originally used to demonstrate
+#fast rendering in libtcod using Numpy.
+#I adapted it to do the lighting for
+#Reactor 3.
 
 import libtcodpy as libtcod
 import os
 
-try:  #import NumPy
+try:
 	from numpy import *
 except ImportError:
 	raise ImportError('----- NumPy must be installed. -----')
 
-
-#size of the screen, in tiles
 SCREEN_W = 80
 SCREEN_H = 50
 HALF_W = SCREEN_W / 2
 HALF_H = SCREEN_H / 2
 
-
-#initialize libtcod
 libtcod.console_set_custom_font(os.path.join('arial10x10.png'),
 	libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
 libtcod.console_init_root(SCREEN_W, SCREEN_H, 'libtcod sample', False)
- 
- 
-#the coordinates of all tiles in the screen, as numpy arrays.
-#NOTE: combining these with regular numbers will effectively transform all pixels
-#based on their coordinates. they look like this with a 4x3 pixels screen:
-#xg = [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]
-#yg = [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]]
+
 (x, y) = meshgrid(range(SCREEN_W), range(SCREEN_H))
 
 lights = []
-lights.append({'x': 40,'y': 20,'brightness': 4.0}) #MUST BE FLOATS
+lights.append({'x': 40,'y': 20,'brightness': 4.0}) #MUST BE FLOAT
 lights.append({'x': 20,'y': 20,'brightness': 3.0})
 
 while not libtcod.console_is_window_closed():
@@ -58,8 +53,6 @@ while not libtcod.console_is_window_closed():
 		
 		brightness = light['brightness'] / sqr_distance
 		brightness = clip(brightness * 255, 0, 255)
-		
-		#render = add(brightness,render).clip(0,255)
 	
 		_RB = subtract(_RB,brightness).clip(0,255)
 		_GB = subtract(_GB,brightness).clip(0,255)
@@ -69,7 +62,8 @@ while not libtcod.console_is_window_closed():
 	_G = subtract(_G,_GB).clip(0,255)
 	_B = subtract(_B,_BB).clip(0,255)
 	
-	libtcod.console_fill_background(0, _R, _G, _B)	
+	libtcod.console_fill_background(0, _R, _G, _B)
+	libtcod.console_fill_foreground(0, _R, _G, _B)
 	print libtcod.sys_get_fps()
 	libtcod.console_flush()
 

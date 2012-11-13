@@ -212,6 +212,8 @@ menus.create_menu(title='General',
 	on_select=menu_item_selected)
 
 #MAP = maputils.resize_map(MAP,(150,150,5))
+LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
+LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
 while RUNNING:
 	get_input()
@@ -219,6 +221,10 @@ while RUNNING:
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)
+	maps.render_lights()
+	
+	LIGHTS[0]['x'] = CURSOR[0]
+	LIGHTS[0]['y'] = CURSOR[1]
 	#maps.render_shadows(MAP)
 	#maps.soften_shadows(MAP)
 	menu_align()
