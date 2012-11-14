@@ -172,11 +172,3 @@ def draw_3d_line(pos1,pos2):
 	_line.append(tuple(pos2))
 	
 	return _line
-
-import time
-
-_stime = time.time()
-draw_3d_line((30,30,0),(100,100,1000))
-print time.time()-_stime
-
->> 0.00599980354309
