@@ -2,6 +2,8 @@ from tiles import *
 import graphics as gfx
 
 def render_map(map):
+	cdef int _CAMERA_POS[2]
+	
 	cdef int _X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
 	cdef int _Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
 	cdef int _X_START = CAMERA_POS[0]

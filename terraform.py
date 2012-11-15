@@ -4,12 +4,21 @@ from globals import *
 from inputs import *
 from tiles import *
 import graphics as gfx
-import render_map
+import maputils
 import random
 import menus
 import time
 import maps
-import maputils
+
+#Optional Cython-compiled modules
+try:
+	import render_map
+	CYTHON_ENABLED = True
+except ImportError, e:
+	CYTHON_ENABLED = False
+	print '[Cython] ImportError with module: %s' % e
+	print '[Cython] Certain functions can run faster if compiled with Cython.'
+	print '[Cython] Run \'python compile_cython_modules.py build_ext --inplace\''
 
 gfx.log(WINDOW_TITLE)
 
@@ -230,8 +239,12 @@ while RUNNING:
 	handle_input()
 
 	gfx.start_of_frame()
-	maps.render_map(MAP)
-	#render_map.render_map(MAP)
+	
+	if CYTHON_ENABLED:
+		render_map.render_map(MAP)
+	else:
+		maps.render_map(MAP)
+	
 	maps.render_lights()
 	
 	LIGHTS[0]['x'] = CURSOR[0]
