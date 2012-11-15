@@ -4,6 +4,7 @@ from globals import *
 from inputs import *
 from tiles import *
 import graphics as gfx
+import render_map
 import random
 import menus
 import time
@@ -230,6 +231,7 @@ while RUNNING:
 
 	gfx.start_of_frame()
 	maps.render_map(MAP)
+	#render_map.render_map(MAP)
 	maps.render_lights()
 	
 	LIGHTS[0]['x'] = CURSOR[0]
