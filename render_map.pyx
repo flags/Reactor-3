@@ -1,7 +1,7 @@
 from tiles import *
 import graphics as gfx
 
-def render_map(map):
+cdef void render_map(map):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
@@ -13,13 +13,6 @@ def render_map(map):
 	_MAP_SIZE[2] = MAP_SIZE[2]
 	_MAP_WINDOW_SIZE[0] = MAP_WINDOW_SIZE[0]
 	_MAP_WINDOW_SIZE[1] = MAP_WINDOW_SIZE[1]
-	
-	#print _MAP_SIZE[2]
-	#cdef int _MAP[3][_MAP_SIZE[0]]
-	#_MAP[0] = map[0]
-	#_MAP[1] = map[0][0]
-	#_MAP[2] = map[0][0][0]
-	#print _MAP[0]
 	
 	cdef int x, y, z
 	cdef int _X_MAX = _CAMERA_POS[0]+_MAP_WINDOW_SIZE[0]

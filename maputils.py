@@ -38,7 +38,7 @@ def resize_map(map,size):
 		for x in range(size[0]):
 			for y in range(abs(_old_size[1]-size[1])):
 				_new_map[x].pop()
-	else:
+	elif _old_size[1]<size[1]:
 		for x1 in range(_old_size[0]):
 			_y1 = []
 			for y1 in range(abs(_old_size[1]-size[1])):
@@ -50,16 +50,21 @@ def resize_map(map,size):
 					else:
 						_z1.append(None)
 				
-				_y1.append(_z1)
-			
 				_new_map[x1].append(_z1)
 	
 	_old_size = get_map_size(_new_map)
 	
-	for z in range(abs(_old_size[2]-size[2])):
-		if _old_size[2]>size[2]:
+	if _old_size[2]>size[2]:
+		for z in range(abs(_old_size[2]-size[2])):
 			_new_map[0][0].pop()
-		else:
-			pass
+	elif _old_size[2]<size[2]:
+		for x1 in range(_old_size[0]):
+			_y1 = []
+			for y1 in range(abs(_old_size[1])):
+				_z1 = []
+				for z1 in range(abs(_old_size[2]-size[2])):
+					_z1.append(None)
+			
+				_new_map[x1][y1].extend(_z1)
 	
 	return _new_map

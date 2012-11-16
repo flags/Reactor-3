@@ -155,6 +155,12 @@ def handle_input():
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_TILES))
 
+	if INPUT['l']:
+		SUN_BRIGHTNESS[0] += 4
+	
+	if INPUT['k']:
+		SUN_BRIGHTNESS[0] -= 4
+
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
 
@@ -230,7 +236,8 @@ menus.create_menu(title='General',
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
 
-#MAP = maputils.resize_map(MAP,(150,150,5))
+#MAP = maputils.resize_map(MAP,(500,500,7))
+#print MAP_SIZE
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
