@@ -1,0 +1,3 @@
+from globals import *
+
+#Humans

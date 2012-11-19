@@ -69,3 +69,26 @@ inoperable just hang on to keyboard input. Tiles should be selectable, placeable
 removable. Selecting tiles should just be assigned to a set of keys until the mouse
 issues are worked out.
 
+Milestone 3-1 - The Beginning of Life - Part 1
+==============================================
+
+Goal
+----
+Life is an extremely complicated mess of variables all interacting at once. Sometimes
+creating life is the hardest part, as dictionaries need to be connected to other
+dictionaries, all while being somewhat easy to access and modify.
+
+Structure
+---------
+						   head
+						   neck
+				lshoulder	 	rshoulder
+			upperleftarm	 	upperrightarm
+				lelbow	  chest		relbow
+			lforearm				  rforearm
+			lhand		   hip			 rhand
+						  groin
+					lthigh		rthigh
+					lknee		 rknee
+				llowerleg		 rlowerleg
+				lfoot				 rfoot
