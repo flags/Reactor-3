@@ -1,53 +1,58 @@
 <race>Human</race>
+
+<flags>HUMANOID|BIPEDAL[lthigh,rthigh]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+
 <body>
-<head>
-	<neck>
-		<lshoulder>
-			<lupperarm>
-				<lelbow>
-					<lforearm>
-						<lhand>
-						</lhand>
-					</lforearm>
-				</lelbow>
-			</lupperarm>
-		</lshoulder>
-		
-		<rshoulder>
-			<rupperarm>
-				<relbow>
-					<rforearm>
-						<rhand>
-						</rhand>
-					</rforearm>
-				</relbow>
-			</rupperarm>
-		</rshoulder>
-		
-		<chest>
-			<hip>
-				<lthigh>
-					<lknee>
-						<llowerleg>
-							<lfoot>
-							</lfoot>
-						</llowerleg>
-					</lknee>
-				</lthigh>
-				
-				<rthigh>
-					<rknee>
-						<rlowerleg>
-							<rfoot>
-							</rfoot>
-						</rlowerleg>
-					</rknee>
-				</rthigh>
-				
-				<groin>
-				</groin>
-			</hip>
-		</chest>
-	</neck>
-</head>
+	<head>
+		<neck>
+			<lshoulder>
+				<lupperarm>
+					<lelbow>
+						<lforearm>
+							<lhand>
+							</lhand>
+						</lforearm>
+					</lelbow>
+				</lupperarm>
+			</lshoulder>
+			
+			<rshoulder>
+				<rupperarm>
+					<relbow>
+						<rforearm>
+							<rhand>
+							</rhand>
+						</rforearm>
+					</relbow>
+				</rupperarm>
+			</rshoulder>
+			
+			<chest>
+				<stomach>
+					<hip affects="speed">
+						<lthigh>
+							<lknee>
+								<llowerleg>
+									<lfoot>
+									</lfoot>
+								</llowerleg>
+							</lknee>
+						</lthigh>
+						
+						<rthigh>
+							<rknee>
+								<rlowerleg>
+									<rfoot>
+									</rfoot>
+								</rlowerleg>
+							</rknee>
+						</rthigh>
+						
+						<groin>
+						</groin>
+					</hip>
+				</stomach>
+			</chest>
+		</neck>
+	</head>
 </body>

@@ -1,4 +1,5 @@
 from libtcodpy import *
+import os
 
 WINDOW_TITLE = 'Reactor 3 - Milestone 2-3'
 
@@ -28,6 +29,7 @@ CONSOLE_HISTORY_MAX_LINES = 29
 PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
+LIFE_DIR = os.path.join(DATA_DIR,'life')
 
 #Non-constants
 SETTINGS = {'draw lights': True,
