@@ -1,7 +1,7 @@
 from tiles import *
 import graphics as gfx
 
-cdef void render_map(map):
+def render_map(map):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
