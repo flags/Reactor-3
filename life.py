@@ -60,7 +60,7 @@ def initiate_limbs(body):
 		body[limb]['holding'] = []
 		initiate_limbs(body[limb]['attached'])
 
-def create_life(type,name=('Test','McChuckski')):
+def create_life(type,position=(0,0),name=('Test','McChuckski')):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
@@ -68,6 +68,7 @@ def create_life(type,name=('Test','McChuckski')):
 	_life = copy.deepcopy(LIFE_TYPES[type])
 	_life['name'] = name
 	_life['speed'] = _life['speed_max']
+	_life['pos'] = list(position)
 	_life['path'] = []
 	_life['actions'] = []
 	_life['flags'] = {}
@@ -86,6 +87,35 @@ def get_state(life,flag):
 	
 	raise Exception('State \'%s\' does not exist.' % flag)
 
+def path_dest(life):
+	if not life['path']:
+		return None
+	
+	return tuple(life['path'][len(life['path'])-1])
+
+def walk(life,to):
+	_dest = path_dest(life)
+	
+	if not _dest == tuple(to):
+		life['path'] = [(3,3),to]
+		print 'Setting path'
+	
+	return walk_path(life)
+
+def walk_path(life):
+	if life['path']:
+		life['pos'] = list(life['path'].pop(0))
+		print 'Walking',life['pos']
+		
+		if life['path']:
+			return False
+		else:
+			print 'Empty path...'
+			return True
+	else:
+		print 'here?'
+		return False
+
 def get_highest_action(life):
 	_actions = {'action': None,'lowest': -1}
 	
@@ -94,7 +124,10 @@ def get_highest_action(life):
 			_actions['lowest'] = action['score']
 			_actions['action'] = action
 	
-	return _actions['action']
+	if _actions['action']:
+		return _actions['action']
+	else:
+		return None
 
 def add_action(life,action,score):
 	life['actions'].append({'action': action,'score': score})
@@ -104,10 +137,14 @@ def perform_action(life):
 	
 	if not _action in life['actions']:
 		return False
+
+	_score = _action['score']
+	_action = _action['action']
 	
-	life['actions'].remove(_action)
-	
-	print life['name'][0],_action['action']
+	if _action['action'] == 'move':
+		print 'Moving'
+		if walk(life,_action['to']):
+			life['actions'].remove({'action':_action,'score':_score})
 
 def tick(life):
 	if life['speed']:
@@ -134,13 +171,12 @@ def tick_all_life():
 	
 initiate_life('Human')
 _life = create_life('Human',['derp','yerp'])
-add_action(_life,'run',200)
 _life = create_life('Human',['nope','yerp'])
 _life['speed'] = 50
 _life['speed_max'] = 50
 _life = create_life('Human',['zooom','yerp'])
-add_action(_life,'run',200)
-add_action(_life,'eat',30)
+add_action(_life,{'action': 'move', 'to': (5,5)},200)
+#add_action(_life,'eat',30)
 _life['speed'] = 1
 _life['speed_max'] = 1
 
