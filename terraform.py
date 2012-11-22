@@ -5,10 +5,12 @@ from inputs import *
 from tiles import *
 import graphics as gfx
 import maputils
+import logging
 import random
 import menus
 import time
 import maps
+import sys
 
 #Optional Cython-compiled modules
 try:
@@ -19,6 +21,15 @@ except ImportError, e:
 	print '[Cython] ImportError with module: %s' % e
 	print '[Cython] Certain functions can run faster if compiled with Cython.'
 	print '[Cython] Run \'python compile_cython_modules.py build_ext --inplace\''
+
+if sys.platform.count('linux'):
+	SLOW_RENDER = True
+	CYTHON_ENABLED = False
+	logging.warning('There is currently a bug with libtcod and 64bit Linux systems')
+	logging.warning('that prevents Reactor 3 from using fast rendering via Numpy.')
+	logging.warning('A much slower rendering process will be used until this is fixed.')
+else:
+	SLOW_RENDER = False
 
 gfx.log(WINDOW_TITLE)
 
@@ -245,12 +256,13 @@ while RUNNING:
 	get_input()
 	handle_input()
 
-	gfx.start_of_frame()
+	if not SLOW_RENDER:
+		gfx.start_of_frame()
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)
 	else:
-		maps.render_map(MAP)
+		maps.render_map(MAP,slow=SLOW_RENDER)
 	
 	maps.render_lights()
 	
@@ -259,7 +271,7 @@ while RUNNING:
 	#maps.render_shadows(MAP)
 	#maps.soften_shadows(MAP)
 	menu_align()
-	gfx.draw_cursor(PLACING_TILE)
+	gfx.draw_cursor(PLACING_TILE,slow=SLOW_RENDER)
 	gfx.draw_all_tiles()
 	gfx.draw_bottom_ui()
 	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))

@@ -39,12 +39,19 @@ def start_of_frame():
 	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]).clip(0,255))
 	console_fill_char(MAP_WINDOW,CHAR_BUFFER[0])
 
-def blit_tile(x,y,tile):
+def blit_tile(x,y,tile,slow=False):
 	_tile = get_tile(tile)
 
-	blit_char(x,y,_tile['icon'],_tile['color'][0],_tile['color'][1])
+	blit_char(x,y,_tile['icon'],_tile['color'][0],_tile['color'][1],slow=slow)
 
-def blit_char(x,y,char,fore_color=None,back_color=None):
+def blit_char(x,y,char,fore_color=None,back_color=None,slow=False):
+	if slow:
+		console_set_char_foreground(MAP_WINDOW, x, y, fore_color)
+		console_set_char_background(MAP_WINDOW, x, y, back_color)
+		console_set_char(MAP_WINDOW, x, y, char)
+		
+		return True
+	
 	if fore_color:
 		RGB_FORE_BUFFER[0][y,x] = fore_color.r
 		RGB_FORE_BUFFER[1][y,x] = fore_color.g
@@ -66,14 +73,14 @@ def darken_tile(x,y,amt):
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
-def draw_cursor(tile):
+def draw_cursor(tile,slow=False):
 	"""Handles the drawing of the cursor."""	
 	if time.time()%1>=0.5:
 		blit_char(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],'X',white,black)
+		              CURSOR[1]-CAMERA_POS[1],'X',white,black,slow=slow)
 	else:
 		blit_tile(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],tile)
+		              CURSOR[1]-CAMERA_POS[1],tile,slow=slow)
 
 def draw_bottom_ui():
 	"""Controls the drawing of the UI under the map."""
