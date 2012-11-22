@@ -1,6 +1,7 @@
 <race>Human</race>
 
-<flags>HUMANOID|BIPEDAL[lthigh,rthigh]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<flags>HUMANOID|LEGS[lthigh,rthigh]|ARMS[lshouder,rshoulder]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<icon>@</icon>
 
 <body>
 	<head>

@@ -100,6 +100,8 @@ def build(file):
 	
 	life = {}	
 	life['race'] = get_value(_data,'race')
+	life['flags'] = get_value(_data,'flags')
+	life['icon'] = get_value(_data,'icon')
 
 	print 'Creating new life: %s' % life['race']
 	print 'Parsing and connecting limbs...',

@@ -30,6 +30,10 @@ PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
+DEFAULT_ICON = '@'
+
+#Life constants
+LIFE_MAX_SPEED = 100
 
 #Non-constants
 SETTINGS = {'draw lights': True,
@@ -38,6 +42,8 @@ SETTINGS = {'draw lights': True,
 			'draw z-levels below': False}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = []
+LIFE_TYPES = {}
+LIFE = []
 
 #Consoles
 MAP_WINDOW = None
