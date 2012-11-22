@@ -69,6 +69,7 @@ def create_life(type,name=('Test','McChuckski')):
 	_life['name'] = name
 	_life['speed'] = _life['speed_max']
 	_life['path'] = []
+	_life['actions'] = []
 	_life['flags'] = {}
 	
 	initiate_limbs(_life['body'])
@@ -85,6 +86,29 @@ def get_state(life,flag):
 	
 	raise Exception('State \'%s\' does not exist.' % flag)
 
+def get_highest_action(life):
+	_actions = {'action': None,'lowest': -1}
+	
+	for action in life['actions']:
+		if action['score'] > _actions['lowest']:
+			_actions['lowest'] = action['score']
+			_actions['action'] = action
+	
+	return _actions['action']
+
+def add_action(life,action,score):
+	life['actions'].append({'action': action,'score': score})
+
+def perform_action(life):
+	_action = get_highest_action(life)
+	
+	if not _action in life['actions']:
+		return False
+	
+	life['actions'].remove(_action)
+	
+	print life['name'][0],_action['action']
+
 def tick(life):
 	if life['speed']:
 		life['speed'] -= 1
@@ -92,7 +116,7 @@ def tick(life):
 	else:
 		life['speed'] = life['speed_max']
 	
-	print life['name'][0]
+	perform_action(life)
 
 def show_life_info(life):
 	for key in life:
@@ -110,13 +134,16 @@ def tick_all_life():
 	
 initiate_life('Human')
 _life = create_life('Human',['derp','yerp'])
+add_action(_life,'run',200)
 _life = create_life('Human',['nope','yerp'])
 _life['speed'] = 50
 _life['speed_max'] = 50
 _life = create_life('Human',['zooom','yerp'])
+add_action(_life,'run',200)
+add_action(_life,'eat',30)
 _life['speed'] = 1
 _life['speed_max'] = 1
 
-for a in range(5000):
+for a in range(500):
 	tick_all_life()
 #show_life_info(_life)
