@@ -1,4 +1,6 @@
 from globals import *
+import json
+import sys
 import os
 
 def read_xml_file(file):
@@ -17,17 +19,16 @@ def read_xml_file(file):
 	
 	raise Exception('Could not read file: ' % os.path.join(LIFE_DIR,file))
 
+def save_json_file(file,data):
+	with open(os.path.join(LIFE_DIR,file),'w') as e:
+		e.write(json.dumps(data))
+
 def get_value(data,value):
 	for entry in data:
 		if entry.count(value):
 			return entry.partition('>')[2].partition('</')[0]
-	
-	raise Exception('Cannot find value: %s' % value)
 
-def get_tag_info(data,tag):
-	for entry in data:
-		if entry.count('<%s>' % tag):
-			pass
+	raise Exception('Cannot find value: %s' % value)
 
 def get_tag(data,tag):
 	_start = -1
@@ -41,28 +42,83 @@ def get_tag(data,tag):
 	
 	raise Exception('Could not find tag: %s' % tag)
 
+def connect_limb(name,limb,to,start):
+	for limb2 in start:		
+		if to == limb2:
+			start[limb2]['attached'][name] = limb
+			return True
+		
+		connect_limb(name,limb,to,start[limb2]['attached'])
+
 def get_children_of_tag(taglist):
-	_children = []
+	_limbs = {}
+	_name = ''
+	_flags = ''
+	_parent = ''
 	
-	for tag in taglist:
-		if tag.count('/'):
+	for tag in taglist:		
+		_key = tag.partition('<')[2].partition('>')[0]
+		
+		if _key.count('/'):
+			if not _parent:
+				_limbs[_name] = {'attached': {}}
+			else:
+				_limb = {'attached': {}}
+				_limb['flags'] = _flags
+				
+				if _parent in _limbs:
+					_limbs[_parent]['attached'][_name] = _limb
+				else:
+					connect_limb(_name,_limb,_parent,_limbs)
+			
+			_name = ''
+			_flags = ''
+			_parent = ''
 			continue
 		
-		_children.append(tag.replace('<','').replace('>',''))
+		_value = tag.partition('>')[2].rpartition('</')[0]
+		
+		if not _value:
+			_name = _key
+		else:
+			if _key == 'flags':
+				_flags = _value
+			
+			if _key == 'parent':
+				_parent = _value
 	
-	return _children
+	return _limbs
 
 def build(file):
-	_data = read_xml_file(file)
+	print 'Reading file \'%s\'...' % file
 	
-	life = {}
+	try:
+		_data = read_xml_file(file)
+	except Exception, e:
+		print 'Failed to read file:',e
+		return False
 	
+	life = {}	
 	life['race'] = get_value(_data,'race')
-	print get_tag(_data,'hip')
+
+	print 'Creating new life: %s' % life['race']
+	print 'Parsing and connecting limbs...',
 	
-	return life
+	life['body'] = get_tag(_data,'body')
+	
+	print 'Done!'
+	print 'Offloading to disk...',
+	save_json_file('%s.json' % life['race'],life)
+	print 'Done!'
+	
+	return True
 
 print '*'*10
-print 'BUILD LIFE'
+print 'Build Life'
 print '*'*10
-print build('human.xml')
+
+if len(sys.argv) == 1:
+	print 'Usage: python build_life.py <files>'
+else:
+	for life in sys.argv[1:]:
+		build(life)

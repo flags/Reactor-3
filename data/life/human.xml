@@ -4,55 +4,116 @@
 
 <body>
 	<head>
-		<neck>
-			<lshoulder>
-				<lupperarm>
-					<lelbow>
-						<lforearm>
-							<lhand>
-							</lhand>
-						</lforearm>
-					</lelbow>
-				</lupperarm>
-			</lshoulder>
-			
-			<rshoulder>
-				<rupperarm>
-					<relbow>
-						<rforearm>
-							<rhand>
-							</rhand>
-						</rforearm>
-					</relbow>
-				</rupperarm>
-			</rshoulder>
-			
-			<chest>
-				<stomach>
-					<hip affects="speed">
-						<lthigh>
-							<lknee>
-								<llowerleg>
-									<lfoot>
-									</lfoot>
-								</llowerleg>
-							</lknee>
-						</lthigh>
-						
-						<rthigh>
-							<rknee>
-								<rlowerleg>
-									<rfoot>
-									</rfoot>
-								</rlowerleg>
-							</rknee>
-						</rthigh>
-						
-						<groin>
-						</groin>
-					</hip>
-				</stomach>
-			</chest>
-		</neck>
+		<flags>SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]</flags>
 	</head>
+	
+	<neck>
+		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
+		<parent>head</parent>
+	</neck>
+	
+	<chest>
+		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
+		<parent>neck</parent>
+	</chest>
+	
+	<lshoulder>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>chest</parent>
+	</lshoulder>
+	
+	<rshoulder>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>chest</parent>
+	</rshoulder>
+	
+	<lupperarm>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lshoulder</parent>
+	</lupperarm>
+	
+	<rupperarm>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lshoulder</parent>
+	</rupperarm>
+	
+	<lelbow>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lupperarm</parent>
+	</lelbow>
+	
+	<relbow>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>rupperarm</parent>
+	</relbow>
+	
+	<lforearm>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lelbow</parent>
+	</lforearm>
+	
+	<rforearm>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>relbow</parent>
+	</rforearm>
+	
+	<lhand>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lforearm</parent>
+	</lhand>
+	
+	<rhand>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>rforearm</parent>
+	</rhand>
+	
+	<stomach>
+		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
+		<parent>chest</parent>
+	</stomach>
+	
+	<hip>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>stomach</parent>
+	</hip>
+	
+	<lthigh>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>hip</parent>
+	</lthigh>
+	
+	<rthigh>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>hip</parent>
+	</rthigh>
+	
+	<lknee>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lthigh</parent>
+	</lknee>
+	
+	<rknee>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>rthigh</parent>
+	</rknee>
+	
+	<llowerleg>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lknee</parent>
+	</llowerleg>
+	
+	<rlowerleg>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>rknee</parent>
+	</rlowerleg>
+	
+	<lfoot>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>llowerleg</parent>
+	</lfoot>
+	
+	<rfoot>
+		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>rlowerleg</parent>
+	</rfoot>
 </body>
