@@ -8,6 +8,7 @@ import maputils
 import logging
 import random
 import menus
+import life
 import time
 import maps
 import sys
@@ -21,15 +22,6 @@ except ImportError, e:
 	print '[Cython] ImportError with module: %s' % e
 	print '[Cython] Certain functions can run faster if compiled with Cython.'
 	print '[Cython] Run \'python compile_cython_modules.py build_ext --inplace\''
-
-if sys.platform.count('linux'):
-	SLOW_RENDER = True
-	CYTHON_ENABLED = False
-	logging.warning('There is currently a bug with libtcod and 64bit Linux systems')
-	logging.warning('that prevents Reactor 3 from using fast rendering via Numpy.')
-	logging.warning('A much slower rendering process will be used until this is fixed.')
-else:
-	SLOW_RENDER = False
 
 gfx.log(WINDOW_TITLE)
 
@@ -217,29 +209,27 @@ def menu_align():
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 
+life.initiate_life('Human')
+_test = life.create_life('Human',name=['derp','yerp'],map=MAP)
+life.add_action(_test,{'action': 'move', 'to': (5,5)},200)
+
 while RUNNING:
 	get_input()
 	handle_input()
+	life.tick_all_life()
 
-	if not SLOW_RENDER:
-		gfx.start_of_frame()
+	gfx.start_of_frame()
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)
 	else:
-		maps.render_map(MAP,slow=SLOW_RENDER)
+		maps.render_map(MAP)
 	
 	maps.render_lights()
-	
-	LIGHTS[0]['x'] = CURSOR[0]
-	LIGHTS[0]['y'] = CURSOR[1]
-	#maps.render_shadows(MAP)
-	#maps.soften_shadows(MAP)
 	menu_align()
-	gfx.draw_cursor(PLACING_TILE,slow=SLOW_RENDER)
-	gfx.draw_all_tiles()
+	
+	life.draw_life()
 	gfx.draw_bottom_ui()
-	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))
 	gfx.draw_menus()
 	gfx.draw_console()
 	gfx.end_of_frame()

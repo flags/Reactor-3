@@ -1,4 +1,6 @@
 from globals import *
+import graphics as gfx
+import pathfinding
 import logging
 import copy
 import json
@@ -60,7 +62,7 @@ def initiate_limbs(body):
 		body[limb]['holding'] = []
 		initiate_limbs(body[limb]['attached'])
 
-def create_life(type,position=(0,0),name=('Test','McChuckski')):
+def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
@@ -69,6 +71,7 @@ def create_life(type,position=(0,0),name=('Test','McChuckski')):
 	_life['name'] = name
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
+	_life['map'] = map
 	_life['path'] = []
 	_life['actions'] = []
 	_life['flags'] = {}
@@ -94,11 +97,18 @@ def path_dest(life):
 	return tuple(life['path'][len(life['path'])-1])
 
 def walk(life,to):
+	if life['speed']:
+		life['speed'] -= 1
+		return False
+	else:
+		life['speed'] = life['speed_max']
+	
 	_dest = path_dest(life)
 	
 	if not _dest == tuple(to):
-		life['path'] = [(3,3),to]
-		print 'Setting path'
+		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
+		life['path'] = _path.find_path(life['pos'])
+		print 'Setting path',life['path']
 	
 	return walk_path(life)
 
@@ -142,17 +152,10 @@ def perform_action(life):
 	_action = _action['action']
 	
 	if _action['action'] == 'move':
-		print 'Moving'
 		if walk(life,_action['to']):
 			life['actions'].remove({'action':_action,'score':_score})
 
 def tick(life):
-	if life['speed']:
-		life['speed'] -= 1
-		return False
-	else:
-		life['speed'] = life['speed_max']
-	
 	perform_action(life)
 
 def show_life_info(life):
@@ -164,22 +167,30 @@ def show_life_info(life):
 	
 	return True
 
+def draw_life():
+	for life in LIFE:
+		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
+			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+			_x = life['pos'][0] - CAMERA_POS[0]
+			_y = life['pos'][1] - CAMERA_POS[1]
+			gfx.blit_char(_x,_y,life['icon'],white,None)
+
 #Conductor
 def tick_all_life():
 	for life in LIFE:
 		tick(life)
 	
-initiate_life('Human')
-_life = create_life('Human',['derp','yerp'])
-_life = create_life('Human',['nope','yerp'])
-_life['speed'] = 50
-_life['speed_max'] = 50
-_life = create_life('Human',['zooom','yerp'])
-add_action(_life,{'action': 'move', 'to': (5,5)},200)
-#add_action(_life,'eat',30)
-_life['speed'] = 1
-_life['speed_max'] = 1
+#initiate_life('Human')
+#_life = create_life('Human',['derp','yerp'])
+#_life = create_life('Human',['nope','yerp'])
+#_life['speed'] = 50
+#_life['speed_max'] = 50
+#_life = create_life('Human',['zooom','yerp'])
+#add_action(_life,{'action': 'move', 'to': (5,5)},200)
+##add_action(_life,'eat',30)
+#_life['speed'] = 1
+#_life['speed_max'] = 1
 
-for a in range(500):
-	tick_all_life()
-#show_life_info(_life)
+#for a in range(500):
+	#tick_all_life()
+##show_life_info(_life)
