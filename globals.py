@@ -35,7 +35,7 @@ DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 
 #Life constants
-LIFE_MAX_SPEED = 30
+LIFE_MAX_SPEED = 12
 
 #Non-constants
 SETTINGS = {'draw lights': True,

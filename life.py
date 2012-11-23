@@ -3,6 +3,7 @@ import graphics as gfx
 import pathfinding
 import logging
 import copy
+import time
 import json
 import os
 
@@ -32,7 +33,7 @@ def calculate_base_stats(life):
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 	
-	stats['speed_max'] = LIFE_MAX_SPEED-(len(stats['legs'])*15)
+	stats['speed_max'] = LIFE_MAX_SPEED-(len(stats['legs']))
 	
 	return stats
 
@@ -126,8 +127,10 @@ def walk(life,to):
 	_dest = path_dest(life)
 	
 	if not _dest == tuple(to):
+		#_stime = time.time()
 		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
 		life['path'] = _path.find_path(life['pos'])
+		#print time.time()-_stime
 	
 	return walk_path(life)
 
@@ -160,7 +163,11 @@ def clear_actions(life):
 	life['actions'] = []
 
 def add_action(life,action,score):
-	life['actions'].append({'action': action,'score': score})
+	_tmp_action = {'action': action,'score': score}
+	if not _tmp_action in life['actions']:
+		life['actions'].append(_tmp_action)
+	
+	return False
 
 def perform_action(life):
 	_action = get_highest_action(life)

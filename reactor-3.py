@@ -221,8 +221,12 @@ life.equip_item(PLAYER,_i)
 while RUNNING:
 	get_input()
 	handle_input()
-	life.tick_all_life()
 
+	while life.get_highest_action(PLAYER):
+		life.tick_all_life()
+	else:
+		life.tick_all_life()
+	
 	gfx.start_of_frame()
 	
 	if CYTHON_ENABLED:

@@ -11,6 +11,7 @@ def init_libtcod():
 	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	CONSOLE_WINDOW = console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
+	console_set_keyboard_repeat(200, 80)
 	sys_set_fps(FPS)
 
 	RGB_BACK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
