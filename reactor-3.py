@@ -58,7 +58,7 @@ def handle_input():
 			else:
 				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
 		else:
-			CURSOR[1] -= 1
+			PLAYER['pos'][1] -= 1
 			
 			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 				CAMERA_POS[1] -= 1
@@ -70,25 +70,25 @@ def handle_input():
 			else:
 				ACTIVE_MENU['index'] = 0
 		else:
-			CURSOR[1] += 1
+			PLAYER['pos'][1] += 1
 
-			if CURSOR[1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
+			if PLAYER['pos'][1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
 				CAMERA_POS[1] += 1
 
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
-			CURSOR[0] += 1
+			PLAYER['pos'][0] += 1
 
-			if CURSOR[0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
+			if PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2:
 				CAMERA_POS[0]+=1
 
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
-			CURSOR[0] -= 1
+			PLAYER['pos'][0] -= 1
 
 			if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
 					CAMERA_POS[0]>0:
@@ -212,6 +212,7 @@ LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 life.add_action(_test,{'action': 'move', 'to': (5,5)},200)
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
 while RUNNING:
 	get_input()

@@ -71,7 +71,7 @@ def handle_input():
 		else:
 			CURSOR[1] += 1
 
-			if CURSOR[1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
+			if CURSOR[1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2:
 				CAMERA_POS[1] += 1
 
 	if INPUT['right']:
