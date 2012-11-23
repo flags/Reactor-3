@@ -62,6 +62,24 @@ def initiate_limbs(body):
 		body[limb]['holding'] = []
 		initiate_limbs(body[limb]['attached'])
 
+def get_all_limbs(body):
+	_limbs = []
+	
+	for limb in body:
+		_limbs.append(limb)
+		_limbs.extend(get_all_limbs(body[limb]['attached']))
+	
+	return _limbs
+
+def attach_item_to_limb(body,item,limb):
+	for limb1 in body:
+		if limb1 == limb:
+			body[limb1]['holding'].append(item)
+			print '%s attached to %s' % (item,limb)
+			return True
+		
+		attach_item_to_limb(body[limb1]['attached'],item,limb)
+
 def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
@@ -74,6 +92,7 @@ def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
 	_life['map'] = map
 	_life['path'] = []
 	_life['actions'] = []
+	_life['inventory'] = []
 	_life['flags'] = {}
 	
 	initiate_limbs(_life['body'])
@@ -108,19 +127,16 @@ def walk(life,to):
 	if not _dest == tuple(to):
 		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
 		life['path'] = _path.find_path(life['pos'])
-		print 'Setting path',life['path']
 	
 	return walk_path(life)
 
 def walk_path(life):
 	if life['path']:
 		life['pos'] = list(life['path'].pop(0))
-		print 'Walking',life['pos']
 		
 		if life['path']:
 			return False
 		else:
-			print 'Empty path...'
 			return True
 	else:
 		print 'here?'
@@ -160,6 +176,24 @@ def perform_action(life):
 
 def tick(life):
 	perform_action(life)
+
+def equip_item(life,item):
+	_limbs = get_all_limbs(life['body'])
+	
+	#TODO: Faster way to do this with sets
+	for limb in item['attaches_to']:
+		if not limb in _limbs:
+			print 'Limb not found:',limb
+			return False
+	
+	#TODO: Find a proper way to do IDs
+	life['inventory'].append(item)
+	_id = len(life['inventory'])
+	
+	print '%s puts on a %s' % (life['name'][0],item['name'])
+	
+	for limb in item['attaches_to']:
+		attach_item_to_limb(life['body'],_id,limb)
 
 def show_life_info(life):
 	for key in life:

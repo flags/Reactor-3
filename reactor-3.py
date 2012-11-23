@@ -8,6 +8,7 @@ import maputils
 import logging
 import random
 import menus
+import items
 import life
 import time
 import maps
@@ -60,7 +61,7 @@ def handle_input():
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 			
-			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
+			if PLAYER['pos'][1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 				CAMERA_POS[1] -= 1
 
 	if INPUT['down']:
@@ -213,6 +214,9 @@ life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 life.add_action(_test,{'action': 'move', 'to': (5,5)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
+
+_i = items.initiate_item('white_shirt')
+life.equip_item(PLAYER,_i)
 
 while RUNNING:
 	get_input()

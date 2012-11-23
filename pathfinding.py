@@ -1,7 +1,6 @@
 from copy import deepcopy
 from globals import *
 import numpy
-import time
 import sys
 
 class astar:
@@ -66,7 +65,6 @@ class astar:
 		self.calculate()
 		
 	def calculate(self):
-		_stime = time.time()
 		node = self.olist[0]
 		
 		_clist = self.clist
@@ -122,8 +120,6 @@ class astar:
 		if len(self.path)==1:
 			if abs(self.start[0]-self.path[0][0])+abs(self.start[1]-self.path[0][1])>1:
 				self.path = None
-		
-		print time.time()-_stime
 	
 	def find_path(self,start):
 		if not self.dij:
@@ -131,7 +127,6 @@ class astar:
 			self.path = [self.end]
 			
 			_broken = False
-			print node,start,self.end
 			while not tuple(node) == tuple(start):
 				if not node: _broken = True;break
 				else: self.path.insert(0,node)

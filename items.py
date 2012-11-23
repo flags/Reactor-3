@@ -10,7 +10,7 @@ def initiate_item(name):
 	if name in ITEM_TYPES:
 		logging.warning('Item type \'%s\' is already loaded. Reloading...' % name)
 	
-	_item= load_item(name)
+	_item = load_item(name)
 	
 	if not 'icon' in _item:
 		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_ICON))
@@ -19,7 +19,8 @@ def initiate_item(name):
 	if not 'flags' in _item:
 		logging.error('No flags set for item type \'%s\'. Errors may occur.' % name)
 	
-	#_life.update(calculate_base_stats(_life))
+	if 'attaches_to' in _item:
+		_item['attaches_to'] = _item['attaches_to'].split('|')
 	
 	ITEM_TYPES[name] = _item
 	
