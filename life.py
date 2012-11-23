@@ -97,7 +97,7 @@ def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
 	_life['path'] = []
 	_life['actions'] = []
 	_life['item_index'] = 0
-	_life['inventory'] = []
+	_life['inventory'] = {}
 	_life['flags'] = {}
 	
 	initiate_limbs(_life['body'])
@@ -188,6 +188,13 @@ def perform_action(life):
 def tick(life):
 	perform_action(life)
 
+def get_inventory_item(life,id):
+	if not life['inventory'].has_key(str(id)):
+		raise Exception('Life \'%s\' does not have item of id #%s'
+			% (life['name'][0],id))
+	
+	return life['inventory'][str(id)]
+
 def equip_item(life,item):
 	_limbs = get_all_limbs(life['body'])
 	
@@ -198,8 +205,8 @@ def equip_item(life,item):
 			return False
 	
 	#TODO: Find a proper way to do IDs
-	life['inventory'].append(item)
 	_id = life['item_index']
+	life['inventory'][str(_id)] = item
 	life['item_index'] += 1
 	
 	print '%s puts on a %s' % (life['name'][0],item['name'])
@@ -223,6 +230,21 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			gfx.blit_char(_x,_y,life['icon'],white,None)
+
+def draw_visual_inventory(life):
+	_inventory = {}
+	_limbs = get_all_limbs(life['body'])
+	
+	for limb in _limbs:
+		if _limbs[limb]['holding']:
+			_item = get_inventory_item(life,_limbs[limb]['holding'][0])
+			console_set_default_foreground(0,white)
+			console_print(0,MAP_WINDOW_SIZE[0]+1,_limbs.keys().index(limb)+1,'%s: %s' % (limb,_item['name']))
+		else:
+			console_set_default_foreground(0,Color(125,125,125))
+			console_print(0,MAP_WINDOW_SIZE[0]+1,_limbs.keys().index(limb)+1,'%s: None' % limb)
+	
+	console_set_default_foreground(0,white)
 
 #Conductor
 def tick_all_life():

@@ -1,7 +1,7 @@
 from globals import *
 
-def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_select=None,on_change=None):
-	_menu = {'settings': {'position': list(position),'title': title, 'padding': padding},
+def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
+	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim},
 		'on_select': on_select,
 		'on_change': on_change,
 		'values':{}}
@@ -68,3 +68,10 @@ def item_selected(menu,index):
 		return menu['on_select'](menu['menu'].values()[index][menu['values'][key]])
 	
 	return menu['on_select'](menu['menu'].values()[index])
+
+def menu_exists(name):
+	for _menu in MENUS:
+		if _menu['settings']['title'] == name:
+			return True
+	
+	return False

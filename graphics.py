@@ -3,6 +3,7 @@ from globals import *
 from tiles import *
 import numpy
 import time
+import life
 
 def init_libtcod():
 	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW
@@ -131,7 +132,7 @@ def draw_menus():
 		for item in menu['menu']:
 			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
 				console_set_default_foreground(menu['settings']['console'],white)
-			else:
+			elif menu['settings']['dim']:
 				console_set_default_foreground(menu['settings']['console'],dark_grey)
 			
 			if isinstance(menu['menu'][item],list):

@@ -87,12 +87,9 @@ def handle_input():
 				create_tile(PLACING_TILE)
 	
 	if INPUT['i']:
-		_inventory = {}
-		_limbs = life.get_all_limbs(PLAYER)
+		if menus.menu_exists('Inventory'):
+			return False
 		
-		for limb in _limbs:
-			_inventory[limb] = _limbs[limb]['holding']
-
 		menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
@@ -178,6 +175,7 @@ while RUNNING:
 	move_camera()	
 	life.draw_life()
 	gfx.draw_bottom_ui()
+	life.draw_visual_inventory(PLAYER)
 	gfx.draw_menus()
 	gfx.draw_console()
 	gfx.end_of_frame()
