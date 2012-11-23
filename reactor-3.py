@@ -86,65 +86,16 @@ def handle_input():
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
-	if INPUT['m']:
-		SUN_POS[0] += 1
-		SUN_POS[1] += 1
-		
-		print SUN_POS
-	
-	if INPUT['n']:
-		SUN_POS[2] -= 1
-		
-		print SUN_POS
-	
-	if INPUT['o']:
-		if ACTIVE_MENU['menu'] < len(MENUS):
-			ACTIVE_MENU['menu'] += 1
-			ACTIVE_MENU['index'] = 0
-	
-	if INPUT['j']:
-		if ACTIVE_MENU['menu'] > -1:
-			menus.item_selected(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
-		
-		ACTIVE_MENU['menu'] = -1
-	
-	if INPUT['q']:
-		_current_index = TILES.index(PLACING_TILE)-1
-		
-		if _current_index<0:
-			_current_index = 0
-		
-		PLACING_TILE = TILES[_current_index]
-			
-	if INPUT['w']:
-		_current_index = TILES.index(PLACING_TILE)+1
-		
-		if _current_index>=len(TILES):
-			_current_index = len(TILES)-1
-		
-		PLACING_TILE = TILES[_current_index]
-	
-	if INPUT['f']:
-		SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
-
-	if INPUT['c']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(GRASS_TILES))
-
-	if INPUT['d']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = None
-	
-	if INPUT['a']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(SAND_TILES))
-	
-	if INPUT['s']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(DIRT_TILES))
-	
-	if INPUT['z']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(CONCRETE_TILES))
+	if INPUT['i']:
+		for limb in life.get_all_limbs(PLAYER):
+			menu[limb] = None
+			menus.create_menu(title='Inventory',
+				menu={'S': 'Save',
+				'L': 'Load',
+				'E': 'Exit'},
+				padding=(1,1),
+				position=(0,0),
+				on_select=None)
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -184,20 +135,6 @@ def menu_item_selected(value):
 	if value == 'Save':
 		maps.save_map(MAP)
 
-def options_menu_item_changed(key,value):
-	if key == 'Blit z-level below':
-		if value == 'On':
-			SETTINGS['draw z-levels below'] = True
-		elif value == 'Off':
-			SETTINGS['draw z-levels below'] = False
-	
-	elif key == 'Draw lights':
-		if value == 'On':
-			SETTINGS['draw lights'] = True
-		elif value == 'Off':
-			maps.reset_lights()
-			SETTINGS['draw lights'] = False
-
 def menu_align():
 	for menu in MENUS:
 		if not MENUS.index(menu):
@@ -208,7 +145,7 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
-LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
+LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)

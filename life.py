@@ -64,11 +64,14 @@ def initiate_limbs(body):
 		initiate_limbs(body[limb]['attached'])
 
 def get_all_limbs(body):
-	_limbs = []
+	_limbs = {}
 	
 	for limb in body:
-		_limbs.append(limb)
-		_limbs.extend(get_all_limbs(body[limb]['attached']))
+		_limb = body[limb].copy()
+		del _limb['attached']
+		
+		_limbs[limb] = _limb
+		_limbs.update(get_all_limbs(body[limb]['attached']))
 	
 	return _limbs
 
