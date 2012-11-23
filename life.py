@@ -37,6 +37,30 @@ def calculate_base_stats(life):
 	
 	return stats
 
+def _get_max_speed(life,leg):
+	#TODO: This will be used to calculate damage at some point...
+	_speed_mod = 0
+	
+	for limb in leg['attached']:
+		limb = get_limb(life['body'],limb)
+		for item in limb['holding']:
+			_i = get_inventory_item(life,item)
+			
+			if _i.has_key('speed_mod'):
+				_speed_mod += _i['speed_mod']
+		
+		_speed_mod += _get_max_speed(life,limb)
+	
+	return _speed_mod
+
+def get_max_speed(life):
+	_speed_mod = 0
+	for leg in life['legs']:
+		_leg = get_limb(life['body'],leg)
+		_speed_mod += _get_max_speed(life,_leg)
+	
+	return _speed_mod
+
 def initiate_life(name):
 	if name in LIFE_TYPES:
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
@@ -62,6 +86,19 @@ def initiate_limbs(body):
 		body[limb]['storing'] = []
 		body[limb]['holding'] = []
 		initiate_limbs(body[limb]['attached'])
+
+def get_limb(body,limb):
+	_limb = []
+	
+	for limb1 in body:
+		if limb1 == limb:
+			return body[limb1]
+		
+		_limbs = get_limb(body[limb1]['attached'],limb)
+		if _limbs:
+			_limb = _limbs
+	
+	return _limb
 
 def get_all_limbs(body):
 	_limbs = {}
@@ -204,7 +241,6 @@ def equip_item(life,item):
 			print 'Limb not found:',limb
 			return False
 	
-	#TODO: Find a proper way to do IDs
 	_id = life['item_index']
 	life['inventory'][str(_id)] = item
 	life['item_index'] += 1
@@ -213,6 +249,10 @@ def equip_item(life,item):
 	
 	for limb in item['attaches_to']:
 		attach_item_to_limb(life['body'],_id,limb)
+	
+	life['speed_max'] = life['speed_max']-get_max_speed(life)
+	if life['speed'] > life['speed_max']:
+		life['speed'] = life['speed_max']
 
 def show_life_info(life):
 	for key in life:
