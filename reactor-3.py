@@ -87,15 +87,17 @@ def handle_input():
 				create_tile(PLACING_TILE)
 	
 	if INPUT['i']:
-		for limb in life.get_all_limbs(PLAYER):
-			menu[limb] = None
-			menus.create_menu(title='Inventory',
-				menu={'S': 'Save',
-				'L': 'Load',
-				'E': 'Exit'},
-				padding=(1,1),
-				position=(0,0),
-				on_select=None)
+		_inventory = {}
+		_limbs = life.get_all_limbs(PLAYER)
+		
+		for limb in _limbs:
+			_inventory[limb] = _limbs[limb]['holding']
+
+		menus.create_menu(title='Inventory',
+			menu=_inventory,
+			padding=(1,1),
+			position=(0,0),
+			on_select=None)
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
