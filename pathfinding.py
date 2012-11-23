@@ -131,6 +131,7 @@ class astar:
 			self.path = [self.end]
 			
 			_broken = False
+			print node,start,self.end
 			while not tuple(node) == tuple(start):
 				if not node: _broken = True;break
 				else: self.path.insert(0,node)

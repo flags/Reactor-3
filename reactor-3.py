@@ -58,7 +58,7 @@ def handle_input():
 			else:
 				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
 		else:
-			PLAYER['pos'][1] -= 1
+			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 			
 			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 				CAMERA_POS[1] -= 1
@@ -70,7 +70,7 @@ def handle_input():
 			else:
 				ACTIVE_MENU['index'] = 0
 		else:
-			PLAYER['pos'][1] += 1
+			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
 
 			if PLAYER['pos'][1]-CAMERA_POS[1]>=MAP_WINDOW_SIZE[1]/2:
 				CAMERA_POS[1] += 1
@@ -79,7 +79,7 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
-			PLAYER['pos'][0] += 1
+			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
 
 			if PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2:
 				CAMERA_POS[0]+=1
@@ -88,7 +88,7 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
-			PLAYER['pos'][0] -= 1
+			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
 
 			if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
 					CAMERA_POS[0]>0:

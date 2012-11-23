@@ -33,7 +33,7 @@ LIFE_DIR = os.path.join(DATA_DIR,'life')
 DEFAULT_ICON = '@'
 
 #Life constants
-LIFE_MAX_SPEED = 30
+LIFE_MAX_SPEED = 32
 
 #Non-constants
 SETTINGS = {'draw lights': True,

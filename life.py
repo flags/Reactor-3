@@ -32,7 +32,7 @@ def calculate_base_stats(life):
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 	
-	stats['speed_max'] = LIFE_MAX_SPEED-(len(stats['legs'])*10)
+	stats['speed_max'] = LIFE_MAX_SPEED-(len(stats['legs'])*15)
 	
 	return stats
 
@@ -139,6 +139,9 @@ def get_highest_action(life):
 	else:
 		return None
 
+def clear_actions(life):
+	life['actions'] = []
+
 def add_action(life,action,score):
 	life['actions'].append({'action': action,'score': score})
 
@@ -152,7 +155,7 @@ def perform_action(life):
 	_action = _action['action']
 	
 	if _action['action'] == 'move':
-		if walk(life,_action['to']):
+		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
 			life['actions'].remove({'action':_action,'score':_score})
 
 def tick(life):
