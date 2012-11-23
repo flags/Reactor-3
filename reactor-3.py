@@ -40,8 +40,16 @@ def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
 	"""Parses input."""
-	if gfx.window_is_closed() or INPUT['\x1b']:
+	if gfx.window_is_closed():
 		RUNNING = False
+	
+	if INPUT['\x1b']:
+		if ACTIVE_MENU['menu'] >= 0:
+			menus.delete_menu(ACTIVE_MENU['menu'])
+			ACTIVE_MENU['menu'] -= 1
+		else:
+			RUNNING = False
+	#Exit should close menu before exiting!
 	
 	if INPUT['-']:
 		if SETTINGS['draw console']:
@@ -81,24 +89,23 @@ def handle_input():
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
-
-	if INPUT[' ']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(PLACING_TILE)
 	
 	if INPUT['i']:
-		if menus.menu_exists('Inventory'):
+		if menus.menu_exists('Inventory')>-1:
+			menus.delete_menu(menus.menu_exists('Inventory'))
 			return False
 		
 		_inventory = {}
 		for item in PLAYER['inventory']:
 			_inventory[str(item)] = life.get_inventory_item(PLAYER,item)['name']
 		
-		menus.create_menu(title='Inventory',
+		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
-			position=(0,0),
+			position=(1,1),
 			on_select=None)
+		
+		menus.activate_menu(_i)
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4

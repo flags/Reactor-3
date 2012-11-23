@@ -29,7 +29,18 @@ def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_
 	
 	MENUS.append(_menu)
 	
-	return _menu
+	return MENUS.index(_menu)
+
+def delete_menu(id):
+	if ACTIVE_MENU['menu'] == id:
+		ACTIVE_MENU['menu'] = -1
+		ACTIVE_MENU['index'] = 0
+	
+	MENUS.pop(id)
+
+def activate_menu(id):
+	ACTIVE_MENU['menu'] = id
+	ACTIVE_MENU['index'] = 0
 
 def previous_item(menu,index):
 	_key = menu['menu'].keys()[index]
@@ -72,6 +83,6 @@ def item_selected(menu,index):
 def menu_exists(name):
 	for _menu in MENUS:
 		if _menu['settings']['title'] == name:
-			return True
+			return MENUS.index(_menu)
 	
-	return False
+	return -1
