@@ -1,6 +1,6 @@
 {"name": "sneakers",
 "type": "shoes",
-"speed_mod": 2,
+"speed_mod": 4,
 "attaches_to": "lfoot|rfoot",
 "flags": "CANBURN|CANSOAK",
 "thickness": 1}

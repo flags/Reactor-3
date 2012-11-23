@@ -148,7 +148,7 @@ LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
-life.add_action(_test,{'action': 'move', 'to': (5,5)},200)
+life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
 _i1 = items.initiate_item('white_shirt')
