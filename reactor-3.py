@@ -90,6 +90,10 @@ def handle_input():
 		if menus.menu_exists('Inventory'):
 			return False
 		
+		_inventory = {}
+		for item in PLAYER['inventory']:
+			_inventory[str(item)] = life.get_inventory_item(PLAYER,item)['name']
+		
 		menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),

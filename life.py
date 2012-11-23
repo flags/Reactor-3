@@ -265,8 +265,8 @@ def show_life_info(life):
 
 def draw_life():
 	for life in LIFE:
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
+			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			gfx.blit_char(_x,_y,life['icon'],white,None)
