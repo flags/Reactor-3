@@ -25,5 +25,3 @@ def initiate_item(name):
 	ITEM_TYPES[name] = _item
 	
 	return _item
-
-initiate_item('white_shirt')

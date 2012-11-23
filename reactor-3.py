@@ -151,8 +151,10 @@ _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 life.add_action(_test,{'action': 'move', 'to': (5,5)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
-_i = items.initiate_item('white_shirt')
-life.equip_item(PLAYER,_i)
+_i1 = items.initiate_item('white_shirt')
+_i2 = items.initiate_item('sneakers')
+life.equip_item(PLAYER,_i1)
+life.equip_item(PLAYER,_i2)
 
 while RUNNING:
 	get_input()
