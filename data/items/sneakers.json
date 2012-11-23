@@ -1,0 +1,5 @@
+{"name": "sneakers",
+"type": "shoes",
+"attaches_to": "lfoot|rfoot",
+"flags": "CANBURN|CANSOAK",
+"thickness": 1}
