@@ -92,6 +92,7 @@ def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
 	_life['map'] = map
 	_life['path'] = []
 	_life['actions'] = []
+	_life['item_index'] = 0
 	_life['inventory'] = []
 	_life['flags'] = {}
 	
@@ -188,7 +189,8 @@ def equip_item(life,item):
 	
 	#TODO: Find a proper way to do IDs
 	life['inventory'].append(item)
-	_id = len(life['inventory'])
+	_id = life['item_index']
+	life['item_index'] += 1
 	
 	print '%s puts on a %s' % (life['name'][0],item['name'])
 	
