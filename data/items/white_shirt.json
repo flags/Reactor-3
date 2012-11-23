@@ -1,0 +1,5 @@
+{"name": "white t-shirt",
+"type": "shirt",
+"attaches_to": "arms|core",
+"flags": "CANTAKEAPART[white cloth(3)]|CANBURN|CANSOAK",
+"thickness": 1}

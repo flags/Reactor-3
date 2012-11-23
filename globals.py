@@ -30,7 +30,9 @@ PLACING_TILE = None
 RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
-DEFAULT_ICON = '@'
+ITEM_DIR = os.path.join(DATA_DIR,'items')
+DEFAULT_LIFE_ICON = '@'
+DEFAULT_ITEM_ICON = 'i'
 
 #Life constants
 LIFE_MAX_SPEED = 32
@@ -44,6 +46,7 @@ KEYBOARD_STRING = ['']
 SELECTED_TILES = []
 LIFE_TYPES = {}
 LIFE = []
+ITEM_TYPES = {}
 
 #Consoles
 MAP_WINDOW = None

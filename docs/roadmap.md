@@ -106,4 +106,17 @@ despite sounding very simple, are actually one of the more complex objects we'll
 This is because clothes aren't just attached to one part of the body, are are technically
 attached to the arms, legs, whatever...
 
-Clothes can also hold items themselves, so that also needs to be covered to some extent.
+Clothes can also hold items themselves, so that also needs to be covered.
+
+Example
+-------
+
+    jacket = add_item(player,'jacket')
+    equip_item(player,jacket)
+
+    #This function is then called...
+    def equip_item(player,item):
+        #TODO: Faster way to check this with sets
+        for limb in item['attaches_to']:
+	    
+    

@@ -81,7 +81,7 @@ def handle_input():
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
 
-			if PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2:
+			if PLAYER['pos'][0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
 				CAMERA_POS[0]+=1
 
 	if INPUT['left']:
@@ -90,8 +90,8 @@ def handle_input():
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
 
-			if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
-					CAMERA_POS[0]>0:
+			if PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
+					PLAYER['pos'][0]>0:
 				CAMERA_POS[0] -= 1
 
 	if INPUT[' ']:

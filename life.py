@@ -43,8 +43,8 @@ def initiate_life(name):
 	_life = load_life(name)
 	
 	if not 'icon' in _life:
-		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_ICON))
-		_life['tile'] = DEFAULT_ICON
+		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
+		_life['tile'] = DEFAULT_LIFE_ICON
 	
 	if not 'flags' in _life:
 		logging.error('No flags set for life type \'%s\'. Errors may occur.' % name)
