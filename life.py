@@ -218,18 +218,3 @@ def draw_life():
 def tick_all_life():
 	for life in LIFE:
 		tick(life)
-	
-#initiate_life('Human')
-#_life = create_life('Human',['derp','yerp'])
-#_life = create_life('Human',['nope','yerp'])
-#_life['speed'] = 50
-#_life['speed_max'] = 50
-#_life = create_life('Human',['zooom','yerp'])
-#add_action(_life,{'action': 'move', 'to': (5,5)},200)
-##add_action(_life,'eat',30)
-#_life['speed'] = 1
-#_life['speed_max'] = 1
-
-#for a in range(500):
-	#tick_all_life()
-##show_life_info(_life)

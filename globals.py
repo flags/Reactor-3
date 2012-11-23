@@ -14,7 +14,7 @@ CURSOR = [0,0]
 CAMERA_POS = [0,0,2]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [50]
-FPS = 300
+FPS = 30
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = FONT_LAYOUT_ASCII_INROW
 DARK_BUFFER = [[]]
@@ -35,7 +35,7 @@ DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 
 #Life constants
-LIFE_MAX_SPEED = 32
+LIFE_MAX_SPEED = 30
 
 #Non-constants
 SETTINGS = {'draw lights': True,
