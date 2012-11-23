@@ -16,6 +16,8 @@ def get_input():
 def get_keyboard_input():
 	global KEYBOARD_STRING
 	
+	print repr(KEY.vk)
+	
 	if not KEY.vk:
 		return False
 

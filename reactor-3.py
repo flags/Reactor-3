@@ -49,7 +49,6 @@ def handle_input():
 			ACTIVE_MENU['menu'] -= 1
 		else:
 			RUNNING = False
-	#Exit should close menu before exiting!
 	
 	if INPUT['-']:
 		if SETTINGS['draw console']:
