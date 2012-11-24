@@ -59,6 +59,16 @@ def draw_menus():
 				_line)
 			_y_offset += 1
 
+def align_menus():
+	for menu in MENUS:
+		if not MENUS.index(menu):
+			continue
+		
+		_prev_menu = MENUS[MENUS.index(menu)-1]
+		_y_mod = _prev_menu['settings']['position'][1]+_prev_menu['settings']['size'][1]
+		
+		menu['settings']['position'][1] = _y_mod+1
+
 def delete_menu(id):
 	if ACTIVE_MENU['menu'] == id:
 		ACTIVE_MENU['menu'] -= 1

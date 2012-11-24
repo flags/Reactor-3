@@ -163,16 +163,6 @@ def return_to_inventory(key,value):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
 
-def align_menus():
-	for menu in MENUS:
-		if not MENUS.index(menu):
-			continue
-		
-		_prev_menu = MENUS[MENUS.index(menu)-1]
-		_y_mod = _prev_menu['settings']['position'][1]+_prev_menu['settings']['size'][1]
-		
-		menu['settings']['position'][1] = _y_mod+1
-
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
 life.initiate_life('Human')
@@ -185,6 +175,7 @@ items.initiate_item('sneakers')
 
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
+_i3 = items.create_item('sneakers',position=(10,10))
 
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
@@ -206,12 +197,13 @@ while RUNNING:
 		maps.render_map(MAP)
 	
 	maps.render_lights()
-	align_menus()
-	move_camera()	
+	move_camera()
+	items.draw_items()
 	life.draw_life()
-	gfx.draw_bottom_ui()
 	life.draw_visual_inventory(PLAYER)
+	menus.align_menus()
 	menus.draw_menus()
+	gfx.draw_bottom_ui()
 	gfx.draw_console()
 	gfx.end_of_frame()
 

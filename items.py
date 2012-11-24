@@ -1,4 +1,5 @@
 from globals import *
+import graphics as gfx
 import logging
 import json
 
@@ -30,4 +31,17 @@ def create_item(name,position=[0,0]):
 	item = ITEM_TYPES[name].copy()
 	item['pos'] = list(position)
 	
+	ITEMS.append(item)
+	
 	return item
+
+def draw_items():
+	for item in ITEMS:
+		if item.has_key('id'):
+			continue
+		
+		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
+			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+			_x = item['pos'][0] - CAMERA_POS[0]
+			_y = item['pos'][1] - CAMERA_POS[1]
+			gfx.blit_char(_x,_y,item['icon'],white,None)

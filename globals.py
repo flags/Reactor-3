@@ -50,6 +50,7 @@ SELECTED_TILES = []
 LIFE_TYPES = {}
 LIFE = []
 ITEM_TYPES = {}
+ITEMS = []
 
 #Consoles
 MAP_WINDOW = None
