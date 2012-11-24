@@ -38,8 +38,22 @@ def delete_menu(id):
 	
 	MENUS.pop(id)
 
+def get_menu(id):
+	return MENUS[id]
+
+def get_menu_by_name(name):
+	for _menu in MENUS:
+		if _menu['settings']['title'] == name:
+			return MENUS.index(_menu)
+	
+	return -1
+
 def activate_menu(id):
 	ACTIVE_MENU['menu'] = id
+	ACTIVE_MENU['index'] = 0
+
+def activate_menu_by_name(name):
+	ACTIVE_MENU['menu'] = get_menu_by_name(name)
 	ACTIVE_MENU['index'] = 0
 
 def previous_item(menu,index):
@@ -51,7 +65,8 @@ def previous_item(menu,index):
 		if menu['values'][menu['values'].keys()[_key_index]]:
 			key = menu['menu'].keys()[index]
 			menu['values'][menu['values'].keys()[_key_index]] -= 1
-			menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
+			if menu['on_change']:
+				menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
 			return True
 	
 	return False
@@ -65,7 +80,8 @@ def next_item(menu,index):
 		if menu['values'][menu['values'].keys()[_key_index]] < len(menu['values'].keys()):
 			key = menu['menu'].keys()[index]
 			menu['values'][menu['values'].keys()[_key_index]] += 1
-			menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
+			if menu['on_change']:
+				menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
 			return True
 	
 	return False
@@ -74,15 +90,10 @@ def get_selected_item(menu,index):
 	return (menu['menu'].keys()[index],menu['menu'].values()[index])
 
 def item_selected(menu,index):
+	menu = get_menu(menu)
+	
 	if isinstance(menu['menu'].values()[index],list):
 		key = menu['menu'].keys()[index]
-		return menu['on_select'](menu['menu'].values()[index][menu['values'][key]])
+		return menu['on_select'](key,menu['menu'].values()[index][menu['values'][key]])
 	
-	return menu['on_select'](menu['menu'].values()[index])
-
-def menu_exists(name):
-	for _menu in MENUS:
-		if _menu['settings']['title'] == name:
-			return MENUS.index(_menu)
-	
-	return -1
+	return menu['on_select'](menu['menu'].keys()[index],menu['menu'].values()[index])

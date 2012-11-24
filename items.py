@@ -22,6 +22,6 @@ def initiate_item(name):
 	if 'attaches_to' in _item:
 		_item['attaches_to'] = _item['attaches_to'].split('|')
 	
-	ITEM_TYPES[name] = _item
+	ITEM_TYPES[_item['name']] = _item
 	
 	return _item

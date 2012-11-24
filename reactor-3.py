@@ -46,7 +46,6 @@ def handle_input():
 	if INPUT['\x1b']:
 		if ACTIVE_MENU['menu'] >= 0:
 			menus.delete_menu(ACTIVE_MENU['menu'])
-			ACTIVE_MENU['menu'] -= 1
 		else:
 			RUNNING = False
 	
@@ -90,21 +89,31 @@ def handle_input():
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
 	
 	if INPUT['i']:
-		if menus.menu_exists('Inventory')>-1:
-			menus.delete_menu(menus.menu_exists('Inventory'))
+		if menus.get_menu_by_name('Inventory')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Inventory'))
 			return False
 		
 		_inventory = {}
 		for item in PLAYER['inventory']:
-			_inventory[str(item)] = life.get_inventory_item(PLAYER,item)['name']
+			_name = life.get_inventory_item(PLAYER,item)['name']
+			if life.item_is_equipped(PLAYER,item):
+				_inventory[_name] = 'Equipped'
+			else:
+				_inventory[_name] = 'Not equipped'
 		
 		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
-			on_select=None)
+			on_select=inventory_select)
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['\r']:
+		if ACTIVE_MENU['menu'] == -1:
+			return False
+		
+		menus.item_selected(ACTIVE_MENU['menu'],ACTIVE_MENU['index'])
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -140,9 +149,18 @@ def move_camera():
 	elif PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
 		CAMERA_POS[0] -= 1
 
-def menu_item_selected(value):
-	if value == 'Save':
-		maps.save_map(MAP)
+def inventory_select(key,value):
+	_i = menus.create_menu(title=key,
+		menu=ITEM_TYPES[key],
+		padding=(1,1),
+		position=(3,3),
+		on_select=return_to_inventory)
+		
+	menus.activate_menu(_i)
+
+def return_to_inventory(key,value):
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.activate_menu_by_name('Inventory')
 
 def menu_align():
 	for menu in MENUS:

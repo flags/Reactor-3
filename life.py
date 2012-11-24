@@ -254,6 +254,13 @@ def equip_item(life,item):
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
 
+def item_is_equipped(life,item):
+	for _limb in get_all_limbs(life['body']):
+		if int(item) in get_limb(life['body'],_limb)['holding']:
+			return True
+	
+	return False
+
 def show_life_info(life):
 	for key in life:
 		if key == 'body':
