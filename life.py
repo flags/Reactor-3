@@ -240,6 +240,7 @@ def add_item_to_inventory(life,item):
 	
 	#TODO: Move this to functions like pick_up_item
 	print '%s picked up a %s.' % (life['name'][0],item['name'])
+	gfx.message('%s picked up a %s.' % (life['name'][0],item['name']))
 	
 	return _id
 

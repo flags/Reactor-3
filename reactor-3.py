@@ -180,8 +180,12 @@ _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
-_i1 = items.initiate_item('white_shirt')
-_i2 = items.initiate_item('sneakers')
+items.initiate_item('white_shirt')
+items.initiate_item('sneakers')
+
+_i1 = items.create_item('white t-shirt')
+_i2 = items.create_item('sneakers')
+
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
 

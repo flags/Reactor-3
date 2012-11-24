@@ -6,11 +6,12 @@ import time
 import life
 
 def init_libtcod():
-	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW
+	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	CONSOLE_WINDOW = console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
+	MESSAGE_WINDOW = console_new(MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	console_set_keyboard_repeat(200, 80)
 	sys_set_fps(FPS)
@@ -85,6 +86,12 @@ def draw_bottom_ui_terraform():
 	_fps_string = '%s fps' % str(sys_get_fps())
 	blit_string(WINDOW_SIZE[0]-len(_fps_string), MAP_WINDOW_SIZE[1]+1,_fps_string)
 
+def draw_bottom_ui():
+	console_print(MESSAGE_WINDOW,1,0,'Messages')
+	
+	for msg in MESSAGE_LOG[len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES:]:
+		console_print(MESSAGE_WINDOW,1,MESSAGE_LOG.index(msg)+1,msg)
+
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
 		console_print(ITEM_WINDOW,pos,0,chr(15))
@@ -121,9 +128,17 @@ def draw_console():
 def log(text):
 	CONSOLE_HISTORY.append(text)
 
+def message(text):
+	MESSAGE_LOG.append(text)
+
 def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
+	#TODO: Only when Terraform is running
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
+	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
+	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))
+	console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
+	console_set_default_foreground(MESSAGE_WINDOW,white)
 	
 	for menu in MENUS:
 		console_blit(menu['settings']['console'],0,0,
