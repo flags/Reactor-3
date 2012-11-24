@@ -153,8 +153,9 @@ def inventory_select(key,value):
 	_i = menus.create_menu(title=key,
 		menu=ITEM_TYPES[key],
 		padding=(1,1),
-		position=(3,3),
-		on_select=return_to_inventory)
+		position=(1,1),
+		on_select=return_to_inventory,
+		dim=False)
 		
 	menus.activate_menu(_i)
 
@@ -162,15 +163,15 @@ def return_to_inventory(key,value):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
 
-def menu_align():
+def align_menus():
 	for menu in MENUS:
 		if not MENUS.index(menu):
 			continue
 		
 		_prev_menu = MENUS[MENUS.index(menu)-1]
-		_size = _prev_menu['settings']['position'][1]+_prev_menu['settings']['size'][1]
+		_y_mod = _prev_menu['settings']['position'][1]+_prev_menu['settings']['size'][1]
 		
-		menu['settings']['position'][1] = _size
+		menu['settings']['position'][1] = _y_mod+1
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
@@ -201,7 +202,7 @@ while RUNNING:
 		maps.render_map(MAP)
 	
 	maps.render_lights()
-	menu_align()
+	align_menus()
 	move_camera()	
 	life.draw_life()
 	gfx.draw_bottom_ui()

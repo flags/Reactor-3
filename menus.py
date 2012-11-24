@@ -33,7 +33,7 @@ def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_
 
 def delete_menu(id):
 	if ACTIVE_MENU['menu'] == id:
-		ACTIVE_MENU['menu'] = -1
+		ACTIVE_MENU['menu'] -= 1
 		ACTIVE_MENU['index'] = 0
 	
 	MENUS.pop(id)
