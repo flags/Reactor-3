@@ -77,7 +77,7 @@ def draw_cursor(tile):
 		blit_tile(CURSOR[0]-CAMERA_POS[0],
 		              CURSOR[1]-CAMERA_POS[1],tile)
 
-def draw_bottom_ui():
+def draw_bottom_ui_terraform():
 	"""Controls the drawing of the UI under the map."""
 	blit_string(0,MAP_WINDOW_SIZE[1]+1,'X: %s Y: %s Z: %s' %
 		(CURSOR[0],CURSOR[1],CAMERA_POS[2]))

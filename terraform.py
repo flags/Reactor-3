@@ -263,9 +263,9 @@ while RUNNING:
 	menu_align()
 	gfx.draw_cursor(PLACING_TILE)
 	gfx.draw_all_tiles()
-	gfx.draw_bottom_ui()
+	gfx.draw_bottom_ui_terraform()
 	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))
-	gfx.draw_menus()
+	menus.draw_menus()
 	gfx.draw_console()
 	gfx.end_of_frame()
 
