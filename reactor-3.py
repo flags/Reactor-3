@@ -175,7 +175,7 @@ items.initiate_item('sneakers')
 
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
-_i3 = items.create_item('sneakers',position=(10,10))
+_i3 = items.create_item('sneakers',position=(10,10,2))
 
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))

@@ -121,7 +121,7 @@ def attach_item_to_limb(body,item,limb):
 		
 		attach_item_to_limb(body[limb1]['attached'],item,limb)
 
-def create_life(type,position=(0,0),name=('Test','McChuckski'),map=None):
+def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
@@ -176,7 +176,8 @@ def walk(life,to):
 
 def walk_path(life):
 	if life['path']:
-		life['pos'] = list(life['path'].pop(0))
+		_pos = list(life['path'].pop(0))
+		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		
 		if life['path']:
 			return False
@@ -281,6 +282,9 @@ def show_life_info(life):
 
 def draw_life():
 	for life in LIFE:
+		if not life['pos'][2] <= CAMERA_POS[2]:
+			continue
+		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]

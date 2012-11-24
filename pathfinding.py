@@ -128,8 +128,12 @@ class astar:
 			
 			_broken = False
 			while not tuple(node) == tuple(start):
-				if not node: _broken = True;break
-				else: self.path.insert(0,node)
+				if not node:
+					_broken = True
+					break
+				else:
+					self.path.insert(0,node)
+				
 				self.tmap[node[0]][node[1]] = 1
 				node = self.pmap[node[0]][node[1]]
 			

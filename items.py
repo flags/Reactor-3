@@ -27,7 +27,7 @@ def initiate_item(name):
 	
 	return item
 
-def create_item(name,position=[0,0]):
+def create_item(name,position=[0,0,0]):
 	item = ITEM_TYPES[name].copy()
 	item['pos'] = list(position)
 	
@@ -38,6 +38,9 @@ def create_item(name,position=[0,0]):
 def draw_items():
 	for item in ITEMS:
 		if item.has_key('id'):
+			continue
+		
+		if not item['pos'][2] <= CAMERA_POS[2]:
 			continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
