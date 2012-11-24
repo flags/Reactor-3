@@ -182,8 +182,8 @@ PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
 _i1 = items.initiate_item('white_shirt')
 _i2 = items.initiate_item('sneakers')
-life.equip_item(PLAYER,_i1)
-life.equip_item(PLAYER,_i2)
+life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
+life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
 
 while RUNNING:
 	get_input()
@@ -207,7 +207,7 @@ while RUNNING:
 	life.draw_life()
 	gfx.draw_bottom_ui()
 	life.draw_visual_inventory(PLAYER)
-	gfx.draw_menus()
+	menus.draw_menus()
 	gfx.draw_console()
 	gfx.end_of_frame()
 

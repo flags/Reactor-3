@@ -232,8 +232,20 @@ def get_inventory_item(life,id):
 	
 	return life['inventory'][str(id)]
 
-def equip_item(life,item):
+def add_item_to_inventory(life,item):
+	_id = life['item_index']
+	item['id'] = _id
+	life['inventory'][str(_id)] = item
+	life['item_index'] += 1
+	
+	#TODO: Move this to functions like pick_up_item
+	print '%s picked up a %s.' % (life['name'][0],item['name'])
+	
+	return _id
+
+def equip_item(life,id):
 	_limbs = get_all_limbs(life['body'])
+	item = get_inventory_item(life,id)
 	
 	#TODO: Faster way to do this with sets
 	for limb in item['attaches_to']:
@@ -241,14 +253,10 @@ def equip_item(life,item):
 			print 'Limb not found:',limb
 			return False
 	
-	_id = life['item_index']
-	life['inventory'][str(_id)] = item
-	life['item_index'] += 1
-	
 	print '%s puts on a %s' % (life['name'][0],item['name'])
 	
 	for limb in item['attaches_to']:
-		attach_item_to_limb(life['body'],_id,limb)
+		attach_item_to_limb(life['body'],item['id'],limb)
 	
 	life['speed_max'] = life['speed_max']-get_max_speed(life)
 	if life['speed'] > life['speed_max']:

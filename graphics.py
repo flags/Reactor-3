@@ -118,34 +118,6 @@ def draw_console():
 			
 	console_print(CONSOLE_WINDOW,0,CONSOLE_WINDOW_SIZE[1]-1,'#'+KEYBOARD_STRING[0])
 
-def draw_menus():
-	for menu in MENUS:
-		_y_offset = menu['settings']['padding'][1]
-		
-		console_set_default_foreground(menu['settings']['console'],white)
-		console_print(menu['settings']['console'],
-			menu['settings']['padding'][0],
-			_y_offset,
-			menu['settings']['title'])
-		
-		_y_offset += 2
-		for item in menu['menu']:
-			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
-				console_set_default_foreground(menu['settings']['console'],white)
-			elif menu['settings']['dim']:
-				console_set_default_foreground(menu['settings']['console'],dark_grey)
-			
-			if isinstance(menu['menu'][item],list):
-				_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
-			else:
-				_line = '%s: %s' % (item,menu['menu'][item])
-
-			console_print(menu['settings']['console'],
-				menu['settings']['padding'][0],
-				_y_offset,
-				_line)
-			_y_offset += 1
-
 def log(text):
 	CONSOLE_HISTORY.append(text)
 

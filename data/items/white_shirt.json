@@ -1,5 +1,7 @@
 {"name": "white t-shirt",
 "type": "shirt",
+"icon": "T",
+"description": "A plain, white t-shirt.",
 "attaches_to": "lshoulder|rshoulder|chest|stomach",
-"flags": "CANTAKEAPART[white cloth(3)]|CANBURN|CANSOAK",
+"flags": "CANDISMANTLE[white cloth(3)]|CANBURN|CANSOAK",
 "thickness": 1}

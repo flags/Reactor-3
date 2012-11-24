@@ -31,6 +31,34 @@ def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_
 	
 	return MENUS.index(_menu)
 
+def draw_menus():
+	for menu in MENUS:
+		_y_offset = menu['settings']['padding'][1]
+		
+		console_set_default_foreground(menu['settings']['console'],white)
+		console_print(menu['settings']['console'],
+			menu['settings']['padding'][0],
+			_y_offset,
+			menu['settings']['title'])
+		
+		_y_offset += 2
+		for item in menu['menu']:
+			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
+				console_set_default_foreground(menu['settings']['console'],white)
+			elif menu['settings']['dim']:
+				console_set_default_foreground(menu['settings']['console'],dark_grey)
+			
+			if isinstance(menu['menu'][item],list):
+				_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
+			else:
+				_line = '%s: %s' % (item,menu['menu'][item])
+
+			console_print(menu['settings']['console'],
+				menu['settings']['padding'][0],
+				_y_offset,
+				_line)
+			_y_offset += 1
+
 def delete_menu(id):
 	if ACTIVE_MENU['menu'] == id:
 		ACTIVE_MENU['menu'] -= 1
