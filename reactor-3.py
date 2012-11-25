@@ -43,7 +43,7 @@ def handle_input():
 	if gfx.window_is_closed():
 		RUNNING = False
 	
-	if INPUT['\x1b']:
+	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
 			menus.delete_menu(ACTIVE_MENU['menu'])
 		else:
@@ -228,6 +228,9 @@ def inventory_drop(key,value):
 		if _name == key:
 			if life.item_is_equipped(PLAYER,item):
 				gfx.message('You take off the %s.' % _name)
+			
+			gfx.message('You drop the %s.' % _name)
+			
 			life.drop_item(PLAYER,item)
 			break
 		
