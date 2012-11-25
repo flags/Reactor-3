@@ -109,6 +109,27 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['d']:
+		if menus.get_menu_by_name('Drop')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Drop'))
+			return False
+		
+		_inventory = {}
+		for item in PLAYER['inventory']:
+			_name = life.get_inventory_item(PLAYER,item)['name']
+			if life.item_is_equipped(PLAYER,item):
+				_inventory[_name] = 'Equipped'
+			else:
+				_inventory[_name] = 'Not equipped'
+		
+		_i = menus.create_menu(title='Drop',
+			menu=_inventory,
+			padding=(1,1),
+			position=(1,1),
+			on_select=inventory_drop)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT[',']:
 		_items = items.get_items_at(PLAYER['pos'])
 		
@@ -166,6 +187,16 @@ def inventory_select(key,value):
 		dim=False)
 		
 	menus.activate_menu(_i)
+
+def inventory_drop(key,value):
+	for item in PLAYER['inventory']:
+		_name = life.get_inventory_item(PLAYER,item)['name']
+		if _name == key:
+			life.drop_item(PLAYER,item)
+			break
+		
+	#menus.activate_menu(_i)
+	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def _pick_up_item_from_ground(key,value):
 	life.pick_up_item_from_ground(PLAYER,key)

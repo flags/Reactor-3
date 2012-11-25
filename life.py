@@ -132,6 +132,15 @@ def attach_item_to_limb(body,item,limb):
 		
 		attach_item_to_limb(body[limb1]['attached'],item,limb)
 
+def remove_item_from_limb(body,item,limb):
+	for limb1 in body:
+		if limb1 == limb:
+			body[limb1]['holding'].remove(item)
+			print '%s removed from %s' % (item,limb)
+			return True
+		
+		remove_item_from_limb(body[limb1]['attached'],item,limb)
+
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
@@ -254,6 +263,19 @@ def add_item_to_inventory(life,item):
 	
 	return _id
 
+def remove_item_from_inventory(life,id):
+	item = get_inventory_item(life,id)
+	
+	print '%s puts on a %s' % (life['name'][0],item['name'])
+	
+	for limb in item['attaches_to']:
+		remove_item_from_limb(life['body'],item['id'],limb)
+	
+	del life['inventory'][str(item['id'])]
+	del item['id']
+	
+	return item
+
 def equip_item(life,id):
 	_limbs = get_all_limbs(life['body'])
 	item = get_inventory_item(life,id)
@@ -272,6 +294,10 @@ def equip_item(life,id):
 	life['speed_max'] = life['speed_max']-get_max_speed(life)
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
+
+def drop_item(life,id):
+	item = remove_item_from_inventory(life,id)
+	item['pos'] = life['pos'][:]	
 
 def pick_up_item_from_ground(life,item):
 	for _item in items.get_items_at(life['pos']):
