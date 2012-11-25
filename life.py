@@ -123,24 +123,6 @@ def get_all_limbs(body):
 	
 	return _limbs
 
-def attach_item_to_limb(body,item,limb):
-	for limb1 in body:
-		if limb1 == limb:
-			body[limb1]['holding'].append(item)
-			print '%s attached to %s' % (item,limb)
-			return True
-		
-		attach_item_to_limb(body[limb1]['attached'],item,limb)
-
-def remove_item_from_limb(body,item,limb):
-	for limb1 in body:
-		if limb1 == limb:
-			body[limb1]['holding'].remove(item)
-			print '%s removed from %s' % (item,limb)
-			return True
-		
-		remove_item_from_limb(body[limb1]['attached'],item,limb)
-
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
@@ -245,6 +227,24 @@ def perform_action(life):
 
 def tick(life):
 	perform_action(life)
+
+def attach_item_to_limb(body,item,limb):
+	for limb1 in body:
+		if limb1 == limb:
+			body[limb1]['holding'].append(item)
+			print '%s attached to %s' % (item,limb)
+			return True
+		
+		attach_item_to_limb(body[limb1]['attached'],item,limb)
+
+def remove_item_from_limb(body,item,limb):
+	for limb1 in body:
+		if limb1 == limb:
+			body[limb1]['holding'].remove(item)
+			print '%s removed from %s' % (item,limb)
+			return True
+		
+		remove_item_from_limb(body[limb1]['attached'],item,limb)
 
 def get_inventory_item(life,id):
 	if not life['inventory'].has_key(str(id)):
