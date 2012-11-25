@@ -240,9 +240,7 @@ def add_item_to_inventory(life,item):
 	life['inventory'][str(_id)] = item
 	life['item_index'] += 1
 	
-	#TODO: Move this to functions like pick_up_item
-	print '%s picked up a %s.' % (life['name'][0],item['name'])
-	gfx.message('%s picked up a %s.' % (life['name'][0],item['name']))
+	print '%s got \'%s\'.' % (life['name'][0],item['name'])
 	
 	return _id
 
@@ -270,7 +268,7 @@ def pick_up_item_from_ground(life,item):
 		if _item['name'] == item:
 			add_item_to_inventory(life,_item)
 			return True
-	
+		
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 

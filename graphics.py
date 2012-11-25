@@ -89,8 +89,10 @@ def draw_bottom_ui_terraform():
 def draw_bottom_ui():
 	console_print(MESSAGE_WINDOW,1,0,'Messages')
 	
+	_y_mod = 1
 	for msg in MESSAGE_LOG[len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES:]:
-		console_print(MESSAGE_WINDOW,1,MESSAGE_LOG.index(msg)+1,msg)
+		console_print(MESSAGE_WINDOW,1,_y_mod,msg)
+		_y_mod += 1
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
