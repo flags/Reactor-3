@@ -77,15 +77,39 @@ CONCRETE_TILE_2 = {'id':'concrete_2',
              'burnable':False,
              'cost':-1}
 
+CONCRETE_FLOOR_1 = {'id':'concrete_floor_1',
+             'icon':'.',
+             'color':(Color(115,115,115),Color(100,100,100)),
+             'burnable':False,
+             'cost':-1}
+
+CONCRETE_FLOOR_2 = {'id':'concrete_floor_2',
+             'icon':'.',
+             'color':(Color(125,125,125),Color(110,110,110)),
+             'burnable':False,
+             'cost':-1}
+
 ROAD_STRIPE_1 = {'id':'road_stripe_1',
              'icon':'.',
              'color':(yellow,yellow),
              'burnable':False,
              'cost':-1}
 
-ROAD_STRIPE_1 = {'id':'road_stripe_2',
+ROAD_STRIPE_2 = {'id':'road_stripe_2',
              'icon':'.',
              'color':(white,darker_gray),
+             'burnable':False,
+             'cost':-1}
+
+RED_BRICK_1 = {'id':'red_brick_1',
+             'icon':'#',
+             'color':(gray,dark_red),
+             'burnable':False,
+             'cost':-1}
+
+RED_BRICK_2 = {'id':'red_brick_2',
+             'icon':'#',
+             'color':(light_gray,dark_red),
              'burnable':False,
              'cost':-1}
 
@@ -93,7 +117,10 @@ ROAD_STRIPE_1 = {'id':'road_stripe_2',
 TILES = [BLANK_TILE,
 		DIRT_TILE,
 		WALL_TILE,
-		ROAD_STRIPE_1]
+		ROAD_STRIPE_1,
+		ROAD_STRIPE_2,
+		RED_BRICK_1,
+		RED_BRICK_2]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,
@@ -109,11 +136,18 @@ SAND_TILES = [SAND_TILE_1,
 CONCRETE_TILES = [CONCRETE_TILE_1,
 			CONCRETE_TILE_2]
 
+CONCRETE_FLOOR_TILES = [CONCRETE_FLOOR_1,
+			CONCRETE_FLOOR_2]
+
+RED_BRICK_TILES = [RED_BRICK_1,
+			RED_BRICK_2]
+
 TILES.extend(GRASS_TILES)
 TILES.extend(DIRT_TILES)
 TILES.extend(SAND_TILES)
 TILES.extend(CONCRETE_TILES)
-
+TILES.extend(CONCRETE_FLOOR_TILES)
+TILES.extend(RED_BRICK_TILES)
 
 def create_tile(tile):
 	_ret_tile = {}

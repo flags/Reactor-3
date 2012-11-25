@@ -135,8 +135,8 @@ def handle_input():
 		
 		PLACING_TILE = TILES[_current_index]
 	
-	if INPUT['f']:
-		SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
+	#if INPUT['f']:
+	#	SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
 
 	if INPUT['c']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
@@ -148,6 +148,14 @@ def handle_input():
 	if INPUT['a']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(SAND_TILES))
+	
+	if INPUT['b']:
+		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+				create_tile(random.choice(RED_BRICK_TILES))
+
+	if INPUT['g']:
+		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
 	if INPUT['s']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \

@@ -93,6 +93,11 @@ def draw_bottom_ui():
 	for msg in MESSAGE_LOG[len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES:]:
 		console_print(MESSAGE_WINDOW,1,_y_mod,msg)
 		_y_mod += 1
+	
+	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))
+	console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
+	console_set_default_foreground(MESSAGE_WINDOW,white)
+	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
@@ -137,10 +142,6 @@ def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	#TODO: Only when Terraform is running
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
-	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
-	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))
-	console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
-	console_set_default_foreground(MESSAGE_WINDOW,white)
 	
 	for menu in MENUS:
 		console_blit(menu['settings']['console'],0,0,
