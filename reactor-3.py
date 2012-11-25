@@ -109,6 +109,29 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['e']:
+		if menus.get_menu_by_name('Equip')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Equip'))
+			return False
+		
+		_inventory = {}
+		for item in PLAYER['inventory']:
+			_name = life.get_inventory_item(PLAYER,item)['name']
+			if not life.item_is_equipped(PLAYER,item):
+				_inventory[_name] = 'Not equipped'
+		
+		if not _inventory:
+			gfx.message('You have no items to equip.')
+			return False
+		
+		_i = menus.create_menu(title='Equip',
+			menu=_inventory,
+			padding=(1,1),
+			position=(1,1),
+			on_select=inventory_equip)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['d']:
 		if menus.get_menu_by_name('Drop')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
@@ -188,10 +211,23 @@ def inventory_select(key,value):
 		
 	menus.activate_menu(_i)
 
+def inventory_equip(key,value):
+	for item in PLAYER['inventory']:
+		_name = life.get_inventory_item(PLAYER,item)['name']
+		if _name == key:
+			gfx.message('You take off the %s.' % _name)
+			life.equip_item(PLAYER,item)
+			break
+		
+	#menus.activate_menu(_i)
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
 def inventory_drop(key,value):
 	for item in PLAYER['inventory']:
 		_name = life.get_inventory_item(PLAYER,item)['name']
 		if _name == key:
+			if life.item_is_equipped(PLAYER,item):
+				gfx.message('You take off the %s.' % _name)
 			life.drop_item(PLAYER,item)
 			break
 		

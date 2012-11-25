@@ -266,7 +266,8 @@ def add_item_to_inventory(life,item):
 def remove_item_from_inventory(life,id):
 	item = get_inventory_item(life,id)
 	
-	print '%s puts on a %s' % (life['name'][0],item['name'])
+	if item_is_equipped(life,id):
+		print '%s takes off a %s' % (life['name'][0],item['name'])
 	
 	for limb in item['attaches_to']:
 		remove_item_from_limb(life['body'],item['id'],limb)
@@ -308,9 +309,9 @@ def pick_up_item_from_ground(life,item):
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
-def item_is_equipped(life,item):
+def item_is_equipped(life,id):
 	for _limb in get_all_limbs(life['body']):
-		if int(item) in get_limb(life['body'],_limb)['holding']:
+		if int(id) in get_limb(life['body'],_limb)['holding']:
 			return True
 	
 	return False
