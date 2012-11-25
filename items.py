@@ -35,6 +35,18 @@ def create_item(name,position=[0,0,0]):
 	
 	return item
 
+def get_items_at(position):
+	_items = []
+	
+	for item in ITEMS:
+		if item.has_key('id'):
+			continue
+		
+		if item['pos'] == position:
+			_items.append(item)
+	
+	return _items
+
 def draw_items():
 	for item in ITEMS:
 		if item.has_key('id'):

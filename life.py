@@ -2,6 +2,7 @@ from globals import *
 import graphics as gfx
 import pathfinding
 import logging
+import items
 import copy
 import time
 import json
@@ -263,6 +264,15 @@ def equip_item(life,id):
 	life['speed_max'] = life['speed_max']-get_max_speed(life)
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
+
+def pick_up_item_from_ground(life,item):
+	for _item in items.get_items_at(life['pos']):
+		if _item['name'] == item:
+			add_item_to_inventory(life,_item)
+			return True
+	
+	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
+		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
 def item_is_equipped(life,item):
 	for _limb in get_all_limbs(life['body']):

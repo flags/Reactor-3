@@ -109,6 +109,14 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT[',']:
+		_items = items.get_items_at(PLAYER['pos'])
+		
+		if not _items:
+			return False
+		
+		create_pick_up_item_menu(_items)
+	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
 			return False
@@ -159,6 +167,30 @@ def inventory_select(key,value):
 		
 	menus.activate_menu(_i)
 
+def _pick_up_item_from_ground(key,value):
+	life.pick_up_item_from_ground(PLAYER,key)
+	gfx.message('You pick up a %s.' % key)
+	
+	_items = items.get_items_at(PLAYER['pos'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	
+	if _items:
+		create_pick_up_item_menu(_items)
+		return True
+
+def create_pick_up_item_menu(items):
+	_menu = {}
+	for item in items:
+		_menu[item['name']] = 1
+	
+	_i = menus.create_menu(title='Items',
+		menu=_menu,
+		padding=(1,1),
+		position=(1,1),
+		on_select=_pick_up_item_from_ground)
+	
+	menus.activate_menu(_i)
+
 def return_to_inventory(key,value):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
@@ -176,6 +208,7 @@ items.initiate_item('sneakers')
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
 _i3 = items.create_item('sneakers',position=(10,10,2))
+_i3 = items.create_item('white t-shirt',position=(10,10,2))
 
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
