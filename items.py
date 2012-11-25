@@ -23,12 +23,18 @@ def initiate_item(name):
 	if 'attaches_to' in item:
 		item['attaches_to'] = item['attaches_to'].split('|')
 	
+	#Unicode isn't handled all that well on Windows for some reason...
+	for key in item:
+		if isinstance(item[key],unicode):
+			item[key] = str(item[key])
+	
 	ITEM_TYPES[item['name']] = item
 	
 	return item
 
 def create_item(name,position=[0,0,0]):
 	item = ITEM_TYPES[name].copy()
+	
 	item['pos'] = list(position)
 	
 	ITEMS.append(item)

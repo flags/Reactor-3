@@ -66,23 +66,33 @@ def initiate_life(name):
 	if name in LIFE_TYPES:
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
 	
-	_life = load_life(name)
+	life = load_life(name)
 	
-	if not 'icon' in _life:
+	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
 		_life['tile'] = DEFAULT_LIFE_ICON
 	
-	if not 'flags' in _life:
+	if not 'flags' in life:
 		logging.error('No flags set for life type \'%s\'. Errors may occur.' % name)
 	
-	_life.update(calculate_base_stats(_life))
+	for key in life:
+		if isinstance(life[key],unicode):
+			life[key] = str(life[key])
 	
-	LIFE_TYPES[name] = _life
+	life.update(calculate_base_stats(life))
 	
-	return _life
+	LIFE_TYPES[name] = life
+	
+	return life
 
 def initiate_limbs(body):
 	for limb in body:
+		#Unicode fix:
+		_val = body[limb].copy()
+		del body[limb]
+		body[str(limb)] = _val
+		body[limb] = body[str(limb)]
+		
 		#If canhold or canstore
 		body[limb]['storing'] = []
 		body[limb]['holding'] = []
