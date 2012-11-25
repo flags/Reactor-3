@@ -25,6 +25,10 @@ def initiate_item(name):
 	
 	#Unicode isn't handled all that well on Windows for some reason...
 	for key in item:
+		_value = item[key]
+		del item[key]
+		item[str(key)] = _value
+		
 		if isinstance(item[key],unicode):
 			item[key] = str(item[key])
 	
