@@ -108,7 +108,7 @@ def render_map(map):
 		for y in range(CAMERA_POS[1],_Y_MAX):
 			_RENDER_Y = y-CAMERA_POS[1]
 			_drawn = False
-			for z in range(MAP_SIZE[2]):
+			for z in range(MAP_SIZE[2]-1,0,-1):
 				if map[x][y][z]:
 					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above']:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
@@ -127,6 +127,8 @@ def render_map(map):
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 							gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 							_drawn = True
+					
+					break
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
