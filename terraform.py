@@ -31,6 +31,7 @@ except IOError:
 	maps.save_map(MAP)
 
 gfx.init_libtcod()
+sys_set_fps(FPS_TERRAFORM)
 
 PLACING_TILE = WALL_TILE
 
@@ -275,6 +276,7 @@ while RUNNING:
 	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))
 	menus.draw_menus()
 	gfx.draw_console()
+	gfx.end_of_frame_terraform()
 	gfx.end_of_frame()
 
 maps.save_map(MAP)
