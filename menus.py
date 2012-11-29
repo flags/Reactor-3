@@ -1,8 +1,7 @@
 from globals import *
 
 def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
-	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim},
-		'format': format_str,
+	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
 		'values':{}}
@@ -17,12 +16,12 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	for entry in _menu['menu']:
 		if entry['type'] == 'list':
 			for value in entry['values']:
-				_line = format_entry(_menu['format'],entry['key'],value)
+				_line = format_entry(_menu['settings']['format'],entry['key'],value)
 				
 				if len(_line) > _size[0]:
 					_size[0] = len(_line)
 		else:
-			_line = format_entry(_menu['format'],entry['key'],entry['values'])
+			_line = format_entry(_menu['settings']['format'],entry['key'],entry['values'])
 			
 			if len(_line) > _size[0]:
 				_size[0] = len(_line)
@@ -38,7 +37,8 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 def create_item(item_type,key,values):
 	_item = {'type': item_type,
 		'key': key,
-		'values': values}
+		'values': values,
+		'value': 0}
 	
 	return _item
 
@@ -57,21 +57,36 @@ def draw_menus():
 		
 		_y_offset += 2
 		for item in menu['menu']:
-			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
+			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index']:
+				#TODO: Colors
 				console_set_default_foreground(menu['settings']['console'],white)
 			elif menu['settings']['dim']:
 				console_set_default_foreground(menu['settings']['console'],dark_grey)
 			
-			if isinstance(menu['menu'][item],list):
-				_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
-			else:
-				_line = '%s: %s' % (item,menu['menu'][item])
-
+			_line = format_entry(menu['settings']['format'],item['key'],item['values'])
+			
 			console_print(menu['settings']['console'],
 				menu['settings']['padding'][0],
 				_y_offset,
 				_line)
 			_y_offset += 1
+				
+		#for item in menu['menu']:
+		#if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
+			#console_set_default_foreground(menu['settings']['console'],white)
+		#elif menu['settings']['dim']:
+			#console_set_default_foreground(menu['settings']['console'],dark_grey)
+		
+		#if isinstance(menu['menu'][item],list):
+			#_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
+		#else:
+			#_line = '%s: %s' % (item,menu['menu'][item])
+
+		#console_print(menu['settings']['console'],
+			#menu['settings']['padding'][0],
+			#_y_offset,
+			#_line)
+		#_y_offset += 1
 
 def align_menus():
 	for menu in MENUS:
