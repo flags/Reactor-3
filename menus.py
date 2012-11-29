@@ -1,27 +1,31 @@
 from globals import *
 
-def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim},
+		'format': format_str,
 		'on_select': on_select,
 		'on_change': on_change,
 		'values':{}}
-	_menu['menu'] = menu
+		
+	#TODO: Does this need to be copied?
+	_menu['menu'] = menu[:]
 	_size = [0,len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
 	
-	for key in _menu['menu']:
-		if isinstance(_menu['menu'][key],list):
-			for i in range(len(_menu['menu'][key])):
-				_entry = '%s: %s' % (key,_menu['menu'][key][0])
+	#menuitem
+	#type: single, list
+	
+	for entry in _menu['menu']:
+		if entry['type'] == 'list':
+			for value in entry['values']:
+				_line = format_entry(_menu['format'],entry['key'],value)
 				
-				if len(_entry) > _size[0]:
-					_size[0] = len(_entry)
-			
-			_menu['values'][key] = 0
+				if len(_line) > _size[0]:
+					_size[0] = len(_line)
 		else:
-			_entry = '%s: %s' % (key,_menu['menu'][key])
-		
-			if len(_entry) > _size[0]:
-				_size[0] = len(_entry)
+			_line = format_entry(_menu['format'],entry['key'],entry['values'])
+			
+			if len(_line) > _size[0]:
+				_size[0] = len(_line)
 	
 	_menu['settings']['size'] = (_size[0]+(_menu['settings']['padding'][0]*2),
 		_size[1])
@@ -30,6 +34,16 @@ def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_
 	MENUS.append(_menu)
 	
 	return MENUS.index(_menu)
+
+def create_item(item_type,key,values):
+	_item = {'type': item_type,
+		'key': key,
+		'values': values}
+	
+	return _item
+
+def format_entry(format_str,key,value):
+	return format_str.replace('$k', key).replace('$v', value)
 
 def draw_menus():
 	for menu in MENUS:

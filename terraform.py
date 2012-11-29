@@ -215,37 +215,40 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
+_menu_items = []
+_menu_items.append(menus.create_item('single','^','Move selected up'))
+_menu_items.append(menus.create_item('single','v','Move selected down'))
+_menu_items.append(menus.create_item('single','Del','Delete all'))
+
 menus.create_menu(title='Tile Operations',
-	menu={'A': 'Moved selected up',
-	'B': 'Moved selected down',
-	'C': 'Delete All'},
+	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
 
-menus.create_menu(title='Map Utils',
-	menu={'Width': MAP_SIZE[0],
-	'Height': MAP_SIZE[1],
-	'Depth': MAP_SIZE[2]},
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected)
+#menus.create_menu(title='Map Utils',
+	#menu={'Width': MAP_SIZE[0],
+	#'Height': MAP_SIZE[1],
+	#'Depth': MAP_SIZE[2]},
+	#padding=(1,1),
+	#position=(MAP_WINDOW_SIZE[0],0),
+	#on_select=menu_item_selected)
 
-menus.create_menu(title='View',
-	menu={'Blit z-level below': ['Off','On'],
-		'Draw lights': ['On','Off']},
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected,
-	on_change=options_menu_item_changed)
+#menus.create_menu(title='View',
+	#menu={'Blit z-level below': ['Off','On'],
+		#'Draw lights': ['On','Off']},
+	#padding=(1,1),
+	#position=(MAP_WINDOW_SIZE[0],0),
+	#on_select=menu_item_selected,
+	#on_change=options_menu_item_changed)
 
-menus.create_menu(title='General',
-	menu={'S': 'Save',
-	'L': 'Load',
-	'E': 'Exit'},
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected)
+#menus.create_menu(title='General',
+	#menu={'S': 'Save',
+	#'L': 'Load',
+	#'E': 'Exit'},
+	#padding=(1,1),
+	#position=(MAP_WINDOW_SIZE[0],0),
+	#on_select=menu_item_selected)
 
 #MAP = maputils.resize_map(MAP,(500,500,5))
 #print MAP_SIZE
