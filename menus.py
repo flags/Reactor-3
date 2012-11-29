@@ -69,6 +69,7 @@ def draw_menus():
 				menu['settings']['padding'][0],
 				_y_offset,
 				_line)
+			
 			_y_offset += 1
 				
 		#for item in menu['menu']:
