@@ -300,8 +300,8 @@ while RUNNING:
 		maps.render_map(MAP)
 	
 	maps.render_lights()
-	move_camera()
 	items.draw_items()
+	move_camera()
 	life.draw_life()
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()
