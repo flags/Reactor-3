@@ -1,5 +1,5 @@
 {"name": "white t-shirt",
-"type": "shirt",
+"type": "clothing",
 "icon": "T",
 "description": "A plain, white t-shirt.",
 "attaches_to": "lshoulder|rshoulder|chest|stomach",

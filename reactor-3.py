@@ -300,14 +300,15 @@ while RUNNING:
 		maps.render_map(MAP)
 	
 	maps.render_lights()
-	move_camera()
 	items.draw_items()
+	move_camera()
 	life.draw_life()
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
 	gfx.draw_bottom_ui()
 	gfx.draw_console()
+	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 
 maps.save_map(MAP)
