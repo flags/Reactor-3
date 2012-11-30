@@ -187,7 +187,7 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
-def menu_item_selected(value):
+def menu_item_selected(key,value):
 	if value == 'Save':
 		maps.save_map(MAP)
 
@@ -234,13 +234,16 @@ menus.create_menu(title='Tile Operations',
 	#position=(MAP_WINDOW_SIZE[0],0),
 	#on_select=menu_item_selected)
 
-#menus.create_menu(title='View',
-	#menu={'Blit z-level below': ['Off','On'],
-		#'Draw lights': ['On','Off']},
-	#padding=(1,1),
-	#position=(MAP_WINDOW_SIZE[0],0),
-	#on_select=menu_item_selected,
-	#on_change=options_menu_item_changed)
+_menu_items = []
+_menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
+_menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
+
+menus.create_menu(title='View',
+	menu=_menu_items,
+	padding=(1,1),
+	position=(MAP_WINDOW_SIZE[0],0),
+	on_select=menu_item_selected,
+	on_change=options_menu_item_changed)
 
 #menus.create_menu(title='General',
 	#menu={'S': 'Save',
