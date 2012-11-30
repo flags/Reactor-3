@@ -47,7 +47,7 @@ def create_item(item_type,key,values):
 	return _item
 
 def format_entry(format_str,entry):
-	return format_str.replace('$k', entry['key']).replace('$v', entry['values'][entry['value']])
+	return format_str.replace('$k', entry['key']).replace('$v', str(entry['values'][entry['value']]))
 
 def draw_menus():
 	for menu in MENUS:
