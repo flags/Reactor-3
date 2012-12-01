@@ -308,6 +308,7 @@ while RUNNING:
 	menus.draw_menus()
 	gfx.draw_bottom_ui()
 	gfx.draw_console()
+	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 
 maps.save_map(MAP)

@@ -1,27 +1,31 @@
 from globals import *
 
-def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
-	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim},
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
+	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
 		'values':{}}
-	_menu['menu'] = menu
+		
+	#TODO: Does this need to be copied?
+	_menu['menu'] = menu[:]
 	_size = [0,len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
 	
-	for key in _menu['menu']:
-		if isinstance(_menu['menu'][key],list):
-			for i in range(len(_menu['menu'][key])):
-				_entry = '%s: %s' % (key,_menu['menu'][key][0])
-				
-				if len(_entry) > _size[0]:
-					_size[0] = len(_entry)
+	#menuitem
+	#type: single, list
+	
+	for entry in _menu['menu']:
+		#if entry['type'] == 'list':
+		for value in entry['values']:
+			_line = format_entry(_menu['settings']['format'],entry)
 			
-			_menu['values'][key] = 0
-		else:
-			_entry = '%s: %s' % (key,_menu['menu'][key])
-		
-			if len(_entry) > _size[0]:
-				_size[0] = len(_entry)
+			if len(_line) > _size[0]:
+				_size[0] = len(_line)
+		#else:
+		#	print 'Single'
+		#	_line = format_entry(_menu['settings']['format'],entry)
+		#	
+		#	if len(_line) > _size[0]:
+		#		_size[0] = len(_line)
 	
 	_menu['settings']['size'] = (_size[0]+(_menu['settings']['padding'][0]*2),
 		_size[1])
@@ -30,6 +34,20 @@ def create_menu(menu={},position=[0,0],title='Untitled',padding=MENU_PADDING,on_
 	MENUS.append(_menu)
 	
 	return MENUS.index(_menu)
+
+def create_item(item_type,key,values):
+	if not isinstance(values,list):
+		values = [values]
+	
+	_item = {'type': item_type,
+		'key': key,
+		'values': values,
+		'value': 0}
+	
+	return _item
+
+def format_entry(format_str,entry):
+	return format_str.replace('$k', entry['key']).replace('$v', str(entry['values'][entry['value']]))
 
 def draw_menus():
 	for menu in MENUS:
@@ -43,20 +61,19 @@ def draw_menus():
 		
 		_y_offset += 2
 		for item in menu['menu']:
-			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].keys().index(item) == ACTIVE_MENU['index']:
+			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index']:
+				#TODO: Colors
 				console_set_default_foreground(menu['settings']['console'],white)
 			elif menu['settings']['dim']:
 				console_set_default_foreground(menu['settings']['console'],dark_grey)
 			
-			if isinstance(menu['menu'][item],list):
-				_line = '%s: %s' % (item,menu['menu'][item][menu['values'][item]])
-			else:
-				_line = '%s: %s' % (item,menu['menu'][item])
-
+			_line = format_entry(menu['settings']['format'],item)
+			
 			console_print(menu['settings']['console'],
 				menu['settings']['padding'][0],
 				_y_offset,
 				_line)
+			
 			_y_offset += 1
 
 def align_menus():
@@ -95,43 +112,18 @@ def activate_menu_by_name(name):
 	ACTIVE_MENU['index'] = 0
 
 def previous_item(menu,index):
-	_key = menu['menu'].keys()[index]
-	
-	if _key in menu['values'].keys():
-		_key_index = menu['values'].keys().index(_key)
-		
-		if menu['values'][menu['values'].keys()[_key_index]]:
-			key = menu['menu'].keys()[index]
-			menu['values'][menu['values'].keys()[_key_index]] -= 1
-			if menu['on_change']:
-				menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
-			return True
-	
-	return False
+	if menu['menu'][index]['value']:
+		menu['menu'][index]['value']-=1
 
 def next_item(menu,index):
-	_key = menu['menu'].keys()[index]
-	
-	if _key in menu['values'].keys():
-		_key_index = menu['values'].keys().index(_key)
-		
-		if menu['values'][menu['values'].keys()[_key_index]] < len(menu['values'].keys()):
-			key = menu['menu'].keys()[index]
-			menu['values'][menu['values'].keys()[_key_index]] += 1
-			if menu['on_change']:
-				menu['on_change'](_key,menu['menu'].values()[index][menu['values'][key]])
-			return True
-	
-	return False
+	if menu['menu'][index]['value']<len(menu['menu'][index]['values'])-1:
+		menu['menu'][index]['value']+=1
 
 def get_selected_item(menu,index):
-	return (menu['menu'].keys()[index],menu['menu'].values()[index])
+	_entry = menu['menu'][index]
+	return (_entry['key'],_entry['values'][_entry['value']])
 
 def item_selected(menu,index):
-	menu = get_menu(menu)
+	_selected = get_selected_item(menu,index)
 	
-	if isinstance(menu['menu'].values()[index],list):
-		key = menu['menu'].keys()[index]
-		return menu['on_select'](key,menu['menu'].values()[index][menu['values'][key]])
-	
-	return menu['on_select'](menu['menu'].keys()[index],menu['menu'].values()[index])
+	return menu['on_select'](_selected[0],_selected[1])

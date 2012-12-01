@@ -187,7 +187,7 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
-def menu_item_selected(value):
+def menu_item_selected(key,value):
 	if value == 'Save':
 		maps.save_map(MAP)
 
@@ -215,40 +215,51 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
+_menu_items = []
+_menu_items.append(menus.create_item('single','^','Move selected up'))
+_menu_items.append(menus.create_item('single','v','Move selected down'))
+_menu_items.append(menus.create_item('single','Del','Delete all'))
+
 menus.create_menu(title='Tile Operations',
-	menu={'A': 'Moved selected up',
-	'B': 'Moved selected down',
-	'C': 'Delete All'},
+	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
+
+_menu_items = []
+_menu_items.append(menus.create_item('single','Width',MAP_SIZE[0]))
+_menu_items.append(menus.create_item('single','Height',MAP_SIZE[1]))
+_menu_items.append(menus.create_item('single','Depth',MAP_SIZE[2]))
 
 menus.create_menu(title='Map Utils',
-	menu={'Width': MAP_SIZE[0],
-	'Height': MAP_SIZE[1],
-	'Depth': MAP_SIZE[2]},
+	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
 
+_menu_items = []
+_menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
+_menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
+
 menus.create_menu(title='View',
-	menu={'Blit z-level below': ['Off','On'],
-		'Draw lights': ['On','Off']},
+	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected,
 	on_change=options_menu_item_changed)
 
+_menu_items = []
+_menu_items.append(menus.create_item('list','S','Save'))
+_menu_items.append(menus.create_item('list','L','Load'))
+_menu_items.append(menus.create_item('list','E','Exit'))
+
 menus.create_menu(title='General',
-	menu={'S': 'Save',
-	'L': 'Load',
-	'E': 'Exit'},
+	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected)
 
 #MAP = maputils.resize_map(MAP,(500,500,5))
-#print MAP_SIZE
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
