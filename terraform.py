@@ -217,7 +217,7 @@ def menu_align():
 
 _menu_items = []
 _menu_items.append(menus.create_item('single','^','Move selected up'))
-_menu_items.append(menus.create_item('single','v','Move selected down'))
+_menu_items.append(menus.create_item('single','v','Move selected down', enabled=False))
 _menu_items.append(menus.create_item('single','Del','Delete all'))
 
 menus.create_menu(title='Tile Operations',

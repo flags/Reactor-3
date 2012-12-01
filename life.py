@@ -34,7 +34,8 @@ def calculate_base_stats(life):
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 	
-	stats['speed_max'] = LIFE_MAX_SPEED-(len(stats['legs']))
+	stats['base_speed'] = LIFE_MAX_SPEED-(len(stats['legs']))
+	stats['speed_max'] = stats['base_speed']
 	
 	return stats
 
@@ -60,7 +61,7 @@ def get_max_speed(life):
 		_leg = get_limb(life['body'],leg)
 		_speed_mod += _get_max_speed(life,_leg)
 	
-	return _speed_mod
+	return LIFE_MAX_SPEED-_speed_mod
 
 def initiate_life(name):
 	if name in LIFE_TYPES:
@@ -163,7 +164,7 @@ def walk(life,to):
 	if life['speed']:
 		life['speed'] -= 1
 		return False
-	else:
+	elif life['speed']<=0:
 		life['speed'] = life['speed_max']
 	
 	_dest = path_dest(life)
@@ -272,6 +273,8 @@ def remove_item_from_inventory(life,id):
 	for limb in item['attaches_to']:
 		remove_item_from_limb(life['body'],item['id'],limb)
 	
+	life['speed_max'] = get_max_speed(life)
+	
 	del life['inventory'][str(item['id'])]
 	del item['id']
 	
@@ -292,7 +295,8 @@ def equip_item(life,id):
 	for limb in item['attaches_to']:
 		attach_item_to_limb(life['body'],item['id'],limb)
 	
-	life['speed_max'] = life['speed_max']-get_max_speed(life)
+	life['speed_max'] = get_max_speed(life)
+	
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
 

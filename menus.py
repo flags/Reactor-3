@@ -14,18 +14,11 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	#type: single, list
 	
 	for entry in _menu['menu']:
-		#if entry['type'] == 'list':
 		for value in entry['values']:
 			_line = format_entry(_menu['settings']['format'],entry)
 			
 			if len(_line) > _size[0]:
 				_size[0] = len(_line)
-		#else:
-		#	print 'Single'
-		#	_line = format_entry(_menu['settings']['format'],entry)
-		#	
-		#	if len(_line) > _size[0]:
-		#		_size[0] = len(_line)
 	
 	_menu['settings']['size'] = (_size[0]+(_menu['settings']['padding'][0]*2),
 		_size[1])
@@ -35,19 +28,20 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
-def create_item(item_type,key,values):
+def create_item(item_type,key,values,enabled=True):
 	if not isinstance(values,list):
 		values = [values]
 	
 	_item = {'type': item_type,
 		'key': key,
+		'enabled': enabled,
 		'values': values,
 		'value': 0}
 	
 	return _item
 
 def format_entry(format_str,entry):
-	return format_str.replace('$k', entry['key']).replace('$v', str(entry['values'][entry['value']]))
+	return format_str.replace('$k', str(entry['key'])).replace('$v', str(entry['values'][entry['value']]))
 
 def draw_menus():
 	for menu in MENUS:
@@ -61,9 +55,11 @@ def draw_menus():
 		
 		_y_offset += 2
 		for item in menu['menu']:
-			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index']:
+			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index'] and item['enabled']:
 				#TODO: Colors
 				console_set_default_foreground(menu['settings']['console'],white)
+			elif not item['enabled']:
+				console_set_default_foreground(menu['settings']['console'],darker_grey)
 			elif menu['settings']['dim']:
 				console_set_default_foreground(menu['settings']['console'],dark_grey)
 			
@@ -120,10 +116,13 @@ def next_item(menu,index):
 		menu['menu'][index]['value']+=1
 
 def get_selected_item(menu,index):
+	menu = get_menu(menu)
 	_entry = menu['menu'][index]
+	
 	return (_entry['key'],_entry['values'][_entry['value']])
 
 def item_selected(menu,index):
 	_selected = get_selected_item(menu,index)
+	menu = get_menu(menu)
 	
 	return menu['on_select'](_selected[0],_selected[1])

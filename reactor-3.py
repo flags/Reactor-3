@@ -114,11 +114,12 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = {}
+		_inventory = []
 		for item in PLAYER['inventory']:
 			_name = life.get_inventory_item(PLAYER,item)['name']
+			
 			if not life.item_is_equipped(PLAYER,item):
-				_inventory[_name] = 'Not equipped'
+				_inventory.append(menus.create_item('single',_name,'Not equipped'))
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
@@ -137,13 +138,16 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
 			return False
 		
-		_inventory = {}
+		_inventory = []
 		for item in PLAYER['inventory']:
 			_name = life.get_inventory_item(PLAYER,item)['name']
+			
 			if life.item_is_equipped(PLAYER,item):
-				_inventory[_name] = 'Equipped'
+				_item = menus.create_item('single',_name,'Equipped')
 			else:
-				_inventory[_name] = 'Not equipped'
+				_item = menus.create_item('single',_name,'Not equipped')
+			
+			_inventory.append(_item)
 		
 		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
@@ -215,11 +219,10 @@ def inventory_equip(key,value):
 	for item in PLAYER['inventory']:
 		_name = life.get_inventory_item(PLAYER,item)['name']
 		if _name == key:
-			gfx.message('You take off the %s.' % _name)
+			gfx.message('You put on the %s.' % _name)
 			life.equip_item(PLAYER,item)
 			break
-		
-	#menus.activate_menu(_i)
+	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_drop(key,value):
@@ -238,8 +241,8 @@ def inventory_drop(key,value):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def _pick_up_item_from_ground(key,value):
-	life.pick_up_item_from_ground(PLAYER,key)
-	gfx.message('You pick up a %s.' % key)
+	life.pick_up_item_from_ground(PLAYER,value)
+	gfx.message('You pick up a %s.' % value)
 	
 	_items = items.get_items_at(PLAYER['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -249,12 +252,13 @@ def _pick_up_item_from_ground(key,value):
 		return True
 
 def create_pick_up_item_menu(items):
-	_menu = {}
+	_menu_items = []
+	
 	for item in items:
-		_menu[item['name']] = 1
+		_menu_items.append(menus.create_item('single',0,item['name']))
 	
 	_i = menus.create_menu(title='Items',
-		menu=_menu,
+		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
 		on_select=_pick_up_item_from_ground)
@@ -280,16 +284,19 @@ _i2 = items.create_item('sneakers')
 _i3 = items.create_item('sneakers',position=(10,10,2))
 _i3 = items.create_item('white t-shirt',position=(10,10,2))
 
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
+#life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
+#life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
 
 while RUNNING:
 	get_input()
 	handle_input()
+	_played_moved = False
 
 	while life.get_highest_action(PLAYER):
 		life.tick_all_life()
-	else:
+		_played_moved = True
+	
+	if not _played_moved:
 		life.tick_all_life()
 	
 	gfx.start_of_frame()

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from globals import *
 import numpy
+import time
 import sys
 
 class astar:
