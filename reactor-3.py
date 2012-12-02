@@ -148,9 +148,16 @@ def handle_input():
 			item = life.get_inventory_item(PLAYER,entry)
 			
 			if life.item_is_equipped(PLAYER,entry):
-				_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
+				_menu_item = menus.create_item('single',item['name'],
+					'Equipped',
+					icon=item['icon'],
+					id=item['id'])
 			else:
-				_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
+				_menu_item = menus.create_item('single',
+					item['name'],
+					'Not equipped',
+					id=item['id'],
+					icon=item['icon'])
 			
 			_inventory.append(_menu_item)
 		
@@ -211,7 +218,9 @@ def move_camera():
 	elif PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
 		CAMERA_POS[0] -= 1
 
-def inventory_select(key,value):
+def inventory_select(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
 	_menu_items = []
 	
 	for _key in ITEM_TYPES[key]:
@@ -226,7 +235,10 @@ def inventory_select(key,value):
 		
 	menus.activate_menu(_i)
 
-def inventory_equip(key,value):
+def inventory_equip(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
 	for item in PLAYER['inventory']:
 		_name = life.get_inventory_item(PLAYER,item)['name']
 		if _name == key:
@@ -236,22 +248,28 @@ def inventory_equip(key,value):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def inventory_drop(key,value):
-	for item in PLAYER['inventory']:
-		_name = life.get_inventory_item(PLAYER,item)['name']
-		if _name == key:
-			if life.item_is_equipped(PLAYER,item):
-				gfx.message('You take off the %s.' % _name)
+def inventory_drop(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = entry['id']
+	
+	#for item in PLAYER['inventory']:
+	#	_name = life.get_inventory_item(PLAYER,item)['name']
+	#	if _name == key:
+	_name = life.get_inventory_item(PLAYER,item)['name']
+	
+	if life.item_is_equipped(PLAYER,item):
+		gfx.message('You take off the %s.' % _name)
 			
-			gfx.message('You drop the %s.' % _name)
-			
-			life.drop_item(PLAYER,item)
-			break
-		
-	#menus.activate_menu(_i)
+	gfx.message('You drop the %s.' % _name)
+	life.drop_item(PLAYER,item)
+	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def _pick_up_item_from_ground(key,value):
+def _pick_up_item_from_ground(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
 	life.pick_up_item_from_ground(PLAYER,value)
 	gfx.message('You pick up a %s.' % value)
 	
@@ -277,7 +295,7 @@ def create_pick_up_item_menu(items):
 	
 	menus.activate_menu(_i)
 
-def return_to_inventory(key,value):
+def return_to_inventory(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
 

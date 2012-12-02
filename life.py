@@ -270,8 +270,8 @@ def remove_item_from_inventory(life,id):
 	if item_is_equipped(life,id):
 		print '%s takes off a %s' % (life['name'][0],item['name'])
 	
-	for limb in item['attaches_to']:
-		remove_item_from_limb(life['body'],item['id'],limb)
+		for limb in item['attaches_to']:
+			remove_item_from_limb(life['body'],item['id'],limb)
 	
 	life['speed_max'] = get_max_speed(life)
 	

@@ -28,7 +28,7 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
-def create_item(item_type,key,values,icon=' ',enabled=True):
+def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	if not isinstance(values,list):
 		values = [values]
 	
@@ -38,6 +38,7 @@ def create_item(item_type,key,values,icon=' ',enabled=True):
 		'icon': icon,
 		'values': values,
 		'value': 0}
+	_item.update(kwargs)
 	
 	return _item
 
@@ -123,10 +124,10 @@ def get_selected_item(menu,index):
 	menu = get_menu(menu)
 	_entry = menu['menu'][index]
 	
-	return (_entry['key'],_entry['values'][_entry['value']])
+	return _entry
 
 def item_selected(menu,index):
-	_selected = get_selected_item(menu,index)
+	_entry = get_selected_item(menu,index)
 	menu = get_menu(menu)
 	
-	return menu['on_select'](_selected[0],_selected[1])
+	return menu['on_select'](_entry)
