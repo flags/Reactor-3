@@ -28,20 +28,23 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
-def create_item(item_type,key,values,enabled=True):
+def create_item(item_type,key,values,icon=' ',enabled=True):
 	if not isinstance(values,list):
 		values = [values]
 	
 	_item = {'type': item_type,
 		'key': key,
 		'enabled': enabled,
+		'icon': icon,
 		'values': values,
 		'value': 0}
 	
 	return _item
 
 def format_entry(format_str,entry):
-	return format_str.replace('$k', str(entry['key'])).replace('$v', str(entry['values'][entry['value']]))
+	return format_str.replace('$k', str(entry['key']))\
+		.replace('$v', str(entry['values'][entry['value']]))\
+		.replace('$i', str(entry['icon']))
 
 def draw_menus():
 	for menu in MENUS:
@@ -54,6 +57,7 @@ def draw_menus():
 			menu['settings']['title'])
 		
 		_y_offset += 2
+		
 		for item in menu['menu']:
 			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index'] and item['enabled']:
 				#TODO: Colors
@@ -61,7 +65,7 @@ def draw_menus():
 			elif not item['enabled']:
 				console_set_default_foreground(menu['settings']['console'],darker_grey)
 			elif menu['settings']['dim']:
-				console_set_default_foreground(menu['settings']['console'],dark_grey)
+				console_set_default_foreground(menu['settings']['console'],grey)
 			
 			_line = format_entry(menu['settings']['format'],item)
 			

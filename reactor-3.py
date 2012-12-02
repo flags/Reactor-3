@@ -93,18 +93,22 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))
 			return False
 		
-		_inventory = {}
-		for item in PLAYER['inventory']:
-			_name = life.get_inventory_item(PLAYER,item)['name']
-			if life.item_is_equipped(PLAYER,item):
-				_inventory[_name] = 'Equipped'
+		_inventory = []
+		for entry in PLAYER['inventory']:
+			item = life.get_inventory_item(PLAYER,entry)
+			
+			if life.item_is_equipped(PLAYER,entry):
+				_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
 			else:
-				_inventory[_name] = 'Not equipped'
+				_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
+			
+			_inventory.append(_menu_item)
 		
 		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
+			format_str='[$i] $k: $v',
 			on_select=inventory_select)
 		
 		menus.activate_menu(_i)
@@ -115,11 +119,11 @@ def handle_input():
 			return False
 		
 		_inventory = []
-		for item in PLAYER['inventory']:
-			_name = life.get_inventory_item(PLAYER,item)['name']
+		for entry in PLAYER['inventory']:
+			item = life.get_inventory_item(PLAYER,entry)
 			
-			if not life.item_is_equipped(PLAYER,item):
-				_inventory.append(menus.create_item('single',_name,'Not equipped'))
+			if not life.item_is_equipped(PLAYER,entry):
+				_inventory.append(menus.create_item('single',item['name'],'Not equipped',icon=item['icon']))
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
@@ -129,6 +133,7 @@ def handle_input():
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
+			format_str='[$i] $k: $v',
 			on_select=inventory_equip)
 		
 		menus.activate_menu(_i)
@@ -139,20 +144,21 @@ def handle_input():
 			return False
 		
 		_inventory = []
-		for item in PLAYER['inventory']:
-			_name = life.get_inventory_item(PLAYER,item)['name']
+		for entry in PLAYER['inventory']:
+			item = life.get_inventory_item(PLAYER,entry)
 			
-			if life.item_is_equipped(PLAYER,item):
-				_item = menus.create_item('single',_name,'Equipped')
+			if life.item_is_equipped(PLAYER,entry):
+				_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
 			else:
-				_item = menus.create_item('single',_name,'Not equipped')
+				_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
 			
-			_inventory.append(_item)
+			_inventory.append(_menu_item)
 		
 		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
+			format_str='[$i] $k: $v',
 			on_select=inventory_drop)
 		
 		menus.activate_menu(_i)
@@ -206,8 +212,13 @@ def move_camera():
 		CAMERA_POS[0] -= 1
 
 def inventory_select(key,value):
+	_menu_items = []
+	
+	for _key in ITEM_TYPES[key]:
+		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
+	
 	_i = menus.create_menu(title=key,
-		menu=ITEM_TYPES[key],
+		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
 		on_select=return_to_inventory,
@@ -255,12 +266,13 @@ def create_pick_up_item_menu(items):
 	_menu_items = []
 	
 	for item in items:
-		_menu_items.append(menus.create_item('single',0,item['name']))
+		_menu_items.append(menus.create_item('single',0,item['name'],icon=item['icon']))
 	
-	_i = menus.create_menu(title='Items',
+	_i = menus.create_menu(title='Pick up',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
+		format_str='[$i] $k: $v',
 		on_select=_pick_up_item_from_ground)
 	
 	menus.activate_menu(_i)
