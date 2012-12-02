@@ -284,8 +284,10 @@ _i2 = items.create_item('sneakers')
 _i3 = items.create_item('sneakers',position=(10,10,2))
 _i3 = items.create_item('white t-shirt',position=(10,10,2))
 
-#life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
-#life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
+life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
+life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
+
+CURRENT_UPS = UPS
 
 while RUNNING:
 	get_input()
@@ -295,6 +297,12 @@ while RUNNING:
 	while life.get_highest_action(PLAYER):
 		life.tick_all_life()
 		_played_moved = True
+		
+		if CURRENT_UPS:
+			CURRENT_UPS-=1
+		else:
+			CURRENT_UPS = UPS
+			break
 	
 	if not _played_moved:
 		life.tick_all_life()
