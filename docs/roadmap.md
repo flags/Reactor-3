@@ -118,5 +118,51 @@ Example
     def equip_item(player,item):
         #TODO: Faster way to check this with sets
         for limb in item['attaches_to']:
-	    
-    
+
+Post-Mortem
+----------
+Milestone 3 was completed without much regard to this document. Fortunately, the issue
+tracker was cleared without much trouble, although there were definitely a few problems
+along the way that pushed back the completion date slightly.
+
+As we move into Milestone 4, it's time to take into hard consideration how the core gameplay
+mechanics will be conveyed to the user. This involves building the character's relationship
+with items scattered throughout the world.
+
+Milestone 4-1 - Interaction
+=========================
+Items currently have no individual behaviors, sans sneakers which provide the user with
+increased speed. This is a good sign that player <-> item interactions are possible with
+the current method of storing item data, and provides a ground for adding in more possibilities.
+
+Stepping back, items need to exist in two contexts: The world and the player. In each, the item
+should behave according to its in-game description, which should reflect the various effects it
+has stored.
+
+Items should also be able to interact with each other, maybe to combine and eventually form
+a different item. The reverse should also be possible in some cases (tearing apart a shirt to
+make bandages.)
+
+A good example of this kind of interaction is between bullets and guns. Loading a gun is a 3-step
+process that involves getting ammo, loading the bullets into the magazine, then inserting the
+magazine into the gun. While some may argue that this is complexity for the sake of complexity,
+I will point out that this type of process (loading your own gun) adds to the survival aspect
+of the game, and also builds a deeper relationship with the player and the weapons he or she
+chooses. It also encourages strict inventory management as a sort of metagame where the most
+organized person succeeds, while the messy search through backpacks for the appropriate item.
+
+This leads to inventory management: Items can be stored in several areas on the body. At first,
+the player has a small backpack able to hold a handful of items, but can also store smaller items
+in their pockets. In the above case, it would make more sense to stick a magazine in your pocket
+rather than a backpack, which would require taking off in order to remove the item. Once again,
+this adds to the inventory metagame discussed previously and puts the player in a position
+to set themselves up for success or failure, depending on how accessible the item they require
+is.
+
+Example
+------
+A pistol may be holstered to someone's hip, allowing them easy access to it in dangerous
+situations. Should the player predict a potentially deadly encounter from a distance, they have
+the opportunity to shuffle their items as needed; holster the pistol, remove an SMG from their
+backpack, and engage. Some weapons could also be outfitted with a strap, allowing them to simply
+be swung around once the pistol is holstered.
