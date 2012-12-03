@@ -279,6 +279,7 @@ def remove_item_in_storage(life,item):
 			continue
 
 		if item in _container['storing']:
+			print 'removed:',item
 			_container['storing'].remove(item)
 			
 			return _container
@@ -342,8 +343,13 @@ def remove_item_from_inventory(life,id):
 	else:
 		remove_item_in_storage(life,id)
 	
+	if 'max_capacity' in item:
+		for _item in item['storing']:
+			remove_item_from_inventory(life,_item)
+	
 	life['speed_max'] = get_max_speed(life)
 	
+	item['pos'] = life['pos'][:]
 	del life['inventory'][str(item['id'])]
 	del item['id']
 	
