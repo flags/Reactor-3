@@ -1,0 +1,9 @@
+{"name": "leather backpack",
+"type": "backpack",
+"icon": "B",
+"description": "As the name suggests, it is a backpack made of quality leather.",
+"attaches_to": "chest",
+"flags": "CANBURN|CANSOAK",
+"size": "6x5",
+"capacity": "6x5",
+"thickness": 3}
