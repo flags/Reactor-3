@@ -253,25 +253,54 @@ def remove_item_from_limb(body,item,limb):
 
 def can_put_item_in_storage(life,item):
 	#Whoa...
-	for _item in  [life['inventory'][item] for item in life['inventory']]:
-		if 'capacity' in _item and _item['capacity']+item['capacity'] < _item['max_capacity']:
+	for _item in [life['inventory'][_item] for _item in life['inventory']]:
+		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
 			return _item
 		else:
 			pass
 	
 	return False
 
-def put_item_in_storage(life,item)
+def add_item_to_storage(life,item):
 	_container = can_put_item_in_storage(life,item)
 	
-	print _container
+	if not _container:
+		return False
+	
+	_container['storing'].append(item['id'])
+	
+	return True
+
+def remove_item_in_storage(life,item):
+	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+		if not 'max_capacity' in _container:
+			continue
+
+		if item in _container['storing']:
+			_container['storing'].remove(item)
+			
+			return _container
+	
+	return False
+
+def item_is_stored(life,item):
+	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+		if not 'max_capacity' in _container:
+			continue
+
+		if item in _container['storing']:
+			return _container
+	
+	return False
 
 def can_wear_item(life,item):
 	for limb in item['attaches_to']:
-		if get_limb(life['body'],limb)['holding']:
-			for item in [life['inventory'][item] for item in life['inventory']]:
-				if not 'STACKABLE' in item['flags']:
-					return False
+		_limb = get_limb(life['body'],limb)
+		
+		for _item in [life['inventory'][str(i)] for i in _limb['holding']]:
+			if not 'CANSTACK' in _item['flags']:
+				logging.warning('%s will not let %s stack.' % (_item['name'],item['name']))
+				return False
 
 	return True
 
@@ -283,14 +312,17 @@ def get_inventory_item(life,id):
 	return life['inventory'][str(id)]
 
 def add_item_to_inventory(life,item):
-	#Can the item be put somewhere?
-	if not can_put_item_in_storage(life,item):
-		if not can_wear_item(life,item):
-			return False
-
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id	
+	
+	if not add_item_to_storage(life,item):
+		if not can_wear_item(life,item):
+			life['item_index'] -= 1
+			del item['id']
+			
+			return False
+	
 	life['inventory'][str(_id)] = item
 	
 	print '%s got \'%s\'.' % (life['name'][0],item['name'])
@@ -305,6 +337,8 @@ def remove_item_from_inventory(life,id):
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life['body'],item['id'],limb)
+	else:
+		remove_item_in_storage(life,id)
 	
 	life['speed_max'] = get_max_speed(life)
 	
@@ -318,7 +352,6 @@ def equip_item(life,id):
 		return False
 	
 	item = get_inventory_item(life,id)
-	
 	_limbs = get_all_limbs(life['body'])
 	
 	#TODO: Faster way to do this with sets
@@ -329,13 +362,16 @@ def equip_item(life,id):
 	
 	print '%s puts on a %s' % (life['name'][0],item['name'])
 	
-	for limb in item['attaches_to']:
-		attach_item_to_limb(life['body'],item['id'],limb)
+	if item['attaches_to']:			
+		for limb in item['attaches_to']:
+			attach_item_to_limb(life['body'],item['id'],limb)
 	
 	life['speed_max'] = get_max_speed(life)
 	
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
+	
+	return True
 
 def drop_item(life,id):
 	item = remove_item_from_inventory(life,id)
@@ -345,8 +381,9 @@ def pick_up_item_from_ground(life,item):
 	for _item in items.get_items_at(life['pos']):
 		#TODO: Don't use names!
 		if _item['name'] == item:
-			if add_item_to_inventory(life,_item):
-				return True
+			_id = add_item_to_inventory(life,_item)
+			if _id:
+				return _id
 			
 			return False
 			

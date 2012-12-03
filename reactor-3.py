@@ -243,7 +243,11 @@ def inventory_equip(entry):
 		_name = life.get_inventory_item(PLAYER,item)['name']
 		if _name == key:
 			gfx.message('You put on the %s.' % _name)
-			life.equip_item(PLAYER,item)
+			
+			_stored = life.item_is_stored(PLAYER,item)
+			gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
+			
+			life.equip_item(PLAYER,int(item))
 			break
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -253,14 +257,16 @@ def inventory_drop(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	#for item in PLAYER['inventory']:
-	#	_name = life.get_inventory_item(PLAYER,item)['name']
-	#	if _name == key:
 	_name = life.get_inventory_item(PLAYER,item)['name']
 	
 	if life.item_is_equipped(PLAYER,item):
 		gfx.message('You take off the %s.' % _name)
 			
+	_stored = life.item_is_stored(PLAYER,item)
+	if _stored:
+		_item = life.get_inventory_item(PLAYER,item)
+		gfx.message('You remove the %s from your %s.' % (_item['name'],_stored['name']))
+	
 	gfx.message('You drop the %s.' % _name)
 	life.drop_item(PLAYER,item)
 	
@@ -269,13 +275,19 @@ def inventory_drop(entry):
 def _pick_up_item_from_ground(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
+	_id = life.pick_up_item_from_ground(PLAYER,value)
 	
-	if not life.pick_up_item_from_ground(PLAYER,value):
+	if not _id:
 		gfx.message('There\'s nowhere to put this!')
 		
 		return False
-		
+	
 	gfx.message('You pick up a %s.' % value)
+	
+	_stored = life.item_is_stored(PLAYER,_id)
+	if _stored:
+		_item = life.get_inventory_item(PLAYER,_id)
+		gfx.message('You store the %s in your %s.' % (_item['name'],_stored['name']))
 	
 	_items = items.get_items_at(PLAYER['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])

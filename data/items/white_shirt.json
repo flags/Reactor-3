@@ -3,5 +3,5 @@
 "icon": "T",
 "description": "A plain, white t-shirt.",
 "attaches_to": "lshoulder|rshoulder|chest|stomach",
-"flags": "CANDISMANTLE[white cloth(3)]|CANBURN|CANSOAK",
+"flags": "CANSTACK|CANDISMANTLE[white cloth(3)]|CANBURN|CANSOAK",
 "thickness": 1}

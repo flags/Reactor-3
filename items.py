@@ -28,6 +28,7 @@ def initiate_item(name):
 		item['max_capacity'] = [int(c) for c in item['capacity'].split('x')]
 		item['max_capacity'] = item['max_capacity'][0]*item['max_capacity'][1]
 		item['capacity'] = 0
+		item['storing'] = []
 	
 	if not 'size' in item:
 		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_SIZE))
