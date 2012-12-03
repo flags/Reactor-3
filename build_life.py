@@ -21,7 +21,7 @@ def read_xml_file(file):
 
 def save_json_file(file,data):
 	with open(os.path.join(LIFE_DIR,file),'w') as e:
-		e.write(json.dumps(data))
+		e.write(json.dumps(data,indent=2))
 
 def get_value(data,value):
 	for entry in data:
