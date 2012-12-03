@@ -255,11 +255,16 @@ def can_put_item_in_storage(life,item):
 	#Whoa...
 	for _item in  [life['inventory'][item] for item in life['inventory']]:
 		if 'capacity' in _item and _item['capacity']+item['capacity'] < _item['max_capacity']:
-			return True
+			return _item
 		else:
 			pass
 	
 	return False
+
+def put_item_in_storage(life,item)
+	_container = can_put_item_in_storage(life,item)
+	
+	print _container
 
 def can_wear_item(life,item):
 	for limb in item['attaches_to']:
