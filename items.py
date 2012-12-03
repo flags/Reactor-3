@@ -19,9 +19,24 @@ def initiate_item(name):
 	
 	if not 'flags' in item:
 		logging.error('No flags set for item type \'%s\'. Errors may occur.' % name)
+		item['flags'] = ''
 	
 	if 'attaches_to' in item:
 		item['attaches_to'] = item['attaches_to'].split('|')
+	
+	if 'capacity' in item:
+		item['max_capacity'] = [int(c) for c in item['capacity'].split('x')]
+		item['max_capacity'] = item['max_capacity'][0]*item['max_capacity'][1]
+		item['capacity'] = 0
+	
+	if not 'size' in item:
+		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_SIZE))
+		item['size'] = DEFAULT_ITEM_SIZE
+	
+	item['flags'] = item['flags'].split('|')
+	
+	item['size'] = 	[int(c) for c in item['size'].split('x')]
+	item['size'] = item['size'][0]*item['size'][1]
 	
 	#Unicode isn't handled all that well on Windows for some reason...
 	for key in item:
@@ -36,7 +51,7 @@ def initiate_item(name):
 	
 	return item
 
-def create_item(name,position=[0,0,0]):
+def create_item(name,position=[0,0,2]):
 	item = ITEM_TYPES[name].copy()
 	
 	item['pos'] = list(position)

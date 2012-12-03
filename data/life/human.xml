@@ -59,12 +59,12 @@
 	</rforearm>
 	
 	<lhand>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
 		<parent>lforearm</parent>
 	</lhand>
 	
 	<rhand>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
 		<parent>rforearm</parent>
 	</rhand>
 	

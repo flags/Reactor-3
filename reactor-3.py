@@ -270,7 +270,11 @@ def _pick_up_item_from_ground(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	life.pick_up_item_from_ground(PLAYER,value)
+	if not life.pick_up_item_from_ground(PLAYER,value):
+		gfx.message('There\'s nowhere to put this!')
+		
+		return False
+		
 	gfx.message('You pick up a %s.' % value)
 	
 	_items = items.get_items_at(PLAYER['pos'])
@@ -308,14 +312,17 @@ PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
+items.initiate_item('leather_backpack')
 
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
-_i3 = items.create_item('sneakers',position=(10,10,2))
-_i3 = items.create_item('white t-shirt',position=(10,10,2))
+_i3 = items.create_item('sneakers')
+_i4 = items.create_item('sneakers',position=(10,10,2))
+_i4 = items.create_item('white t-shirt',position=(10,10,2))
 
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
 life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
+life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i3))
 
 CURRENT_UPS = UPS
 

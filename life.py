@@ -94,9 +94,13 @@ def initiate_limbs(body):
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
 		
-		#If canhold or canstore
-		body[limb]['storing'] = []
+		_flags = body[limb]['flags'].split('|')
+		
+		if 'CANSTORE' in _flags:
+			body[limb]['storing'] = []
+		
 		body[limb]['holding'] = []
+		
 		initiate_limbs(body[limb]['attached'])
 
 def get_limb(body,limb):
@@ -247,6 +251,25 @@ def remove_item_from_limb(body,item,limb):
 		
 		remove_item_from_limb(body[limb1]['attached'],item,limb)
 
+def can_put_item_in_storage(life,item):
+	#Whoa...
+	for _item in  [life['inventory'][item] for item in life['inventory']]:
+		if 'capacity' in _item and _item['capacity']+item['capacity'] < _item['max_capacity']:
+			return True
+		else:
+			pass
+	
+	return False
+
+def can_wear_item(life,item):
+	for limb in item['attaches_to']:
+		if get_limb(life['body'],limb)['holding']:
+			for item in [life['inventory'][item] for item in life['inventory']]:
+				if not 'STACKABLE' in item['flags']:
+					return False
+
+	return True
+
 def get_inventory_item(life,id):
 	if not life['inventory'].has_key(str(id)):
 		raise Exception('Life \'%s\' does not have item of id #%s'
@@ -255,10 +278,15 @@ def get_inventory_item(life,id):
 	return life['inventory'][str(id)]
 
 def add_item_to_inventory(life,item):
-	_id = life['item_index']
-	item['id'] = _id
-	life['inventory'][str(_id)] = item
+	#Can the item be put somewhere?
+	if not can_put_item_in_storage(life,item):
+		if not can_wear_item(life,item):
+			return False
+
 	life['item_index'] += 1
+	_id = life['item_index']
+	item['id'] = _id	
+	life['inventory'][str(_id)] = item
 	
 	print '%s got \'%s\'.' % (life['name'][0],item['name'])
 	
@@ -281,8 +309,12 @@ def remove_item_from_inventory(life,id):
 	return item
 
 def equip_item(life,id):
-	_limbs = get_all_limbs(life['body'])
+	if not id:
+		return False
+	
 	item = get_inventory_item(life,id)
+	
+	_limbs = get_all_limbs(life['body'])
 	
 	#TODO: Faster way to do this with sets
 	for limb in item['attaches_to']:
@@ -306,9 +338,13 @@ def drop_item(life,id):
 
 def pick_up_item_from_ground(life,item):
 	for _item in items.get_items_at(life['pos']):
+		#TODO: Don't use names!
 		if _item['name'] == item:
-			add_item_to_inventory(life,_item)
-			return True
+			if add_item_to_inventory(life,_item):
+				return True
+			
+			return False
+			
 		
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
