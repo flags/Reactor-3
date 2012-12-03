@@ -272,6 +272,8 @@ def add_item_to_storage(life,item):
 	return True
 
 def remove_item_in_storage(life,item):
+	item = int(item)
+	
 	for _container in [life['inventory'][_container] for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue

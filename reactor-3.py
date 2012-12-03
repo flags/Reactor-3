@@ -242,10 +242,11 @@ def inventory_equip(entry):
 	for item in PLAYER['inventory']:
 		_name = life.get_inventory_item(PLAYER,item)['name']
 		if _name == key:
-			gfx.message('You put on the %s.' % _name)
+			_stored = life.item_is_stored(PLAYER,int(item))
+			if _stored:
+				gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
 			
-			_stored = life.item_is_stored(PLAYER,item)
-			gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
+			gfx.message('You put on the %s.' % _name)
 			
 			life.equip_item(PLAYER,int(item))
 			break
