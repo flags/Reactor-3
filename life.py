@@ -10,7 +10,7 @@ import os
 
 def load_life(life):
 	with open(os.path.join(LIFE_DIR,life+'.json'),'r') as e:
-		return json.loads(e.readline())
+		return json.loads(''.join(e.readlines()))
 
 def calculate_base_stats(life):
 	stats = {'arms': None,
