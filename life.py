@@ -394,6 +394,9 @@ def equip_item(life,id):
 			print 'Limb not found:',limb
 			return False
 	
+	if remove_item_in_storage(life,id):
+		print 'Removed: %s',item['name']
+	
 	print '%s puts on a %s' % (life['name'][0],item['name'])
 	
 	if item['attaches_to']:			

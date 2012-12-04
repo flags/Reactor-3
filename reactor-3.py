@@ -289,6 +289,11 @@ def _pick_up_item_from_ground(entry):
 	if _stored:
 		_item = life.get_inventory_item(PLAYER,_id)
 		gfx.message('You store the %s in your %s.' % (_item['name'],_stored['name']))
+	else:
+		if life.item_is_equipped(PLAYER,_id):
+			_item = life.get_inventory_item(PLAYER,_id)
+			gfx.message('There\'s nowhere to put this!')
+			gfx.message('You put on the %s instead.' % (_item['name']))
 	
 	_items = items.get_items_at(PLAYER['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
