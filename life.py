@@ -280,6 +280,7 @@ def remove_item_in_storage(life,item):
 
 		if item in _container['storing']:
 			_container['storing'].remove(item)
+			print 'Removed item #%s from %s' % (item,_container['name'])
 			
 			return _container
 	
@@ -344,15 +345,13 @@ def remove_item_from_inventory(life,id):
 			remove_item_from_limb(life['body'],item['id'],limb)
 		
 		item['pos'] = life['pos'][:]
-	
-	#if item_is_stored(life,id)
-	#	remove_item_in_storage(life,id)
+	elif item_is_stored(life,id):
+		remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
 		for _item in item['storing'][:]:
-			#TODO: Will this work?
+			#TODO: See issue #10
 			#del get_inventory_item(life,_item)['id']
-			
 			del life['inventory'][str(_item)]
 	
 	life['speed_max'] = get_max_speed(life)
