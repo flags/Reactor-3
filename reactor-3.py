@@ -334,10 +334,10 @@ _i4 = items.create_item('sneakers',position=(10,10,2))
 _i4 = items.create_item('white t-shirt',position=(10,10,2))
 _i5 = items.create_item('leather backpack')
 
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i1))
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i2))
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i3))
-life.equip_item(PLAYER,life.add_item_to_inventory(PLAYER,_i5))
+life.add_item_to_inventory(PLAYER,_i1)
+life.add_item_to_inventory(PLAYER,_i2)
+life.add_item_to_inventory(PLAYER,_i3)
+life.add_item_to_inventory(PLAYER,_i5)
 
 CURRENT_UPS = UPS
 

@@ -324,8 +324,11 @@ def add_item_to_inventory(life,item):
 			del item['id']
 			
 			return False
-	
-	life['inventory'][str(_id)] = item
+		else:
+			life['inventory'][str(_id)] = item
+			equip_item(life,_id)
+	else:
+		life['inventory'][str(_id)] = item
 	
 	print '%s got \'%s\'.' % (life['name'][0],item['name'])
 	
@@ -339,16 +342,23 @@ def remove_item_from_inventory(life,id):
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life['body'],item['id'],limb)
-	else:
-		remove_item_in_storage(life,id)
+		
+		item['pos'] = life['pos'][:]
+	
+	#if item_is_stored(life,id)
+	#	remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
 		for _item in item['storing'][:]:
-			remove_item_from_inventory(life,_item)
+			#TODO: Will this work?
+			#del get_inventory_item(life,_item)['id']
+			
+			del life['inventory'][str(_item)]
 	
 	life['speed_max'] = get_max_speed(life)
 	
-	item['pos'] = life['pos'][:]
+	print 'Removed from inventory:',item['name']
+	
 	del life['inventory'][str(item['id'])]
 	del item['id']
 	
@@ -393,7 +403,6 @@ def pick_up_item_from_ground(life,item):
 				return _id
 			
 			return False
-			
 		
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
