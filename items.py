@@ -58,15 +58,18 @@ def create_item(name,position=[0,0,2]):
 	item['uid'] = len(ITEMS)
 	item['pos'] = list(position)
 	
-	ITEMS.append(item)
+	ITEMS[item['uid']] = item
 	
 	return item
+
+def get_item_from_uid(uid):
+	return ITEMS[uid]
 
 def get_items_at(position):
 	_items = []
 	
 	for item in ITEMS:
-		if item.has_key('id'):
+		if ITEMS[item].has_key('id'):
 			continue
 		
 		if item['pos'] == position:
@@ -75,7 +78,9 @@ def get_items_at(position):
 	return _items
 
 def draw_items():
-	for item in ITEMS:
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
 		if item.has_key('id'):
 			continue
 		

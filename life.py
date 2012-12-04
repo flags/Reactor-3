@@ -314,10 +314,20 @@ def get_inventory_item(life,id):
 	
 	return life['inventory'][str(id)]
 
+def direct_add_item_to_inventory(life,item):
+	#Warning: Only use this if you know what you're doing!
+	life['item_index'] += 1
+	_id = life['item_index']
+	item['id'] = _id
+	
+	life['inventory'][str(_id)] = item
+	
+	return _id
+
 def add_item_to_inventory(life,item):
 	life['item_index'] += 1
 	_id = life['item_index']
-	item['id'] = _id	
+	item['id'] = _id
 	
 	if not add_item_to_storage(life,item):
 		if not can_wear_item(life,item):
@@ -332,8 +342,11 @@ def add_item_to_inventory(life,item):
 		life['inventory'][str(_id)] = item
 	
 	if 'max_capacity' in item:
-		for _item in item['storing'][:]:
-			add_item_to_inventory
+		for uid in item['storing'][:]:
+			_item = items.get_item_from_uid(uid)
+			
+			item['storing'].remove(uid)
+			item['storing'].append(direct_add_item_to_inventory(life,_item))
 	
 	print '%s got \'%s\'.' % (life['name'][0],item['name'])
 	
@@ -359,7 +372,7 @@ def remove_item_from_inventory(life,id):
 			
 			#TODO: Warning: This might be dangerous!
 			item['storing'].remove(_item)
-			item['storing'].append(get_inventory_item(life,_item))
+			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
 			del life['inventory'][str(_item)]
 	
