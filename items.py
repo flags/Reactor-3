@@ -55,6 +55,7 @@ def initiate_item(name):
 def create_item(name,position=[0,0,2]):
 	item = ITEM_TYPES[name].copy()
 	
+	item['uid'] = len(ITEMS)
 	item['pos'] = list(position)
 	
 	ITEMS.append(item)

@@ -331,6 +331,10 @@ def add_item_to_inventory(life,item):
 	else:
 		life['inventory'][str(_id)] = item
 	
+	if 'max_capacity' in item:
+		for _item in item['storing'][:]:
+			add_item_to_inventory
+	
 	print '%s got \'%s\'.' % (life['name'][0],item['name'])
 	
 	return _id
@@ -352,6 +356,11 @@ def remove_item_from_inventory(life,id):
 		for _item in item['storing'][:]:
 			#TODO: See issue #10
 			#del get_inventory_item(life,_item)['id']
+			
+			#TODO: Warning: This might be dangerous!
+			item['storing'].remove(_item)
+			item['storing'].append(get_inventory_item(life,_item))
+			
 			del life['inventory'][str(_item)]
 	
 	life['speed_max'] = get_max_speed(life)
