@@ -279,7 +279,6 @@ def remove_item_in_storage(life,item):
 			continue
 
 		if item in _container['storing']:
-			print 'removed:',item
 			_container['storing'].remove(item)
 			
 			return _container
@@ -340,8 +339,8 @@ def remove_item_from_inventory(life,id):
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life['body'],item['id'],limb)
-	
-	remove_item_in_storage(life,id)
+	else:
+		remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
 		for _item in item['storing'][:]:
