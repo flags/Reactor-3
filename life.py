@@ -340,11 +340,11 @@ def remove_item_from_inventory(life,id):
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life['body'],item['id'],limb)
-	else:
-		remove_item_in_storage(life,id)
+	
+	remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
-		for _item in item['storing']:
+		for _item in item['storing'][:]:
 			remove_item_from_inventory(life,_item)
 	
 	life['speed_max'] = get_max_speed(life)
