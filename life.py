@@ -367,10 +367,6 @@ def remove_item_from_inventory(life,id):
 	
 	if 'max_capacity' in item:
 		for _item in item['storing'][:]:
-			#TODO: See issue #10
-			#del get_inventory_item(life,_item)['id']
-			
-			#TODO: Warning: This might be dangerous!
 			item['storing'].remove(_item)
 			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
