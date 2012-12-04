@@ -68,8 +68,10 @@ def get_item_from_uid(uid):
 def get_items_at(position):
 	_items = []
 	
-	for item in ITEMS:
-		if ITEMS[item].has_key('id'):
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
+		if item.has_key('id'):
 			continue
 		
 		if item['pos'] == position:
