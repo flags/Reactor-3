@@ -60,15 +60,19 @@ def draw_menus():
 		_y_offset += 2
 		
 		for item in menu['menu']:
-			if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index'] and item['enabled']:
-				#TODO: Colors
+			if item['type'] == 'title':
 				console_set_default_foreground(menu['settings']['console'],white)
-			elif not item['enabled']:
-				console_set_default_foreground(menu['settings']['console'],darker_grey)
-			elif menu['settings']['dim']:
-				console_set_default_foreground(menu['settings']['console'],grey)
+				_line = format_entry('- $k',item)
+			else:
+				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index'] and item['enabled']:
+					#TODO: Colors
+					console_set_default_foreground(menu['settings']['console'],white)
+				elif not item['enabled']:
+					console_set_default_foreground(menu['settings']['console'],darker_grey)
+				elif menu['settings']['dim']:
+					console_set_default_foreground(menu['settings']['console'],grey)
 			
-			_line = format_entry(menu['settings']['format'],item)
+				_line = format_entry(menu['settings']['format'],item)
 			
 			console_print(menu['settings']['console'],
 				menu['settings']['padding'][0],
@@ -106,11 +110,59 @@ def get_menu_by_name(name):
 
 def activate_menu(id):
 	ACTIVE_MENU['menu'] = id
-	ACTIVE_MENU['index'] = 0
+	ACTIVE_MENU['index'] = find_first_item(MENUS[id])
 
 def activate_menu_by_name(name):
 	ACTIVE_MENU['menu'] = get_menu_by_name(name)
 	ACTIVE_MENU['index'] = 0
+
+def find_first_item(menu):
+	for item in menu['menu']:
+		if item['enabled']:
+			return menu['menu'].index(item)
+	
+	return 0
+
+def find_last_item(menu):
+	_items = menu['menu'][:]
+	_items.reverse()
+	
+	for item in _items:
+		if item['enabled']:
+			return menu['menu'].index(item)
+	
+	return 0
+
+def find_item_after(menu,index=0):
+	for item in menu['menu'][index+1:]:
+		if item['enabled']:
+			print menu['menu'].index(item)
+			return menu['menu'].index(item)
+	
+	return find_item_after(menu)
+
+def find_next_item(menu,index):
+	for item in menu['menu'][index+1:]:
+		if item['enabled']:
+			return menu['menu'].index(item)
+	
+	return find_first_item(menu)
+
+def find_previous_item(menu,index):
+	_items = menu['menu'][:index][:]
+	_items.reverse()
+	
+	for item in _items:
+		if item['enabled']:
+			return menu['menu'].index(item)
+	
+	return find_last_item(menu)
+
+def move_up(menu,index):
+	ACTIVE_MENU['index'] = find_previous_item(menu,index)
+
+def move_down(menu,index):
+	ACTIVE_MENU['index'] = find_next_item(menu,index)
 
 def previous_item(menu,index):
 	if menu['menu'][index]['value']:

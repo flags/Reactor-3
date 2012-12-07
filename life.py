@@ -251,6 +251,15 @@ def remove_item_from_limb(body,item,limb):
 		
 		remove_item_from_limb(body[limb1]['attached'],item,limb)
 
+def get_all_storage(life):
+	_storage = []
+	
+	for item in [life['inventory'][item] for item in life['inventory']]:
+		if 'max_capacity' in item:
+			_storage.append(item)
+	
+	return _storage
+
 def can_put_item_in_storage(life,item):
 	#Whoa...
 	for _item in [life['inventory'][_item] for _item in life['inventory']]:

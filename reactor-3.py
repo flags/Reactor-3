@@ -60,19 +60,21 @@ def handle_input():
 
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			if ACTIVE_MENU['index']>0:
-				ACTIVE_MENU['index'] -= 1
-			else:
-				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
+			#if ACTIVE_MENU['index']>0:
+			#	ACTIVE_MENU['index'] -= 1
+			#else:
+			#	ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
+			menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			if ACTIVE_MENU['index']<len(MENUS[ACTIVE_MENU['menu']]['menu'])-1:
-				ACTIVE_MENU['index'] += 1
-			else:
-				ACTIVE_MENU['index'] = 0
+			#if ACTIVE_MENU['index']<len(MENUS[ACTIVE_MENU['menu']]['menu'])-1:
+			#	ACTIVE_MENU['index'] += 1
+			#else:
+			#	ACTIVE_MENU['index'] = 0
+			menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
 		else:
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
 
@@ -94,15 +96,39 @@ def handle_input():
 			return False
 		
 		_inventory = []
+		_title = menus.create_item('title','Equipped',None,enabled=False)
+		_inventory.append(_title)
+		
 		for entry in PLAYER['inventory']:
 			item = life.get_inventory_item(PLAYER,entry)
 			
 			if life.item_is_equipped(PLAYER,entry):
 				_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
-			else:
-				_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
 			
-			_inventory.append(_menu_item)
+				_inventory.append(_menu_item)
+		
+		for container in life.get_all_storage(PLAYER):
+			_title = menus.create_item('title',container['name'],None,enabled=False)
+			_inventory.append(_title)
+			for _item in container['storing']:
+				item = life.get_inventory_item(PLAYER,_item)
+				
+				if life.item_is_equipped(PLAYER,_item):
+					_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
+				else:
+					_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
+				
+				_inventory.append(_menu_item)
+		
+		#for entry in PLAYER['inventory']:
+		#	item = life.get_inventory_item(PLAYER,entry)
+		#	
+		#	if life.item_is_equipped(PLAYER,entry):
+		#		_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
+		#	else:
+		#		_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
+		#	
+		#	_inventory.append(_menu_item)
 		
 		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
