@@ -327,34 +327,34 @@ def pick_up_item_from_ground_action(entry):
 		
 	menus.activate_menu(_i)
 
-def _pick_up_item_from_ground(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	_id = life.pick_up_item_from_ground(PLAYER,value)
-	
-	if not _id:
-		gfx.message('There\'s nowhere to put this!')
-		
-		return False
-	
-	gfx.message('You pick up a %s.' % value)
-	
-	_stored = life.item_is_stored(PLAYER,_id)
-	if _stored:
-		_item = life.get_inventory_item(PLAYER,_id)
-		gfx.message('You store the %s in your %s.' % (_item['name'],_stored['name']))
-	else:
-		if life.item_is_equipped(PLAYER,_id):
-			_item = life.get_inventory_item(PLAYER,_id)
-			gfx.message('There\'s nowhere to put this!')
-			gfx.message('You put on the %s instead.' % (_item['name']))
-	
-	_items = items.get_items_at(PLAYER['pos'])
-	menus.delete_menu(ACTIVE_MENU['menu'])
-	
-	if _items:
-		create_pick_up_item_menu(_items)
-		return True
+#def _pick_up_item_from_ground(entry):
+#	key = entry['key']
+#	value = entry['values'][entry['value']]
+#	_id = life.pick_up_item_from_ground(PLAYER,value)
+#	
+#	if not _id:
+#		gfx.message('There\'s nowhere to put this!')
+#		
+#		return False
+#	
+#	gfx.message('You pick up a %s.' % value)
+#	
+#	_stored = life.item_is_stored(PLAYER,_id)
+#	if _stored:
+#		_item = life.get_inventory_item(PLAYER,_id)
+#		gfx.message('You store the %s in your %s.' % (_item['name'],_stored['name']))
+#	else:
+#		if life.item_is_equipped(PLAYER,_id):
+#			_item = life.get_inventory_item(PLAYER,_id)
+#			gfx.message('There\'s nowhere to put this!')
+#			gfx.message('You put on the %s instead.' % (_item['name']))
+#	
+#	_items = items.get_items_at(PLAYER['pos'])
+#	menus.delete_menu(ACTIVE_MENU['menu'])
+#	
+#	if _items:
+#		create_pick_up_item_menu(_items)
+#		return True
 
 def create_pick_up_item_menu(items):
 	_menu_items = []
