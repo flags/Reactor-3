@@ -208,6 +208,10 @@ def get_highest_action(life):
 		return None
 
 def clear_actions(life):
+	#TODO: Any way to improve this?
+	if life['actions'] and not life['actions'][0]['action']['action']=='move':
+		logging.debug('Canceled action <here>')
+		
 	life['actions'] = []
 
 def add_action(life,action,score):
@@ -229,6 +233,8 @@ def perform_action(life):
 	if _action['action'] == 'move':
 		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
 			life['actions'].remove({'action':_action,'score':_score})
+	elif _action['action'] == 'pickup':
+		pass
 
 def tick(life):
 	perform_action(life)
@@ -477,7 +483,6 @@ def draw_visual_inventory(life):
 	
 	console_set_default_foreground(0,white)
 
-#Conductor
 def tick_all_life():
 	for life in LIFE:
 		tick(life)

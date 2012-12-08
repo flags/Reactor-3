@@ -62,24 +62,28 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			ACTIVE_MENU['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
 		else:
+			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			ACTIVE_MENU['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
 		else:
+			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
 
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
+			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
 
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
 		else:
+			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
 	
 	if INPUT['i']:
