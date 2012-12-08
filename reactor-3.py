@@ -285,6 +285,48 @@ def inventory_drop(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def pick_up_item_from_ground(entry):	
+	_items = items.get_items_at(PLAYER['pos'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	
+	#if _items:
+	#	create_pick_up_item_menu(_items)
+	
+	#life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
+	life.add_action(PLAYER,{'action': 'pickupitem',
+		'item': entry['item'],
+		'container': entry['container'],
+		'life': PLAYER},
+		200)
+
+def pick_up_item_from_ground_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_item = items.get_item_from_uid(entry['item'])
+	
+	_menu = []
+	#TODO: Can we equip this?	
+	_menu.append(menus.create_item('title','Actions',None,enabled=False))
+	_menu.append(menus.create_item('single','Equip','Body part',item=value))
+	
+	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
+	for container in life.get_all_storage(PLAYER):
+		_menu.append(menus.create_item('single',
+			container['name'],
+			'%s/%s' % (container['capacity'],container['max_capacity']),
+			container=container,
+			item=_item))
+	
+	_i = menus.create_menu(title='Pick up (action)',
+		menu=_menu,
+		padding=(1,1),
+		position=(1,1),
+		format_str='  $k: $v',
+		on_select=pick_up_item_from_ground)
+		
+	menus.activate_menu(_i)
+
 def _pick_up_item_from_ground(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
@@ -318,14 +360,14 @@ def create_pick_up_item_menu(items):
 	_menu_items = []
 	
 	for item in items:
-		_menu_items.append(menus.create_item('single',0,item['name'],icon=item['icon']))
+		_menu_items.append(menus.create_item('single',0,item['name'],icon=item['icon'],item=item['uid']))
 	
 	_i = menus.create_menu(title='Pick up',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
 		format_str='[$i] $k: $v',
-		on_select=_pick_up_item_from_ground)
+		on_select=pick_up_item_from_ground_action)
 	
 	menus.activate_menu(_i)
 
@@ -339,6 +381,7 @@ life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP)
+PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')

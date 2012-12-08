@@ -233,8 +233,16 @@ def perform_action(life):
 	if _action['action'] == 'move':
 		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
 			life['actions'].remove({'action':_action,'score':_score})
-	elif _action['action'] == 'pickup':
-		pass
+	elif _action['action'] == 'pickupitem':
+		direct_add_item_to_inventory(_action['life'],_action['item'],container=_action['container'])
+		life['actions'].remove({'action':_action,'score':_score})
+		
+		if life.has_key('player'):
+			gfx.message('You pick up a %s.' % _action['item']['name'])
+			
+			if _action.has_key('container'):
+				gfx.message('You store the %s in your %s.'
+					% (_action['item']['name'],_action['container']['name']))
 
 def tick(life):
 	perform_action(life)
@@ -276,13 +284,14 @@ def can_put_item_in_storage(life,item):
 	
 	return False
 
-def add_item_to_storage(life,item):
-	_container = can_put_item_in_storage(life,item)
+def add_item_to_storage(life,item,container=None):
+	if not container:
+		container = can_put_item_in_storage(life,item)
 	
-	if not _container:
+	if not container:
 		return False
 	
-	_container['storing'].append(item['id'])
+	container['storing'].append(item['id'])
 	
 	return True
 
@@ -329,13 +338,18 @@ def get_inventory_item(life,id):
 	
 	return life['inventory'][str(id)]
 
-def direct_add_item_to_inventory(life,item):
+def direct_add_item_to_inventory(life,item,container=None):
 	#Warning: Only use this if you know what you're doing!
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
 	
 	life['inventory'][str(_id)] = item
+	
+	#Warning: `container` refers directly to an item instead of an ID.
+	if container:
+		#Warning: No check is done to make sure the container isn't full!
+		add_item_to_storage(life,item,container=container)
 	
 	return _id
 
@@ -428,16 +442,29 @@ def drop_item(life,id):
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]	
 
-def pick_up_item_from_ground(life,item):
-	for _item in items.get_items_at(life['pos']):
-		#TODO: Don't use names!
-		if _item['name'] == item:
-			_id = add_item_to_inventory(life,_item)
-			if _id:
-				return _id
-			
-			return False
-		
+#def direct_pick_up_item_from_ground(life,item):
+#	#Warning: Only use this if you know what you're doing!
+#	for _item in items.get_items_at(life['pos']):
+#		#TODO: Don't use names!
+#		if _item['name'] == item:
+#			_id = add_item_to_inventory(life,_item)
+#			if _id:
+#				return _id
+#			
+#			return False
+#		
+#	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
+#		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
+
+def pick_up_item_from_ground(life,uid):
+	_item = items.get_item_from_uid(uid)
+	_id = add_item_to_inventory(life,_item)
+	
+	if _id:
+		return _id
+
+	return False
+
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
