@@ -13,7 +13,11 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	#menuitem
 	#type: single, list
 	
+	_uid = 0
 	for entry in _menu['menu']:
+		entry['uid'] = _uid
+		_uid+=1
+		
 		for value in entry['values']:
 			_line = format_entry(_menu['settings']['format'],entry)
 			
@@ -110,45 +114,13 @@ def get_menu_by_name(name):
 
 def activate_menu(id):
 	ACTIVE_MENU['menu'] = id
-	ACTIVE_MENU['index'] = find_first_item(MENUS[id])
+	ACTIVE_MENU['index'] = find_item_after(MENUS[id])
 
 def activate_menu_by_name(name):
 	ACTIVE_MENU['menu'] = get_menu_by_name(name)
 	ACTIVE_MENU['index'] = 0
 
-def find_first_item(menu):
-	for item in menu['menu']:
-		if item['enabled']:
-			return menu['menu'].index(item)
-	
-	return 0
-
-def find_last_item(menu):
-	_items = menu['menu'][:]
-	_items.reverse()
-	
-	for item in _items:
-		if item['enabled']:
-			return menu['menu'].index(item)
-	
-	return 0
-
-def find_item_after(menu,index=0):
-	for item in menu['menu'][index+1:]:
-		if item['enabled']:
-			print menu['menu'].index(item)
-			return menu['menu'].index(item)
-	
-	return find_item_after(menu)
-
-def find_next_item(menu,index):
-	for item in menu['menu'][index+1:]:
-		if item['enabled']:
-			return menu['menu'].index(item)
-	
-	return find_first_item(menu)
-
-def find_previous_item(menu,index):
+def find_item_before(menu,index=0):
 	_items = menu['menu'][:index][:]
 	_items.reverse()
 	
@@ -156,7 +128,14 @@ def find_previous_item(menu,index):
 		if item['enabled']:
 			return menu['menu'].index(item)
 	
-	return find_last_item(menu)
+	return find_item_before(menu,index=len(menu['menu']))
+
+def find_item_after(menu,index=-1):
+	for item in menu['menu'][index+1:]:
+		if item['enabled']:
+			return menu['menu'].index(item)
+	
+	return find_item_after(menu)
 
 def move_up(menu,index):
 	ACTIVE_MENU['index'] = find_previous_item(menu,index)
