@@ -365,8 +365,10 @@ def direct_add_item_to_inventory(life,item,container=None):
 	life['inventory'][str(_id)] = item
 	
 	if 'max_capacity' in item:
-		print 'Container found in direct_add', 
+		print 'Container found in direct_add'
+		
 		for uid in item['storing'][:]:
+			print '\tAdding uid %s' % uid
 			_item = items.get_item_from_uid(uid)
 
 			item['storing'].remove(uid)
