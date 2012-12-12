@@ -364,6 +364,14 @@ def direct_add_item_to_inventory(life,item,container=None):
 	
 	life['inventory'][str(_id)] = item
 	
+	if 'max_capacity' in item:
+		print 'Container found in direct_add', 
+		for uid in item['storing'][:]:
+			_item = items.get_item_from_uid(uid)
+
+			item['storing'].remove(uid)
+			item['storing'].append(direct_add_item_to_inventory(life,_item))
+	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
 		#Warning: No check is done to make sure the container isn't full!
@@ -413,7 +421,10 @@ def remove_item_from_inventory(life,id):
 		remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
+		print 'Dropping container storing:'
+		
 		for _item in item['storing'][:]:
+			print '\tdropping %s' % _item
 			item['storing'].remove(_item)
 			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			

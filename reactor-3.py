@@ -140,7 +140,7 @@ def handle_input():
 		
 		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
 		
-		_i = menus.create_menu(title='Inventory',
+		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
