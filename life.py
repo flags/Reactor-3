@@ -3,6 +3,7 @@ import graphics as gfx
 import pathfinding
 import logging
 import items
+import menus
 import copy
 import time
 import json
@@ -243,6 +244,23 @@ def perform_action(life):
 			if _action.has_key('container'):
 				gfx.message('You store the %s in your %s.'
 					% (_action['item']['name'],_action['container']['name']))
+	elif _action['action'] == 'pickupequipitem':
+		if not can_wear_item(_action['life'],_action['item']):
+			if life.has_key('player'):
+				gfx.message('You can\'t equip this item!')
+			
+			life['actions'].remove({'action':_action,'score':_score})
+			return False
+		
+		#TODO: Can we even equip this? Can we check here instead of later?
+		_id = direct_add_item_to_inventory(_action['life'],_action['item'])
+		
+		equip_item(_action['life'],_id)
+		
+		life['actions'].remove({'action':_action,'score':_score})
+		
+		if life.has_key('player'):
+			gfx.message('You equip a %s from the ground.' % _action['item']['name'])
 
 def tick(life):
 	perform_action(life)
@@ -415,6 +433,10 @@ def equip_item(life,id):
 		return False
 	
 	item = get_inventory_item(life,id)
+	
+	if not can_wear_item(life,item):
+		return False
+	
 	_limbs = get_all_limbs(life['body'])
 	
 	#TODO: Faster way to do this with sets
@@ -494,6 +516,40 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			gfx.blit_char(_x,_y,life['icon'],white,None)
+
+def get_fancy_inventory_menu_items(life):
+	_inventory = []
+	
+	_title = menus.create_item('title','Equipped',None,enabled=False)
+	_inventory.append(_title)
+	
+	#TODO: Time it would take to remove
+	for entry in life['inventory']:
+		item = get_inventory_item(life,entry)
+		
+		if item_is_equipped(life,entry):
+			_menu_item = menus.create_item('single',
+				item['name'],
+				'Equipped',
+				icon=item['icon'],
+				id=int(entry))
+		
+			_inventory.append(_menu_item)
+	
+	for container in get_all_storage(life):
+		_title = menus.create_item('title',container['name'],None,enabled=False)
+		_inventory.append(_title)
+		for _item in container['storing']:
+			item = get_inventory_item(life,_item)
+			_menu_item = menus.create_item('single',
+				item['name'],
+				'Not equipped',
+				icon=item['icon'],
+				id=int(entry))
+			
+			_inventory.append(_menu_item)
+	
+	return _inventory
 
 def draw_visual_inventory(life):
 	_inventory = {}

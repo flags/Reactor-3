@@ -1,7 +1,7 @@
 from libtcodpy import *
 import os
 
-WINDOW_TITLE = 'Reactor 3 - Milestone 3-2'
+WINDOW_TITLE = 'Reactor 3 - Milestone 4'
 
 #Constants
 WINDOW_SIZE = (100,50)

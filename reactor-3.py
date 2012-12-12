@@ -91,30 +91,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))
 			return False
 		
-		_inventory = []
-		_title = menus.create_item('title','Equipped',None,enabled=False)
-		_inventory.append(_title)
-		
-		for entry in PLAYER['inventory']:
-			item = life.get_inventory_item(PLAYER,entry)
-			
-			if life.item_is_equipped(PLAYER,entry):
-				_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
-			
-				_inventory.append(_menu_item)
-		
-		for container in life.get_all_storage(PLAYER):
-			_title = menus.create_item('title',container['name'],None,enabled=False)
-			_inventory.append(_title)
-			for _item in container['storing']:
-				item = life.get_inventory_item(PLAYER,_item)
-				
-				if life.item_is_equipped(PLAYER,_item):
-					_menu_item = menus.create_item('single',item['name'],'Equipped',icon=item['icon'])
-				else:
-					_menu_item = menus.create_item('single',item['name'],'Not equipped',icon=item['icon'])
-				
-				_inventory.append(_menu_item)
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
 		
 		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
@@ -135,7 +112,13 @@ def handle_input():
 			item = life.get_inventory_item(PLAYER,entry)
 			
 			if not life.item_is_equipped(PLAYER,entry):
-				_inventory.append(menus.create_item('single',item['name'],'Not equipped',icon=item['icon']))
+				_menu_item = menus.create_item('single',
+					item['name'],
+					'Not equipped',
+					icon=item['icon'],
+					id=int(entry))
+				
+				_inventory.append(_menu_item)
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
@@ -155,25 +138,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
 			return False
 		
-		_inventory = []
-		for entry in PLAYER['inventory']:
-			item = life.get_inventory_item(PLAYER,entry)
-			
-			if life.item_is_equipped(PLAYER,entry):
-				_menu_item = menus.create_item('single',item['name'],
-					'Equipped',
-					icon=item['icon'],
-					id=item['id'])
-			else:
-				_menu_item = menus.create_item('single',
-					item['name'],
-					'Not equipped',
-					id=item['id'],
-					icon=item['icon'])
-			
-			_inventory.append(_menu_item)
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
 		
-		_i = menus.create_menu(title='Drop',
+		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
@@ -250,20 +217,20 @@ def inventory_select(entry):
 def inventory_equip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
+	item = entry['id']
 	
-	for item in PLAYER['inventory']:
-		_name = life.get_inventory_item(PLAYER,item)['name']
-		if _name == key:
-			_stored = life.item_is_stored(PLAYER,int(item))
-			if _stored:
-				gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
-			
-			gfx.message('You put on the %s.' % _name)
-			
-			life.equip_item(PLAYER,int(item))
-			break
+	_name = life.get_inventory_item(PLAYER,item)['name']
 	
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	if life.equip_item(PLAYER,int(item)):
+		_stored = life.item_is_stored(PLAYER,int(item))
+		if _stored:
+			gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
+		
+		gfx.message('You put on the %s.' % _name)
+	
+		menus.delete_menu(ACTIVE_MENU['menu'])
+	else:
+		gfx.message('You can\'t wear %s.' % _name)
 
 def inventory_drop(entry):
 	key = entry['key']
@@ -290,15 +257,22 @@ def pick_up_item_from_ground(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
-	#if _items:
-	#	create_pick_up_item_menu(_items)
+	#TODO: Lowercase menu keys
+	if entry['key'] == 'Equip':
+		life.add_action(PLAYER,{'action': 'pickupequipitem',
+			'item': entry['item'],
+			'life': PLAYER},
+			200)
+		
+		return True
 	
-	#life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 	life.add_action(PLAYER,{'action': 'pickupitem',
 		'item': entry['item'],
 		'container': entry['container'],
 		'life': PLAYER},
 		200)
+	
+	return True
 
 def pick_up_item_from_ground_action(entry):
 	key = entry['key']
@@ -308,7 +282,7 @@ def pick_up_item_from_ground_action(entry):
 	_menu = []
 	#TODO: Can we equip this?	
 	_menu.append(menus.create_item('title','Actions',None,enabled=False))
-	_menu.append(menus.create_item('single','Equip','Body part',item=value))
+	_menu.append(menus.create_item('single','Equip','Body part',item=_item))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
 	for container in life.get_all_storage(PLAYER):
@@ -326,35 +300,6 @@ def pick_up_item_from_ground_action(entry):
 		on_select=pick_up_item_from_ground)
 		
 	menus.activate_menu(_i)
-
-#def _pick_up_item_from_ground(entry):
-#	key = entry['key']
-#	value = entry['values'][entry['value']]
-#	_id = life.pick_up_item_from_ground(PLAYER,value)
-#	
-#	if not _id:
-#		gfx.message('There\'s nowhere to put this!')
-#		
-#		return False
-#	
-#	gfx.message('You pick up a %s.' % value)
-#	
-#	_stored = life.item_is_stored(PLAYER,_id)
-#	if _stored:
-#		_item = life.get_inventory_item(PLAYER,_id)
-#		gfx.message('You store the %s in your %s.' % (_item['name'],_stored['name']))
-#	else:
-#		if life.item_is_equipped(PLAYER,_id):
-#			_item = life.get_inventory_item(PLAYER,_id)
-#			gfx.message('There\'s nowhere to put this!')
-#			gfx.message('You put on the %s instead.' % (_item['name']))
-#	
-#	_items = items.get_items_at(PLAYER['pos'])
-#	menus.delete_menu(ACTIVE_MENU['menu'])
-#	
-#	if _items:
-#		create_pick_up_item_menu(_items)
-#		return True
 
 def create_pick_up_item_menu(items):
 	_menu_items = []
