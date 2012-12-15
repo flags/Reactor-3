@@ -62,7 +62,7 @@ CONSOLE_WINDOW = None
 
 #Menus
 MENUS = []
-ACTIVE_MENU = {'menu': -1,'index': 0}
+ACTIVE_MENU = {'menu': -1}
 MENU_PADDING = (1,1)
 
 #Controls

@@ -60,28 +60,28 @@ def handle_input():
 
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			ACTIVE_MENU['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
+			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			ACTIVE_MENU['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=ACTIVE_MENU['index'])
+			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
 
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
-			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
 
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
-			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
@@ -161,7 +161,7 @@ def handle_input():
 		if ACTIVE_MENU['menu'] == -1:
 			return False
 		
-		menus.item_selected(ACTIVE_MENU['menu'],ACTIVE_MENU['index'])
+		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4

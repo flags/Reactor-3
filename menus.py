@@ -4,6 +4,7 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
+		'index': 0,
 		'values':{}}
 		
 	#TODO: Does this need to be copied?
@@ -68,7 +69,7 @@ def draw_menus():
 				console_set_default_foreground(menu['settings']['console'],white)
 				_line = format_entry('- $k',item)
 			else:
-				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == ACTIVE_MENU['index'] and item['enabled']:
+				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors
 					console_set_default_foreground(menu['settings']['console'],white)
 				elif not item['enabled']:
@@ -98,7 +99,6 @@ def align_menus():
 def delete_menu(id):
 	if ACTIVE_MENU['menu'] == id:
 		ACTIVE_MENU['menu'] -= 1
-		ACTIVE_MENU['index'] = 0
 	
 	MENUS.pop(id)
 
@@ -114,11 +114,10 @@ def get_menu_by_name(name):
 
 def activate_menu(id):
 	ACTIVE_MENU['menu'] = id
-	ACTIVE_MENU['index'] = find_item_after(MENUS[id])
+	MENUS[id]['index'] = find_item_after(MENUS[id])
 
 def activate_menu_by_name(name):
 	ACTIVE_MENU['menu'] = get_menu_by_name(name)
-	ACTIVE_MENU['index'] = 0
 
 def find_item_before(menu,index=0):
 	_items = menu['menu'][:index][:]
@@ -138,10 +137,10 @@ def find_item_after(menu,index=-1):
 	return find_item_after(menu)
 
 def move_up(menu,index):
-	ACTIVE_MENU['index'] = find_previous_item(menu,index)
+	menu['index'] = find_previous_item(menu,index)
 
 def move_down(menu,index):
-	ACTIVE_MENU['index'] = find_next_item(menu,index)
+	menu['index'] = find_next_item(menu,index)
 
 def previous_item(menu,index):
 	if menu['menu'][index]['value']:
