@@ -119,3 +119,7 @@ BROWN_DARK = Color(123,74,18)
 BROWN_DARK_ALT = Color(123, 63, 0)
 BROWN_DARK_ALT_2 = Color(139,71,38)
 CLAY = Color(228,145,53)
+
+#Message bank
+MESSAGE_BANK = {'cancelpickupequipitem': 'You stop picking up the item.',
+	'cancelpickupitem': 'You stop picking up the item.'}

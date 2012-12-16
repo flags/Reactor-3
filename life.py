@@ -211,13 +211,21 @@ def get_highest_action(life):
 def clear_actions(life):
 	#TODO: Any way to improve this?
 	if life['actions'] and not life['actions'][0]['action']['action']=='move':
-		logging.debug('Canceled action <here>')
+		_action = life['actions'][0]['action']['action']
+		
+		logging.debug('%s %s cancels %s' % (life['name'][0],life['name'][1],_action))
+		
+		if life.has_key('player'):
+			gfx.message(MESSAGE_BANK['cancel'+_action])
 		
 	life['actions'] = []
 
-def add_action(life,action,score):
+def add_action(life,action,score,delay=0):
 	_tmp_action = {'action': action,'score': score}
+	
 	if not _tmp_action in life['actions']:
+		_tmp_action['delay'] = delay
+		
 		life['actions'].append(_tmp_action)
 	
 	return False
@@ -225,18 +233,25 @@ def add_action(life,action,score):
 def perform_action(life):
 	_action = get_highest_action(life)
 	
+	#TODO: What's happening here?
 	if not _action in life['actions']:
 		return False
 
+	if _action['delay']:
+		_action['delay']-=1
+		
+		return False
+
 	_score = _action['score']
+	_delay = _action['delay']
 	_action = _action['action']
 	
 	if _action['action'] == 'move':
 		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
-			life['actions'].remove({'action':_action,'score':_score})
+			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 	elif _action['action'] == 'pickupitem':
 		direct_add_item_to_inventory(_action['life'],_action['item'],container=_action['container'])
-		life['actions'].remove({'action':_action,'score':_score})
+		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 		
 		if life.has_key('player'):
 			gfx.message('You pick up a %s.' % _action['item']['name'])
@@ -249,7 +264,7 @@ def perform_action(life):
 			if life.has_key('player'):
 				gfx.message('You can\'t equip this item!')
 			
-			life['actions'].remove({'action':_action,'score':_score})
+			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 			return False
 		
 		#TODO: Can we even equip this? Can we check here instead of later?
@@ -269,7 +284,7 @@ def attach_item_to_limb(body,item,limb):
 	for limb1 in body:
 		if limb1 == limb:
 			body[limb1]['holding'].append(item)
-			print '%s attached to %s' % (item,limb)
+			logging.debug('%s attached to %s' % (item,limb))
 			return True
 		
 		attach_item_to_limb(body[limb1]['attached'],item,limb)
@@ -278,7 +293,7 @@ def remove_item_from_limb(body,item,limb):
 	for limb1 in body:
 		if limb1 == limb:
 			body[limb1]['holding'].remove(item)
-			print '%s removed from %s' % (item,limb)
+			logging.debug('%s removed from %s' % (item,limb))
 			return True
 		
 		remove_item_from_limb(body[limb1]['attached'],item,limb)
@@ -322,7 +337,7 @@ def remove_item_in_storage(life,item):
 
 		if item in _container['storing']:
 			_container['storing'].remove(item)
-			print 'Removed item #%s from %s' % (item,_container['name'])
+			logging.debug('Removed item #%s from %s' % (item,_container['name']))
 			
 			return _container
 	
@@ -365,10 +380,10 @@ def direct_add_item_to_inventory(life,item,container=None):
 	life['inventory'][str(_id)] = item
 	
 	if 'max_capacity' in item:
-		print 'Container found in direct_add'
+		logging.debug('Container found in direct_add')
 		
 		for uid in item['storing'][:]:
-			print '\tAdding uid %s' % uid
+			logging.debug('\tAdding uid %s' % uid)
 			_item = items.get_item_from_uid(uid)
 
 			item['storing'].remove(uid)
@@ -405,7 +420,7 @@ def add_item_to_inventory(life,item):
 			item['storing'].remove(uid)
 			item['storing'].append(direct_add_item_to_inventory(life,_item))
 	
-	print '%s got \'%s\'.' % (life['name'][0],item['name'])
+	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	
 	return _id
 
@@ -413,7 +428,7 @@ def remove_item_from_inventory(life,id):
 	item = get_inventory_item(life,id)
 	
 	if item_is_equipped(life,id):
-		print '%s takes off a %s' % (life['name'][0],item['name'])
+		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life['body'],item['id'],limb)
@@ -423,10 +438,10 @@ def remove_item_from_inventory(life,id):
 		remove_item_in_storage(life,id)
 	
 	if 'max_capacity' in item:
-		print 'Dropping container storing:'
+		logging.debug('Dropping container storing:')
 		
 		for _item in item['storing'][:]:
-			print '\tdropping %s' % _item
+			logging.debug('\tdropping %s' % _item)
 			item['storing'].remove(_item)
 			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
@@ -434,7 +449,7 @@ def remove_item_from_inventory(life,id):
 	
 	life['speed_max'] = get_max_speed(life)
 	
-	print 'Removed from inventory:',item['name']
+	logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
@@ -455,12 +470,12 @@ def equip_item(life,id):
 	#TODO: Faster way to do this with sets
 	for limb in item['attaches_to']:
 		if not limb in _limbs:
-			print 'Limb not found:',limb
+			logging.warning('Limb not found: %s' % limb)
 			return False
 	
 	remove_item_in_storage(life,id)
 	
-	print '%s puts on a %s' % (life['name'][0],item['name'])
+	logging.debug('%s puts on a %s' % (life['name'][0],item['name']))
 	
 	if item['attaches_to']:			
 		for limb in item['attaches_to']:
@@ -515,7 +530,7 @@ def show_life_info(life):
 		if key == 'body':
 			continue
 		
-		print '%s: %s' % (key,life[key])
+		logging.debug('%s: %s' % (key,life[key]))
 	
 	return True
 

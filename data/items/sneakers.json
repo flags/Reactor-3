@@ -5,4 +5,5 @@
 "speed_mod": 4,
 "attaches_to": "lfoot|rfoot",
 "flags": "CANBURN|CANSOAK",
+"size": "1x1",
 "thickness": 1}

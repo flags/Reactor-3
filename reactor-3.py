@@ -14,6 +14,13 @@ import time
 import maps
 import sys
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M %m/%d/%y')
+ch = logging.StreamHandler()
+ch.setFormatter(console_formatter)
+logger.addHandler(ch)
+
 #Optional Cython-compiled modules
 try:
 	import render_map
@@ -259,18 +266,25 @@ def pick_up_item_from_ground(entry):
 	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
+		gfx.message('You start to pick up %s.' % entry['item']['name'])
+		
 		life.add_action(PLAYER,{'action': 'pickupequipitem',
 			'item': entry['item'],
 			'life': PLAYER},
-			200)
+			200,
+			delay=40)
 		
 		return True
+	
+	gfx.message('You start to put the %s in your %s.' %
+		(entry['item']['name'],entry['container']['name']))
 	
 	life.add_action(PLAYER,{'action': 'pickupitem',
 		'item': entry['item'],
 		'container': entry['container'],
 		'life': PLAYER},
-		200)
+		200,
+		delay=60)
 	
 	return True
 
