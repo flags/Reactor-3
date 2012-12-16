@@ -27,9 +27,9 @@ try:
 	CYTHON_ENABLED = True
 except ImportError, e:
 	CYTHON_ENABLED = False
-	print '[Cython] ImportError with module: %s' % e
-	print '[Cython] Certain functions can run faster if compiled with Cython.'
-	print '[Cython] Run \'python compile_cython_modules.py build_ext --inplace\''
+	logging.warning('[Cython] ImportError with module: %s' % e)
+	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
+	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
 gfx.log(WINDOW_TITLE)
 
@@ -397,4 +397,4 @@ while RUNNING:
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 
-maps.save_map(MAP)
+maps.save_map('map1.dat',MAP)

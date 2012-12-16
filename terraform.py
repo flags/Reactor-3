@@ -12,15 +12,22 @@ import time
 import maps
 import sys
 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M %m/%d/%y')
+ch = logging.StreamHandler()
+ch.setFormatter(console_formatter)
+logger.addHandler(ch)
+
 #Optional Cython-compiled modules
 try:
 	import render_map
 	CYTHON_ENABLED = True
 except ImportError, e:
 	CYTHON_ENABLED = False
-	print '[Cython] ImportError with module: %s' % e
-	print '[Cython] Certain functions can run faster if compiled with Cython.'
-	print '[Cython] Run \'python compile_cython_modules.py build_ext --inplace\''
+	logging.warning('[Cython] ImportError with module: %s' % e)
+	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
+	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
 gfx.log(WINDOW_TITLE)
 
@@ -104,13 +111,9 @@ def handle_input():
 	if INPUT['m']:
 		SUN_POS[0] += 1
 		SUN_POS[1] += 1
-		
-		print SUN_POS
 	
 	if INPUT['n']:
 		SUN_POS[2] -= 1
-		
-		print SUN_POS
 	
 	if INPUT['o']:
 		if ACTIVE_MENU['menu'] < len(MENUS):
@@ -293,4 +296,4 @@ while RUNNING:
 	gfx.end_of_frame_terraform()
 	gfx.end_of_frame()
 
-maps.save_map(MAP)
+maps.save_map('map1.dat',MAP)
