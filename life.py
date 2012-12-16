@@ -189,6 +189,16 @@ def walk(life,to):
 def walk_path(life):
 	if life['path']:
 		_pos = list(life['path'].pop(0))
+		
+		if abs(_pos[2])-1:
+			if _pos[2]>0:
+				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
+				life['pos'][2] += abs(_pos[2])-1
+			else:
+				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]+1)))
+				life['pos'][2] += _pos[2]+1
+				
+			
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		
 		if life['path']:
@@ -538,8 +548,8 @@ def show_life_info(life):
 
 def draw_life():
 	for life in LIFE:
-		if not life['pos'][2] <= CAMERA_POS[2]:
-			continue
+		#if not life['pos'][2] <= CAMERA_POS[2]:
+		#	continue
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:

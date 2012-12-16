@@ -1,23 +1,19 @@
 from copy import deepcopy
 from globals import *
+import logging
 import numpy
 import tiles
 import time
 import sys
 
 class astar:
-	def __init__(self,start=None,end=None,omap=None,size=None,goals=None,blocking=None,dij=False,inverted=False):
+	def __init__(self,start=None,end=None,omap=None,size=None,goals=None,dij=False,inverted=False):
 		self.map = []
 		self.omap = omap
 		self.size = size
 		self.dij = dij
 		self.goals = goals
 		self.inverted = inverted
-		
-		#if not blocking:
-		self.blocking = []#var.blocking[:]
-		#self.blocking.extend(var.solid)
-		#else: self.blocking = blocking
 
 		if not self.dij:
 			self.start = tuple(start)
@@ -48,9 +44,23 @@ class astar:
 		self.map = numpy.ones((self.size[1],self.size[0]))
 		
 		for x in xrange(self.size[0]):
-			for y in xrange(self.size[1]):				
-				if self.omap[x][y][self.start[2]+1] and tiles.get_tile(self.omap[x][y][self.start[2]+1])['cost']==-1:
+			for y in xrange(self.size[1]):
+				#Fall down
+				#if self.omap[x][y][self.start[2]-1]:
+				#	self.map[y,x] = -2
+				
+				#Can't walk if there's no ground beneath this position
+				if not self.omap[x][y][self.start[2]]:
+					self.map[y,x] = -2
+				
+				#But we can climb to this position if there is something to climb on
+				if self.omap[x][y][self.start[2]+1]:
+					self.map[y,x] = 2
+				
+				#Not if there's a tile above the position we'd be climing to!
+				if self.omap[x][y][self.start[2]+2]:
 					self.map[y,x] = 0
+				#elif 
 		
 		#Calculate our starting node
 		if not self.dij:
@@ -86,6 +96,7 @@ class astar:
 			
 			_clist.append(node)
 			_lowest = {'pos':None,'f':9000}
+			
 			#Check adjacent
 			for adj in self.getadj(node):
 				if not adj in _olist:
@@ -127,10 +138,10 @@ class astar:
 	def find_path(self,start):
 		if not self.dij:
 			if self.map[self.end[1],self.end[0]] == 0:
-				return [self.start]
+				return [[self.start[0],self.start[1],0]]
 			
 			node = self.pmap[self.end[0]][self.end[1]]
-			self.path = [self.end]
+			self.path = [[self.end[0],self.end[1],int(self.map[self.end[1],self.end[0]])]]
 			
 			_broken = False
 			while not tuple(node) == tuple(start):
@@ -138,7 +149,7 @@ class astar:
 					_broken = True
 					break
 				else:
-					self.path.insert(0,node)
+					self.path.insert(0,(node[0],node[1],int(self.map[node[1],node[0]])))
 				
 				self.tmap[node[0]][node[1]] = 1
 				node = self.pmap[node[0]][node[1]]
@@ -195,10 +206,12 @@ class astar:
 			_x = pos[0]+r[0]
 			_y = pos[1]+r[1]
 			
-			if _x<0 or _x>=self.size[0] or _y<0 or _y>=self.size[1] or not self.map[_y,_x]: continue
+			if _x<0 or _x>=self.size[0] or _y<0 or _y>=self.size[1] or not self.map[_y,_x]:
+				continue
 			
 			if (_x,_y) in self.clist and checkclist:
-				continue 
+				continue
+			
 			adj.append((_x,_y))
 			
 		return adj
