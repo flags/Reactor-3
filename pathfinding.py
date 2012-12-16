@@ -45,13 +45,13 @@ class astar:
 		
 		for x in xrange(self.size[0]):
 			for y in xrange(self.size[1]):
-				#Fall down
-				#if self.omap[x][y][self.start[2]-1]:
-				#	self.map[y,x] = -2
-				
 				#Can't walk if there's no ground beneath this position
 				if not self.omap[x][y][self.start[2]]:
 					self.map[y,x] = -2
+					
+					#For loop!
+					if not self.omap[x][y][self.start[2]-1]:
+						self.map[y,x] = -3
 				
 				#But we can climb to this position if there is something to climb on
 				if self.omap[x][y][self.start[2]+1]:
