@@ -13,6 +13,10 @@ def initiate_item(name):
 	
 	item = load_item(name)
 	
+	if not 'prefix' in item:
+		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_PREFIX))
+		item['prefix'] = DEFAULT_ITEM_PREFIX
+	
 	if not 'icon' in item:
 		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_ICON))
 		item['tile'] = DEFAULT_ITEM_ICON
@@ -78,6 +82,9 @@ def get_items_at(position):
 			_items.append(item)
 	
 	return _items
+
+def get_name(item):
+	return '%s %s' % (item['prefix'],item['name'])
 
 def draw_items():
 	for _item in ITEMS:

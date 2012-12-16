@@ -255,8 +255,8 @@ def perform_action(life):
 		
 		if life.has_key('player'):			
 			if _action.has_key('container'):
-				gfx.message('You store the %s in your %s.'
-					% (_action['item']['name'],_action['container']['name']))
+				gfx.message('You store %s in your %s.'
+					% (items.get_name(_action['item']),_action['container']['name']))
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(_action['life'],_action['item']):
 			if life.has_key('player'):
@@ -270,10 +270,10 @@ def perform_action(life):
 		
 		equip_item(_action['life'],_id)
 		
-		life['actions'].remove({'action':_action,'score':_score})
+		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 		
 		if life.has_key('player'):
-			gfx.message('You equip a %s from the ground.' % _action['item']['name'])
+			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
 
 def tick(life):
 	perform_action(life)

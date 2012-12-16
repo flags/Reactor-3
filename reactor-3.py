@@ -16,7 +16,7 @@ import sys
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M %m/%d/%y')
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
 ch = logging.StreamHandler()
 ch.setFormatter(console_formatter)
 logger.addHandler(ch)
@@ -226,14 +226,14 @@ def inventory_equip(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	_name = life.get_inventory_item(PLAYER,item)['name']
+	_name = items.get_name(life.get_inventory_item(PLAYER,item))
 	
 	if life.equip_item(PLAYER,int(item)):
 		_stored = life.item_is_stored(PLAYER,int(item))
 		if _stored:
-			gfx.message('You remove the %s from your %s.' % (_name,_stored['name']))
+			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
 		
-		gfx.message('You put on the %s.' % _name)
+		gfx.message('You put on %s.' % _name)
 	
 		menus.delete_menu(ACTIVE_MENU['menu'])
 	else:
@@ -244,17 +244,17 @@ def inventory_drop(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	_name = life.get_inventory_item(PLAYER,item)['name']
+	_name = items.get_name(life.get_inventory_item(PLAYER,item))
 	
 	if life.item_is_equipped(PLAYER,item):
-		gfx.message('You take off the %s.' % _name)
+		gfx.message('You take off %s.' % _name)
 			
 	_stored = life.item_is_stored(PLAYER,item)
 	if _stored:
 		_item = life.get_inventory_item(PLAYER,item)
-		gfx.message('You remove the %s from your %s.' % (_item['name'],_stored['name']))
+		gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
 	
-	gfx.message('You drop the %s.' % _name)
+	gfx.message('You drop %s.' % _name)
 	life.drop_item(PLAYER,item)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -266,7 +266,7 @@ def pick_up_item_from_ground(entry):
 	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
-		gfx.message('You start to pick up %s.' % entry['item']['name'])
+		gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
 		
 		life.add_action(PLAYER,{'action': 'pickupequipitem',
 			'item': entry['item'],
@@ -276,8 +276,8 @@ def pick_up_item_from_ground(entry):
 		
 		return True
 	
-	gfx.message('You start to put the %s in your %s.' %
-		(entry['item']['name'],entry['container']['name']))
+	gfx.message('You start to put %s in your %s.' %
+		(items.get_name(entry['item']),entry['container']['name']))
 	
 	life.add_action(PLAYER,{'action': 'pickupitem',
 		'item': entry['item'],
@@ -345,6 +345,7 @@ PLAYER['player'] = True
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
+items.initiate_item('blue_jeans')
 
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
@@ -352,6 +353,7 @@ _i3 = items.create_item('sneakers')
 _i4 = items.create_item('sneakers',position=(10,10,2))
 _i4 = items.create_item('white t-shirt',position=(10,10,2))
 _i5 = items.create_item('leather backpack')
+_i6 = items.create_item('blue jeans')
 
 life.add_item_to_inventory(PLAYER,_i1)
 life.add_item_to_inventory(PLAYER,_i2)

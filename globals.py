@@ -39,6 +39,7 @@ ITEM_DIR = os.path.join(DATA_DIR,'items')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
+DEFAULT_ITEM_PREFIX = 'a'
 
 #Life constants
 LIFE_MAX_SPEED = 12
