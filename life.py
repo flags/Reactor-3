@@ -253,9 +253,7 @@ def perform_action(life):
 		direct_add_item_to_inventory(_action['life'],_action['item'],container=_action['container'])
 		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 		
-		if life.has_key('player'):
-			gfx.message('You pick up a %s.' % _action['item']['name'])
-			
+		if life.has_key('player'):			
 			if _action.has_key('container'):
 				gfx.message('You store the %s in your %s.'
 					% (_action['item']['name'],_action['container']['name']))
