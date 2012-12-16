@@ -69,37 +69,37 @@ CONCRETE_TILE_1 = {'id':'concrete_1',
              'icon':'.',
              'color':(Color(130,130,130),Color(70,70,70)),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 CONCRETE_TILE_2 = {'id':'concrete_2',
              'icon':'.',
              'color':(Color(95,95,95),Color(62,62,62)),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 CONCRETE_FLOOR_1 = {'id':'concrete_floor_1',
              'icon':'.',
              'color':(Color(115,115,115),Color(100,100,100)),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 CONCRETE_FLOOR_2 = {'id':'concrete_floor_2',
              'icon':'.',
              'color':(Color(125,125,125),Color(110,110,110)),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 ROAD_STRIPE_1 = {'id':'road_stripe_1',
              'icon':'.',
              'color':(yellow,yellow),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 ROAD_STRIPE_2 = {'id':'road_stripe_2',
              'icon':'.',
              'color':(white,darker_gray),
              'burnable':False,
-             'cost':-1}
+             'cost':2}
 
 RED_BRICK_1 = {'id':'red_brick_1',
              'icon':'#',

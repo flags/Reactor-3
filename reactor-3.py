@@ -359,6 +359,7 @@ life.add_item_to_inventory(PLAYER,_i1)
 life.add_item_to_inventory(PLAYER,_i2)
 life.add_item_to_inventory(PLAYER,_i3)
 life.add_item_to_inventory(PLAYER,_i5)
+life.add_item_to_inventory(PLAYER,_i6)
 
 CURRENT_UPS = UPS
 

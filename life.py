@@ -138,7 +138,11 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['name'] = name
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
+	
+	#TODO: We only need this for pathing, so maybe we should move this to
+	#the `walk` function?
 	_life['map'] = map
+	
 	_life['path'] = []
 	_life['actions'] = []
 	_life['item_index'] = 0

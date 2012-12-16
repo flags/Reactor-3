@@ -1,6 +1,7 @@
 from copy import deepcopy
 from globals import *
 import numpy
+import tiles
 import time
 import sys
 
@@ -47,12 +48,9 @@ class astar:
 		self.map = numpy.ones((self.size[1],self.size[0]))
 		
 		for x in xrange(self.size[0]):
-			for y in xrange(self.size[1]):
-				if self.omap[x][y][2] in self.blocking:
+			for y in xrange(self.size[1]):				
+				if self.omap[x][y][self.start[2]+1] and tiles.get_tile(self.omap[x][y][self.start[2]+1])['cost']==-1:
 					self.map[y,x] = 0
-		
-		#for pos in blocking:
-		#	self.map[pos[1],pos[0]] = 0
 		
 		#Calculate our starting node
 		if not self.dij:
@@ -61,11 +59,15 @@ class astar:
 			if self.goals:
 				for goal in self.goals:
 					self.olist.append(goal)
+		
 		self.fmap[self.start[0]][self.start[1]] = self.hmap[self.start[0]][self.start[1]]
 		
 		self.calculate()
 		
 	def calculate(self):
+		if self.map[self.end[1],self.end[0]] == 0:
+			return False
+		
 		node = self.olist[0]
 		
 		_clist = self.clist
@@ -124,6 +126,9 @@ class astar:
 	
 	def find_path(self,start):
 		if not self.dij:
+			if self.map[self.end[1],self.end[0]] == 0:
+				return [self.start]
+			
 			node = self.pmap[self.end[0]][self.end[1]]
 			self.path = [self.end]
 			
