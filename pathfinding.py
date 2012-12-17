@@ -50,8 +50,11 @@ class astar:
 					self.map[y,x] = -2
 					
 					#For loop!
-					if not self.omap[x][y][self.start[2]-1]:
-						self.map[y,x] = -3
+					for i in xrange(1,self.start[2]+1):
+						if not self.omap[x][y][self.start[2]-1-i]:
+							self.map[y,x] = -1-i
+							
+							break
 				
 				#But we can climb to this position if there is something to climb on
 				if self.omap[x][y][self.start[2]+1]:
@@ -60,7 +63,6 @@ class astar:
 					#Not if there's a tile above the position we'd be climing to!
 					if self.omap[x][y][self.start[2]+2]:
 						self.map[y,x] = 0
-				#elif 
 		
 		#Calculate our starting node
 		if not self.dij:

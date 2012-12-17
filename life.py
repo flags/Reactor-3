@@ -190,8 +190,6 @@ def walk_path(life):
 	if life['path']:
 		_pos = list(life['path'].pop(0))
 		
-		#print _pos[2]
-		
 		if _pos[2] and abs(_pos[2])-1:
 			if _pos[2]>0:
 				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
