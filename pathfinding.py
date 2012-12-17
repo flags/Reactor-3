@@ -57,9 +57,9 @@ class astar:
 				if self.omap[x][y][self.start[2]+1]:
 					self.map[y,x] = 2
 				
-				#Not if there's a tile above the position we'd be climing to!
-				if self.omap[x][y][self.start[2]+2]:
-					self.map[y,x] = 0
+					#Not if there's a tile above the position we'd be climing to!
+					if self.omap[x][y][self.start[2]+2]:
+						self.map[y,x] = 0
 				#elif 
 		
 		#Calculate our starting node
