@@ -56,11 +56,16 @@ def initiate_item(name):
 	
 	return item
 
-def create_item(name,position=[0,0,2]):
+def create_item(name,_map,position=[0,0,2]):
 	item = ITEM_TYPES[name].copy()
 	
 	item['uid'] = len(ITEMS)
+	item['map'] = _map
 	item['pos'] = list(position)
+	item['realpos'] = list(position)
+	item['velocity'] = [0,0,0]
+	item['friction'] = 0
+	item['gravity'] = 0.1
 	
 	ITEMS[item['uid']] = item
 	
@@ -86,6 +91,21 @@ def get_items_at(position):
 def get_name(item):
 	return '%s %s' % (item['prefix'],item['name'])
 
+def move(item,velocity,friction=0.05):
+	#if not len(direction) == 3:
+	#	logging.warning('Passing wrong number of elements to items.move()\'s \'direction\'!')
+	
+	#if speed == item['speed_max']:
+	#	logging.warning('Changing item \'%s\' to same speed!' % item['name'])
+	#	return False
+	
+	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
+	item['friction'] = friction
+	item['velocity'] = velocity
+	item['realpos'] = item['pos'][:]
+	
+	logging.debug('The %s flies off in an arc!' % item['name'])
+
 def draw_items():
 	for _item in ITEMS:
 		item = ITEMS[_item]
@@ -93,11 +113,82 @@ def draw_items():
 		if item.has_key('id'):
 			continue
 		
-		if not item['pos'][2] <= CAMERA_POS[2]:
-			continue
+		#if not item['pos'][2] <= CAMERA_POS[2]:
+		#	continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = item['pos'][0] - CAMERA_POS[0]
 			_y = item['pos'][1] - CAMERA_POS[1]
 			gfx.blit_char(_x,_y,item['icon'],white,None)
+
+def tick_all_items():
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
+		if not item['velocity'].count(0)==3:
+			#if item['velocity'][0]:
+			item['realpos'][0]+=item['velocity'][0]
+				
+			#Friction here if item on ground
+			
+			item['realpos'][1]+=item['velocity'][1]
+				
+			#Friction here if item on ground
+							
+			item['realpos'][2]+=item['velocity'][2]
+			
+			item['velocity'][2] -= item['gravity']
+			
+			_nx = int(item['realpos'][0])
+			_ny = int(item['realpos'][1])
+			_nz = int(item['realpos'][2])
+			
+			item['velocity'][2] -= item['gravity']
+			
+			#Collisions
+			if item['map'][_nx][_ny][_nz]:
+				print 'speed of impact',,_ny-item['pos'][1],_nz-item['pos'][2]
+				_coll_x = _nx-item['pos'][0]
+				_coll_y = _nx-item['pos'][1]
+				_coll_z = _nx-item['pos'][2]
+				#...with tile below
+				if 0>=_nz-item['pos'][2]<=-1:
+					item['velocity'][2] = 0
+					item['gravity'] = 0
+				elif 0<=_nz-item['pos'][2]>=1:
+					item['velocity'][2] = 0
+				
+				#...with the left and right
+				if 0>_nx-item['pos'][0]<=-1:
+					item['velocity'][0] = 0#-item['velocity'][0]
+				elif 0<_nx-item['pos'][0]>=1:
+					item['velocity'][0] = 0#-item['velocity'][0]
+				
+				#...up and down
+				if 0>_ny-item['pos'][1]<=-1:
+					item['velocity'][1] = 0#-item['velocity'][1]
+				elif 0<_ny-item['pos'][1]>=1:
+					item['velocity'][1] = 0#-item['velocity'][1]
+			else:
+				item['gravity'] = 0.1
+				
+			item['pos'] = [_nx,_ny,_nz]
+			
+			if not item['velocity'][2]:
+				for i in range(0,2):
+					if item['velocity'][i]>0:
+						item['velocity'][i]-=item['friction']
+						
+						if item['velocity'][i]<0:
+							item['velocity'][i]=0
+						
+					elif item['velocity'][i]<0:
+						item['velocity'][i]+=item['friction']
+						
+						if item['velocity'][i]>0:
+							item['velocity'][i]=0
+			
+			if item['velocity'].count(0)==3:
+				logging.debug('The %s comes to a rest at %s,%s,%s.' %
+					(item['name'],item['pos'][0],item['pos'][1],item['pos'][2]))

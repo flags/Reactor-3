@@ -347,13 +347,15 @@ items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
 items.initiate_item('blue_jeans')
 
-_i1 = items.create_item('white t-shirt')
-_i2 = items.create_item('sneakers')
-_i3 = items.create_item('sneakers')
-_i4 = items.create_item('sneakers',position=(10,10,2))
-_i4 = items.create_item('white t-shirt',position=(10,10,2))
-_i5 = items.create_item('leather backpack')
-_i6 = items.create_item('blue jeans')
+_i1 = items.create_item('white t-shirt',MAP)
+_i2 = items.create_item('sneakers',MAP)
+_i3 = items.create_item('sneakers',MAP)
+_i4 = items.create_item('sneakers',MAP,position=(8,15,2))
+_i4 = items.create_item('white t-shirt',MAP,position=(5,20,2))
+_i5 = items.create_item('leather backpack',MAP)
+_i6 = items.create_item('blue jeans',MAP)
+
+items.move(_i4,[0.5,0,1])
 
 life.add_item_to_inventory(PLAYER,_i1)
 life.add_item_to_inventory(PLAYER,_i2)
@@ -369,6 +371,7 @@ while RUNNING:
 	_played_moved = False
 
 	while life.get_highest_action(PLAYER):
+		items.tick_all_items()
 		life.tick_all_life()
 		_played_moved = True
 		
@@ -379,6 +382,7 @@ while RUNNING:
 			break
 	
 	if not _played_moved:
+		items.tick_all_items()
 		life.tick_all_life()
 	
 	gfx.start_of_frame()
