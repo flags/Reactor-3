@@ -33,13 +33,13 @@ def init_libtcod():
 
 def start_of_frame():
 	console_fill_background(MAP_WINDOW,
-	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
-	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]).clip(0,255),
-	        numpy.add(numpy.subtract(RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]).clip(0,255))
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
 	console_fill_foreground(MAP_WINDOW,
-	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]).clip(0,255),
-	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]).clip(0,255),
-	        numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]).clip(0,255))
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
 	console_fill_char(MAP_WINDOW,CHAR_BUFFER[0])
 
 def blit_tile(x,y,tile):

@@ -194,10 +194,20 @@ def walk_path(life):
 			if _pos[2]>0:
 				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
 				life['pos'][2] += _pos[2]-1
+				
 			else:
 				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]+1)))
 				life['pos'][2] += _pos[2]+1
 				
+				_dist = abs(_pos[2])-1
+				
+				#TODO: Damage?
+				if life.has_key('player'):
+					if _dist>=2:
+						gfx.message('You stumble to the ground.')
+				elif _dist>=4:
+					if _dist>=2:
+						gfx.message('You hit the ground hard.')				
 			
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		

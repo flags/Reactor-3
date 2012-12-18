@@ -41,6 +41,9 @@ DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
 DEFAULT_ITEM_PREFIX = 'a'
 
+#Versions
+MAP_RENDER_VERSION = 2
+
 #Life constants
 LIFE_MAX_SPEED = 12
 
@@ -108,7 +111,10 @@ INPUT = {'up':False,
 		'2':False,
 		'3':False,
 		'4':False,
-		'5':False}
+		'5':False,
+		'6':False,
+		'7':False,
+		'8':False}
 		
 #Colors
 GREEN_ALT = Color(0,130,0)

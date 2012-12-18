@@ -65,7 +65,7 @@ def create_item(name,_map,position=[0,0,2]):
 	item['realpos'] = list(position)
 	item['velocity'] = [0,0,0]
 	item['friction'] = 0
-	item['gravity'] = 0.1
+	item['gravity'] = 0.05
 	
 	ITEMS[item['uid']] = item
 	

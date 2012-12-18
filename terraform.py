@@ -181,17 +181,26 @@ def handle_input():
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
 
-	if INPUT['2']:
+	elif INPUT['2']:
 		CAMERA_POS[2] = 2
 
-	if INPUT['3']:
+	elif INPUT['3']:
 		CAMERA_POS[2] = 3
 
-	if INPUT['4']:
+	elif INPUT['4']:
 		CAMERA_POS[2] = 4
 
-	if INPUT['5']:
+	elif INPUT['5']:
 		CAMERA_POS[2] = 5
+	
+	elif INPUT['6']:
+		CAMERA_POS[2] = 6
+	
+	elif INPUT['7']:
+		CAMERA_POS[2] = 7
+	
+	elif INPUT['8']:
+		CAMERA_POS[2] = 8
 
 def menu_item_selected(key,value):
 	if value == 'Save':

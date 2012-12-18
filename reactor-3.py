@@ -24,7 +24,14 @@ logger.addHandler(ch)
 #Optional Cython-compiled modules
 try:
 	import render_map
-	CYTHON_ENABLED = True
+	
+	if render_map.VERSION == MAP_RENDER_VERSION:
+		CYTHON_ENABLED = True
+	else:
+		CYTHON_ENABLED = False
+		logging.warning('[Cython] render_map is out of date!')
+		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+	
 except ImportError, e:
 	CYTHON_ENABLED = False
 	logging.warning('[Cython] ImportError with module: %s' % e)
@@ -203,6 +210,8 @@ def move_camera():
 	
 	elif PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
 		CAMERA_POS[0] -= 1
+	
+	CAMERA_POS[2] = PLAYER['pos'][2]
 
 def inventory_select(entry):
 	key = entry['key']
@@ -335,6 +344,8 @@ def return_to_inventory(entry):
 	menus.activate_menu_by_name('Inventory')
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
+
+SETTINGS['draw z-levels below'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
