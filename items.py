@@ -146,30 +146,48 @@ def tick_all_items():
 			
 			item['velocity'][2] -= item['gravity']
 			
-			#Collisions
+			#Collisions!
+			#Kinda complicated things going on here...
+			#Basically this `if` statement says there is some kind of
+			#collision at the position we're moving to, but nothing else.
+			#We have to figure all of that out next.
+			#print _nx,_ny,_nz
+			
 			if item['map'][_nx][_ny][_nz]:
-				print 'speed of impact',,_ny-item['pos'][1],_nz-item['pos'][2]
-				_coll_x = _nx-item['pos'][0]
-				_coll_y = _nx-item['pos'][1]
-				_coll_z = _nx-item['pos'][2]
-				#...with tile below
-				if 0>=_nz-item['pos'][2]<=-1:
+				#print _nx,_ny,_nz,'speed of impact',_ny-item['pos'][1],_nz-item['pos'][2]
+				
+				#We know there's a collision, but how should the item react?
+				#First we find the difference between the new position and the
+				#old.
+				_x_change = _nx-item['pos'][0]
+				_y_change = _ny-item['pos'][1]
+				_z_change = _nz-item['pos'][2]
+				
+				if _x_change:
+					item['velocity'][0] = -(item['velocity'][0]/2)
+					
+					#print 'x-collision:',item['velocity'][0]
+				
+				#A positive/negative _x_change says we made contact to the right/left
+				if _y_change:
+					item['velocity'][1] = -(item['velocity'][1]/2)
+					
+					#print 'y-collision:',item['velocity'][1]
+				
+				if _z_change>0:
+					if _z_change>0:
+						item['velocity'][2] = -(item['velocity'][2]/2)
+						
+						#print 'z-collision:',item['velocity'][2]
+					
+				elif _z_change<0:
+					item['velocity'][0] = 0
+					item['velocity'][1] = 0
 					item['velocity'][2] = 0
 					item['gravity'] = 0
-				elif 0<=_nz-item['pos'][2]>=1:
-					item['velocity'][2] = 0
-				
-				#...with the left and right
-				if 0>_nx-item['pos'][0]<=-1:
-					item['velocity'][0] = 0#-item['velocity'][0]
-				elif 0<_nx-item['pos'][0]>=1:
-					item['velocity'][0] = 0#-item['velocity'][0]
-				
-				#...up and down
-				if 0>_ny-item['pos'][1]<=-1:
-					item['velocity'][1] = 0#-item['velocity'][1]
-				elif 0<_ny-item['pos'][1]>=1:
-					item['velocity'][1] = 0#-item['velocity'][1]
+					
+					print 'z-collision: resting at',_nz
+			
 			else:
 				item['gravity'] = 0.1
 				
