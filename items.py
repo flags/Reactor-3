@@ -92,13 +92,6 @@ def get_name(item):
 	return '%s %s' % (item['prefix'],item['name'])
 
 def move(item,velocity,friction=0.05):
-	#if not len(direction) == 3:
-	#	logging.warning('Passing wrong number of elements to items.move()\'s \'direction\'!')
-	
-	#if speed == item['speed_max']:
-	#	logging.warning('Changing item \'%s\' to same speed!' % item['name'])
-	#	return False
-	
 	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
 	item['friction'] = friction
 	item['velocity'] = velocity

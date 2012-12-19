@@ -334,8 +334,6 @@ def perform_action(life):
 		_id = direct_add_item_to_inventory(_action['life'],_action['item'])
 		_hand['holding'].append(_id)
 		
-		print _id
-		
 		gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
 		
 		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})

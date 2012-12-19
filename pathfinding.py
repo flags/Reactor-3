@@ -49,11 +49,12 @@ class astar:
 				if not self.omap[x][y][self.start[2]]:
 					self.map[y,x] = -2
 					
-					for i in xrange(1,self.start[2]+1):
-						if not self.omap[x][y][self.start[2]-1-i]:
-							self.map[y,x] = -1-i
-							
-							break
+					#TODO: Will probably need this at some point (for falling risk?)
+					#for i in xrange(1,self.start[2]+1):
+					#	if not self.omap[x][y][self.start[2]-1-i]:
+					#		self.map[y,x] = -1-i
+					#		
+					#		break
 				
 				#But we can climb to this position if there is something to climb on
 				if self.omap[x][y][self.start[2]+1]:
