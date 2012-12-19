@@ -275,13 +275,24 @@ def pick_up_item_from_ground(entry):
 	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
-		gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+		if entry['values'][entry['value']] == 'Wear':
+			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+			
+			life.add_action(PLAYER,{'action': 'pickupequipitem',
+				'item': entry['item'],
+				'life': PLAYER},
+				200,
+				delay=40)
 		
-		life.add_action(PLAYER,{'action': 'pickupequipitem',
-			'item': entry['item'],
-			'life': PLAYER},
-			200,
-			delay=40)
+		elif entry['values'][entry['value']] in PLAYER['hands']:
+			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+			
+			life.add_action(PLAYER,{'action': 'pickupholditem',
+				'item': entry['item'],
+				'hand': entry['values'][entry['value']],
+				'life': PLAYER},
+				200,
+				delay=40)
 		
 		return True
 	
@@ -305,7 +316,10 @@ def pick_up_item_from_ground_action(entry):
 	_menu = []
 	#TODO: Can we equip this?	
 	_menu.append(menus.create_item('title','Actions',None,enabled=False))
-	_menu.append(menus.create_item('single','Equip','Body part',item=_item))
+	_menu.append(menus.create_item('single','Equip','Wear',item=_item))
+	
+	for hand in PLAYER['hands']:
+		_menu.append(menus.create_item('single','Equip',hand,item=_item))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
 	for container in life.get_all_storage(PLAYER):

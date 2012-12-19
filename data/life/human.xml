@@ -1,6 +1,6 @@
 <race>Human</race>
 
-<flags>HUMANOID|LEGS[lthigh,rthigh]|ARMS[lshouder,rshoulder]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<flags>HUMANOID|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
 <icon>@</icon>
 
 <body>

@@ -32,6 +32,9 @@ def calculate_base_stats(life):
 		elif flag.count('ARMS'):
 			stats['arms'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
+		elif flag.count('HANDS'):
+			stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
+		
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 	
@@ -304,6 +307,7 @@ def perform_action(life):
 				gfx.message('You can\'t equip this item!')
 			
 			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+			
 			return False
 		
 		#TODO: Can we even equip this? Can we check here instead of later?
@@ -315,6 +319,26 @@ def perform_action(life):
 		
 		if life.has_key('player'):
 			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
+	
+	elif _action['action'] == 'pickupholditem':
+		_hand = get_limb(life['body'],_action['hand'])
+		
+		if _hand['holding']:
+			if life.has_key('player'):
+				gfx.message('You\'re alreading holding something in your %s!' % _action['hand'])
+		
+			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+			
+			return False
+		
+		_id = direct_add_item_to_inventory(_action['life'],_action['item'])
+		_hand['holding'].append(_id)
+		
+		print _id
+		
+		gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+		
+		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
 
 def tick(life):
 	perform_collisions(life)
@@ -332,7 +356,11 @@ def attach_item_to_limb(body,item,limb):
 def remove_item_from_limb(body,item,limb):
 	for limb1 in body:
 		if limb1 == limb:
-			body[limb1]['holding'].remove(item)
+			try:
+				body[limb1]['holding'].remove(item)
+			except:
+				print body[limb1]['holding'],item
+				raise Exception('Cant find that item...')
 			logging.debug('%s removed from %s' % (item,limb))
 			return True
 		
@@ -467,7 +495,12 @@ def add_item_to_inventory(life,item):
 def remove_item_from_inventory(life,id):
 	item = get_inventory_item(life,id)
 	
-	if item_is_equipped(life,id):
+	_holding = holding_item(life,id)
+	if _holding:
+		_holding['holding'].remove(id)
+		logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
+		
+	elif item_is_equipped(life,id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
@@ -530,21 +563,7 @@ def equip_item(life,id):
 
 def drop_item(life,id):
 	item = remove_item_from_inventory(life,id)
-	item['pos'] = life['pos'][:]	
-
-#def direct_pick_up_item_from_ground(life,item):
-#	#Warning: Only use this if you know what you're doing!
-#	for _item in items.get_items_at(life['pos']):
-#		#TODO: Don't use names!
-#		if _item['name'] == item:
-#			_id = add_item_to_inventory(life,_item)
-#			if _id:
-#				return _id
-#			
-#			return False
-#		
-#	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
-#		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
+	item['pos'] = life['pos'][:]
 
 def pick_up_item_from_ground(life,uid):
 	_item = items.get_item_from_uid(uid)
@@ -557,6 +576,15 @@ def pick_up_item_from_ground(life,uid):
 
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
+
+def holding_item(life,id):
+	for _hand in life['hands']:
+		_limb = get_limb(life['body'],_hand)
+		
+		if id in _limb['holding']:
+			return _limb
+	
+	return False
 
 def item_is_equipped(life,id):
 	for _limb in get_all_limbs(life['body']):
