@@ -51,7 +51,8 @@ LIFE_MAX_SPEED = 12
 SETTINGS = {'draw lights': True,
 			'draw console': False,
 			'draw z-levels above': True,
-			'draw z-levels below': False}
+			'draw z-levels below': False,
+			'world gravity': 0.09}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = []
 LIFE_TYPES = {}

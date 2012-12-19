@@ -138,6 +138,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['name'] = name
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
+	_life['realpos'] = list(position)
 	
 	#TODO: We only need this for pathing, so maybe we should move this to
 	#the `walk` function?
@@ -148,6 +149,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['item_index'] = 0
 	_life['inventory'] = {}
 	_life['flags'] = {}
+	_life['gravity'] = 0
 	
 	initiate_limbs(_life['body'])
 	LIFE.append(_life)
@@ -187,6 +189,9 @@ def walk(life,to):
 	return walk_path(life)
 
 def walk_path(life):
+	if life['gravity']:
+		return False
+	
 	if life['path']:
 		_pos = list(life['path'].pop(0))
 		
@@ -194,22 +199,9 @@ def walk_path(life):
 			if _pos[2]>0:
 				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
 				life['pos'][2] += _pos[2]-1
-				
-			else:
-				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]+1)))
-				life['pos'][2] += _pos[2]+1
-				
-				_dist = abs(_pos[2])-1
-				
-				#TODO: Damage?
-				if life.has_key('player'):
-					if _dist>=2:
-						gfx.message('You stumble to the ground.')
-				elif _dist>=4:
-					if _dist>=2:
-						gfx.message('You hit the ground hard.')				
 			
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
+		life['realpos'] = life['pos'][:]
 		
 		if life['path']:
 			return False
@@ -218,6 +210,31 @@ def walk_path(life):
 	else:
 		print 'here?'
 		return False
+
+def perform_collisions(life):
+	#Gravity
+	if not life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
+		if life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
+			life['pos'][2] -= 1
+			
+			return True
+		
+		if not life['gravity'] and life.has_key('player'):
+			gfx.message('You begin to fall...')
+		
+		life['gravity'] = SETTINGS['world gravity']
+			
+	elif life['gravity']:
+		life['gravity'] = 0
+		
+		if life.has_key('player'):
+			gfx.message('You land.')
+	
+	if life['gravity']:
+		life['realpos'][2] -= SETTINGS['world gravity']
+		life['pos'][2] = int(life['realpos'][2])
+		
+		print life['pos'][2]
 
 def get_highest_action(life):
 	_actions = {'action': None,'lowest': -1}
@@ -300,6 +317,7 @@ def perform_action(life):
 			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
 
 def tick(life):
+	perform_collisions(life)
 	perform_action(life)
 
 def attach_item_to_limb(body,item,limb):

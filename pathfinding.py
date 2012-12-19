@@ -49,7 +49,6 @@ class astar:
 				if not self.omap[x][y][self.start[2]]:
 					self.map[y,x] = -2
 					
-					#For loop!
 					for i in xrange(1,self.start[2]+1):
 						if not self.omap[x][y][self.start[2]-1-i]:
 							self.map[y,x] = -1-i
