@@ -416,11 +416,12 @@ while RUNNING:
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)
 	else:
-		maps.render_map(MAP,los=maps.render_los(MAP,PLAYER['pos']))
+		maps.render_map(MAP)
 	
 	maps.render_lights()
 	items.draw_items()
 	move_camera()
+	maps.render_los(MAP,PLAYER['pos'])
 	life.draw_life()
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()

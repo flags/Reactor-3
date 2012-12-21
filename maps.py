@@ -95,8 +95,7 @@ def render_los(map,position):
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	for pos1 in drawing.draw_circle(position,28):
-		#pos1 = (CAMERA_POS[0]+pos2[0],CAMERA_POS[1]+pos2[1])
-		
+
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):
 			_dist = abs(pos[0]-position[0])+abs(pos[1]-position[1])
@@ -111,16 +110,18 @@ def render_los(map,position):
 					
 					continue
 				
-			if not _dark:
-				_x = pos[0]-CAMERA_POS[0]
-				_y = pos[1]-CAMERA_POS[1]
-				
-				if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
-					continue
+			if _dark:
+				continue
+			
+			_x = pos[0]-CAMERA_POS[0]
+			_y = pos[1]-CAMERA_POS[1]
+			
+			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
+				continue
 
-				LOS_BUFFER[0][_y,_x] = 1
+			LOS_BUFFER[0][_y,_x] = 1
 
-def render_map(map,los=[]):
+def render_map(map):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
 	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
 	
@@ -159,8 +160,6 @@ def render_map(map,los=[]):
 				
 					if SETTINGS['draw z-levels above'] and _drawn:
 						break
-			
-			#gfx.darken_tile(_RENDER_X,_RENDER_Y,255)
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
