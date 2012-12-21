@@ -101,16 +101,23 @@ def render_los(map,position):
 	if _Y_MAX>MAP_SIZE[1]:
 		_Y_MAX = MAP_SIZE[1]
 	
-	for pos1 in drawing.draw_circle(position,30):
+	for pos1 in drawing.draw_circle(position,28):
 		#pos1 = (CAMERA_POS[0]+pos2[0],CAMERA_POS[1]+pos2[1])
 		
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):
+			_dist = abs(pos[0]-position[0])+abs(pos[1]-position[1])
+			
 			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:
 				_x = pos[0]-CAMERA_POS[0]
 				_y = pos[1]-CAMERA_POS[1]
 				
 				if not _dark:
+					#if _dist<=8:
+					#	dark = 0
+					#else:
+					#	dark = (_dist-8)*14
+					
 					gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 					_dark = True
 					continue
@@ -122,8 +129,12 @@ def render_los(map,position):
 				if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
 					continue
 				
-				dark = (abs(pos[0]-position[0])+abs(pos[1]-position[1]))*5
-				#gfx.lighten_tile(_x,_y,LOS_LIGHT_BUFFER[0][_y,_x])
+				#if _dist<=8:
+				#	dark = 0
+				#else:
+				#	dark = (_dist-8)*14
+					
+				
 				gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 
 def render_map(map,los=[]):
@@ -140,8 +151,6 @@ def render_map(map,los=[]):
 
 	if _Y_MAX>MAP_SIZE[1]:
 		_Y_MAX = MAP_SIZE[1]
-	
-	#print CAMERA_POS[2]
 
 	for x in range(CAMERA_POS[0],_X_MAX):
 		_RENDER_X = x-CAMERA_POS[0]
