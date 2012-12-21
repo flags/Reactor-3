@@ -215,7 +215,6 @@ def walk_path(life):
 		return False
 
 def perform_collisions(life):
-	#Gravity
 	if not life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
 		if life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
 			life['pos'][2] -= 1
@@ -236,8 +235,6 @@ def perform_collisions(life):
 	if life['gravity']:
 		life['realpos'][2] -= SETTINGS['world gravity']
 		life['pos'][2] = int(life['realpos'][2])
-		
-		print life['pos'][2]
 
 def get_highest_action(life):
 	_actions = {'action': None,'lowest': -1}
