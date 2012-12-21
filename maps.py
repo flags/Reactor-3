@@ -106,13 +106,9 @@ def render_los(map,position):
 				_y = pos[1]-CAMERA_POS[1]
 				
 				if not _dark:
-					#if _dist<=8:
-					#	dark = 0
-					#else:
-					#	dark = (_dist-8)*14
-					
-					#gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 					_dark = True
+					LOS_BUFFER[0][_y,_x] = 1
+					
 					continue
 				
 			if not _dark:
@@ -121,16 +117,8 @@ def render_los(map,position):
 				
 				if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
 					continue
-				
-				#if _dist<=8:
-				#	dark = 0
-				#else:
-				#	dark = (_dist-8)*14
-				#_LOS.append(pos)
+
 				LOS_BUFFER[0][_y,_x] = 1
-					
-				
-				#gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 
 def render_map(map,los=[]):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
