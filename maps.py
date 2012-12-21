@@ -92,14 +92,7 @@ def render_lights():
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0,255)
 
 def render_los(map,position):
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
+	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	for pos1 in drawing.draw_circle(position,28):
 		#pos1 = (CAMERA_POS[0]+pos2[0],CAMERA_POS[1]+pos2[1])
@@ -118,7 +111,7 @@ def render_los(map,position):
 					#else:
 					#	dark = (_dist-8)*14
 					
-					gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
+					#gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 					_dark = True
 					continue
 				
@@ -133,9 +126,11 @@ def render_los(map,position):
 				#	dark = 0
 				#else:
 				#	dark = (_dist-8)*14
+				#_LOS.append(pos)
+				LOS_BUFFER[0][_y,_x] = 1
 					
 				
-				gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
+				#gfx.darken_tile(_x,_y,LOS_DARK_BUFFER[0][_y,_x])
 
 def render_map(map,los=[]):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
@@ -159,9 +154,9 @@ def render_map(map,los=[]):
 			_drawn = False
 			for z in range(MAP_SIZE[2]-1,0,-1):
 				if map[x][y][z]:
-					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above']:
+					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=True)
+						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=False)
 						_drawn = True
 					elif z == CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES and time.time()%1>=0.5:
@@ -171,13 +166,13 @@ def render_map(map,los=[]):
 						_drawn = True
 					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=True)
+						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=False)
 						_drawn = True
 				
-					if _drawn:
+					if SETTINGS['draw z-levels above'] and _drawn:
 						break
 			
-			gfx.darken_tile(_RENDER_X,_RENDER_Y,255)
+			#gfx.darken_tile(_RENDER_X,_RENDER_Y,255)
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)

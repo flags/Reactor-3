@@ -360,7 +360,7 @@ def return_to_inventory(entry):
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
 SETTINGS['draw z-levels below'] = True
-SETTINGS['draw z-levels above'] = False
+SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
@@ -416,15 +416,12 @@ while RUNNING:
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)
 	else:
-		maps.render_map(MAP)
+		maps.render_map(MAP,los=maps.render_los(MAP,PLAYER['pos']))
 	
 	maps.render_lights()
 	items.draw_items()
 	move_camera()
 	life.draw_life()
-	_lostime = time.time()
-	maps.render_los(MAP,PLAYER['pos'])
-	print time.time()-_lostime
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
