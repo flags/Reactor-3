@@ -163,6 +163,23 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['t']:
+		if menus.get_menu_by_name('Throw')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Throw'))
+			return False
+		
+		#TODO: Use this?
+		_throwable = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=False)
+		
+		_i = menus.create_menu(title='Throw',
+			menu=_throwable,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k: $v',
+			on_select=inventory_throw)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT[',']:
 		_items = items.get_items_at(PLAYER['pos'])
 		
@@ -268,6 +285,22 @@ def inventory_drop(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def inventory_throw(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	_stored = life.item_is_stored(PLAYER,item['id'])
+	if _stored:
+		gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
+	
+	gfx.message('You drop %s.' % item['name'])
+	life.drop_item(PLAYER,item['id'])
+	
+	items.move(item,(1,0,1))
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
 def pick_up_item_from_ground(entry):	
 	_items = items.get_items_at(PLAYER['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -365,7 +398,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 #life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[135,20,4])
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[15,10,4])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')

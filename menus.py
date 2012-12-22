@@ -11,9 +11,6 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	_menu['menu'] = menu[:]
 	_size = [0,len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
 	
-	#menuitem
-	#type: single, list
-	
 	_uid = 0
 	for entry in _menu['menu']:
 		entry['uid'] = _uid

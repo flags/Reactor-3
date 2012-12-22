@@ -94,7 +94,7 @@ def get_name(item):
 def move(item,velocity,friction=0.05):
 	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
 	item['friction'] = friction
-	item['velocity'] = velocity
+	item['velocity'] = list(velocity)
 	item['realpos'] = item['pos'][:]
 	
 	logging.debug('The %s flies off in an arc!' % item['name'])

@@ -609,24 +609,25 @@ def draw_life():
 			
 			gfx.blit_char(_x,_y,life['icon'],white,None)
 
-def get_fancy_inventory_menu_items(life):
+def get_fancy_inventory_menu_items(life,show_equipped=True):
 	_inventory = []
-	
-	_title = menus.create_item('title','Equipped',None,enabled=False)
-	_inventory.append(_title)
-	
+		
 	#TODO: Time it would take to remove
-	for entry in life['inventory']:
-		item = get_inventory_item(life,entry)
-		
-		if item_is_equipped(life,entry):
-			_menu_item = menus.create_item('single',
-				item['name'],
-				'Equipped',
-				icon=item['icon'],
-				id=int(entry))
-		
-			_inventory.append(_menu_item)
+	if show_equipped:
+		_title = menus.create_item('title','Equipped',None,enabled=False)
+		_inventory.append(_title)
+	
+		for entry in life['inventory']:
+			item = get_inventory_item(life,entry)
+			
+			if item_is_equipped(life,entry):
+				_menu_item = menus.create_item('single',
+					item['name'],
+					'Equipped',
+					icon=item['icon'],
+					id=int(entry))
+			
+				_inventory.append(_menu_item)
 	
 	for container in get_all_storage(life):
 		_title = menus.create_item('title',container['name'],None,enabled=False)
@@ -637,7 +638,7 @@ def get_fancy_inventory_menu_items(life):
 				item['name'],
 				'Not equipped',
 				icon=item['icon'],
-				id=int(entry))
+				id=int(_item))
 			
 			_inventory.append(_menu_item)
 	
