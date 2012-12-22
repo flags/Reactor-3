@@ -94,12 +94,8 @@ def draw_bottom_ui():
 	console_print(MESSAGE_WINDOW,1,0,'Messages')
 	
 	_y_mod = 1
-	_lower = len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES
 	
-	if _lower<0:
-		_lower = 0
-	
-	for msg in MESSAGE_LOG[_lower:]:
+	for msg in MESSAGE_LOG[max(0, min(len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES, MESSAGE_LOG_MAX_LINES)):]:
 		console_print(MESSAGE_WINDOW,1,_y_mod,msg)
 		_y_mod += 1
 
