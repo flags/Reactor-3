@@ -55,7 +55,8 @@ SETTINGS = {'draw lights': True,
 			'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': False,
-			'world gravity': 0.09}
+			'world gravity': 0.09,
+			'los': 35}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = []
 LIFE_TYPES = {}

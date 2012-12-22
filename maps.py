@@ -94,12 +94,15 @@ def render_lights():
 def render_los(map,position):
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
-	for pos1 in drawing.draw_circle(position,28):
+	for pos1 in drawing.draw_circle(position,SETTINGS['los']):
 
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):
 			_x = pos[0]-CAMERA_POS[0]
 			_y = pos[1]-CAMERA_POS[1]
+			
+			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
+				continue
 			
 			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
 				if not _dark:
@@ -109,9 +112,6 @@ def render_los(map,position):
 					continue
 				
 			if _dark:
-				continue
-			
-			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
 				continue
 
 			LOS_BUFFER[0][_y,_x] = 1

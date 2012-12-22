@@ -202,10 +202,10 @@ def move_camera():
 	if PLAYER['pos'][1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 		CAMERA_POS[1] -= 1
 	
-	elif PLAYER['pos'][1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2:
+	elif PLAYER['pos'][1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]+MAP_WINDOW_SIZE[1]<MAP_SIZE[1]:
 		CAMERA_POS[1] += 1
 	
-	elif PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2:
+	if PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]+MAP_WINDOW_SIZE[0]<MAP_SIZE[0]:
 		CAMERA_POS[0]+=1
 	
 	elif PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
@@ -365,7 +365,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 #life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[15,20,4])
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[135,20,4])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
