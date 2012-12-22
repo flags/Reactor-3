@@ -106,13 +106,14 @@ def draw_items():
 		if item.has_key('id'):
 			continue
 		
-		#if not item['pos'][2] <= CAMERA_POS[2]:
-		#	continue
-		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = item['pos'][0] - CAMERA_POS[0]
 			_y = item['pos'][1] - CAMERA_POS[1]
+		
+			if not LOS_BUFFER[0][_y,_x]:
+				continue
+			
 			gfx.blit_char(_x,_y,item['icon'],white,None)
 
 def tick_all_items():

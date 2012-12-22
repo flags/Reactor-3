@@ -30,8 +30,6 @@ def init_libtcod():
 	CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LOS_DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LOS_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 def start_of_frame():
@@ -66,20 +64,10 @@ def blit_char(x,y,char,fore_color=None,back_color=None):
 def blit_string(x,y,text):
 	console_print(0,x,y,text)
 
-def darken_tile(x,y,amt,los=False):
-	if los:
-		LOS_DARK_BUFFER[0][y,x] = amt
-		
-		return True
-	
+def darken_tile(x,y,amt):
 	DARK_BUFFER[0][y,x] = amt
 
-def lighten_tile(x,y,amt,los=False):
-	if los:
-		LOS_LIGHT_BUFFER[0][y,x] = amt
-		
-		return True
-	
+def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
 def draw_cursor(tile):

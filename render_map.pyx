@@ -1,7 +1,7 @@
 from tiles import *
 import graphics as gfx
 
-VERSION = 2
+VERSION = 3
 
 def render_map(map):
 	cdef int _CAMERA_POS[2]
@@ -40,7 +40,7 @@ def render_map(map):
 			_drawn = False
 			for z in range(MAP_SIZE[2]-1,0,-1):
 				if map[x][y][z]:
-					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above']:
+					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
 						_drawn = True
@@ -55,7 +55,8 @@ def render_map(map):
 						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
 						_drawn = True
 				
-					break
+					if SETTINGS['draw z-levels above'] and _drawn:
+						break
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)

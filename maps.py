@@ -98,12 +98,10 @@ def render_los(map,position):
 
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):
-			_dist = abs(pos[0]-position[0])+abs(pos[1]-position[1])
+			_x = pos[0]-CAMERA_POS[0]
+			_y = pos[1]-CAMERA_POS[1]
 			
-			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:
-				_x = pos[0]-CAMERA_POS[0]
-				_y = pos[1]-CAMERA_POS[1]
-				
+			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
 				if not _dark:
 					_dark = True
 					LOS_BUFFER[0][_y,_x] = 1
@@ -112,9 +110,6 @@ def render_los(map,position):
 				
 			if _dark:
 				continue
-			
-			_x = pos[0]-CAMERA_POS[0]
-			_y = pos[1]-CAMERA_POS[1]
 			
 			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
 				continue
@@ -127,8 +122,6 @@ def render_map(map):
 	
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LOS_DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LOS_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 	if _X_MAX>MAP_SIZE[0]:
 		_X_MAX = MAP_SIZE[0]
