@@ -206,7 +206,7 @@ def menu_item_selected(key,value):
 	if value == 'Save':
 		maps.save_map(MAP)
 
-def options_menu_item_changed(key,value):
+def options_menu_item_changed(entry):
 	if key == 'Blit z-level below':
 		if value == 'On':
 			SETTINGS['draw z-levels below'] = True
