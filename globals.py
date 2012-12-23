@@ -45,7 +45,7 @@ DEFAULT_ITEM_SIZE = '2x2'
 DEFAULT_ITEM_PREFIX = 'a'
 
 #Versions
-MAP_RENDER_VERSION = 3
+MAP_RENDER_VERSION = 4
 
 #Life constants
 LIFE_MAX_SPEED = 12
@@ -58,7 +58,7 @@ SETTINGS = {'draw lights': True,
 			'world gravity': 0.09,
 			'los': 35}
 KEYBOARD_STRING = ['']
-SELECTED_TILES = []
+SELECTED_TILES = [[]]
 LIFE_TYPES = {}
 LIFE = []
 ITEM_TYPES = {}

@@ -1,7 +1,8 @@
 from tiles import *
 import graphics as gfx
+import time
 
-VERSION = 3
+VERSION = 4
 
 def render_map(map):
 	cdef int _CAMERA_POS[2]
@@ -45,7 +46,7 @@ def render_map(map):
 						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == _CAMERA_POS[2]:
-						if (x,y,z) in SELECTED_TILES and time.time()%1>=0.5:
+						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
 							gfx.blit_char(_RENDER_X,_RENDER_Y,'X',darker_grey,black)
 						else:
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])

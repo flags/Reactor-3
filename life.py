@@ -153,6 +153,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['inventory'] = {}
 	_life['flags'] = {}
 	_life['gravity'] = 0
+	_life['targetting'] = None
 	
 	initiate_limbs(_life['body'])
 	LIFE.append(_life)
@@ -370,6 +371,15 @@ def get_all_storage(life):
 	
 	return _storage
 
+def can_throw(life):
+	for hand in life['hands']:
+		_hand = get_limb(life['body'],hand)
+		
+		if not _hand['holding']:
+			return _hand
+	
+	return False
+
 def can_put_item_in_storage(life,item):
 	#Whoa...
 	for _item in [life['inventory'][_item] for _item in life['inventory']]:
@@ -559,6 +569,8 @@ def equip_item(life,id):
 def drop_item(life,id):
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]
+	
+	return item
 
 def pick_up_item_from_ground(life,uid):
 	_item = items.get_item_from_uid(uid)

@@ -5,6 +5,7 @@ from inputs import *
 from tiles import *
 import graphics as gfx
 import maputils
+import drawing
 import logging
 import random
 import menus
@@ -60,6 +61,9 @@ def handle_input():
 	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
 			menus.delete_menu(ACTIVE_MENU['menu'])
+		elif PLAYER['targetting']:
+			PLAYER['targetting'] = None
+			SELECTED_TILES[0] = []
 		else:
 			RUNNING = False
 	
@@ -75,6 +79,8 @@ def handle_input():
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+		elif PLAYER['targetting']:
+			PLAYER['targetting'][1]-=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
@@ -82,6 +88,8 @@ def handle_input():
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+		elif PLAYER['targetting']:
+			PLAYER['targetting'][1]+=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
@@ -89,6 +97,8 @@ def handle_input():
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+		elif PLAYER['targetting']:
+			PLAYER['targetting'][0]+=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
@@ -96,6 +106,8 @@ def handle_input():
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+		elif PLAYER['targetting']:
+			PLAYER['targetting'][0]-=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
@@ -230,6 +242,13 @@ def move_camera():
 	
 	CAMERA_POS[2] = PLAYER['pos'][2]
 
+def draw_targetting():
+	if PLAYER['targetting']:
+		
+		SELECTED_TILES[0] = []
+		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targetting']):
+			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
+
 def inventory_select(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
@@ -294,10 +313,23 @@ def inventory_throw(entry):
 	if _stored:
 		gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
 	
-	gfx.message('You drop %s.' % item['name'])
-	life.drop_item(PLAYER,item['id'])
+	#gfx.message('You drop %s.' % item['name'])
+	_dropped_item = life.drop_item(PLAYER,item['id'])
 	
-	items.move(item,(1,0,1))
+	#items.move(item,(1,0,1))
+	_hand = life.can_throw(PLAYER)
+	if not _hand:
+		gfx.message('Both of your hands are full.')
+	
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		return False
+	
+	_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
+	
+	PLAYER['targetting'] = PLAYER['pos'][:]
+	_hand['holding'].append(_new_id)
+	
+	gfx.message('You hold %s.' % items.get_name(_dropped_item))
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -445,6 +477,7 @@ while RUNNING:
 		life.tick_all_life()
 	
 	gfx.start_of_frame()
+	draw_targetting()
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)

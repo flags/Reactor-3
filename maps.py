@@ -138,17 +138,17 @@ def render_map(map):
 				if map[x][y][z]:
 					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=False)
+						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == CAMERA_POS[2]:
-						if (x,y,z) in SELECTED_TILES and time.time()%1>=0.5:
+						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
 							gfx.blit_char(_RENDER_X,_RENDER_Y,'X',darker_grey,black)
 						else:
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 						_drawn = True
 					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30,los=False)
+						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 						_drawn = True
 				
 					if SETTINGS['draw z-levels above'] and _drawn:
