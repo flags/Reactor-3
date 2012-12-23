@@ -65,6 +65,9 @@ def draw_menus():
 			if item['type'] == 'title':
 				console_set_default_foreground(menu['settings']['console'],white)
 				_line = format_entry('- $k',item)
+			elif item['type'] == 'spacer':
+				console_set_default_foreground(menu['settings']['console'],white)
+				_line = item['key']*menu['settings']['size'][0]
 			else:
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors

@@ -63,10 +63,7 @@ def handle_input():
 
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			if ACTIVE_MENU['index']>0:
-				ACTIVE_MENU['index'] -= 1
-			else:
-				ACTIVE_MENU['index'] = len(MENUS[ACTIVE_MENU['menu']]['menu'])-1
+			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[1] -= 1
 			
@@ -75,10 +72,7 @@ def handle_input():
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			if ACTIVE_MENU['index']<len(MENUS[ACTIVE_MENU['menu']]['menu'])-1:
-				ACTIVE_MENU['index'] += 1
-			else:
-				ACTIVE_MENU['index'] = 0
+			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[1] += 1
 
@@ -87,7 +81,7 @@ def handle_input():
 
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
-			menus.next_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[0] += 1
 
@@ -96,7 +90,7 @@ def handle_input():
 
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
-			menus.previous_item(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[0] -= 1
 
@@ -116,15 +110,13 @@ def handle_input():
 		SUN_POS[2] -= 1
 	
 	if INPUT['o']:
-		if ACTIVE_MENU['menu'] < len(MENUS):
-			ACTIVE_MENU['menu'] += 1
-			ACTIVE_MENU['index'] = 0
+		menus.activate_menu(0)
 	
-	if INPUT['j']:
-		if ACTIVE_MENU['menu'] > -1:
-			menus.item_selected(MENUS[ACTIVE_MENU['menu']],ACTIVE_MENU['index'])
+	if INPUT['\r']:
+		if ACTIVE_MENU['menu'] == -1:
+			return False
 		
-		ACTIVE_MENU['menu'] = -1
+		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
@@ -202,11 +194,19 @@ def handle_input():
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
 
-def menu_item_selected(key,value):
+def menu_item_selected(entry):
+	global RUNNING
+	value = entry['values'][entry['value']]
+	
 	if value == 'Save':
-		maps.save_map(MAP)
+		maps.save_map('map1.dat',MAP)
+	elif value == 'Exit':
+		RUNNING = False
 
-def options_menu_item_changed(entry):
+def menu_item_changed(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
 	if key == 'Blit z-level below':
 		if value == 'On':
 			SETTINGS['draw z-levels below'] = True
@@ -231,48 +231,34 @@ def menu_align():
 		menu['settings']['position'][1] = _size
 
 _menu_items = []
+_menu_items.append(menus.create_item('title','Tile Operations',None,enabled=False))
 _menu_items.append(menus.create_item('single','^','Move selected up'))
 _menu_items.append(menus.create_item('single','v','Move selected down', enabled=False))
 _menu_items.append(menus.create_item('single','Del','Delete all'))
+_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
-menus.create_menu(title='Tile Operations',
-	menu=_menu_items,
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected)
-
-_menu_items = []
+_menu_items.append(menus.create_item('title','Map Utils',None,enabled=False))
 _menu_items.append(menus.create_item('single','Width',MAP_SIZE[0]))
 _menu_items.append(menus.create_item('single','Height',MAP_SIZE[1]))
 _menu_items.append(menus.create_item('single','Depth',MAP_SIZE[2]))
+_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
-menus.create_menu(title='Map Utils',
-	menu=_menu_items,
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected)
-
-_menu_items = []
+_menu_items.append(menus.create_item('title','View',None,enabled=False))
 _menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
 _menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
+_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+
+_menu_items.append(menus.create_item('title','General',None,enabled=False))
+_menu_items.append(menus.create_item('list','S','Save'))
+_menu_items.append(menus.create_item('list','L','Load'))
+_menu_items.append(menus.create_item('list','E','Exit'))
 
 menus.create_menu(title='View',
 	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
 	on_select=menu_item_selected,
-	on_change=options_menu_item_changed)
-
-_menu_items = []
-_menu_items.append(menus.create_item('list','S','Save'))
-_menu_items.append(menus.create_item('list','L','Load'))
-_menu_items.append(menus.create_item('list','E','Exit'))
-
-menus.create_menu(title='General',
-	menu=_menu_items,
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected)
+	on_change=menu_item_changed)
 
 #MAP = maputils.resize_map(MAP,(500,500,5))
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
