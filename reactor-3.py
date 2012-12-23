@@ -227,20 +227,31 @@ def handle_input():
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
 
-def move_camera():
-	if PLAYER['pos'][1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
-		CAMERA_POS[1] -= 1
+def move_camera(pos,scroll=False):
+	CAMERA_POS[0] = max(0, min(pos[0]-(MAP_WINDOW_SIZE[0]/2), MAP_SIZE[0]-MAP_WINDOW_SIZE[0]))
+	CAMERA_POS[1] = max(0, min(pos[1]-(MAP_WINDOW_SIZE[1]/2), MAP_SIZE[1]-MAP_WINDOW_SIZE[1]))
+	CAMERA_POS[2] = pos[2]
 	
-	elif PLAYER['pos'][1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]+MAP_WINDOW_SIZE[1]<MAP_SIZE[1]:
-		CAMERA_POS[1] += 1
+	return False
+	#if pos[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
+		#if snap:
+			#CAMERA_POS[1] = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2
+		#else:
+			#CAMERA_POS[1] -= 1
 	
-	if PLAYER['pos'][0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]+MAP_WINDOW_SIZE[0]<MAP_SIZE[0]:
-		CAMERA_POS[0]+=1
+	#elif pos[1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]+MAP_WINDOW_SIZE[1]<MAP_SIZE[1]:
+		#if snap:
+			#CAMERA_POS[1] = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2
+		#else:
+			#CAMERA_POS[1] += 1
 	
-	elif PLAYER['pos'][0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
-		CAMERA_POS[0] -= 1
+	#if pos[0]-CAMERA_POS[0]>MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]+MAP_WINDOW_SIZE[0]<MAP_SIZE[0]:
+		#CAMERA_POS[0]+=1
 	
-	CAMERA_POS[2] = PLAYER['pos'][2]
+	#elif pos[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and CAMERA_POS[0]>0:
+		#CAMERA_POS[0] -= 1
+	
+	#CAMERA_POS[2] = pos[2]
 
 def draw_targetting():
 	if PLAYER['targetting']:
@@ -430,7 +441,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 #life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[15,10,4])
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[120,30,4])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
@@ -486,7 +497,7 @@ while RUNNING:
 	
 	maps.render_lights()
 	items.draw_items()
-	move_camera()
+	move_camera(PLAYER['pos'])
 	life.draw_life()
 	maps.render_los(MAP,PLAYER['pos'])
 	life.draw_visual_inventory(PLAYER)
