@@ -161,3 +161,9 @@ def item_selected(menu,index):
 	menu = get_menu(menu)
 	
 	return menu['on_select'](_entry)
+
+def item_changed(menu,index):
+	_entry = get_selected_item(menu,index)
+	menu = get_menu(menu)
+	
+	return menu['on_change'](_entry)

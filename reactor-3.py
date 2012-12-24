@@ -328,7 +328,9 @@ def inventory_throw(entry):
 	#gfx.message('You drop %s.' % item['name'])
 	_dropped_item = life.drop_item(PLAYER,item['id'])
 	
-	#items.move(item,(1,0,1))
+	items.move(_dropped_item,(1,0,1))
+	return True
+	
 	_hand = life.can_throw(PLAYER)
 	if not _hand:
 		gfx.message('Both of your hands are full.')

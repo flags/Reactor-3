@@ -159,8 +159,9 @@ def tick_all_items():
 				
 				if _x_change:
 					item['velocity'][0] = -(item['velocity'][0]/2)
+					_nx = item['pos'][0]
 					
-					#print 'x-collision:',item['velocity'][0]
+					print 'x-collision:',item['velocity'][0]
 				
 				#A positive/negative _x_change says we made contact to the right/left
 				if _y_change:
@@ -175,7 +176,7 @@ def tick_all_items():
 						#print 'z-collision:',item['velocity'][2]
 					
 				elif _z_change<0:
-					item['velocity'][0] = 0
+					#item['velocity'][0] = 0
 					item['velocity'][1] = 0
 					item['velocity'][2] = 0
 					item['gravity'] = 0

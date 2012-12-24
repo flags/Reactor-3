@@ -93,6 +93,7 @@ def handle_input():
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[0] += 1
 
@@ -102,6 +103,7 @@ def handle_input():
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
 			CURSOR[0] -= 1
 
@@ -133,6 +135,7 @@ def handle_input():
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+		ACTIVE_MENU['menu'] = -1
 	
 	if INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
@@ -229,6 +232,12 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
 	
+	elif key == 'Blit z-level above':
+		if value == 'On':
+			SETTINGS['draw z-levels above'] = True
+		elif value == 'Off':
+			SETTINGS['draw z-levels above'] = False
+	
 	elif key == 'Draw lights':
 		if value == 'On':
 			SETTINGS['draw lights'] = True
@@ -261,6 +270,7 @@ _menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
 _menu_items.append(menus.create_item('title','View',None,enabled=False))
 _menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
+_menu_items.append(menus.create_item('list','Blit z-level above',['On','Off']))
 _menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
 _menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
