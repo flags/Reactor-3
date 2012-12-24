@@ -40,6 +40,10 @@ def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 		'icon': icon,
 		'values': values,
 		'value': 0}
+	
+	if _item['type'] in ['title','spacer']:
+		_item['enabled'] = False
+	
 	_item.update(kwargs)
 	
 	return _item
@@ -67,7 +71,7 @@ def draw_menus():
 				_line = format_entry('- $k',item)
 			elif item['type'] == 'spacer':
 				console_set_default_foreground(menu['settings']['console'],white)
-				_line = item['key']*menu['settings']['size'][0]
+				_line = item['key']*(menu['settings']['size'][0]-menu['settings']['padding'][0])
 			else:
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors

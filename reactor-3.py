@@ -181,7 +181,6 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
-		#TODO: Use this?
 		_throwable = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=False)
 		
 		_i = menus.create_menu(title='Throw',
@@ -190,6 +189,25 @@ def handle_input():
 			position=(1,1),
 			format_str='[$i] $k: $v',
 			on_select=inventory_throw)
+		
+		menus.activate_menu(_i)
+	
+	if INPUT['o']:
+		if menus.get_menu_by_name('Options')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Options'))
+			return False
+		
+		_options = []
+		_options.append(menus.create_item('title','Debug (Developer)',None))
+		_options.append(menus.create_item('spacer','=',None))
+		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
+		
+		_i = menus.create_menu(title='Options',
+			menu=_options,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v',
+			on_select=handle_options_menu)
 		
 		menus.activate_menu(_i)
 	
@@ -234,6 +252,7 @@ def move_camera(pos,scroll=False):
 	CAMERA_POS[2] = pos[2]
 	
 	return False
+	#TODO: Scrolling!
 	#if pos[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 		#if snap:
 			#CAMERA_POS[1] = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2
@@ -260,6 +279,18 @@ def draw_targetting():
 		SELECTED_TILES[0] = []
 		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targetting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
+
+def handle_options_menu(entry):
+	global MAP
+	del MAP
+	
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if key == 'Reload map':
+		MAP = maps.load_map('map1.dat')
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_select(entry):
 	key = entry['key']
