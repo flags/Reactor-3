@@ -54,9 +54,10 @@ PLACING_TILE = WALL_TILE
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
-	"""Parses input."""
 	if gfx.window_is_closed():
 		RUNNING = False
+		
+		return True
 	
 	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
@@ -508,4 +509,5 @@ while RUNNING:
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 
-maps.save_map('map1.dat',MAP)
+#TODO: Enable this...?
+#maps.save_map('map1.dat',MAP)

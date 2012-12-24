@@ -48,9 +48,20 @@ PLACING_TILE = WALL_TILE
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
-	"""Parses input."""
-	if gfx.window_is_closed() or INPUT['\x1b']:
+	if gfx.window_is_closed():
 		RUNNING = False
+		
+		return True
+	
+	if INPUT['\x1b']:
+		if not ACTIVE_MENU['menu'] == -1:
+			ACTIVE_MENU['menu'] = -1
+			
+			return True
+			
+		RUNNING = False
+		
+		return True
 	
 	if INPUT['-']:
 		if SETTINGS['draw console']:
