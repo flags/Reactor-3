@@ -121,6 +121,11 @@ def handle_input():
 		SUN_POS[2] -= 1
 	
 	if INPUT['o']:
+		if not ACTIVE_MENU['menu'] == -1:
+			ACTIVE_MENU['menu'] = -1
+			
+			return True
+		
 		menus.activate_menu(0)
 	
 	if INPUT['\r']:
@@ -264,7 +269,7 @@ _menu_items.append(menus.create_item('list','S','Save'))
 _menu_items.append(menus.create_item('list','L','Load'))
 _menu_items.append(menus.create_item('list','E','Exit'))
 
-menus.create_menu(title='View',
+menus.create_menu(title='Options',
 	menu=_menu_items,
 	padding=(1,1),
 	position=(MAP_WINDOW_SIZE[0],0),
