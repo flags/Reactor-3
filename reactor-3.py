@@ -25,6 +25,7 @@ logger.addHandler(ch)
 #Optional Cython-compiled modules
 try:
 	import render_map
+	import render_los
 	
 	if render_map.VERSION == MAP_RENDER_VERSION:
 		CYTHON_ENABLED = True
@@ -533,7 +534,12 @@ while RUNNING:
 	items.draw_items()
 	move_camera(PLAYER['pos'])
 	life.draw_life()
-	maps.render_los(MAP,PLAYER['pos'])
+	
+	if CYTHON_ENABLED:
+		render_los.render_los(MAP,PLAYER['pos'])
+	else:
+		maps.render_los(MAP,PLAYER['pos'])
+	
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
