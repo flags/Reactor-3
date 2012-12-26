@@ -320,10 +320,11 @@ def main():
 		gfx.draw_console()
 		gfx.end_of_frame_terraform()
 		gfx.end_of_frame()
-		
-		break
 
-cProfile.run('main()','profile.dat')
-#main()
+if '--profile' in sys.argv:
+	logging.info('Profiling. Exit when completed.')
+	cProfile.run('main()','profile.dat')
+else:
+	main()
 
 maps.save_map('map1.dat',MAP)
