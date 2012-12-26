@@ -619,7 +619,14 @@ def draw_life():
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
-			gfx.blit_char(_x,_y,life['icon'],white,None)
+			gfx.blit_char(_x,
+				_y,
+				life['icon'],
+				white,
+				None,
+				char_buffer=MAP_CHAR_BUFFER,
+				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
 def get_fancy_inventory_menu_items(life,show_equipped=True):
 	_inventory = []

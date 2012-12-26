@@ -7,6 +7,7 @@ import graphics as gfx
 import cProfile
 import maputils
 import logging
+import prefabs
 import random
 import menus
 import time
@@ -47,7 +48,7 @@ except IOError:
 	maps.save_map(MAP)
 
 
-gfx.init_libtcod()
+gfx.init_libtcod(terraform=True)
 create_all_tiles()
 
 #TODO: Scroll speed
@@ -303,30 +304,32 @@ menu_align()
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
+test_prefab = prefabs.create_new_prefab((10,10,3))
+
 def main():
 	while RUNNING:
 		get_input()
 		handle_input()
 
-		gfx.start_of_frame()
-		
 		if CYTHON_ENABLED:
 			render_map.render_map(MAP)
 		else:
 			maps.render_map(MAP)
 		
-		maps.render_lights()
+		#maps.render_lights()
 		
-		LIGHTS[0]['x'] = CURSOR[0]
-		LIGHTS[0]['y'] = CURSOR[1]
-		#maps.render_shadows(MAP)
-		#maps.soften_shadows(MAP)
+		#LIGHTS[0]['x'] = CURSOR[0]
+		#LIGHTS[0]['y'] = CURSOR[1]
+
 		gfx.draw_cursor(PLACING_TILE)
 		gfx.draw_all_tiles()
 		gfx.draw_bottom_ui_terraform()
 		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
 		menus.draw_menus()
 		gfx.draw_console()
+		prefabs.draw_prefab(test_prefab)
+		gfx.start_of_frame()
+		gfx.start_of_frame_terraform()
 		gfx.end_of_frame_terraform()
 		gfx.end_of_frame()
 

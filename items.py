@@ -1,7 +1,11 @@
 from globals import *
 import graphics as gfx
 import logging
-import json
+
+try:
+	import ujson as json
+except:
+	import json
 
 def load_item(item):
 	with open(os.path.join(ITEM_DIR,item+'.json'),'r') as e:
@@ -114,7 +118,14 @@ def draw_items():
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
-			gfx.blit_char(_x,_y,item['icon'],white,None)
+			gfx.blit_char(_x,
+				_y,
+				item['icon'],
+				white,
+				None,
+				char_buffer=MAP_CHAR_BUFFER,
+				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
 def tick_all_items():
 	for _item in ITEMS:

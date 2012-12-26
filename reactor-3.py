@@ -44,7 +44,9 @@ except ImportError, e:
 gfx.log(WINDOW_TITLE)
 
 try:
+	_stime = time.time()
 	MAP = maps.load_map('map1.dat')
+	print time.time()-_stime
 except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
@@ -524,7 +526,6 @@ while RUNNING:
 		items.tick_all_items()
 		life.tick_all_life()
 	
-	gfx.start_of_frame()
 	draw_targetting()
 	
 	if CYTHON_ENABLED:
@@ -547,6 +548,7 @@ while RUNNING:
 	menus.draw_menus()
 	gfx.draw_bottom_ui()
 	gfx.draw_console()
+	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 

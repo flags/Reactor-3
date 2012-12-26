@@ -5,61 +5,74 @@ import numpy
 import time
 import life
 
-def init_libtcod():
-	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW
+def init_libtcod(terraform=False):
+	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	CONSOLE_WINDOW = console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
 	MESSAGE_WINDOW = console_new(MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
+	
+	if terraform:
+		PREFAB_WINDOW = console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
+		PREFAB_CHAR_BUFFER[0] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
+	
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	console_set_keyboard_repeat(200, 0)
 	sys_set_fps(FPS)
 
-	RGB_BACK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_BACK_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_BACK_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_FORE_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	
-	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	for i in range(3):
+		MAP_RGB_BACK_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+		MAP_RGB_FORE_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+		RGB_LIGHT_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+		
+		if terraform:
+			PREFAB_RGB_BACK_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
+			PREFAB_RGB_FORE_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
 	
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 def start_of_frame():
 	console_fill_background(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
 	console_fill_foreground(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	console_fill_char(MAP_WINDOW,CHAR_BUFFER[0])
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
+	console_fill_char(MAP_WINDOW,MAP_CHAR_BUFFER[0])
 
-def blit_tile(x,y,tile):
+def start_of_frame_terraform():
+	console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
+	console_fill_foreground(PREFAB_WINDOW,PREFAB_RGB_FORE_BUFFER[0],PREFAB_RGB_FORE_BUFFER[1],PREFAB_RGB_FORE_BUFFER[2])
+	console_fill_char(PREFAB_WINDOW,PREFAB_CHAR_BUFFER[0])
+
+def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	_tile = get_tile(tile)
 
-	blit_char(x,y,_tile['icon'],_tile['color'][0],_tile['color'][1])
+	blit_char(x,y,_tile['icon'],
+		_tile['color'][0],
+		_tile['color'][1],
+		char_buffer=char_buffer,
+		rgb_fore_buffer=rgb_fore_buffer,
+		rgb_back_buffer=rgb_back_buffer)
 
-def blit_char(x,y,char,fore_color=None,back_color=None):
+def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore_buffer=None,rgb_back_buffer=None):
 	if fore_color:
-		RGB_FORE_BUFFER[0][y,x] = fore_color.r
-		RGB_FORE_BUFFER[1][y,x] = fore_color.g
-		RGB_FORE_BUFFER[2][y,x] = fore_color.b
+		rgb_fore_buffer[0][y,x] = fore_color.r
+		rgb_fore_buffer[1][y,x] = fore_color.g
+		rgb_fore_buffer[2][y,x] = fore_color.b
 
 	if back_color:
-		RGB_BACK_BUFFER[0][y,x] = back_color.r
-		RGB_BACK_BUFFER[1][y,x] = back_color.g
-		RGB_BACK_BUFFER[2][y,x] = back_color.b
+		rgb_back_buffer[0][y,x] = back_color.r
+		rgb_back_buffer[1][y,x] = back_color.g
+		rgb_back_buffer[2][y,x] = back_color.b
 
-	CHAR_BUFFER[0][y,x] = ord(char)
+	char_buffer[0][y,x] = ord(char)
 
 def blit_string(x,y,text):
 	console_print(0,x,y,text)
@@ -74,10 +87,20 @@ def draw_cursor(tile):
 	"""Handles the drawing of the cursor."""	
 	if time.time()%1>=0.5:
 		blit_char(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],'X',white,black)
+			CURSOR[1]-CAMERA_POS[1],
+			'X',
+			white,
+			black,
+			char_buffer=MAP_CHAR_BUFFER,
+			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 	else:
 		blit_tile(CURSOR[0]-CAMERA_POS[0],
-		              CURSOR[1]-CAMERA_POS[1],tile)
+			CURSOR[1]-CAMERA_POS[1],
+			tile,
+			char_buffer=MAP_CHAR_BUFFER,
+			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
 def draw_bottom_ui_terraform():
 	"""Controls the drawing of the UI under the map."""
@@ -140,6 +163,16 @@ def message(text):
 
 def end_of_frame_terraform():
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
+	console_blit(PREFAB_WINDOW,
+		0,
+		0,
+		PREFAB_WINDOW_SIZE[0],
+		PREFAB_WINDOW_SIZE[1],
+		0,
+		PREFAB_WINDOW_OFFSET[0],
+		PREFAB_WINDOW_OFFSET[1])
+	
+	console_print(0,PREFAB_WINDOW_OFFSET[0],0,'Prefab Editor')
 
 def end_of_frame_reactor3():
 	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

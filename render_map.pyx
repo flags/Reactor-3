@@ -39,7 +39,7 @@ def render_map(map):
 		for y in range(_Y_START,_Y_MAX):
 			_RENDER_Y = y-_CAMERA_POS[1]
 			_drawn = False
-			for z in range(MAP_SIZE[2]-1,0,-1):
+			for z in range(MAP_SIZE[2]-1,-1,-1):
 				if map[x][y][z]:
 					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
