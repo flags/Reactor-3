@@ -49,6 +49,7 @@ except IOError:
 	maps.save_map(MAP)
 
 gfx.init_libtcod()
+create_all_tiles()
 
 PLACING_TILE = WALL_TILE
 

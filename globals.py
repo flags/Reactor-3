@@ -59,6 +59,7 @@ SETTINGS = {'draw lights': True,
 			'los': 35}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
+TILES = {}
 LIFE_TYPES = {}
 LIFE = []
 ITEM_TYPES = {}

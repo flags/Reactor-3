@@ -39,6 +39,7 @@ except IOError:
 	maps.save_map(MAP)
 
 gfx.init_libtcod()
+create_all_tiles()
 
 #TODO: Scroll speed
 console_set_keyboard_repeat(200, 30)
@@ -54,7 +55,7 @@ def handle_input():
 		
 		return True
 	
-	if INPUT['\x1b']:
+	elif INPUT['\x1b']:
 		if not ACTIVE_MENU['menu'] == -1:
 			ACTIVE_MENU['menu'] = -1
 			
@@ -64,16 +65,16 @@ def handle_input():
 		
 		return True
 	
-	if INPUT['-']:
+	elif INPUT['-']:
 		if SETTINGS['draw console']:
 			SETTINGS['draw console'] = False
 		else:
 			SETTINGS['draw console'] = True
 	
-	if SETTINGS['draw console']:
+	elif SETTINGS['draw console']:
 		return
 
-	if INPUT['up']:
+	elif INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
@@ -82,7 +83,7 @@ def handle_input():
 			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
 				CAMERA_POS[1] -= 1
 
-	if INPUT['down']:
+	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		else:
@@ -91,7 +92,7 @@ def handle_input():
 			if CURSOR[1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2:
 				CAMERA_POS[1] += 1
 
-	if INPUT['right']:
+	elif INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -101,7 +102,7 @@ def handle_input():
 			if CURSOR[0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
 				CAMERA_POS[0]+=1
 
-	if INPUT['left']:
+	elif INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -112,18 +113,18 @@ def handle_input():
 					CAMERA_POS[0]>0:
 				CAMERA_POS[0] -= 1
 
-	if INPUT[' ']:
+	elif INPUT[' ']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
-	if INPUT['m']:
+	elif INPUT['m']:
 		SUN_POS[0] += 1
 		SUN_POS[1] += 1
 	
-	if INPUT['n']:
+	elif INPUT['n']:
 		SUN_POS[2] -= 1
 	
-	if INPUT['o']:
+	elif INPUT['o']:
 		if not ACTIVE_MENU['menu'] == -1:
 			ACTIVE_MENU['menu'] = -1
 			
@@ -131,14 +132,14 @@ def handle_input():
 		
 		menus.activate_menu(0)
 	
-	if INPUT['\r']:
+	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		ACTIVE_MENU['menu'] = -1
 	
-	if INPUT['q']:
+	elif INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
 		
 		if _current_index<0:
@@ -146,7 +147,7 @@ def handle_input():
 		
 		PLACING_TILE = TILES[_current_index]
 			
-	if INPUT['w']:
+	elif INPUT['w']:
 		_current_index = TILES.index(PLACING_TILE)+1
 		
 		if _current_index>=len(TILES):
@@ -157,40 +158,40 @@ def handle_input():
 	#if INPUT['f']:
 	#	SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
 
-	if INPUT['c']:
+	elif INPUT['c']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(GRASS_TILES))
 
-	if INPUT['d']:
+	elif INPUT['d']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = None
 	
-	if INPUT['a']:
+	elif INPUT['a']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(SAND_TILES))
 	
-	if INPUT['b']:
+	elif INPUT['b']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(RED_BRICK_TILES))
 
-	if INPUT['g']:
+	elif INPUT['g']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
-	if INPUT['s']:
+	elif INPUT['s']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 	
-	if INPUT['z']:
+	elif INPUT['z']:
 		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_TILES))
 
-	if INPUT['l']:
+	elif INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
 	
-	if INPUT['k']:
+	elif INPUT['k']:
 		SUN_BRIGHTNESS[0] -= 4
 
-	if INPUT['1']:
+	elif INPUT['1']:
 		CAMERA_POS[2] = 1
 
 	elif INPUT['2']:
@@ -320,9 +321,9 @@ def main():
 		gfx.end_of_frame_terraform()
 		gfx.end_of_frame()
 		
-		#break
+		break
 
-#cProfile.run('main()','profile.dat')
-main()
+cProfile.run('main()','profile.dat')
+#main()
 
 maps.save_map('map1.dat',MAP)

@@ -59,9 +59,9 @@ def get_keyboard_input():
 		
 		INPUT[_key] = True
 	else:
-		if INPUT[_key]:
-			#TODO: A 'true' release...?
-			pass
+		#if INPUT[_key]:
+		#	#TODO: A 'true' release...?
+		#	pass
 		
 		INPUT[_key] = False
 
