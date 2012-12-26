@@ -13,7 +13,9 @@ MESSAGE_WINDOW_SIZE = (60,10)
 PREFAB_WINDOW_SIZE = (40,40)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 RUNNING = True
-CURSOR = [0,0]
+MAP_CURSOR = [0,0]
+PREFAB_CURSOR = [0,0]
+
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
@@ -94,6 +96,7 @@ INPUT = {'up':False,
 		',': False,
 		'\x1b':False,
 		'\r':False,
+		'\t':False,
 		'a':False,
 		'b':False,
 		'c':False,

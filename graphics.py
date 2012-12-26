@@ -83,29 +83,29 @@ def darken_tile(x,y,amt):
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
-def draw_cursor(tile):
+def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	"""Handles the drawing of the cursor."""	
 	if time.time()%1>=0.5:
-		blit_char(CURSOR[0]-CAMERA_POS[0],
-			CURSOR[1]-CAMERA_POS[1],
+		blit_char(cursor[0]-camera[0],
+			cursor[1]-camera[1],
 			'X',
 			white,
 			black,
-			char_buffer=MAP_CHAR_BUFFER,
-			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+			char_buffer=char_buffer,
+			rgb_fore_buffer=rgb_fore_buffer,
+			rgb_back_buffer=rgb_back_buffer)
 	else:
-		blit_tile(CURSOR[0]-CAMERA_POS[0],
-			CURSOR[1]-CAMERA_POS[1],
+		blit_tile(cursor[0]-camera[0],
+			cursor[1]-camera[1],
 			tile,
-			char_buffer=MAP_CHAR_BUFFER,
-			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+			char_buffer=char_buffer,
+			rgb_fore_buffer=rgb_fore_buffer,
+			rgb_back_buffer=rgb_back_buffer)
 
 def draw_bottom_ui_terraform():
 	"""Controls the drawing of the UI under the map."""
 	blit_string(0,MAP_WINDOW_SIZE[1]+1,'X: %s Y: %s Z: %s' %
-		(CURSOR[0],CURSOR[1],CAMERA_POS[2]))
+		(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	_fps_string = '%s fps' % str(sys_get_fps())
 	blit_string(WINDOW_SIZE[0]-len(_fps_string), MAP_WINDOW_SIZE[1]+1,_fps_string)
@@ -161,7 +161,7 @@ def log(text):
 def message(text):
 	MESSAGE_LOG.append(text)
 
-def end_of_frame_terraform():
+def end_of_frame_terraform(editing_prefab=False):
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	console_blit(PREFAB_WINDOW,
 		0,
@@ -171,6 +171,11 @@ def end_of_frame_terraform():
 		0,
 		PREFAB_WINDOW_OFFSET[0],
 		PREFAB_WINDOW_OFFSET[1])
+	
+	if editing_prefab:
+		console_set_default_foreground(0,white)
+	else:
+		console_set_default_foreground(0,Color(185,185,185))
 	
 	console_print(0,PREFAB_WINDOW_OFFSET[0],0,'Prefab Editor')
 

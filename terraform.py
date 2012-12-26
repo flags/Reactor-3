@@ -47,18 +47,46 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
-
 gfx.init_libtcod(terraform=True)
 create_all_tiles()
 
-#TODO: Scroll speed
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
 
+IN_PREFAB_EDITOR = False
 PLACING_TILE = WALL_TILE
 
+def handle_scrolling(cursor,camera,window_size,map_size,change):
+	if change[0]>0:
+		if cursor[0]<map_size[0]-1:
+			cursor[0]+=change[0]
+		
+		if cursor[0]-camera[0]/2>window_size[0]/2 and camera[0]+window_size[0]<map_size[0]:
+			camera[0]+=change[0]
+	
+	elif change[0]<0:
+		if cursor[0]>0:
+			cursor[0]+=change[0]
+		
+		if cursor[0]-camera[0]<window_size[0]/2 and camera[0]>0:
+			camera[0]-=1
+	
+	if change[1]>0:
+		if cursor[1]<map_size[1]-1:
+			cursor[1]+=change[1]
+		
+		if cursor[1]-camera[1]/2>window_size[1]/2 and camera[1]+window_size[1]<map_size[1]:
+			camera[1]+=change[1]
+	
+	elif change[1]<0:
+		if cursor[1]>0:
+			cursor[1]+=change[1]
+		
+		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
+			camera[1]-=1
+
 def handle_input():
-	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
+	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
 
 	if gfx.window_is_closed():
 		RUNNING = False
@@ -87,44 +115,44 @@ def handle_input():
 	elif INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+		elif IN_PREFAB_EDITOR:
+			#TODO: Make this and everything in the `else` statement a function.
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,(0,-1))
 		else:
-			CURSOR[1] -= 1
-			
-			if CAMERA_POS[1]<CAMERA_POS[1]+MAP_WINDOW_SIZE[1]/2 and CAMERA_POS[1]>0:
-				CAMERA_POS[1] -= 1
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,-1))
 
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+		elif IN_PREFAB_EDITOR:
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,(0,1))
 		else:
-			CURSOR[1] += 1
-
-			if CURSOR[1]-CAMERA_POS[1]>MAP_WINDOW_SIZE[1]/2:
-				CAMERA_POS[1] += 1
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,1))
 
 	elif INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+		elif IN_PREFAB_EDITOR:
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1,0))
 		else:
-			CURSOR[0] += 1
-
-			if CURSOR[0]-CAMERA_POS[0]>=MAP_WINDOW_SIZE[0]/2:
-				CAMERA_POS[0]+=1
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1,0))
 
 	elif INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+		elif IN_PREFAB_EDITOR:
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1,0))
 		else:
-			CURSOR[0] -= 1
-
-			if CAMERA_POS[0]<CAMERA_POS[0]+MAP_WINDOW_SIZE[0]/2 and\
-					CAMERA_POS[0]>0:
-				CAMERA_POS[0] -= 1
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1,0))
 
 	elif INPUT[' ']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		if IN_PREFAB_EDITOR:
+			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][PREFAB_CAMERA_POS[2]] = \
+				create_tile(PLACING_TILE)
+		else:
+			MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
 	elif INPUT['m']:
@@ -149,6 +177,12 @@ def handle_input():
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		ACTIVE_MENU['menu'] = -1
 	
+	elif INPUT['\t']:
+		if IN_PREFAB_EDITOR:
+			IN_PREFAB_EDITOR = False
+		else:
+			IN_PREFAB_EDITOR = True
+	
 	elif INPUT['q']:
 		_current_index = TILES.index(PLACING_TILE)-1
 		
@@ -166,33 +200,33 @@ def handle_input():
 		PLACING_TILE = TILES[_current_index]
 	
 	#if INPUT['f']:
-	#	SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(CURSOR[0],CURSOR[1],CAMERA_POS[2])))
+	#	SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2])))
 
 	elif INPUT['c']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = None
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
 	
 	elif INPUT['a']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(SAND_TILES))
 	
 	elif INPUT['b']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(RED_BRICK_TILES))
 
 	elif INPUT['g']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
 	elif INPUT['s']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 	
 	elif INPUT['z']:
-		MAP[CURSOR[0]][CURSOR[1]][CAMERA_POS[2]] = \
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_TILES))
 
 	elif INPUT['l']:
@@ -304,7 +338,7 @@ menu_align()
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
-test_prefab = prefabs.create_new_prefab((10,10,3))
+CURRENT_PREFAB = prefabs.create_new_prefab((10,10,3))
 
 def main():
 	while RUNNING:
@@ -318,19 +352,29 @@ def main():
 		
 		#maps.render_lights()
 		
-		#LIGHTS[0]['x'] = CURSOR[0]
-		#LIGHTS[0]['y'] = CURSOR[1]
-
-		gfx.draw_cursor(PLACING_TILE)
+		#LIGHTS[0]['x'] = MAP_CURSOR[0]
+		#LIGHTS[0]['y'] = MAP_CURSOR[1]
+		
 		gfx.draw_all_tiles()
 		gfx.draw_bottom_ui_terraform()
 		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
 		menus.draw_menus()
 		gfx.draw_console()
-		prefabs.draw_prefab(test_prefab)
+		prefabs.draw_prefab(CURRENT_PREFAB)
+		
+		if IN_PREFAB_EDITOR:
+			gfx.draw_cursor(PREFAB_CURSOR,
+				PREFAB_CAMERA_POS,
+				PLACING_TILE,
+				char_buffer=PREFAB_CHAR_BUFFER,
+				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
+				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
+		else:
+			gfx.draw_cursor(MAP_CURSOR,CAMERA_POS,PLACING_TILE)
+		
 		gfx.start_of_frame()
-		gfx.start_of_frame_terraform()
-		gfx.end_of_frame_terraform()
+		gfx.start_of_frame_terraform()		
+		gfx.end_of_frame_terraform(editing_prefab=IN_PREFAB_EDITOR)
 		gfx.end_of_frame()
 
 if '--profile' in sys.argv:
