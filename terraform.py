@@ -4,6 +4,7 @@ from globals import *
 from inputs import *
 from tiles import *
 import graphics as gfx
+import cProfile
 import maputils
 import logging
 import random
@@ -286,35 +287,42 @@ menus.create_menu(title='Options',
 	on_select=menu_item_selected,
 	on_change=menu_item_changed)
 
+menu_align()
+
 #MAP = maputils.resize_map(MAP,(500,500,5))
 LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
 LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
 
-while RUNNING:
-	get_input()
-	handle_input()
+def main():
+	while RUNNING:
+		get_input()
+		handle_input()
 
-	gfx.start_of_frame()
-	
-	if CYTHON_ENABLED:
-		render_map.render_map(MAP)
-	else:
-		maps.render_map(MAP)
-	
-	maps.render_lights()
-	
-	LIGHTS[0]['x'] = CURSOR[0]
-	LIGHTS[0]['y'] = CURSOR[1]
-	#maps.render_shadows(MAP)
-	#maps.soften_shadows(MAP)
-	menu_align()
-	gfx.draw_cursor(PLACING_TILE)
-	gfx.draw_all_tiles()
-	gfx.draw_bottom_ui_terraform()
-	gfx.draw_selected_tile_in_item_window(TILES.index(PLACING_TILE))
-	menus.draw_menus()
-	gfx.draw_console()
-	gfx.end_of_frame_terraform()
-	gfx.end_of_frame()
+		gfx.start_of_frame()
+		
+		if CYTHON_ENABLED:
+			render_map.render_map(MAP)
+		else:
+			maps.render_map(MAP)
+		
+		maps.render_lights()
+		
+		LIGHTS[0]['x'] = CURSOR[0]
+		LIGHTS[0]['y'] = CURSOR[1]
+		#maps.render_shadows(MAP)
+		#maps.soften_shadows(MAP)
+		gfx.draw_cursor(PLACING_TILE)
+		gfx.draw_all_tiles()
+		gfx.draw_bottom_ui_terraform()
+		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
+		menus.draw_menus()
+		gfx.draw_console()
+		gfx.end_of_frame_terraform()
+		gfx.end_of_frame()
+		
+		#break
+
+#cProfile.run('main()','profile.dat')
+main()
 
 maps.save_map('map1.dat',MAP)

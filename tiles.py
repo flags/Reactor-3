@@ -114,7 +114,7 @@ RED_BRICK_2 = {'id':'red_brick_2',
              'cost':-1}
 
 #Groups
-TILES = [BLANK_TILE,
+TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
 		WALL_TILE,
 		ROAD_STRIPE_1,
@@ -142,12 +142,16 @@ CONCRETE_FLOOR_TILES = [CONCRETE_FLOOR_1,
 RED_BRICK_TILES = [RED_BRICK_1,
 			RED_BRICK_2]
 
-TILES.extend(GRASS_TILES)
-TILES.extend(DIRT_TILES)
-TILES.extend(SAND_TILES)
-TILES.extend(CONCRETE_TILES)
-TILES.extend(CONCRETE_FLOOR_TILES)
-TILES.extend(RED_BRICK_TILES)
+TEMP_TILES.extend(GRASS_TILES)
+TEMP_TILES.extend(DIRT_TILES)
+TEMP_TILES.extend(SAND_TILES)
+TEMP_TILES.extend(CONCRETE_TILES)
+TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
+TEMP_TILES.extend(RED_BRICK_TILES)
+
+TILES = {}
+for tile in TEMP_TILES:
+	TILES[tile['id']] = tile
 
 def create_tile(tile):
 	_ret_tile = {}
@@ -159,8 +163,9 @@ def create_tile(tile):
 	return _ret_tile
 
 def get_tile(tile):
-	for _tile in TILES:
-		if _tile['id'] == tile['id']:
-			return _tile
+	#for _tile in TILES:
+	#	if _tile['id'] == tile['id']:
+	#		return _tile
+	return TILES[tile['id']]
 
-	raise Exception('Tile of id \'%s\' not found in TILES array.' % tile['id'])
+	#raise Exception('Tile of id \'%s\' not found in TILES array.' % tile['id'])

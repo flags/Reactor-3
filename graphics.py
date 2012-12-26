@@ -105,9 +105,9 @@ def draw_selected_tile_in_item_window(pos):
 
 def draw_all_tiles():
 	for tile in TILES:
-		console_set_char_foreground(ITEM_WINDOW, TILES.index(tile), 0, tile['color'][0])
-		console_set_char_background(ITEM_WINDOW, TILES.index(tile), 0, tile['color'][1])
-		console_set_char(ITEM_WINDOW, TILES.index(tile), 0, tile['icon'])
+		console_set_char_foreground(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][0])
+		console_set_char_background(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][1])
+		console_set_char(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['icon'])
 
 def draw_console():
 	if not SETTINGS['draw console']:
