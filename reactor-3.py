@@ -22,6 +22,7 @@ ch = logging.StreamHandler()
 ch.setFormatter(console_formatter)
 logger.addHandler(ch)
 
+#TODO: Replace with "module_sanity_check"
 #Optional Cython-compiled modules
 try:
 	import render_map

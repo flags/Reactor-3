@@ -23,7 +23,15 @@ logger.addHandler(ch)
 #Optional Cython-compiled modules
 try:
 	import render_map
-	CYTHON_ENABLED = True
+	import render_los
+	
+	if render_map.VERSION == MAP_RENDER_VERSION:
+		CYTHON_ENABLED = True
+	else:
+		CYTHON_ENABLED = False
+		logging.warning('[Cython] render_map is out of date!')
+		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+	
 except ImportError, e:
 	CYTHON_ENABLED = False
 	logging.warning('[Cython] ImportError with module: %s' % e)
@@ -37,6 +45,7 @@ try:
 except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
+
 
 gfx.init_libtcod()
 create_all_tiles()
@@ -326,5 +335,8 @@ if '--profile' in sys.argv:
 	cProfile.run('main()','profile.dat')
 else:
 	main()
+
+#TODO: write this into the utility
+#maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
 
 maps.save_map('map1.dat',MAP)
