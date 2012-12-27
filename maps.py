@@ -157,6 +157,7 @@ def render_map(map):
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
 
+#TODO: Put both of these into one function.
 def render_x_cutout(map,x_pos,y_pos):
 	_X_MAX = x_pos+X_CUTOUT_WINDOW_SIZE[0]
 	y = y_pos
