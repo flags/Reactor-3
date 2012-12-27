@@ -61,16 +61,15 @@ def get_children_of_tag(taglist):
 		
 		if _key.count('/'):
 			if not _parent:
-				_limbs[_name] = {'attached': {},
-					'flags': _flags}
+				_limbs[_name] = {'flags': _flags}
 			else:
-				_limb = {'attached': {}}
-				_limb['flags'] = _flags
+				_limb = {'flags': _flags}
+				_limbs[_name] = _limb
 				
-				if _parent in _limbs:
-					_limbs[_parent]['attached'][_name] = _limb
-				else:
-					connect_limb(_name,_limb,_parent,_limbs)
+				#if _parent in _limbs:
+				#	_limbs[_parent]['attached'][_name] = _limb
+				#else:
+				#	connect_limb(_name,_limb,_parent,_limbs)
 			
 			_name = ''
 			_flags = ''

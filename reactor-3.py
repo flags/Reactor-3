@@ -44,9 +44,7 @@ except ImportError, e:
 gfx.log(WINDOW_TITLE)
 
 try:
-	_stime = time.time()
 	MAP = maps.load_map('map1.dat')
-	print time.time()-_stime
 except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)

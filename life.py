@@ -43,27 +43,15 @@ def calculate_base_stats(life):
 	
 	return stats
 
-def _get_max_speed(life,leg):
-	#TODO: This will be used to calculate damage at some point...
+def get_max_speed(life):
 	_speed_mod = 0
 	
-	for limb in leg['attached']:
-		limb = get_limb(life['body'],limb)
-		for item in limb['holding']:
+	for limb in get_all_limbs(life['body']):
+		for item in life['body'][limb]['holding']:
 			_i = get_inventory_item(life,item)
 			
 			if _i.has_key('speed_mod'):
 				_speed_mod += _i['speed_mod']
-		
-		_speed_mod += _get_max_speed(life,limb)
-	
-	return _speed_mod
-
-def get_max_speed(life):
-	_speed_mod = 0
-	for leg in life['legs']:
-		_leg = get_limb(life['body'],leg)
-		_speed_mod += _get_max_speed(life,_leg)
 	
 	return LIFE_MAX_SPEED-_speed_mod
 
@@ -105,32 +93,13 @@ def initiate_limbs(body):
 		
 		body[limb]['holding'] = []
 		
-		initiate_limbs(body[limb]['attached'])
+		#initiate_limbs(body[limb]['attached'])
 
 def get_limb(body,limb):
-	_limb = []
-	
-	for limb1 in body:
-		if limb1 == limb:
-			return body[limb1]
-		
-		_limbs = get_limb(body[limb1]['attached'],limb)
-		if _limbs:
-			_limb = _limbs
-	
-	return _limb
+	return body[limb]
 
 def get_all_limbs(body):
-	_limbs = {}
-	
-	for limb in body:
-		_limb = body[limb].copy()
-		del _limb['attached']
-		
-		_limbs[limb] = _limb
-		_limbs.update(get_all_limbs(body[limb]['attached']))
-	
-	return _limbs
+	return body
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	if not type in LIFE_TYPES:
@@ -341,26 +310,16 @@ def tick(life):
 	perform_action(life)
 
 def attach_item_to_limb(body,item,limb):
-	for limb1 in body:
-		if limb1 == limb:
-			body[limb1]['holding'].append(item)
-			logging.debug('%s attached to %s' % (item,limb))
-			return True
-		
-		attach_item_to_limb(body[limb1]['attached'],item,limb)
+	body[limb]['holding'].append(item)
+	logging.debug('%s attached to %s' % (item,limb))
+	
+	return True
 
 def remove_item_from_limb(body,item,limb):
-	for limb1 in body:
-		if limb1 == limb:
-			try:
-				body[limb1]['holding'].remove(item)
-			except:
-				print body[limb1]['holding'],item
-				raise Exception('Cant find that item...')
-			logging.debug('%s removed from %s' % (item,limb))
-			return True
-		
-		remove_item_from_limb(body[limb1]['attached'],item,limb)
+	body[limb]['holding'].remove(item)
+	logging.debug('%s removed from %s' % (item,limb))
+	
+	return True
 
 def get_all_storage(life):
 	_storage = []

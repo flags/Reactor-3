@@ -1,114 +1,73 @@
 {
   "body": {
+    "lthigh": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "lknee": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "rfoot": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "llowerleg": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "rhand": {
+      "flags": "SKIN|MUSCLE|BONE|CANSTORE"
+    }, 
+    "rupperarm": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "lhand": {
+      "flags": "SKIN|MUSCLE|BONE|CANSTORE"
+    }, 
+    "rthigh": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "rknee": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "chest": {
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+    }, 
+    "lelbow": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "relbow": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "lupperarm": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "hip": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
     "head": {
-      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]", 
-      "attached": {
-        "neck": {
-          "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-          "attached": {
-            "chest": {
-              "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-              "attached": {
-                "stomach": {
-                  "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-                  "attached": {
-                    "hip": {
-                      "flags": "SKIN|MUSCLE|BONE", 
-                      "attached": {
-                        "lthigh": {
-                          "flags": "SKIN|MUSCLE|BONE", 
-                          "attached": {
-                            "lknee": {
-                              "flags": "SKIN|MUSCLE|BONE", 
-                              "attached": {
-                                "llowerleg": {
-                                  "flags": "SKIN|MUSCLE|BONE", 
-                                  "attached": {
-                                    "lfoot": {
-                                      "flags": "SKIN|MUSCLE|BONE", 
-                                      "attached": {}
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }, 
-                        "rthigh": {
-                          "flags": "SKIN|MUSCLE|BONE", 
-                          "attached": {
-                            "rknee": {
-                              "flags": "SKIN|MUSCLE|BONE", 
-                              "attached": {
-                                "rlowerleg": {
-                                  "flags": "SKIN|MUSCLE|BONE", 
-                                  "attached": {
-                                    "rfoot": {
-                                      "flags": "SKIN|MUSCLE|BONE", 
-                                      "attached": {}
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }, 
-                "lshoulder": {
-                  "flags": "SKIN|MUSCLE|BONE", 
-                  "attached": {
-                    "rupperarm": {
-                      "flags": "SKIN|MUSCLE|BONE", 
-                      "attached": {
-                        "relbow": {
-                          "flags": "SKIN|MUSCLE|BONE", 
-                          "attached": {
-                            "rforearm": {
-                              "flags": "SKIN|MUSCLE|BONE", 
-                              "attached": {
-                                "rhand": {
-                                  "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
-                                  "attached": {}
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }, 
-                    "lupperarm": {
-                      "flags": "SKIN|MUSCLE|BONE", 
-                      "attached": {
-                        "lelbow": {
-                          "flags": "SKIN|MUSCLE|BONE", 
-                          "attached": {
-                            "lforearm": {
-                              "flags": "SKIN|MUSCLE|BONE", 
-                              "attached": {
-                                "lhand": {
-                                  "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
-                                  "attached": {}
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }, 
-                "rshoulder": {
-                  "flags": "SKIN|MUSCLE|BONE", 
-                  "attached": {}
-                }
-              }
-            }
-          }
-        }
-      }
+      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
+    }, 
+    "stomach": {
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+    }, 
+    "rlowerleg": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "neck": {
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+    }, 
+    "lshoulder": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "lforearm": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "lfoot": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "rforearm": {
+      "flags": "SKIN|MUSCLE|BONE"
+    }, 
+    "rshoulder": {
+      "flags": "SKIN|MUSCLE|BONE"
     }
   }, 
   "race": "Human", 
