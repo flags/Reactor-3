@@ -157,6 +157,44 @@ def render_map(map):
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
 
+def render_x_cutout(map,x_pos,y_pos):
+	_X_MAX = x_pos+X_CUTOUT_WINDOW_SIZE[0]
+	y = y_pos
+	
+	for x in range(x_pos,_X_MAX):
+		_RENDER_X = x-x_pos
+		for z in range(MAP_SIZE[2]):
+			if map[x][y][z]:
+				_tile = map[x][y][z]
+			else:
+				_tile = BLANK_TILE
+			
+			gfx.blit_tile(_RENDER_X,
+				MAP_SIZE[2]-z,
+				_tile,
+				char_buffer=X_CUTOUT_CHAR_BUFFER,
+				rgb_fore_buffer=X_CUTOUT_RGB_FORE_BUFFER,
+				rgb_back_buffer=X_CUTOUT_RGB_BACK_BUFFER)
+
+def render_y_cutout(map,x_pos,y_pos):
+	_Y_MAX = y_pos+Y_CUTOUT_WINDOW_SIZE[1]
+	x = x_pos
+	
+	for y in range(y_pos,_Y_MAX):
+		_RENDER_Y = y-y_pos
+		for z in range(MAP_SIZE[2]):
+			if map[x][y][z]:
+				_tile = map[x][y][z]
+			else:
+				_tile = BLANK_TILE
+			
+			gfx.blit_tile(_RENDER_Y,
+				MAP_SIZE[2]-z,
+				_tile,
+				char_buffer=Y_CUTOUT_CHAR_BUFFER,
+				rgb_fore_buffer=Y_CUTOUT_RGB_FORE_BUFFER,
+				rgb_back_buffer=Y_CUTOUT_RGB_BACK_BUFFER)
+
 def render_shadows(map):
 	_stime = time.time()
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]

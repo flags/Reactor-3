@@ -6,7 +6,7 @@ import time
 import life
 
 def init_libtcod(terraform=False):
-	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW
+	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
@@ -15,7 +15,12 @@ def init_libtcod(terraform=False):
 	
 	if terraform:
 		PREFAB_WINDOW = console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
+		X_CUTOUT_WINDOW = console_new(X_CUTOUT_WINDOW_SIZE[0],X_CUTOUT_WINDOW_SIZE[1])
+		Y_CUTOUT_WINDOW = console_new(Y_CUTOUT_WINDOW_SIZE[0],Y_CUTOUT_WINDOW_SIZE[1])
+		
 		PREFAB_CHAR_BUFFER[0] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
+		X_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
+		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
 	
 	console_set_custom_font(FONT,FONT_LAYOUT)
 	console_set_keyboard_repeat(200, 0)
@@ -29,6 +34,10 @@ def init_libtcod(terraform=False):
 		if terraform:
 			PREFAB_RGB_BACK_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
 			PREFAB_RGB_FORE_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
+			X_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
+			X_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
+			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
+			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
 	
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -50,6 +59,14 @@ def start_of_frame_terraform():
 	console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
 	console_fill_foreground(PREFAB_WINDOW,PREFAB_RGB_FORE_BUFFER[0],PREFAB_RGB_FORE_BUFFER[1],PREFAB_RGB_FORE_BUFFER[2])
 	console_fill_char(PREFAB_WINDOW,PREFAB_CHAR_BUFFER[0])
+	
+	console_fill_background(X_CUTOUT_WINDOW,X_CUTOUT_RGB_BACK_BUFFER[0],X_CUTOUT_RGB_BACK_BUFFER[1],X_CUTOUT_RGB_BACK_BUFFER[2])
+	console_fill_foreground(X_CUTOUT_WINDOW,X_CUTOUT_RGB_FORE_BUFFER[0],X_CUTOUT_RGB_FORE_BUFFER[1],X_CUTOUT_RGB_FORE_BUFFER[2])
+	console_fill_char(X_CUTOUT_WINDOW,X_CUTOUT_CHAR_BUFFER[0])
+	
+	console_fill_background(Y_CUTOUT_WINDOW,Y_CUTOUT_RGB_BACK_BUFFER[0],Y_CUTOUT_RGB_BACK_BUFFER[1],Y_CUTOUT_RGB_BACK_BUFFER[2])
+	console_fill_foreground(Y_CUTOUT_WINDOW,Y_CUTOUT_RGB_FORE_BUFFER[0],Y_CUTOUT_RGB_FORE_BUFFER[1],Y_CUTOUT_RGB_FORE_BUFFER[2])
+	console_fill_char(Y_CUTOUT_WINDOW,Y_CUTOUT_CHAR_BUFFER[0])
 
 def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	_tile = get_tile(tile)
@@ -84,7 +101,6 @@ def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
-	"""Handles the drawing of the cursor."""	
 	if time.time()%1>=0.5:
 		blit_char(cursor[0]-camera[0],
 			cursor[1]-camera[1],
@@ -171,13 +187,32 @@ def end_of_frame_terraform(editing_prefab=False):
 		0,
 		PREFAB_WINDOW_OFFSET[0],
 		PREFAB_WINDOW_OFFSET[1])
+	console_blit(X_CUTOUT_WINDOW,
+		0,
+		0,
+		X_CUTOUT_WINDOW_SIZE[0],
+		X_CUTOUT_WINDOW_SIZE[1],
+		0,
+		PREFAB_WINDOW_OFFSET[0],
+		11)
+	console_blit(Y_CUTOUT_WINDOW,
+		0,
+		0,
+		Y_CUTOUT_WINDOW_SIZE[0],
+		Y_CUTOUT_WINDOW_SIZE[1],
+		0,
+		PREFAB_WINDOW_OFFSET[0],
+		22)
 	
 	if editing_prefab:
 		console_set_default_foreground(0,white)
 	else:
 		console_set_default_foreground(0,Color(185,185,185))
 	
+	#TODO: Figure these out using math
 	console_print(0,PREFAB_WINDOW_OFFSET[0],0,'Prefab Editor')
+	console_print(0,PREFAB_WINDOW_OFFSET[0],11,'West -X Cutout- East')
+	console_print(0,PREFAB_WINDOW_OFFSET[0],22,'North -Y Cutout- South')
 
 def end_of_frame_reactor3():
 	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

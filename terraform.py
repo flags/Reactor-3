@@ -117,7 +117,7 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif IN_PREFAB_EDITOR:
 			#TODO: Make this and everything in the `else` statement a function.
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,(0,-1))
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
 		else:
 			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,-1))
 
@@ -125,7 +125,7 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif IN_PREFAB_EDITOR:
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,(0,1))
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0,1))
 		else:
 			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,1))
 
@@ -350,7 +350,10 @@ def main():
 		else:
 			maps.render_map(MAP)
 		
-		#maps.render_lights()
+		#TODO: Cython-ify
+		maps.render_x_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
+		maps.render_y_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
+		#ma#ps.render_lights()
 		
 		#LIGHTS[0]['x'] = MAP_CURSOR[0]
 		#LIGHTS[0]['y'] = MAP_CURSOR[1]
