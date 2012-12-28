@@ -78,8 +78,16 @@ def draw_3d_line(pos1,pos2):
 		_x = pos1[0]
 		_y = pos1[1]
 		_z = pos1[2]
-		_ystep = abs(_ychange/float(_xchange))
-		_zstep = abs(_zchange/float(_xchange))
+		
+		try:
+			_ystep = abs(_ychange/float(_xchange))
+		except:
+			_ystep = abs(_ychange)
+		
+		try:
+			_zstep = abs(_zchange/float(_xchange))
+		except:
+			_zstep = abs(_zchange)
 		
 		for x in range(1,abs(_xchange)):
 			if _xnegative:

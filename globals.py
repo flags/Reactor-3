@@ -80,6 +80,7 @@ LIFE_TYPES = {}
 LIFE = []
 ITEM_TYPES = {}
 ITEMS = {}
+BULLETS = []
 
 #Consoles
 MAP_WINDOW = None

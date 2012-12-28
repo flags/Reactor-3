@@ -7,6 +7,7 @@ import graphics as gfx
 import maputils
 import drawing
 import logging
+import bullets
 import random
 import menus
 import items
@@ -478,7 +479,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
 #life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[120,30,4])
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[120,32,4])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
@@ -504,6 +505,8 @@ life.add_item_to_inventory(PLAYER,_i6)
 
 CURRENT_UPS = UPS
 
+bullets.create_bullet((75,32,3),(3,0,0),1)
+
 while RUNNING:
 	get_input()
 	handle_input()
@@ -512,6 +515,7 @@ while RUNNING:
 	while life.get_highest_action(PLAYER):
 		items.tick_all_items()
 		life.tick_all_life()
+		bullets.tick_bullets(MAP)
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -523,6 +527,7 @@ while RUNNING:
 	if not _played_moved:
 		items.tick_all_items()
 		life.tick_all_life()
+		bullets.tick_bullets(MAP)
 	
 	draw_targetting()
 	
@@ -533,6 +538,7 @@ while RUNNING:
 	
 	maps.render_lights()
 	items.draw_items()
+	bullets.draw_bullets()
 	move_camera(PLAYER['pos'])
 	life.draw_life()
 	
