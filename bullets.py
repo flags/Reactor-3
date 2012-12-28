@@ -6,9 +6,11 @@ import life
 import math
 
 def create_bullet(pos,direction,speed,owner_id):
-	velocity = numpy.array([math.cos(direction),math.sin(direction)])
+	rad = direction*(math.pi/180)
+	
+	velocity = numpy.array([math.cos(rad),math.sin(rad)])
 	_xvel,_yvel = numpy.multiply(velocity,speed)
-	velocity = [_xvel,_yvel]
+	velocity = [_xvel,-_yvel]
 	
 	print velocity
 	
