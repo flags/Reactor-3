@@ -495,12 +495,7 @@ def remove_item_from_inventory(life,id):
 	
 	return item
 
-def equip_item(life,id):
-	if not id:
-		return False
-	
-	item = get_inventory_item(life,id)
-	
+def _equip_clothing(life,item,id):
 	if not can_wear_item(life,item):
 		return False
 	
@@ -514,11 +509,49 @@ def equip_item(life,id):
 	
 	remove_item_in_storage(life,id)
 	
-	logging.debug('%s puts on a %s' % (life['name'][0],item['name']))
+	logging.debug('%s puts on a %s.' % (life['name'][0],item['name']))
 	
 	if item['attaches_to']:			
 		for limb in item['attaches_to']:
 			attach_item_to_limb(life['body'],item['id'],limb)
+	
+	return True
+
+def _equip_weapon(life,item,id):
+	#if not can_wear_item(life,item):
+	#	return False
+	
+	_limbs = get_all_limbs(life['body'])
+	
+	_hand = can_hold_item(life)
+	
+	if not _hand:
+		gfx.message('You don\'t have a free hand!')
+		return False
+	
+	remove_item_in_storage(life,id)
+	_hand['holding'].append(id)
+	
+	logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
+	
+	#if item['attaches_to']:			
+	#	for limb in item['attaches_to']:
+	#		attach_item_to_limb(life['body'],item['id'],limb)
+	return True
+
+def equip_item(life,id):
+	if not id:
+		return False
+	
+	item = get_inventory_item(life,id)
+	
+	if item['type'] == 'clothing':
+		if not _equip_clothing(life,item,id):
+			return False
+	elif item['type'] == 'gun':
+		_equip_weapon(life,item,id)
+	else:
+		logging.error('Invalid item type: %s' % item['type'])
 	
 	life['speed_max'] = get_max_speed(life)
 	
@@ -545,9 +578,18 @@ def pick_up_item_from_ground(life,uid):
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
+def can_hold_item(life):
+	for hand in life['hands']:
+		_limb = get_limb(life['body'],hand)
+		
+		if not len(_limb['holding']):
+			return _limb
+	
+	return False
+
 def holding_item(life,id):
-	for _hand in life['hands']:
-		_limb = get_limb(life['body'],_hand)
+	for hand in life['hands']:
+		_limb = get_limb(life['body'],hand)
 		
 		if id in _limb['holding']:
 			return _limb

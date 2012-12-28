@@ -1,0 +1,10 @@
+{"name": "glock",
+"prefix": "a",
+"type": "gun",
+"icon": "p",
+"description": "A pistol",
+"flags": "",
+"size": "1x1",
+"magsize": 17,
+"ammotype": "9x19mm",
+"thickness": 1}

@@ -9,7 +9,11 @@ except:
 
 def load_item(item):
 	with open(os.path.join(ITEM_DIR,item+'.json'),'r') as e:
-		return json.loads(''.join(e.readlines()))
+		try:
+			return json.loads(''.join(e.readlines()))
+		except ValueError,e:
+			raise Exception('Failed to load item: %s' % e)
+			
 
 def initiate_item(name):
 	if name in ITEM_TYPES:

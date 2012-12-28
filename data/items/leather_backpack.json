@@ -1,6 +1,6 @@
 {"name": "leather backpack",
 "prefix": "a",
-"type": "backpack",
+"type": "clothing",
 "icon": "B",
 "description": "As the name suggests, it is a backpack made of quality leather.",
 "attaches_to": "chest",

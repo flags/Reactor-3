@@ -486,6 +486,7 @@ items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
 items.initiate_item('blue_jeans')
+items.initiate_item('glock')
 
 _i1 = items.create_item('white t-shirt',MAP)
 _i2 = items.create_item('sneakers',MAP)
@@ -494,6 +495,7 @@ _i4 = items.create_item('sneakers',MAP,position=(8,15,2))
 _i4 = items.create_item('white t-shirt',MAP,position=(5,20,2))
 _i5 = items.create_item('leather backpack',MAP)
 _i6 = items.create_item('blue jeans',MAP)
+_i7 = items.create_item('glock',MAP)
 
 items.move(_i4,[0.5,0,1])
 
@@ -502,6 +504,7 @@ life.add_item_to_inventory(PLAYER,_i2)
 life.add_item_to_inventory(PLAYER,_i3)
 life.add_item_to_inventory(PLAYER,_i5)
 life.add_item_to_inventory(PLAYER,_i6)
+life.add_item_to_inventory(PLAYER,_i7)
 
 CURRENT_UPS = UPS
 

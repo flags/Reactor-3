@@ -1,6 +1,6 @@
 {"name": "sneakers",
 "prefix": "a pair of",
-"type": "shoes",
+"type": "clothing",
 "icon": "s",
 "description": "A pair of running shoes.",
 "speed_mod": 4,
