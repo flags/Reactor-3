@@ -384,7 +384,10 @@ if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')
 	cProfile.run('main()','profile.dat')
 else:
-	main()
+	try:
+		main()
+	except Exception, e:
+		logging.critical('Crashed: %s' % e)
 
 #TODO: write this into the utility
 #maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
