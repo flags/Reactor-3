@@ -92,6 +92,8 @@ def initiate_limbs(body):
 			body[limb]['storing'] = []
 		
 		body[limb]['holding'] = []
+		body[limb]['condition'] = 100
+		body[limb]['cut'] = False
 		
 		#initiate_limbs(body[limb]['attached'])
 
@@ -636,6 +638,29 @@ def draw_visual_inventory(life):
 			console_print(0,MAP_WINDOW_SIZE[0]+1,_limbs.keys().index(limb)+1,'%s: None' % limb)
 	
 	console_set_default_foreground(0,white)
+
+def cut_limb(life,limb):
+	_limb = life['body'][limb]
+	
+	if _limb['cut']:
+		return True
+	
+	_limb['cut'] = True
+	
+	if life.has_key('player'):
+		gfx.message('Your %s is severely cut!' % limb)
+
+def damage(life,item):
+	if item['sharp']:
+		cut_limb(life,'chest')
+	
+	_damage = item['damage']#-armor here
+	_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
+	
+	life['body']['chest']['condition'] -= _damage
+	
+	if life.has_key('player'):
+		gfx.message('You feel a sudden force against you. (-%s)' % _damage)
 
 def tick_all_life():
 	for life in LIFE:

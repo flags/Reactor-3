@@ -505,7 +505,7 @@ life.add_item_to_inventory(PLAYER,_i6)
 
 CURRENT_UPS = UPS
 
-bullets.create_bullet((75,32,3),(3,0,0),1)
+bullets.create_bullet((75,32,3),0,10.5,1)
 
 while RUNNING:
 	get_input()
