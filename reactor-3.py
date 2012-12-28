@@ -196,6 +196,41 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['f']:
+		if menus.get_menu_by_name('Fire')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Fire'))
+			return False
+		
+		#TODO: Pause game
+		
+		_weapons = []
+		for hand in PLAYER['hands']:
+			_limb = life.get_limb(PLAYER['body'],hand)
+			
+			if not _limb['holding']:
+				continue
+			
+			_item = life.get_inventory_item(PLAYER,_limb['holding'][0])
+			
+			if _item['type'] == 'gun':
+				_weapons.append(menus.create_item('single',
+					_item['name'],
+					'Temp',
+					icon=_item['icon']))
+		
+		if not _weapons:
+			gfx.message('You have nothing to shoot!')
+			return False
+		
+		_i = menus.create_menu(title='Fire',
+			menu=_weapons,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k: $v',
+			on_select=inventory_fire)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Options'))
@@ -359,6 +394,37 @@ def inventory_throw(entry):
 	_stored = life.item_is_stored(PLAYER,item['id'])
 	if _stored:
 		gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
+	
+	#gfx.message('You drop %s.' % item['name'])
+	_dropped_item = life.drop_item(PLAYER,item['id'])
+	
+	items.move(_dropped_item,(1,0,1))
+	return True
+	
+	_hand = life.can_throw(PLAYER)
+	if not _hand:
+		gfx.message('Both of your hands are full.')
+	
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		return False
+	
+	_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
+	
+	PLAYER['targetting'] = PLAYER['pos'][:]
+	_hand['holding'].append(_new_id)
+	
+	gfx.message('You hold %s.' % items.get_name(_dropped_item))
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_fire(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	#_stored = life.item_is_stored(PLAYER,item['id'])
+	#if _stored:
+	#	gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
 	
 	#gfx.message('You drop %s.' % item['name'])
 	_dropped_item = life.drop_item(PLAYER,item['id'])
