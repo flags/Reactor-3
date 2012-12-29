@@ -408,6 +408,15 @@ def throw_item(life,id,target,speed):
 	
 	items.move(_item,direction,speed)
 
+def update_container_capacity(life,container):
+	logging.warning('life.update_container_capacity(): This method is untested!')
+	_capacity = 0
+	
+	for item in container['storing']:
+		_capacity += get_inventory_item(life,item)['size']
+	
+	container['capacity'] = _capacity
+
 def can_put_item_in_storage(life,item):
 	#Whoa...
 	for _item in [life['inventory'][_item] for _item in life['inventory']]:
@@ -426,6 +435,7 @@ def add_item_to_storage(life,item,container=None):
 		return False
 	
 	container['storing'].append(item['id'])
+	container['capacity'] += item['size']
 	
 	return True
 
@@ -438,6 +448,7 @@ def remove_item_in_storage(life,item):
 
 		if item in _container['storing']:
 			_container['storing'].remove(item)
+			_container['capacity'] -= get_inventory_item(life,item)['size']
 			logging.debug('Removed item #%s from %s' % (item,_container['name']))
 			
 			return _container

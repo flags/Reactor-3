@@ -98,7 +98,7 @@ def get_items_at(position):
 	return _items
 
 def get_name(item):
-	return '%s %s' % (item['prefix'],item['name'])
+	return '%s %s' % (item['prefix'],item['name'])		
 
 def move(item,direction,speed,friction=0.05):
 	velocity = numbers.velocity(direction,speed)

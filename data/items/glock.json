@@ -4,7 +4,7 @@
 "icon": "p",
 "description": "A pistol",
 "flags": "",
-"size": "1x1",
+"size": "2x2",
 "magsize": 17,
 "ammotype": "9x19mm",
 "thickness": 1}

@@ -127,6 +127,10 @@ def handle_input():
 		
 		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
 		
+		if not _inventory:
+			gfx.message('You have no items.')
+			return False
+		
 		_i = menus.create_menu(title='Inventory',
 			menu=_inventory,
 			padding=(1,1),
@@ -502,11 +506,17 @@ def pick_up_item_from_ground_action(entry):
 		_menu.append(menus.create_item('single','Equip',hand,item=_item))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
-	for container in life.get_all_storage(PLAYER):
+	for container in life.get_all_storage(PLAYER):		
+		if container['capacity']+_item['size'] > container['max_capacity']:
+			_enabled = False
+		else:
+			_enabled = True
+		
 		_menu.append(menus.create_item('single',
 			container['name'],
 			'%s/%s' % (container['capacity'],container['max_capacity']),
 			container=container,
+			enabled=_enabled,
 			item=_item))
 	
 	_i = menus.create_menu(title='Pick up (action)',
