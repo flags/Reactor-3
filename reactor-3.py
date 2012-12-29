@@ -7,6 +7,7 @@ import graphics as gfx
 import maputils
 import drawing
 import logging
+import weapons
 import bullets
 import random
 import menus
@@ -201,6 +202,12 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Fire'))
 			return False
 		
+		if PLAYER['targetting']:
+			weapons.fire(PLAYER,PLAYER['targetting'])
+			PLAYER['targetting'] = None
+			SELECTED_TILES[0] = []
+			return True
+		
 		#TODO: Pause game
 		
 		_weapons = []
@@ -216,7 +223,8 @@ def handle_input():
 				_weapons.append(menus.create_item('single',
 					_item['name'],
 					'Temp',
-					icon=_item['icon']))
+					icon=_item['icon'],
+					id=_item['id']))
 		
 		if not _weapons:
 			gfx.message('You have nothing to shoot!')
@@ -422,15 +430,13 @@ def inventory_fire(entry):
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
 	
+	PLAYER['firing'] = item
+	
 	#_stored = life.item_is_stored(PLAYER,item['id'])
 	#if _stored:
 	#	gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
 	
 	#gfx.message('You drop %s.' % item['name'])
-	_dropped_item = life.drop_item(PLAYER,item['id'])
-	
-	items.move(_dropped_item,(1,0,1))
-	return True
 	
 	_hand = life.can_throw(PLAYER)
 	if not _hand:
@@ -439,12 +445,12 @@ def inventory_fire(entry):
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		return False
 	
-	_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
+	#_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
 	
 	PLAYER['targetting'] = PLAYER['pos'][:]
-	_hand['holding'].append(_new_id)
+	#_hand['holding'].append(_new_id)
 	
-	gfx.message('You hold %s.' % items.get_name(_dropped_item))
+	#gfx.message('You hold %s.' % items.get_name(_dropped_item))
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -573,8 +579,6 @@ life.add_item_to_inventory(PLAYER,_i6)
 life.add_item_to_inventory(PLAYER,_i7)
 
 CURRENT_UPS = UPS
-
-bullets.create_bullet((127,32,3),360,2,1)
 
 while RUNNING:
 	get_input()

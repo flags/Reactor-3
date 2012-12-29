@@ -5,7 +5,7 @@ import numpy
 import life
 import math
 
-def create_bullet(pos,direction,speed,owner_id):
+def create_bullet(pos,direction,speed,owner):
 	rad = direction*(math.pi/180)
 	
 	velocity = numpy.array([math.cos(rad),math.sin(rad)])
@@ -21,13 +21,16 @@ def create_bullet(pos,direction,speed,owner_id):
 		'velocity': velocity,
 		'sharp': True,
 		'damage': 60,
-		'fallspeed': 0.2,
-		'owner': owner_id}
+		'fallspeed': 0.05,
+		'owner': owner}
 	
 	BULLETS.append(bullet)
 
 def tick_bullets(MAP):
 	for bullet in BULLETS:
+		if not bullet['velocity'][0] and not bullet['velocity'][1]:
+			continue
+		
 		bullet['realpos'][0] += bullet['velocity'][0]
 		bullet['realpos'][1] += bullet['velocity'][1]
 		_break = False
@@ -38,6 +41,9 @@ def tick_bullets(MAP):
 				break
 			
 			for _life in LIFE:
+				if _life == bullet['owner']:
+					continue
+				
 				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1]:
 					bullet['pos'] = pos
 					life.damage(_life,bullet)
@@ -50,17 +56,21 @@ def tick_bullets(MAP):
 				break
 					
 			
-			if MAP[pos[0]][pos[1]][bullet['pos'][2]]:
+			if MAP[pos[0]][pos[1]][bullet['pos'][2]+1]:
 				bullet['velocity'][0] = 0
 				bullet['velocity'][1] = 0
 				#bullet['velocity'][2] = 0
+				bullet['pos'] = list(pos)
+				
+				_break = True
+				break
 		
 		if _break:
 			continue
 		
 		bullet['pos'][0] = int(bullet['realpos'][0])
 		bullet['pos'][1] = int(bullet['realpos'][1])
-
+		
 		#TODO: Min/max
 		bullet['velocity'][0] -= (bullet['velocity'][0]*bullet['fallspeed'])
 		bullet['velocity'][1] -= (bullet['velocity'][1]*bullet['fallspeed'])

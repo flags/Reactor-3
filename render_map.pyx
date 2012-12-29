@@ -47,7 +47,14 @@ def render_map(map):
 						_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							gfx.blit_char(_RENDER_X,_RENDER_Y,'X',darker_grey,black)
+							gfx.blit_char(_RENDER_X,
+								_RENDER_Y,
+								'X',
+								darker_grey,
+								black,
+								char_buffer=MAP_CHAR_BUFFER,
+								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 						else:
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 						_drawn = True
