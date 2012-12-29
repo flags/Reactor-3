@@ -233,6 +233,13 @@ def clear_actions(life):
 		
 	life['actions'] = []
 
+def delete_action(life,action):
+	_action = {'action': action['action'],
+		'score': action['score'],
+		'delay': action['delay']}
+	
+	life['actions'].remove(_action)
+
 def add_action(life,action,score,delay=0):
 	_tmp_action = {'action': action,'score': score}
 	
@@ -244,14 +251,19 @@ def add_action(life,action,score,delay=0):
 	return False
 
 def perform_action(life):
-	_action = get_highest_action(life)
+	action = get_highest_action(life)
+	
+	if not action:
+		return False
+	
+	_action = action.copy()
 	
 	#TODO: What's happening here?
 	if not _action in life['actions']:
 		return False
 
-	if _action['delay']:
-		_action['delay']-=1
+	if action['delay']:
+		action['delay']-=1
 		
 		return False
 
@@ -261,30 +273,48 @@ def perform_action(life):
 	
 	if _action['action'] == 'move':
 		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
-			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+			delete_action(life,action)
+	
 	elif _action['action'] == 'pickupitem':
-		direct_add_item_to_inventory(_action['life'],_action['item'],container=_action['container'])
-		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
+		delete_action(life,action)
 		
 		if life.has_key('player'):			
 			if _action.has_key('container'):
 				gfx.message('You store %s in your %s.'
 					% (items.get_name(_action['item']),_action['container']['name']))
+	
+	elif _action['action'] == 'equipitem':
+		_name = items.get_name(get_inventory_item(life,_action['item']))
+		
+		if not equip_item(life,_action['item']):
+			delete_action(life,action)
+			gfx.message('You can\'t wear %s.' % _name)
+		
+		_stored = item_is_stored(life,_action['item'])
+
+		if _stored:
+			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+		
+		delete_action(life,action)
+		
+		gfx.message('You put on %s.' % _name)
+
 	elif _action['action'] == 'pickupequipitem':
-		if not can_wear_item(_action['life'],_action['item']):
+		if not can_wear_item(life,_action['item']):
 			if life.has_key('player'):
 				gfx.message('You can\'t equip this item!')
 			
-			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+			delete_action(life,action)
 			
 			return False
 		
 		#TODO: Can we even equip this? Can we check here instead of later?
-		_id = direct_add_item_to_inventory(_action['life'],_action['item'])
+		_id = direct_add_item_to_inventory(life,_action['item'])
 		
-		equip_item(_action['life'],_id)
+		equip_item(life,_id)
 		
-		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+		delete_action(life,action)
 		
 		if life.has_key('player'):
 			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
@@ -296,16 +326,16 @@ def perform_action(life):
 			if life.has_key('player'):
 				gfx.message('You\'re alreading holding something in your %s!' % _action['hand'])
 		
-			life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+			delete_action(life,action)
 			
 			return False
 		
-		_id = direct_add_item_to_inventory(_action['life'],_action['item'])
+		_id = direct_add_item_to_inventory(life,_action['item'])
 		_hand['holding'].append(_id)
 		
 		gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
 		
-		life['actions'].remove({'action':_action,'score':_score,'delay':_delay})
+		delete_action(life,action)
 
 def tick(life):
 	perform_collisions(life)

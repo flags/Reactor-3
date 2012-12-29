@@ -153,4 +153,5 @@ CLAY = Color(228,145,53)
 
 #Message bank
 MESSAGE_BANK = {'cancelpickupequipitem': 'You stop picking up the item.',
-	'cancelpickupitem': 'You stop picking up the item.'}
+	'cancelpickupitem': 'You stop picking up the item.',
+	'cancelequipitem': 'You stop putting on the item.'}

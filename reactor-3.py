@@ -363,16 +363,17 @@ def inventory_equip(entry):
 	
 	_name = items.get_name(life.get_inventory_item(PLAYER,item))
 	
-	if life.equip_item(PLAYER,int(item)):
-		_stored = life.item_is_stored(PLAYER,int(item))
-		if _stored:
-			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
-		
-		gfx.message('You put on %s.' % _name)
+	#if life.equip_item(PLAYER,int(item)):
+	life.add_action(PLAYER,{'action': 'equipitem',
+		'item': item},
+		200,
+		delay=40)
 	
-		menus.delete_menu(ACTIVE_MENU['menu'])
-	else:
-		gfx.message('You can\'t wear %s.' % _name)
+	gfx.message('You start putting on %s.' % _name)
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	#else:
+	#	gfx.message('You can\'t wear %s.' % _name)
 
 def inventory_drop(entry):
 	key = entry['key']
@@ -465,8 +466,7 @@ def pick_up_item_from_ground(entry):
 			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
 			
 			life.add_action(PLAYER,{'action': 'pickupequipitem',
-				'item': entry['item'],
-				'life': PLAYER},
+				'item': entry['item']},
 				200,
 				delay=40)
 		
@@ -475,8 +475,7 @@ def pick_up_item_from_ground(entry):
 			
 			life.add_action(PLAYER,{'action': 'pickupholditem',
 				'item': entry['item'],
-				'hand': entry['values'][entry['value']],
-				'life': PLAYER},
+				'hand': entry['values'][entry['value']]},
 				200,
 				delay=40)
 		
@@ -487,8 +486,7 @@ def pick_up_item_from_ground(entry):
 	
 	life.add_action(PLAYER,{'action': 'pickupitem',
 		'item': entry['item'],
-		'container': entry['container'],
-		'life': PLAYER},
+		'container': entry['container']},
 		200,
 		delay=60)
 	
