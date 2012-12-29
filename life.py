@@ -229,7 +229,10 @@ def clear_actions(life):
 		logging.debug('%s %s cancels %s' % (life['name'][0],life['name'][1],_action))
 		
 		if life.has_key('player'):
-			gfx.message(MESSAGE_BANK['cancel'+_action])
+			try:
+				gfx.message(MESSAGE_BANK['cancel'+_action])
+			except KeyError:
+				logging.warning('Unhandled cancel message for action \'%s\'.' % _action)
 		
 	life['actions'] = []
 
@@ -283,6 +286,22 @@ def perform_action(life):
 			if _action.has_key('container'):
 				gfx.message('You store %s in your %s.'
 					% (items.get_name(_action['item']),_action['container']['name']))
+	
+	elif _action['action'] == 'dropitem':
+		_name = items.get_name(get_inventory_item(life,_action['item']))
+		
+		if item_is_equipped(life,_action['item']):
+			gfx.message('You take off %s.' % _name)
+				
+		_stored = item_is_stored(life,_action['item'])
+		if _stored:
+			_item = get_inventory_item(life,_action['item'])
+			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+		
+		gfx.message('You drop %s.' % _name)
+		drop_item(life,_action['item'])
+		
+		delete_action(life,action)
 	
 	elif _action['action'] == 'equipitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))

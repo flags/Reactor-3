@@ -363,7 +363,6 @@ def inventory_equip(entry):
 	
 	_name = items.get_name(life.get_inventory_item(PLAYER,item))
 	
-	#if life.equip_item(PLAYER,int(item)):
 	life.add_action(PLAYER,{'action': 'equipitem',
 		'item': item},
 		200,
@@ -372,8 +371,6 @@ def inventory_equip(entry):
 	gfx.message('You start putting on %s.' % _name)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
-	#else:
-	#	gfx.message('You can\'t wear %s.' % _name)
 
 def inventory_drop(entry):
 	key = entry['key']
@@ -382,16 +379,12 @@ def inventory_drop(entry):
 	
 	_name = items.get_name(life.get_inventory_item(PLAYER,item))
 	
-	if life.item_is_equipped(PLAYER,item):
-		gfx.message('You take off %s.' % _name)
-			
-	_stored = life.item_is_stored(PLAYER,item)
-	if _stored:
-		_item = life.get_inventory_item(PLAYER,item)
-		gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+	life.add_action(PLAYER,{'action': 'dropitem',
+		'item': item},
+		200,
+		delay=20)
 	
-	gfx.message('You drop %s.' % _name)
-	life.drop_item(PLAYER,item)
+	gfx.message('You start to drop %s.' % _name)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
