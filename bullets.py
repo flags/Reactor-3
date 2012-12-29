@@ -10,7 +10,7 @@ def create_bullet(pos,direction,speed,owner):
 	
 	velocity = numpy.array([math.cos(rad),math.sin(rad)])
 	_xvel,_yvel = numpy.multiply(velocity,speed)
-	velocity = [_xvel,-_yvel]
+	velocity = [_xvel,-_yvel,0]
 	
 	bullet = {'pos': list(pos),
 		'realpos': list(pos),
@@ -34,6 +34,9 @@ def tick_bullets(MAP):
 		_break = False
 		
 		for pos in drawing.diag_line(bullet['pos'],(int(bullet['realpos'][0]),int(bullet['realpos'][1]))):
+			bullet['realpos'][2] += bullet['velocity'][2]
+			bullet['velocity'][2] -= bullet['fallspeed']*.01
+			
 			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 				BULLETS.remove(bullet)
 				break
@@ -42,7 +45,7 @@ def tick_bullets(MAP):
 				if _life == bullet['owner']:
 					continue
 				
-				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1]:
+				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(bullet['realpos'][2])):
 					bullet['pos'] = pos
 					life.damage(_life,bullet)
 					_break = True
@@ -52,12 +55,11 @@ def tick_bullets(MAP):
 				
 			if _break:
 				break
-					
 			
-			if MAP[pos[0]][pos[1]][bullet['pos'][2]+1]:
+			if MAP[pos[0]][pos[1]][int(round(bullet['realpos'][2]))+1]:
 				bullet['velocity'][0] = 0
 				bullet['velocity'][1] = 0
-				#bullet['velocity'][2] = 0
+				bullet['velocity'][2] = 0
 				bullet['pos'] = list(pos)
 				
 				_break = True
@@ -66,8 +68,9 @@ def tick_bullets(MAP):
 		if _break:
 			continue
 		
-		bullet['pos'][0] = int(bullet['realpos'][0])
-		bullet['pos'][1] = int(bullet['realpos'][1])
+		bullet['pos'][0] = int(round(bullet['realpos'][0]))
+		bullet['pos'][1] = int(round(bullet['realpos'][1]))
+		bullet['pos'][2] = int(round(bullet['realpos'][2]))
 		
 		#TODO: Min/max
 		bullet['velocity'][0] -= (bullet['velocity'][0]*bullet['fallspeed'])

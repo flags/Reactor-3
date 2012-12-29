@@ -149,9 +149,9 @@ def tick_all_items():
 			
 			item['velocity'][2] -= item['gravity']
 			
-			_nx = int(item['realpos'][0])
-			_ny = int(item['realpos'][1])
-			_nz = int(item['realpos'][2])
+			_nx = int(round(item['realpos'][0]))
+			_ny = int(round(item['realpos'][1]))
+			_nz = int(round(item['realpos'][2]))
 			
 			item['velocity'][2] -= item['gravity']
 

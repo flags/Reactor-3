@@ -13,10 +13,7 @@ def fire(life,target):
 			theta += 2 * pi
 		
 		direction = (theta * (180/pi))
-		
 		direction += random.randint(-13,10)
-		
-		#print direction
 		
 		weapon = life['firing']
 		bullets.create_bullet(life['pos'],direction,5,life)
