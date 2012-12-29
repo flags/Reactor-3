@@ -1,6 +1,7 @@
 from globals import *
 import graphics as gfx
 import logging
+import numbers
 
 try:
 	import ujson as json
@@ -99,13 +100,16 @@ def get_items_at(position):
 def get_name(item):
 	return '%s %s' % (item['prefix'],item['name'])
 
-def move(item,velocity,friction=0.05):
+def move(item,direction,speed,friction=0.05):
+	velocity = numbers.velocity(direction,speed)
+	velocity[2] = 1
+	
 	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
 	item['friction'] = friction
-	item['velocity'] = list(velocity)
+	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
 	
-	logging.debug('The %s flies off in an arc!' % item['name'])
+	logging.debug('%s flies off in an arc!' % get_name(item))
 
 def draw_items():
 	for _item in ITEMS:
@@ -198,5 +202,5 @@ def tick_all_items():
 							item['velocity'][i]=0
 			
 			if item['velocity'].count(0)==3:
-				logging.debug('The %s comes to a rest at %s,%s,%s.' %
-					(item['name'],item['pos'][0],item['pos'][1],item['pos'][2]))
+				logging.debug('%s comes to a rest at %s,%s,%s.' %
+					(get_name(item),item['pos'][0],item['pos'][1],item['pos'][2]))

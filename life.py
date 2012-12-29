@@ -2,6 +2,7 @@ from globals import *
 import graphics as gfx
 import pathfinding
 import logging
+import numbers
 import items
 import menus
 import copy
@@ -355,6 +356,16 @@ def perform_action(life):
 		gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
 		
 		delete_action(life,action)
+	
+	elif _action['action'] == 'holditemthrow':
+		_dropped_item = drop_item(life,_action['item'])
+		_id = direct_add_item_to_inventory(life,_dropped_item)
+		_action['hand']['holding'].append(_id)
+		
+		gfx.message('You aim %s.' % items.get_name(_dropped_item))
+		life['targetting'] = life['pos'][:]
+		
+		delete_action(life,action)
 
 def tick(life):
 	perform_collisions(life)
@@ -389,6 +400,13 @@ def can_throw(life):
 			return _hand
 	
 	return False
+
+def throw_item(life,id,target,speed):
+	_item = remove_item_from_inventory(life,id)
+	
+	direction = numbers.direction_to(life['pos'],target)
+	
+	items.move(_item,direction,speed)
 
 def can_put_item_in_storage(life,item):
 	#Whoa...
@@ -510,7 +528,7 @@ def add_item_to_inventory(life,item):
 def remove_item_from_inventory(life,id):
 	item = get_inventory_item(life,id)
 	
-	_holding = holding_item(life,id)
+	_holding = is_holding(life,id)
 	if _holding:
 		_holding['holding'].remove(id)
 		logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
@@ -636,7 +654,7 @@ def can_hold_item(life):
 	
 	return False
 
-def holding_item(life,id):
+def is_holding(life,id):
 	for hand in life['hands']:
 		_limb = get_limb(life['body'],hand)
 		
@@ -645,8 +663,11 @@ def holding_item(life,id):
 	
 	return False
 
-def item_is_equipped(life,id):
+def item_is_equipped(life,id,check_hands=False):
 	for _limb in get_all_limbs(life['body']):
+		if not check_hands and _limb in life['hands']:
+			continue
+		
 		if int(id) in get_limb(life['body'],_limb)['holding']:
 			return True
 	
@@ -680,7 +701,7 @@ def draw_life():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
-def get_fancy_inventory_menu_items(life,show_equipped=True):
+def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 	_inventory = []
 		
 	#TODO: Time it would take to remove
@@ -691,7 +712,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True):
 		for entry in life['inventory']:
 			item = get_inventory_item(life,entry)
 			
-			if item_is_equipped(life,entry):
+			if item_is_equipped(life,entry,check_hands=check_hands):
 				_menu_item = menus.create_item('single',
 					item['name'],
 					'Equipped',
@@ -699,6 +720,24 @@ def get_fancy_inventory_menu_items(life,show_equipped=True):
 					id=int(entry))
 			
 				_inventory.append(_menu_item)
+	elif check_hands:
+		_title = menus.create_item('title','Holding',None,enabled=False)
+		_inventory.append(_title)
+	
+		for hand in life['hands']:
+			if not life['body'][hand]['holding']:
+				continue
+				
+			item = get_inventory_item(life,life['body'][hand]['holding'][0])
+			
+			#if item_is_equipped(life,entry,check_hands=check_hands):
+			_menu_item = menus.create_item('single',
+				item['name'],
+				'Holding',
+				icon=item['icon'],
+				id=item['id'])
+		
+			_inventory.append(_menu_item)
 	
 	for container in get_all_storage(life):
 		_title = menus.create_item('title',container['name'],None,enabled=False)

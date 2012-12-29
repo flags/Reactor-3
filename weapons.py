@@ -1,5 +1,5 @@
 from globals import *
-from math import *
+import numbers
 import bullets
 import random
 
@@ -7,12 +7,7 @@ random.seed()
 
 def fire(life,target):
 	for i in range(4):
-		theta = atan2((life['pos'][1]-target[1]),-(life['pos'][0]-target[0]))
-		
-		if theta < 0:
-			theta += 2 * pi
-		
-		direction = (theta * (180/pi))
+		direction = numbers.direction_to(life['pos'],target)
 		direction += random.randint(-13,10)
 		
 		weapon = life['firing']

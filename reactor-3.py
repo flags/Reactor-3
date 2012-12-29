@@ -69,6 +69,8 @@ def handle_input():
 			menus.delete_menu(ACTIVE_MENU['menu'])
 		elif PLAYER['targetting']:
 			PLAYER['targetting'] = None
+			PLAYER['throwing'] = None
+			PLAYER['firing'] = None
 			SELECTED_TILES[0] = []
 		else:
 			RUNNING = False
@@ -186,7 +188,13 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
-		_throwable = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=False)
+		if PLAYER['targetting']:
+			life.throw_item(PLAYER,PLAYER['throwing']['id'],PLAYER['targetting'],1)
+			PLAYER['targetting'] = None
+			SELECTED_TILES[0] = []
+			return True
+		
+		_throwable = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=False,check_hands=True)
 		
 		_i = menus.create_menu(title='Throw',
 			menu=_throwable,
@@ -393,15 +401,13 @@ def inventory_throw(entry):
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
 	
-	_stored = life.item_is_stored(PLAYER,item['id'])
-	if _stored:
-		gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
-	
-	#gfx.message('You drop %s.' % item['name'])
-	_dropped_item = life.drop_item(PLAYER,item['id'])
-	
-	items.move(_dropped_item,(1,0,1))
-	return True
+	_hand = life.is_holding(PLAYER,entry['id'])
+	if _hand:
+		PLAYER['targetting'] = PLAYER['pos'][:]
+		PLAYER['throwing'] = item
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		
+		return True
 	
 	_hand = life.can_throw(PLAYER)
 	if not _hand:
@@ -409,13 +415,21 @@ def inventory_throw(entry):
 	
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		return False
+
+	_stored = life.item_is_stored(PLAYER,item['id'])
+	if _stored:
+		_delay = 40
+		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
+	else:
+		_delay = 20
 	
-	_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
+	PLAYER['throwing'] = item
 	
-	PLAYER['targetting'] = PLAYER['pos'][:]
-	_hand['holding'].append(_new_id)
-	
-	gfx.message('You hold %s.' % items.get_name(_dropped_item))
+	life.add_action(PLAYER,{'action': 'holditemthrow',
+		'item': entry['id'],
+		'hand': _hand},
+		200,
+		delay=_delay)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -426,12 +440,6 @@ def inventory_fire(entry):
 	
 	PLAYER['firing'] = item
 	
-	#_stored = life.item_is_stored(PLAYER,item['id'])
-	#if _stored:
-	#	gfx.message('You remove %s from your %s.' % (item['name'],_stored['name']))
-	
-	#gfx.message('You drop %s.' % item['name'])
-	
 	_hand = life.can_throw(PLAYER)
 	if not _hand:
 		gfx.message('Both of your hands are full.')
@@ -439,12 +447,7 @@ def inventory_fire(entry):
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		return False
 	
-	#_new_id = life.direct_add_item_to_inventory(PLAYER,_dropped_item)
-	
 	PLAYER['targetting'] = PLAYER['pos'][:]
-	#_hand['holding'].append(_new_id)
-	
-	#gfx.message('You hold %s.' % items.get_name(_dropped_item))
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -560,7 +563,7 @@ _i5 = items.create_item('leather backpack',MAP)
 _i6 = items.create_item('blue jeans',MAP)
 _i7 = items.create_item('glock',MAP)
 
-items.move(_i4,[0.5,0,1])
+items.move(_i4,0,1)
 
 life.add_item_to_inventory(PLAYER,_i1)
 life.add_item_to_inventory(PLAYER,_i2)

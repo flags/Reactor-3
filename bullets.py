@@ -1,16 +1,13 @@
 from globals import *
 import graphics as gfx
+import numbers
 import drawing
 import numpy
 import life
 import math
 
 def create_bullet(pos,direction,speed,owner):
-	rad = direction*(math.pi/180)
-	
-	velocity = numpy.array([math.cos(rad),math.sin(rad)])
-	_xvel,_yvel = numpy.multiply(velocity,speed)
-	velocity = [_xvel,-_yvel,0]
+	velocity = numbers.velocity(direction,speed)
 	
 	bullet = {'pos': list(pos),
 		'realpos': list(pos),
