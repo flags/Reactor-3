@@ -12,8 +12,6 @@ def create_bullet(pos,direction,speed,owner):
 	_xvel,_yvel = numpy.multiply(velocity,speed)
 	velocity = [_xvel,-_yvel]
 	
-	print velocity
-	
 	bullet = {'pos': list(pos),
 		'realpos': list(pos),
 		'spos': list(pos),
