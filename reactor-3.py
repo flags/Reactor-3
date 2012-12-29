@@ -498,7 +498,7 @@ def pick_up_item_from_ground_action(entry):
 	_item = items.get_item_from_uid(entry['item'])
 	
 	_menu = []
-	#TODO: Can we equip this?	
+	#TODO: Can we equip this?
 	_menu.append(menus.create_item('title','Actions',None,enabled=False))
 	_menu.append(menus.create_item('single','Equip','Wear',item=_item))
 	
