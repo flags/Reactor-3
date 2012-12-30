@@ -145,18 +145,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = []
-		for entry in PLAYER['inventory']:
-			item = life.get_inventory_item(PLAYER,entry)
-			
-			if not life.item_is_equipped(PLAYER,entry):
-				_menu_item = menus.create_item('single',
-					item['name'],
-					'Not equipped',
-					icon=item['icon'],
-					id=int(entry))
-				
-				_inventory.append(_menu_item)
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=False,check_hands=False)
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
@@ -166,7 +155,7 @@ def handle_input():
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
-			format_str='[$i] $k: $v',
+			format_str='[$i] $k',
 			on_select=inventory_equip)
 		
 		menus.activate_menu(_i)
