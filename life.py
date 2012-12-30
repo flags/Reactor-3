@@ -735,7 +735,6 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 				
 			item = get_inventory_item(life,life['body'][hand]['holding'][0])
 			
-			#if item_is_equipped(life,entry,check_hands=check_hands):
 			_menu_item = menus.create_item('single',
 				item['name'],
 				'Holding',
