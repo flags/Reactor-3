@@ -439,14 +439,12 @@ def add_item_to_storage(life,item,container=None):
 	
 	return True
 
-def remove_item_in_storage(life,item):
-	item = int(item)
-	
+def remove_item_in_storage(life,id):
 	for _container in [life['inventory'][_container] for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
-		if item in _container['storing']:
+		if id in _container['storing']:
 			_container['storing'].remove(item)
 			_container['capacity'] -= get_inventory_item(life,item)['size']
 			logging.debug('Removed item #%s from %s' % (item,_container['name']))
@@ -455,12 +453,12 @@ def remove_item_in_storage(life,item):
 	
 	return False
 
-def item_is_stored(life,item):
+def item_is_stored(life,id):
 	for _container in [life['inventory'][_container] for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
-		if item in _container['storing']:
+		if id in _container['storing']:
 			return _container
 	
 	return False
@@ -573,7 +571,9 @@ def remove_item_from_inventory(life,id):
 	
 	return item
 
-def _equip_clothing(life,item,id):
+def _equip_clothing(life,id):
+	item = get_inventory_item(life,id)
+	
 	if not can_wear_item(life,item):
 		return False
 	
@@ -595,13 +595,10 @@ def _equip_clothing(life,item,id):
 	
 	return True
 
-def _equip_weapon(life,item,id):
-	#if not can_wear_item(life,item):
-	#	return False
-	
+def _equip_weapon(life,id):
 	_limbs = get_all_limbs(life['body'])
-	
 	_hand = can_hold_item(life)
+	item = get_inventory_item(life,id)
 	
 	if not _hand:
 		gfx.message('You don\'t have a free hand!')
@@ -612,9 +609,6 @@ def _equip_weapon(life,item,id):
 	
 	logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
 	
-	#if item['attaches_to']:			
-	#	for limb in item['attaches_to']:
-	#		attach_item_to_limb(life['body'],item['id'],limb)
 	return True
 
 def equip_item(life,id):
@@ -624,10 +618,10 @@ def equip_item(life,id):
 	item = get_inventory_item(life,id)
 	
 	if item['type'] == 'clothing':
-		if not _equip_clothing(life,item,id):
+		if not _equip_clothing(life,id):
 			return False
 	elif item['type'] == 'gun':
-		_equip_weapon(life,item,id)
+		_equip_weapon(life,id)
 	else:
 		logging.error('Invalid item type: %s' % item['type'])
 	
