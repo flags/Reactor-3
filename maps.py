@@ -170,6 +170,9 @@ def render_x_cutout(map,x_pos,y_pos):
 	y = y_pos
 	
 	for x in range(x_pos,_X_MAX):
+		if x>=MAP_SIZE[0] or x<0:
+			continue
+		
 		_RENDER_X = x-x_pos
 		for z in range(MAP_SIZE[2]):
 			if map[x][y][z]:
@@ -189,6 +192,9 @@ def render_y_cutout(map,x_pos,y_pos):
 	x = x_pos
 	
 	for y in range(y_pos,_Y_MAX):
+		if y>=MAP_SIZE[1] or y<0:
+			break
+		
 		_RENDER_Y = y-y_pos
 		for z in range(MAP_SIZE[2]):
 			if map[x][y][z]:
