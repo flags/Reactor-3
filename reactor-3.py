@@ -240,6 +240,53 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['r']:
+		if menus.get_menu_by_name('Reload')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Reload'))
+			return False
+		
+		_weapons = []
+		for item in life.get_held_items(PLAYER,matches=[{'type': 'gun'}]):
+			_weapons.append(life.get_inventory_item(PLAYER,item))
+		
+		if not _weapons:
+			gfx.message('You aren\'t holding any weapons.')
+			return False
+		
+		_menu = []
+		
+		for weapon in _weapons:
+			_title = menus.create_item('title',
+				weapon['name'],
+				None,
+				icon=weapon['icon'])
+			
+			_ammo = []
+			for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}]):
+				_ammo.append(menus.create_item('single',
+					ammo['name'],
+					'Temp',
+					icon=ammo['icon'],
+					parent=weapon,
+					id=ammo['id']))
+			
+			if _ammo:
+				_menu.append(_title)
+				_menu.extend(_ammo)
+		
+		if not _menu:
+			gfx.message('You have no ammo!')
+			return False
+		
+		_i = menus.create_menu(title='Reload',
+			menu=_menu,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k',
+			on_select=inventory_reload)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Options'))
@@ -433,14 +480,28 @@ def inventory_fire(entry):
 	
 	PLAYER['firing'] = item
 	
-	_hand = life.can_throw(PLAYER)
-	if not _hand:
-		gfx.message('Both of your hands are full.')
-	
-		menus.delete_menu(ACTIVE_MENU['menu'])
-		return False
+	if not life.is_holding(PLAYER,entry['id']):
+		_hand = life.can_throw(PLAYER)
+		if not _hand:
+			gfx.message('Both of your hands are full.')
+		
+			menus.delete_menu(ACTIVE_MENU['menu'])
+			return False
 	
 	PLAYER['targetting'] = PLAYER['pos'][:]
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_reload(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	life.add_action(PLAYER,{'action': 'reload',
+		'weapon': entry['parent'],
+		'ammo': item},
+		200,
+		delay=20)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -551,6 +612,7 @@ items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
 items.initiate_item('blue_jeans')
 items.initiate_item('glock')
+items.initiate_item('9x19mm_mag')
 
 _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
@@ -560,6 +622,7 @@ _i4 = items.create_item('white t-shirt',position=(5,20,2))
 _i5 = items.create_item('leather backpack')
 _i6 = items.create_item('blue jeans')
 _i7 = items.create_item('glock')
+_i8 = items.create_item('9x19mm magazine')
 
 items.move(_i4,0,1)
 
@@ -569,6 +632,7 @@ life.add_item_to_inventory(PLAYER,_i3)
 life.add_item_to_inventory(PLAYER,_i5)
 life.add_item_to_inventory(PLAYER,_i6)
 life.add_item_to_inventory(PLAYER,_i7)
+life.add_item_to_inventory(PLAYER,_i8)
 
 life.get_all_storage(PLAYER)
 

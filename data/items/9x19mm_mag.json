@@ -1,0 +1,14 @@
+{"name": "9x19mm magazine",
+"prefix": "a",
+"type": "magazine",
+"icon": "L",
+"description": "A magazine designed for use in the Glock 17. Extendable to 19 rounds with optional floor plate.",
+"flags": "",
+"size": "2x2",
+"magsize": 17,
+"ammotype": "9x19mm",
+"upgrades":
+	{"ext. 9x19mm mag floor plate":
+		{"magsize": 19}
+	}
+}

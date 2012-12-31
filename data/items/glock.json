@@ -5,6 +5,7 @@
 "description": "A pistol",
 "flags": "",
 "size": "2x2",
-"magsize": 17,
+"feed": "magazine",
 "ammotype": "9x19mm",
-"thickness": 1}
+"firemodes": ["single", "3burst"],
+"firemode": 1}

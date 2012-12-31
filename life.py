@@ -377,6 +377,14 @@ def perform_action(life):
 		life['targetting'] = life['pos'][:]
 		
 		delete_action(life,action)
+		
+	elif _action['action'] == 'reload':	
+		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
+		
+		if life.has_key('player'):
+			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
+		
+		delete_action(life,action)
 	
 	return True
 
@@ -500,6 +508,25 @@ def get_inventory_item(life,id):
 			% (life['name'][0],id))
 	
 	return life['inventory'][str(id)]
+
+def get_all_inventory_items(life,matches=None):
+	"""Returns list of all inventory items.
+	
+	`matches` can be a list of dictionaries with criteria the item must meet. Only one needs to match.
+	
+	"""
+	_items = []
+	
+	for item in life['inventory']:
+		_item = life['inventory'][item]
+		
+		if matches:
+			if not perform_match(_item,matches):
+				continue
+		
+		_items.append(_item)
+		
+	return _items
 
 def direct_add_item_to_inventory(life,item,container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
@@ -699,6 +726,42 @@ def is_holding(life,id):
 	
 	return False
 
+def perform_match(item,matches):
+	for match in matches:
+		_fail = False
+		
+		for key in match:
+			if not key in item:
+				_fail = True
+				break
+			
+			if not match[key] == item[key]:
+				_fail = True
+				break
+		
+		if not _fail:
+			return True
+	
+	return False
+
+def get_held_items(life,matches=None):
+	"""Returns list of all held items."""
+	_holding = []
+	
+	for hand in life['hands']:
+		_limb = get_limb(life['body'],hand)
+		
+		if _limb['holding']:
+			_item = get_inventory_item(life,_limb['holding'][0])
+			
+			if matches:
+				if not perform_match(_item,matches):
+					continue
+							
+			_holding.append(_limb['holding'][0])
+	
+	return _holding
+
 def item_is_equipped(life,id,check_hands=False):
 	"""Returns limb where item is equipped. Returns False othewise.
 	
@@ -742,7 +805,7 @@ def draw_life():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
-def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
+def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,matches=None):
 	"""Returns list of menu items with "fancy formatting".
 	
 	`show_equipped` decides whether equipped items are shown (default True)
@@ -758,6 +821,10 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 	
 		for entry in life['inventory']:
 			item = get_inventory_item(life,entry)
+			
+			if matches:
+				if not perform_match(item,matches):
+					continue					
 			
 			if item_is_equipped(life,entry,check_hands=check_hands):
 				_menu_item = menus.create_item('single',
@@ -777,6 +844,10 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 				
 			item = get_inventory_item(life,life['body'][hand]['holding'][0])
 			
+			if matches:
+				if not perform_match(item,matches):
+					continue	
+			
 			_menu_item = menus.create_item('single',
 				item['name'],
 				'Holding',
@@ -794,6 +865,11 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 		_inventory.append(_title)
 		for _item in container['storing']:
 			item = get_inventory_item(life,_item)
+			
+			if matches:
+				if not perform_match(item,matches):
+					continue	
+			
 			_menu_item = menus.create_item('single',
 				item['name'],
 				'Not equipped',
