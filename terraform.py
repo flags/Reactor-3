@@ -334,10 +334,6 @@ menus.create_menu(title='Options',
 
 menu_align()
 
-#MAP = maputils.resize_map(MAP,(500,500,5))
-LIGHTS.append({'x': 40,'y': 30,'brightness': 20.0})
-LIGHTS.append({'x': 20,'y': 25,'brightness': 20.0})
-
 CURRENT_PREFAB = prefabs.create_new_prefab((10,10,3))
 
 def main():
@@ -353,10 +349,6 @@ def main():
 		#TODO: Cython-ify
 		maps.render_x_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
 		maps.render_y_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
-		#ma#ps.render_lights()
-		
-		#LIGHTS[0]['x'] = MAP_CURSOR[0]
-		#LIGHTS[0]['y'] = MAP_CURSOR[1]
 		
 		gfx.draw_all_tiles()
 		gfx.draw_bottom_ui_terraform()
