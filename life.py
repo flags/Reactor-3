@@ -461,9 +461,9 @@ def remove_item_in_storage(life,id):
 			continue
 
 		if id in _container['storing']:
-			_container['storing'].remove(item)
-			_container['capacity'] -= get_inventory_item(life,item)['size']
-			logging.debug('Removed item #%s from %s' % (item,_container['name']))
+			_container['storing'].remove(id)
+			_container['capacity'] -= get_inventory_item(life,id)['size']
+			logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
 			return _container
 	
