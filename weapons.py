@@ -12,6 +12,5 @@ def fire(life,target):
 		
 		weapon = life['firing']
 		bullets.create_bullet(life['pos'],direction,5,life)
-		
 	
 	life['firing'] = None
