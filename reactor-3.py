@@ -329,13 +329,13 @@ def draw_targetting():
 			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
 
 def handle_options_menu(entry):
-	global MAP
-	del MAP
-	
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
 	if key == 'Reload map':
+		logging.warning('Map reloading is not well tested!')
+		global MAP
+		del MAP
 		MAP = maps.load_map('map1.dat')
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
