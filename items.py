@@ -65,11 +65,10 @@ def initiate_item(name):
 	
 	return item
 
-def create_item(name,_map,position=[0,0,2]):
+def create_item(name,position=[0,0,2]):
 	item = ITEM_TYPES[name].copy()
 	
 	item['uid'] = len(ITEMS)
-	item['map'] = _map
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0,0,0]
@@ -135,7 +134,7 @@ def draw_items():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
-def tick_all_items():
+def tick_all_items(MAP):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
@@ -160,15 +159,15 @@ def tick_all_items():
 			item['velocity'][2] -= item['gravity']
 
 			#Collisions
-			if item['map'][_nx][item['pos'][1]][_nz]:
+			if MAP[_nx][item['pos'][1]][_nz]:
 				item['velocity'][0] = -(item['velocity'][0]/float(2))
 				_nx = item['pos'][0]
 				
-			if item['map'][item['pos'][0]][_ny][_nz]:
+			if MAP[item['pos'][0]][_ny][_nz]:
 				item['velocity'][1] = -(item['velocity'][1]/float(2))
 				_ny = item['pos'][1]
 			
-			if item['map'][item['pos'][0]][item['pos'][1]][_nz]:
+			if MAP[item['pos'][0]][item['pos'][1]][_nz]:
 				#If we're touching the ceiling...
 				if _nz > item['pos'][2]:
 					item['velocity'][2] = -(item['velocity'][2]/float(2))

@@ -15,6 +15,7 @@ def load_life(life):
 		return json.loads(''.join(e.readlines()))
 
 def calculate_base_stats(life):
+	"""Calculates and returns intital stats for `life`."""
 	stats = {'arms': None,
 		'legs': None,
 		'melee': None,
@@ -45,6 +46,7 @@ def calculate_base_stats(life):
 	return stats
 
 def get_max_speed(life):
+	"""Returns max speed based on items worn."""
 	_speed_mod = 0
 	
 	for limb in get_all_limbs(life['body']):
@@ -57,6 +59,7 @@ def get_max_speed(life):
 	return LIFE_MAX_SPEED-_speed_mod
 
 def initiate_life(name):
+	"""Loads (and returns) new life type into memory."""
 	if name in LIFE_TYPES:
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
 	
@@ -80,6 +83,7 @@ def initiate_life(name):
 	return life
 
 def initiate_limbs(body):
+	"""Creates skeleton of a character and all related variables. Returns nothing."""
 	for limb in body:
 		#Unicode fix:
 		_val = body[limb].copy()
@@ -95,16 +99,19 @@ def initiate_limbs(body):
 		body[limb]['holding'] = []
 		body[limb]['condition'] = 100
 		body[limb]['cut'] = False
-		
-		#initiate_limbs(body[limb]['attached'])
 
 def get_limb(body,limb):
+	"""Helper function. Finds ands returns a limb."""
 	return body[limb]
 
 def get_all_limbs(body):
+	"""Deprecated helper function. Returns all limbs."""
+	#logging.warning('Deprecated: life.get_all_limbs() will be removed in next version.')
+	
 	return body
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
+	"Initiates and returns a deepcopy of a life type."
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
@@ -132,22 +139,15 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	return _life
 
-def set_state(life,flag,state):
-	life['flags'][flag] = state
-
-def get_state(life,flag):
-	if flag in life['flags']:
-		return life['flags'][flag]
-	
-	raise Exception('State \'%s\' does not exist.' % flag)
-
 def path_dest(life):
+	"""Returns the end of the current path."""
 	if not life['path']:
 		return None
 	
 	return tuple(life['path'][len(life['path'])-1])
 
 def walk(life,to):
+	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']:
 		life['speed'] -= 1
 		return False
@@ -165,6 +165,7 @@ def walk(life,to):
 	return walk_path(life)
 
 def walk_path(life):
+	"""Walks and returns whether the path is finished or not."""
 	if life['gravity']:
 		return False
 	
@@ -188,6 +189,7 @@ def walk_path(life):
 		return False
 
 def perform_collisions(life):
+	"""Performs gravity. Returns True if falling."""
 	if not life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
 		if life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
 			life['pos'][2] -= 1
@@ -208,8 +210,11 @@ def perform_collisions(life):
 	if life['gravity']:
 		life['realpos'][2] -= SETTINGS['world gravity']
 		life['pos'][2] = int(life['realpos'][2])
+	
+	return False
 
 def get_highest_action(life):
+	"""Returns highest action in the queue."""
 	_actions = {'action': None,'lowest': -1}
 	
 	for action in life['actions']:
@@ -223,6 +228,7 @@ def get_highest_action(life):
 		return None
 
 def clear_actions(life):
+	"""Clears all actions and prints a cancellation message for the highest scoring action."""
 	#TODO: Any way to improve this?
 	if life['actions'] and not life['actions'][0]['action']['action']=='move':
 		_action = life['actions'][0]['action']['action']
@@ -238,6 +244,7 @@ def clear_actions(life):
 	life['actions'] = []
 
 def delete_action(life,action):
+	"""Deletes an action."""
 	_action = {'action': action['action'],
 		'score': action['score'],
 		'delay': action['delay']}
@@ -245,16 +252,20 @@ def delete_action(life,action):
 	life['actions'].remove(_action)
 
 def add_action(life,action,score,delay=0):
+	"""Creates new action. Returns True on success."""
 	_tmp_action = {'action': action,'score': score}
 	
 	if not _tmp_action in life['actions']:
 		_tmp_action['delay'] = delay
 		
 		life['actions'].append(_tmp_action)
+		
+		return True
 	
 	return False
 
 def perform_action(life):
+	"""Executes logic based on top action. Returns True on success."""
 	action = get_highest_action(life)
 	
 	if not action:
@@ -366,42 +377,38 @@ def perform_action(life):
 		life['targetting'] = life['pos'][:]
 		
 		delete_action(life,action)
+	
+	return True
 
 def tick(life):
+	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 	perform_collisions(life)
 	perform_action(life)
 
-def attach_item_to_limb(body,item,limb):
-	body[limb]['holding'].append(item)
-	logging.debug('%s attached to %s' % (item,limb))
+def attach_item_to_limb(body,id,limb):
+	"""Attaches item to limb. Returns True."""
+	body[limb]['holding'].append(id)
+	logging.debug('%s attached to %s' % (id,limb))
 	
 	return True
 
 def remove_item_from_limb(body,item,limb):
+	"""Removes item from limb. Returns True."""
 	body[limb]['holding'].remove(item)
 	logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
 
 def get_all_storage(life):
-	_storage = []
-	
-	for item in [life['inventory'][item] for item in life['inventory']]:
-		if 'max_capacity' in item:
-			_storage.append(item)
-	
-	return _storage
+	"""Returns list of all containers in a character's inventory."""
+	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
 
 def can_throw(life):
-	for hand in life['hands']:
-		_hand = get_limb(life['body'],hand)
-		
-		if not _hand['holding']:
-			return _hand
-	
-	return False
+	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
+	return can_hold_item(life)
 
 def throw_item(life,id,target,speed):
+	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
 	_item = remove_item_from_inventory(life,id)
 	
 	direction = numbers.direction_to(life['pos'],target)
@@ -409,6 +416,7 @@ def throw_item(life,id,target,speed):
 	items.move(_item,direction,speed)
 
 def update_container_capacity(life,container):
+	"""Updates the current capacity of container. Returns nothing."""
 	logging.warning('life.update_container_capacity(): This method is untested!')
 	_capacity = 0
 	
@@ -418,6 +426,8 @@ def update_container_capacity(life,container):
 	container['capacity'] = _capacity
 
 def can_put_item_in_storage(life,item):
+	"""Returns available storage container that can fit `item`. Returns False if none is found."""
+	#TODO: Should return list of containers instead.
 	#Whoa...
 	for _item in [life['inventory'][_item] for _item in life['inventory']]:
 		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
@@ -428,6 +438,11 @@ def can_put_item_in_storage(life,item):
 	return False
 
 def add_item_to_storage(life,item,container=None):
+	"""Adds item to free storage container.
+	
+	A specific container can be requested with the keyword argument `container`.
+	
+	"""
 	if not container:
 		container = can_put_item_in_storage(life,item)
 	
@@ -440,6 +455,7 @@ def add_item_to_storage(life,item,container=None):
 	return True
 
 def remove_item_in_storage(life,id):
+	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
 	for _container in [life['inventory'][_container] for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
@@ -454,6 +470,7 @@ def remove_item_in_storage(life,id):
 	return False
 
 def item_is_stored(life,id):
+	"""Returns the container of an item. Returns False on failure."""
 	for _container in [life['inventory'][_container] for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
@@ -464,6 +481,8 @@ def item_is_stored(life,id):
 	return False
 
 def can_wear_item(life,item):
+	"""Attaches item to limbs. Returns False on failure."""
+	#TODO: Function name makes no sense.	
 	for limb in item['attaches_to']:
 		_limb = get_limb(life['body'],limb)
 		
@@ -475,6 +494,7 @@ def can_wear_item(life,item):
 	return True
 
 def get_inventory_item(life,id):
+	"""Returns inventory item."""
 	if not life['inventory'].has_key(str(id)):
 		raise Exception('Life \'%s\' does not have item of id #%s'
 			% (life['name'][0],id))
@@ -482,6 +502,11 @@ def get_inventory_item(life,id):
 	return life['inventory'][str(id)]
 
 def direct_add_item_to_inventory(life,item,container=None):
+	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
+	
+	A specific container can be requested with the keyword argument `container`.
+	
+	""" 
 	#Warning: Only use this if you know what you're doing!
 	life['item_index'] += 1
 	_id = life['item_index']
@@ -507,6 +532,7 @@ def direct_add_item_to_inventory(life,item,container=None):
 	return _id
 
 def add_item_to_inventory(life,item):
+	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
@@ -535,6 +561,7 @@ def add_item_to_inventory(life,item):
 	return _id
 
 def remove_item_from_inventory(life,id):
+	"""Removes item from inventory and all storage containers. Returns item."""
 	item = get_inventory_item(life,id)
 	
 	_holding = is_holding(life,id)
@@ -572,6 +599,7 @@ def remove_item_from_inventory(life,id):
 	return item
 
 def _equip_clothing(life,id):
+	"""Private function. Equips clothing. See life.equip_item()."""
 	item = get_inventory_item(life,id)
 	
 	if not can_wear_item(life,item):
@@ -596,12 +624,14 @@ def _equip_clothing(life,id):
 	return True
 
 def _equip_weapon(life,id):
+	"""Private function. Equips weapon. See life.equip_item()."""
 	_limbs = get_all_limbs(life['body'])
 	_hand = can_hold_item(life)
 	item = get_inventory_item(life,id)
 	
 	if not _hand:
-		gfx.message('You don\'t have a free hand!')
+		if 'player' in life:
+			gfx.message('You don\'t have a free hand!')
 		return False
 	
 	remove_item_in_storage(life,id)
@@ -612,9 +642,7 @@ def _equip_weapon(life,id):
 	return True
 
 def equip_item(life,id):
-	if not id:
-		return False
-	
+	"""Helper function. Equips item."""	
 	item = get_inventory_item(life,id)
 	
 	if item['type'] == 'clothing':
@@ -633,33 +661,36 @@ def equip_item(life,id):
 	return True
 
 def drop_item(life,id):
+	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]
 	
 	return item
 
 def pick_up_item_from_ground(life,uid):
+	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""
+	#TODO: Misleading function name.
 	_item = items.get_item_from_uid(uid)
 	_id = add_item_to_inventory(life,_item)
 	
 	if _id:
 		return _id
 
-	return False
-
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
 def can_hold_item(life):
+	"""Returns limb of empty hand. Returns False if none are empty."""
 	for hand in life['hands']:
-		_limb = get_limb(life['body'],hand)
+		_hand = get_limb(life['body'],hand)
 		
-		if not len(_limb['holding']):
-			return _limb
+		if not _hand['holding']:
+			return _hand
 	
 	return False
 
 def is_holding(life,id):
+	"""Returns the hand holding `item`. Returns False otherwise."""
 	for hand in life['hands']:
 		_limb = get_limb(life['body'],hand)
 		
@@ -669,6 +700,11 @@ def is_holding(life,id):
 	return False
 
 def item_is_equipped(life,id,check_hands=False):
+	"""Returns limb where item is equipped. Returns False othewise.
+	
+	The `check_hands` keyword argument indicates whether hands will be checked (default False)
+	
+	"""
 	for _limb in get_all_limbs(life['body']):
 		if not check_hands and _limb in life['hands']:
 			continue
@@ -707,6 +743,12 @@ def draw_life():
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
 def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
+	"""Returns list of menu items with "fancy formatting".
+	
+	`show_equipped` decides whether equipped items are shown (default True)
+	`check_hands` decides whether held items are shown (default False)
+	
+	"""
 	_inventory = []
 		
 	#TODO: Time it would take to remove
