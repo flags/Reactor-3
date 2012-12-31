@@ -165,7 +165,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER,check_hands=True)
 		
 		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
