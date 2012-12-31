@@ -786,7 +786,11 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False):
 			_inventory.append(_menu_item)
 	
 	for container in get_all_storage(life):
-		_title = menus.create_item('title',container['name'],None,enabled=False)
+		_title = menus.create_item('title',
+			'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
+			None,
+			enabled=False)
+		
 		_inventory.append(_title)
 		for _item in container['storing']:
 			item = get_inventory_item(life,_item)
