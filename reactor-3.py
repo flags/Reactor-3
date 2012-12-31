@@ -543,7 +543,6 @@ SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
-#life.add_action(_test,{'action': 'move', 'to': (50,0)},200)
 PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[120,32,4])
 PLAYER['player'] = True
 

@@ -184,23 +184,20 @@ def handle_input():
 			IN_PREFAB_EDITOR = True
 	
 	elif INPUT['q']:
-		_current_index = TILES.index(PLACING_TILE)-1
+		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
 		
 		if _current_index<0:
 			_current_index = 0
 		
-		PLACING_TILE = TILES[_current_index]
+		PLACING_TILE = TILES[TILES.keys()[_current_index]]
 			
 	elif INPUT['w']:
-		_current_index = TILES.index(PLACING_TILE)+1
+		_current_index = TILES.keys().index(PLACING_TILE['id'])+1
 		
 		if _current_index>=len(TILES):
 			_current_index = len(TILES)-1
 		
-		PLACING_TILE = TILES[_current_index]
-	
-	#if INPUT['f']:
-	#	SELECTED_TILES.extend(maps.flood_select_by_tile(MAP,PLACING_TILE,(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2])))
+		PLACING_TILE = PLACING_TILE = TILES[TILES.keys()[_current_index]]	
 
 	elif INPUT['c']:
 		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
