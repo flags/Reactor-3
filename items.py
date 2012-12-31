@@ -17,6 +17,7 @@ def load_item(item):
 			
 
 def initiate_item(name):
+	"""Loads (and returns) new item type into memory."""
 	if name in ITEM_TYPES:
 		logging.warning('Item type \'%s\' is already loaded. Reloading...' % name)
 	
@@ -66,6 +67,7 @@ def initiate_item(name):
 	return item
 
 def create_item(name,position=[0,0,2]):
+	"""Initiates and returns a deepcopy of an item type."""
 	item = ITEM_TYPES[name].copy()
 	
 	item['uid'] = len(ITEMS)
@@ -80,9 +82,11 @@ def create_item(name,position=[0,0,2]):
 	return item
 
 def get_item_from_uid(uid):
+	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
 
 def get_items_at(position):
+	"""Returns list of all items at a given position."""
 	_items = []
 	
 	for _item in ITEMS:
@@ -97,9 +101,11 @@ def get_items_at(position):
 	return _items
 
 def get_name(item):
+	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
 def move(item,direction,speed,friction=0.05):
+	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction,speed)
 	velocity[2] = 1
 	

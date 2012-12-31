@@ -111,7 +111,7 @@ def get_all_limbs(body):
 	return body
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
-	"Initiates and returns a deepcopy of a life type."
+	"""Initiates and returns a deepcopy of a life type."""
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
