@@ -386,6 +386,14 @@ def perform_action(life):
 		
 		delete_action(life,action)
 	
+	elif _action['action'] == 'refillammo':	
+		_action['ammo']['rounds'].append(_action['round'])
+		
+		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
+			gfx.message('The magazine is full.')
+		
+		delete_action(life,action)
+	
 	return True
 
 def tick(life):

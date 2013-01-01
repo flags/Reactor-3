@@ -1,0 +1,9 @@
+{"name": "9x19mm round",
+"prefix": "a",
+"type": "bullet",
+"icon": "L",
+"description": "Pistol round effective at short to mid-range combat.",
+"flags": "",
+"size": "1x1",
+"ammotype": "9x19mm",
+}

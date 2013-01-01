@@ -8,4 +8,4 @@
 "feed": "magazine",
 "ammotype": "9x19mm",
 "firemodes": ["single", "3burst"],
-"firemode": 1}
+"firemode": 0}

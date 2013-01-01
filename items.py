@@ -48,6 +48,9 @@ def initiate_item(name):
 		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_SIZE))
 		item['size'] = DEFAULT_ITEM_SIZE
 	
+	if item['type'] == 'gun':
+		item[item['feed']] = None
+	
 	item['flags'] = item['flags'].split('|')
 	
 	item['size'] = 	[int(c) for c in item['size'].split('x')]
