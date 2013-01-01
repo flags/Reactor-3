@@ -283,23 +283,6 @@ def handle_input():
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
 					id=ammo['id']))
-			#_title = menus.create_item('title',
-			#	weapon['name'],
-			#	None,
-			#	icon=weapon['icon'])
-			
-			#_ammo = []
-			#for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}]):
-			#	if not ammo['rounds']:
-			#		_empty_ammo.append(ammo)
-			#		continue
-			#	
-			#	_ammo.append(menus.create_item('single',
-			#		ammo['name'],
-			#		'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
-			#		icon=ammo['icon'],
-			#		parent=weapon,
-			#		id=ammo['id']))
 			
 		if _loaded_weapons:
 			_menu.append(menus.create_item('title','Loaded weapons',None))

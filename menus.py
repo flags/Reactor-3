@@ -9,13 +9,14 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 		
 	#TODO: Does this need to be copied?
 	_menu['menu'] = menu[:]
-	_size = [0,len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
+	_size = [len(title),len(_menu['menu'])+2+(_menu['settings']['padding'][1]*2)]
 	
 	_uid = 0
 	for entry in _menu['menu']:
 		entry['uid'] = _uid
 		_uid+=1
 		
+		print title,len(entry['values'])
 		for value in entry['values']:
 			_line = format_entry(_menu['settings']['format'],entry)
 			
