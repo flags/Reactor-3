@@ -245,49 +245,61 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Reload'))
 			return False
 		
-		_weapons = []
-		for item in life.get_all_inventory_items(PLAYER,matches=[{'type': 'gun'}]):
-			_weapons.append(item)#life.get_inventory_item(PLAYER,item))
-		
 		#if not _weapons:
 		#	gfx.message('You aren\'t holding any weapons.')
 		#	return False
 		
 		_menu = []
+		_loaded_weapons = []
+		_non_empty_ammo = []
 		_empty_ammo = []
 		
-		for weapon in _weapons:
-			_title = menus.create_item('title',
-				weapon['name'],
-				None,
-				icon=weapon['icon'])
-			
-			_ammo = []
-			for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}]):
-				if not ammo['rounds']:
-					_empty_ammo.append(ammo)
-					continue
-				
-				_ammo.append(menus.create_item('single',
+		for weapon in life.get_all_inventory_items(PLAYER,matches=[{'type': 'gun'}]):
+			if weapons.get_feed(weapon):
+				_loaded_weapons.append(weapon)
+		
+		for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'magazine'},{'type': 'clip'}]):
+			if ammo['rounds']:
+				_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
 					'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
 					icon=ammo['icon'],
-					parent=weapon,
 					id=ammo['id']))
+			else:
+				_non_empty_ammo.append(menus.create_item('single',
+					ammo['name'],
+					'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
+					icon=ammo['icon'],
+					id=ammo['id']))
+			#_title = menus.create_item('title',
+			#	weapon['name'],
+			#	None,
+			#	icon=weapon['icon'])
 			
-			if _ammo:
-				_menu.append(_title)
-				_menu.extend(_ammo)
+			#_ammo = []
+			#for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}]):
+			#	if not ammo['rounds']:
+			#		_empty_ammo.append(ammo)
+			#		continue
+			#	
+			#	_ammo.append(menus.create_item('single',
+			#		ammo['name'],
+			#		'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
+			#		icon=ammo['icon'],
+			#		parent=weapon,
+			#		id=ammo['id']))
+			
+		if _loaded_weapons:
+			_menu.append(menus.create_item('title','Loaded weapons',None))
+			_menu.extend(_loaded_weapons)
+			
+		if _non_empty_ammo:
+			_menu.append(menus.create_item('title','Mags/Clips (Non-empty)',None))
+			_menu.extend(_non_empty_ammo)
 		
 		if _empty_ammo:
-			_menu.append(menus.create_item('title','Empty',None))
-			
-			for ammo in _empty_ammo:
-				_menu.append(menus.create_item('single',
-					ammo['name'],
-					'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
-					icon=ammo['icon'],
-					id=ammo['id']))
+			_menu.append(menus.create_item('title','Mags/Clips (Empty)',None))
+			_menu.extend(_empty_ammo)
 		
 		if not _menu:
 			gfx.message('You have no ammo!')
@@ -515,26 +527,43 @@ def inventory_reload(entry):
 	#TODO: Delay based on item location
 	#if life.item_is_stored(PLAYER,item):		
 	if 'parent' in entry:
-		life.add_action(PLAYER,{'action': 'reload',
-			'weapon': entry['parent'],
-			'ammo': item},
+		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
+	else:
+		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
+	
+		_i = menus.create_menu(title=key,
+			menu=_menu_items,
+			padding=(1,1),
+			position=(1,1),
+			on_select=return_to_inventory,
+			dim=False)
+
+def inventory_insert_feed(entry):
+	life.add_action(PLAYER,{'action': 'reload',
+		'weapon': entry['parent'],
+		'ammo': item},
+		200,
+		delay=20)
+
+def inventory_fill_ammo(entry)
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
+	
+	_rounds = len(item['rounds'])
+	for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
+		life.add_action(PLAYER,{'action': 'refillammo',
+			'ammo': item,
+			'round': ammo},
 			200,
 			delay=20)
-	else:
-		gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
 		
-		_rounds = len(item['rounds'])
-		for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
-			life.add_action(PLAYER,{'action': 'refillammo',
-				'ammo': item,
-				'round': ammo},
-				200,
-				delay=20)
-			
-			_rounds += 1
-			
-			if _rounds>=item['maxrounds']:
-				break
+		_rounds += 1
+		
+		if _rounds>=item['maxrounds']:
+			break
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
