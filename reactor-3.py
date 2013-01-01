@@ -255,20 +255,32 @@ def handle_input():
 		_empty_ammo = []
 		
 		for weapon in life.get_all_inventory_items(PLAYER,matches=[{'type': 'gun'}]):
-			if weapons.get_feed(weapon):
-				_loaded_weapons.append(weapon)
+			_feed = weapons.get_feed(weapon)
+			
+			if _feed:
+				_loaded_weapons.append(menus.create_item('single',
+					weapon['name'],
+					'%s/%s' % (_feed['rounds'],_feed['maxrounds']),
+					icon=weapon['icon'],
+					id=weapon['id']))
+			else:
+				_loaded_weapons.append(menus.create_item('single',
+					weapon['name'],
+					'Empty',
+					icon=weapon['icon'],
+					id=weapon['id']))
 		
 		for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'magazine'},{'type': 'clip'}]):
 			if ammo['rounds']:
 				_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
-					'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
+					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
 					id=ammo['id']))
 			else:
 				_non_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
-					'%s/%s' % (ammo['rounds'],ammo['maxrounds']),
+					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
 					id=ammo['id']))
 			#_title = menus.create_item('title',
@@ -309,7 +321,7 @@ def handle_input():
 			menu=_menu,
 			padding=(1,1),
 			position=(1,1),
-			format_str='$k',
+			format_str='$k: $v',
 			on_select=inventory_reload)
 		
 		menus.activate_menu(_i)
@@ -524,28 +536,76 @@ def inventory_reload(entry):
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
 	
-	#TODO: Delay based on item location
-	#if life.item_is_stored(PLAYER,item):		
-	if 'parent' in entry:
-		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
-	else:
-		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
-	
+	if item['type'] == 'gun':
+		_menu = []
+		#_menu.append(menus.create_item('single','Reload',None,id=entry['id']))
+		_menu.append(menus.create_item('single','Empty',None,id=entry['id']))
+		
 		_i = menus.create_menu(title=key,
-			menu=_menu_items,
+			menu=_menu,
 			padding=(1,1),
 			position=(1,1),
 			on_select=return_to_inventory,
-			dim=False)
+			format_str='$k')
+	
+	else:
+		_menu = []
+		_menu.append(menus.create_item('single','Fill',None,id=entry['id']))
+		
+		_weapons = []
+		for _weapon in life.get_held_items(PLAYER,matches=[{'type': 'gun','ammotype': item['ammotype'],'feed': item['type']}]):
+			weapon = life.get_inventory_item(PLAYER,_weapon)
+			
+			if weapons.get_feed(weapon):
+				continue
+			
+			_weapons.append(menus.create_item('single',weapon['name'],None,ammo=item,id=weapon['id']))
+		
+		if _weapons:
+			_menu.append(menus.create_item('title','Load into',None,id=entry['id']))
+			_menu.extend(_weapons)
+		
+		_i = menus.create_menu(title=key,
+			menu=_menu,
+			padding=(1,1),
+			position=(1,1),
+			on_select=inventory_handle_feed,
+			format_str='$k')
+	
+	menus.activate_menu(_i)
 
-def inventory_insert_feed(entry):
-	life.add_action(PLAYER,{'action': 'reload',
-		'weapon': entry['parent'],
-		'ammo': item},
-		200,
-		delay=20)
+def inventory_handle_feed(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	if key == 'Fill':
+		gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
+	
+		_rounds = len(item['rounds'])
+		for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
+			life.add_action(PLAYER,{'action': 'refillammo',
+				'ammo': item,
+				'round': ammo},
+				200,
+				delay=20)
+			
+			_rounds += 1
+			
+			if _rounds>=item['maxrounds']:
+				break
+	else:
+		life.add_action(PLAYER,{'action': 'reload',
+			'weapon': item,
+			'ammo': entry['ammo']},
+			200,
+			delay=20)
+	
+	#TODO: Don't breathe this!
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def inventory_fill_ammo(entry)
+def inventory_fill_ammo(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
