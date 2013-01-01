@@ -271,14 +271,18 @@ def handle_input():
 					id=weapon['id']))
 		
 		for ammo in life.get_all_inventory_items(PLAYER,matches=[{'type': 'magazine'},{'type': 'clip'}]):
+			#TODO: Make `parent` an actual key.
+			if 'parent' in ammo:
+				continue
+			
 			if ammo['rounds']:
-				_empty_ammo.append(menus.create_item('single',
+				_non_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
 					id=ammo['id']))
 			else:
-				_non_empty_ammo.append(menus.create_item('single',
+				_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
@@ -521,8 +525,8 @@ def inventory_reload(entry):
 	
 	if item['type'] == 'gun':
 		_menu = []
-		#_menu.append(menus.create_item('single','Reload',None,id=entry['id']))
-		_menu.append(menus.create_item('single','Empty',None,id=entry['id']))
+		_menu.append(menus.create_item('single','Empty feed',None,id=entry['id']))
+		_menu.append(menus.create_item('single','Insert feed',None,id=entry['id']))
 		
 		_i = menus.create_menu(title=key,
 			menu=_menu,

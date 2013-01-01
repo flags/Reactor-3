@@ -380,6 +380,7 @@ def perform_action(life):
 		
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
+		_action['ammo']['parent'] = _action['weapon']
 		
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))

@@ -16,7 +16,6 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 		entry['uid'] = _uid
 		_uid+=1
 		
-		print title,len(entry['values'])
 		for value in entry['values']:
 			_line = format_entry(_menu['settings']['format'],entry)
 			
