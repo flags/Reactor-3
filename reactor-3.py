@@ -245,12 +245,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Reload'))
 			return False
 		
-		#if not _weapons:
-		#	gfx.message('You aren\'t holding any weapons.')
-		#	return False
-		
 		_menu = []
 		_loaded_weapons = []
+		_unloaded_weapons = []
 		_non_empty_ammo = []
 		_empty_ammo = []
 		
@@ -260,11 +257,11 @@ def handle_input():
 			if _feed:
 				_loaded_weapons.append(menus.create_item('single',
 					weapon['name'],
-					'%s/%s' % (_feed['rounds'],_feed['maxrounds']),
+					'%s/%s' % (len(_feed['rounds']),_feed['maxrounds']),
 					icon=weapon['icon'],
 					id=weapon['id']))
 			else:
-				_loaded_weapons.append(menus.create_item('single',
+				_unloaded_weapons.append(menus.create_item('single',
 					weapon['name'],
 					'Empty',
 					icon=weapon['icon'],
@@ -291,6 +288,10 @@ def handle_input():
 		if _loaded_weapons:
 			_menu.append(menus.create_item('title','Loaded weapons',None))
 			_menu.extend(_loaded_weapons)
+		
+		if _unloaded_weapons:
+			_menu.append(menus.create_item('title','Unloaded weapons',None))
+			_menu.extend(_unloaded_weapons)
 			
 		if _non_empty_ammo:
 			_menu.append(menus.create_item('title','Mags/Clips (Non-empty)',None))
@@ -612,6 +613,8 @@ def inventory_fill_ammo(entry):
 		if _rounds>=item['maxrounds']:
 			break
 	
+	#TODO: Don't breathe this!
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def pick_up_item_from_ground(entry):	

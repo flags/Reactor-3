@@ -389,6 +389,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
+		_round = remove_item_from_inventory(life,_action['round']['id'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')
