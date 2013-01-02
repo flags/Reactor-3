@@ -526,14 +526,17 @@ def inventory_reload(entry):
 	
 	if item['type'] == 'gun':
 		_menu = []
-		_menu.append(menus.create_item('single','Empty feed',None,id=entry['id']))
+		
+		if weapons.get_feed(item):
+			_menu.append(menus.create_item('single','Remove feed',None,id=entry['id']))
+		
 		_menu.append(menus.create_item('single','Insert feed',None,id=entry['id']))
 		
 		_i = menus.create_menu(title=key,
 			menu=_menu,
 			padding=(1,1),
 			position=(1,1),
-			on_select=return_to_inventory,
+			on_select=inventory_handle_feed,
 			format_str='$k')
 	
 	else:
@@ -557,12 +560,25 @@ def inventory_reload(entry):
 			menu=_menu,
 			padding=(1,1),
 			position=(1,1),
-			on_select=inventory_handle_feed,
+			on_select=inventory_handle_ammo,
 			format_str='$k')
 	
 	menus.activate_menu(_i)
 
 def inventory_handle_feed(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = life.get_inventory_item(PLAYER,entry['id'])
+	
+	if key == 'Remove feed':
+		life.add_action(PLAYER,{'action': 'unload',
+			'weapon': item},
+			200,
+			delay=20)
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_handle_ammo(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])

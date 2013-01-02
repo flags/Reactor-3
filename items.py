@@ -98,6 +98,9 @@ def get_items_at(position):
 		if item.has_key('id'):
 			continue
 		
+		if item.has_key('parent'):
+			continue
+		
 		if item['pos'] == position:
 			_items.append(item)
 	
@@ -124,6 +127,9 @@ def draw_items():
 		item = ITEMS[_item]
 		
 		if item.has_key('id'):
+			continue
+		
+		if item.has_key('parent'):
 			continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\

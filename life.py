@@ -409,6 +409,26 @@ def perform_action(life):
 		
 		delete_action(life,action)
 	
+	elif _action['action'] == 'unload':	
+		_ammo = _action['weapon'][_action['weapon']['feed']]
+		_hand = can_hold_item(life)
+		
+		if _hand:
+			_id = direct_add_item_to_inventory(life,_ammo)
+			del _ammo['parent']
+			_hand['holding'].append(_id)
+			_action['weapon'][_action['weapon']['feed']] = None
+		else:
+			if 'player' in life:
+				gfx.message('You have no hands free to hold %s!' % items.get_name(_ammo))
+				gfx.message('%s falls to the ground.' % items.get_name(_ammo))
+			
+			#TODO: Too hacky
+			del _ammo['parent']
+			_ammo['pos'] = life['pos'][:]
+		
+		delete_action(life,action)
+	
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
 		_round = remove_item_from_inventory(life,_action['round']['id'])
