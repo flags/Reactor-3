@@ -125,7 +125,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(PLAYER)
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER,check_hands=True)
 		
 		if not _inventory:
 			gfx.message('You have no items.')
@@ -567,7 +567,16 @@ def inventory_handle_feed(entry):
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
 	
-	if key == 'Fill':
+	if key == 'Fill':		
+		_hold = life.add_action(PLAYER,{'action': 'removeandholditem',
+			'item': item['id']},
+			200,
+			delay=20)
+			
+		if not _hold:
+			gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
+			return False
+		
 		gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
 	
 		_rounds = len(item['rounds'])

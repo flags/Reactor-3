@@ -364,7 +364,28 @@ def perform_action(life):
 		_id = direct_add_item_to_inventory(life,_action['item'])
 		_hand['holding'].append(_id)
 		
-		gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+		if 'player' in life:
+			gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+		
+		delete_action(life,action)
+	
+	elif _action['action'] == 'removeandholditem':
+		_hand = can_hold_item(life)
+		
+		if not _hand:
+			if 'player' in life:
+				_item = get_inventory_item(life,_action['item'])
+				gfx.message('You have no hands free to hold the %s.' % items.get_name(_item))
+			
+			return False
+
+		#TODO: Do we need to drop it first?
+		_dropped_item = remove_item_from_inventory(life,_action['item'])
+		_id = direct_add_item_to_inventory(life,_dropped_item)
+		_hand['holding'].append(_id)
+		
+		if 'player' in life:
+			gfx.message('You hold %s.' % items.get_name(_dropped_item))
 		
 		delete_action(life,action)
 	
@@ -380,6 +401,7 @@ def perform_action(life):
 		
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
+		_ammo = remove_item_from_inventory(life,_action['ammo']['id'])
 		_action['ammo']['parent'] = _action['weapon']
 		
 		if life.has_key('player'):
