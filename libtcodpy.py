@@ -1,5 +1,5 @@
 #
-# libtcod 1.5.2 python wrapper
+# libtcod 1.5.1 python wrapper
 # Copyright (c) 2008,2009,2010 Jice & Mingos
 # All rights reserved.
 #
@@ -75,9 +75,9 @@ else:
     _lib.TCOD_image_get_mipmap_pixel = _lib.TCOD_image_get_mipmap_pixel_wrapper
     _lib.TCOD_parser_get_color_property = _lib.TCOD_parser_get_color_property_wrapper
 
-HEXVERSION = 0x010502
-STRVERSION = "1.5.2"
-TECHVERSION = 0x01050200
+HEXVERSION = 0x010501
+STRVERSION = "1.5.1"
+TECHVERSION = 0x01050103
 
 ############################
 # color module
@@ -476,8 +476,6 @@ class ConsoleBuffer:
 _lib.TCOD_console_credits_render.restype = c_bool
 _lib.TCOD_console_is_fullscreen.restype = c_bool
 _lib.TCOD_console_is_window_closed.restype = c_bool
-_lib.TCOD_console_has_mouse_focus.restype = c_bool
-_lib.TCOD_console_is_active.restype = c_bool
 _lib.TCOD_console_get_default_background.restype = Color
 _lib.TCOD_console_get_default_foreground.restype = Color
 _lib.TCOD_console_get_char_background.restype = Color
@@ -715,7 +713,7 @@ def console_map_ascii_code_to_font(asciiCode, fontCharX, fontCharY):
 
 def console_map_ascii_codes_to_font(firstAsciiCode, nbCodes, fontCharX,
                                     fontCharY):
-    if type(firstAsciiCode) == str or type(firstAsciiCode) == bytes:
+    if type(firstAsciiCode) == str or type(asciiCode) == bytes:
         _lib.TCOD_console_map_ascii_codes_to_font(ord(firstAsciiCode), nbCodes,
                                                   fontCharX, fontCharY)
     else:
@@ -736,12 +734,6 @@ def console_set_fullscreen(fullscreen):
 
 def console_is_window_closed():
     return _lib.TCOD_console_is_window_closed()
-
-def console_has_mouse_focus():
-    return _lib.TCOD_console_has_mouse_focus()
-
-def console_is_active():
-    return _lib.TCOD_console_is_active()
 
 def console_set_window_title(title):
     _lib.TCOD_console_set_window_title(c_char_p(title))
@@ -922,9 +914,9 @@ def console_fill_foreground(con,r,g,b) :
     if (numpy_available and isinstance(r, numpy.ndarray) and
         isinstance(g, numpy.ndarray) and isinstance(b, numpy.ndarray)):
         #numpy arrays, use numpy's ctypes functions
-        r = numpy.ascontiguousarray(r, dtype=numpy.int32)
-        g = numpy.ascontiguousarray(g, dtype=numpy.int32)
-        b = numpy.ascontiguousarray(b, dtype=numpy.int32)
+        r = numpy.ascontiguousarray(r, dtype=numpy.int_)
+        g = numpy.ascontiguousarray(g, dtype=numpy.int_)
+        b = numpy.ascontiguousarray(b, dtype=numpy.int_)
         cr = r.ctypes.data_as(POINTER(c_int))
         cg = g.ctypes.data_as(POINTER(c_int))
         cb = b.ctypes.data_as(POINTER(c_int))
@@ -943,9 +935,9 @@ def console_fill_background(con,r,g,b) :
     if (numpy_available and isinstance(r, numpy.ndarray) and
         isinstance(g, numpy.ndarray) and isinstance(b, numpy.ndarray)):
         #numpy arrays, use numpy's ctypes functions
-        r = numpy.ascontiguousarray(r, dtype=numpy.int32)
-        g = numpy.ascontiguousarray(g, dtype=numpy.int32)
-        b = numpy.ascontiguousarray(b, dtype=numpy.int32)
+        r = numpy.ascontiguousarray(r, dtype=numpy.int_)
+        g = numpy.ascontiguousarray(g, dtype=numpy.int_)
+        b = numpy.ascontiguousarray(b, dtype=numpy.int_)
         cr = r.ctypes.data_as(POINTER(c_int))
         cg = g.ctypes.data_as(POINTER(c_int))
         cb = b.ctypes.data_as(POINTER(c_int))
@@ -960,7 +952,7 @@ def console_fill_background(con,r,g,b) :
 def console_fill_char(con,arr) :
     if (numpy_available and isinstance(arr, numpy.ndarray) ):
         #numpy arrays, use numpy's ctypes functions
-        arr = numpy.ascontiguousarray(arr, dtype=numpy.int32)
+        arr = numpy.ascontiguousarray(arr, dtype=numpy.int_)
         carr = arr.ctypes.data_as(POINTER(c_int))
     else:
         #otherwise convert using the struct module
@@ -1864,9 +1856,6 @@ def heightmap_add_hill(hm, x, y, radius, height):
 def heightmap_dig_hill(hm, x, y, radius, height):
     _lib.TCOD_heightmap_dig_hill(hm.p, c_float( x), c_float( y),
                                  c_float( radius), c_float( height))
-
-def heightmap_mid_point_displacement(hm, rng, roughness):
-    _lib.TCOD_heightmap_mid_point_displacement(hm.p, rng, c_float(roughness))
 
 def heightmap_rain_erosion(hm, nbDrops, erosionCoef, sedimentationCoef, rnd=0):
     _lib.TCOD_heightmap_rain_erosion(hm.p, nbDrops, c_float( erosionCoef),

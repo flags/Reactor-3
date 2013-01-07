@@ -289,9 +289,10 @@ def handle_input():
 			_menu.append(menus.create_item('title','Loaded weapons',None))
 			_menu.extend(_loaded_weapons)
 		
-		if _unloaded_weapons:
-			_menu.append(menus.create_item('title','Unloaded weapons',None))
-			_menu.extend(_unloaded_weapons)
+		#TODO: Disabled for now.
+		#if _unloaded_weapons:
+		#	_menu.append(menus.create_item('title','Unloaded weapons',None))
+		#	_menu.extend(_unloaded_weapons)
 			
 		if _non_empty_ammo:
 			_menu.append(menus.create_item('title','Mags/Clips (Non-empty)',None))
@@ -410,7 +411,12 @@ def handle_options_menu(entry):
 		logging.warning('Map reloading is not well tested!')
 		global MAP
 		del MAP
+		
 		MAP = maps.load_map('map1.dat')
+		
+		logging.warning('Updating references to map.')
+		for entry in LIFE:
+			entry['map'] = MAP
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
