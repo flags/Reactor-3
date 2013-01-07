@@ -414,9 +414,12 @@ def handle_options_menu(entry):
 		
 		MAP = maps.load_map('map1.dat')
 		
-		logging.warning('Updating references to map.')
+		logging.warning('Updating references to map. This may take a while.')
 		for entry in LIFE:
 			entry['map'] = MAP
+		
+		logging.warning('Redrawing LOS.')
+		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -818,10 +821,7 @@ while RUNNING:
 	move_camera(PLAYER['pos'])
 	life.draw_life()
 	
-	if CYTHON_ENABLED:
-		render_los.render_los(MAP,PLAYER['pos'])
-	else:
-		maps.render_los(MAP,PLAYER['pos'])
+	maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()

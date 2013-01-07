@@ -10,6 +10,16 @@ import time
 import json
 import os
 
+try:
+	import render_los as cython_render_los
+	CYTHON_ENABLED = True
+	
+except ImportError, e:
+	CYTHON_ENABLED = False
+	logging.warning('[Cython] ImportError with module: %s' % e)
+	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
+	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+
 def create_map():
 	_map = []
 
@@ -90,6 +100,12 @@ def render_lights():
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0,255)
+
+def _render_los(map,pos,cython=False):
+	if cython:
+		cython_render_los.render_los(map,pos)
+	else:
+		render_los(MAP,pos)
 
 def render_los(map,position):
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -289,7 +305,7 @@ def soften_shadows(map):
 		
 		DARK_BUFFER[0] = numpy.copy(_DARK_BUFFER_COPY)[0]
 
-def flood_select_by_tile(map_array,tile,where):
+def flood_select_by_tile(map_array,tile_id,where,fuzzy=True):
 	_to_check = [where]
 	_checked = []
 	
@@ -305,8 +321,13 @@ def flood_select_by_tile(map_array,tile,where):
 				y = _y+_current[1]
 				z = _current[2]
 				
-				if map_array[x][y][z]['id'] == tile['id']:
-					if not (x,y,z) in _checked:
-						_to_check.append((x,y,z))
+				if fuzzy:
+					if map_array[x][y][z] and map_array[x][y][z]['id'].count(tile_id):
+						if not (x,y,z) in _checked and not (x,y,z) in _to_check:
+							_to_check.append((x,y,z))
+				else:
+					if map_array[x][y][z] and map_array[x][y][z]['id'] == tile_id:
+						if not (x,y,z) in _checked:
+							_to_check.append((x,y,z))
 	
 	return _checked

@@ -197,7 +197,15 @@ def handle_input():
 		if _current_index>=len(TILES):
 			_current_index = len(TILES)-1
 		
-		PLACING_TILE = PLACING_TILE = TILES[TILES.keys()[_current_index]]	
+		PLACING_TILE = PLACING_TILE = TILES[TILES.keys()[_current_index]]
+	
+	elif INPUT['f']:
+		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
+		_matching = 'grass'
+		
+		SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
+			_matching,
+			(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
 		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
@@ -376,7 +384,7 @@ else:
 	try:
 		main()
 	except Exception, e:
-		logging.critical('Crashed: %s' % e)
+		logging.exception('Crashed: %s' % e)
 
 #TODO: write this into the utility
 #maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
