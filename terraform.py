@@ -387,6 +387,6 @@ else:
 		logging.exception('Crashed: %s' % e)
 
 #TODO: write this into the utility
-#maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
+#MAP = maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
 
 maps.save_map('map1.dat',MAP)
