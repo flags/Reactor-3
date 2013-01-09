@@ -135,7 +135,12 @@ def draw_bottom_ui():
 	_y_mod = 1
 	
 	for msg in MESSAGE_LOG[max(0, min(len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES, MESSAGE_LOG_MAX_LINES)):]:
-		console_print(MESSAGE_WINDOW,1,_y_mod,msg)
+		if msg['style'] == 'damage':
+			console_set_default_foreground(MESSAGE_WINDOW,red)
+		else:
+			console_set_default_foreground(MESSAGE_WINDOW,white)
+		
+		console_print(MESSAGE_WINDOW,1,_y_mod,msg['msg'])
 		_y_mod += 1
 
 def draw_selected_tile_in_item_window(pos):
@@ -174,8 +179,8 @@ def draw_console():
 def log(text):
 	CONSOLE_HISTORY.append(text)
 
-def message(text):
-	MESSAGE_LOG.append(text)
+def message(text,style=None):
+	MESSAGE_LOG.append({'msg': text,'style': style})
 
 def end_of_frame_terraform(editing_prefab=False):
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

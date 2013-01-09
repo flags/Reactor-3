@@ -45,18 +45,47 @@ def calculate_base_stats(life):
 	
 	return stats
 
+def calculate_limb_conditions(life):	
+	for limb in [life['body'][limb] for limb in life['body']]:
+		_condition = 100
+		
+		if limb['bleeding']:
+			_condition-=15
+		
+		if limb['cut']:
+			_condition-=25
+		
+		if limb['bruised']:
+			_condition-=20
+		
+		if limb['broken']:
+			_condition-=40
+		
+		limb['condition'] = _condition
+
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
 	_speed_mod = 0
+	_penalty = 0
 	
-	for limb in get_all_limbs(life['body']):
+	for limb in life['body']:
 		for item in life['body'][limb]['holding']:
 			_i = get_inventory_item(life,item)
 			
 			if _i.has_key('speed_mod'):
 				_speed_mod += _i['speed_mod']
+		
+		if limb in life['legs']:
+			#TODO: Make .05 a variable
+			_penalty += int((100-life['body'][limb]['condition'])*.05)
 	
-	return LIFE_MAX_SPEED-_speed_mod
+	_MAX_SPEED = LIFE_MAX_SPEED-_speed_mod
+	_MAX_SPEED += _penalty
+	
+	if _MAX_SPEED > LIFE_MAX_SPEED:
+		return LIFE_MAX_SPEED
+	
+	return _MAX_SPEED
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -97,8 +126,13 @@ def initiate_limbs(body):
 			body[limb]['storing'] = []
 		
 		body[limb]['holding'] = []
+		
+		#TODO: `Condition` is calculated automatically
 		body[limb]['condition'] = 100
 		body[limb]['cut'] = False
+		body[limb]['bleeding'] = False
+		body[limb]['bruised'] = False
+		body[limb]['broken'] = False
 
 def get_limb(body,limb):
 	"""Helper function. Finds ands returns a limb."""
@@ -152,6 +186,7 @@ def walk(life,to):
 		life['speed'] -= 1
 		return False
 	elif life['speed']<=0:
+		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 	
 	_dest = path_dest(life)
@@ -196,15 +231,20 @@ def perform_collisions(life):
 			
 			return True
 		
-		if not life['gravity'] and life.has_key('player'):
-			gfx.message('You begin to fall...')
+		if not life['gravity']:
+			life['falling_startzpos'] = life['pos'][2]
+			
+			if life.has_key('player'):
+				gfx.message('You begin to fall...')
 		
 		life['gravity'] = SETTINGS['world gravity']
 			
 	elif life['gravity']:
 		life['gravity'] = 0
 		
-		if life.has_key('player'):
+		_fall_dist = life['falling_startzpos']-life['pos'][2]
+		
+		if not damage_from_fall(life,_fall_dist) and life.has_key('player'):
 			gfx.message('You land.')
 	
 	if life['gravity']:
@@ -442,6 +482,7 @@ def perform_action(life):
 
 def tick(life):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
+	calculate_limb_conditions(life)
 	perform_collisions(life)
 	perform_action(life)
 
@@ -947,6 +988,12 @@ def draw_visual_inventory(life):
 	
 	console_set_default_foreground(0,white)
 
+def get_limb_damage_penalty(life,limb,amount):
+	"""Returns the penalty of having a pre-existing injury on a limb."""
+	_limb = life['body'][limb]
+	
+	return int((100-_limb['condition'])*.25)	
+
 def cut_limb(life,limb):
 	_limb = life['body'][limb]
 	
@@ -958,7 +1005,30 @@ def cut_limb(life,limb):
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb)
 
-def damage(life,item):
+def bruise_limb(life,limb):
+	_limb = life['body'][limb]
+	
+	_limb['bruised'] = True
+
+def damage_from_fall(life,dist):
+	print 'FELL',dist
+	if 0<dist<=4:
+		for leg in life['legs']:
+			if life['body'][leg]['bruised']:
+				#TODO: Pain
+				pass
+			else:
+				bruise_limb(life,leg)
+		
+		if 'player' in life:
+			gfx.message('You land improperly!')
+			gfx.message('Your legs are bruised in the fall.',style='damage')
+	else:
+		return False
+	
+	return True
+
+def damage_from_item(life,item):
 	if item['sharp']:
 		cut_limb(life,'chest')
 	
