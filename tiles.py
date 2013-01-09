@@ -113,6 +113,18 @@ RED_BRICK_2 = {'id':'red_brick_2',
 			 'burnable':False,
 			 'cost':-1}
 
+WHITE_TILE_1 = {'id':'white_tile_1',
+			 'icon':',',
+			 'color':(lightest_gray,lighter_gray),
+			 'burnable':False,
+			 'cost':-1}
+
+WHITE_TILE_2 = {'id':'white_tile_2',
+			 'icon':'.',
+			 'color':(white,lightest_gray),
+			 'burnable':False,
+			 'cost':-1}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -120,7 +132,9 @@ TEMP_TILES = [BLANK_TILE,
 		ROAD_STRIPE_1,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
-		RED_BRICK_2]
+		RED_BRICK_2,
+		WHITE_TILE_1,
+		WHITE_TILE_2]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,
@@ -142,6 +156,9 @@ CONCRETE_FLOOR_TILES = [CONCRETE_FLOOR_1,
 RED_BRICK_TILES = [RED_BRICK_1,
 			RED_BRICK_2]
 
+WHITE_TILE_TILES = [WHITE_TILE_1,
+			WHITE_TILE_2]
+
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -149,6 +166,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(CONCRETE_TILES)
 	TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(RED_BRICK_TILES)
+	TEMP_TILES.extend(WHITE_TILE_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
@@ -163,9 +181,4 @@ def create_tile(tile):
 	return _ret_tile
 
 def get_tile(tile):
-	#for _tile in TILES:
-	#	if _tile['id'] == tile['id']:
-	#		return _tile
 	return TILES[tile['id']]
-
-	#raise Exception('Tile of id \'%s\' not found in TILES array.' % tile['id'])

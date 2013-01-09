@@ -138,7 +138,9 @@ INPUT = {'up':False,
 		'5':False,
 		'6':False,
 		'7':False,
-		'8':False}
+		'8':False,
+		'9':False,
+		'0':False}
 		
 #Colors
 GREEN_ALT = Color(0,130,0)

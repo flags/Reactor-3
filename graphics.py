@@ -212,7 +212,7 @@ def end_of_frame_terraform(editing_prefab=False):
 	#TODO: Figure these out using math
 	console_print(0,PREFAB_WINDOW_OFFSET[0],0,'Prefab Editor')
 	console_print(0,PREFAB_WINDOW_OFFSET[0],11,'West -X Cutout- East')
-	console_print(0,PREFAB_WINDOW_OFFSET[0],22,'North -Y Cutout- South')
+	console_print(0,PREFAB_WINDOW_OFFSET[0],25,'North -Y Cutout- South')
 
 def end_of_frame_reactor3():
 	console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

@@ -190,14 +190,14 @@ def render_x_cutout(map,x_pos,y_pos):
 			continue
 		
 		_RENDER_X = x-x_pos
-		for z in range(MAP_SIZE[2]):
+		for z in range(MAP_SIZE[2]-3):
 			if map[x][y][z]:
 				_tile = map[x][y][z]
 			else:
 				_tile = BLANK_TILE
 			
 			gfx.blit_tile(_RENDER_X,
-				MAP_SIZE[2]-z,
+				(MAP_SIZE[2]-3)-z,
 				_tile,
 				char_buffer=X_CUTOUT_CHAR_BUFFER,
 				rgb_fore_buffer=X_CUTOUT_RGB_FORE_BUFFER,

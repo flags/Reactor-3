@@ -226,6 +226,10 @@ def handle_input():
 		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
+	elif INPUT['h']:
+		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+				create_tile(random.choice(WHITE_TILE_TILES))
+	
 	elif INPUT['s']:
 		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
@@ -263,6 +267,12 @@ def handle_input():
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
+	
+	elif INPUT['9']:
+		CAMERA_POS[2] = 9
+	
+	elif INPUT['0']:
+		CAMERA_POS[2] = 10
 
 def menu_item_selected(entry):
 	global RUNNING
