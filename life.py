@@ -45,21 +45,22 @@ def calculate_base_stats(life):
 	
 	return stats
 
-def calculate_limb_conditions(life):	
+def calculate_limb_conditions(life):
 	for limb in [life['body'][limb] for limb in life['body']]:
+		_pain_mod = limb['pain']+1
 		_condition = 100
 		
 		if limb['bleeding']:
-			_condition-=15
+			_condition-=(15*_pain_mod)
 		
 		if limb['cut']:
-			_condition-=25
+			_condition-=(20*_pain_mod)
 		
 		if limb['bruised']:
-			_condition-=20
+			_condition-=(15*_pain_mod)
 		
 		if limb['broken']:
-			_condition-=40
+			_condition-=(30*_pain_mod)
 		
 		limb['condition'] = _condition
 
@@ -77,10 +78,9 @@ def get_max_speed(life):
 		
 		if limb in life['legs']:
 			#TODO: Make .05 a variable
-			_penalty += int((100-life['body'][limb]['condition'])*.05)
+			_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)
 	
-	_MAX_SPEED = LIFE_MAX_SPEED-_speed_mod
-	_MAX_SPEED += _penalty
+	_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
 	
 	if _MAX_SPEED > LIFE_MAX_SPEED:
 		return LIFE_MAX_SPEED
@@ -133,6 +133,7 @@ def initiate_limbs(body):
 		body[limb]['bleeding'] = False
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
+		body[limb]['pain'] = 0
 
 def get_limb(body,limb):
 	"""Helper function. Finds ands returns a limb."""
@@ -1010,15 +1011,21 @@ def bruise_limb(life,limb):
 	
 	_limb['bruised'] = True
 
+def add_pain_to_limb(life,limb,amount=1):
+	_limb = life['body'][limb]
+	
+	_limb['pain'] += amount
+
 def damage_from_fall(life,dist):
 	print 'FELL',dist
+	
 	if 0<dist<=4:
 		for leg in life['legs']:
 			if life['body'][leg]['bruised']:
-				#TODO: Pain
-				pass
+				add_pain_to_limb(life,leg,amount=dist*2)
 			else:
 				bruise_limb(life,leg)
+				add_pain_to_limb(life,leg,amount=dist)
 		
 		if 'player' in life:
 			gfx.message('You land improperly!')
