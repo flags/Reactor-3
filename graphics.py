@@ -182,6 +182,10 @@ def log(text):
 def message(text,style=None):
 	MESSAGE_LOG.append({'msg': text,'style': style})
 
+def print_message(text):
+	console_print_frame(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1])
+	console_print(0,0,0,text)
+
 def end_of_frame_terraform(editing_prefab=False):
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	console_blit(PREFAB_WINDOW,

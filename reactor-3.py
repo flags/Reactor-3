@@ -743,6 +743,11 @@ def return_to_inventory(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
 
+def tick_all_objects():
+	items.tick_all_items(MAP)
+	life.tick_all_life()
+	bullets.tick_bullets(MAP)
+
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
 
 SETTINGS['draw z-levels below'] = True
@@ -750,7 +755,7 @@ SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[95,80,2])
+PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[100,80,5])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
@@ -792,9 +797,7 @@ while RUNNING:
 	_played_moved = False
 
 	while life.get_highest_action(PLAYER):
-		items.tick_all_items(MAP)
-		life.tick_all_life()
-		bullets.tick_bullets(MAP)
+		tick_all_objects()
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -804,9 +807,7 @@ while RUNNING:
 			break
 	
 	if not _played_moved:
-		items.tick_all_items(MAP)
-		life.tick_all_life()
-		bullets.tick_bullets(MAP)
+		tick_all_objects()
 	
 	draw_targetting()
 	

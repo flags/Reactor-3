@@ -121,6 +121,7 @@ def initiate_limbs(body):
 		#Unicode fix:
 		_val = body[limb].copy()
 		del body[limb]
+		print _val
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
 		
@@ -131,13 +132,21 @@ def initiate_limbs(body):
 		
 		body[limb]['holding'] = []
 		
-		#TODO: `Condition` is calculated automatically
+		#Note: `Condition` is calculated automatically
 		body[limb]['condition'] = 100
 		body[limb]['cut'] = False
 		body[limb]['bleeding'] = False
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
 		body[limb]['pain'] = 0
+		
+		if not 'parent' in body[limb]:
+			continue
+		
+		if not 'children' in body[body[limb]['parent']]:
+			body[body[limb]['parent']]['children'] = [limb]
+		else:
+			body[body[limb]['parent']]['children'].append(limb)
 
 def get_limb(body,limb):
 	"""Helper function. Finds ands returns a limb."""
@@ -174,6 +183,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['targetting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
+	_life['blood'] = 600
 	
 	initiate_limbs(_life['body'])
 	LIFE.append(_life)
@@ -1098,7 +1108,7 @@ def damage_from_item(life,item):
 	if item['sharp']:
 		cut_limb(life,'chest')
 	
-	_damage = item['damage']#-armor here
+	_damage = item['damage']#TODO: armor here
 	_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
 	
 	life['body']['chest']['condition'] -= _damage

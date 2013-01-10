@@ -1,73 +1,95 @@
 {
   "body": {
     "lthigh": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "hip"
     }, 
     "lknee": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lthigh"
     }, 
     "rfoot": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "rlowerleg"
     }, 
     "llowerleg": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lknee"
     }, 
     "rhand": {
-      "flags": "SKIN|MUSCLE|BONE|CANSTORE"
+      "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
+      "parent": "rforearm"
     }, 
     "rupperarm": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lshoulder"
     }, 
     "lhand": {
-      "flags": "SKIN|MUSCLE|BONE|CANSTORE"
+      "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
+      "parent": "lforearm"
     }, 
     "rthigh": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "hip"
     }, 
     "rknee": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "rthigh"
     }, 
     "chest": {
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "neck"
     }, 
     "lelbow": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lupperarm"
     }, 
     "relbow": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "rupperarm"
     }, 
     "lupperarm": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lshoulder"
     }, 
     "hip": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "stomach"
     }, 
     "head": {
       "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
     }, 
     "stomach": {
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "chest"
     }, 
     "rlowerleg": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "rknee"
     }, 
     "neck": {
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL"
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "head"
     }, 
     "lshoulder": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "chest"
     }, 
     "lforearm": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lelbow"
     }, 
     "lfoot": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "llowerleg"
     }, 
     "rforearm": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "relbow"
     }, 
     "rshoulder": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "chest"
     }
   }, 
   "race": "Human", 

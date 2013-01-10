@@ -64,6 +64,7 @@ def get_children_of_tag(taglist):
 				_limbs[_name] = {'flags': _flags}
 			else:
 				_limb = {'flags': _flags}
+				_limb['parent'] = _parent
 				_limbs[_name] = _limb
 				
 				#if _parent in _limbs:
