@@ -66,6 +66,7 @@ MAP_RENDER_VERSION = 4
 #Life constants
 LIFE_MAX_SPEED = 12
 DAMAGE_MOVE_PENALTY_MOD = .07
+PASS_OUT_PAIN_MOD = 25
 
 #Non-constants
 SETTINGS = {'draw lights': True,
