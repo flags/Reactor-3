@@ -756,6 +756,7 @@ def remove_item_from_inventory(life,id):
 	
 	life['speed_max'] = get_max_speed(life)
 	
+	menus.remove_item_from_menus({'id': item['id']})
 	logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]

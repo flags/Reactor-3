@@ -47,6 +47,21 @@ def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	
 	return _item
 
+def remove_item_from_menus(matching):
+	#print matching['item']['id']
+	for menu in MENUS:
+		for item in menu['menu'][:]:
+			_match = True
+			
+			for key in matching:
+				#print item.keys()
+				if not key in item or not matching[key] == item[key]:
+					_match = False
+					break
+			
+			if _match:
+				menu['menu'].remove(item)
+
 def format_entry(format_str,entry):
 	return format_str.replace('$k', str(entry['key']))\
 		.replace('$v', str(entry['values'][entry['value']]))\
