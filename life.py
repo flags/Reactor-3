@@ -121,7 +121,6 @@ def initiate_limbs(body):
 		#Unicode fix:
 		_val = body[limb].copy()
 		del body[limb]
-		print _val
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
 		

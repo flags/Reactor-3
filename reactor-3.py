@@ -838,7 +838,7 @@ while RUNNING:
 			_string,
 			console=MAP_WINDOW,
 			fore_color=Color(255,_col,_col),
-			back_color=Color(_col,_col,_col),
+			back_color=Color(255-_col,255-_col,255-_col),
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	

@@ -68,9 +68,9 @@ FADE_TO_WHITE = [0]
 
 #Life constants
 LIFE_MAX_SPEED = 12
-LIFE_BLEED_RATE = .76 #Lower is faster
+LIFE_BLEED_RATE = .15 #Lower is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
-PASS_OUT_PAIN_MOD = 15
+PASS_OUT_PAIN_MOD = 10
 
 #Non-constants
 SETTINGS = {'draw lights': True,
