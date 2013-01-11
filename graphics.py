@@ -1,6 +1,7 @@
 from libtcodpy import *
 from globals import *
 from tiles import *
+import random
 import numpy
 import time
 import life
@@ -91,14 +92,48 @@ def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore
 
 	char_buffer[0][y,x] = ord(char)
 
-def blit_string(x,y,text):
-	console_print(0,x,y,text)
+def blit_string(x,y,text,console=0,fore_color=white,back_color=None,flicker=0):
+	i = 0
+	
+	for c in text:
+		_back_color = back_color
+		
+		if not _back_color:
+			_back_color = Color(int(MAP_RGB_BACK_BUFFER[0][y,x+i])+random.randint(0,flicker),
+				int(MAP_RGB_BACK_BUFFER[1][y,x+i]+random.randint(0,flicker)),
+				int(MAP_RGB_BACK_BUFFER[2][y,x+i]+random.randint(0,flicker)))
+		
+		_alpha = int(LIGHT_BUFFER[0][y,x+i])
+		
+		blit_char(x+i,
+			y,
+			c,
+			fore_color=fore_color,
+			back_color=_back_color,
+			char_buffer=MAP_CHAR_BUFFER,
+			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+		
+		darken_tile(x+i,y,0)
+		lighten_tile(x+i,y,0)
+		i+=1
 
 def darken_tile(x,y,amt):
 	DARK_BUFFER[0][y,x] = amt
 
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
+
+def fade_to_white(amt):
+	amt = int(round(amt))
+	
+	if amt > 255:
+		amt = 255
+	
+	for x in range(MAP_WINDOW_SIZE[0]):
+		for y in range(MAP_WINDOW_SIZE[1]):
+			darken_tile(x,y,0)
+			lighten_tile(x,y,amt)
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	if time.time()%1>=0.5:
@@ -181,10 +216,6 @@ def log(text):
 
 def message(text,style=None):
 	MESSAGE_LOG.append({'msg': text,'style': style})
-
-def print_message(text):
-	console_print_frame(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1])
-	console_print(0,0,0,text)
 
 def end_of_frame_terraform(editing_prefab=False):
 	console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

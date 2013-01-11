@@ -824,6 +824,23 @@ while RUNNING:
 	
 	maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
+	if PLAYER['dead']:
+		gfx.fade_to_white(FADE_TO_WHITE[0])
+		_col = 255-int(round(FADE_TO_WHITE[0]))*2
+		
+		if _col<0:
+			_col = 0
+		
+		_string = 'You die.'
+		
+		gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
+			MAP_WINDOW_SIZE[1]/2,
+			_string,
+			console=MAP_WINDOW,
+			fore_color=Color(255,_col,_col),
+			flicker=0)
+		FADE_TO_WHITE[0] += 0.9
+	
 	life.draw_visual_inventory(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()

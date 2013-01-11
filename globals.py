@@ -63,10 +63,14 @@ DEFAULT_ITEM_PREFIX = 'a'
 #Versions
 MAP_RENDER_VERSION = 4
 
+#Graphics tweaks
+FADE_TO_WHITE = [0]
+
 #Life constants
 LIFE_MAX_SPEED = 12
+LIFE_BLEED_RATE = .76 #Lower is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
-PASS_OUT_PAIN_MOD = 25
+PASS_OUT_PAIN_MOD = 15
 
 #Non-constants
 SETTINGS = {'draw lights': True,

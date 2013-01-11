@@ -184,6 +184,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
 	_life['blood'] = 600
+	_life['dead'] = False
 	
 	initiate_limbs(_life['body'])
 	LIFE.append(_life)
@@ -497,8 +498,24 @@ def perform_action(life):
 	
 	return True
 
+def kill(life,how):
+	if how == 'bleedout':
+		if 'player' in life:
+			gfx.message('You die from blood loss.',style='death')
+		else:
+			logging.debug('%s dies from blood loss.' % life['name'][0])
+	
+	life['dead'] = True
+
 def tick(life):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
+	if life['dead']:
+		return False
+	
+	if calculate_blood(life)<=0:
+		kill(life,'bleedout')
+				
+		return False
 	
 	if life['asleep']:
 		life['asleep'] -= 1
@@ -1036,6 +1053,19 @@ def get_total_pain(life):
 	
 	return _pain
 
+def calculate_blood(life):
+	_blood = 0
+	
+	if life['blood']<=0:
+		return 0
+	
+	for limb in [life['body'][limb] for limb in life['body']]:
+		_blood += limb['bleeding']
+	
+	life['blood'] -= _blood*LIFE_BLEED_RATE
+	
+	return life['blood']
+
 def get_limb_damage_penalty(life,limb,amount):
 	"""Returns the penalty of having a pre-existing injury on a limb."""
 	_limb = life['body'][limb]
@@ -1057,6 +1087,7 @@ def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
+	_limb['bleeding'] = True
 
 def bruise_limb(life,limb):
 	_limb = life['body'][limb]
@@ -1069,10 +1100,26 @@ def add_pain_to_limb(life,limb,amount=1):
 	_limb['pain'] += amount
 	
 	if get_total_pain(life)>life['pain_tolerance']:		
+		if life['asleep']:
+			return False
+		
 		if 'player' in life:
 			gfx.message('The pain becomes too much.')
 		
-		pass_out(life)
+			pass_out(life)
+
+def get_all_attached_limbs(life,limb):
+	_limb = life['body'][limb]
+	
+	if not 'children' in _limb:
+		return [limb]
+	
+	_attached = [limb]
+	
+	for child in _limb['children']:
+		_attached.extend(get_all_attached_limbs(life,child))
+	
+	return _attached
 
 def damage_from_fall(life,dist):
 	print 'FELL',dist
@@ -1082,23 +1129,26 @@ def damage_from_fall(life,dist):
 			gfx.message('You land improperly!')
 			gfx.message('Your legs are bruised in the fall.',style='damage')
 		
-		for leg in life['legs']:
-			if life['body'][leg]['bruised']:
-				add_pain_to_limb(life,leg,amount=dist*2)
-			else:
-				bruise_limb(life,leg)
-				add_pain_to_limb(life,leg,amount=dist)
+		for limbs in life['legs']:
+			for leg in get_all_attached_limbs(life,limbs):
+				if life['body'][leg]['bruised']:
+					add_pain_to_limb(life,leg,amount=dist*2)
+				else:
+					bruise_limb(life,leg)
+					add_pain_to_limb(life,leg,amount=dist)
+			
 	elif dist>3:
 		if 'player' in life:
 			gfx.message('You hear the sound of breaking bones!')
 			gfx.message('You break both legs in the fall.',style='damage')
 		
-		for leg in life['legs']:
-			if life['body'][leg]['broken']:
-				add_pain_to_limb(life,leg,amount=dist*10)
-			else:
-				break_limb(life,leg)
-				add_pain_to_limb(life,leg,amount=dist*3)
+		for limbs in life['legs']:
+			for leg in get_all_attached_limbs(life,limbs):				
+				if life['body'][leg]['broken']:
+					add_pain_to_limb(life,leg,amount=dist*10)
+				else:
+					break_limb(life,leg)
+					add_pain_to_limb(life,leg,amount=dist*3)
 	else:
 		return False
 	
