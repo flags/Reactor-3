@@ -8,6 +8,7 @@ import maputils
 import drawing
 import logging
 import weapons
+import numbers
 import bullets
 import random
 import menus
@@ -370,8 +371,8 @@ def handle_input():
 		CAMERA_POS[2] = 5
 
 def move_camera(pos,scroll=False):
-	CAMERA_POS[0] = max(0, min(pos[0]-(MAP_WINDOW_SIZE[0]/2), MAP_SIZE[0]-MAP_WINDOW_SIZE[0]))
-	CAMERA_POS[1] = max(0, min(pos[1]-(MAP_WINDOW_SIZE[1]/2), MAP_SIZE[1]-MAP_WINDOW_SIZE[1]))
+	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
+	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]
 	
 	return False
@@ -755,7 +756,7 @@ SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['derp','yerp'],map=MAP)
-PLAYER = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[100,80,5])
+PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[100,80,5])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
@@ -842,10 +843,10 @@ while RUNNING:
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
-	life.draw_visual_inventory(PLAYER)
+	life.draw_life_info(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
-	gfx.draw_bottom_ui()
+	gfx.draw_message_box()
 	gfx.draw_console()
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()

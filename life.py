@@ -896,6 +896,8 @@ def get_held_items(life,matches=None):
 			if matches:
 				if not perform_match(_item,matches):
 					continue
+					continue
+					continue
 							
 			_holding.append(_limb['holding'][0])
 	
@@ -1034,6 +1036,81 @@ def draw_visual_inventory(life):
 	
 	console_set_default_foreground(0,white)
 
+def prettify_string_array(array,max_length):
+	"""Returns a human readable string from an array of strings."""
+	_string = ''
+	
+	_i = 0
+	for entry in array:
+		if len(_string) > max_length:
+			_string += ', and %s more.' % (_i+1)
+			
+			break
+		
+		if _i == 0:
+			_string += entry
+		elif 0<_i<len(array)-1:
+			_string += ', %s' % entry
+		elif _i == len(array)-1:
+			_string += ' and %s.' % entry
+		
+		_i += 1
+	
+	return _string
+
+#TODO: Since we are drawing in a blank area, we only need to do this once!
+def draw_life_info(life):
+	_info = []
+	_name_mods = ''
+	_holding = get_held_items(life)
+	_bleeding = get_bleeding_limbs(life)
+	_broken = get_broken_limbs(life)
+	
+	if life['asleep']:
+		_name_mods = ' (Asleep)'
+	
+	console_set_default_foreground(0,BORDER_COLOR)
+	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
+	
+	console_set_default_foreground(0,white)
+	console_print(0,MAP_WINDOW_SIZE[0]+1,0,' '.join(life['name'])+_name_mods)
+	
+	if _holding:
+		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
+		_held_string = prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_info.append({'text': 'Holding: %s' % _held_string, 'color': white})
+	else:
+		_info.append({'text': 'You aren\'t holding anything.',
+			'color': Color(125,125,125)})
+	
+	if _bleeding:
+		_bleeding_string = prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
+	else:
+		_info.append({'text': 'You are in good health.',
+			'color': Color(0,200,0)})
+	
+	if _broken:
+		_broken_string = prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
+		
+		_info.append({'text': 'Broken: %s' % _broken_string,
+			'color': red})
+	else:
+		_info.append({'text': 'You are in no pain.',
+			'color': Color(0,200,0)})
+	
+	_i = 1
+	for entry in _info:
+		console_set_default_foreground(0,entry['color'])
+		console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
+		
+		_i += 1
+	
+	_blood_r = numbers.clip(600-int(life['blood']),0,255)
+	_blood_g = numbers.clip(int(life['blood']),0,255)
+	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
+	console_print(0,MAP_WINDOW_SIZE[0]+1,4,'Blood: %s' % life['blood'])
+
 def pass_out(life,length=None):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
@@ -1071,6 +1148,26 @@ def get_limb_damage_penalty(life,limb,amount):
 	_limb = life['body'][limb]
 	
 	return int((100-_limb['condition'])*.25)	
+
+def get_bleeding_limbs(life):
+	"""Returns list of bleeding limbs."""
+	_bleeding = []
+	
+	for limb in life['body']:
+		if life['body'][limb]['bleeding']:
+			_bleeding.append(limb)
+	
+	return _bleeding
+
+def get_broken_limbs(life):
+	"""Returns list of broken limbs."""
+	_broken = []
+	
+	for limb in life['body']:
+		if life['body'][limb]['broken']:
+			_broken.append(limb)
+	
+	return _broken	
 
 def cut_limb(life,limb):
 	_limb = life['body'][limb]

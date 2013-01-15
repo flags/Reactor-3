@@ -161,7 +161,7 @@ def draw_bottom_ui_terraform():
 	_fps_string = '%s fps' % str(sys_get_fps())
 	blit_string(WINDOW_SIZE[0]-len(_fps_string), MAP_WINDOW_SIZE[1]+1,_fps_string)
 
-def draw_bottom_ui():	
+def draw_message_box():	
 	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))
 	console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	console_set_default_foreground(MESSAGE_WINDOW,white)
