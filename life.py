@@ -4,6 +4,7 @@ import pathfinding
 import language
 import logging
 import numbers
+import alife
 import items
 import menus
 import copy
@@ -530,6 +531,7 @@ def tick(life):
 	
 	calculate_limb_conditions(life)
 	perform_collisions(life)
+	alife.think(life)
 	perform_action(life)
 
 def attach_item_to_limb(body,id,limb):
@@ -549,6 +551,28 @@ def remove_item_from_limb(body,item,limb):
 def get_all_storage(life):
 	"""Returns list of all containers in a character's inventory."""
 	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
+
+def can_see(life,pos):
+	"""Returns `true` if the life can see a certain position."""
+	_dark = False
+	for pos in drawing.diag_line(life['pos'],pos):
+		_x = pos[0]-CAMERA_POS[0]
+		_y = pos[1]-CAMERA_POS[1]
+		
+		if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
+			continue
+		
+		if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
+			if not _dark:
+				_dark = True
+				LOS_BUFFER[0][_y,_x] = 1
+				
+				continue
+			
+		if _dark:
+			continue
+
+		LOS_BUFFER[0][_y,_x] = 1
 
 def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""

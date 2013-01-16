@@ -7,6 +7,9 @@ def clip(number,start,end):
 	
 	return max(start, min(number, end))
 
+def distance(pos1,pos2):
+	return abs(pos2[1]-pos1[1])+abs(pos2[0]-pos1[0])
+
 def velocity(direction,speed):
 	rad = direction*(pi/180)
 	velocity = numpy.multiply(numpy.array([cos(rad),sin(rad)]),speed)
