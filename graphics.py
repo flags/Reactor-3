@@ -1,6 +1,7 @@
 from libtcodpy import *
 from globals import *
 from tiles import *
+import numbers
 import random
 import numpy
 import time
@@ -168,8 +169,8 @@ def draw_message_box():
 	console_print(MESSAGE_WINDOW,1,0,'Messages')
 	
 	_y_mod = 1
-	
-	for msg in MESSAGE_LOG[max(0, min(len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES, MESSAGE_LOG_MAX_LINES)):]:
+	_lower = numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
+	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
 		if msg['style'] == 'damage':
 			console_set_default_foreground(MESSAGE_WINDOW,red)
 		else:

@@ -3,7 +3,9 @@ import numpy
 
 def clip(number,start,end):
 	"""Returns `number`, but makes sure it's in the range of [start..end]"""
-	return max(0, min(number, 255))
+	#max(0, min(pos[0]-(MAP_WINDOW_SIZE[0]/2), MAP_SIZE[0]-MAP_WINDOW_SIZE[0]))
+	
+	return max(start, min(number, end))
 
 def velocity(direction,speed):
 	rad = direction*(pi/180)

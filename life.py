@@ -1065,6 +1065,7 @@ def draw_life_info(life):
 	_holding = get_held_items(life)
 	_bleeding = get_bleeding_limbs(life)
 	_broken = get_broken_limbs(life)
+	_bruised = get_bruised_limbs(life)
 	
 	if life['asleep']:
 		_name_mods = ' (Asleep)'
@@ -1099,6 +1100,15 @@ def draw_life_info(life):
 		_info.append({'text': 'You are in no pain.',
 			'color': Color(0,200,0)})
 	
+	if _bruised:
+		_bruised_string = prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
+		
+		_info.append({'text': 'Buised: %s' % _bruised_string,
+			'color': red})
+	else:
+		_info.append({'text': 'You are in no pain.',
+			'color': Color(0,200,0)})
+	
 	_i = 1
 	for entry in _info:
 		console_set_default_foreground(0,entry['color'])
@@ -1109,7 +1119,7 @@ def draw_life_info(life):
 	_blood_r = numbers.clip(600-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,4,'Blood: %s' % life['blood'])
+	console_print(0,MAP_WINDOW_SIZE[0]+1,5,'Blood: %s' % life['blood'])
 
 def pass_out(life,length=None):
 	if not length:
@@ -1167,7 +1177,17 @@ def get_broken_limbs(life):
 		if life['body'][limb]['broken']:
 			_broken.append(limb)
 	
-	return _broken	
+	return _broken
+
+def get_bruised_limbs(life):
+	"""Returns list of bruised limbs."""
+	_bruised = []
+	
+	for limb in life['body']:
+		if life['body'][limb]['bruised']:
+			_bruised.append(limb)
+	
+	return _bruised
 
 def cut_limb(life,limb):
 	_limb = life['body'][limb]
