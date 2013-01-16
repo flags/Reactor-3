@@ -1,6 +1,7 @@
 from globals import *
 import graphics as gfx
 import pathfinding
+import language
 import logging
 import numbers
 import items
@@ -1036,28 +1037,6 @@ def draw_visual_inventory(life):
 	
 	console_set_default_foreground(0,white)
 
-def prettify_string_array(array,max_length):
-	"""Returns a human readable string from an array of strings."""
-	_string = ''
-	
-	_i = 0
-	for entry in array:
-		if len(_string) > max_length:
-			_string += ', and %s more.' % (_i+1)
-			
-			break
-		
-		if _i == 0:
-			_string += entry
-		elif 0<_i<len(array)-1:
-			_string += ', %s' % entry
-		elif _i == len(array)-1:
-			_string += ' and %s.' % entry
-		
-		_i += 1
-	
-	return _string
-
 #TODO: Since we are drawing in a blank area, we only need to do this once!
 def draw_life_info(life):
 	_info = []
@@ -1078,21 +1057,21 @@ def draw_life_info(life):
 	
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
-		_held_string = prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_held_string = language.prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
 		_info.append({'text': 'Holding: %s' % _held_string, 'color': white})
 	else:
 		_info.append({'text': 'You aren\'t holding anything.',
 			'color': Color(125,125,125)})
 	
 	if _bleeding:
-		_bleeding_string = prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
 		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
 	else:
 		_info.append({'text': 'You are in good health.',
 			'color': Color(0,200,0)})
 	
 	if _broken:
-		_broken_string = prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Broken: %s' % _broken_string,
 			'color': red})
@@ -1101,7 +1080,7 @@ def draw_life_info(life):
 			'color': Color(0,200,0)})
 	
 	if _bruised:
-		_bruised_string = prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
+		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Buised: %s' % _bruised_string,
 			'color': red})
