@@ -83,7 +83,7 @@ def judge(life,target):
 	return _like-_dislike
 
 def combat(life,target):
-	logging.debug('Combat!')
+	logging.info('Combat!')
 
 def understand(life):
 	_target = {'who': None,'score': -10000}
