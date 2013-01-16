@@ -19,7 +19,7 @@ import maps
 import sys
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
 ch = logging.StreamHandler()
 ch.setFormatter(console_formatter)

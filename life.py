@@ -2,6 +2,7 @@ from globals import *
 import graphics as gfx
 import pathfinding
 import language
+import drawing
 import logging
 import numbers
 import alife
@@ -167,6 +168,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	#TODO: Any way to get rid of this call to `copy`?
 	_life = copy.deepcopy(LIFE_TYPES[type])
 	_life['name'] = name
+	_life['id'] = SETTINGS['lifeid']
+	
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
 	_life['realpos'] = list(position)
@@ -187,7 +190,11 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['blood'] = 600
 	_life['dead'] = False
 	
+	#ALife
+	_life['know'] = {}
+	
 	initiate_limbs(_life['body'])
+	SETTINGS['lifeid'] += 1
 	LIFE.append(_life)
 	
 	return _life
@@ -531,7 +538,10 @@ def tick(life):
 	
 	calculate_limb_conditions(life)
 	perform_collisions(life)
-	alife.think(life)
+	
+	if not 'player' in life:
+		alife.think(life)
+	
 	perform_action(life)
 
 def attach_item_to_limb(body,id,limb):
@@ -554,7 +564,6 @@ def get_all_storage(life):
 
 def can_see(life,pos):
 	"""Returns `true` if the life can see a certain position."""
-	_dark = False
 	for pos in drawing.diag_line(life['pos'],pos):
 		_x = pos[0]-CAMERA_POS[0]
 		_y = pos[1]-CAMERA_POS[1]
@@ -562,17 +571,10 @@ def can_see(life,pos):
 		if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
 			continue
 		
-		if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
-			if not _dark:
-				_dark = True
-				LOS_BUFFER[0][_y,_x] = 1
-				
-				continue
-			
-		if _dark:
-			continue
-
-		LOS_BUFFER[0][_y,_x] = 1
+		if life['map'][pos[0]][pos[1]][CAMERA_POS[2]+1]:				
+			return False
+	
+	return True
 
 def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""

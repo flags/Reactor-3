@@ -9,31 +9,105 @@
 from globals import *
 import life as lfe
 import pathfinding
-import drawing
 import logging
 import numbers
 
 def look(life):
-	life['sight'] = []
+	life['seen'] = []
 	
 	for ai in LIFE:
 		if ai == life:
 			continue
 		
-		if numbers.distance(life['pos'],ai['pos']) > 20:
+		if numbers.distance(life['pos'],ai['pos']) > 30:
 			#TODO: "see" via other means?
 			continue
 		
+		if not lfe.can_see(life,ai['pos']):
+			continue
+		
+		life['seen'].append(str(life['id']))
+		
 		#TODO: Don't pass entire life, just id
-		life['sight'].append(ai)
+		if str(life['id']) in life['know']:
+			continue
+			
+		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
+		
+		life['know'][str(life['id'])] = {'life': ai,'score': 0}
 	
-	logging.debug('\tTargets: %s' % (len(life['sight'])))
+	logging.debug('\tTargets: %s' % (len(life['seen'])))
+
+def hear(life):
+	for event in life['heard']:
+		print event
+
+def judge(life,target):
+	_like = 0
+	_dislike = 0
+	
+	for limb in [target['body'][limb] for limb in target['body']]:
+		#TODO: Mark as target?
+		if limb['bleeding']:
+			_like += 1
+		else:
+			_dislike += 1
+		
+		if limb['bruised']:
+			_like += 2
+		else:
+			_dislike += 2
+		
+		if limb['broken']:
+			_like += 3
+		else:
+			_dislike += 3
+	
+	#Am I armed?
+	_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	_target_armed = lfe.get_held_items(target,matches=[{'type': 'gun'}])
+	
+	if _self_armed and _target_armed:
+		#TODO: This.
+		pass
+	elif not _self_armed and _target_armed:
+		_dislike += 50
+	elif _self_armed and not _target_armed:
+		_like += 50
+	
+	#TODO: Add modifier depending on type of weapon
+	#TODO: Consider if the AI has heard the target run out of ammo
+	#TODO: Added "scared by", so a fear of guns would subtract from
+	logging.debug('%s judged %s with score %s.' % (life['name'][0],target['name'][0],_like-_dislike))
+	
+	return _like-_dislike
+
+def combat(life,target):
+	logging.debug('Combat!')
 
 def understand(life):
-	for item in life['sight']:
-		if lfe.can_see(life,item['pos']):
-			print 'Yo!'
-			break
+	_target = {'who': None,'score': -10000}
+	
+	for entry in life['seen']:
+		target = life['know'][entry]
+		
+		_score = judge(life,target['life'])
+		if not target['score'] == _score:
+			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
+		
+		target['score'] = _score
+		
+		if _score > _target['score']:
+			_target['who'] = _target
+			_target['score'] = _score
+	
+	if not _target['who']:
+		#TODO: No active target, reroute to non-engagement logic
+		return False
+	
+	#TODO: Life should use all stats instead of the judge function
+	if _target['score'] <= judge(life,life):
+		combat(life,_target['who'])
 
 def think(life):
 	logging.debug('*THINKING*')

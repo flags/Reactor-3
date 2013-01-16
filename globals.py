@@ -80,7 +80,8 @@ SETTINGS = {'draw lights': True,
 			'draw z-levels above': True,
 			'draw z-levels below': False,
 			'world gravity': 0.09,
-			'los': 35}
+			'los': 35,
+			'lifeid': 0}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
