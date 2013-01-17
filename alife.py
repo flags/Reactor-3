@@ -11,6 +11,7 @@ import life as lfe
 import pathfinding
 import logging
 import numbers
+import time
 
 def look(life):
 	life['seen'] = []
@@ -26,15 +27,15 @@ def look(life):
 		if not lfe.can_see(life,ai['pos']):
 			continue
 		
-		life['seen'].append(str(life['id']))
+		life['seen'].append(str(ai['id']))
 		
 		#TODO: Don't pass entire life, just id
-		if str(life['id']) in life['know']:
+		if str(ai['id']) in life['know']:
 			continue
 			
 		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
 		
-		life['know'][str(life['id'])] = {'life': ai,'score': 0}
+		life['know'][str(ai['id'])] = {'life': ai,'score': 0}
 	
 	logging.debug('\tTargets: %s' % (len(life['seen'])))
 
@@ -42,7 +43,24 @@ def hear(life):
 	for event in life['heard']:
 		print event
 
+def update_snapshot(life,id,snapshot):
+	life['know'][str(id)].update(snapshot)
+
 def judge(life,target):
+	snapshot = {'condition': 0,
+		'appearance': 0,
+		'visible_items': []}
+
+	for limb in target['body']:
+		snapshot['condition'] += lfe.get_limb_condition(target,limb)
+
+		#for item in limb:
+		#	snapshot['appearance'] += get_quality(item)
+		#	snapshot['visible_items].append(item['name'])
+
+	update_snapshot(life,target['id'],snapshot)
+
+def judge_combat(life,target):
 	_like = 0
 	_dislike = 0
 	
@@ -117,8 +135,8 @@ def understand(life):
 		target = life['know'][entry]
 		
 		_score = judge(life,target['life'])
-		if not target['score'] == _score:
-			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
+		#if not target['score'] == _score:
+		#	logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
 		target['score'] = _score
 		

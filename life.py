@@ -73,6 +73,9 @@ def calculate_limb_conditions(life):
 		
 		limb['condition'] = _condition
 
+def get_limb_condition(life,limb):
+	return life['body'][limb]['condition']
+
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
 	_speed_mod = 0
