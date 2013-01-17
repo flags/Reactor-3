@@ -82,8 +82,29 @@ def judge(life,target):
 	
 	return _like-_dislike
 
+#TODO: Move to `life.py`?
+def calculate_situation_danger(pos,**kvargs):
+	_distance = numbers.distance(pos,kvargs['target']['life']['pos'])+1
+	
+	#TODO: (WEAPON_ACCURACY_TO_POSITION/BASE_WEAPON_ACCURACY)
+	_distance_mod = 100/100
+	
+	return _distance#kvargs['target']['score']*(_distance*_distance_mod)
+
 def combat(life,target):
-	logging.info('Combat!')
+	#logging.info('Combat!')
+	_escape = numbers.create_dijkstra_map(target['life']['pos'],
+		life['map'],
+		calculate=calculate_situation_danger,
+		life=life,
+		target=target)
+	
+	#SETTINGS['heatmap'] = _escape
+	
+	life['path'] = pathfinding.path_from_dijkstra(life['pos'],_escape)
+	#numbers.draw_dijkstra(_escape)
+	
+	lfe.walk_path(life)
 
 def understand(life):
 	_target = {'who': None,'score': -10000}
@@ -98,7 +119,7 @@ def understand(life):
 		target['score'] = _score
 		
 		if _score > _target['score']:
-			_target['who'] = _target
+			_target['who'] = target
 			_target['score'] = _score
 	
 	if not _target['who']:

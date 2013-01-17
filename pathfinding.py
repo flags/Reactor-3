@@ -217,3 +217,55 @@ class astar:
 			adj.append((_x,_y))
 			
 		return adj
+
+def path_from_dijkstra(start_position,dijkstra,downhill=False):
+	_s_pos = start_position[:]
+	_next_pos = {'pos': None,'score': 0}
+	
+	_path = []
+	
+	while 1:
+		for x1 in range(-1,2):
+			x = (_s_pos[0]+x1)-dijkstra['x_range'][0]
+			
+			if dijkstra['x_range'][0]>=x or x>=dijkstra['x_range'][1]-1:
+				continue
+			
+			for y1 in range(-1,2):
+				if (x1,y1) == (0,0):
+					continue
+				
+				y = (_s_pos[1]+y1)-dijkstra['y_range'][0]
+				
+				if dijkstra['y_range'][0]>=y or y>=dijkstra['y_range'][1]-1:
+					continue
+				
+				#print 'x',dijkstra['x_range'][0],dijkstra['x_range'][1]
+				#print 'y',y,dijkstra['y_range'][1]
+				if dijkstra['map'][x][y]==-1:
+					continue
+				
+				_score = dijkstra['map'][x][y]
+				
+				if downhill:
+					if _score < _next_pos['score']:
+						_next_pos['score'] = _score
+						_next_pos['pos'] = (x,y,_s_pos[2])
+						
+						continue
+				
+				if _score > _next_pos['score']:
+					_next_pos['score'] = _score
+					_next_pos['pos'] = (x,y,_s_pos[2])
+		
+		if _path and _path[len(_path)-1] == _next_pos['pos']:
+			return _path
+		elif _next_pos['pos']:
+			if len(_path)>=2 and _next_pos['pos'] == _path[len(_path)-2]:
+				return _path
+			
+			_path.append(_next_pos['pos'])
+			_s_pos = _path[len(_path)-1][:]
+		else:
+			logging.info('No path found!')
+			return _path

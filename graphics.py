@@ -189,6 +189,28 @@ def draw_all_tiles():
 		console_set_char_background(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][1])
 		console_set_char(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['icon'])
 
+def draw_dijkstra_heatmap():
+	if not SETTINGS['heatmap']:
+		return False
+	
+	_map = SETTINGS['heatmap']
+	
+	for _x in range(_map['x_range'][0],_map['x_range'][1]):		
+		x = _x-_map['x_range'][0]
+		
+		if x<0 or x>=MAP_WINDOW_SIZE[0]:
+			continue
+		
+		for _y in range(_map['y_range'][0],_map['y_range'][1]):			
+			y = _y-_map['y_range'][0]
+			
+			if y<CAMERA_POS[1] or y>=MAP_WINDOW_SIZE[1]:
+				continue
+			
+			_score = abs(SETTINGS['heatmap']['map'][_x][_y])/8
+			_light = numbers.clip(_score,0,150)
+			lighten_tile(x,y,_light)
+
 def draw_console():
 	if not SETTINGS['draw console']:
 		return False
