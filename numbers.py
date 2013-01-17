@@ -58,7 +58,7 @@ def create_dijkstra_map(center,source_map,size=(100,100),calculate=None,**kvargs
 		
 		_map.append(_col)
 	
-	logging.info('Dijkstra map took: %s, size %s,%s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y)))
+	#logging.info('Dijkstra map took: %s, size %s,%s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y)))
 	
 	return {'map': _map,
 		'x_range': (_min_x,_max_x),
@@ -71,11 +71,15 @@ def draw_dijkstra(dijkstra):
 		for _x in range(dijkstra['x_range'][0],dijkstra['x_range'][1]):
 			x = _x-dijkstra['x_range'][0]
 			
-			_score = clip(dijkstra['map'][_x][_y],0,9)
+			#if _x == 20:
+			#	continue
+			
+			#print _x,dijkstra['x_range']#,_y#,dijkstra['x_range'][1],dijkstra['y_range'][1]
+			_score = clip(dijkstra['map'][x][y],0,9)
 			
 			print '%s' % _score,
 		
 		print
 
-#_a = create_dijkstra_map((1,10,2),[],size=(20,20))
+#_a = create_dijkstra_map((90,10,2),[],size=(20,20))
 #draw_dijkstra(_a)

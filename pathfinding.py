@@ -226,18 +226,20 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	
 	while 1:
 		for x1 in range(-1,2):
-			x = (_s_pos[0]+x1)-dijkstra['x_range'][0]
+			_x = (_s_pos[0]+x1)
+			x = (_s_pos[0]-dijkstra['x_range'][0])+x1
 			
-			if dijkstra['x_range'][0]>=x or x>=dijkstra['x_range'][1]-1:
+			if dijkstra['x_range'][0]>=x or x>=dijkstra['x_range'][1]:
 				continue
 			
 			for y1 in range(-1,2):
 				if (x1,y1) == (0,0):
 					continue
 				
-				y = (_s_pos[1]+y1)-dijkstra['y_range'][0]
+				_y = (_s_pos[1]+y1)
+				y = (_s_pos[1]-dijkstra['y_range'][0])+y1
 				
-				if dijkstra['y_range'][0]>=y or y>=dijkstra['y_range'][1]-1:
+				if dijkstra['y_range'][0]>=y or y>=dijkstra['y_range'][1]:
 					continue
 				
 				#print 'x',dijkstra['x_range'][0],dijkstra['x_range'][1]
@@ -250,13 +252,13 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 				if downhill:
 					if _score < _next_pos['score']:
 						_next_pos['score'] = _score
-						_next_pos['pos'] = (x,y,_s_pos[2])
-						
-						continue
+						_next_pos['pos'] = (_x,_y,_s_pos[2])
+					
+					continue
 				
 				if _score > _next_pos['score']:
 					_next_pos['score'] = _score
-					_next_pos['pos'] = (x,y,_s_pos[2])
+					_next_pos['pos'] = (_x,_y,_s_pos[2])
 		
 		if _path and _path[len(_path)-1] == _next_pos['pos']:
 			return _path

@@ -219,9 +219,10 @@ def walk(life,to):
 	
 	if not _dest == tuple(to):
 		#_stime = time.time()
-		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
-		life['path'] = _path.find_path(life['pos'])
+		#_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
+		#life['path'] = _path.find_path(life['pos'])
 		#print time.time()-_stime
+		pass
 	
 	return walk_path(life)
 
@@ -237,6 +238,7 @@ def walk_path(life):
 			if _pos[2]>0:
 				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
 				life['pos'][2] += _pos[2]-1
+				print 'Changing z-level, bitch!'
 			
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
