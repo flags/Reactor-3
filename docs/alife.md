@@ -24,14 +24,14 @@ target's outward appearance, including any defining traits (injury, equipped wea
 identification.
 
 Once a snapshot has been created, the ALife can start remembering events this target performs. Take note
-that these should be be trivial things such as movement, but instead memorable events like engaging in
+that these should not be trivial things such as movement, but instead memorable events like engaging in
 combat.
 
 These memories play an important roll in the observing ALife's behavior.
 
 Part 1.2: Judging
 -----------------
-*But first, a note:* It should be noted that this step is where optimization comes into play. Remember that
+**But first, a note**: It should be noted that this step is where optimization comes into play. Remember that
 most functions relating to ALife are performed many times a second- the less we have to do in that second
 the better.
 
@@ -42,21 +42,21 @@ filed away. The value is never recalculated.
 Consider the following: The impression an ALife has of another ALife determines what action is taken by
 the observing ALife, so heavy calculations are justified by only being executed once.
 
-# First Appearance
+**Note**:
 Distance (or any variable that changes on a turn-by-turn basis) does not play a part in judgement.
-
-First, the outward appearence is recorded. This is done by scanning all visible items and their quality:
-
-	appearance = 0
-	
-	for limb in body:
-		for item in limb:
-			appearance += get_quality(item)
 
 # Every Turn
 A rundown of the ALife's condition is performed, but only in situations where it is required.
 
-	condition += 1
+	snapshot = {'condition': 0,
+		'appearance': 0,
+		'visible_items': []}
 	
 	for limb in body
-		condition += get_condition(limb)
+		snapshot['condition'] += get_condition(limb)
+		
+		for item in limb:
+			snapshot['appearance'] += get_quality(item)
+			snapshot['visible_items].append(item['name'])
+	
+	update_snapshot(life,target['id'],snapshot)
