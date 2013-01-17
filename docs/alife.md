@@ -53,7 +53,7 @@ First, the outward appearence is recorded. This is done by scanning all visible 
 		for item in limb:
 			appearance += get_quality(item)
 
-# Every turn
+# Every Turn
 A rundown of the ALife's condition is performed, but only in situations where it is required.
 
 	condition += 1
