@@ -577,6 +577,9 @@ def can_see(life,pos):
 			life['pos'][1],
 			pos[0],
 			pos[1])
+		
+		if not _line:
+			_line = []
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
 	

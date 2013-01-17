@@ -84,6 +84,7 @@ def judge(life,target):
 
 #TODO: Move to `life.py`?
 def calculate_situation_danger(pos,**kvargs):
+	#TODO: Doesn't really make sense...
 	#if not lfe.can_see(kvargs['target']['life'],pos):
 	#	return 0
 	
