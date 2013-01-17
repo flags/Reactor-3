@@ -35,7 +35,7 @@ def look(life):
 			
 		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
 		
-		life['know'][str(ai['id'])] = {'life': ai,'score': 0}
+		life['know'][str(ai['id'])] = {'life': ai,'score': 0,'snapshot': {}}
 	
 	logging.debug('\tTargets: %s' % (len(life['seen'])))
 
@@ -44,9 +44,11 @@ def hear(life):
 		print event
 
 def update_snapshot(life,id,snapshot):
-	life['know'][str(id)].update(snapshot)
+	life['know'][str(id)]['snapshot'].update(snapshot)
 
 def judge(life,target):
+	#TODO: Check to see if we even need to do this!
+	
 	snapshot = {'condition': 0,
 		'appearance': 0,
 		'visible_items': []}
@@ -54,9 +56,10 @@ def judge(life,target):
 	for limb in target['body']:
 		snapshot['condition'] += lfe.get_limb_condition(target,limb)
 
-		#for item in limb:
-		#	snapshot['appearance'] += get_quality(item)
-		#	snapshot['visible_items].append(item['name'])
+	for item in lfe.get_all_visible_items(target):
+		print 'Saw item'
+		#snapshot['appearance'] += get_quality(item)
+		snapshot['visible_items'].append(str(item))
 
 	update_snapshot(life,target['id'],snapshot)
 

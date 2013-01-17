@@ -198,6 +198,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['asleep'] = 0
 	_life['blood'] = 600
 	_life['dead'] = False
+	_life['snapshot_sum'] = ''
 	
 	#ALife
 	_life['know'] = {}
@@ -572,6 +573,9 @@ def remove_item_from_limb(body,item,limb):
 def get_all_storage(life):
 	"""Returns list of all containers in a character's inventory."""
 	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
+
+def get_all_visible_items(life):
+	return [limb['holding'] for limb in [life['body'][limb] for limb in life['body']] if limb['holding']]
 
 def can_see(life,pos):
 	"""Returns `true` if the life can see a certain position."""
