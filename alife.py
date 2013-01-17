@@ -104,7 +104,8 @@ def combat(life,target):
 	life['path'] = pathfinding.path_from_dijkstra(life['pos'],_escape)
 	#numbers.draw_dijkstra(_escape)
 	
-	lfe.walk_path(life)
+	lfe.clear_actions(life)
+	lfe.add_action(life,{'action': 'move','to': life['path'][len(life['path'])-1]},200)
 
 def understand(life):
 	_target = {'who': None,'score': -10000}

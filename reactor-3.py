@@ -777,6 +777,7 @@ _i5 = items.create_item('leather backpack')
 _i6 = items.create_item('blue jeans')
 _i7 = items.create_item('glock')
 _i8 = items.create_item('9x19mm magazine')
+_i9 = items.create_item('sneakers')
 
 items.move(_i4,0,1)
 
@@ -787,6 +788,7 @@ life.add_item_to_inventory(PLAYER,_i5)
 life.add_item_to_inventory(PLAYER,_i6)
 life.add_item_to_inventory(PLAYER,_i7)
 life.add_item_to_inventory(PLAYER,_i8)
+life.add_item_to_inventory(_test,_i9)
 
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
