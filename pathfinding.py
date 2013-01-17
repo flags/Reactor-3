@@ -252,13 +252,13 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 				if downhill:
 					if _score < _next_pos['score']:
 						_next_pos['score'] = _score
-						_next_pos['pos'] = (_x,_y,_s_pos[2])
+						_next_pos['pos'] = (_x,_y,0)
 					
 					continue
 				
 				if _score > _next_pos['score']:
 					_next_pos['score'] = _score
-					_next_pos['pos'] = (_x,_y,_s_pos[2])
+					_next_pos['pos'] = (_x,_y,0)
 		
 		if _path and _path[len(_path)-1] == _next_pos['pos']:
 			return _path

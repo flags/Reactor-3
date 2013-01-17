@@ -27,7 +27,7 @@ def direction_to(pos1,pos2):
 	
 	return theta * (180/pi)
 	
-def create_dijkstra_map(center,source_map,size=(100,100),calculate=None,**kvargs):
+def create_dijkstra_map(center,source_map,size=(50,50),calculate=None,**kvargs):
 	_map = []
 	
 	_min_x = clip(center[0]-(size[0]/2),0,MAP_SIZE[0])
@@ -58,7 +58,7 @@ def create_dijkstra_map(center,source_map,size=(100,100),calculate=None,**kvargs
 		
 		_map.append(_col)
 	
-	#logging.info('Dijkstra map took: %s, size %s,%s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y)))
+	logging.info('Dijkstra map took: %s, size %s,%s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y)))
 	
 	return {'map': _map,
 		'x_range': (_min_x,_max_x),

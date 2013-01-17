@@ -84,15 +84,17 @@ def judge(life,target):
 
 #TODO: Move to `life.py`?
 def calculate_situation_danger(pos,**kvargs):
-	_distance = numbers.distance(pos,kvargs['target']['life']['pos'])+1
+	#if not lfe.can_see(kvargs['target']['life'],pos):
+	#	return 0
+	
+	_distance = numbers.distance(pos,kvargs['target']['life']['pos'])
 	
 	#TODO: (WEAPON_ACCURACY_TO_POSITION/BASE_WEAPON_ACCURACY)
 	_distance_mod = 100/100
-	
-	return _distance#kvargs['target']['score']*(_distance*_distance_mod)
+	 
+	return kvargs['target']['score']*(_distance*_distance_mod)
 
 def combat(life,target):
-	#logging.info('Combat!')
 	_escape = numbers.create_dijkstra_map(target['life']['pos'],
 		life['map'],
 		calculate=calculate_situation_danger,

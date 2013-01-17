@@ -13,6 +13,12 @@ import time
 import json
 import os
 
+try:
+	import render_los
+	CYTHON_RENDER_LOS = True
+except:
+	CYTHON_RENDER_LOS = False
+
 def load_life(life):
 	with open(os.path.join(LIFE_DIR,life+'.json'),'r') as e:
 		return json.loads(''.join(e.readlines()))
@@ -566,7 +572,15 @@ def get_all_storage(life):
 
 def can_see(life,pos):
 	"""Returns `true` if the life can see a certain position."""
-	for pos in drawing.diag_line(life['pos'],pos):
+	if CYTHON_RENDER_LOS:
+		_line = render_los.draw_line(life['pos'][0],
+			life['pos'][1],
+			pos[0],
+			pos[1])
+	else:
+		_line = drawing.diag_line(life['pos'],pos)
+	
+	for pos in _line:
 		_x = pos[0]-CAMERA_POS[0]
 		_y = pos[1]-CAMERA_POS[1]
 		

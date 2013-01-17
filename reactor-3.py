@@ -800,7 +800,7 @@ while RUNNING:
 	handle_input()
 	_played_moved = False
 	
-	print _test['pos']
+	#print _test['pos']
 
 	while life.get_highest_action(PLAYER):
 		tick_all_objects()
