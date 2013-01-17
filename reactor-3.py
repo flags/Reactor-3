@@ -825,10 +825,10 @@ while RUNNING:
 	maps.render_lights()
 	items.draw_items()
 	bullets.draw_bullets()
-	move_camera(_test['pos'])
+	move_camera(PLAYER['pos'])
 	life.draw_life()
 	
-	maps._render_los(MAP,_test['pos'],cython=CYTHON_ENABLED)
+	maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	if PLAYER['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

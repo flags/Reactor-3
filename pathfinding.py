@@ -229,7 +229,7 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 			_x = (_s_pos[0]+x1)
 			x = (_s_pos[0]-dijkstra['x_range'][0])+x1
 			
-			if dijkstra['x_range'][0]>=x or x>=dijkstra['x_range'][1]:
+			if dijkstra['x_range'][0]>=x or x>=len(dijkstra['map']):
 				continue
 			
 			for y1 in range(-1,2):
@@ -239,11 +239,11 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 				_y = (_s_pos[1]+y1)
 				y = (_s_pos[1]-dijkstra['y_range'][0])+y1
 				
-				if dijkstra['y_range'][0]>=y or y>=dijkstra['y_range'][1]:
+				if dijkstra['y_range'][0]>y or y>=len(dijkstra['map'][0]):
 					continue
 				
-				#print 'x',dijkstra['x_range'][0],dijkstra['x_range'][1]
-				#print 'y',y,dijkstra['y_range'][1]
+				#print 'x',x,dijkstra['x_range'],
+				#print 'y',y,dijkstra['y_range']
 				if dijkstra['map'][x][y]==-1:
 					continue
 				
