@@ -3,6 +3,7 @@ import graphics as gfx
 import numbers
 import bullets
 import random
+import items
 
 random.seed()
 
@@ -36,8 +37,12 @@ def fire(life,target):
 		direction = numbers.direction_to(life['pos'],target)
 		direction += random.randint(-13,10)
 		
-		bullets.create_bullet(life['pos'],direction,5,life)
-		_feed['rounds'].pop()
+		#TODO: Clean this up...
+		#bullets.create_bullet(life['pos'],direction,5,life)
+		_bullet = _feed['rounds'].pop()
+		_bullet['owner'] = life['id']
+		del _bullet['parent']
+		items.move(_bullet,direction,5)
 	
 	if _ooa:
 		if 'player' in life:

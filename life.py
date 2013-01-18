@@ -252,9 +252,8 @@ def walk_path(life):
 		
 		if _pos[2] and abs(_pos[2])-1:
 			if _pos[2]>0:
-				logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
+				#logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
 				life['pos'][2] += _pos[2]-1
-				print 'Changing z-level, bitch!'
 			
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
@@ -515,6 +514,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
+		_action['round']['parent'] = _action['ammo']
 		_round = remove_item_from_inventory(life,_action['round']['id'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:

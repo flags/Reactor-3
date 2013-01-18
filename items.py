@@ -1,5 +1,6 @@
 from globals import *
 import graphics as gfx
+import drawing
 import logging
 import numbers
 
@@ -150,19 +151,75 @@ def draw_items():
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
 def tick_all_items(MAP):
+	_remove = []
+	
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
+		if item['velocity'] == [0,0,0]:
+			continue
+		
+		print item['pos'],item['velocity']
+		
+		item['realpos'][0] += item['velocity'][0]
+		item['realpos'][1] += item['velocity'][1]
+		_break = False
+		
+		for pos in drawing.diag_line(item['pos'],(int(item['realpos'][0]),int(item['realpos'][1]))):
+			item['realpos'][2] += item['velocity'][2]
+			item['velocity'][2] -= item['gravity']
+			
+			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
+				_remove.append(item['uid'])
+				break
+			
+			if item['type'] == 'bullet':
+				for _life in LIFE:
+					if _life['id'] == item['owner']:
+						continue
+					
+					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
+						item['pos'] = pos
+						life.damage_from_item(_life,item)
+						_break = True
+						
+						_remove.append(item['uid'])
+						break
+				
+			if _break:
+				break
+			
+			if MAP[pos[0]][pos[1]][int(round(item['realpos'][2]))+1]:
+				item['velocity'][0] = 0
+				item['velocity'][1] = 0
+				item['velocity'][2] = 0
+				item['pos'] = list(pos)
+				
+				_break = True
+				break
+		
+		if _break:
+			continue
+		
+		item['pos'][0] = int(round(item['realpos'][0]))
+		item['pos'][1] = int(round(item['realpos'][1]))
+		item['pos'][2] = int(round(item['realpos'][2]))
+		
+		#TODO: Min/max
+		item['velocity'][0] -= (item['velocity'][0]*item['gravity'])
+		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])
+	
+	for _id in _remove:
+		del ITEMS[_id]
+
+def tick_all_items_old(MAP):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
 		if not item['velocity'].count(0)==3:
 			#if item['velocity'][0]:
 			item['realpos'][0]+=item['velocity'][0]
-				
-			#Friction here if item on ground
-			
 			item['realpos'][1]+=item['velocity'][1]
-				
-			#Friction here if item on ground
-							
 			item['realpos'][2]+=item['velocity'][2]
 			
 			item['velocity'][2] -= item['gravity']
