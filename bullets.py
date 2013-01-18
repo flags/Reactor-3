@@ -44,7 +44,7 @@ def tick_bullets(MAP):
 				
 				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(bullet['realpos'][2])):
 					bullet['pos'] = pos
-					life.damage(_life,bullet)
+					life.damage_from_item(_life,bullet)
 					_break = True
 					
 					BULLETS.remove(bullet)

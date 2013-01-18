@@ -169,6 +169,12 @@ def get_all_limbs(body):
 	
 	return body
 
+def create_and_update_self_snapshot(life):
+	_ss = alife.create_snapshot(life)
+	alife.update_self_snapshot(life,_ss)
+	
+	logging.debug('%s updated their snapshot.' % life['name'][0])
+
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	"""Initiates and returns a deepcopy of a life type."""
 	if not type in LIFE_TYPES:
@@ -198,7 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['asleep'] = 0
 	_life['blood'] = 600
 	_life['dead'] = False
-	_life['snapshot_sum'] = ''
+	_life['snapshot'] = {}
 	
 	#ALife
 	_life['know'] = {}
@@ -566,6 +572,7 @@ def attach_item_to_limb(body,id,limb):
 def remove_item_from_limb(body,item,limb):
 	"""Removes item from limb. Returns True."""
 	body[limb]['holding'].remove(item)
+	create_and_update_self_snapshot(life)
 	logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
@@ -815,6 +822,8 @@ def remove_item_from_inventory(life,id):
 	del life['inventory'][str(item['id'])]
 	del item['id']
 	
+	create_and_update_self_snapshot(life)
+	
 	return item
 
 def _equip_clothing(life,id):
@@ -876,6 +885,8 @@ def equip_item(life,id):
 	
 	if life['speed'] > life['speed_max']:
 		life['speed'] = life['speed_max']
+	
+	create_and_update_self_snapshot(life)
 	
 	return True
 
@@ -1300,6 +1311,8 @@ def damage_from_fall(life,dist):
 	else:
 		return False
 	
+	create_and_update_self_snapshot(life)
+	
 	return True
 
 def damage_from_item(life,item):
@@ -1311,8 +1324,14 @@ def damage_from_item(life,item):
 	
 	life['body']['chest']['condition'] -= _damage
 	
+	create_and_update_self_snapshot(life)
+	
 	if life.has_key('player'):
 		gfx.message('You feel a sudden force against you. (-%s)' % _damage)
+	else:
+		#TODO: This should be filed into the event system for the ALife's memory.
+		#gfx.message('%s rips through %s\'s chest! (-%s)' % (items.get_name(item),life['name'],_damage))
+		pass
 
 def tick_all_life():
 	for life in LIFE:

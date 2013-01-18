@@ -17,7 +17,7 @@ def look(life):
 	life['seen'] = []
 	
 	for ai in LIFE:
-		if ai == life:
+		if ai['id'] == life['id']:
 			continue
 		
 		if numbers.distance(life['pos'],ai['pos']) > 30:
@@ -37,31 +37,43 @@ def look(life):
 		
 		life['know'][str(ai['id'])] = {'life': ai,'score': 0,'snapshot': {}}
 	
-	logging.debug('\tTargets: %s' % (len(life['seen'])))
+	#logging.debug('\tTargets: %s' % (len(life['seen'])))
 
 def hear(life):
 	for event in life['heard']:
 		print event
 
-def update_snapshot(life,id,snapshot):
-	life['know'][str(id)]['snapshot'].update(snapshot)
+def update_self_snapshot(life,snapshot):
+	life['snapshot'] = snapshot
 
-def judge(life,target):
-	#TODO: Check to see if we even need to do this!
+def update_snapshot_of_target(life,target,snapshot):
+	life['know'][str(target['id'])]['snapshot'].update(snapshot)
 	
-	snapshot = {'condition': 0,
+	logging.debug('%s updated their snapshot of %s.' % (life['name'][0],target['name'][0]))
+
+def create_snapshot(life):
+	_snapshot = {'condition': 0,
 		'appearance': 0,
 		'visible_items': []}
 
-	for limb in target['body']:
-		snapshot['condition'] += lfe.get_limb_condition(target,limb)
+	for limb in life['body']:
+		_snapshot['condition'] += lfe.get_limb_condition(life,limb)
 
-	for item in lfe.get_all_visible_items(target):
-		print 'Saw item'
+	for item in lfe.get_all_visible_items(life):
 		#snapshot['appearance'] += get_quality(item)
-		snapshot['visible_items'].append(str(item))
+		_snapshot['visible_items'].append(str(item))
+	
+	return _snapshot
 
-	update_snapshot(life,target['id'],snapshot)
+def judge(life,target):
+	return 0
+
+def process_snapshot(life,target):
+	if life['know'][str(target['id'])]['snapshot'] == target['snapshot']:
+		return False
+	
+	_ss = create_snapshot(target)
+	update_snapshot_of_target(life,target,_ss)
 
 def judge_combat(life,target):
 	_like = 0
@@ -137,6 +149,8 @@ def understand(life):
 	for entry in life['seen']:
 		target = life['know'][entry]
 		
+		process_snapshot(life,target['life'])
+		
 		_score = judge(life,target['life'])
 		#if not target['score'] == _score:
 		#	logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
@@ -152,13 +166,13 @@ def understand(life):
 		return False
 	
 	#TODO: Life should use all stats instead of the judge function
-	if _target['score'] <= judge(life,life):
-		combat(life,_target['who'])
+	#if _target['score'] <= judge(life,life):
+	#	combat(life,_target['who'])
 
 def think(life):
-	logging.debug('*THINKING*')
-	logging.debug('Look:')
+	#logging.debug('*THINKING*')
+	#logging.debug('Look:')
 	look(life)
 	
-	logging.debug('Understand:')
+	#logging.debug('Understand:')
 	understand(life)
