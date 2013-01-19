@@ -2,6 +2,7 @@
 #Easily recalcuate map
 
 from numbers import *
+import numbers
 import numpy
 import maps
 
@@ -54,6 +55,11 @@ def generate_dijkstra_map(dijkstra):
 	_map = dijkstra['map']
 	_orig_map = None
 	
+	if 'inverted' in dijkstra:
+		_starting_lowest = -9000
+	else:
+		_starting_lowest = 9000
+	
 	while 1:
 		#print 'running'
 		_orig_map = _map.copy()
@@ -63,7 +69,7 @@ def generate_dijkstra_map(dijkstra):
 				if (_x,_y) in _target_positions or (_x,_y) in dijkstra['ignore']:
 					continue
 				
-				_lowest_score = 9000
+				_lowest_score = _starting_lowest
 				
 				for x_mod in range(-1,2):
 					_map_x_pos = (_x-_min_x)+x_mod
@@ -80,14 +86,41 @@ def generate_dijkstra_map(dijkstra):
 						if 0>_map_y_pos or _map_y_pos>=_map.shape[0]-2:	
 							continue
 						
-						if _orig_map[_y-_min_y,_x-_min_x]-_orig_map[_map_y_pos,_map_x_pos]>=2:
-							_lowest_score = _orig_map[_map_y_pos,_map_x_pos]+1
+						if _starting_lowest == 9000:
+							#print _orig_map[_y-_min_y,_x-_min_x]-_orig_map[_map_y_pos,_map_x_pos]
+							if _orig_map[_y-_min_y,_x-_min_x]-_orig_map[_map_y_pos,_map_x_pos]>=2:
+								_lowest_score = _orig_map[_map_y_pos,_map_x_pos]+1
+						else:
+							#print _orig_map[_y-_min_y,_x-_min_x]-_orig_map[_map_y_pos,_map_x_pos]
+							if _orig_map[_y-_min_y,_x-_min_x]-_orig_map[_map_y_pos,_map_x_pos]>=2:
+								_lowest_score = _orig_map[_map_y_pos,_map_x_pos]+1
 				
-				if _lowest_score < 9000:
-					_map[_y-_min_y,_x-_min_x] = _lowest_score
+				if _starting_lowest == 9000:
+					if _lowest_score < 9000:
+						_map[_y-_min_y,_x-_min_x] = _lowest_score
+				else:
+					if _lowest_score > -9000:
+						_map[_y-_min_y,_x-_min_x] = -_lowest_score
 				
 		if numpy.array_equal(_map,_orig_map):
 			break
+
+def invert_dijkstra_map(dijkstra):
+	_min_x,_max_x = dijkstra['x_range']
+	_min_y,_max_y = dijkstra['y_range']
+	
+	#for _x in range(_min_x,_max_x):
+	#	for _y in range(_min_y,_max_y):				
+	#		if(_x,_y) in dijkstra['ignore']:
+	#			continue
+			
+	dijkstra['map'] *= -1.2
+	
+	#draw_dijkstra(dijkstra)
+	
+	dijkstra['inverted'] = True
+	
+	generate_dijkstra_map(dijkstra)
 
 def draw_dijkstra(dijkstra):
 	for _y in range(dijkstra['y_range'][0],dijkstra['y_range'][1]):
@@ -101,7 +134,7 @@ def draw_dijkstra(dijkstra):
 				continue
 			#else:
 			#	print '.',
-			print int(dijkstra['map'][y,x]),
+			print numbers.clip(abs(int(dijkstra['map'][y,x])),0,9),
 		
 		print
 
@@ -110,7 +143,8 @@ if __name__ == "__main__":
 	MAP = maps.load_map('map1.dat')
 	_a = create_dijkstra_map((50,25,2),MAP,_targets)
 	generate_dijkstra_map(_a)
-	#_a = create_flee_map(_a)
+	draw_dijkstra(_a)
+	invert_dijkstra_map(_a)
 	#_path = pathfinding.path_from_dijkstra((46,28,2),_a,downhill=True)
 	#print _path
 	draw_dijkstra(_a)
