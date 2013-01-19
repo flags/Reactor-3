@@ -40,7 +40,6 @@ def create_dijkstra_map(center,source_map,targets):
 		'ignore': _ignore,
 		'targets': targets}
 	
-	#center,source_map,targets,size=(50,50),flee=False,**kvargs
 	return _dijkstra
 
 def generate_dijkstra_map(dijkstra):
