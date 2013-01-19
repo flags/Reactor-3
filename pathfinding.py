@@ -220,7 +220,11 @@ class astar:
 
 def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	_s_pos = start_position[:]
-	_next_pos = {'pos': None,'score': 0}
+	
+	if downhill:
+		_next_pos = {'pos': None,'score': 0}
+	else:
+		_next_pos = {'pos': None,'score': -9000}
 	
 	_path = []
 	
@@ -229,7 +233,7 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 			_x = (_s_pos[0]+x1)
 			x = (_s_pos[0]-dijkstra['x_range'][0])+x1
 			
-			if dijkstra['x_range'][0]>=x or x>=len(dijkstra['map']):
+			if 0>x or x>=dijkstra['x_range'][1]:
 				continue
 			
 			for y1 in range(-1,2):
@@ -239,18 +243,18 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 				_y = (_s_pos[1]+y1)
 				y = (_s_pos[1]-dijkstra['y_range'][0])+y1
 				
-				if dijkstra['y_range'][0]>y or y>=len(dijkstra['map'][0]):
+				if 0>y or y>=dijkstra['y_range'][1]:
 					continue
 				
 				#print 'x',x,dijkstra['x_range'],
 				#print 'y',y,dijkstra['y_range']
-				if dijkstra['map'][x][y]==-1:
+				if dijkstra['map'][y,x]==-1:
 					continue
 				
-				_score = dijkstra['map'][x][y]
+				_score = dijkstra['map'][y,x]
 				
 				if downhill:
-					if _score < _next_pos['score']:
+					if _score <= _next_pos['score'] and not (_x,_y,0) in _path:
 						_next_pos['score'] = _score
 						_next_pos['pos'] = (_x,_y,0)
 					
