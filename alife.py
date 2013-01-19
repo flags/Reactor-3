@@ -65,17 +65,17 @@ def create_snapshot(life):
 	
 	return _snapshot
 
-def judge(life,target):
-	return 0
-
 def process_snapshot(life,target):
 	if life['know'][str(target['id'])]['snapshot'] == target['snapshot']:
 		return False
 	
-	_ss = create_snapshot(target)
+	_ss = target['snapshot'].copy()
+	
 	update_snapshot_of_target(life,target,_ss)
+	
+	return True
 
-def judge_combat(life,target):
+def judge(life,target):
 	_like = 0
 	_dislike = 0
 	
@@ -111,7 +111,6 @@ def judge_combat(life,target):
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
 	#TODO: Added "scared by", so a fear of guns would subtract from
-	logging.debug('%s judged %s with score %s.' % (life['name'][0],target['name'][0],_like-_dislike))
 	
 	return _like-_dislike
 
@@ -149,13 +148,13 @@ def understand(life):
 	for entry in life['seen']:
 		target = life['know'][entry]
 		
-		process_snapshot(life,target['life'])
+		_score = target['score']
 		
-		_score = judge(life,target['life'])
-		#if not target['score'] == _score:
-		#	logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
-		
-		target['score'] = _score
+		_stime = time.time()
+		if process_snapshot(life,target['life']):
+			_score = judge(life,target['life'])
+			
+			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
 		if _score > _target['score']:
 			_target['who'] = target
@@ -166,8 +165,8 @@ def understand(life):
 		return False
 	
 	#TODO: Life should use all stats instead of the judge function
-	#if _target['score'] <= judge(life,life):
-	#	combat(life,_target['who'])
+	if _target['score'] <= judge(life,life):
+		combat(life,_target['who'])
 
 def think(life):
 	#logging.debug('*THINKING*')

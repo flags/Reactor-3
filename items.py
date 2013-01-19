@@ -159,8 +159,6 @@ def tick_all_items(MAP):
 		if item['velocity'] == [0,0,0]:
 			continue
 		
-		print item['pos'],item['velocity']
-		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
 		_break = False
@@ -194,6 +192,7 @@ def tick_all_items(MAP):
 				item['velocity'][1] = 0
 				item['velocity'][2] = 0
 				item['pos'] = list(pos)
+				
 				
 				_break = True
 				break
