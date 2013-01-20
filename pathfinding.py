@@ -8,13 +8,10 @@ import time
 import sys
 
 class astar:
-	def __init__(self,start=None,end=None,omap=None,size=None,goals=None,dij=False,inverted=False):
+	def __init__(self,start=None,end=None,omap=None,size=None):
 		self.map = []
 		self.omap = omap
 		self.size = size
-		self.dij = dij
-		self.goals = goals
-		self.inverted = inverted
 
 		if not self.dij:
 			self.start = tuple(start)
@@ -28,6 +25,7 @@ class astar:
 
 		self.clist = []
 		
+		_s = time.time()
 		#Let's make a few of these
 		self.fmap = []
 		self.gmap = []
@@ -40,7 +38,9 @@ class astar:
 			self.hmap.append([0] * self.size[1])
 			self.pmap.append([0] * self.size[1])
 			self.tmap.append([0] * self.size[1])
-			
+		
+		print time.time()-_s
+		
 		#Create our map
 		self.map = numpy.ones((self.size[1],self.size[0]))
 		
