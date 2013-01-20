@@ -1,5 +1,6 @@
 from copy import deepcopy
 from globals import *
+import numbers
 import logging
 import numpy
 import tiles
@@ -220,11 +221,72 @@ class astar:
 
 def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	_s_pos = start_position[:]
+	_path = []
 	
 	if downhill:
-		_next_pos = {'pos': None,'score': 0}
+		_next = {'pos': [],'score': 9000}
 	else:
-		_next_pos = {'pos': None,'score': -9000}
+		_next = {'pos': [],'score': 0}
+	
+	while 1:
+		for x1 in range(-1,2):
+			_x = (_s_pos[0]+x1)
+			x = (_s_pos[0]-dijkstra['x_range'][0])+x1
+			
+			if 0>x or x>=dijkstra['x_range'][1]:
+				continue
+			
+			for y1 in range(-1,2):
+				if (x1,y1) == (0,0):
+					continue
+				
+				_y = (_s_pos[1]+y1)
+				y = (_s_pos[1]-dijkstra['y_range'][0])+y1
+				
+				if 0>y or y>=dijkstra['y_range'][1]:
+					continue
+				
+				if (x,y) in dijkstra['ignore']:
+					continue
+				
+				_dist = numbers.distance(_s_pos,(_x,_y))
+				_score = dijkstra['map'][y,x]#*_dist
+				#print _score
+				
+				if downhill:
+					if _score <= _next['score']:
+						_next['score'] = _score
+						_next['pos'] = (_x,_y,0)
+				else:
+					#print _score,_next['score']
+					if _score >= _next['score']:
+						_next['score'] = _score
+						_next['pos'] = (_x,_y,0)
+		
+		if _path and _path[len(_path)-1] == _next['pos']:
+			return _path
+		
+		elif _next['score']<=0:
+			return _path
+		
+		elif _next['pos']:
+			if len(_path)>=2 and _next['pos'] == _path[len(_path)-2]:
+				return _path
+			
+			_path.append(_next['pos'])
+			_s_pos = _path[len(_path)-1][:]
+		
+		else:
+			logging.info('No path found!')
+			return _path
+
+def path_from_dijkstra_old(start_position,dijkstra,downhill=False):
+	_s_pos = start_position[:]
+	
+	if downhill:
+		_next_pos = {'pos': [],'score': 9000}
+	else:
+		_next_pos = {'pos': [],'score': -9000}
 	
 	_path = []
 	
@@ -248,29 +310,45 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 				
 				#print 'x',x,dijkstra['x_range'],
 				#print 'y',y,dijkstra['y_range']
-				if dijkstra['map'][y,x]==-1:
+				if (x,y) in dijkstra['ignore']:
 					continue
 				
 				_score = dijkstra['map'][y,x]
 				
 				if downhill:
-					if _score <= _next_pos['score'] and not (_x,_y,0) in _path:
-						_next_pos['score'] = _score
-						_next_pos['pos'] = (_x,_y,0)
+					if _score < _next_pos['score'] and not (_x,_y,0) in _path:
+						if _score == _next_pos['score']:
+							_next_pos['pos'].append((_x,_y,0))
+						else:
+							_next_pos['score'] = _score
+							_next_pos['pos'] = [(_x,_y,0)]
 					
 					continue
 				
-				if _score > _next_pos['score']:
-					_next_pos['score'] = _score
-					_next_pos['pos'] = (_x,_y,0)
+				if _score >= _next_pos['score'] and not (_x,_y,0) in _path:
+					if _score == _next_pos['score']:
+						_next_pos['pos'].append((_x,_y,0))
+					else:
+						_next_pos['score'] = _score
+						_next_pos['pos'] = [(_x,_y,0)]
 		
+		#TODO: Tear this apart if we need to...
 		if _path and _path[len(_path)-1] == _next_pos['pos']:
 			return _path
-		elif _next_pos['pos']:
-			if len(_path)>=2 and _next_pos['pos'] == _path[len(_path)-2]:
+		elif _next_pos['pos']:			
+			_winning_pos = {'pos': None,'score': 3}
+			for pos in _next_pos['pos']:
+				_dist = numbers.distance(_s_pos,pos)
+				if _dist < _winning_pos['score']:
+					_winning_pos['pos'] = pos
+					_winning_pos['score'] = _dist
+			
+			_next_pos['pos'] = []
+			
+			if len(_path)>=2 and _winning_pos['pos'] == _path[len(_path)-2]:
 				return _path
 			
-			_path.append(_next_pos['pos'])
+			_path.append(_winning_pos['pos'])
 			_s_pos = _path[len(_path)-1][:]
 		else:
 			logging.info('No path found!')

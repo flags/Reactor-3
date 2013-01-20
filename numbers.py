@@ -64,6 +64,9 @@ def calculate_dijkstra_map(dijkstra):
 						continue
 					
 					for y1 in range(-1,2):
+						#if (x1,y1) in [(-1,-1),(1,-1),(-1,1),(1,1)]:
+						#	continue
+						
 						y = _y+y1
 						
 						if 0>y or y>=_max_y or (x1,y1) == (0,0) or _orig_map[y-_min_y,x-_min_x] == -1:
@@ -168,9 +171,9 @@ def create_dijkstra_map(center,source_map,targets,flee=False):
 if __name__ == "__main__":
 	_targets = [{'position': (45,30),'score': 50}]
 	MAP = maps.load_map('map1.dat')
-	_a = create_dijkstra_map((45,15,2),MAP,_targets,flee=True)
+	_a = create_dijkstra_map((40,15,2),MAP,_targets,flee=True)
 	#_a = create_flee_map(_a)
-	_path = pathfinding.path_from_dijkstra((46,28,2),_a,downhill=True)
+	_path = pathfinding.path_from_dijkstra((45,30,2),_a,downhill=True)
 	print _path
 	draw_dijkstra(_a,_path)
 
