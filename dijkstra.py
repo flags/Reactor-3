@@ -85,7 +85,10 @@ def generate_dijkstra_map(dijkstra):
 						if (x_mod,y_mod) == (0,0) or (_xx,_yy) in dijkstra['ignore']:
 							continue
 						
-						_dist = numbers.distance((_x,_y),(_xx,_yy))
+						if (x_mod,y_mod) in [(-1,-1),(1,-1),(-1,1),(-1,1)]:
+							continue
+						
+						_dist = 1#numbers.distance((_x,_y),(_xx,_yy))
 						
 						_map_y_pos = (_real_y)+y_mod
 						
@@ -167,8 +170,8 @@ def _main():
 	print time.time()-_stime
 	draw_dijkstra(_a)
 	
-	_path = pathfinding.path_from_dijkstra((44,26,2),_a,downhill=False)
-	#draw_dijkstra(_a,path=_path)
+	_path = pathfinding.path_from_dijkstra((43,30,2),_a,downhill=False)
+	draw_dijkstra(_a,path=_path)
 
 _main()
 #cProfile.run('_main()','profile.dat')

@@ -60,3 +60,18 @@ A rundown of the ALife's condition is performed, but only in situations where it
 			snapshot['visible_items].append(item['name'])
 	
 	update_snapshot(life,target['id'],snapshot)
+
+Part 2: Pathfinding
+-------------------
+Regardless of how complicated the rest of the ALife becomes, pathfinding will almost always be the biggest
+bottleneck. This is due to the way most algorithms react when handed a larger map to parse, and since the
+level size for most Reactor 3 maps will be much, much larger than 1000x1000, certain precautions must taken.
+
+Consider the following needs for different pathing types:
+
+* The most intense pathfinding will done in combat when using cover mechanics or fleeing from an opponent
+* An algorithm must take path costs similar to the dijkstra approach (which does not work due to map size)
+* When the ALife is not in combat, straight lines can be used to path
+
+Algorithm 1: Weighted A*
+

@@ -233,11 +233,12 @@ def walk(life,to):
 	
 	_dest = path_dest(life)
 	
-	if not _dest == tuple(to):
-		#_stime = time.time()
+	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
+		print _dest,tuple(to)
+		_stime = time.time()
 		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
 		life['path'] = _path.find_path(life['pos'])
-		#print time.time()-_stime
+		print time.time()-_stime
 		pass
 	
 	return walk_path(life)

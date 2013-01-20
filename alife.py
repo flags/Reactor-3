@@ -128,19 +128,20 @@ def calculate_situation_danger(pos,**kvargs):
 	return kvargs['target']['score']*(_distance*_distance_mod)
 
 def combat(life,target):
-	_escape = numbers.create_dijkstra_map(target['life']['pos'],
-		life['map'],
-		calculate=calculate_situation_danger,
-		life=life,
-		target=target)
+	#_escape = numbers.create_dijkstra_map(target['life']['pos'],
+	#	life['map'],
+	#	calculate=calculate_situation_danger,
+	#	life=life,
+	#	target=target)
 	
 	#SETTINGS['heatmap'] = _escape
 	
-	life['path'] = pathfinding.path_from_dijkstra(life['pos'],_escape)
+	#life['path'] = pathfinding.path_from_dijkstra(life['pos'],_escape)
 	#numbers.draw_dijkstra(_escape)
 	
 	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': life['path'][len(life['path'])-1]},200)
+	#lfe.add_action(life,{'action': 'move','to': life['path'][len(life['path'])-1]},200)
+	lfe.add_action(life,{'action': 'move','to': [25,25]},200)
 
 def understand(life):
 	_target = {'who': None,'score': -10000}
