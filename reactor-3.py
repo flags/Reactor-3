@@ -747,7 +747,7 @@ def return_to_inventory(entry):
 
 def tick_all_objects():
 	items.tick_all_items(MAP)
-	life.tick_all_life()
+	life.tick_all_life(MAP)
 	bullets.tick_bullets(MAP)
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
@@ -756,8 +756,8 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
-_test = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[10,10,2])
-PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[0,1,2])
+_test = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[20,10,2])
+PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[15,5,2])
 PLAYER['player'] = True
 
 items.initiate_item('white_shirt')
@@ -828,7 +828,7 @@ while RUNNING:
 	move_camera(PLAYER['pos'])
 	life.draw_life()
 	
-	maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
+	LOS_BUFFER[0] = maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	if PLAYER['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

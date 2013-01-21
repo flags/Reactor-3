@@ -13,7 +13,7 @@ def draw_circle(x,y,size):
 	cdef int center_y=(height/2)
 	cdef int i,j
 	
-	_circle = []
+	_circle = []#[(x+j,y+i)]
 
 	for i in range(height):
 		for j in range(width+1):
@@ -76,20 +76,21 @@ def draw_line(x1,y1,x2,y2):
 	
 	return path
 
-def render_los(map,position):
-	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def render_los(map,position,top_left=CAMERA_POS):
+	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	cdef int pos1[2]
 	cdef int _dark = 0
 	cdef int _x,_y
-	cdef int X_CAMERA_POS = CAMERA_POS[0]
-	cdef int Y_CAMERA_POS = CAMERA_POS[1]
+	cdef int X_CAMERA_POS = top_left[0]
+	cdef int Y_CAMERA_POS = top_left[1]
 	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
 	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
 	cdef int POSITION[2]
 	POSITION[0] = position[0]
 	POSITION[1] = position[1]
 	
+	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
 	for _pos in draw_circle(POSITION[0],POSITION[1],30):
 
@@ -104,11 +105,13 @@ def render_los(map,position):
 			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
 				if not _dark:
 					_dark = 1
-					LOS_BUFFER[0][_y,_x] = 1
+					los_buffer[_y,_x] = 1
 					
 					continue
 				
 			if _dark:
 				continue
 
-			LOS_BUFFER[0][_y,_x] = 1
+			los_buffer[_y,_x] = 1
+	
+	return los_buffer

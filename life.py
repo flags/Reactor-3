@@ -205,6 +205,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['blood'] = 600
 	_life['dead'] = False
 	_life['snapshot'] = {}
+	_life['in_combat'] = False
 	
 	#ALife
 	_life['know'] = {}
@@ -234,11 +235,9 @@ def walk(life,to):
 	_dest = path_dest(life)
 	
 	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
-		print _dest,tuple(to)
 		_stime = time.time()
-		_path = pathfinding.astar(start=life['pos'],end=to,size=MAP_SIZE,omap=life['map'])
-		life['path'] = _path.find_path(life['pos'])
-		print time.time()-_stime
+		life['path'] = pathfinding.create_path(life['pos'],to,source_map=life['map'])
+		print '\ttotal',time.time()-_stime
 		pass
 	
 	return walk_path(life)
@@ -264,8 +263,8 @@ def walk_path(life):
 		else:
 			return True
 	else:
-		print 'here?'
-		return False
+		#TODO: Collision with wall
+		return True
 
 def perform_collisions(life):
 	"""Performs gravity. Returns True if falling."""
@@ -534,7 +533,7 @@ def kill(life,how):
 	
 	life['dead'] = True
 
-def tick(life):
+def tick(life,source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 	if life['dead']:
 		return False
@@ -559,7 +558,7 @@ def tick(life):
 	perform_collisions(life)
 	
 	if not 'player' in life:
-		alife.think(life)
+		alife.think(life,source_map)
 	
 	perform_action(life)
 
@@ -1334,6 +1333,6 @@ def damage_from_item(life,item):
 		#gfx.message('%s rips through %s\'s chest! (-%s)' % (items.get_name(item),life['name'],_damage))
 		pass
 
-def tick_all_life():
+def tick_all_life(source_map):
 	for life in LIFE:
-		tick(life)
+		tick(life,source_map)

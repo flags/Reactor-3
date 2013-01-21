@@ -9,8 +9,10 @@
 from globals import *
 import life as lfe
 import pathfinding
+import render_los
 import logging
 import numbers
+import maps
 import time
 
 def look(life):
@@ -127,23 +129,59 @@ def calculate_situation_danger(pos,**kvargs):
 	 
 	return kvargs['target']['score']*(_distance*_distance_mod)
 
-def combat(life,target):
-	#_escape = numbers.create_dijkstra_map(target['life']['pos'],
-	#	life['map'],
-	#	calculate=calculate_situation_danger,
-	#	life=life,
-	#	target=target)
+def combat(life,target,source_map):	
+	#For the purposes of this test, we'll be assuming the ALife is fleeing from
+	#the target.
+	#Step 1: Locate cover
+	_cover = {'pos': None,'score':9000}
 	
-	#SETTINGS['heatmap'] = _escape
+	#What can the target see?
+	#TODO: Unchecked Cython flag
+	_a = time.time()
+	_top_left = (target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),
+		target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2))
+	target_los = render_los.render_los(source_map,target['life']['pos'],top_left=_top_left)
 	
-	#life['path'] = pathfinding.path_from_dijkstra(life['pos'],_escape)
-	#numbers.draw_dijkstra(_escape)
+	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
+		x = pos[0]-_top_left[0]
+		y = pos[1]-_top_left[1]
+				
+		if x<0 or y<0:
+			continue
+		
+		if pos[0]<0 or pos[1]<0 or (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
+			continue
+		
+		if x>=target_los.shape[1] or y>=target_los.shape[0]:
+			continue
+		
+		if source_map[pos[0]][pos[1]][target['life']['pos'][2]+1]:# and source_map[pos[0]][pos[1]][target['life']['pos'][2]+2]:
+			continue
+		
+		if not target_los[y,x]:
+			#TODO: Additional scores, like distance from target
+			_dist = numbers.distance(life['pos'],pos)
+			
+			if _dist<_cover['score']:
+				_cover['score'] = _dist
+				#print life['pos'],pos
+				_cover['pos'] = list(pos)
+	
+	#print _cover
+	
+	print 'hide time',time.time()-_a
+	
+	if not _cover['pos']:
+		print 'Nowhere to hide'
+		return False
+	
+	#print _cover['pos']
 	
 	lfe.clear_actions(life)
 	#lfe.add_action(life,{'action': 'move','to': life['path'][len(life['path'])-1]},200)
-	lfe.add_action(life,{'action': 'move','to': [25,25]},200)
+	lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
 
-def understand(life):
+def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
 	
 	for entry in life['seen']:
@@ -166,13 +204,16 @@ def understand(life):
 		return False
 	
 	#TODO: Life should use all stats instead of the judge function
-	if _target['score'] <= judge(life,life):
-		combat(life,_target['who'])
+	if abs(_target['score']) <= abs(judge(life,life)):
+		life['in_combat'] = True
+		combat(life,_target['who'],source_map)
+	else:
+		life['in_combat'] = False
 
-def think(life):
+def think(life,source_map):
 	#logging.debug('*THINKING*')
 	#logging.debug('Look:')
 	look(life)
 	
 	#logging.debug('Understand:')
-	understand(life)
+	understand(life,source_map)

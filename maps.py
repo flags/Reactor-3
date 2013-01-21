@@ -103,12 +103,12 @@ def render_lights():
 
 def _render_los(map,pos,cython=False):
 	if cython:
-		cython_render_los.render_los(map,pos)
+		return cython_render_los.render_los(map,pos)
 	else:
-		render_los(MAP,pos)
+		return render_los(map,pos)
 
-def render_los(map,position):
-	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def render_los(map,position,los_buffer=LOS_BUFFER[0]):
+	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	for pos1 in drawing.draw_circle(position,SETTINGS['los']):
 
@@ -123,14 +123,14 @@ def render_los(map,position):
 			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
 				if not _dark:
 					_dark = True
-					LOS_BUFFER[0][_y,_x] = 1
+					los_buffer[_y,_x] = 1
 					
 					continue
 				
 			if _dark:
 				continue
 
-			LOS_BUFFER[0][_y,_x] = 1
+			los_buffer[_y,_x] = 1
 
 def render_map(map):
 	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]

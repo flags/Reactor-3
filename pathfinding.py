@@ -7,48 +7,52 @@ import tiles
 import time
 import sys
 
-class astar:
-	def __init__(self,start=None,end=None,omap=None,size=None):
+class Astar:
+	def __init__(self,start=None,end=None,omap=None,dist=None):
 		self.map = []
 		self.omap = omap
-		self.size = size
 
-		if not self.dij:
-			self.start = tuple(start)
-			self.end = tuple(end)
-			self.olist = [self.start]
-			self.goals = []
-		else:
-			self.start = (0,0)
-			self.end = tuple(self.goals.pop())
-			self.olist = [self.end]
+		self.start = tuple(start)
+		self.end = tuple(end)
+		self.olist = [self.start]
+		self.goals = []
 
 		self.clist = []
 		
 		_s = time.time()
-		#Let's make a few of these
-		self.fmap = []
-		self.gmap = []
-		self.hmap = []
-		self.pmap = []
-		self.tmap = []
-		for x in range(self.size[0]):
-			self.fmap.append([0] * self.size[1])
-			self.gmap.append([0] * self.size[1])
-			self.hmap.append([0] * self.size[1])
-			self.pmap.append([0] * self.size[1])
-			self.tmap.append([0] * self.size[1])
 		
-		print time.time()-_s
+		if not dist:
+			dist = numbers.distance(start,end)
+		
+		if dist<75:
+			dist=75
+		
+		_x_min = numbers.clip(start[0]-dist,0,MAP_SIZE[0])
+		_x_max = numbers.clip(start[0]+dist,0,MAP_SIZE[0])
+		_y_min = numbers.clip(start[1]-dist,0,MAP_SIZE[1])
+		_y_max = numbers.clip(start[1]+dist,0,MAP_SIZE[1])
+		
+		self.size = (_x_max,_y_max)
+		
+		#Let's make a few of these
+		self.fmap = numpy.zeros((self.size[1],self.size[0]))
+		self.gmap = numpy.zeros((self.size[1],self.size[0]))
+		self.hmap = numpy.zeros((self.size[1],self.size[0]))
+		self.pmap = []
+		self.tmap = numpy.zeros((self.size[1],self.size[0]))
+		for x in range(self.size[0]):
+			self.pmap.append([0] * self.size[1])
 		
 		#Create our map
 		self.map = numpy.ones((self.size[1],self.size[0]))
 		
-		for x in xrange(self.size[0]):
-			for y in xrange(self.size[1]):
+		for _x in xrange(self.size[0]):
+			_map_x_pos = _x+_x_min
+			for _y in xrange(self.size[1]):
+				_map_y_pos = _y+_y_min
 				#Can't walk if there's no ground beneath this position
-				if not self.omap[x][y][self.start[2]]:
-					self.map[y,x] = -2
+				if not self.omap[_map_x_pos][_map_y_pos][self.start[2]]:
+					self.map[_y,_x] = -2
 					
 					#TODO: Will probably need this at some point (for falling risk?)
 					#for i in xrange(1,self.start[2]+1):
@@ -58,22 +62,24 @@ class astar:
 					#		break
 				
 				#But we can climb to this position if there is something to climb on
-				if self.omap[x][y][self.start[2]+1]:
-					self.map[y,x] = 2
+				if self.omap[_map_x_pos][_map_y_pos][self.start[2]+1]:
+					self.map[_y,_x] = 2
 				
 					#Not if there's a tile above the position we'd be climing to!
-					if self.omap[x][y][self.start[2]+2]:
-						self.map[y,x] = 0
+					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
+						self.map[_y,_x] = 0
+		
+		start = (start[0]-_x_min,start[1]-_y_min)
 		
 		#Calculate our starting node
-		if not self.dij:
-			self.hmap[start[0]][start[1]] = (abs(self.start[0]-end[0])+abs(self.start[1]-end[1]))*10
-		else:
-			if self.goals:
-				for goal in self.goals:
-					self.olist.append(goal)
+		self.hmap[start[1],start[0]] = (abs(self.start[0]-end[0])+abs(self.start[1]-end[1]))*10
 		
-		self.fmap[self.start[0]][self.start[1]] = self.hmap[self.start[0]][self.start[1]]
+		self.fmap[self.start[1],self.start[0]] = self.hmap[self.start[1],self.start[0]]
+		
+		#init time 0.00857901573181
+		print 'init time',time.time()-_s
+		
+		self.path = []
 		
 		self.calculate()
 		
@@ -89,11 +95,12 @@ class astar:
 		_hmap = self.hmap
 		_fmap = self.fmap
 		_pmap = self.pmap
+		_stime = time.time()
 		while len(_olist):
 			_olist.remove(node)
 			
 			#Is it the end?
-			if tuple(node) == tuple(self.end) and not self.dij:
+			if tuple(node) == tuple(self.end):
 				_olist = []
 				break
 			
@@ -105,100 +112,80 @@ class astar:
 				if not adj in _olist:
 					#Calculate g score for adj
 					if abs(node[0]-adj[0])+abs(node[1]-adj[1]) == 1:
-						_gmap[adj[0]][adj[1]] = _gmap[node[0]][node[1]]+10
+						_gmap[adj[1],adj[0]] = _gmap[node[1],node[0]]+10
 					else:
-						_gmap[adj[0]][adj[1]] = _gmap[node[0]][node[1]]+14
+						_gmap[adj[1],adj[0]] = _gmap[node[1],node[0]]+14
 					
 					#Calculate h score for adj
-					if not self.dij:
-						_hmap[adj[0]][adj[1]] = (abs(adj[0]-self.end[0])+abs(adj[1]-self.end[1]))*10
-					_fmap[adj[0]][adj[1]] = _gmap[adj[0]][adj[1]]+_hmap[adj[0]][adj[1]]
+					#_hmap[adj[1],adj[0]] = (abs(adj[0]-self.end[0])+abs(adj[1]-self.end[1]))*10
+					
+					xDistance = abs(adj[0]-self.end[0])
+					yDistance = abs(adj[1]-self.end[1])
+					if xDistance > yDistance:
+						 _hmap[adj[1],adj[0]] = 14*yDistance + 10*(xDistance-yDistance)
+					else:
+						 _hmap[adj[1],adj[0]] = 14*xDistance + 10*(yDistance-xDistance)
+					
+					_fmap[adj[1],adj[0]] = _gmap[adj[1],adj[0]]+_hmap[adj[1],adj[0]]
 					_pmap[adj[0]][adj[1]] = node
 					
 					_olist.append(adj)
 				
 			for o in _olist:			
 				#_lowest check
-				if _fmap[o[0]][o[1]] < _lowest['f']:
+				if _fmap[o[1],o[0]] < _lowest['f']:
 					_lowest['pos'] = o
-					_lowest['f'] = _fmap[o[0]][o[1]]
+					_lowest['f'] = _fmap[o[1],o[0]]
 				
 			
 			if _lowest['pos']:
 				node = _lowest['pos']
 		
-		if self.inverted:
-			for y in range(self.size[1]):
-				for x in range(self.size[0]):
-					_fmap[x][y] = _fmap[x][y]*-1
+		#if self.inverted:
+		#	for y in range(self.size[1]):
+		#		for x in range(self.size[0]):
+		#			_fmap[x][y] = _fmap[x][y]*-1
 			
-		if not self.dij: self.find_path(self.start)
+		self.path = self.find_path(self.start)
 		
 		if len(self.path)==1:
 			if abs(self.start[0]-self.path[0][0])+abs(self.start[1]-self.path[0][1])>1:
 				self.path = None
+		
+		#print 'calc time',time.time()-_stime
+	
+	def get_path(self):
+		return self.path
 	
 	def find_path(self,start):
-		if not self.dij:
-			if self.map[self.end[1],self.end[0]] == 0:
-				return [[self.start[0],self.start[1],0]]
-			
-			node = self.pmap[self.end[0]][self.end[1]]
-			self.path = [[self.end[0],self.end[1],int(self.map[self.end[1],self.end[0]])]]
-			
-			_broken = False
-			while not tuple(node) == tuple(start):
-				if not node:
-					_broken = True
-					break
-				else:
-					self.path.insert(0,(node[0],node[1],int(self.map[node[1],node[0]])))
-				
-				self.tmap[node[0]][node[1]] = 1
-				node = self.pmap[node[0]][node[1]]
-			
-			#There's a few ways to fix this...
-			#The issue is that pmap[self.end[0]][self.end[1]]
-			#fails, leading to only self.end being the path.
-			#The only way to REALLY fix this is to track where A*
-			#fails, which we can fix in getadj()
-			#If (_x,_y) is in an array (list of ALife positions), then
-			#we could walk backwards from there...
-			if _broken:
-				print self.end
-				print 'Broken A*!'
-				return self.start
-				
-		else:
-			#Roll downhill
-			node = start
-			self.path = []
-			if self.inverted:
-				moves = var.alife_fleesteps
-				while moves:
-					_lowest = {'pos':None,'f':1}
-					for adj in self.getadj(node,checkclist=False):
-						if self.fmap[adj[0]][adj[1]] < _lowest['f']:
-							_lowest['pos'] = adj
-							_lowest['f'] = self.fmap[adj[0]][adj[1]]
-					
-					if _lowest['pos']:
-						node = _lowest['pos']
-						self.tmap[node[0]][node[1]] = 1
-						self.path.append(node)
-					moves -= 1
+		if self.map[self.end[1],self.end[0]] == 0:
+			return [[self.start[0],self.start[1],0]]
+		
+		node = self.pmap[self.end[0]][self.end[1]]
+		self.path = [[self.end[0],self.end[1],int(self.map[self.end[1],self.end[0]])]]
+		
+		_broken = False
+		while not tuple(node) == tuple(start):
+			if not node:
+				_broken = True
+				break
 			else:
-				while self.fmap[node[0]][node[1]]:
-					_lowest = {'pos':None,'f':9000}
-					for adj in self.getadj(node,checkclist=False):
-						if self.fmap[adj[0]][adj[1]] < _lowest['f']:
-							_lowest['pos'] = adj
-							_lowest['f'] = self.fmap[adj[0]][adj[1]]
-					
-					if _lowest['pos']:
-						node = _lowest['pos']
-						self.tmap[node[0]][node[1]] = 1
-						self.path.append(node)
+				self.path.insert(0,(node[0],node[1],int(self.map[node[1],node[0]])))
+			
+			self.tmap[node[0]][node[1]] = 1
+			node = self.pmap[node[0]][node[1]]
+		
+		#There's a few ways to fix this...
+		#The issue is that pmap[self.end[0]][self.end[1]]
+		#fails, leading to only self.end being the path.
+		#The only way to REALLY fix this is to track where A*
+		#fails, which we can fix in getadj()
+		#If (_x,_y) is in an array (list of ALife positions), then
+		#we could walk backwards from there...
+		if _broken:
+			print self.end
+			print 'Broken A*!'
+			return self.start
 			
 		return self.path
 	
@@ -218,6 +205,23 @@ class astar:
 			adj.append((_x,_y))
 			
 		return adj
+
+def short_path(start,end,source_map):
+	if source_map[end[0]][end[1]][start[2]+1]:
+		if source_map[end[0]][end[1]][start[2]+2]:
+			return [(start[0],start[1],0)]
+		return [(end[0],end[1],2)]
+	
+	#if source_map[end[0]][end[1]][start[2]-1]:
+	return [(end[0],end[1],0)]
+
+def create_path(start,end,source_map):
+	_dist = numbers.distance(start,end)
+	
+	if _dist <= 2:
+		return short_path(start,end,source_map)
+	else:
+		return Astar(start=start,end=end,omap=source_map,dist=_dist).get_path()
 
 def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	_s_pos = start_position[:]
