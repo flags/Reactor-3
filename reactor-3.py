@@ -447,14 +447,19 @@ def inventory_equip(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	_name = items.get_name(life.get_inventory_item(PLAYER,item))
+	_item = life.get_inventory_item(PLAYER,item)
+	
+	if _item['type'] == 'gun' and not life.can_hold_item(PLAYER):
+		gfx.message('You can\'t possibly hold that!')
+		
+		return False
 	
 	life.add_action(PLAYER,{'action': 'equipitem',
 		'item': item},
 		200,
 		delay=40)
 	
-	gfx.message('You start putting on %s.' % _name)
+	gfx.message('You start putting on %s.' % _item['name'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -594,15 +599,15 @@ def inventory_handle_ammo(entry):
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(PLAYER,entry['id'])
 	
-	if key == 'Fill':		
+	if key == 'Fill':
+		if not life.can_hold_item(PLAYER):
+			gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
+			return False
+		
 		_hold = life.add_action(PLAYER,{'action': 'removeandholditem',
 			'item': item['id']},
 			200,
 			delay=20)
-			
-		if not _hold:
-			gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
-			return False
 		
 		gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
 	
@@ -778,6 +783,9 @@ _i6 = items.create_item('blue jeans')
 _i7 = items.create_item('glock')
 _i8 = items.create_item('9x19mm magazine')
 _i9 = items.create_item('sneakers')
+_i10 = items.create_item('leather backpack')
+_i11 = items.create_item('glock')
+_i12 = items.create_item('9x19mm magazine')
 
 items.move(_i4,0,1)
 
@@ -789,9 +797,15 @@ life.add_item_to_inventory(PLAYER,_i6)
 life.add_item_to_inventory(PLAYER,_i7)
 life.add_item_to_inventory(PLAYER,_i8)
 life.add_item_to_inventory(_test,_i9)
+life.add_item_to_inventory(_test,_i10)
+life.add_item_to_inventory(_test,_i11)
+life.add_item_to_inventory(_test,_i12)
 
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
+
+for i in range(5):
+	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
 
 CURRENT_UPS = UPS
 

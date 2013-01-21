@@ -298,15 +298,15 @@ def perform_collisions(life):
 
 def get_highest_action(life):
 	"""Returns highest action in the queue."""
-	_actions = {'action': None,'lowest': -1}
+	#_actions = {'action': None,'lowest': -1}
 	
-	for action in life['actions']:
-		if action['score'] > _actions['lowest']:
-			_actions['lowest'] = action['score']
-			_actions['action'] = action
+	#for action in life['actions']:
+	#	if action['score'] > _actions['lowest']:
+	#		_actions['lowest'] = action['score']
+	#		_actions['action'] = action
 	
-	if _actions['action']:
-		return _actions['action']
+	if life['actions'] and life['actions'][0]:
+		return life['actions'][0]
 	else:
 		return None
 
@@ -338,14 +338,21 @@ def add_action(life,action,score,delay=0):
 	"""Creates new action. Returns True on success."""
 	_tmp_action = {'action': action,'score': score}
 	
-	if not _tmp_action in life['actions']:
-		_tmp_action['delay'] = delay
-		
-		life['actions'].append(_tmp_action)
-		
-		return True
+	if _tmp_action in life['actions']:
+		return False
 	
-	return False
+	_tmp_action['delay'] = delay
+	
+	_index = 0
+	for queue_action in life['actions']:
+		if score > queue_action['score']:
+			break
+		
+		_index += 1
+	
+	life['actions'].insert(_index,_tmp_action)	
+	
+	return True
 
 def perform_action(life):
 	"""Executes logic based on top action. Returns True on success."""
@@ -404,15 +411,23 @@ def perform_action(life):
 		if not equip_item(life,_action['item']):
 			delete_action(life,action)
 			gfx.message('You can\'t wear %s.' % _name)
+			
+			return False
 		
 		_stored = item_is_stored(life,_action['item'])
 
 		if _stored:
-			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+			if 'player' in life:
+				gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+			else:
+				pass
 		
 		delete_action(life,action)
 		
-		gfx.message('You put on %s.' % _name)
+		if 'player' in life:
+			gfx.message('You put on %s.' % _name)
+		else:
+			pass
 
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
@@ -569,9 +584,9 @@ def attach_item_to_limb(body,id,limb):
 	
 	return True
 
-def remove_item_from_limb(body,item,limb):
+def remove_item_from_limb(life,item,limb):
 	"""Removes item from limb. Returns True."""
-	body[limb]['holding'].remove(item)
+	life['body'][limb]['holding'].remove(item)
 	create_and_update_self_snapshot(life)
 	logging.debug('%s removed from %s' % (item,limb))
 	
@@ -798,7 +813,7 @@ def remove_item_from_inventory(life,id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
-			remove_item_from_limb(life['body'],item['id'],limb)
+			remove_item_from_limb(life,item['id'],limb)
 		
 		item['pos'] = life['pos'][:]
 	elif item_is_stored(life,id):
