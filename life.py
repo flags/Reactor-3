@@ -237,7 +237,7 @@ def walk(life,to):
 	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
 		_stime = time.time()
 		life['path'] = pathfinding.create_path(life['pos'],to,source_map=life['map'])
-		print '\ttotal',time.time()-_stime
+		#print '\ttotal',time.time()-_stime
 		pass
 	
 	return walk_path(life)

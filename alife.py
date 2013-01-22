@@ -194,8 +194,7 @@ def judge(life,target):
 	_target_armed = lfe.get_held_items(target,matches=[{'type': 'gun'}])
 	
 	if _self_armed and _target_armed:
-		#TODO: This.
-		pass
+		_dislike += 50
 	elif not _self_armed and _target_armed:
 		_dislike += 50
 	elif _self_armed and not _target_armed:
@@ -224,7 +223,6 @@ def combat(life,target,source_map):
 		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
 			_cover['pos'] = life['pos']
 			break
-			
 		
 		if pos[0]<0 or pos[1]<0 or (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
 			continue
@@ -255,7 +253,7 @@ def combat(life,target,source_map):
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
 
-def flee(life,target,source_map):	
+def flee(life,target,source_map):
 	#For the purposes of this test, we'll be assuming the ALife is fleeing from
 	#the target.
 	#Step 1: Locate cover
@@ -271,6 +269,10 @@ def flee(life,target,source_map):
 	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
 		x = pos[0]-_top_left[0]
 		y = pos[1]-_top_left[1]
+		
+		if not target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
+			_cover['pos'] = life['pos'][:]
+			return True
 		
 		if pos[0]<0 or pos[1]<0 or (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
 			continue
@@ -292,7 +294,7 @@ def flee(life,target,source_map):
 				_cover['score'] = _score
 				_cover['pos'] = list(pos)
 	
-	print 'hide time',time.time()-_a
+	#print 'hide time',time.time()-_a
 	
 	if not _cover['pos']:
 		print 'Nowhere to hide'
@@ -300,6 +302,8 @@ def flee(life,target,source_map):
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
+	
+	return False
 
 def handle_lost_los(life):
 	if life['in_combat']:
@@ -311,7 +315,7 @@ def handle_lost_los(life):
 		_target = life['know'][entry]
 		_score = 0
 		_score += _target['last_seen_time']
-		_score += numbers.distance(life['pos'],_target['last_seen_at'])
+		_score -= numbers.distance(life['pos'],_target['last_seen_at'])
 		
 		if _score < _nearest_target['score']:
 			_nearest_target['target'] = _target
@@ -319,10 +323,20 @@ def handle_lost_los(life):
 	
 	return _nearest_target
 
-def fight_or_flight(life,target):
+def in_danger(life,target):
 	if 'not_seen' in target:
 		#We can take our time depending on distance
-		pass
+		#TODO: Courage here
+		if target['danger_score']<=50:
+			return True
+		else:
+			return False
+	
+	print abs(target['score']),abs(judge(life,life))
+	if abs(target['score']) > abs(judge(life,life)):
+		return True
+	else:
+		return False
 
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
@@ -339,8 +353,8 @@ def understand(life,source_map):
 		_stime = time.time()
 		if process_snapshot(life,target['life']):
 			_score = judge(life,target['life'])
-			#target['score'] = _score
-			print target['score']
+			target['score'] = _score
+			#print target['score']
 			
 			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
@@ -378,12 +392,14 @@ def understand(life,source_map):
 		_target['not_seen'] = True
 	
 	if _target['who']:
-		fight_or_flight(life,_target['who'])
-		if abs(_target['score']) < abs(judge(life,life)):
-			life['in_combat'] = _target
-			flee(life,_target['who'],source_map)
+		if in_danger(life,_target):
+			if flee(life,_target['who'],source_map):
+				if not _weapon_equipped(life):
+					if not 'equipping' in life:
+						if _equip_weapon(life):
+							life['equipping'] = True
 		else:
-			print 'Should be okay'
+			combat(life,_target['who'],source_map)
 		#life['in_combat'] = False
 	else:
 		#TODO: Idle?
