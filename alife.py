@@ -118,11 +118,17 @@ def look(life):
 		
 		#TODO: Don't pass entire life, just id
 		if str(ai['id']) in life['know']:
+			life['know'][str(ai['id'])]['last_seen_time'] = 0
+			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
 			continue
 			
 		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
 		
-		life['know'][str(ai['id'])] = {'life': ai,'score': 0,'snapshot': {}}
+		life['know'][str(ai['id'])] = {'life': ai,
+			'score': 0,
+			'last_seen_time': 0,
+			'last_seen_at': ai['pos'][:],
+			'snapshot': {}}
 	
 	#logging.debug('\tTargets: %s' % (len(life['seen'])))
 
@@ -295,10 +301,37 @@ def flee(life,target,source_map):
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
 
+def handle_lost_los(life):
+	if life['in_combat']:
+		#TODO: Do something here...
+		pass
+	
+	_nearest_target = {'target': None,'score': 9000}
+	for entry in life['know']:
+		_target = life['know'][entry]
+		_score = 0
+		_score += _target['last_seen_time']
+		_score += numbers.distance(life['pos'],_target['last_seen_at'])
+		
+		if _score < _nearest_target['score']:
+			_nearest_target['target'] = _target
+			_nearest_target['score'] = _score
+	
+	return _nearest_target
+
+def fight_or_flight(life,target):
+	if 'not_seen' in target:
+		#We can take our time depending on distance
+		pass
+
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
 	
+	_known_targets_not_seen = life['know'].keys()
+	
 	for entry in life['seen']:
+		_known_targets_not_seen.remove(entry)
+		
 		target = life['know'][entry]
 		
 		_score = target['score']
@@ -306,6 +339,8 @@ def understand(life,source_map):
 		_stime = time.time()
 		if process_snapshot(life,target['life']):
 			_score = judge(life,target['life'])
+			#target['score'] = _score
+			print target['score']
 			
 			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
@@ -313,36 +348,57 @@ def understand(life,source_map):
 			_target['who'] = target
 			_target['score'] = _score
 	
+	for _not_seen in _known_targets_not_seen:
+		if life['know'][_not_seen]['last_seen_time']<100:
+			life['know'][_not_seen]['last_seen_time'] += 1
+	
+	#if life['in_combat']:
+	#	if _weapon_equipped(life):
+	#		#if _weapon_check(life):
+	#		combat(life,life['in_combat']['who'],source_map)
+	#	else:
+	#		if 'equipping' in life:
+	#			return False
+	#
+	#		if _equip_weapon(life):
+	#			life['equipping'] = True
+	
+	
 	if not _target['who']:
-		#TODO: No visible target, reroute to safety logic
-		if life['in_combat']:
-			if _weapon_equipped(life):
-				#if _weapon_check(life):
-				combat(life,life['in_combat']['who'],source_map)
-			else:
-				if 'equipping' in life:
-					return False
-				
-				if _equip_weapon(life):
-					life['equipping'] = True
-			
-		return False
+		#TODO: No visible target, doesn't mean they're not there
+		_lost_target = handle_lost_los(life)
+		
+		if not _lost_target:
+			#TODO: Some kind of cooldown here...
+			print 'No lost targets'
+		
+		_target['who'] = _lost_target['target']
+		_target['score'] = _lost_target['target']['score']
+		_target['danger_score'] = _lost_target['score']
+		_target['not_seen'] = True
+	
+	if _target['who']:
+		fight_or_flight(life,_target['who'])
+		if abs(_target['score']) < abs(judge(life,life)):
+			life['in_combat'] = _target
+			flee(life,_target['who'],source_map)
+		else:
+			print 'Should be okay'
+		#life['in_combat'] = False
 	else:
-		if life['in_combat']:
-			if _weapon_equipped(life):
-				#if _weapon_check(life):
-				combat(life,life['in_combat']['who'],source_map)
-				
-				return True
+		#TODO: Idle?
+		print 'Away from trouble.'
+	
+	#else:
+	#	if life['in_combat']:
+	#		if _weapon_equipped(life):
+	#			#if _weapon_check(life):
+	#			combat(life,life['in_combat']['who'],source_map)
+	#			
+	#			return True
 	
 	#TODO: Life should use all stats instead of the judge function
 	#print abs(_target['score']),abs(judge(life,life))
-	if abs(_target['score']) < abs(judge(life,life)):
-		life['in_combat'] = _target
-		flee(life,_target['who'],source_map)
-	else:
-		print 'Should be okay'
-		#life['in_combat'] = False
 
 def think(life,source_map):
 	#logging.debug('*THINKING*')
