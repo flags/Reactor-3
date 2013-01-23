@@ -4,6 +4,7 @@ import numbers
 import bullets
 import random
 import items
+import life as lfe
 
 random.seed()
 
@@ -15,7 +16,11 @@ def get_fire_mode(weapon):
 	return weapon['firemodes'][weapon['firemode']]
 
 def fire(life,target):
-	weapon = life['firing']
+	#TODO: Don't breathe this!
+	if 'player' in life:
+		weapon = life['firing']
+	else:
+		weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
 	
 	_mode = get_fire_mode(weapon)
 	if _mode == 'single':

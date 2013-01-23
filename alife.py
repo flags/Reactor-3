@@ -41,9 +41,21 @@ def _refill_feed(life,feed):
 		200,
 		delay=0)
 	
-	logging.info('%s is refilling ammo.' % life['name'][0])
+	#logging.info('%s is refilling ammo.' % life['name'][0])
 
+	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
+	
+	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
+		return False
+	
 	_rounds = len(feed['rounds'])
+	
+	if _rounds>=feed['maxrounds']:
+		print 'Full?'
+		return True
+	
+	_left_to_load = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))+_loading_rounds+_rounds
+	print 'ltl',_left_to_load
 	for ammo in lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]):
 		lfe.add_action(life,{'action': 'refillammo',
 			'ammo': feed,
@@ -55,11 +67,14 @@ def _refill_feed(life,feed):
 		
 		if _rounds>=feed['maxrounds']:
 			break
+	
+	#print len(feed['rounds'])
 
 def _equip_weapon(life):
 	#TODO: Which one is the best one?
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
+	#TODO: See issue #64
 	_best_wep = {'weapon': None,'rounds': 0}
 	for _wep in _weapons:
 		
@@ -85,18 +100,36 @@ def _equip_weapon(life):
 		_feed = _get_feed(life,_weapon)
 		
 		if _feed:
-			if not _feed['rounds']:
-				print 'Need to fill ammo'
+			#TODO: How much time should we spend loading rounds if we're in danger?
+			_avail_rounds = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': _feed['ammotype']}]))
+			if len(_feed['rounds']) < _avail_rounds:
+				#print 'Need to fill ammo'
 				_refill_feed(life,_feed)
+			else:
+				print 'Nothig else we can do?'
 		else:
 			print 'No feed!'
 			
 			return False
+		
+		return False
+	else:
+		print 'This gun is loaded'
+		return True
+	
+	#TODO: Seems hacky
+	_feed = _get_feed(life,_weapon)
 	
 	lfe.add_action(life,{'action': 'equipitem',
 		'item': _weapon['id']},
 		300,
 		delay=0)
+	
+	life.add_action(PLAYER,{'action': 'reload',
+		'weapon': _weapon['id'],
+		'ammo': entry['ammo']},
+		200,
+		delay=20)
 	
 	return True
 
@@ -206,7 +239,7 @@ def judge(life,target):
 	
 	return _like-_dislike
 
-def combat(life,target,source_map):
+def position_for_combat(life,target,source_map):
 	_cover = {'pos': None,'score':9000}
 	
 	#What can the target see?
@@ -222,7 +255,7 @@ def combat(life,target,source_map):
 		
 		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
 			_cover['pos'] = life['pos']
-			break
+			return True
 		
 		if pos[0]<0 or pos[1]<0 or (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
 			continue
@@ -252,6 +285,16 @@ def combat(life,target,source_map):
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
+	
+	return False
+
+def combat(life,target,source_map):
+	if not position_for_combat(life,target,source_map):
+		print 'Traveling'
+		return False
+	
+	#TODO: Shoot function...
+	weapons.fire(life,target['life']['pos'])
 
 def flee(life,target,source_map):
 	#For the purposes of this test, we'll be assuming the ALife is fleeing from
@@ -310,12 +353,14 @@ def handle_lost_los(life):
 		#TODO: Do something here...
 		pass
 	
+	#TODO: Take the original score and subtract/add stuff from there...
 	_nearest_target = {'target': None,'score': 9000}
 	for entry in life['know']:
 		_target = life['know'][entry]
-		_score = 0
-		_score += _target['last_seen_time']
-		_score -= numbers.distance(life['pos'],_target['last_seen_at'])
+		#TODO: Kinda messing up this system a bit but it'll work for now.
+		_score = _target['score']
+		#_score += _target['last_seen_time']
+		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
 		
 		if _score < _nearest_target['score']:
 			_nearest_target['target'] = _target
@@ -333,7 +378,7 @@ def in_danger(life,target):
 			return False
 	
 	#print abs(target['score']),abs(judge(life,life))
-	if abs(target['score']) > abs(judge(life,life)):
+	if abs(target['score']) >= abs(judge(life,life)):
 		return True
 	else:
 		return False
@@ -394,6 +439,7 @@ def understand(life,source_map):
 	if _target['who']:
 		if in_danger(life,_target):
 			if flee(life,_target['who'],source_map):
+				#If we're not ready, prepare for combat
 				if not _weapon_equipped(life):
 					if not 'equipping' in life:
 						if _equip_weapon(life):

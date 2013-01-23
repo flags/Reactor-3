@@ -326,6 +326,25 @@ def clear_actions(life):
 		
 	life['actions'] = []
 
+def find_action(life,matches=[{}]):
+	_matching_actions = []
+	
+	for action in [action['action'] for action in life['actions']]:
+		_break = False
+		
+		for match in matches:
+			for key in match:
+				if not action[key] == match[key]:
+					break
+					_break = True
+			
+			if _break:
+				break
+				
+			_matching_actions.append(action)
+	
+	return _matching_actions
+
 def delete_action(life,action):
 	"""Deletes an action."""
 	_action = {'action': action['action'],
@@ -831,7 +850,9 @@ def remove_item_from_inventory(life,id):
 	
 	life['speed_max'] = get_max_speed(life)
 	
-	menus.remove_item_from_menus({'id': item['id']})
+	if 'player' in life:
+		menus.remove_item_from_menus({'id': item['id']})
+	
 	logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]
