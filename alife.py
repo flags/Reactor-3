@@ -21,7 +21,7 @@ def _weapon_equipped(life):
 
 def _get_feed(life,weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
-	
+
 	_highest_feed = {'rounds': -1,'feed': None}
 	for feed in [lfe.get_inventory_item(life,_feed['id']) for _feed in _feeds]:
 		if feed['rounds']>_highest_feed['rounds']:
@@ -34,19 +34,23 @@ def _refill_feed(life,feed):
 	if not lfe.can_hold_item(life):
 		logging.warning('No hands free to load ammo!')
 		
+		#TODO: We can't just return False. Handle dropping instead.
 		return False
 	
-	_hold = lfe.add_action(life,{'action': 'removeandholditem',
-		'item': feed['id']},
-		200,
-		delay=0)
+	if not lfe.get_held_items(life,matches=[{'id': feed['id']}]):
+		_hold = lfe.add_action(life,{'action': 'removeandholditem',
+			'item': feed['id']},
+			200,
+			delay=0)
 	
 	#logging.info('%s is refilling ammo.' % life['name'][0])
 
 	#TODO: This is a mess. Tear it apart if need be.
+	#TODO: No check for ammo type.
 	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
-	
 	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
+		if not _loading_rounds:
+			return True
 		return False
 	
 	_rounds = len(feed['rounds'])
@@ -72,7 +76,6 @@ def _refill_feed(life,feed):
 	#print len(feed['rounds'])
 
 def _equip_weapon(life):
-	#TODO: Which one is the best one?
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
 	#TODO: See issue #64
@@ -82,13 +85,33 @@ def _equip_weapon(life):
 		_feeds = lfe.get_all_inventory_items(life,
 			matches=[{'type': _wep['feed'],'ammotype': _wep['ammotype']}])
 		
-		if _feeds:
+		#TODO: Not *really* the best weapon, just already loaded
+		if weapons.get_feed(_wep):
+			_best_wep['weapon'] = _wep
+			break
+
+		#print _feeds
+		_best_feed = {'feed': None, 'rounds': -1}
+		for _feed in _feeds:
+			
+			#TODO: Check to make sure this isn't picking up the rounds already in the mag/clip
 			_rounds = len(lfe.get_all_inventory_items(life,
 				matches=[{'type': 'bullet', 'ammotype': _wep['ammotype']}]))
+			_rounds += len(_feed['rounds'])
 			
+			if len(_feed['rounds']) > _best_feed['rounds']:
+				_best_feed['rounds'] = len(_feed['rounds'])
+				_best_feed['feed'] = _feed
+
 			if _rounds > _best_wep['rounds']:
 				_best_wep['weapon'] = _wep
 				_best_wep['rounds'] = _rounds
+
+		if not _best_feed['feed']:
+			_best_wep['weapon'] = None
+			print 'No feed for weapon.'
+		else:
+			_best_wep['feed'] = _best_feed['feed']
 	
 	if not _best_wep['weapon']:
 		print 'No weapon!'
@@ -98,16 +121,22 @@ def _equip_weapon(life):
 	
 	#TODO: Need to refill ammo?
 	if not weapons.get_feed(_weapon):
-		_feed = _get_feed(life,_weapon)
+		_feed = _best_wep['feed']#_get_feed(life,_weapon)
 		
 		if _feed:
 			#TODO: How much time should we spend loading rounds if we're in danger?
-			_avail_rounds = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': _feed['ammotype']}]))
-			if len(_feed['rounds']) < _avail_rounds:
-				#print 'Need to fill ammo'
-				_refill_feed(life,_feed)
-			else:
-				print 'Nothig else we can do?'
+			#_avail_rounds = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': _feed['ammotype']}]))
+			#if len(_feed['rounds']) < _avail_rounds:
+			#print 'Need to fill ammo'
+			print len(_feed['rounds'])
+			if _refill_feed(life,_feed):
+				lfe.add_action(life,{'action': 'reload',
+					'weapon': _weapon,
+					'ammo': _feed},
+					200,
+					delay=0)
+			#else:
+			#print 'Nothing else we can do?'
 		else:
 			print 'No feed!'
 			
@@ -115,22 +144,19 @@ def _equip_weapon(life):
 		
 		return False
 	else:
-		print 'This gun is loaded'
+		lfe.add_action(life,{'action': 'equipitem',
+			'item': _weapon['id']},
+			300,
+			delay=0)
+		
+		print 'Loaded!'
 		return True
 	
-	#TODO: Seems hacky
-	_feed = _get_feed(life,_weapon)
-	
-	lfe.add_action(life,{'action': 'equipitem',
-		'item': _weapon['id']},
-		300,
-		delay=0)
-	
-	life.add_action(PLAYER,{'action': 'reload',
-		'weapon': _weapon['id'],
-		'ammo': entry['ammo']},
-		200,
-		delay=20)
+	#life.add_action(PLAYER,{'action': 'reload',
+	#	'weapon': _weapon['id'],
+	#	'ammo': entry['ammo']},
+	#	200,
+	#	delay=20)
 	
 	return True
 

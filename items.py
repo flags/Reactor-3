@@ -84,6 +84,8 @@ def create_item(name,position=[0,0,2]):
 		logging.debug('Found marked key: %s' % key)
 		item[key] = item['marked_for_reint'][key][:]
 	
+	del item['marked_for_reint']
+
 	item['uid'] = len(ITEMS)
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
