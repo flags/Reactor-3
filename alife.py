@@ -244,7 +244,7 @@ def combat(life,target,source_map):
 				_cover['score'] = _score
 				_cover['pos'] = list(pos)
 	
-	print 'engage time',time.time()-_a
+	#print 'engage time',time.time()-_a
 	
 	if not _cover['pos']:
 		print 'Nowhere to engage'
@@ -332,7 +332,7 @@ def in_danger(life,target):
 		else:
 			return False
 	
-	print abs(target['score']),abs(judge(life,life))
+	#print abs(target['score']),abs(judge(life,life))
 	if abs(target['score']) > abs(judge(life,life)):
 		return True
 	else:

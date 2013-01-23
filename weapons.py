@@ -40,6 +40,7 @@ def fire(life,target):
 		#TODO: Clean this up...
 		#bullets.create_bullet(life['pos'],direction,5,life)
 		_bullet = _feed['rounds'].pop()
+		_bullet['pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
 		del _bullet['parent']
 		items.move(_bullet,direction,5)

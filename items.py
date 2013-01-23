@@ -15,7 +15,6 @@ def load_item(item):
 			return json.loads(''.join(e.readlines()))
 		except ValueError,e:
 			raise Exception('Failed to load item: %s' % e)
-			
 
 def initiate_item(name):
 	"""Loads (and returns) new item type into memory."""
@@ -23,6 +22,7 @@ def initiate_item(name):
 		logging.warning('Item type \'%s\' is already loaded. Reloading...' % name)
 	
 	item = load_item(name)
+	_marked_for_reint = {}
 	
 	if not 'prefix' in item:
 		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_PREFIX))
@@ -57,6 +57,12 @@ def initiate_item(name):
 	item['size'] = 	[int(c) for c in item['size'].split('x')]
 	item['size'] = item['size'][0]*item['size'][1]
 	
+	for key in item:
+		if isinstance(item[key],list):
+			_marked_for_reint[key] = item[key][:]
+	
+	item['marked_for_reint'] = _marked_for_reint.copy()
+	
 	#Unicode isn't handled all that well on Windows for some reason...
 	for key in item:
 		_value = item[key]
@@ -71,8 +77,12 @@ def initiate_item(name):
 	return item
 
 def create_item(name,position=[0,0,2]):
-	"""Initiates and returns a deepcopy of an item type."""
+	"""Initiates and returns a copy of an item type."""
 	item = ITEM_TYPES[name].copy()
+	
+	for key in item['marked_for_reint']:
+		logging.debug('Found marked key: %s' % key)
+		item[key] = item['marked_for_reint'][key][:]
 	
 	item['uid'] = len(ITEMS)
 	item['pos'] = list(position)
