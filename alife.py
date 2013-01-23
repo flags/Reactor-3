@@ -43,6 +43,7 @@ def _refill_feed(life,feed):
 	
 	#logging.info('%s is refilling ammo.' % life['name'][0])
 
+	#TODO: This is a mess. Tear it apart if need be.
 	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
 	
 	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
