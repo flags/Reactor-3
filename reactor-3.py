@@ -777,7 +777,7 @@ _i1 = items.create_item('white t-shirt')
 _i2 = items.create_item('sneakers')
 _i3 = items.create_item('sneakers')
 _i4 = items.create_item('sneakers',position=(8,15,2))
-_i4 = items.create_item('white t-shirt',position=(5,20,2))
+_i4_ = items.create_item('white t-shirt',position=(5,20,2))
 _i5 = items.create_item('leather backpack')
 _i6 = items.create_item('blue jeans')
 _i7 = items.create_item('glock')
@@ -787,7 +787,8 @@ _i10 = items.create_item('leather backpack')
 _i11 = items.create_item('glock')
 _i12 = items.create_item('9x19mm magazine')
 
-items.move(_i4,0,1)
+items.move(_i4,0,1,_velocity=1)
+items.move(_i4_,0,1,_velocity=1)
 
 life.add_item_to_inventory(PLAYER,_i1)
 life.add_item_to_inventory(PLAYER,_i2)
@@ -813,8 +814,6 @@ while RUNNING:
 	get_input()
 	handle_input()
 	_played_moved = False
-	
-	#print _test['pos']
 
 	while life.get_highest_action(PLAYER):
 		tick_all_objects()

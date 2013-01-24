@@ -76,7 +76,7 @@ def draw_line(x1,y1,x2,y2):
 	
 	return path
 
-def render_los(map,position,top_left=CAMERA_POS):
+def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	cdef int pos1[2]
@@ -84,6 +84,7 @@ def render_los(map,position,top_left=CAMERA_POS):
 	cdef int _x,_y
 	cdef int X_CAMERA_POS = top_left[0]
 	cdef int Y_CAMERA_POS = top_left[1]
+	cdef int Z_CAMERA_POS = top_left[2]
 	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
 	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
 	cdef int POSITION[2]
@@ -102,10 +103,12 @@ def render_los(map,position,top_left=CAMERA_POS):
 			if _x<0 or _x>=X_MAP_WINDOW_SIZE or _y<0 or _y>=Y_MAP_WINDOW_SIZE:
 				continue
 			
-			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
+			if map[pos[0]][pos[1]][Z_CAMERA_POS+1]:				
 				if not _dark:
 					_dark = 1
-					los_buffer[_y,_x] = 1
+					
+					if not no_edge:
+						los_buffer[_y,_x] = 1
 					
 					continue
 				

@@ -218,10 +218,11 @@ def short_path(start,end,source_map):
 def create_path(start,end,source_map):
 	_dist = numbers.distance(start,end)
 	
-	if _dist <= 2:
-		return short_path(start,end,source_map)
-	else:
-		return Astar(start=start,end=end,omap=source_map,dist=_dist).get_path()
+	#TODO: Short path doesn't for 1x1 walls
+	#if _dist <= 1:
+	#	return short_path(start,end,source_map)
+	#else:
+	return Astar(start=start,end=end,omap=source_map,dist=_dist).get_path()
 
 def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	_s_pos = start_position[:]

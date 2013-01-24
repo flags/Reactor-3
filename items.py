@@ -3,6 +3,7 @@ import graphics as gfx
 import drawing
 import logging
 import numbers
+import life
 
 try:
 	import ujson as json
@@ -123,10 +124,10 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item,direction,speed,friction=0.05):
+def move(item,direction,speed,friction=0.05,_velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction,speed)
-	velocity[2] = 1
+	velocity[2] = _velocity
 	
 	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
 	item['friction'] = friction
@@ -176,10 +177,12 @@ def tick_all_items(MAP):
 		_break = False
 		
 		for pos in drawing.diag_line(item['pos'],(int(item['realpos'][0]),int(item['realpos'][1]))):
-			item['realpos'][2] += item['velocity'][2]
-			item['velocity'][2] -= item['gravity']
+			if not item['type'] == 'bullet':
+				item['realpos'][2] += item['velocity'][2]
+				item['velocity'][2] -= item['gravity']
 			
 			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
+				logging.warning('Item OOM: %s', item['uid'])
 				_remove.append(item['uid'])
 				break
 			
@@ -190,7 +193,7 @@ def tick_all_items(MAP):
 					
 					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
 						item['pos'] = pos
-						life.damage_from_item(_life,item)
+						life.damage_from_item(_life,item,60)
 						_break = True
 						
 						_remove.append(item['uid'])
@@ -203,9 +206,8 @@ def tick_all_items(MAP):
 				item['velocity'][0] = 0
 				item['velocity'][1] = 0
 				item['velocity'][2] = 0
-				item['pos'] = list(pos)
-				
-				
+				item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
+				#print 'LANDED',item['pos']				
 				_break = True
 				break
 		

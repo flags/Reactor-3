@@ -60,7 +60,6 @@ def _refill_feed(life,feed):
 		return True
 	
 	_left_to_load = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))+_loading_rounds+_rounds
-	print 'ltl',_left_to_load
 	for ammo in lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]):
 		lfe.add_action(life,{'action': 'refillammo',
 			'ammo': feed,
@@ -128,7 +127,6 @@ def _equip_weapon(life):
 			#_avail_rounds = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': _feed['ammotype']}]))
 			#if len(_feed['rounds']) < _avail_rounds:
 			#print 'Need to fill ammo'
-			print len(_feed['rounds'])
 			if _refill_feed(life,_feed):
 				lfe.add_action(life,{'action': 'reload',
 					'weapon': _weapon,
@@ -273,7 +271,8 @@ def position_for_combat(life,target,source_map):
 	#TODO: Unchecked Cython flag
 	_a = time.time()
 	_top_left = (target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),
-		target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2))
+		target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2),
+		2)
 	target_los = render_los.render_los(source_map,target['life']['pos'],top_left=_top_left)
 	
 	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
@@ -320,6 +319,8 @@ def combat(life,target,source_map):
 		print 'Traveling'
 		return False
 	
+	#print 'combat'
+	
 	#TODO: Shoot function...
 	weapons.fire(life,target['life']['pos'])
 
@@ -330,30 +331,46 @@ def flee(life,target,source_map):
 	_cover = {'pos': None,'score':9000}
 	
 	#What can the target see?
+	#_top_left = (target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),
+	#	target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2))
+	#print life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]
+	
 	#TODO: Unchecked Cython flag
 	_a = time.time()
-	_top_left = (target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),
-		target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2))
-	target_los = render_los.render_los(source_map,target['life']['pos'],top_left=_top_left)
+	_x = numbers.clip(target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
+	_y = numbers.clip(target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_top_left = (_x,_y,target['life']['pos'][2])
+	target_los = render_los.render_los(source_map,target['life']['pos'],top_left=_top_left,no_edge=False)
 	
 	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
 		x = pos[0]-_top_left[0]
 		y = pos[1]-_top_left[1]
 		
-		if not target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
-			_cover['pos'] = life['pos'][:]
-			return True
-		
-		if pos[0]<0 or pos[1]<0 or (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
-			continue
-		
-		if pos[0]>=MAP_SIZE[0]-1 or pos[1]>=MAP_SIZE[1]-1:
+		if pos[0]<0 or pos[1]<0 or pos[0]>=MAP_SIZE[0] or pos[1]>=MAP_SIZE[0]:
 			continue
 		
 		if x<0 or y<0 or x>=target_los.shape[1] or y>=target_los.shape[0]:
 			continue
 		
-		if source_map[pos[0]][pos[1]][target['life']['pos'][2]+1]:# and source_map[pos[0]][pos[1]][target['life']['pos'][2]+2]:
+		#if life['pos'][0]-_top_left[0]<0 or life['pos'][1]-_top_left[1]<0 or life['pos'][0]-_top_left[0]>=target_los.shape[1] or life['pos'][1]-_top_left[1]>=target_los.shape[0]:
+		#	continue
+			
+		#print x,y,_top_left
+		#print life['pos'][0]-_top_left[0],life['pos'][1]-_top_left[1]
+		#print x,y
+		
+		if not target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
+			_cover['pos'] = life['pos'][:]
+			return True
+		
+		#if (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
+		#	continue
+		
+		#if pos[0]>=MAP_SIZE[0]-1 or pos[1]>=MAP_SIZE[1]-1:
+		#	continue
+		
+		if source_map[pos[0]][pos[1]][target['life']['pos'][2]+1] or source_map[pos[0]][pos[1]][target['life']['pos'][2]+2]:
+			#print pos
 			continue
 		
 		if not target_los[y,x]:
