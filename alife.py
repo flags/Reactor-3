@@ -226,6 +226,39 @@ def process_snapshot(life,target):
 	
 	return True
 
+def judge_self(life):
+	_confidence = 0
+	_limb_confidence = 0
+	
+	for limb in [life['body'][limb] for limb in life['body']]:
+		#TODO: Mark as target?
+		if not limb['bleeding']:
+			_limb_confidence += 1
+		
+		if not limb['bruised']:
+			_limb_confidence += 2
+		
+		if not limb['broken']:
+			_limb_confidence += 3
+	
+	#TODO: There's a chance to fake confidence here
+	#If we're holding a gun, that's all the other ALifes see
+	#and they judge based on that (unless they've heard you run
+	#out of ammo.)
+	#For now we'll consider ammo just because we can...
+	_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if _self_armed:
+		_weapon = lfe.get_inventory_item(life,_self_armed[0])
+		#print _weapon
+		_feed = weapons.get_feed(_weapon)
+		if _feed and _feed['rounds']:
+			_confidence += 10
+		else:
+			_confidence -= 10
+	
+	return _confidence+_limb_confidence
+
 def judge(life,target):
 	_like = 0
 	_dislike = 0
@@ -248,15 +281,17 @@ def judge(life,target):
 			_dislike += 3
 	
 	#Am I armed?
-	_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	#_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 	_target_armed = lfe.get_held_items(target,matches=[{'type': 'gun'}])
 	
-	if _self_armed and _target_armed:
+	if _target_armed:
 		_dislike += 50
-	elif not _self_armed and _target_armed:
-		_dislike += 50
-	elif _self_armed and not _target_armed:
-		_like += 50
+	#if _self_armed and _target_armed:
+	#	_dislike += 50
+	#elif not _self_armed and _target_armed:
+	#	_dislike += 50
+	#elif _self_armed and not _target_armed:
+	#	_like += 50
 	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
@@ -403,7 +438,8 @@ def in_danger(life,target):
 		else:
 			return False
 	
-	if abs(target['score']) >= abs(judge(life,life)):
+	print abs(target['score']),judge_self(life)
+	if abs(target['score']) >= judge_self(life):
 		return True
 	else:
 		return False
