@@ -329,11 +329,7 @@ def flee(life,target,source_map):
 	#the target.
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
-	
-	#What can the target see?
-	#_top_left = (target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),
-	#	target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2))
-	#print life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]
+	_close_target = False
 	
 	#TODO: Unchecked Cython flag
 	_a = time.time()
@@ -352,25 +348,11 @@ def flee(life,target,source_map):
 		if x<0 or y<0 or x>=target_los.shape[1] or y>=target_los.shape[0]:
 			continue
 		
-		#if life['pos'][0]-_top_left[0]<0 or life['pos'][1]-_top_left[1]<0 or life['pos'][0]-_top_left[0]>=target_los.shape[1] or life['pos'][1]-_top_left[1]>=target_los.shape[0]:
-		#	continue
-			
-		#print x,y,_top_left
-		#print life['pos'][0]-_top_left[0],life['pos'][1]-_top_left[1]
-		#print x,y
-		
 		if not target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]:
 			_cover['pos'] = life['pos'][:]
 			return True
 		
-		#if (pos[0],pos[1]) == (target['life']['pos'][0],target['life']['pos'][1]):
-		#	continue
-		
-		#if pos[0]>=MAP_SIZE[0]-1 or pos[1]>=MAP_SIZE[1]-1:
-		#	continue
-		
 		if source_map[pos[0]][pos[1]][target['life']['pos'][2]+1] or source_map[pos[0]][pos[1]][target['life']['pos'][2]+2]:
-			#print pos
 			continue
 		
 		if not target_los[y,x]:
@@ -403,7 +385,7 @@ def handle_lost_los(life):
 		_target = life['know'][entry]
 		#TODO: Kinda messing up this system a bit but it'll work for now.
 		_score = _target['score']
-		#_score += _target['last_seen_time']
+		_score += _target['last_seen_time']
 		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
 		
 		if _score < _nearest_target['score']:
@@ -421,7 +403,6 @@ def in_danger(life,target):
 		else:
 			return False
 	
-	#print abs(target['score']),abs(judge(life,life))
 	if abs(target['score']) >= abs(judge(life,life)):
 		return True
 	else:
@@ -453,19 +434,7 @@ def understand(life,source_map):
 	
 	for _not_seen in _known_targets_not_seen:
 		if life['know'][_not_seen]['last_seen_time']<100:
-			life['know'][_not_seen]['last_seen_time'] += 1
-	
-	#if life['in_combat']:
-	#	if _weapon_equipped(life):
-	#		#if _weapon_check(life):
-	#		combat(life,life['in_combat']['who'],source_map)
-	#	else:
-	#		if 'equipping' in life:
-	#			return False
-	#
-	#		if _equip_weapon(life):
-	#			life['equipping'] = True
-	
+			life['know'][_not_seen]['last_seen_time'] += 1	
 	
 	if not _target['who']:
 		#TODO: No visible target, doesn't mean they're not there
@@ -488,20 +457,19 @@ def understand(life,source_map):
 					if not 'equipping' in life:
 						if _equip_weapon(life):
 							life['equipping'] = True
+				else:
+					#TODO: ALife is hiding now...
+					pass
+					
 		else:
+			print 'Combat?'
 			combat(life,_target['who'],source_map)
 		#life['in_combat'] = False
 	else:
 		#TODO: Idle?
 		print 'Away from trouble.'
 	
-	#else:
-	#	if life['in_combat']:
-	#		if _weapon_equipped(life):
-	#			#if _weapon_check(life):
-	#			combat(life,life['in_combat']['who'],source_map)
-	#			
-	#			return True
+	#print _target['who'].keys()
 	
 	#TODO: Life should use all stats instead of the judge function
 	#print abs(_target['score']),abs(judge(life,life))

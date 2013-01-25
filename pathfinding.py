@@ -50,6 +50,10 @@ class Astar:
 			_map_x_pos = _x+_x_min
 			for _y in xrange(self.size[1]):
 				_map_y_pos = _y+_y_min
+				
+				if _map_x_pos >= MAP_SIZE[0] or _map_y_pos >= MAP_SIZE[1]:
+					continue
+				
 				#Can't walk if there's no ground beneath this position
 				if not self.omap[_map_x_pos][_map_y_pos][self.start[2]]:
 					self.map[_y,_x] = -2
