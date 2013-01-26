@@ -244,9 +244,9 @@ def judge_self(life):
 		_feed = weapons.get_feed(_weapon)
 		
 		if _feed and _feed['rounds']:
-			_confidence += 10
+			_confidence += 30
 		else:
-			_confidence -= 10
+			_confidence -= 30
 	
 	return _confidence+_limb_confidence
 
@@ -276,7 +276,7 @@ def judge(life,target):
 	_target_armed = lfe.get_held_items(target,matches=[{'type': 'gun'}])
 	
 	if _target_armed:
-		_dislike += 50
+		_dislike += 30
 	#if _self_armed and _target_armed:
 	#	_dislike += 50
 	#elif not _self_armed and _target_armed:
@@ -400,6 +400,9 @@ def generate_los(life,target,source_map,score_callback,invert=False):
 		if x<0 or y<0 or x>=target_los.shape[1] or y>=target_los.shape[0]:
 			continue
 		
+		if life['pos'][0]-_top_left[0]>=target_los.shape[0] or life['pos'][1]-_top_left[1]>=target_los.shape[1]:
+			continue
+		
 		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]==invert:
 			_cover['pos'] = life['pos'][:]
 			return False
@@ -431,8 +434,9 @@ def handle_lost_los(life):
 	for entry in life['know']:
 		_target = life['know'][entry]
 		#TODO: Kinda messing up this system a bit but it'll work for now.
-		_score = _target['score']
-		_score += _target['last_seen_time']
+		_score = judge(life,_target['life'])#_target['score']
+		_score -= _target['last_seen_time']
+		#print _score
 		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
 		
 		if _score < _nearest_target['score']:
@@ -445,8 +449,8 @@ def in_danger(life,target):
 	if 'not_seen' in target:
 		#We can take our time depending on distance
 		#TODO: Courage here
-		#print target['danger_score'],time.time()
-		if target['danger_score']<=20:
+		print abs(target['danger_score']),judge_self(life),time.time()
+		if abs(target['danger_score'])>=judge_self(life):
 			return True
 		else:
 			return False
@@ -481,8 +485,8 @@ def understand(life,source_map):
 			_target['score'] = _score
 	
 	for _not_seen in _known_targets_not_seen:
-		#TODO: 500?
-		if life['know'][_not_seen]['last_seen_time']<500:
+		#TODO: 25?
+		if life['know'][_not_seen]['last_seen_time']<25:
 			life['know'][_not_seen]['last_seen_time'] += 1	
 	
 	if not _target['who']:

@@ -343,6 +343,12 @@ def handle_input():
 		
 		create_pick_up_item_menu(_items)
 	
+	if INPUT['y']:
+		SETTINGS['following'] = LIFE[0]
+
+	if INPUT['u']:
+		SETTINGS['following'] = LIFE[1]
+	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
 			return False
@@ -766,6 +772,8 @@ _test = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[20,10,2]
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[15,5,2])
 PLAYER['player'] = True
 
+SETTINGS['following'] = _test
+
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
@@ -839,10 +847,10 @@ while RUNNING:
 	maps.render_lights()
 	items.draw_items()
 	bullets.draw_bullets()
-	move_camera(PLAYER['pos'])
+	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
 	
-	LOS_BUFFER[0] = maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
+	LOS_BUFFER[0] = maps._render_los(MAP,SETTINGS['following']['pos'],cython=CYTHON_ENABLED)
 	
 	if PLAYER['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
