@@ -474,7 +474,7 @@ def perform_action(life):
 		
 		if _hand['holding']:
 			if life.has_key('player'):
-				gfx.message('You\'re alreading holding something in your %s!' % _action['hand'])
+				gfx.message('You\'re already holding something in your %s!' % _action['hand'])
 		
 			delete_action(life,action)
 			
