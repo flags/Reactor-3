@@ -446,7 +446,7 @@ def in_danger(life,target):
 		#We can take our time depending on distance
 		#TODO: Courage here
 		#print target['danger_score'],time.time()
-		if target['danger_score']<=50:
+		if target['danger_score']<=20:
 			return True
 		else:
 			return False

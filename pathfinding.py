@@ -216,16 +216,16 @@ def short_path(start,end,source_map):
 			return [(start[0],start[1],0)]
 		return [(end[0],end[1],2)]
 	
-	#if source_map[end[0]][end[1]][start[2]-1]:
 	return [(end[0],end[1],0)]
 
 def create_path(start,end,source_map):
 	_dist = numbers.distance(start,end)
 	
-	#TODO: Short path doesn't for 1x1 walls
-	#if _dist <= 1:
-	#	return short_path(start,end,source_map)
-	#else:
+	for x1 in range(-1,2):
+		for y1 in range(-1,2):
+			if (start[0],start[1]) == (end[0]+x1,end[1]+y1):
+				return short_path(start,end,source_map)
+	
 	return Astar(start=start,end=end,omap=source_map,dist=_dist).get_path()
 
 def path_from_dijkstra(start_position,dijkstra,downhill=False):
