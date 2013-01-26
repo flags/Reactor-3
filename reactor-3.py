@@ -814,7 +814,7 @@ life.add_item_to_inventory(_test,_i12)
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-for i in range(5):
+for i in range(21):
 	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
 
 CURRENT_UPS = UPS
@@ -879,6 +879,3 @@ while RUNNING:
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
-
-#TODO: Enable this...?
-#maps.save_map('map1.dat',MAP)

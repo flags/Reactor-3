@@ -240,7 +240,6 @@ def walk(life,to):
 		_stime = time.time()
 		life['path'] = pathfinding.create_path(life['pos'],to,source_map=life['map'])
 		#print '\ttotal',time.time()-_stime
-		pass
 	
 	return walk_path(life)
 

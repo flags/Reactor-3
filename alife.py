@@ -16,8 +16,24 @@ import numbers
 import maps
 import time
 
-def _weapon_equipped(life):
-	return lfe.get_held_items(life,matches=[{'type': 'gun'}])
+def _weapon_equipped_and_ready(life):
+	_wep = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if not _wep:
+		return False
+	
+	#TODO: More than one weapon
+	_wep = lfe.get_inventory_item(life,_wep[0])
+	_feed = weapons.get_feed(_wep)
+	
+	if not _feed:
+		return False
+	
+	if not _feed['rounds']:
+		print 'feed in gun with no ammo'
+		return False
+	
+	return True
 
 def _get_feed(life,weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
@@ -45,12 +61,15 @@ def _refill_feed(life,feed):
 	
 	#logging.info('%s is refilling ammo.' % life['name'][0])
 
-	#TODO: This is a mess. Tear it apart if need be.
 	#TODO: No check for ammo type.
+	
 	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
 	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
 		if not _loading_rounds:
 			return True
+		return False
+	
+	if len(lfe.find_action(life,matches=[{'action': 'refillammo'}])):
 		return False
 	
 	_rounds = len(feed['rounds'])
@@ -59,18 +78,17 @@ def _refill_feed(life,feed):
 		print 'Full?'
 		return True
 	
-	_left_to_load = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))+_loading_rounds+_rounds
-	for ammo in lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]):
+	_ammo_count = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))
+	_ammo_count += len(feed['rounds'])
+	_rounds_to_load = numbers.clip(_ammo_count,0,feed['maxrounds'])
+	for ammo in lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])[:_rounds_to_load]:		
 		lfe.add_action(life,{'action': 'refillammo',
 			'ammo': feed,
 			'round': ammo},
 			200,
-			delay=20)
+			delay=5)
 		
 		_rounds += 1
-		
-		if _rounds>=feed['maxrounds']:
-			break
 
 def _equip_weapon(life):
 	_best_wep = get_best_weapon(life)
@@ -291,7 +309,6 @@ def judge(life,target):
 	return _like-_dislike
 
 def combat(life,target,source_map):
-	print 'Combat'
 	if not position_for_combat(life,target,source_map):
 		print 'Traveling'
 		return False
@@ -351,6 +368,9 @@ def escape(life,target,source_map):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
+	
+	if lfe.path_dest(life):
+		return True
 	
 	return True
 
@@ -435,9 +455,14 @@ def handle_lost_los(life):
 		_target = life['know'][entry]
 		#TODO: Kinda messing up this system a bit but it'll work for now.
 		_score = judge(life,_target['life'])#_target['score']
-		_score -= _target['last_seen_time']
+		#_score -= _target['last_seen_time']
 		#print _score
 		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
+		
+		#print _target['last_seen_time']
+		
+		#if _target['last_seen_time'] >= 350:
+		#	continue
 		
 		if _score < _nearest_target['score']:
 			_nearest_target['target'] = _target
@@ -447,9 +472,8 @@ def handle_lost_los(life):
 
 def in_danger(life,target):
 	if 'not_seen' in target:
-		#We can take our time depending on distance
 		#TODO: Courage here
-		print abs(target['danger_score']),judge_self(life),time.time()
+		#print abs(target['danger_score']),judge_self(life),time.time()
 		if abs(target['danger_score'])>=judge_self(life):
 			return True
 		else:
@@ -486,36 +510,35 @@ def understand(life,source_map):
 	
 	for _not_seen in _known_targets_not_seen:
 		#TODO: 25?
-		if life['know'][_not_seen]['last_seen_time']<25:
+		if life['know'][_not_seen]['last_seen_time']<350:
 			life['know'][_not_seen]['last_seen_time'] += 1	
 	
 	if not _target['who']:
 		#TODO: No visible target, doesn't mean they're not there
 		_lost_target = handle_lost_los(life)
 		
-		if not _lost_target:
+		if _lost_target['target']:
+			_target['who'] = _lost_target['target']
+			_target['score'] = _lost_target['target']['score']
+			_target['danger_score'] = _lost_target['score']
+			_target['not_seen'] = True
+		else:
 			#TODO: Some kind of cooldown here...
 			print 'No lost targets'
-		
-		_target['who'] = _lost_target['target']
-		_target['score'] = _lost_target['target']['score']
-		_target['danger_score'] = _lost_target['score']
-		_target['not_seen'] = True
 	
 	if _target['who']:
 		if in_danger(life,_target):
 			if handle_hide(life,_target['who'],source_map):
 				#If we're not ready, prepare for combat
-				if not _weapon_equipped(life):
+				if not _weapon_equipped_and_ready(life):
 					if not 'equipping' in life:
 						if _equip_weapon(life):
 							life['equipping'] = True
 				else:
-					#TODO: ALife is hiding now...
+					#TODO: ALife is hiding now...'
 					pass
 					
 		else:
-			print 'Combat?'
 			combat(life,_target['who'],source_map)
 		#life['in_combat'] = False
 	else:
