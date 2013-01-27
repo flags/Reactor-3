@@ -187,6 +187,7 @@ def look(life):
 		if str(ai['id']) in life['know']:
 			life['know'][str(ai['id'])]['last_seen_time'] = 0
 			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
+			life['know'][str(ai['id'])]['escaped'] = False
 			continue
 			
 		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
@@ -195,6 +196,7 @@ def look(life):
 			'score': 0,
 			'last_seen_time': 0,
 			'last_seen_at': ai['pos'][:],
+			'escaped': False,
 			'snapshot': {}}
 	
 	#logging.debug('\tTargets: %s' % (len(life['seen'])))
@@ -309,8 +311,14 @@ def judge(life,target):
 	return _like-_dislike
 
 def combat(life,target,source_map):
-	if not position_for_combat(life,target,source_map):
-		print 'Traveling'
+	if not position_for_combat(life,target,target['last_seen_at'],source_map):
+		return False
+	
+	if not lfe.can_see(life,target['life']['pos']):
+		if not find_target(life,target,target['last_seen_at'],source_map):
+			target['escaped'] = True
+			#print target.keys()
+		
 		return False
 	
 	if not len(lfe.find_action(life,matches=[{'action': 'shoot', 'target': target['life']['pos']}])):
@@ -333,12 +341,12 @@ def score_escape(life,target,pos):
 def score_hide(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
-def position_for_combat(life,target,source_map):
+def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
 	
 	#What can the target see?
 	#TODO: Unchecked Cython flag
-	_attack_from = generate_los(life,target,source_map,score_shootcover,invert=True)
+	_attack_from = generate_los(life,target,position,source_map,score_shootcover,invert=True)
 	
 	if _attack_from:
 		lfe.clear_actions(life)
@@ -346,6 +354,15 @@ def position_for_combat(life,target,source_map):
 		return False
 	
 	return True
+
+def find_target(life,target,pos,source_map):
+	lfe.clear_actions(life)
+	
+	if not tuple(life['pos']) == tuple(pos):
+		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+		return True
+	
+	return False
 
 def escape(life,target,source_map):
 	#So we need to get away from the target...
@@ -362,7 +379,7 @@ def escape(life,target,source_map):
 	#We're most likely in sight of the target if this is running.
 	
 	#Step #1: Find our escape route.
-	_escape = generate_los(life,target,source_map,score_escape)
+	_escape = generate_los(life,target,target['life']['pos'],source_map,score_escape)
 	
 	if _escape:
 		lfe.clear_actions(life)
@@ -375,7 +392,7 @@ def escape(life,target,source_map):
 	return True
 
 def hide(life,target,source_map):
-	_cover = generate_los(life,target,source_map,score_hide)
+	_cover = generate_los(life,target,target['life']['pos'],source_map,score_hide)
 	
 	if _cover:
 		lfe.clear_actions(life)
@@ -399,16 +416,16 @@ def handle_hide(life,target,source_map):
 	else:
 		return escape(life,target,source_map)
 
-def generate_los(life,target,source_map,score_callback,invert=False):
+def generate_los(life,target,at,source_map,score_callback,invert=False):
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
 	
 	#TODO: Unchecked Cython flag
 	_a = time.time()
-	_x = numbers.clip(target['life']['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-	_y = numbers.clip(target['life']['pos'][1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
-	_top_left = (_x,_y,target['life']['pos'][2])
-	target_los = render_los.render_los(source_map,target['life']['pos'],top_left=_top_left,no_edge=False)
+	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
+	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_top_left = (_x,_y,at[2])
+	target_los = render_los.render_los(source_map,at,top_left=_top_left,no_edge=False)
 	
 	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
 		x = pos[0]-_top_left[0]
@@ -427,7 +444,7 @@ def generate_los(life,target,source_map,score_callback,invert=False):
 			_cover['pos'] = life['pos'][:]
 			return False
 		
-		if source_map[pos[0]][pos[1]][target['life']['pos'][2]+1] or source_map[pos[0]][pos[1]][target['life']['pos'][2]+2]:
+		if source_map[pos[0]][pos[1]][at[2]+1] or source_map[pos[0]][pos[1]][at[2]+2]:
 			continue
 		
 		if target_los[y,x] == invert:
@@ -450,12 +467,15 @@ def handle_lost_los(life):
 		pass
 	
 	#TODO: Take the original score and subtract/add stuff from there...
-	_nearest_target = {'target': None,'score': 9000}
+	_nearest_target = {'target': None,'score': 0}
 	for entry in life['know']:
 		_target = life['know'][entry]
 		#TODO: Kinda messing up this system a bit but it'll work for now.
 		_score = judge(life,_target['life'])#_target['score']
-		#_score -= _target['last_seen_time']
+		
+		if _target['escaped']:
+			_score += _target['last_seen_time']
+			print _score
 		#print _score
 		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
 		
@@ -471,8 +491,9 @@ def handle_lost_los(life):
 	return _nearest_target
 
 def in_danger(life,target):
-	if 'not_seen' in target:
+	if 'last_seen_time' in target and not target['last_seen_time']:
 		#TODO: Courage here
+		#in danger!
 		#print abs(target['danger_score']),judge_self(life),time.time()
 		if abs(target['danger_score'])>=judge_self(life):
 			return True
@@ -521,7 +542,7 @@ def understand(life,source_map):
 			_target['who'] = _lost_target['target']
 			_target['score'] = _lost_target['target']['score']
 			_target['danger_score'] = _lost_target['score']
-			_target['not_seen'] = True
+			_target['last_seen_time'] = _lost_target['target']['last_seen_time']
 		else:
 			#TODO: Some kind of cooldown here...
 			print 'No lost targets'
