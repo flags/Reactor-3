@@ -775,7 +775,7 @@ _test = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[20,10,2]
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[15,5,2])
 PLAYER['player'] = True
 
-SETTINGS['following'] = _test
+SETTINGS['following'] = PLAYER
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')

@@ -99,12 +99,12 @@ def blit_string(x,y,text,console=0,fore_color=white,back_color=None,flicker=0):
 	for c in text:
 		_back_color = back_color
 		
-		if not _back_color:
-			_back_color = Color(int(MAP_RGB_BACK_BUFFER[0][y,x+i])+random.randint(0,flicker),
-				int(MAP_RGB_BACK_BUFFER[1][y,x+i]+random.randint(0,flicker)),
-				int(MAP_RGB_BACK_BUFFER[2][y,x+i]+random.randint(0,flicker)))
+		#if not _back_color:
+			#_back_color = Color(int(MAP_RGB_BACK_BUFFER[0][y,x+i])+random.randint(0,flicker),
+			#	int(MAP_RGB_BACK_BUFFER[1][y,x+i]+random.randint(0,flicker)),
+			#	int(MAP_RGB_BACK_BUFFER[2][y,x+i]+random.randint(0,flicker)))
 		
-		_alpha = int(LIGHT_BUFFER[0][y,x+i])
+		#_alpha = int(LIGHT_BUFFER[0][y,x+i])
 		
 		blit_char(x+i,
 			y,
@@ -156,11 +156,17 @@ def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=M
 
 def draw_bottom_ui_terraform():
 	"""Controls the drawing of the UI under the map."""
-	blit_string(0,MAP_WINDOW_SIZE[1]+1,'X: %s Y: %s Z: %s' %
-		(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
-
-	_fps_string = '%s fps' % str(sys_get_fps())
-	blit_string(WINDOW_SIZE[0]-len(_fps_string), MAP_WINDOW_SIZE[1]+1,_fps_string)
+	
+	_string = '%s fps ' % str(sys_get_fps())
+	_string += 'X: %s Y: %s Z: %s' % (MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2])
+	
+	blit_string(MAP_WINDOW_SIZE[0]-len(_string),
+			MAP_WINDOW_SIZE[1]-1,
+			_string,
+			console=MAP_WINDOW,
+			fore_color=Color(255,255,255),
+			back_color=Color(0,0,0),
+			flicker=0)
 
 def draw_message_box():	
 	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))

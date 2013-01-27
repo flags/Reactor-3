@@ -310,10 +310,10 @@ def combat(life,target,source_map):
 	
 	if not lfe.can_see(life,target['life']['pos']):
 		if not target['escaped'] and not travel_to_target(life,target,target['last_seen_at'],source_map):
+			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			target['escaped'] = True
 		elif target['escaped']:
-			#TODO: Now where do we go next?
-			pass
+			search_for_target(life,target,source_map)
 		
 		return False
 	
@@ -321,6 +321,9 @@ def combat(life,target,source_map):
 		lfe.clear_actions(life)
 	
 	lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
+
+def score_search(life,target,pos):
+	return -numbers.distance(life['pos'],pos)
 
 def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
@@ -361,21 +364,18 @@ def travel_to_target(life,target,pos,source_map):
 	
 	return False
 
+def search_for_target(life,target,source_map):
+	print 'DERP!'
+	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search)
+	
+	if _cover:
+		lfe.clear_actions(life)
+		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
+		return False
+	
+	return True
+
 def escape(life,target,source_map):
-	#So we need to get away from the target...
-	#The thing is that we really need to be considering everyone
-	#rather than just the target. Hopefully the target finding function
-	#will do that for us (we'll assume that it will for now.)
-	
-	#To get away, we need to make sure we actually can first.
-	#Hard to understand, but let's break it down:
-	#	If we're hiding in the first place, then it's okay
-	#to kinda have this function do it's own little thing
-	#and take control of the character...
-	
-	#We're most likely in sight of the target if this is running.
-	
-	#Step #1: Find our escape route.
 	_escape = generate_los(life,target,target['life']['pos'],source_map,score_escape)
 	
 	if _escape:
