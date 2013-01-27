@@ -4,6 +4,7 @@ import pathfinding
 import language
 import drawing
 import logging
+import weapons
 import numbers
 import effects
 import random
@@ -211,12 +212,31 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	#ALife
 	_life['know'] = {}
+	_life['memory'] = []
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
 	LIFE.append(_life)
 	
 	return _life
+
+def memory(life,memory,**kvargs):
+	_entry = {'text': memory}
+	_entry.update(kvargs)
+	print _entry
+	life['memory'].append(_entry)
+
+def get_recent_memories(life,number):
+	return life['memory'][len(life['memory'])-number:]
+
+def create_recent_history(life,depth=10):
+	_story = ''
+	
+	_line = '%s %s ' % (life['name'][0],life['name'][1])
+	for entry in life['memory'][len(life['memory'])-depth:]:
+		_line += '%s.' % entry['text']
+	
+	return _line	
 
 def path_dest(life):
 	"""Returns the end of the current path."""
@@ -556,6 +576,14 @@ def perform_action(life):
 			gfx.message('The magazine is full.')
 		
 		delete_action(life,action)
+	
+	elif _action['action'] == 'shoot':
+		weapons.fire(life,_action['target'])
+		
+		delete_action(life,action)
+	
+	else:
+		logging.warning('Unhandled action: %s' % _action['action'])
 	
 	return True
 
@@ -1322,6 +1350,9 @@ def get_all_attached_limbs(life,limb):
 def damage_from_fall(life,dist):
 	print 'FELL',dist
 	
+	memory(life,'fell %s feet' % (dist*15),
+		pos=life['pos'][:])
+	
 	if 0<dist<=3:
 		if 'player' in life:
 			gfx.message('You land improperly!')
@@ -1332,6 +1363,10 @@ def damage_from_fall(life,dist):
 				if life['body'][leg]['bruised']:
 					add_pain_to_limb(life,leg,amount=dist*2)
 				else:
+					memory(life,'bruised their %s in a fall' % (leg),
+						pos=life['pos'][:],
+						limb=leg)
+					
 					bruise_limb(life,leg)
 					add_pain_to_limb(life,leg,amount=dist)
 			
@@ -1345,6 +1380,10 @@ def damage_from_fall(life,dist):
 				if life['body'][leg]['broken']:
 					add_pain_to_limb(life,leg,amount=dist*10)
 				else:
+					memory(life,'broke their %s in a fall' % (leg),
+						pos=life['pos'][:],
+						limb=leg)
+					
 					break_limb(life,leg)
 					add_pain_to_limb(life,leg,amount=dist*3)
 	else:

@@ -314,9 +314,14 @@ def combat(life,target,source_map):
 		return False
 	
 	#print 'combat'
+	#_wep = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	#_wep = lfe.get_inventory_item(life,_wep[0])
+	#_feed = weapons.get_feed(_wep)
 	
-	#TODO: Shoot function...
-	weapons.fire(life,target['life']['pos'])
+	#weapons.fire(life,target['life']['pos'])
+	if not len(lfe.find_action(life,matches=[{'action': 'shoot', 'target': target['life']['pos']}])):
+		lfe.clear_actions(life)
+	lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
 
 def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)

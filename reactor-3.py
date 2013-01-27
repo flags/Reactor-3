@@ -343,6 +343,9 @@ def handle_input():
 		
 		create_pick_up_item_menu(_items)
 	
+	if INPUT['b']:
+		print life.create_recent_history(SETTINGS['following'])
+	
 	if INPUT['y']:
 		SETTINGS['following'] = LIFE[0]
 
