@@ -297,13 +297,7 @@ def judge(life,target):
 	
 	if _target_armed:
 		_dislike += 30
-	#if _self_armed and _target_armed:
-	#	_dislike += 50
-	#elif not _self_armed and _target_armed:
-	#	_dislike += 50
-	#elif _self_armed and not _target_armed:
-	#	_like += 50
-	
+
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
 	#TODO: Added "scared by", so a fear of guns would subtract from
@@ -315,9 +309,11 @@ def combat(life,target,source_map):
 		return False
 	
 	if not lfe.can_see(life,target['life']['pos']):
-		if not find_target(life,target,target['last_seen_at'],source_map):
+		if not target['escaped'] and not travel_to_target(life,target,target['last_seen_at'],source_map):
 			target['escaped'] = True
-			#print target.keys()
+		elif target['escaped']:
+			#TODO: Now where do we go next?
+			pass
 		
 		return False
 	
@@ -330,13 +326,15 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def score_escape(life,target,pos):
-	#_score = -numbers.distance(life['pos'],pos)
 	_score = -numbers.distance(target['pos'],pos)
 	
 	if not lfe.can_see(target,pos):
 		_score -= 25
 	
 	return _score
+
+def score_find_target(life,target,pos):
+	return -numbers.distance(life['pos'],pos)
 
 def score_hide(life,target,pos):
 	return numbers.distance(life['pos'],pos)
@@ -355,10 +353,9 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def find_target(life,target,pos,source_map):
-	lfe.clear_actions(life)
-	
+def travel_to_target(life,target,pos,source_map):	
 	if not tuple(life['pos']) == tuple(pos):
+		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 		return True
 	
@@ -474,7 +471,7 @@ def handle_lost_los(life):
 		_score = judge(life,_target['life'])#_target['score']
 		
 		if _target['escaped']:
-			_score += _target['last_seen_time']
+			_score += (_target['last_seen_time']/2)
 			print _score
 		#print _score
 		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
