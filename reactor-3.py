@@ -347,10 +347,12 @@ def handle_input():
 		print life.create_recent_history(SETTINGS['following'])
 	
 	if INPUT['y']:
-		SETTINGS['following'] = LIFE[0]
+		if LIFE.index(SETTINGS['following'])<len(LIFE)-1:
+			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])+1]
 
 	if INPUT['u']:
-		SETTINGS['following'] = LIFE[1]
+		if LIFE.index(SETTINGS['following'])>0:
+			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])-1]
 	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
