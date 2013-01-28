@@ -123,6 +123,12 @@ def _equip_weapon(life):
 	
 	return True
 
+def is_weapon_equipped(life):
+	return lfe.get_held_items(life,matches=[{'type': 'gun'}])
+
+def has_weapon(life):
+	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
+
 def get_best_weapon(life):
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
@@ -162,7 +168,6 @@ def get_best_weapon(life):
 			_best_wep['feed'] = _best_feed['feed']
 	
 	if not _best_wep['weapon']:
-		print 'No weapon!'
 		return False
 	
 	return _best_wep
@@ -365,8 +370,9 @@ def travel_to_target(life,target,pos,source_map):
 	return False
 
 def search_for_target(life,target,source_map):
-	print 'DERP!'
 	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search)
+	
+	print 'derp'
 	
 	if _cover:
 		lfe.clear_actions(life)
@@ -400,7 +406,10 @@ def hide(life,target,source_map):
 
 def handle_hide(life,target,source_map):
 	_weapon = get_best_weapon(life)	
-	_feed = weapons.get_feed(_weapon['weapon'])
+	_feed = None
+	
+	if _weapon:
+		_feed = weapons.get_feed(_weapon['weapon'])		
 	
 	#TODO: Can we merge this into get_best_weapon()?
 	_has_loaded_ammo = False
@@ -408,7 +417,7 @@ def handle_hide(life,target,source_map):
 		if _feed['rounds']:
 			_has_loaded_ammo = True
 	
-	if _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
+	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
 		return hide(life,target,source_map)
 	else:
 		return escape(life,target,source_map)
@@ -458,6 +467,25 @@ def generate_los(life,target,at,source_map,score_callback,invert=False):
 	
 	return _cover
 
+def handle_potential_combat_encounter(life,target,source_map):
+	if is_weapon_equipped(life):
+		combat(life,target,source_map)
+	else:
+		handle_hide_and_decide(life,target,source_map)
+
+def handle_hide_and_decide(life,target,source_map):
+	if handle_hide(life,target,source_map):
+		#TODO: Just need a general function to make sure we have a weapon
+		if has_weapon(life):
+			#If we're not ready, prepare for combat
+			if not _weapon_equipped_and_ready(life):
+				if not 'equipping' in life:
+					if _equip_weapon(life):
+						life['equipping'] = True
+			else:
+				#TODO: ALife is hiding now...'
+				pass
+
 def handle_lost_los(life):
 	if life['in_combat']:
 		#TODO: Do something here...
@@ -467,19 +495,10 @@ def handle_lost_los(life):
 	_nearest_target = {'target': None,'score': 0}
 	for entry in life['know']:
 		_target = life['know'][entry]
-		#TODO: Kinda messing up this system a bit but it'll work for now.
-		_score = judge(life,_target['life'])#_target['score']
+		_score = judge(life,_target['life'])
 		
 		if _target['escaped']:
 			_score += (_target['last_seen_time']/2)
-			print _score
-		#print _score
-		#_score -= numbers.distance(life['pos'],_target['last_seen_at'])
-		
-		#print _target['last_seen_time']
-		
-		#if _target['last_seen_time'] >= 350:
-		#	continue
 		
 		if _score < _nearest_target['score']:
 			_nearest_target['target'] = _target
@@ -497,7 +516,6 @@ def in_danger(life,target):
 		else:
 			return False
 	
-	#print abs(target['score']),judge_self(life)
 	if abs(target['score']) >= judge_self(life):
 		return True
 	else:
@@ -546,19 +564,10 @@ def understand(life,source_map):
 	
 	if _target['who']:
 		if in_danger(life,_target):
-			if handle_hide(life,_target['who'],source_map):
-				#If we're not ready, prepare for combat
-				if not _weapon_equipped_and_ready(life):
-					if not 'equipping' in life:
-						if _equip_weapon(life):
-							life['equipping'] = True
-				else:
-					#TODO: ALife is hiding now...'
-					pass
-					
+			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			combat(life,_target['who'],source_map)
-		#life['in_combat'] = False
+			handle_potential_combat_encounter(life,_target['who'],source_map)
+		
 	else:
 		#TODO: Idle?
 		print 'Away from trouble.'

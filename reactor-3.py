@@ -770,12 +770,12 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
-_test = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[20,10,2])
-#_test2 = life.create_life('Human',name=['derp','yerp'],map=MAP,position=[10,10,2])
-PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[15,5,2])
+_test = life.create_life('Human',name=['test1',''],map=MAP,position=[50,40,2])
+_test2 = life.create_life('Human',name=['test2',''],map=MAP,position=[50,50,2])
+PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,10,2])
 PLAYER['player'] = True
 
-SETTINGS['following'] = PLAYER
+SETTINGS['following'] = _test
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -798,6 +798,8 @@ _i9 = items.create_item('sneakers')
 _i10 = items.create_item('leather backpack')
 _i11 = items.create_item('glock')
 _i12 = items.create_item('9x19mm magazine')
+_i13 = items.create_item('leather backpack')
+_i14 = items.create_item('sneakers')
 
 items.move(_i4,0,1,_velocity=1)
 items.move(_i4_,0,1,_velocity=1)
@@ -813,6 +815,8 @@ life.add_item_to_inventory(_test,_i9)
 life.add_item_to_inventory(_test,_i10)
 life.add_item_to_inventory(_test,_i11)
 life.add_item_to_inventory(_test,_i12)
+#life.add_item_to_inventory(_test2,_i14)
+life.add_item_to_inventory(_test2,_i13)
 
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))

@@ -1411,7 +1411,6 @@ def damage_from_item(life,item,damage):
 		
 		cut_limb(life,random.choice(_poss_limbs))
 	
-	print 'DAMNAGE DUDE!'
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
 	#_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
