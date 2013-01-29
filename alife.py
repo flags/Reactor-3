@@ -310,8 +310,12 @@ def judge(life,target):
 	return _like-_dislike
 
 def combat(life,target,source_map):
-	if not target['escaped'] and not position_for_combat(life,target,target['last_seen_at'],source_map):
+	_pos_for_combat = position_for_combat(life,target,target['last_seen_at'],source_map)
+	
+	if not target['escaped'] and not _pos_for_combat:
 		return False
+	elif _pos_for_combat:
+		lfe.clear_actions(life,matches=[{'action': 'move'}])
 	
 	if not lfe.can_see(life,target['life']['pos']):
 		if not target['escaped'] and not travel_to_target(life,target,target['last_seen_at'],source_map):
@@ -322,10 +326,8 @@ def combat(life,target,source_map):
 		
 		return False
 	
-	if not len(lfe.find_action(life,matches=[{'action': 'shoot', 'target': target['life']['pos']}])):
-		lfe.clear_actions(life)
-	
-	lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
+	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
+		lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
 
 def score_search(life,target,pos):
 	return -numbers.distance(life['pos'],pos)
@@ -350,6 +352,13 @@ def score_hide(life,target,pos):
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
 	
+	#print 'Finding position for combat'
+	
+	#TODO: Eventually this should be written into the pathfinding logic
+	if lfe.can_see(life,target['life']['pos']):
+		lfe.clear_actions(life)
+		return True
+	
 	#What can the target see?
 	#TODO: Unchecked Cython flag
 	_attack_from = generate_los(life,target,position,source_map,score_shootcover,invert=True)
@@ -362,6 +371,8 @@ def position_for_combat(life,target,position,source_map):
 	return True
 
 def travel_to_target(life,target,pos,source_map):
+	#print 'Traveling'
+	
 	if not tuple(life['pos']) == tuple(pos):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -372,7 +383,7 @@ def travel_to_target(life,target,pos,source_map):
 def search_for_target(life,target,source_map):
 	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
-	#print 'derp'
+	#print 'Searching'
 	
 	if _cover:
 		lfe.clear_actions(life)

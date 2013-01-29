@@ -331,21 +331,24 @@ def get_highest_action(life):
 	else:
 		return None
 
-def clear_actions(life):
+def clear_actions_matching(life,matches):
+	for match in matches[:]:
+		for action in life['actions']:
+			for key in match:
+				if key in action['action'] and match[key] == action['action'][key]:
+					life['actions'].remove(action)
+					#print 'Removed matched item: ',action
+					break
+
+def clear_actions(life,matches=[]):
 	"""Clears all actions and prints a cancellation message for the highest scoring action."""
-	#TODO: Any way to improve this?
-	if life['actions'] and not life['actions'][0]['action']['action']=='move':
-		_action = life['actions'][0]['action']['action']
-		
-		logging.debug('%s %s cancels %s' % (life['name'][0],life['name'][1],_action))
-		
-		if life.has_key('player'):
-			try:
-				gfx.message(MESSAGE_BANK['cancel'+_action])
-			except KeyError:
-				logging.warning('Unhandled cancel message for action \'%s\'.' % _action)
-		
-	life['actions'] = []
+	
+	if matches:
+		clear_actions_matching(life,matches)
+		return True
+	else:
+		clear_actions_matching(life,matches=[{'action': 'move'}])
+		return True
 
 def find_action(life,matches=[{}]):
 	_matching_actions = []
@@ -382,6 +385,9 @@ def add_action(life,action,score,delay=0):
 		return False
 	
 	_tmp_action['delay'] = delay
+	
+	if _tmp_action in life['actions']:
+		return False
 	
 	_index = 0
 	for queue_action in life['actions']:
