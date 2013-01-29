@@ -310,7 +310,7 @@ def judge(life,target):
 	return _like-_dislike
 
 def combat(life,target,source_map):
-	if not position_for_combat(life,target,target['last_seen_at'],source_map):
+	if not target['escaped'] and not position_for_combat(life,target,target['last_seen_at'],source_map):
 		return False
 	
 	if not lfe.can_see(life,target['life']['pos']):
@@ -361,7 +361,7 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life,target,pos,source_map):	
+def travel_to_target(life,target,pos,source_map):
 	if not tuple(life['pos']) == tuple(pos):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -370,9 +370,9 @@ def travel_to_target(life,target,pos,source_map):
 	return False
 
 def search_for_target(life,target,source_map):
-	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search)
+	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
-	print 'derp'
+	#print 'derp'
 	
 	if _cover:
 		lfe.clear_actions(life)
@@ -422,7 +422,7 @@ def handle_hide(life,target,source_map):
 	else:
 		return escape(life,target,source_map)
 
-def generate_los(life,target,at,source_map,score_callback,invert=False):
+def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
 	
@@ -446,7 +446,7 @@ def generate_los(life,target,at,source_map,score_callback,invert=False):
 		if life['pos'][0]-_top_left[0]>=target_los.shape[0] or life['pos'][1]-_top_left[1]>=target_los.shape[1]:
 			continue
 		
-		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]==invert:
+		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]==invert and not ignore_starting:
 			_cover['pos'] = life['pos'][:]
 			return False
 		
