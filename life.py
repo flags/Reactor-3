@@ -1400,28 +1400,30 @@ def damage_from_fall(life,dist):
 	return True
 
 def damage_from_item(life,item,damage):
+	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
+	#Here, have some help :)
+	#print item['velocity']
+	
+	#We'll probably want to randomly select a limb out of a group of limbs right now...
+	_rand_limb = random.choice(life['body'].keys())
+	_poss_limbs = [_rand_limb]
+	
+	if 'parent' in life['body'][_rand_limb]:
+		_poss_limbs.append(life['body'][_rand_limb]['parent'])
+	
+	if 'children' in life['body'][_rand_limb]:
+		_poss_limbs.append(life['body'][_rand_limb]['children'][0])
+
+	_hit_limb = random.choice(_poss_limbs)
+
 	if item['sharp']:
-		#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
-		#Here, have some help :)
-		#print item['velocity']
-		
-		#We'll probably want to randomly select a limb out of a group of limbs right now...
-		_rand_limb = random.choice(life['body'].keys())
-		_poss_limbs = [_rand_limb]
-		
-		if 'parent' in life['body'][_rand_limb]:
-			_poss_limbs.append(life['body'][_rand_limb]['parent'])
-		
-		if 'children' in life['body'][_rand_limb]:
-			_poss_limbs.append(life['body'][_rand_limb]['children'][0])
-		
-		cut_limb(life,random.choice(_poss_limbs))
+		cut_limb(life,_hit_limb)
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
 	#_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
 	
-	life['body']['chest']['condition'] -= _damage
+	life['body'][_hit_limb]['condition'] -= _damage
 	
 	create_and_update_self_snapshot(life)
 	
