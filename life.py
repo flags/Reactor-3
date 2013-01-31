@@ -220,6 +220,13 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	return _life
 
+def say(life,text,action=False):
+	if action:
+		text = text.replace('@n',' '.join(life['name']))
+	
+	print text
+	gfx.message(text)
+
 def memory(life,memory,**kvargs):
 	_entry = {'text': memory}
 	_entry.update(kvargs)
@@ -1337,8 +1344,10 @@ def add_pain_to_limb(life,limb,amount=1):
 		
 		if 'player' in life:
 			gfx.message('The pain becomes too much.')
+		else:
+			say(life,'@n passes out.',action=True)
 		
-			pass_out(life)
+		pass_out(life)
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -1403,6 +1412,8 @@ def damage_from_item(life,item,damage):
 	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
 	#Here, have some help :)
 	#print item['velocity']
+	print 'BULLET HIT'
+	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
 	_rand_limb = random.choice(life['body'].keys())
@@ -1418,6 +1429,12 @@ def damage_from_item(life,item,damage):
 
 	if item['sharp']:
 		cut_limb(life,_hit_limb)
+		add_pain_to_limb(life,_hit_limb,amount=12)
+		_hit_type = 'cut'
+	else:
+		bruise_limb(life,_hit_limb)
+		add_pain_to_limb(life,_hit_limb,amount=8)
+		_hit_type = 'blunt'
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
@@ -1427,10 +1444,14 @@ def damage_from_item(life,item,damage):
 	
 	create_and_update_self_snapshot(life)
 	
+	print get_total_pain(life)
+	
 	if life.has_key('player'):
 		gfx.message('You feel a sudden force against you. (-%s)' % _damage)
 	else:
 		#TODO: This should be filed into the event system for the ALife's memory.
+		if _hit_type == 'cut':
+			say(life,'A bullet hits @n\'s %s, tearing the flesh!' % _hit_limb,action=True)
 		#gfx.message('%s rips through %s\'s chest! (-%s)' % (items.get_name(item),life['name'],_damage))
 		pass
 
