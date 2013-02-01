@@ -766,10 +766,10 @@ def tick_all_objects():
 	items.tick_all_items(MAP)
 	life.tick_all_life(MAP)
 	bullets.tick_bullets(MAP)
-	effects.tick_effects()
+	#effects.tick_effects()
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
-effects.create_gas((0,0,2),'smoke',3,MAP)
+effects.create_gas((5,10,2),'smoke',3,MAP)
 
 SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
@@ -885,7 +885,7 @@ while RUNNING:
 	life.draw_life_info(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
-	gfx.draw_effects()
+	#gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_console()
 	gfx.start_of_frame()

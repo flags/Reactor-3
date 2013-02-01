@@ -215,11 +215,12 @@ def draw_effects():
 			#_drawn = False
 	
 			for effect in EFFECTS:
-				effect['size'] = (40,40)
+				effect['size'] = (50,90)
 				
-				if (x>=effect['where'][0] and x<=effect['where'][0]+effect['size'][0]) and (y>=effect['where'][1] and y<=effect['where'][1]+effect['size'][1]):
+				if (x>=effect['top_left'][0] and x<=effect['top_left'][0]+effect['size'][0]) and (y>=effect['top_left'][1] and y<=effect['top_left'][1]+effect['size'][1]):
 					if effect['height_map'][_RENDER_Y,_RENDER_X]>0:
-						darken_tile(_RENDER_X,_RENDER_Y,effect['height_map'][_RENDER_Y,_RENDER_X]*55)
+						darken_tile(_RENDER_X,_RENDER_Y,effect['height_map'][_RENDER_Y,_RENDER_X])
+						#print effect['height_map'][_RENDER_Y,_RENDER_X]
 
 def draw_dijkstra_heatmap():
 	if not SETTINGS['heatmap']:
