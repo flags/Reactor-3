@@ -198,6 +198,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	_life['path'] = []
 	_life['actions'] = []
+	_life['conversations'] = []
+	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
 	_life['flags'] = {}
@@ -220,6 +222,30 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	LIFE.append(_life)
 	
 	return _life
+
+def create_conversation(life,gist,say=None,action=None):
+	_convo = {'gist': gist,'say': say,'action': action,'heard': []}
+	
+	if gist in [convo['gist'] for convo in life['conversations']]:
+		return False
+	
+	logging.debug('Created new conversation: %s' % gist)
+	
+	for entry in LIFE:
+		if entry['id'] == life['id']:
+			continue
+		
+		#TODO: 30?
+		if numbers.distance(life['pos'],entry['pos'])<=30:
+			hear(entry,{'from': life,'gist': gist})
+	
+	life['conversations'].append(_convo)
+
+def hear(life,what):
+	what['when'] = time.time()
+	life['heard'].append(what)
+	
+	logging.debug('%s heard %s.' % (' '.join(life['name']),' '.join(what['from']['name'])))
 
 def say(life,text,action=False):
 	if action:

@@ -173,44 +173,6 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def look(life):
-	life['seen'] = []
-	
-	for ai in LIFE:
-		if ai['id'] == life['id']:
-			continue
-		
-		if numbers.distance(life['pos'],ai['pos']) > 30:
-			#TODO: "see" via other means?
-			continue
-		
-		if not lfe.can_see(life,ai['pos']):
-			continue
-		
-		life['seen'].append(str(ai['id']))
-		
-		#TODO: Don't pass entire life, just id
-		if str(ai['id']) in life['know']:
-			life['know'][str(ai['id'])]['last_seen_time'] = 0
-			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
-			life['know'][str(ai['id'])]['escaped'] = False
-			continue
-			
-		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
-		
-		life['know'][str(ai['id'])] = {'life': ai,
-			'score': 0,
-			'last_seen_time': 0,
-			'last_seen_at': ai['pos'][:],
-			'escaped': False,
-			'snapshot': {}}
-	
-	#logging.debug('\tTargets: %s' % (len(life['seen'])))
-
-def hear(life):
-	for event in life['heard']:
-		print event
-
 def update_self_snapshot(life,snapshot):
 	life['snapshot'] = snapshot
 
@@ -536,15 +498,67 @@ def in_danger(life,target):
 	else:
 		return False
 
+def communicate(life,gist):
+	lfe.create_conversation(life,gist)
+
+def look(life):
+	life['seen'] = []
+	
+	for ai in LIFE:
+		if ai['id'] == life['id']:
+			continue
+		
+		if numbers.distance(life['pos'],ai['pos']) > 30:
+			#TODO: "see" via other means?
+			continue
+		
+		if not lfe.can_see(life,ai['pos']):
+			continue
+		
+		life['seen'].append(str(ai['id']))
+		
+		#TODO: Don't pass entire life, just id
+		if str(ai['id']) in life['know']:
+			life['know'][str(ai['id'])]['last_seen_time'] = 0
+			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
+			life['know'][str(ai['id'])]['escaped'] = False
+			continue
+			
+		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
+		
+		life['know'][str(ai['id'])] = {'life': ai,
+			'score': 0,
+			'last_seen_time': 0,
+			'last_seen_at': ai['pos'][:],
+			'escaped': False,
+			'snapshot': {},
+			'consider': []}
+	
+	#logging.debug('\tTargets: %s' % (len(life['seen'])))
+
+def listen(life):
+	for event in life['heard'][:]:
+		_age = time.time()-event['when']
+		
+		if not str(event['from']['id']) in life['know']:
+			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
+		
+		if event['gist'] == 'surrender':
+			life['know'][str(event['from']['id'])]['consider'].append('surrender')
+			logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+		
+		life['heard'].remove(event)
+
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
 	
 	_known_targets_not_seen = life['know'].keys()
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']:
-		print life['pain_tolerance'],lfe.get_total_pain(life)
-		if random.randint(life['pain_tolerance'],lfe.get_total_pain(life))>=20:
-			lfe.say(life,'@n begins to stumble.',action=True)
+		communicate(life,'surrender')
+		#print life['pain_tolerance'],lfe.get_total_pain(life)
+		#if random.randint(life['pain_tolerance'],lfe.get_total_pain(life))>=20:
+		#	lfe.say(life,'@n begins to stumble.',action=True)
 	
 	for entry in life['seen']:
 		_known_targets_not_seen.remove(entry)
@@ -552,6 +566,9 @@ def understand(life,source_map):
 		target = life['know'][entry]
 		
 		_score = target['score']
+		
+		if 'surrender' in target['consider']:
+			print 'Ignore'
 		
 		if target['life']['asleep']:
 			continue
@@ -594,16 +611,8 @@ def understand(life,source_map):
 	else:
 		#TODO: Idle?
 		print 'Away from trouble.'
-	
-	#print _target['who'].keys()
-	
-	#TODO: Life should use all stats instead of the judge function
-	#print abs(_target['score']),abs(judge(life,life))
 
 def think(life,source_map):
-	#logging.debug('*THINKING*')
-	#logging.debug('Look:')
 	look(life)
-	
-	#logging.debug('Understand:')
+	listen(life)
 	understand(life,source_map)
