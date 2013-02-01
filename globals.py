@@ -91,6 +91,7 @@ LIFE = []
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
+EFFECTS = []
 
 #Consoles
 MAP_WINDOW = None

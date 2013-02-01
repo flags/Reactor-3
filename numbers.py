@@ -1,6 +1,7 @@
 from globals import *
 from math import *
 import pathfinding
+import render_los
 import logging
 import numpy
 import tiles

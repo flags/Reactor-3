@@ -331,3 +331,18 @@ def flood_select_by_tile(map_array,tile_id,where,fuzzy=True):
 							_to_check.append((x,y,z))
 	
 	return _checked
+
+def get_collision_map(map_array,start,end,mark=1):
+	x_size = end[0]-start[0]
+	y_size = end[1]-start[1]
+	z = start[2]
+	
+	collision_map = numpy.zeros((x_size,y_size))
+	
+	for x in range(x_size):
+		for y in range(y_size):
+			
+			if map_array[x][y][z+1]:# and map_array[x][y][z+2]:
+				collision_map[y,x] = mark
+	
+	return collision_map

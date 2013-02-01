@@ -8,6 +8,7 @@ import maputils
 import drawing
 import logging
 import weapons
+import effects
 import numbers
 import bullets
 import random
@@ -765,8 +766,10 @@ def tick_all_objects():
 	items.tick_all_items(MAP)
 	life.tick_all_life(MAP)
 	bullets.tick_bullets(MAP)
+	effects.tick_effects()
 
 LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
+effects.create_gas((0,0,2),'smoke',3,MAP)
 
 SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
@@ -777,7 +780,7 @@ _test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,10,2])
 PLAYER['player'] = True
 
-SETTINGS['following'] = _test
+SETTINGS['following'] = PLAYER
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -882,9 +885,9 @@ while RUNNING:
 	life.draw_life_info(PLAYER)
 	menus.align_menus()
 	menus.draw_menus()
+	gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_console()
-	#gfx.draw_dijkstra_heatmap()
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
