@@ -13,6 +13,7 @@ import render_los
 import weapons
 import logging
 import numbers
+import random
 import maps
 import time
 
@@ -279,6 +280,9 @@ def judge(life,target):
 	_like = 0
 	_dislike = 0
 	
+	if target['asleep']:
+		return 0
+	
 	for limb in [target['body'][limb] for limb in target['body']]:
 		#TODO: Mark as target?
 		if limb['bleeding']:
@@ -537,12 +541,20 @@ def understand(life,source_map):
 	
 	_known_targets_not_seen = life['know'].keys()
 	
+	if lfe.get_total_pain(life) > life['pain_tolerance']:
+		print life['pain_tolerance'],lfe.get_total_pain(life)
+		if random.randint(life['pain_tolerance'],lfe.get_total_pain(life))>=20:
+			lfe.say(life,'@n begins to stumble.',action=True)
+	
 	for entry in life['seen']:
 		_known_targets_not_seen.remove(entry)
 		
 		target = life['know'][entry]
 		
 		_score = target['score']
+		
+		if target['life']['asleep']:
+			continue
 		
 		_stime = time.time()
 		if process_snapshot(life,target['life']):
@@ -556,7 +568,7 @@ def understand(life,source_map):
 			_target['score'] = _score
 	
 	for _not_seen in _known_targets_not_seen:
-		#TODO: 25?
+		#TODO: 350?
 		if life['know'][_not_seen]['last_seen_time']<350:
 			life['know'][_not_seen]['last_seen_time'] += 1	
 	

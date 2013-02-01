@@ -59,20 +59,20 @@ def calculate_base_stats(life):
 
 def calculate_limb_conditions(life):
 	for limb in [life['body'][limb] for limb in life['body']]:
-		_pain_mod = limb['pain']+1
+		_pain_mod = numbers.clip(limb['pain'],1,100)
 		_condition = 100
 		
 		if limb['bleeding']:
-			_condition-=(15*_pain_mod)
+			_condition-=(3*_pain_mod)
 		
 		if limb['cut']:
-			_condition-=(20*_pain_mod)
+			_condition-=(5*_pain_mod)
 		
 		if limb['bruised']:
-			_condition-=(15*_pain_mod)
+			_condition-=(1*_pain_mod)
 		
 		if limb['broken']:
-			_condition-=(30*_pain_mod)
+			_condition-=(7*_pain_mod)
 		
 		limb['condition'] = _condition
 
@@ -206,6 +206,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
 	_life['blood'] = 600
+	_life['consciousness'] = 100
 	_life['dead'] = False
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
@@ -629,6 +630,21 @@ def tick(life,source_map):
 				gfx.message('You wake up.')
 		
 		return False
+	
+	if get_total_pain(life)>life['pain_tolerance']:		
+		life['consciousness'] -= get_total_pain(life)-life['pain_tolerance']
+		
+		if life['consciousness'] <= 0:
+			life['consciousness'] = 0
+			
+			if 'player' in life:
+				gfx.message('The pain becomes too much.')
+			else:
+				say(life,'@n passes out.',action=True)
+			
+			pass_out(life)
+			
+			return False
 	
 	calculate_limb_conditions(life)
 	perform_collisions(life)
@@ -1337,17 +1353,6 @@ def add_pain_to_limb(life,limb,amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount
-	
-	if get_total_pain(life)>life['pain_tolerance']:		
-		if life['asleep']:
-			return False
-		
-		if 'player' in life:
-			gfx.message('The pain becomes too much.')
-		else:
-			say(life,'@n passes out.',action=True)
-		
-		pass_out(life)
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
