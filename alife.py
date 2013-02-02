@@ -184,7 +184,8 @@ def update_snapshot_of_target(life,target,snapshot):
 def create_snapshot(life):
 	_snapshot = {'condition': 0,
 		'appearance': 0,
-		'visible_items': []}
+		'visible_items': [],
+		'generated': time.time()}
 
 	for limb in life['body']:
 		_snapshot['condition'] += lfe.get_limb_condition(life,limb)
@@ -204,76 +205,6 @@ def process_snapshot(life,target):
 	update_snapshot_of_target(life,target,_ss)
 	
 	return True
-
-def judge_self(life):
-	_confidence = 0
-	_limb_confidence = 0
-	
-	for limb in [life['body'][limb] for limb in life['body']]:
-		#TODO: Mark as target?
-		if not limb['bleeding']:
-			_limb_confidence += 1
-		
-		if not limb['bruised']:
-			_limb_confidence += 2
-		
-		if not limb['broken']:
-			_limb_confidence += 3
-	
-	#TODO: There's a chance to fake confidence here
-	#If we're holding a gun, that's all the other ALifes see
-	#and they judge based on that (unless they've heard you run
-	#out of ammo.)
-	#For now we'll consider ammo just because we can...
-	_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	
-	if _self_armed:
-		_weapon = lfe.get_inventory_item(life,_self_armed[0])
-		_feed = weapons.get_feed(_weapon)
-		
-		if _feed and _feed['rounds']:
-			_confidence += 30
-		else:
-			_confidence -= 30
-	
-	return _confidence+_limb_confidence
-
-def judge(life,target):
-	_like = 0
-	_dislike = 0
-	
-	if target['asleep']:
-		return 0
-	
-	for limb in [target['body'][limb] for limb in target['body']]:
-		#TODO: Mark as target?
-		if limb['bleeding']:
-			_like += 1
-		else:
-			_dislike += 1
-		
-		if limb['bruised']:
-			_like += 2
-		else:
-			_dislike += 2
-		
-		if limb['broken']:
-			_like += 3
-		else:
-			_dislike += 3
-	
-	#Am I armed?
-	#_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	_target_armed = lfe.get_held_items(target,matches=[{'type': 'gun'}])
-	
-	if _target_armed:
-		_dislike += 30
-
-	#TODO: Add modifier depending on type of weapon
-	#TODO: Consider if the AI has heard the target run out of ammo
-	#TODO: Added "scared by", so a fear of guns would subtract from
-	
-	return _like-_dislike
 
 def combat(life,target,source_map):
 	_pos_for_combat = position_for_combat(life,target,target['last_seen_at'],source_map)
@@ -472,7 +403,7 @@ def handle_lost_los(life):
 	_nearest_target = {'target': None,'score': 0}
 	for entry in life['know']:
 		_target = life['know'][entry]
-		_score = judge(life,_target['life'])
+		_score = judge(life,_target)
 		
 		if _target['escaped']:
 			_score += (_target['last_seen_time']/2)
@@ -497,6 +428,79 @@ def in_danger(life,target):
 		return True
 	else:
 		return False
+
+def judge_self(life):
+	_confidence = 0
+	_limb_confidence = 0
+	
+	for limb in [life['body'][limb] for limb in life['body']]:
+		#TODO: Mark as target?
+		if not limb['bleeding']:
+			_limb_confidence += 1
+		
+		if not limb['bruised']:
+			_limb_confidence += 2
+		
+		if not limb['broken']:
+			_limb_confidence += 3
+	
+	#TODO: There's a chance to fake confidence here
+	#If we're holding a gun, that's all the other ALifes see
+	#and they judge based on that (unless they've heard you run
+	#out of ammo.)
+	#For now we'll consider ammo just because we can...
+	_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if _self_armed:
+		_weapon = lfe.get_inventory_item(life,_self_armed[0])
+		_feed = weapons.get_feed(_weapon)
+		
+		if _feed and _feed['rounds']:
+			_confidence += 30
+		else:
+			_confidence -= 30
+	
+	return _confidence+_limb_confidence
+
+def judge(life,target):
+	_like = 0
+	_dislike = 0
+	
+	if target['life']['asleep']:
+		return 0
+	
+	if 'surrender' in target['consider']:
+		return 1
+	
+	for limb in [target['life']['body'][limb] for limb in target['life']['body']]:
+		#TODO: Mark as target?
+		if limb['bleeding']:
+			_like += 1
+		else:
+			_dislike += 1
+		
+		if limb['bruised']:
+			_like += 2
+		else:
+			_dislike += 2
+		
+		if limb['broken']:
+			_like += 3
+		else:
+			_dislike += 3
+	
+	#Am I armed?
+	#_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	_target_armed = lfe.get_held_items(target['life'],matches=[{'type': 'gun'}])
+	
+	if _target_armed:
+		_dislike += 30
+
+	#TODO: Add modifier depending on type of weapon
+	#TODO: Consider if the AI has heard the target run out of ammo
+	#TODO: Added "scared by", so a fear of guns would subtract from
+	
+	return _like-_dislike
 
 def communicate(life,gist):
 	lfe.create_conversation(life,gist)
@@ -544,8 +548,9 @@ def listen(life):
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			life['know'][str(event['from']['id'])]['consider'].append('surrender')
-			logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+			if not 'surrender' in life['know'][str(event['from']['id'])]['consider']:
+				life['know'][str(event['from']['id'])]['consider'].append('surrender')
+				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 		
 		life['heard'].remove(event)
 
@@ -556,9 +561,6 @@ def understand(life,source_map):
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']:
 		communicate(life,'surrender')
-		#print life['pain_tolerance'],lfe.get_total_pain(life)
-		#if random.randint(life['pain_tolerance'],lfe.get_total_pain(life))>=20:
-		#	lfe.say(life,'@n begins to stumble.',action=True)
 	
 	for entry in life['seen']:
 		_known_targets_not_seen.remove(entry)
@@ -567,22 +569,21 @@ def understand(life,source_map):
 		
 		_score = target['score']
 		
-		if 'surrender' in target['consider']:
-			print 'Ignore'
-		
 		if target['life']['asleep']:
 			continue
 		
 		_stime = time.time()
 		if process_snapshot(life,target['life']):
-			_score = judge(life,target['life'])
+			_score = judge(life,target)
 			target['score'] = _score
 			
 			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
-		if _score > _target['score']:
+		if _score < 0 and _score > _target['score']:
 			_target['who'] = target
 			_target['score'] = _score
+		elif _score>0:
+			print 'Friendly!'
 	
 	for _not_seen in _known_targets_not_seen:
 		#TODO: 350?
@@ -611,6 +612,7 @@ def understand(life,source_map):
 	else:
 		#TODO: Idle?
 		print 'Away from trouble.'
+		#lfe.clear_actions(life,matches=[{'action': 'shoot'}])
 
 def think(life,source_map):
 	look(life)

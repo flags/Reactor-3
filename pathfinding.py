@@ -81,7 +81,7 @@ class Astar:
 		self.fmap[self.start[1],self.start[0]] = self.hmap[self.start[1],self.start[0]]
 		
 		#init time 0.00857901573181
-		print 'init time',time.time()-_s
+		#print 'init time',time.time()-_s
 		
 		self.path = []
 		

@@ -240,6 +240,8 @@ def create_conversation(life,gist,say=None,action=None):
 			hear(entry,{'from': life,'gist': gist})
 	
 	life['conversations'].append(_convo)
+	
+	create_and_update_self_snapshot(life)
 
 def hear(life,what):
 	what['when'] = time.time()
@@ -646,10 +648,15 @@ def tick(life,source_map):
 				
 		return False
 	
+	natural_healing(life)
+	
 	if life['asleep']:
+		print get_total_pain(life),life['asleep']
 		life['asleep'] -= 1
 		
-		if not life['asleep']:
+		if life['asleep']<=0:
+			life['asleep'] = 0
+			
 			logging.debug('%s woke up.' % life['name'][0])
 			
 			if 'player' in life:
@@ -1485,6 +1492,16 @@ def damage_from_item(life,item,damage):
 			say(life,'A bullet hits @n\'s %s, tearing the flesh!' % _hit_limb,action=True)
 		#gfx.message('%s rips through %s\'s chest! (-%s)' % (items.get_name(item),life['name'],_damage))
 		pass
+
+def natural_healing(life):
+	if life['asleep']:
+		_heal_rate = 0.05
+	else:
+		_heal_rate = 0.03
+	
+	for limb in [life['body'][limb] for limb in life['body']]:
+		if limb['pain'] > 10:
+			limb['pain'] -= 0.05
 
 def tick_all_life(source_map):
 	for life in LIFE:
