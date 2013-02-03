@@ -1153,6 +1153,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,mat
 	
 	"""
 	_inventory = []
+	_inventory_items = 0
 		
 	#TODO: Time it would take to remove
 	if show_equipped:
@@ -1166,13 +1167,14 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,mat
 				if not perform_match(item,matches):
 					continue					
 			
-			if item_is_equipped(life,entry,check_hands=check_hands):
+			if item_is_equipped(life,entry,check_hands=check_hands):				
 				_menu_item = menus.create_item('single',
 					item['name'],
 					'Equipped',
 					icon=item['icon'],
 					id=int(entry))
 			
+				_inventory_items += 1
 				_inventory.append(_menu_item)
 	elif check_hands:
 		_title = menus.create_item('title','Holding',None,enabled=False)
@@ -1194,6 +1196,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,mat
 				icon=item['icon'],
 				id=item['id'])
 		
+			_inventory_items += 1
 			_inventory.append(_menu_item)
 	
 	for container in get_all_storage(life):
@@ -1216,7 +1219,11 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,mat
 				icon=item['icon'],
 				id=int(_item))
 			
+			_inventory_items += 1
 			_inventory.append(_menu_item)
+	
+	if not _inventory_items:
+		return []
 	
 	return _inventory
 
@@ -1534,7 +1541,7 @@ def natural_healing(life):
 		
 		if limb['cut']:
 			if limb['bleeding']>0:
-				limb['bleeding'] -= 0.006
+				limb['bleeding'] -= 0.002
 			
 			if limb['bleeding']<0:
 				limb['bleeding'] = 0
