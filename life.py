@@ -207,7 +207,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['targetting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
-	_life['blood'] = 600
+	_life['blood'] = 300
 	_life['consciousness'] = 100
 	_life['dead'] = False
 	_life['snapshot'] = {}
@@ -643,6 +643,8 @@ def tick(life,source_map):
 	if life['dead']:
 		return False
 	
+	#print get_total_pain(life)
+	
 	if calculate_blood(life)<=0:
 		kill(life,'bleedout')
 				
@@ -651,7 +653,6 @@ def tick(life,source_map):
 	natural_healing(life)
 	
 	if life['asleep']:
-		print get_total_pain(life),life['asleep']
 		life['asleep'] -= 1
 		
 		if life['asleep']<=0:
@@ -1285,7 +1286,7 @@ def draw_life_info(life):
 		
 		_i += 1
 	
-	_blood_r = numbers.clip(600-int(life['blood']),0,255)
+	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
 	console_print(0,MAP_WINDOW_SIZE[0]+1,5,'Blood: %s' % life['blood'])
@@ -1365,6 +1366,7 @@ def cut_limb(life,limb):
 		return True
 	
 	_limb['cut'] = True
+	_limb['bleeding'] += 2
 	
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb,style='damage')
@@ -1375,7 +1377,7 @@ def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
-	_limb['bleeding'] = True
+	_limb['bleeding'] += 3
 
 def bruise_limb(life,limb):
 	_limb = life['body'][limb]
@@ -1500,8 +1502,15 @@ def natural_healing(life):
 		_heal_rate = 0.03
 	
 	for limb in [life['body'][limb] for limb in life['body']]:
-		if limb['pain'] > 10:
+		if limb['pain'] > 6:
 			limb['pain'] -= 0.05
+		
+		if limb['cut']:
+			if limb['bleeding']>0:
+				limb['bleeding'] -= 0.006
+			
+			if limb['bleeding']<0:
+				limb['bleeding'] = 0
 
 def tick_all_life(source_map):
 	for life in LIFE:

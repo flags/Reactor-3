@@ -526,6 +526,7 @@ def look(life):
 			life['know'][str(ai['id'])]['last_seen_time'] = 0
 			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
 			life['know'][str(ai['id'])]['escaped'] = False
+			
 			continue
 			
 		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
@@ -583,7 +584,8 @@ def understand(life,source_map):
 			_target['who'] = target
 			_target['score'] = _score
 		elif _score>0:
-			print 'Friendly!'
+			#print 'Friendly!'
+			pass
 	
 	for _not_seen in _known_targets_not_seen:
 		#TODO: 350?
@@ -599,9 +601,9 @@ def understand(life,source_map):
 			_target['score'] = _lost_target['target']['score']
 			_target['danger_score'] = _lost_target['score']
 			_target['last_seen_time'] = _lost_target['target']['last_seen_time']
-		else:
-			#TODO: Some kind of cooldown here...
-			print 'No lost targets'
+		#else:
+		#	#TODO: Some kind of cooldown here...
+		#	print 'No lost targets'
 	
 	if _target['who']:
 		if in_danger(life,_target):
@@ -610,8 +612,9 @@ def understand(life,source_map):
 			handle_potential_combat_encounter(life,_target['who'],source_map)
 		
 	else:
+		pass
 		#TODO: Idle?
-		print 'Away from trouble.'
+		#print 'Away from trouble.'
 		#lfe.clear_actions(life,matches=[{'action': 'shoot'}])
 
 def think(life,source_map):
