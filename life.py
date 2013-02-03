@@ -737,13 +737,7 @@ def can_see(life,pos):
 		_line = drawing.diag_line(life['pos'],pos)
 	
 	for pos in _line:
-		_x = pos[0]-CAMERA_POS[0]
-		_y = pos[1]-CAMERA_POS[1]
-		
-		if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
-			continue
-		
-		if life['map'][pos[0]][pos[1]][CAMERA_POS[2]+1]:				
+		if life['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False
 	
 	return True
