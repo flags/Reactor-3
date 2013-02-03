@@ -1271,36 +1271,36 @@ def draw_life_info(life):
 	if _bleeding:
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
 		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
-	else:
-		_info.append({'text': 'You are not bleeding.',
-			'color': Color(0,200,0)})
+	#else:
+	#	_info.append({'text': 'You are not bleeding.',
+	#		'color': Color(0,200,0)})
 	
 	if _broken:
 		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Broken: %s' % _broken_string,
 			'color': red})
-	else:
-		_info.append({'text': 'You have no broken limbs.',
-			'color': Color(0,200,0)})
+	#else:
+	#	_info.append({'text': 'You have no broken limbs.',
+	#		'color': Color(0,200,0)})
 	
 	if _cut:
 		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Cut: %s' % _cut_string,
 			'color': red})
-	else:
-		_info.append({'text': 'You have no cut limbs.',
-			'color': Color(0,200,0)})
+	#else:
+	#	_info.append({'text': 'You have no cut limbs.',
+	#		'color': Color(0,200,0)})
 	
 	if _bruised:
 		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Buised: %s' % _bruised_string,
 			'color': red})
-	else:
-		_info.append({'text': 'You have no bruised limbs.',
-			'color': Color(0,200,0)})
+	#else:
+	#	_info.append({'text': 'You have no bruised limbs.',
+	#		'color': Color(0,200,0)})
 	
 	_i = 1
 	for entry in _info:
