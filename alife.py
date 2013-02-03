@@ -552,14 +552,16 @@ def listen(life):
 			if not 'surrender' in life['know'][str(event['from']['id'])]['consider']:
 				life['know'][str(event['from']['id'])]['consider'].append('surrender')
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+				lfe.say(life,'Drop everything, now!')
 				
 				communicate(life,'demand_drop_loot')
 		
-		elif event['gist'] == 'demand_drop_loot'):
-			print 'SORTED'
-			for entry for lfe.get_all_inventory_items(life):
+		elif event['gist'] == 'demand_drop_loot':
+			lfe.say(life,'@n begins to drop their items.',action=True)
+			
+			for entry in lfe.get_all_inventory_items(life):
 				lfe.add_action(life,{'action': 'dropitem',
-					'item': entry},
+					'item': entry['id']},
 					200,
 					delay=20)
 		

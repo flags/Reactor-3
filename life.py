@@ -252,6 +252,8 @@ def hear(life,what):
 def say(life,text,action=False):
 	if action:
 		text = text.replace('@n',' '.join(life['name']))
+	else:
+		text = '%s: %s' % (' '.join(life['name']),text)
 	
 	print text
 	gfx.message(text)
@@ -466,7 +468,7 @@ def perform_action(life):
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		delete_action(life,action)
 		
-		if life.has_key('player'):			
+		if life.has_key('player'):
 			if _action.has_key('container'):
 				gfx.message('You store %s in your %s.'
 					% (items.get_name(_action['item']),_action['container']['name']))
@@ -475,14 +477,25 @@ def perform_action(life):
 		_name = items.get_name(get_inventory_item(life,_action['item']))
 		
 		if item_is_equipped(life,_action['item']):
-			gfx.message('You take off %s.' % _name)
+			if 'player' in life:
+				gfx.message('You take off %s.' % _name)
+			else:
+				say(life,'@n takes off %s.' % _name,action=True)
 				
 		_stored = item_is_stored(life,_action['item'])
 		if _stored:
 			_item = get_inventory_item(life,_action['item'])
-			gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+			
+			if life.has_key('player'):
+				gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+			else:
+				say(life,'@n takes off %s.' % _name,action=True)
 		
-		gfx.message('You drop %s.' % _name)
+		if life.has_key('player'):
+			gfx.message('You drop %s.' % _name)
+		else:
+			say(life,'@n drops %s.' % _name,action=True)
+		
 		drop_item(life,_action['item'])
 		
 		delete_action(life,action)
@@ -1236,6 +1249,7 @@ def draw_life_info(life):
 	_bleeding = get_bleeding_limbs(life)
 	_broken = get_broken_limbs(life)
 	_bruised = get_bruised_limbs(life)
+	_cut = get_cut_limbs(life)
 	
 	if life['asleep']:
 		_name_mods = ' (Asleep)'
@@ -1258,7 +1272,7 @@ def draw_life_info(life):
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
 		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
 	else:
-		_info.append({'text': 'You are in good health.',
+		_info.append({'text': 'You are not bleeding.',
 			'color': Color(0,200,0)})
 	
 	if _broken:
@@ -1267,7 +1281,16 @@ def draw_life_info(life):
 		_info.append({'text': 'Broken: %s' % _broken_string,
 			'color': red})
 	else:
-		_info.append({'text': 'You are in no pain.',
+		_info.append({'text': 'You have no broken limbs.',
+			'color': Color(0,200,0)})
+	
+	if _cut:
+		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
+		
+		_info.append({'text': 'Cut: %s' % _cut_string,
+			'color': red})
+	else:
+		_info.append({'text': 'You have no cut limbs.',
 			'color': Color(0,200,0)})
 	
 	if _bruised:
@@ -1276,7 +1299,7 @@ def draw_life_info(life):
 		_info.append({'text': 'Buised: %s' % _bruised_string,
 			'color': red})
 	else:
-		_info.append({'text': 'You are in no pain.',
+		_info.append({'text': 'You have no bruised limbs.',
 			'color': Color(0,200,0)})
 	
 	_i = 1
@@ -1289,7 +1312,7 @@ def draw_life_info(life):
 	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,5,'Blood: %s' % life['blood'])
+	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % life['blood'])
 
 def pass_out(life,length=None):
 	if not length:
@@ -1358,6 +1381,16 @@ def get_bruised_limbs(life):
 			_bruised.append(limb)
 	
 	return _bruised
+
+def get_cut_limbs(life):
+	"""Returns list of cut limbs."""
+	_cut = []
+	
+	for limb in life['body']:
+		if life['body'][limb]['cut']:
+			_cut.append(limb)
+	
+	return _cut
 
 def cut_limb(life,limb):
 	_limb = life['body'][limb]
@@ -1502,7 +1535,7 @@ def natural_healing(life):
 		_heal_rate = 0.03
 	
 	for limb in [life['body'][limb] for limb in life['body']]:
-		if limb['pain'] > 6:
+		if limb['pain'] > 4:
 			limb['pain'] -= 0.05
 		
 		if limb['cut']:
