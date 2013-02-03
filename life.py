@@ -730,7 +730,11 @@ def get_all_storage(life):
 	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
 
 def get_all_visible_items(life):
-	return [limb['holding'] for limb in [life['body'][limb] for limb in life['body']] if limb['holding']]
+	_ret = []
+	
+	[_ret.extend(limb['holding']) for limb in [life['body'][limb] for limb in life['body']] if limb['holding']]
+	
+	return _ret
 
 def can_see(life,pos):
 	"""Returns `true` if the life can see a certain position."""

@@ -191,7 +191,6 @@ def create_snapshot(life):
 		_snapshot['condition'] += lfe.get_limb_condition(life,limb)
 
 	for item in lfe.get_all_visible_items(life):
-		#snapshot['appearance'] += get_quality(item)
 		_snapshot['visible_items'].append(str(item))
 	
 	return _snapshot
@@ -389,9 +388,13 @@ def handle_potential_combat_encounter(life,target,source_map):
 		handle_hide_and_decide(life,target,source_map)
 
 def handle_hide_and_decide(life,target,source_map):
-	if handle_hide(life,target,source_map):
+	if handle_hide(life,target,source_map):		
 		#TODO: Just need a general function to make sure we have a weapon
 		if has_weapon(life):
+			if consider(life,target['life'],'shouted_at'):
+				lfe.say(life,'I\'m coming for you!')
+				communicate(life,'intimidate',target=target['life'])
+			
 			#If we're not ready, prepare for combat
 			if not _weapon_equipped_and_ready(life):
 				if not 'equipping' in life:
@@ -400,6 +403,9 @@ def handle_hide_and_decide(life,target,source_map):
 			else:
 				#TODO: ALife is hiding now...'
 				pass
+		else:
+			if consider(life,target['life'],'shown_scared'):
+				lfe.say(life,'@n panics!',action=True)
 
 def handle_lost_los(life):
 	if life['in_combat']:
@@ -443,6 +449,9 @@ def consider(life,target,what):
 		return True
 	
 	return False
+
+def check_snapshot(life,target):
+	return life['know'][str(target['id'])]['snapshot']
 
 def judge_self(life):
 	_confidence = 0
@@ -516,6 +525,14 @@ def judge(life,target):
 	#TODO: Added "scared by", so a fear of guns would subtract from
 	
 	return _like-_dislike
+
+def event_delay(event,time):
+	if event['age'] < time:
+		event['age'] += 1
+		
+		return True
+	
+	return False
 
 def communicate(life,gist,**kvargs):
 	lfe.create_conversation(life,gist,**kvargs)
@@ -591,13 +608,44 @@ def listen(life):
 		
 		elif event['gist'] == 'stand_still':
 			lfe.add_action(life,{'action': 'block'},400)
-			print 'Blockan'
-			
+						
 			continue
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
 				consider(life,event['from'],'compliant')
+		
+		elif event['gist'] == 'intimidate':
+			if event_delay(event,60):
+				continue
+			
+			#Here we go...
+			#This is the first *real* chance to make the ALife
+			#just that much more complex...
+			#We can make them lie about their current situation
+			#to intimiate the person right back
+			
+			if life == event['target']:
+				#We'll lie
+				lfe.say(life,'I\'ll shoot if you come any closer.')
+				communicate(life,'intimidate_with_weapon',target=event['from'])
+		
+		elif event['gist'] == 'intimidate_with_weapon':
+			if event_delay(event,60):
+				continue
+			
+			#TODO: We should also use sounds (reloading, etc) to confirm
+			#if the ALife is telling the truth.
+			if life == event['target']:
+				_lying = True
+				
+				for item in [lfe.get_inventory_item(event['from'],item) for item in check_snapshot(life,event['from'])['visible_items']]:
+					if item['type'] == 'gun':
+						_lying = False
+				
+				if _lying:
+					lfe.say(life,'I know you don\'t have a gun.')
+					#communicate(life,
 		
 		life['heard'].remove(event)
 
@@ -660,7 +708,7 @@ def understand(life,source_map):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					
 					if _visible_items:
-						_item_to_drop = _visible_items[0][0]
+						_item_to_drop = _visible_items[0]
 						communicate(life,'demand_drop_item',item=_item_to_drop)
 						
 						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
