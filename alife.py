@@ -376,6 +376,13 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 	return _cover
 
 def handle_potential_combat_encounter(life,target,source_map):
+	#print target.keys()
+	if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
+		communicate(life,'comply',target=target['life'])
+		lfe.clear_actions(life)
+		
+		return True
+	
 	if is_weapon_equipped(life):
 		combat(life,target,source_map)
 	else:
@@ -429,6 +436,14 @@ def in_danger(life,target):
 	else:
 		return False
 
+def consider(life,target,what):
+	if not what in life['know'][str(target['id'])]['consider']:
+		life['know'][str(target['id'])]['consider'].append(what)
+		
+		return True
+	
+	return False
+
 def judge_self(life):
 	_confidence = 0
 	_limb_confidence = 0
@@ -470,7 +485,7 @@ def judge(life,target):
 		return 0
 	
 	if 'surrender' in target['consider']:
-		return 1
+		return 0
 	
 	for limb in [target['life']['body'][limb] for limb in target['life']['body']]:
 		#TODO: Mark as target?
@@ -502,8 +517,8 @@ def judge(life,target):
 	
 	return _like-_dislike
 
-def communicate(life,gist):
-	lfe.create_conversation(life,gist)
+def communicate(life,gist,**kvargs):
+	lfe.create_conversation(life,gist,**kvargs)
 
 def look(life):
 	life['seen'] = []
@@ -543,27 +558,46 @@ def look(life):
 
 def listen(life):
 	for event in life['heard'][:]:
-		_age = time.time()-event['when']
-		
 		if not str(event['from']['id']) in life['know']:
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			if not 'surrender' in life['know'][str(event['from']['id'])]['consider']:
-				life['know'][str(event['from']['id'])]['consider'].append('surrender')
+			#if not 'surrender' in life['know'][str(event['from']['id'])]['consider']:
+			#	life['know'][str(event['from']['id'])]['consider'].append('surrender')
+			if consider(life,event['from'],'surrender'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-				lfe.say(life,'Drop everything, now!')
 				
-				communicate(life,'demand_drop_loot')
+				communicate(life,'stand_still')
 		
-		elif event['gist'] == 'demand_drop_loot':
-			lfe.say(life,'@n begins to drop their items.',action=True)
+		elif event['gist'] == 'comply':
+			#TODO: Judge who this is coming from...
+			if life == event['target']:
+				communicate(life,'surrender')
+				print 'SURRENDER'
+		
+		elif event['gist'] == 'demand_drop_item':
+			if event['age'] < 60:
+				event['age'] += 1
+				communicate(life,'compliant',target=event['from'])
+				
+				continue
 			
-			for entry in lfe.get_all_inventory_items(life):
-				lfe.add_action(life,{'action': 'dropitem',
-					'item': entry['id']},
-					200,
-					delay=20)
+			lfe.say(life,'@n begins to drop their %s.' % lfe.get_inventory_item(life,event['item'])['name'],action=True)
+			
+			lfe.add_action(life,{'action': 'dropitem',
+				'item': event['item']},
+				401,
+				delay=20)
+		
+		elif event['gist'] == 'stand_still':
+			lfe.add_action(life,{'action': 'block'},400)
+			print 'Blockan'
+			
+			continue
+		
+		elif event['gist'] == 'compliant':
+			if life == event['target']:
+				consider(life,event['from'],'compliant')
 		
 		life['heard'].remove(event)
 
@@ -572,7 +606,7 @@ def understand(life,source_map):
 	
 	_known_targets_not_seen = life['know'].keys()
 	
-	if lfe.get_total_pain(life) > life['pain_tolerance']:
+	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
 		communicate(life,'surrender')
 	
 	for entry in life['seen']:
@@ -592,7 +626,7 @@ def understand(life,source_map):
 			
 			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
 		
-		if _score < 0 and _score > _target['score']:
+		if _score <= 0 and _score > _target['score']:
 			_target['who'] = target
 			_target['score'] = _score
 		elif _score>0:
@@ -621,7 +655,19 @@ def understand(life,source_map):
 		if in_danger(life,_target):
 			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			handle_potential_combat_encounter(life,_target['who'],source_map)
+			if 'surrender' in _target['who']['consider']:
+				if consider(life,_target['who']['life'],'asked_to_comply'):					
+					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
+					
+					if _visible_items:
+						_item_to_drop = _visible_items[0][0]
+						communicate(life,'demand_drop_item',item=_item_to_drop)
+						
+						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
+					else:
+						logging.warning('No items visible on target!')					
+			else:
+				handle_potential_combat_encounter(life,_target['who'],source_map)
 		
 	else:
 		pass

@@ -179,6 +179,10 @@ def draw_message_box():
 	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
 		if msg['style'] == 'damage':
 			console_set_default_foreground(MESSAGE_WINDOW,red)
+		elif msg['style'] == 'speech':
+			console_set_default_foreground(MESSAGE_WINDOW,gray)
+		elif msg['style'] == 'action':
+			console_set_default_foreground(MESSAGE_WINDOW,lightest_gray)
 		else:
 			console_set_default_foreground(MESSAGE_WINDOW,white)
 		

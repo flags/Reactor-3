@@ -829,7 +829,7 @@ life.add_item_to_inventory(_test2,_i13)
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-for i in range(21):
+for i in range(9):
 	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
 
 CURRENT_UPS = UPS

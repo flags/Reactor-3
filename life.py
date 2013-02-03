@@ -223,7 +223,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	return _life
 
-def create_conversation(life,gist,say=None,action=None):
+def create_conversation(life,gist,say=None,action=None,**kvargs):
 	_convo = {'gist': gist,'say': say,'action': action,'heard': []}
 	
 	if gist in [convo['gist'] for convo in life['conversations']]:
@@ -237,14 +237,16 @@ def create_conversation(life,gist,say=None,action=None):
 		
 		#TODO: 30?
 		if numbers.distance(life['pos'],entry['pos'])<=30:
-			hear(entry,{'from': life,'gist': gist})
+			_broadcast_sound = {'from': life,'gist': gist}
+			_broadcast_sound.update(kvargs)
+			hear(entry,_broadcast_sound)
 	
 	life['conversations'].append(_convo)
 	
 	create_and_update_self_snapshot(life)
 
 def hear(life,what):
-	what['when'] = time.time()
+	what['age'] = 0
 	life['heard'].append(what)
 	
 	logging.debug('%s heard %s.' % (' '.join(life['name']),' '.join(what['from']['name'])))
@@ -252,11 +254,13 @@ def hear(life,what):
 def say(life,text,action=False):
 	if action:
 		text = text.replace('@n',' '.join(life['name']))
+		_style = 'action'
 	else:
 		text = '%s: %s' % (' '.join(life['name']),text)
+		_style = 'speech'
 	
 	print text
-	gfx.message(text)
+	gfx.message(text,style=_style)
 
 def memory(life,memory,**kvargs):
 	_entry = {'text': memory}
@@ -637,6 +641,9 @@ def perform_action(life):
 		
 		delete_action(life,action)
 	
+	elif _action['action'] == 'block':
+		delete_action(life,action)
+	
 	else:
 		logging.warning('Unhandled action: %s' % _action['action'])
 	
@@ -675,6 +682,8 @@ def tick(life,source_map):
 			
 			if 'player' in life:
 				gfx.message('You wake up.')
+			else:
+				say(life,'@n wakes up.',action=True)
 		
 		return False
 	
@@ -1313,7 +1322,7 @@ def draw_life_info(life):
 	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % life['blood'])
+	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
 
 def pass_out(life,length=None):
 	if not length:

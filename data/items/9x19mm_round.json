@@ -1,7 +1,7 @@
 {"name": "9x19mm round",
 "prefix": "a",
 "type": "bullet",
-"icon": "L",
+"icon": ".",
 "description": "Pistol round effective at short to mid-range combat.",
 "sharp": true,
 "fallspeed": 0.05,
