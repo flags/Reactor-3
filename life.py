@@ -401,9 +401,9 @@ def find_action(life,matches=[{}]):
 		
 		for match in matches:
 			for key in match:
-				if not action[key] == match[key]:
-					break
+				if not key in action['action'] and not action[key] == match[key]:
 					_break = True
+					break
 			
 			if _break:
 				break
@@ -1060,7 +1060,20 @@ def pick_up_item_from_ground(life,uid):
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
+def get_open_hands(life):
+	"""Returns list of open hands."""
+	_hands = []
+	
+	for hand in life['hands']:
+		_hand = get_limb(life['body'],hand)
+		
+		if not _hand['holding']:
+			_hands.append(hand)
+	
+	return _hands
+
 def can_hold_item(life):
+	#TODO: Rename needed.
 	"""Returns limb of empty hand. Returns False if none are empty."""
 	for hand in life['hands']:
 		_hand = get_limb(life['body'],hand)

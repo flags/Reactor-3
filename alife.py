@@ -185,24 +185,6 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def find_known_items(life,matches=[]):
-	_match = []
-	
-	for item in [life['know_items'][item] for item in life['know_items']]:
-		_break = False
-		for match in matches:
-			for key in match:
-				if not item.has_key(key) or not item[key] == match[key]:
-					_break = True
-					break
-			
-			if _break:
-				break
-		
-		_match.append(item)
-	
-	return _match
-
 def update_self_snapshot(life,snapshot):
 	life['snapshot'] = snapshot
 
@@ -273,7 +255,9 @@ def score_find_target(life,target,pos):
 	return -numbers.distance(life['pos'],pos)
 
 def score_hide(life,target,pos):
-	return numbers.distance(life['pos'],pos)
+	_score = numbers.distance(life['pos'],pos)
+	
+	return _score
 
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
@@ -342,24 +326,6 @@ def hide(life,target,source_map):
 	
 	return True
 
-def handle_hide(life,target,source_map):
-	_weapon = get_best_weapon(life)	
-	_feed = None
-	
-	if _weapon:
-		_feed = weapons.get_feed(_weapon['weapon'])		
-	
-	#TODO: Can we merge this into get_best_weapon()?
-	_has_loaded_ammo = False
-	if _feed:
-		if _feed['rounds']:
-			_has_loaded_ammo = True
-	
-	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
-		return hide(life,target,source_map)
-	else:
-		return escape(life,target,source_map)
-
 def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
@@ -405,9 +371,33 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 	
 	return _cover
 
+def find_known_items(life,matches=[],visible=True):
+	_match = []
+	
+	for item in [life['know_items'][item] for item in life['know_items']]:
+		if visible and not lfe.can_see(life,item['item']['pos']):
+			continue
+		
+		if 'parent' in item['item'] or 'id' in item['item']:
+			continue
+		
+		_break = False
+		for match in matches:
+			for key in match:
+				if not item['item'].has_key(key) or not item['item'][key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				break
+		
+		_match.append(item)
+	
+	return _match
+
 def collect_nearby_wanted_items(life):
 	_highest = {'item': None,'score': 0}
-	_nearby = find_known_items(life,matches=[{'type': 'gun'}])
+	_nearby = find_known_items(life,matches=[{'type': 'gun'}],visible=True)
 	
 	for item in _nearby:
 		if item['score'] > _highest['score']:
@@ -415,18 +405,50 @@ def collect_nearby_wanted_items(life):
 			_highest['item'] = item['item']
 	
 	if not _highest['item']:
+		return True
+	
+	_empty_hand = lfe.get_open_hands(life)
+	
+	if not _empty_hand:
+		print 'No open hands!'
+		
 		return False
 	
 	lfe.clear_actions(life)
 	
 	if life['pos'] == _highest['item']['pos']:
+		if lfe.find_action(life,matches=[{'action': 'pickupholditem','item': _highest['item']}]):
+			return False
+		
 		lfe.add_action(life,{'action': 'pickupholditem',
 			'item': _highest['item'],
-			'hand': 'lhand'},
+			'hand': random.choice(_empty_hand)},
 			200,
 			delay=40)
 	else:
 		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+	
+	return False
+
+def handle_hide(life,target,source_map):
+	_weapon = get_best_weapon(life)	
+	_feed = None
+	
+	if _weapon:
+		_feed = weapons.get_feed(_weapon['weapon'])		
+	
+	#TODO: Can we merge this into get_best_weapon()?
+	_has_loaded_ammo = False
+	if _feed:
+		if _feed['rounds']:
+			_has_loaded_ammo = True
+	
+	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
+		return hide(life,target,source_map)
+	elif not _weapon and find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
+		return collect_nearby_wanted_items(life)
+	else:
+		return escape(life,target,source_map)
 
 def handle_potential_combat_encounter(life,target,source_map):
 	if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
@@ -460,7 +482,7 @@ def handle_hide_and_decide(life,target,source_map):
 			if consider(life,target['life'],'shown_scared'):
 				lfe.say(life,'@n panics!',action=True)
 			
-			collect_nearby_wanted_items(life)
+			#collect_nearby_wanted_items(life)
 
 def handle_lost_los(life):
 	if life['in_combat']:
@@ -588,7 +610,8 @@ def judge_item(life,item):
 	
 	if not _has_weapon and item['type'] == 'gun':
 		_score += 10
-	elif _has_weapon:
+	else:
+		#elif _has_weapon:
 		_score += 10
 	
 	return _score
