@@ -808,6 +808,8 @@ _i11 = items.create_item('glock')
 _i12 = items.create_item('9x19mm magazine')
 _i13 = items.create_item('leather backpack')
 _i14 = items.create_item('sneakers')
+_i15 = items.create_item('glock',position=[40,50,2])
+_i16 = items.create_item('9x19mm magazine',position=[41,50,2])
 
 items.move(_i4,0,1,_velocity=1)
 items.move(_i4_,0,1,_velocity=1)
@@ -829,7 +831,7 @@ life.add_item_to_inventory(_test2,_i13)
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-for i in range(9):
+for i in range(17):
 	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
 
 CURRENT_UPS = UPS

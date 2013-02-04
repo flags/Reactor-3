@@ -93,6 +93,10 @@ def _refill_feed(life,feed):
 
 def _equip_weapon(life):
 	_best_wep = get_best_weapon(life)
+	
+	if not _best_wep:
+		return False
+	
 	_weapon = _best_wep['weapon']
 	
 	#TODO: Need to refill ammo?
@@ -130,6 +134,13 @@ def is_weapon_equipped(life):
 def has_weapon(life):
 	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 
+def has_usable_weapon(life):
+	for weapon in lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}]):
+		if lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}]):
+			return True
+	
+	return False
+
 def get_best_weapon(life):
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
@@ -164,7 +175,7 @@ def get_best_weapon(life):
 
 		if not _best_feed['feed']:
 			_best_wep['weapon'] = None
-			print 'No feed for weapon.'
+			print 'No feed for weapon.',life['name']
 		else:
 			_best_wep['feed'] = _best_feed['feed']
 	
@@ -172,6 +183,24 @@ def get_best_weapon(life):
 		return False
 	
 	return _best_wep
+
+def find_known_items(life,matches=[]):
+	_match = []
+	
+	for item in [life['know_items'][item] for item in life['know_items']]:
+		_break = False
+		for match in matches:
+			for key in match:
+				if not item.has_key(key) or not item[key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				break
+		
+		_match.append(item)
+	
+	return _match
 
 def update_self_snapshot(life,snapshot):
 	life['snapshot'] = snapshot
@@ -307,6 +336,7 @@ def hide(life,target,source_map):
 	if _cover:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
+		
 		return False
 	
 	return True
@@ -374,8 +404,30 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 	
 	return _cover
 
+def collect_nearby_wanted_items(life):
+	_highest = {'item': None,'score': 0}
+	_nearby = find_known_items(life,matches=[{'type': 'gun'}])
+	
+	for item in _nearby:
+		if item['score'] > _highest['score']:
+			_highest['score'] = item['score']
+			_highest['item'] = item['item']
+	
+	if not _highest['item']:
+		return False
+	
+	lfe.clear_actions(life)
+	
+	if life['pos'] == _highest['item']['pos']:
+		lfe.add_action(life,{'action': 'pickupholditem',
+			'item': _highest['item'],
+			'hand': 'lhand'},
+			200,
+			delay=40)
+	else:
+		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+
 def handle_potential_combat_encounter(life,target,source_map):
-	#print target.keys()
 	if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
 		communicate(life,'comply',target=target['life'])
 		lfe.clear_actions(life)
@@ -406,6 +458,8 @@ def handle_hide_and_decide(life,target,source_map):
 		else:
 			if consider(life,target['life'],'shown_scared'):
 				lfe.say(life,'@n panics!',action=True)
+			
+			collect_nearby_wanted_items(life)
 
 def handle_lost_los(life):
 	if life['in_combat']:
@@ -526,6 +580,18 @@ def judge(life,target):
 	
 	return _like-_dislike
 
+def judge_item(life,item):
+	_score = 0
+	
+	_has_weapon = has_weapon(life)
+	
+	if not _has_weapon and item['type'] == 'gun':
+		_score += 10
+	elif _has_weapon:
+		_score += 10
+	
+	return _score
+
 def event_delay(event,time):
 	if event['age'] < time:
 		event['age'] += 1
@@ -571,6 +637,25 @@ def look(life):
 			'snapshot': {},
 			'consider': []}
 	
+	for item in [ITEMS[item] for item in ITEMS]:
+		if item.has_key('id'):
+			continue
+		
+		if item.has_key('parent'):
+			continue
+		
+		_can_see = lfe.can_see(life,item['pos'])
+		
+		if _can_see and not str(item['uid']) in life['know_items']:
+			life['know_items'][str(item['uid'])] = {'item': item,
+				'score': judge_item(life,item),
+				'last_seen_at': item['pos'][:]}
+		
+		if _can_see:
+			life['know_items'][str(item['uid'])]['last_seen_time'] = 0
+		elif str(item['uid']) in life['know_items']:
+			life['know_items'][str(item['uid'])]['last_seen_time'] += 1
+	
 	#logging.debug('\tTargets: %s' % (len(life['seen'])))
 
 def listen(life):
@@ -579,8 +664,6 @@ def listen(life):
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			#if not 'surrender' in life['know'][str(event['from']['id'])]['consider']:
-			#	life['know'][str(event['from']['id'])]['consider'].append('surrender')
 			if consider(life,event['from'],'surrender'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 				
@@ -593,7 +676,7 @@ def listen(life):
 				print 'SURRENDER'
 		
 		elif event['gist'] == 'demand_drop_item':
-			if event['age'] < 60:
+			if event['age'] < 40:
 				event['age'] += 1
 				communicate(life,'compliant',target=event['from'])
 				

@@ -215,6 +215,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	#ALife
 	_life['know'] = {}
+	_life['know_items'] = {}
 	_life['memory'] = []
 	
 	initiate_limbs(_life['body'])
@@ -526,7 +527,7 @@ def perform_action(life):
 		if 'player' in life:
 			gfx.message('You put on %s.' % _name)
 		else:
-			pass
+			say(life,'@n puts on %s.' % _name,action=True)
 
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
@@ -563,6 +564,8 @@ def perform_action(life):
 		
 		if 'player' in life:
 			gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+		else:
+			say(life,'@n holds %s in their %s.' % (items.get_name(_action['item']),_action['hand']),action=True)
 		
 		delete_action(life,action)
 	
