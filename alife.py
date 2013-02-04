@@ -176,6 +176,7 @@ def get_best_weapon(life):
 		if not _best_feed['feed']:
 			_best_wep['weapon'] = None
 			print 'No feed for weapon.',life['name']
+			return False
 		else:
 			_best_wep['feed'] = _best_feed['feed']
 	
