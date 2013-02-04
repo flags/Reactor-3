@@ -129,7 +129,12 @@ def _equip_weapon(life):
 	return True
 
 def is_weapon_equipped(life):
-	return lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	_weapon = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if not _weapon:
+		return False
+	
+	return lfe.get_inventory_item(life,_weapon[0])
 
 def has_weapon(life):
 	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
@@ -410,7 +415,7 @@ def collect_nearby_wanted_items(life):
 	_empty_hand = lfe.get_open_hands(life)
 	
 	if not _empty_hand:
-		print 'No open hands!'
+		print 'No open hands, managing....'
 		
 		return False
 	
@@ -467,8 +472,13 @@ def handle_hide_and_decide(life,target,source_map):
 		#TODO: Just need a general function to make sure we have a weapon
 		if has_weapon(life):
 			if consider(life,target['life'],'shouted_at'):
-				lfe.say(life,'I\'m coming for you!')
-				communicate(life,'intimidate',target=target['life'])
+				if 'shown_scared' in target['consider']:
+					lfe.say(life,'I\'m coming for you!')
+					communicate(life,'confidence',target=target['life'])
+					target['consider'].remove('shown_scared')
+				else:
+					lfe.say(life,'I\'m coming for you!')
+					communicate(life,'intimidate',target=target['life'])
 			
 			#If we're not ready, prepare for combat
 			if not _weapon_equipped_and_ready(life):
@@ -606,10 +616,12 @@ def judge(life,target):
 def judge_item(life,item):
 	_score = 0
 	
-	_has_weapon = has_weapon(life)
+	_has_weapon = is_weapon_equipped(life)
 	
 	if not _has_weapon and item['type'] == 'gun':
 		_score += 10
+	elif _has_weapon and item['type'] == _has_weapon['feed'] and item['ammotype'] == _has_weapon['ammotype']:
+		_score += 20
 	else:
 		#elif _has_weapon:
 		_score += 10
@@ -677,6 +689,7 @@ def look(life):
 		
 		if _can_see:
 			life['know_items'][str(item['uid'])]['last_seen_time'] = 0
+			life['know_items'][str(item['uid'])]['score'] = judge_item(life,item)
 		elif str(item['uid']) in life['know_items']:
 			life['know_items'][str(item['uid'])]['last_seen_time'] += 1
 	
@@ -753,6 +766,9 @@ def listen(life):
 				if _lying:
 					lfe.say(life,'I know you don\'t have a gun.')
 					#communicate(life,
+		
+		elif event['gist'] == 'confidence':
+			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
 		
 		life['heard'].remove(event)
 

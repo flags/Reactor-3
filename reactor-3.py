@@ -153,14 +153,32 @@ def handle_input():
 			gfx.message('You have no items to equip.')
 			return False
 		
-		print _inventory
-		
 		_i = menus.create_menu(title='Equip',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k',
 			on_select=inventory_equip)
+		
+		menus.activate_menu(_i)
+	
+	if INPUT['E']:
+		if menus.get_menu_by_name('Equip')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Equip'))
+			return False
+		
+		_inventory = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=True,check_hands=True,show_containers=False)
+		
+		if not _inventory:
+			gfx.message('You have no items to equip.')
+			return False
+		
+		_i = menus.create_menu(title='Equip',
+			menu=_inventory,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k',
+			on_select=inventory_unequip)
 		
 		menus.activate_menu(_i)
 	
@@ -458,6 +476,27 @@ def inventory_select(entry):
 	menus.activate_menu(_i)
 
 def inventory_equip(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = entry['id']
+	
+	_item = life.get_inventory_item(PLAYER,item)
+	
+	if _item['type'] == 'gun' and not life.can_hold_item(PLAYER):
+		gfx.message('You can\'t possibly hold that!')
+		
+		return False
+	
+	life.add_action(PLAYER,{'action': 'equipitem',
+		'item': item},
+		200,
+		delay=40)
+	
+	gfx.message('You start putting on %s.' % _item['name'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_unequip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	item = entry['id']
@@ -783,7 +822,7 @@ _test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,10,2])
 PLAYER['player'] = True
 
-SETTINGS['following'] = _test2
+SETTINGS['following'] = PLAYER#_test2
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -810,6 +849,7 @@ _i13 = items.create_item('leather backpack')
 _i14 = items.create_item('sneakers')
 _i15 = items.create_item('glock',position=[40,50,2])
 _i16 = items.create_item('9x19mm magazine',position=[41,50,2])
+items.create_item('9x19mm round',position=[42,50,2])
 
 items.move(_i4,0,1,_velocity=1)
 items.move(_i4_,0,1,_velocity=1)

@@ -1174,7 +1174,7 @@ def draw_life():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
-def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,matches=None):
+def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,check_hands=False,matches=None):
 	"""Returns list of menu items with "fancy formatting".
 	
 	`show_equipped` decides whether equipped items are shown (default True)
@@ -1228,28 +1228,29 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,check_hands=False,mat
 			_inventory_items += 1
 			_inventory.append(_menu_item)
 	
-	for container in get_all_storage(life):
-		_title = menus.create_item('title',
-			'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
-			None,
-			enabled=False)
-		
-		_inventory.append(_title)
-		for _item in container['storing']:
-			item = get_inventory_item(life,_item)
+	if show_containers:
+		for container in get_all_storage(life):
+			_title = menus.create_item('title',
+				'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
+				None,
+				enabled=False)
 			
-			if matches:
-				if not perform_match(item,matches):
-					continue	
-			
-			_menu_item = menus.create_item('single',
-				item['name'],
-				'Not equipped',
-				icon=item['icon'],
-				id=int(_item))
-			
-			_inventory_items += 1
-			_inventory.append(_menu_item)
+			_inventory.append(_title)
+			for _item in container['storing']:
+				item = get_inventory_item(life,_item)
+				
+				if matches:
+					if not perform_match(item,matches):
+						continue	
+				
+				_menu_item = menus.create_item('single',
+					item['name'],
+					'Not equipped',
+					icon=item['icon'],
+					id=int(_item))
+				
+				_inventory_items += 1
+				_inventory.append(_menu_item)
 	
 	if not _inventory_items:
 		return []
