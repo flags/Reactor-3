@@ -9,6 +9,7 @@ import life
 
 def init_libtcod(terraform=False):
 	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
+	
 	console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	ITEM_WINDOW = console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
@@ -124,6 +125,14 @@ def darken_tile(x,y,amt):
 
 def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
+
+def tint_tile(x,y,color,coef):
+	_o_color = Color(int(MAP_RGB_BACK_BUFFER[0][y,x]),int(MAP_RGB_BACK_BUFFER[1][y,x]),int(MAP_RGB_BACK_BUFFER[2][y,x]))
+	_n_color = color_lerp(_o_color,color,coef)
+	
+	MAP_RGB_BACK_BUFFER[0][y,x] = _n_color.r
+	MAP_RGB_BACK_BUFFER[1][y,x] = _n_color.g
+	MAP_RGB_BACK_BUFFER[2][y,x] = _n_color.b
 
 def fade_to_white(amt):
 	amt = int(round(amt))

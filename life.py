@@ -252,7 +252,7 @@ def hear(life,what):
 	
 	logging.debug('%s heard %s.' % (' '.join(life['name']),' '.join(what['from']['name'])))
 
-def say(life,text,action=False):
+def say(life,text,action=False,volume=30):
 	if action:
 		text = text.replace('@n',' '.join(life['name']))
 		_style = 'action'
@@ -260,8 +260,8 @@ def say(life,text,action=False):
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
-	print text
-	gfx.message(text,style=_style)
+	if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
+		gfx.message(text,style=_style)
 
 def memory(life,memory,**kvargs):
 	_entry = {'text': memory}
@@ -690,6 +690,10 @@ def tick(life,source_map):
 		return False
 	
 	natural_healing(life)
+	
+	if get_bleeding_limbs(life):
+		if random.randint(0,50)<7:
+			effects.create_splatter('blood',life['pos'])
 	
 	if life['asleep']:
 		life['asleep'] -= 1
@@ -1448,10 +1452,10 @@ def cut_limb(life,limb):
 	_limb['cut'] = True
 	_limb['bleeding'] += 2
 	
+	effects.create_splatter('blood',life['pos'],velocity=1)
+	
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb,style='damage')
-		
-		effects.create_splatter(life,limb)
 
 def break_limb(life,limb):
 	_limb = life['body'][limb]
@@ -1563,8 +1567,6 @@ def damage_from_item(life,item,damage):
 	life['body'][_hit_limb]['condition'] -= _damage
 	
 	create_and_update_self_snapshot(life)
-	
-	print get_total_pain(life)
 	
 	if life.has_key('player'):
 		gfx.message('You feel a sudden force against you. (-%s)' % _damage)

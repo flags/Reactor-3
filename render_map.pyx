@@ -1,5 +1,6 @@
 from tiles import *
 import graphics as gfx
+import effects
 import time
 
 VERSION = 4
@@ -57,6 +58,8 @@ def render_map(map):
 								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 						else:
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+							
+							effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])

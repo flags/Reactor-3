@@ -40,7 +40,7 @@ def fire(life,target):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)
-		direction += random.randint(-13,10)
+		direction += random.randint(-2,3)
 		
 		#TODO: Clean this up...
 		#bullets.create_bullet(life['pos'],direction,5,life)

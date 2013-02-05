@@ -602,9 +602,9 @@ def judge(life,target):
 	
 	#Am I armed?
 	#_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	_target_armed = lfe.get_held_items(target['life'],matches=[{'type': 'gun'}])
+	_target_armed = is_weapon_equipped(target['life'])#lfe.get_held_items(target['life'],matches=[{'type': 'gun'}])
 	
-	if _target_armed:
+	if _target_armed and weapons.get_feed(_target_armed):
 		_dislike += 30
 
 	#TODO: Add modifier depending on type of weapon

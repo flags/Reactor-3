@@ -3,6 +3,7 @@ import graphics as gfx
 import render_los
 import logging
 import numbers
+import random
 import numpy
 import time
 import maps
@@ -15,9 +16,32 @@ def register_effect(effect,callback):
 	
 	logging.debug('Effect registered: %s' % effect['what'])
 
-def create_splatter(life,what):
-	pass
-	#gfx.message('%s splatters on the ground.')
+def has_splatter(position,what=None):
+	for splat in SPLATTERS:
+		if splat['pos'] == position:
+			if what and not what == splat['what']:
+				continue
+			
+			return splat
+
+def create_splatter(what,position,velocity=0):
+	_splatter = has_splatter(tuple(position),what=what)
+	
+	if not _splatter:
+		_splatter = {'pos': list(position[:]),'what': what,'color': Color(0,0,0),'coef': 0}
+		_splatter['pos'][0] += random.randint(-velocity,velocity)
+		_splatter['pos'][1] += random.randint(-velocity,velocity)
+	
+		if what == 'blood':
+			_splatter['color'].r = 150
+	else:
+		_splatter['coef'] += 0.3
+		_splatter['coef'] = numbers.clip(_splatter['coef'],0,1)
+		
+		return True
+	
+	_splatter['pos'] = tuple(_splatter['pos'])
+	SPLATTERS.append(_splatter)
 
 def create_gas(where,what,amount,source_map):
 	effect = {'what': what, 'where': tuple(where),'amount': amount,'map': source_map,'height_map': 'Reset'}
@@ -27,8 +51,6 @@ def create_gas(where,what,amount,source_map):
 	_top_left = (_x,_y,where[2])
 	
 	effect['top_left'] = _top_left
-	
-	#print _top_left
 	
 	target_los = render_los.render_los(source_map,where,top_left=_top_left,no_edge=False)
 	target_los = numpy.multiply(target_los,50)
@@ -41,6 +63,14 @@ def simulate_gas(effect):
 	effect['height_map'] = numpy.multiply(effect['height_map'],0.99)
 	
 	return True
+
+def draw_splatter(position,render_at):
+	_has_splatter = has_splatter(position)
+	
+	if not _has_splatter:
+		return False
+	
+	gfx.tint_tile(render_at[0],render_at[1],_has_splatter['color'],_has_splatter['coef'])
 
 def tick_effects():
 	#global EFFECTS

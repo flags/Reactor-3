@@ -900,6 +900,8 @@ life.add_item_to_inventory(_test,_i12)
 #life.add_item_to_inventory(_test2,_i14)
 life.add_item_to_inventory(_test2,_i13)
 
+life.cut_limb(PLAYER,'chest')
+
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 

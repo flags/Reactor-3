@@ -92,6 +92,7 @@ ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
 EFFECTS = []
+SPLATTERS = []
 
 #Consoles
 MAP_WINDOW = None
