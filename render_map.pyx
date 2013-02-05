@@ -59,7 +59,8 @@ def render_map(map):
 						else:
 							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 							
-							effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
+							if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+								effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])

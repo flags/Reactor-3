@@ -1583,7 +1583,9 @@ def natural_healing(life):
 	else:
 		_heal_rate = 0.03
 	
-	for limb in [life['body'][limb] for limb in life['body']]:
+	for _limb in life['body']:
+		limb = life['body'][_limb]
+		
 		if limb['pain'] > 4:
 			limb['pain'] -= 0.05
 		
@@ -1593,6 +1595,9 @@ def natural_healing(life):
 			
 			if limb['bleeding']<0:
 				limb['bleeding'] = 0
+				
+				if 'player' in life:
+					gfx.message('Your %s stops bleeding.' % _limb)
 
 def tick_all_life(source_map):
 	for life in LIFE:

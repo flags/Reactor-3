@@ -492,7 +492,7 @@ def inventory_equip(entry):
 		200,
 		delay=40)
 	
-	gfx.message('You start storing the %s.' % _item['name'])
+	gfx.message('You start putting on the %s.' % _item['name'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
