@@ -529,14 +529,6 @@ def in_danger(life,target):
 	else:
 		return False
 
-def consider(life,target,what):
-	if not what in life['know'][str(target['id'])]['consider']:
-		life['know'][str(target['id'])]['consider'].append(what)
-		
-		return True
-	
-	return False
-
 def check_snapshot(life,target):
 	return life['know'][str(target['id'])]['snapshot']
 
@@ -631,6 +623,14 @@ def judge_item(life,item):
 def event_delay(event,time):
 	if event['age'] < time:
 		event['age'] += 1
+		
+		return True
+	
+	return False
+
+def consider(life,target,what):
+	if not what in life['know'][str(target['id'])]['consider']:
+		life['know'][str(target['id'])]['consider'].append(what)
 		
 		return True
 	
@@ -827,7 +827,7 @@ def understand(life,source_map):
 			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
 			if 'surrender' in _target['who']['consider']:
-				if consider(life,_target['who']['life'],'asked_to_comply'):					
+				if consider(life,_target['who']['life'],'asked_to_comply'):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					
 					if _visible_items:
@@ -836,7 +836,11 @@ def understand(life,source_map):
 						
 						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
 					else:
-						logging.warning('No items visible on target!')					
+						logging.warning('No items visible on target!')
+				
+				if not consider(life,_target['who']['life'],'compliant'):
+					print 'THEY ARE COMPLYING'
+				
 			else:
 				handle_potential_combat_encounter(life,_target['who'],source_map)
 		
