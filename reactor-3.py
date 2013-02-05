@@ -163,22 +163,22 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['E']:
-		if menus.get_menu_by_name('Equip')>-1:
+		if menus.get_menu_by_name('Unequip')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
 		_inventory = life.get_fancy_inventory_menu_items(PLAYER,show_equipped=True,check_hands=True,show_containers=False)
 		
 		if not _inventory:
-			gfx.message('You have no items to equip.')
+			gfx.message('You have no items to unequip.')
 			return False
 		
-		_i = menus.create_menu(title='Equip',
+		_i = menus.create_menu(title='Unequip',
 			menu=_inventory,
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k',
-			on_select=inventory_unequip)
+			on_select=inventory_unequip_action)
 		
 		menus.activate_menu(_i)
 	
@@ -492,30 +492,62 @@ def inventory_equip(entry):
 		200,
 		delay=40)
 	
-	gfx.message('You start putting on %s.' % _item['name'])
+	gfx.message('You start storing the %s.' % _item['name'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_unequip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['id']
+	item = entry['item']['id']
 	
 	_item = life.get_inventory_item(PLAYER,item)
 	
-	if _item['type'] == 'gun' and not life.can_hold_item(PLAYER):
-		gfx.message('You can\'t possibly hold that!')
+	life.add_action(PLAYER,{'action': 'storeitem',
+		'item': item,
+		'container': entry['container']},
+		200,
+		delay=60)
+	
+	gfx.message('You begin storing %s.' % _item['name'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_unequip_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	item = entry['id']
+	
+	_item = life.get_inventory_item(PLAYER,item)
+	_menu = []
+	
+	for container in life.get_all_storage(PLAYER):		
+		if container['capacity']+_item['size'] > container['max_capacity']:
+			continue
+		
+		if container['id'] == item:
+			continue
+		
+		_menu.append(menus.create_item('single',
+			container['name'],
+			'%s/%s' % (container['capacity'],container['max_capacity']),
+			container=container['id'],
+			item=_item))
+	
+	if not _menu:
+		gfx.message('You have nowhere to store this item!')
 		
 		return False
 	
-	life.add_action(PLAYER,{'action': 'equipitem',
-		'item': item},
-		200,
-		delay=40)
+	_i = menus.create_menu(title='Store in...',
+		menu=_menu,
+		padding=(1,1),
+		position=(1,1),
+		format_str='  $k: $v',
+		on_select=inventory_unequip)
 	
-	gfx.message('You start putting on %s.' % _item['name'])
-	
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.activate_menu(_i)
 
 def inventory_drop(entry):
 	key = entry['key']

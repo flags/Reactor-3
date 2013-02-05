@@ -528,7 +528,23 @@ def perform_action(life):
 			gfx.message('You put on %s.' % _name)
 		else:
 			say(life,'@n puts on %s.' % _name,action=True)
-
+	
+	elif _action['action'] == 'storeitem':
+		_item_to_store_name = items.get_name(get_inventory_item(life,_action['item']))
+		_item_to_store = get_inventory_item(life,_action['item'])
+		_container_name = items.get_name(get_inventory_item(life,_action['container']))
+		_container = get_inventory_item(life,_action['container'])
+		
+		remove_item_from_inventory(life,_action['item'])
+		direct_add_item_to_inventory(life,_item_to_store,container=_container)
+		
+		if life.has_key('player'):
+			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
+		else:
+			say(life,'@n stores %s in their %s.' % (_item_to_store_name,_container_name),action=True)
+		
+		delete_action(life,action)
+	
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
 			if life.has_key('player'):
