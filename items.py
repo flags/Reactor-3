@@ -98,6 +98,17 @@ def create_item(name,position=[0,0,2]):
 	
 	return item
 
+def delete_item(item):
+	logging.debug('Deleting references to item %s' % item['uid'])
+	
+	for life in LIFE:
+		if item['uid'] in life['know_items']:
+			logging.debug('\tDeleted reference in life #%s' % life['id'])
+			
+			del life['know_items'][item['uid']]
+	
+	del ITEMS[item['uid']]
+
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
@@ -192,7 +203,7 @@ def tick_all_items(MAP):
 						continue
 					
 					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
-						item['pos'] = pos
+						item['pos'] = [pos[0],pos[1],_life['pos'][2]]
 						life.damage_from_item(_life,item,60)
 						_break = True
 						
@@ -223,7 +234,7 @@ def tick_all_items(MAP):
 		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])
 	
 	for _id in _remove:
-		del ITEMS[_id]
+		delete_item(ITEMS[_id])
 
 def tick_all_items_old(MAP):
 	for _item in ITEMS:

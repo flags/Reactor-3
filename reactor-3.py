@@ -881,7 +881,7 @@ _i13 = items.create_item('leather backpack')
 _i14 = items.create_item('sneakers')
 _i15 = items.create_item('glock',position=[40,50,2])
 _i16 = items.create_item('9x19mm magazine',position=[41,50,2])
-items.create_item('9x19mm round',position=[42,50,2])
+items.create_item('9x19mm round',position=[44,50,2])
 
 items.move(_i4,0,1,_velocity=1)
 items.move(_i4_,0,1,_velocity=1)

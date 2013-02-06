@@ -827,6 +827,8 @@ def add_item_to_storage(life,item,container=None):
 	container['storing'].append(item['id'])
 	container['capacity'] += item['size']
 	
+	alife.remember_item(life,item)
+	
 	return True
 
 def remove_item_in_storage(life,id):

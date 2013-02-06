@@ -180,7 +180,7 @@ def get_best_weapon(life):
 
 		if not _best_feed['feed']:
 			_best_wep['weapon'] = None
-			print 'No feed for weapon.',life['name']
+			#print 'No feed for weapon.',life['name']
 			return False
 		else:
 			_best_wep['feed'] = _best_feed['feed']
@@ -375,6 +375,26 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 	
 	return _cover
 
+def remember_item(life,item):
+	if not item['uid'] in life['know_items']:
+		life['know_items'][item['uid']] = {'item': item,
+			'score': judge_item(life,item),
+			'last_seen_at': item['pos'][:],
+			'flags': []}
+		
+		return True
+	
+	return False
+
+def flag_item(life,item,flag):
+	if not flag in life['know_items'][item['uid']]['flags']:
+		life['know_items'][item['uid']]['flags'].append(flag)
+		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
+		
+		return True
+	
+	return False
+
 def find_known_items(life,matches=[],visible=True):
 	_match = []
 	
@@ -383,6 +403,10 @@ def find_known_items(life,matches=[],visible=True):
 			continue
 		
 		if 'parent' in item['item'] or 'id' in item['item']:
+			continue
+		
+		if 'demand_drop' in item['flags']:
+			print 'item was a forced drop'
 			continue
 		
 		_break = False
@@ -418,14 +442,11 @@ def collect_nearby_wanted_items(life):
 		
 		return False
 	
-	print _highest['item'].has_key('id')
-	#print 'Yo whats happening forum',tuple(life['pos'][:2]),tuple(_highest['item']['pos'][:2])
-	
 	if life['pos'] == _highest['item']['pos']:
 		lfe.clear_actions(life)
 		
 		if lfe.find_action(life,matches=[{'action': 'pickupholditem','item': _highest['item']}]):
-			print 'I was picking up something else...'
+			print 'I was picking up something else...',_highest['item']['name']
 			return False
 		
 		lfe.add_action(life,{'action': 'pickupholditem',
@@ -615,7 +636,7 @@ def judge_item(life,item):
 	_has_weapon = is_weapon_equipped(life)
 	
 	if not _has_weapon and item['type'] == 'gun':
-		_score += 10
+		_score += 30
 	elif _has_weapon and item['type'] == _has_weapon['feed'] and item['ammotype'] == _has_weapon['ammotype']:
 		_score += 20
 	else:
@@ -700,16 +721,14 @@ def look(life):
 		
 		_can_see = lfe.can_see(life,item['pos'])
 		
-		if _can_see and not str(item['uid']) in life['know_items']:
-			life['know_items'][str(item['uid'])] = {'item': item,
-				'score': judge_item(life,item),
-				'last_seen_at': item['pos'][:]}
+		if _can_see:
+			remember_item(life,item)
 		
 		if _can_see:
-			life['know_items'][str(item['uid'])]['last_seen_time'] = 0
-			life['know_items'][str(item['uid'])]['score'] = judge_item(life,item)
+			life['know_items'][item['uid']]['last_seen_time'] = 0
+			life['know_items'][item['uid']]['score'] = judge_item(life,item)
 		elif str(item['uid']) in life['know_items']:
-			life['know_items'][str(item['uid'])]['last_seen_time'] += 1
+			life['know_items'][item['uid']]['last_seen_time'] += 1
 	
 	#logging.debug('\tTargets: %s' % (len(life['seen'])))
 
@@ -747,7 +766,10 @@ def listen(life):
 				
 				continue
 			
-			lfe.say(life,'@n begins to drop their %s.' % lfe.get_inventory_item(life,event['item'])['name'],action=True)
+			_inventory_item = lfe.get_inventory_item(life,event['item'])
+			
+			flag_item(life,_inventory_item,'demand_drop')
+			lfe.say(life,'@n begins to drop their %s.' % _inventory_item['name'],action=True)
 			
 			lfe.add_action(life,{'action': 'dropitem',
 				'item': event['item']},
