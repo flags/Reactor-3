@@ -406,7 +406,6 @@ def find_known_items(life,matches=[],visible=True):
 			continue
 		
 		if 'demand_drop' in item['flags']:
-			print 'item was a forced drop'
 			continue
 		
 		_break = False
@@ -445,8 +444,10 @@ def collect_nearby_wanted_items(life):
 	if life['pos'] == _highest['item']['pos']:
 		lfe.clear_actions(life)
 		
-		if lfe.find_action(life,matches=[{'action': 'pickupholditem','item': _highest['item']}]):
-			print 'I was picking up something else...',_highest['item']['name']
+		for action in lfe.find_action(life,matches=[{'action': 'pickupholditem'}]):
+			#print action
+			#print 'I was picking up something else...',_highest['item']['name']
+			#print life['actions']
 			return False
 		
 		lfe.add_action(life,{'action': 'pickupholditem',
@@ -778,8 +779,6 @@ def listen(life):
 		
 		elif event['gist'] == 'stand_still':
 			lfe.add_action(life,{'action': 'block'},400)
-						
-			continue
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
