@@ -3,6 +3,7 @@ from tiles import *
 import graphics as gfx
 import maputils
 import logging
+import numbers
 import drawing
 import random
 import numpy
@@ -81,7 +82,7 @@ def reset_lights():
 	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	RGB_LIGHT_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
-def render_lights():
+def render_lights(source_map):
 	if not SETTINGS['draw lights']:
 		return False
 
@@ -90,16 +91,30 @@ def render_lights():
 	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
-	
+
 	for light in LIGHTS:
+		_render_x = light['x']-CAMERA_POS[0]
+		_render_y = light['y']-CAMERA_POS[1]
+		_x = numbers.clip(light['x']-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
+		_y = numbers.clip(light['y']-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+		_top_left = (_x,_y,light['z'])
+		los = cython_render_los.render_los(source_map,(light['x'],light['y']),top_left=_top_left)
 		sqr_distance = (x - (light['x']-CAMERA_POS[0]))**2 + (y - (light['y']-CAMERA_POS[1]))**2
 		
 		brightness = light['brightness'] / sqr_distance
 		brightness = numpy.clip(brightness * 255, 0, 255)
 	
+		RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0]*los
+		RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1]*los
+		RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2]*los
+
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0,255)
+
+		#RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0]*los
+		#RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1]*los
+		#RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2]*los
 
 def _render_los(map,pos,cython=False):
 	if cython:

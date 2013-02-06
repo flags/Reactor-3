@@ -842,7 +842,7 @@ def tick_all_objects():
 	bullets.tick_bullets(MAP)
 	#effects.tick_effects()
 
-LIGHTS.append({'x': 40,'y': 30,'brightness': 40.0})
+LIGHTS.append({'x': 10,'y': 10,'z': 2,'brightness': 100.0})
 effects.create_gas((5,10,2),'smoke',3,MAP)
 
 SETTINGS['draw z-levels below'] = True
@@ -935,7 +935,7 @@ while RUNNING:
 	else:
 		maps.render_map(MAP)
 	
-	maps.render_lights()
+	maps.render_lights(MAP)
 	items.draw_items()
 	bullets.draw_bullets()
 	move_camera(SETTINGS['following']['pos'])
