@@ -98,23 +98,25 @@ def render_lights(source_map):
 		_x = numbers.clip(light['x']-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
 		_y = numbers.clip(light['y']-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
 		_top_left = (_x,_y,light['z'])
+		
 		los = cython_render_los.render_los(source_map,(light['x'],light['y']),top_left=_top_left)
+		print numpy.r_[los[0][:-CAMERA_POS[0]],0].shape
+		#print los.shape
+		
 		sqr_distance = (x - (light['x']-CAMERA_POS[0]))**2 + (y - (light['y']-CAMERA_POS[1]))**2
 		
 		brightness = light['brightness'] / sqr_distance
 		brightness = numpy.clip(brightness * 255, 0, 255)
-	
-		RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0]*los
-		RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1]*los
-		RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2]*los
+		brightness *= los
+		
+		
+		#RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0]*los
+		#RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1]*los
+		#RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2]*los
 
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0,255)
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0,255)
-
-		#RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0]*los
-		#RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1]*los
-		#RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2]*los
 
 def _render_los(map,pos,cython=False):
 	if cython:
