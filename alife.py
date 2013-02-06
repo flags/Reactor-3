@@ -325,8 +325,7 @@ def hide(life,target,source_map):
 	
 	if _cover:
 		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
-		
+		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)		
 		return False
 	
 	return True
@@ -419,10 +418,14 @@ def collect_nearby_wanted_items(life):
 		
 		return False
 	
-	lfe.clear_actions(life)
+	print _highest['item'].has_key('id')
+	#print 'Yo whats happening forum',tuple(life['pos'][:2]),tuple(_highest['item']['pos'][:2])
 	
 	if life['pos'] == _highest['item']['pos']:
+		lfe.clear_actions(life)
+		
 		if lfe.find_action(life,matches=[{'action': 'pickupholditem','item': _highest['item']}]):
+			print 'I was picking up something else...'
 			return False
 		
 		lfe.add_action(life,{'action': 'pickupholditem',
@@ -431,6 +434,7 @@ def collect_nearby_wanted_items(life):
 			200,
 			delay=40)
 	else:
+		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
 	
 	return False
@@ -598,7 +602,7 @@ def judge(life,target):
 	
 	if _target_armed and weapons.get_feed(_target_armed):
 		_dislike += 30
-
+	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
 	#TODO: Added "scared by", so a fear of guns would subtract from
@@ -628,9 +632,23 @@ def event_delay(event,time):
 	
 	return False
 
+def has_considered(life,target,what):
+	if what in life['know'][str(target['id'])]['consider']:
+		return True
+	
+	return False
+
 def consider(life,target,what):
 	if not what in life['know'][str(target['id'])]['consider']:
 		life['know'][str(target['id'])]['consider'].append(what)
+		
+		return True
+	
+	return False
+
+def unconsider(life,target,what):
+	if what in life['know'][str(target['id'])]['consider']:
+		life['know'][str(target['id'])]['consider'].remove(what)
 		
 		return True
 	
@@ -706,11 +724,21 @@ def listen(life):
 				
 				communicate(life,'stand_still')
 		
+		elif event['gist'] == 'free_to_go':
+			#if event['age'] < 40:
+			#	event['age'] += 1
+			#	
+			#	continue
+			
+			lfe.create_and_update_self_snapshot(event['from'])
+			
+			unconsider(life,event['from'],'surrender')
+			#communicate(life,'leaving',target=event['from'])
+		
 		elif event['gist'] == 'comply':
 			#TODO: Judge who this is coming from...
 			if life == event['target']:
 				communicate(life,'surrender')
-				print 'SURRENDER'
 		
 		elif event['gist'] == 'demand_drop_item':
 			if event['age'] < 40:
@@ -795,7 +823,7 @@ def understand(life,source_map):
 			_score = judge(life,target)
 			target['score'] = _score
 			
-			logging.info('%s judged %s with score %s.' % (life['name'][0],target['life']['name'][0],_score))
+			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		if _score <= 0 and _score > _target['score']:
 			_target['who'] = target
@@ -826,7 +854,7 @@ def understand(life,source_map):
 		if in_danger(life,_target):
 			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			if 'surrender' in _target['who']['consider']:
+			if has_considered(life,_target['who']['life'],'surrender'):
 				if consider(life,_target['who']['life'],'asked_to_comply'):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					
@@ -835,11 +863,15 @@ def understand(life,source_map):
 						communicate(life,'demand_drop_item',item=_item_to_drop)
 						
 						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
+						lfe.clear_actions(life,matches=[{'action': 'shoot'}])
 					else:
 						logging.warning('No items visible on target!')
 				
-				if not consider(life,_target['who']['life'],'compliant'):
-					print 'THEY ARE COMPLYING'
+				if has_considered(life,_target['who']['life'],'compliant'):
+					if not lfe.get_held_items(_target['who']['life'],matches=[{'type': 'gun'}]):
+						lfe.say(life,'Now get out of here!')
+						communicate(life,'free_to_go')
+						unconsider(life,_target['who']['life'],'surrender')
 				
 			else:
 				handle_potential_combat_encounter(life,_target['who'],source_map)
