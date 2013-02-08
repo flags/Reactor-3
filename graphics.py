@@ -200,7 +200,7 @@ def draw_message_box():
 
 def draw_status_line():
 	if time.time()%1>=0.5:
-		if SETTINGS['following']['targetting']:
+		if SETTINGS['following']['targeting']:
 			blit_string(0,
 				MAP_WINDOW_SIZE[1]-1,
 				'Firing')

@@ -204,7 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['inventory'] = {}
 	_life['flags'] = {}
 	_life['gravity'] = 0
-	_life['targetting'] = None
+	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
 	_life['blood'] = 300
@@ -611,7 +611,7 @@ def perform_action(life):
 		_action['hand']['holding'].append(_id)
 		
 		gfx.message('You aim %s.' % items.get_name(_dropped_item))
-		life['targetting'] = life['pos'][:]
+		life['targeting'] = life['pos'][:]
 		
 		delete_action(life,action)
 		

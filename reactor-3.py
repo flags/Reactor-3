@@ -69,8 +69,8 @@ def handle_input():
 	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
 			menus.delete_menu(ACTIVE_MENU['menu'])
-		elif PLAYER['targetting']:
-			PLAYER['targetting'] = None
+		elif PLAYER['targeting']:
+			PLAYER['targeting'] = None
 			PLAYER['throwing'] = None
 			PLAYER['firing'] = None
 			SELECTED_TILES[0] = []
@@ -89,8 +89,8 @@ def handle_input():
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
-		elif PLAYER['targetting']:
-			PLAYER['targetting'][1]-=1
+		elif PLAYER['targeting']:
+			PLAYER['targeting'][1]-=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]-1)},200)
@@ -98,8 +98,8 @@ def handle_input():
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
-		elif PLAYER['targetting']:
-			PLAYER['targetting'][1]+=1
+		elif PLAYER['targeting']:
+			PLAYER['targeting'][1]+=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0],PLAYER['pos'][1]+1)},200)
@@ -107,8 +107,8 @@ def handle_input():
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif PLAYER['targetting']:
-			PLAYER['targetting'][0]+=1
+		elif PLAYER['targeting']:
+			PLAYER['targeting'][0]+=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]+1,PLAYER['pos'][1])},200)
@@ -116,8 +116,8 @@ def handle_input():
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif PLAYER['targetting']:
-			PLAYER['targetting'][0]-=1
+		elif PLAYER['targeting']:
+			PLAYER['targeting'][0]-=1
 		else:
 			life.clear_actions(PLAYER)
 			life.add_action(PLAYER,{'action': 'move', 'to': (PLAYER['pos'][0]-1,PLAYER['pos'][1])},200)
@@ -203,9 +203,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
-		if PLAYER['targetting']:
-			life.throw_item(PLAYER,PLAYER['throwing']['id'],PLAYER['targetting'],1)
-			PLAYER['targetting'] = None
+		if PLAYER['targeting']:
+			life.throw_item(PLAYER,PLAYER['throwing']['id'],PLAYER['targeting'],1)
+			PLAYER['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
 		
@@ -225,9 +225,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Fire'))
 			return False
 		
-		if PLAYER['targetting']:
-			weapons.fire(PLAYER,PLAYER['targetting'])
-			PLAYER['targetting'] = None
+		if PLAYER['targeting']:
+			weapons.fire(PLAYER,PLAYER['targeting'])
+			PLAYER['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
 		
@@ -431,11 +431,11 @@ def move_camera(pos,scroll=False):
 	
 	#CAMERA_POS[2] = pos[2]
 
-def draw_targetting():
-	if PLAYER['targetting']:
+def draw_targeting():
+	if PLAYER['targeting']:
 		
 		SELECTED_TILES[0] = []
-		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targetting']):
+		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
 
 def handle_options_menu(entry):
@@ -572,7 +572,7 @@ def inventory_throw(entry):
 	
 	_hand = life.is_holding(PLAYER,entry['id'])
 	if _hand:
-		PLAYER['targetting'] = PLAYER['pos'][:]
+		PLAYER['targeting'] = PLAYER['pos'][:]
 		PLAYER['throwing'] = item
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		
@@ -617,7 +617,7 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	PLAYER['targetting'] = PLAYER['pos'][:]
+	PLAYER['targeting'] = PLAYER['pos'][:]
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -837,7 +837,7 @@ def return_to_inventory(entry):
 	menus.activate_menu_by_name('Inventory')
 
 def tick_all_objects():
-	if PLAYER['targetting']:
+	if PLAYER['targeting']:
 		return False
 	
 	items.tick_all_items(MAP)
@@ -933,7 +933,7 @@ while RUNNING:
 	if not _played_moved:
 		tick_all_objects()
 	
-	draw_targetting()
+	draw_targeting()
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(MAP)
