@@ -837,10 +837,15 @@ def return_to_inventory(entry):
 	menus.activate_menu_by_name('Inventory')
 
 def tick_all_objects():
+	if PLAYER['targetting']:
+		return False
+	
 	items.tick_all_items(MAP)
 	life.tick_all_life(MAP)
 	bullets.tick_bullets(MAP)
 	#effects.tick_effects()
+	
+	return True
 
 LIGHTS.append({'x': 12,'y': 20,'z': 2,'brightness': 50.0})
 #effects.create_gas((5,10,2),'smoke',3,MAP)
