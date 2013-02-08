@@ -198,6 +198,13 @@ def draw_message_box():
 		console_print(MESSAGE_WINDOW,1,_y_mod,msg['msg'])
 		_y_mod += 1
 
+def draw_status_line():
+	if time.time()%1>=0.5:
+		if SETTINGS['following']['targetting']:
+			blit_string(0,
+				MAP_WINDOW_SIZE[1]-1,
+				'Firing')
+
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
 		console_print(ITEM_WINDOW,pos,0,chr(15))

@@ -971,6 +971,7 @@ while RUNNING:
 	menus.draw_menus()
 	#gfx.draw_effects()
 	gfx.draw_message_box()
+	gfx.draw_status_line()
 	gfx.draw_console()
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
