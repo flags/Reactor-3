@@ -966,7 +966,7 @@ while RUNNING:
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
-	life.draw_life_info(SETTINGS['following'])
+	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
 	#gfx.draw_effects()

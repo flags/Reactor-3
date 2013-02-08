@@ -1295,7 +1295,8 @@ def draw_visual_inventory(life):
 	console_set_default_foreground(0,white)
 
 #TODO: Since we are drawing in a blank area, we only need to do this once!
-def draw_life_info(life):
+def draw_life_info():
+	life = SETTINGS['following']
 	_info = []
 	_name_mods = ''
 	_holding = get_held_items(life)
