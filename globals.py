@@ -14,7 +14,6 @@ PREFAB_WINDOW_SIZE = (40,40)
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
-RUNNING = True
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 
@@ -76,14 +75,17 @@ DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
 
 #Non-constants
-SETTINGS = {'draw lights': True,
+SETTINGS = {'running': True,
+			'draw lights': True,
 			'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': False,
 			'world gravity': 0.09,
 			'los': 35,
 			'lifeid': 0,
-			'heatmap': None}
+			'heatmap': None,
+			'controlling': None,
+			'following': None}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}

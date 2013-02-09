@@ -1535,6 +1535,9 @@ def damage_from_fall(life,dist):
 	
 	return True
 
+def damage_limb(life,limb):
+	_limb = life['body'][limb]
+
 def damage_from_item(life,item,damage):
 	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
 	#Here, have some help :)
@@ -1566,6 +1569,8 @@ def damage_from_item(life,item,damage):
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
 	#_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
+	
+	
 	
 	life['body'][_hit_limb]['condition'] -= _damage
 	
