@@ -72,28 +72,10 @@ def draw_targeting():
 		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
 
-def handle_options_menu(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	
-	if key == 'Reload map':
-		logging.warning('Map reloading is not well tested!')
-		global MAP
-		del MAP
-		
-		MAP = maps.load_map('map1.dat')
-		
-		logging.warning('Updating references to map. This may take a while.')
-		for entry in LIFE:
-			entry['map'] = MAP
-		
-		logging.warning('Redrawing LOS.')
-		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
-	
-	menus.delete_menu(ACTIVE_MENU['menu'])
-
 def tick_all_objects():
-	if PLAYER['targeting']:
+	if SETTINGS['controlling']['targeting'] and SETTINGS['controlling']['shoot_timer']:
+		SETTINGS['controlling']['shoot_timer']-=1
+		
 		return False
 	
 	items.tick_all_items(MAP)
@@ -104,7 +86,6 @@ def tick_all_objects():
 	return True
 
 LIGHTS.append({'x': 12,'y': 20,'z': 2,'brightness': 50.0})
-#effects.create_gas((5,10,2),'smoke',3,MAP)
 
 SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True

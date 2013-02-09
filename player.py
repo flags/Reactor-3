@@ -1,5 +1,6 @@
 from globals import *
 import graphics as gfx
+import weapons
 import menus
 import life
 
@@ -176,8 +177,6 @@ def handle_input():
 			SELECTED_TILES[0] = []
 			return True
 		
-		#TODO: Pause game
-		
 		_weapons = []
 		for hand in SETTINGS['controlling']['hands']:
 			_limb = life.get_limb(SETTINGS['controlling']['body'],hand)
@@ -316,12 +315,12 @@ def handle_input():
 	if INPUT['y']:
 		if LIFE.index(SETTINGS['following'])<len(LIFE)-1:
 			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])+1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['following'])+1]
+			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])+1]
 
 	if INPUT['u']:
 		if LIFE.index(SETTINGS['following'])>0:
 			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])-1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['following'])-1]
+			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])-1]
 	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
@@ -509,7 +508,8 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['pos'][:]
+	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
+	SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -727,3 +727,23 @@ def create_pick_up_item_menu(items):
 def return_to_inventory(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.activate_menu_by_name('Inventory')
+
+def handle_options_menu(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if key == 'Reload map':
+		logging.warning('Map reloading is not well tested!')
+		global MAP
+		del MAP
+		
+		MAP = maps.load_map('map1.dat')
+		
+		logging.warning('Updating references to map. This may take a while.')
+		for entry in LIFE:
+			entry['map'] = MAP
+		
+		logging.warning('Redrawing LOS.')
+		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])

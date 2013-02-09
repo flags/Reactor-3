@@ -82,7 +82,6 @@ def create_item(name,position=[0,0,2]):
 	item = ITEM_TYPES[name].copy()
 	
 	for key in item['marked_for_reint']:
-		logging.debug('Found marked key: %s' % key)
 		item[key] = item['marked_for_reint'][key][:]
 	
 	del item['marked_for_reint']

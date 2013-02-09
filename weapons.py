@@ -54,4 +54,13 @@ def fire(life,target):
 		if 'player' in life:
 			gfx.message('You are out of ammo.')
 	
+	_fx = numbers.clip(life['facing'][0]-target[0],-1,1)
+	_fy = numbers.clip(life['facing'][1]-target[1],-1,1)
+	
+	for life in LIFE:
+		if life['pos'][0] == target[0] and life['pos'][1] == target[1]:
+			life['aim_at'] = life['pos']
+			break
+	
+	life['facing'] = (_fx,_fy)
 	life['firing'] = None

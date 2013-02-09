@@ -212,6 +212,11 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['dead'] = False
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
+	_life['shoot_timer'] = 0
+	_life['shoot_timer_max'] = 60
+	_life['strafing'] = False
+	_life['facing'] = (0,0)
+	_life['aim_at'] = _life
 	
 	#ALife
 	_life['know'] = {}
@@ -313,6 +318,12 @@ def walk_path(life):
 	
 	if life['path']:
 		_pos = list(life['path'].pop(0))
+		_nfx = numbers.clip(life['pos'][0]-_pos[0],-1,1)
+		_nfy = numbers.clip(life['pos'][1]-_pos[1],-1,1)
+		
+		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
+			life['facing'] = (_nfx,_nfy)
+			life['aim_at'] = life
 		
 		if _pos[2] and abs(_pos[2])-1:
 			if _pos[2]>0:

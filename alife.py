@@ -703,7 +703,7 @@ def look(life):
 			
 			continue
 			
-		logging.info('%s learned about %s.' % (life['name'][0],ai['name'][0]))
+		logging.info('%s learned about %s.' % (' '.join(life['name']),' '.join(ai['name'])))
 		
 		life['know'][str(ai['id'])] = {'life': ai,
 			'score': 0,
@@ -730,8 +730,6 @@ def look(life):
 			life['know_items'][item['uid']]['score'] = judge_item(life,item)
 		elif str(item['uid']) in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
-	
-	#logging.debug('\tTargets: %s' % (len(life['seen'])))
 
 def listen(life):
 	for event in life['heard'][:]:
@@ -742,18 +740,12 @@ def listen(life):
 			if consider(life,event['from'],'surrender'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 				
-				communicate(life,'stand_still')
+				communicate(life,'stand_still',target=event['from'])
 		
 		elif event['gist'] == 'free_to_go':
-			#if event['age'] < 40:
-			#	event['age'] += 1
-			#	
-			#	continue
-			
-			lfe.create_and_update_self_snapshot(event['from'])
-			
-			unconsider(life,event['from'],'surrender')
-			#communicate(life,'leaving',target=event['from'])
+			if life == event['target']:
+				lfe.create_and_update_self_snapshot(event['from'])
+				unconsider(life,event['from'],'surrender')
 		
 		elif event['gist'] == 'comply':
 			#TODO: Judge who this is coming from...
@@ -761,24 +753,26 @@ def listen(life):
 				communicate(life,'surrender')
 		
 		elif event['gist'] == 'demand_drop_item':
-			if event['age'] < 40:
-				event['age'] += 1
-				communicate(life,'compliant',target=event['from'])
+			if life == event['target']:
+				if event['age'] < 40:
+					event['age'] += 1
+					communicate(life,'compliant',target=event['from'])
+					
+					continue
 				
-				continue
-			
-			_inventory_item = lfe.get_inventory_item(life,event['item'])
-			
-			flag_item(life,_inventory_item,'demand_drop')
-			lfe.say(life,'@n begins to drop their %s.' % _inventory_item['name'],action=True)
-			
-			lfe.add_action(life,{'action': 'dropitem',
-				'item': event['item']},
-				401,
-				delay=20)
+				_inventory_item = lfe.get_inventory_item(life,event['item'])
+				
+				flag_item(life,_inventory_item,'demand_drop')
+				lfe.say(life,'@n begins to drop their %s.' % _inventory_item['name'],action=True)
+				
+				lfe.add_action(life,{'action': 'dropitem',
+					'item': event['item']},
+					401,
+					delay=20)
 		
 		elif event['gist'] == 'stand_still':
-			lfe.add_action(life,{'action': 'block'},400)
+			if life == event['target']:
+				lfe.add_action(life,{'action': 'block'},400)
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
@@ -881,7 +875,7 @@ def understand(life,source_map):
 					
 					if _visible_items:
 						_item_to_drop = _visible_items[0]
-						communicate(life,'demand_drop_item',item=_item_to_drop)
+						communicate(life,'demand_drop_item',item=_item_to_drop,target=_target['who']['life'])
 						
 						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
 						lfe.clear_actions(life,matches=[{'action': 'shoot'}])
@@ -891,7 +885,7 @@ def understand(life,source_map):
 				if has_considered(life,_target['who']['life'],'compliant'):
 					if not lfe.get_held_items(_target['who']['life'],matches=[{'type': 'gun'}]):
 						lfe.say(life,'Now get out of here!')
-						communicate(life,'free_to_go')
+						communicate(life,'free_to_go',target=_target['who']['life'])
 						unconsider(life,_target['who']['life'],'surrender')
 				
 			else:
