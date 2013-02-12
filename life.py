@@ -216,6 +216,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['shoot_timer_max'] = 60
 	_life['strafing'] = False
 	_life['facing'] = (0,0)
+	_life['strafing'] = False
 	_life['aim_at'] = _life
 	
 	#ALife
@@ -427,7 +428,8 @@ def delete_action(life,action):
 	"""Deletes an action."""
 	_action = {'action': action['action'],
 		'score': action['score'],
-		'delay': action['delay']}
+		'delay': action['delay'],
+		'delay_max': action['delay_max']}
 	
 	life['actions'].remove(_action)
 
@@ -439,6 +441,7 @@ def add_action(life,action,score,delay=0):
 		return False
 	
 	_tmp_action['delay'] = delay
+	_tmp_action['delay_max'] = delay
 	
 	if _tmp_action in life['actions']:
 		return False
@@ -1336,36 +1339,24 @@ def draw_life_info():
 	if _bleeding:
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
 		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
-	#else:
-	#	_info.append({'text': 'You are not bleeding.',
-	#		'color': Color(0,200,0)})
 	
 	if _broken:
 		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Broken: %s' % _broken_string,
 			'color': red})
-	#else:
-	#	_info.append({'text': 'You have no broken limbs.',
-	#		'color': Color(0,200,0)})
 	
 	if _cut:
 		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Cut: %s' % _cut_string,
 			'color': red})
-	#else:
-	#	_info.append({'text': 'You have no cut limbs.',
-	#		'color': Color(0,200,0)})
 	
 	if _bruised:
 		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Buised: %s' % _bruised_string,
 			'color': red})
-	#else:
-	#	_info.append({'text': 'You have no bruised limbs.',
-	#		'color': Color(0,200,0)})
 	
 	_i = 1
 	for entry in _info:
@@ -1378,6 +1369,38 @@ def draw_life_info():
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
 	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
+	
+	#Drawing the action queue
+	console_set_default_foreground(0,white)
+	console_print(0,MAP_WINDOW_SIZE[0]+1,19,'Queued Actions')
+	
+	_y_mod = 0
+	for action in life['actions']:
+		if not action['delay']:
+			continue
+				
+		_name = action['action']['action']
+		_bar_size = (action['delay']/float(action['delay_max']))*SETTINGS['progress bar max value']
+		
+		console_set_default_background(0,white)
+		
+		for i in range(SETTINGS['progress bar max value']):
+			if i <= _bar_size:
+				console_set_default_foreground(0,white)
+			else:
+				console_set_default_foreground(0,gray)
+			
+			if 1 <= i <= len(_name):
+				console_set_default_foreground(0,green)
+				console_print(0,MAP_WINDOW_SIZE[0]+2+i,20+_y_mod,_name[i-1])
+			else:
+				console_print(0,MAP_WINDOW_SIZE[0]+2+i,20+_y_mod,'|')
+		
+		console_set_default_foreground(0,white)
+		console_print(0,MAP_WINDOW_SIZE[0]+1,20+_y_mod,'[')
+		console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,20+_y_mod,']')
+			
+		_y_mod += 1
 
 def pass_out(life,length=None):
 	if not length:

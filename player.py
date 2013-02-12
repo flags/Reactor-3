@@ -281,6 +281,14 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['S']:
+		if SETTINGS['controlling']['strafing']:
+			SETTINGS['controlling']['strafing'] = False
+			print 'Not strafing'
+		else:
+			SETTINGS['controlling']['strafing'] = True
+			print 'Strafing'
+	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Options'))

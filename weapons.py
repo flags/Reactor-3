@@ -43,7 +43,6 @@ def fire(life,target):
 		direction += random.randint(-2,3)
 		
 		#TODO: Clean this up...
-		#bullets.create_bullet(life['pos'],direction,5,life)
 		_bullet = _feed['rounds'].pop()
 		_bullet['pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
@@ -57,9 +56,9 @@ def fire(life,target):
 	_fx = numbers.clip(life['facing'][0]-target[0],-1,1)
 	_fy = numbers.clip(life['facing'][1]-target[1],-1,1)
 	
-	for life in LIFE:
-		if life['pos'][0] == target[0] and life['pos'][1] == target[1]:
-			life['aim_at'] = life['pos']
+	for _life in LIFE:
+		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
+			life['aim_at'] = _life
 			break
 	
 	life['facing'] = (_fx,_fy)
