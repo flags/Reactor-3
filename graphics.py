@@ -208,14 +208,14 @@ def draw_status_line():
 	if SETTINGS['following']['strafing']:
 		_non_flashing_text += 'Strafing'
 	
-	if time.time()%1>=0.5:	
-		blit_string(0,
-			MAP_WINDOW_SIZE[1]-1,
-			_flashing_text)
-	
-	blit_string(len(_flashing_text)+1,
+	blit_string(0,
 		MAP_WINDOW_SIZE[1]-1,
 		_non_flashing_text)
+	
+	if time.time()%1>=0.5:
+		blit_string(len(_non_flashing_text)+1,
+			MAP_WINDOW_SIZE[1]-1,
+			_flashing_text)
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:

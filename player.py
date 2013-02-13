@@ -2,6 +2,7 @@ from globals import *
 import graphics as gfx
 import weapons
 import menus
+import items
 import life
 
 def handle_input():
@@ -127,6 +128,30 @@ def handle_input():
 			on_select=inventory_unequip_action)
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['c']:
+		if SETTINGS['controlling']['stance'] == 'standing':
+			_delay = 5
+		elif SETTINGS['controlling']['stance'] == 'crawling':
+			_delay = 15
+		else:
+			return False
+		
+		life.add_action(SETTINGS['controlling'],{'action': 'crouch'},
+			200,
+			delay=_delay)
+	
+	if INPUT['C']:
+		if SETTINGS['controlling']['stance'] == 'crouching':
+			_delay = 5
+		elif SETTINGS['controlling']['stance'] == 'crawling':
+			_delay = 15
+		else:
+			return False
+		
+		life.add_action(SETTINGS['controlling'],{'action': 'stand'},
+			200,
+			delay=_delay)
 	
 	if INPUT['d']:
 		if menus.get_menu_by_name('Drop')>-1:
@@ -307,6 +332,18 @@ def handle_input():
 			on_select=handle_options_menu)
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['Z']:
+		if SETTINGS['controlling']['stance'] == 'standing':
+			_delay = 15
+		elif SETTINGS['controlling']['stance'] == 'crouching':
+			_delay = 5
+		else:
+			return False
+		
+		life.add_action(SETTINGS['controlling'],{'action': 'crawl'},
+			200,
+			delay=_delay)
 	
 	if INPUT[',']:
 		_items = items.get_items_at(SETTINGS['controlling']['pos'])

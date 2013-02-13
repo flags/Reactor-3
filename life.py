@@ -215,6 +215,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 60
 	_life['strafing'] = False
+	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
 	_life['aim_at'] = _life
@@ -296,8 +297,14 @@ def path_dest(life):
 
 def walk(life,to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
-	if life['speed']:
-		life['speed'] -= 1
+	if life['speed']>0:
+		if life['stance'] == 'standing':
+			life['speed'] -= 1
+		elif life['stance'] == 'crouching':
+			life['speed'] -= 0.5
+		elif life['stance'] == 'crawling':
+			life['speed'] -= 0.3
+			
 		return False
 	elif life['speed']<=0:
 		life['speed_max'] = get_max_speed(life)
@@ -373,14 +380,7 @@ def perform_collisions(life):
 	return False
 
 def get_highest_action(life):
-	"""Returns highest action in the queue."""
-	#_actions = {'action': None,'lowest': -1}
-	
-	#for action in life['actions']:
-	#	if action['score'] > _actions['lowest']:
-	#		_actions['lowest'] = action['score']
-	#		_actions['action'] = action
-	
+	"""Returns highest action in the queue."""	
 	if life['actions'] and life['actions'][0]:
 		return life['actions'][0]
 	else:
@@ -482,6 +482,36 @@ def perform_action(life):
 	if _action['action'] == 'move':
 		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
 			delete_action(life,action)
+	
+	elif _action['action'] == 'stand':
+		life['stance'] = 'standing'
+		
+		if 'player' in life:
+			gfx.message('You stand up.')
+		else:
+			say(life,'@n stands up.',action=True)
+		
+		delete_action(life,action)
+	
+	elif _action['action'] == 'crouch':
+		life['stance'] = 'crouching'
+		
+		if 'player' in life:
+			gfx.message('You crouch down.')
+		else:
+			say(life,'@n crouches.',action=True)
+		
+		delete_action(life,action)
+	
+	elif _action['action'] == 'crawl':
+		life['stance'] = 'crawling'
+		
+		if 'player' in life:
+			gfx.message('You begin to crawl.')
+		else:
+			say(life,'@n starts to crawl.',action=True)
+		
+		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupitem':
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
@@ -1312,7 +1342,7 @@ def draw_visual_inventory(life):
 def draw_life_info():
 	life = SETTINGS['following']
 	_info = []
-	_name_mods = ''
+	_name_mods = []
 	_holding = get_held_items(life)
 	_bleeding = get_bleeding_limbs(life)
 	_broken = get_broken_limbs(life)
@@ -1320,13 +1350,15 @@ def draw_life_info():
 	_cut = get_cut_limbs(life)
 	
 	if life['asleep']:
-		_name_mods = ' (Asleep)'
+		_name_mods.append('(Asleep)')
+	
+	_name_mods.append(life['stance'].title())	
 	
 	console_set_default_foreground(0,BORDER_COLOR)
 	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
 	
 	console_set_default_foreground(0,white)
-	console_print(0,MAP_WINDOW_SIZE[0]+1,0,' '.join(life['name'])+_name_mods)
+	console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
 	
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
@@ -1569,8 +1601,14 @@ def damage_from_fall(life,dist):
 	
 	return True
 
-def damage_limb(life,limb):
+def damage_limb(life,limb,damage):
 	_limb = life['body'][limb]
+	
+	if damage>30:
+		break_limb(life,limb)
+		bruise_limb(life,limb)
+	
+	life['body'][limb]['condition'] -= damage
 
 def damage_from_item(life,item,damage):
 	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
@@ -1602,11 +1640,7 @@ def damage_from_item(life,item,damage):
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
-	#_damage -= abs(item['maxvelocity'][0]-item['velocity'][0])+abs(item['maxvelocity'][1]-item['velocity'][1])
-	
-	
-	
-	life['body'][_hit_limb]['condition'] -= _damage
+	damage_limb(life,_hit_limb,damage)
 	
 	create_and_update_self_snapshot(life)
 	
