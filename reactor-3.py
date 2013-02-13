@@ -60,7 +60,6 @@ create_all_tiles()
 PLACING_TILE = WALL_TILE
 
 def move_camera(pos,scroll=False):
-	
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
 	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]

@@ -632,14 +632,17 @@ def perform_action(life):
 	elif _action['action'] == 'removeandholditem':
 		_hand = can_hold_item(life)
 		
+		if get_inventory_item(life,_action['item'])['id'] in get_held_items(life):
+			delete_action(life,action)
+			
+			return True
+		
 		if not _hand:
 			if 'player' in life:
-				_item = get_inventory_item(life,_action['item'])
-				gfx.message('You have no hands free to hold the %s.' % items.get_name(_item))
+				gfx.message('You have no hands free to hold the %s.' % items.get_name(get_inventory_item(life,_action['item'])))
 			
 			return False
 
-		#TODO: Do we need to drop it first?
 		_dropped_item = remove_item_from_inventory(life,_action['item'])
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_hand['holding'].append(_id)
@@ -939,6 +942,27 @@ def get_all_inventory_items(life,matches=None):
 		_items.append(_item)
 		
 	return _items
+
+def get_item_access_time(life,item):
+	"""Returns the amount of time it takes to get an item from inventory."""
+	#TODO: Where's it at on the body? How long does it take to get to it?
+	_item = get_inventory_item(life,item)
+	
+	if item_is_equipped(life,item):
+		_time = _item['size']
+		
+		if 'max_capacity' in _item:
+			_time += _item['capacity']
+		
+		return _time
+	
+	_stored = item_is_stored(life,item)
+	if _stored:
+		return get_item_access_time(life,_stored['id'])+_item['size']
+	
+	logging.warning('Could not find access time for %s.' % _item['name'])
+	
+	return _item['size']
 
 def direct_add_item_to_inventory(life,item,container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.

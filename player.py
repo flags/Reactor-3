@@ -426,7 +426,7 @@ def inventory_equip(entry):
 	life.add_action(SETTINGS['controlling'],{'action': 'equipitem',
 		'item': item},
 		200,
-		delay=40)
+		delay=life.get_item_access_time(SETTINGS['controlling'],item))
 	
 	gfx.message('You start putting on the %s.' % _item['name'])
 	
@@ -443,7 +443,7 @@ def inventory_unequip(entry):
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=60)
+		delay=life.get_item_access_time(SETTINGS['controlling'],item))
 	
 	gfx.message('You begin storing %s.' % _item['name'])
 	
@@ -495,7 +495,7 @@ def inventory_drop(entry):
 	life.add_action(SETTINGS['controlling'],{'action': 'dropitem',
 		'item': item},
 		200,
-		delay=20)
+		delay=life.get_item_access_time(SETTINGS['controlling'],item))
 	
 	gfx.message('You start to drop %s.' % _name)
 	
@@ -623,7 +623,7 @@ def inventory_handle_ammo(entry):
 	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
 	
 	if key == 'Fill':
-		if not life.can_hold_item(SETTINGS['controlling']):
+		if not life.can_hold_item(SETTINGS['controlling']) and not item['id'] in life.get_held_items(SETTINGS['controlling']):
 			gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
 			return False
 		
