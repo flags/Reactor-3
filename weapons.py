@@ -40,7 +40,16 @@ def fire(life,target):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)
-		direction += random.randint(-2,3)
+		stance_mod = 0
+		
+		if life['stance'] == 'standing':
+			stance_mod = 3
+		elif life['stance'] == 'crouching':
+			stance_mod = 2
+		elif life['stance'] == 'crawling':
+			stance_mod = 1
+		
+		direction += random.randint(-stance_mod,stance_mod+1)
 		
 		#TODO: Clean this up...
 		_bullet = _feed['rounds'].pop()

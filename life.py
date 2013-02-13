@@ -717,6 +717,7 @@ def kill(life,how):
 		if 'player' in life:
 			gfx.message('You die from blood loss.',style='death')
 		else:
+			say(life,'@n dies from blood loss.',action=True)
 			logging.debug('%s dies from blood loss.' % life['name'][0])
 	
 	life['dead'] = True
@@ -725,8 +726,6 @@ def tick(life,source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 	if life['dead']:
 		return False
-	
-	#print get_total_pain(life)
 	
 	if calculate_blood(life)<=0:
 		kill(life,'bleedout')
@@ -1434,10 +1433,20 @@ def draw_life_info():
 			
 		_y_mod += 1
 
+def collapse(life):
+	if life['stance'] in ['standing','crouching']:
+		if 'player' in life:
+			gfx.message('You collapse!',style='damage')
+		else:
+			say(life,'@n collapses.',action=True)
+		
+		life['stance'] == 'crawling'
+
 def pass_out(life,length=None):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
+	collapse(life)
 	life['asleep'] = length
 	
 	if 'player' in life:
@@ -1605,7 +1614,6 @@ def damage_limb(life,limb,damage):
 	_limb = life['body'][limb]
 	
 	if damage>30:
-		break_limb(life,limb)
 		bruise_limb(life,limb)
 	
 	life['body'][limb]['condition'] -= damage
@@ -1614,7 +1622,6 @@ def damage_from_item(life,item,damage):
 	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
 	#Here, have some help :)
 	#print item['velocity']
-	print 'BULLET HIT'
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
@@ -1667,7 +1674,7 @@ def natural_healing(life):
 		
 		if limb['cut']:
 			if limb['bleeding']>0:
-				limb['bleeding'] -= 0.002
+				limb['bleeding'] -= 0.0005
 			
 			if limb['bleeding']<0:
 				limb['bleeding'] = 0
