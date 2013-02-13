@@ -623,11 +623,12 @@ def inventory_handle_ammo(entry):
 	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
 	
 	if key == 'Fill':
-		if not life.can_hold_item(SETTINGS['controlling']) and not item['id'] in life.get_held_items(SETTINGS['controlling']):
-			gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
-			return False
+		if not item['id'] in life.get_held_items(SETTINGS['controlling']):
+			if not life.can_hold_item(SETTINGS['controlling']):
+				gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
+				return False
 		
-		_hold = life.add_action(SETTINGS['controlling'],{'action': 'removeandholditem',
+		life.add_action(SETTINGS['controlling'],{'action': 'removeandholditem',
 			'item': item['id']},
 			200,
 			delay=20)

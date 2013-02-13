@@ -632,11 +632,6 @@ def perform_action(life):
 	elif _action['action'] == 'removeandholditem':
 		_hand = can_hold_item(life)
 		
-		if get_inventory_item(life,_action['item'])['id'] in get_held_items(life):
-			delete_action(life,action)
-			
-			return True
-		
 		if not _hand:
 			if 'player' in life:
 				gfx.message('You have no hands free to hold the %s.' % items.get_name(get_inventory_item(life,_action['item'])))
