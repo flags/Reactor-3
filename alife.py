@@ -298,14 +298,16 @@ def travel_to_target(life,target,pos,source_map):
 def search_for_target(life,target,source_map):
 	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
-	#print 'Searching'
-	
 	if _cover:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
 		return False
 	
 	return True
+
+def explore(life,source_map):
+	#This is a bit different than the logic used for the other pathfinding functions
+	#L
 
 def escape(life,target,source_map):
 	_escape = generate_los(life,target,target['life']['pos'],source_map,score_escape)
@@ -387,6 +389,8 @@ def remember_item(life,item):
 	return False
 
 def flag_item(life,item,flag):
+	print ' '.join(life['name'])
+	
 	if not flag in life['know_items'][item['uid']]['flags']:
 		life['know_items'][item['uid']]['flags'].append(flag)
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
@@ -445,9 +449,7 @@ def collect_nearby_wanted_items(life):
 		lfe.clear_actions(life)
 		
 		for action in lfe.find_action(life,matches=[{'action': 'pickupholditem'}]):
-			#print action
 			#print 'I was picking up something else...',_highest['item']['name']
-			#print life['actions']
 			return False
 		
 		lfe.add_action(life,{'action': 'pickupholditem',
@@ -517,8 +519,6 @@ def handle_hide_and_decide(life,target,source_map):
 		else:
 			if consider(life,target['life'],'shown_scared'):
 				lfe.say(life,'@n panics!',action=True)
-			
-			#collect_nearby_wanted_items(life)
 
 def handle_lost_los(life):
 	if life['in_combat']:
@@ -543,7 +543,6 @@ def handle_lost_los(life):
 def in_danger(life,target):
 	if 'last_seen_time' in target and not target['last_seen_time']:
 		#TODO: Courage here
-		#in danger!
 		#print abs(target['danger_score']),judge_self(life),time.time()
 		if abs(target['danger_score'])>=judge_self(life):
 			return True
@@ -678,6 +677,36 @@ def unconsider(life,target,what):
 
 def communicate(life,gist,**kvargs):
 	lfe.create_conversation(life,gist,**kvargs)
+
+def flag(life,flag):
+	life['flags'][flag] = True
+
+def unflag(life,flag):
+	life['flags'][flag] = False
+
+def get_flag(life,flag):
+	if not flag in life['flags']:
+		return False
+	
+	return life['flags'][flag]
+
+def survive(life):
+	#What do we need to do?
+	#	- Get items?
+	#	- Find shelter?
+	
+	if has_weapon(life):
+		unflag(life,'no_weapon')
+	else:
+		flag(life,'no_weapon')
+	
+	if get_flag(life,'no_weapon'):
+		_nearby_weapons = find_known_items(life,matches=[{'type': 'gun'}])
+		
+		if _nearby_weapons:
+			collect_nearby_wanted_items(life)
+		else:
+			escape(life
 
 def look(life):
 	life['seen'] = []
@@ -892,7 +921,7 @@ def understand(life,source_map):
 				handle_potential_combat_encounter(life,_target['who'],source_map)
 		
 	else:
-		pass
+		survive(life)
 		#TODO: Idle?
 		#print 'Away from trouble.'
 		#lfe.clear_actions(life,matches=[{'action': 'shoot'}])

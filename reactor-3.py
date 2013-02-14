@@ -91,7 +91,7 @@ SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['test','1'],map=MAP,position=[50,40,2])
-_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
+#_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,10,2])
 PLAYER['player'] = True
 
@@ -135,18 +135,18 @@ life.add_item_to_inventory(PLAYER,_i5)
 life.add_item_to_inventory(PLAYER,_i6)
 life.add_item_to_inventory(PLAYER,_i7)
 life.add_item_to_inventory(PLAYER,_i8)
-life.add_item_to_inventory(_test,_i9)
-life.add_item_to_inventory(_test,_i10)
-life.add_item_to_inventory(_test,_i11)
-life.add_item_to_inventory(_test,_i12)
+#life.add_item_to_inventory(_test,_i9)
+#life.add_item_to_inventory(_test,_i10)
+#life.add_item_to_inventory(_test,_i11)
+#life.add_item_to_inventory(_test,_i12)
 #life.add_item_to_inventory(_test2,_i14)
-life.add_item_to_inventory(_test2,_i13)
+#life.add_item_to_inventory(_test2,_i13)
 
 for i in range(17):
 	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-for i in range(17):
-	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
+#for i in range(17):
+#	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
 
 CURRENT_UPS = UPS
 
