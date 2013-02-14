@@ -307,7 +307,7 @@ def search_for_target(life,target,source_map):
 
 def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions
-	#L
+	pass
 
 def escape(life,target,source_map):
 	_escape = generate_los(life,target,target['life']['pos'],source_map,score_escape)
@@ -706,7 +706,8 @@ def survive(life):
 		if _nearby_weapons:
 			collect_nearby_wanted_items(life)
 		else:
-			escape(life
+			#escape(life
+			pass
 
 def look(life):
 	life['seen'] = []
