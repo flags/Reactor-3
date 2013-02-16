@@ -55,6 +55,7 @@ def get_children_of_tag(taglist):
 	_name = ''
 	_flags = ''
 	_parent = ''
+	_damage_mod = 0
 	
 	for tag in taglist:		
 		_key = tag.partition('<')[2].partition('>')[0]
@@ -65,6 +66,7 @@ def get_children_of_tag(taglist):
 			else:
 				_limb = {'flags': _flags}
 				_limb['parent'] = _parent
+				_limb['damage_mod'] = _damage_mod
 				_limbs[_name] = _limb
 				
 				#if _parent in _limbs:
@@ -87,6 +89,9 @@ def get_children_of_tag(taglist):
 			
 			if _key == 'parent':
 				_parent = _value
+			
+			if _key == 'damage_mod':
+				_damage_mod = _value
 	
 	return _limbs
 

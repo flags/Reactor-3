@@ -1,58 +1,68 @@
 {
   "body": {
     "lthigh": {
+      "damage_mod": "5", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "hip"
     }, 
     "lknee": {
-      "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "lthigh"
+      "flags": "SKIN|MUSCLE|BONE"
     }, 
     "rfoot": {
+      "damage_mod": "1", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rlowerleg"
     }, 
     "llowerleg": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lknee"
     }, 
     "rhand": {
+      "damage_mod": "1", 
       "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
       "parent": "rforearm"
     }, 
     "rupperarm": {
+      "damage_mod": "6", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lshoulder"
     }, 
     "lhand": {
+      "damage_mod": "1", 
       "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
       "parent": "lforearm"
     }, 
     "rthigh": {
-      "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "hip"
+      "flags": "SKIN|MUSCLE|BONE"
     }, 
     "rknee": {
+      "damage_mod": "3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rthigh"
     }, 
     "chest": {
+      "damage_mod": "25", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "neck"
     }, 
     "lelbow": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lupperarm"
     }, 
     "relbow": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rupperarm"
     }, 
     "lupperarm": {
+      "damage_mod": "6", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lshoulder"
     }, 
     "hip": {
+      "damage_mod": "6", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "stomach"
     }, 
@@ -60,34 +70,42 @@
       "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
     }, 
     "stomach": {
+      "damage_mod": "8", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "chest"
     }, 
     "rlowerleg": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rknee"
     }, 
     "neck": {
+      "damage_mod": "20", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "head"
     }, 
     "lshoulder": {
+      "damage_mod": "6", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "chest"
     }, 
     "lforearm": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lelbow"
     }, 
     "lfoot": {
+      "damage_mod": "1", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "llowerleg"
     }, 
     "rforearm": {
+      "damage_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "relbow"
     }, 
     "rshoulder": {
+      "damage_mod": "6", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "chest"
     }

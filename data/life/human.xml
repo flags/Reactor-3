@@ -6,115 +6,136 @@
 <body>
 	<head>
 		<flags>SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]</flags>
+		<damage_mod>20</damage_mod>
 	</head>
 	
 	<neck>
 		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
 		<parent>head</parent>
+		<damage_mod>20</damage_mod>
 	</neck>
 	
 	<chest>
 		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
 		<parent>neck</parent>
+		<damage_mod>25</damage_mod>
 	</chest>
 	
 	<lshoulder>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>chest</parent>
+		<damage_mod>6</damage_mod>
 	</lshoulder>
 	
 	<rshoulder>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>chest</parent>
+		<damage_mod>6</damage_mod>
 	</rshoulder>
 	
 	<lupperarm>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>lshoulder</parent>
+		<damage_mod>6</damage_mod>
 	</lupperarm>
 	
 	<rupperarm>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>lshoulder</parent>
+		<damage_mod>6</damage_mod>
 	</rupperarm>
 	
 	<lelbow>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>lupperarm</parent>
+		<damage_mod>2</damage_mod>
 	</lelbow>
 	
 	<relbow>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>rupperarm</parent>
+		<damage_mod>2</damage_mod>
 	</relbow>
 	
 	<lforearm>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>lelbow</parent>
+		<damage_mod>2</damage_mod>
 	</lforearm>
 	
 	<rforearm>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>relbow</parent>
+		<damage_mod>2</damage_mod>
 	</rforearm>
 	
 	<lhand>
 		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
 		<parent>lforearm</parent>
+		<damage_mod>1</damage_mod>
 	</lhand>
 	
 	<rhand>
 		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
 		<parent>rforearm</parent>
+		<damage_mod>1</damage_mod>
 	</rhand>
 	
 	<stomach>
 		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
 		<parent>chest</parent>
+		<damage_mod>8</damage_mod>
 	</stomach>
 	
 	<hip>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>stomach</parent>
+		<damage_mod>6</damage_mod>
 	</hip>
 	
 	<lthigh>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>hip</parent>
+		<damage_mod>5</damage_mod>
 	</lthigh>
 	
 	<rthigh>
 		<flags>SKIN|MUSCLE|BONE</flags>
-		<parent>hip</parent>
+		<damage_mod>5</damage_mod>
 	</rthigh>
 	
 	<lknee>
 		<flags>SKIN|MUSCLE|BONE</flags>
-		<parent>lthigh</parent>
+		<damage_mod>3</damage_mod>
 	</lknee>
 	
 	<rknee>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>rthigh</parent>
+		<damage_mod>3</damage_mod>
 	</rknee>
 	
 	<llowerleg>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>lknee</parent>
+		<damage_mod>2</damage_mod>
 	</llowerleg>
 	
 	<rlowerleg>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>rknee</parent>
+		<damage_mod>2</damage_mod>
 	</rlowerleg>
 	
 	<lfoot>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>llowerleg</parent>
+		<damage_mod>1</damage_mod>
 	</lfoot>
 	
 	<rfoot>
 		<flags>SKIN|MUSCLE|BONE</flags>
 		<parent>rlowerleg</parent>
+		<damage_mod>1</damage_mod>
 	</rfoot>
 </body>

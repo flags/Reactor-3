@@ -717,6 +717,12 @@ def kill(life,how):
 		else:
 			say(life,'@n dies from blood loss.',action=True)
 			logging.debug('%s dies from blood loss.' % life['name'][0])
+	elif how == 'pain':
+		if 'player' in life:
+			gfx.message('You die.',style='death')
+		else:
+			say(life,'@n dies.',action=True)
+			logging.debug('%s dies.' % life['name'][0])
 	
 	life['dead'] = True
 
@@ -748,6 +754,11 @@ def tick(life,source_map):
 				gfx.message('You wake up.')
 			else:
 				say(life,'@n wakes up.',action=True)
+		
+		return False
+	
+	if get_total_pain(life)>=20:
+		kill(life,'pain')
 		
 		return False
 	
@@ -1540,14 +1551,16 @@ def get_cut_limbs(life):
 	
 	return _cut
 
-def cut_limb(life,limb):
+def limb_is_cut(life,limb):
 	_limb = life['body'][limb]
 	
-	if _limb['cut']:
-		return True
+	return _limb['cut']
+
+def cut_limb(life,limb,amount=2):
+	_limb = life['body'][limb]
 	
+	_limb['bleeding'] += amount
 	_limb['cut'] = True
-	_limb['bleeding'] += 2
 	
 	effects.create_splatter('blood',life['pos'],velocity=1)
 	
@@ -1656,28 +1669,30 @@ def damage_from_item(life,item,damage):
 	_hit_limb = random.choice(_poss_limbs)
 
 	if item['sharp']:
-		cut_limb(life,_hit_limb)
+		if not limb_is_cut(life,_hit_limb):
+			if life.has_key('player'):
+				gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
+			else:
+				say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
+		else:
+			if life.has_key('player'):
+				gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
+			else:
+				say(life,'%s lodges itself in %n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
+
+		_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
+
+		cut_limb(life,_hit_limb,amount=4)
 		add_pain_to_limb(life,_hit_limb,amount=12)
-		_hit_type = 'cut'
 	else:
 		bruise_limb(life,_hit_limb)
 		add_pain_to_limb(life,_hit_limb,amount=8)
-		_hit_type = 'blunt'
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
 	damage_limb(life,_hit_limb,damage)
 	
 	create_and_update_self_snapshot(life)
-	
-	if life.has_key('player'):
-		gfx.message('You feel a sudden force against you. (-%s)' % _damage)
-	else:
-		#TODO: This should be filed into the event system for the ALife's memory.
-		if _hit_type == 'cut':
-			say(life,'A bullet hits @n\'s %s, tearing the flesh!' % _hit_limb,action=True)
-		#gfx.message('%s rips through %s\'s chest! (-%s)' % (items.get_name(item),life['name'],_damage))
-		pass
 
 def natural_healing(life):
 	if life['asleep']:
