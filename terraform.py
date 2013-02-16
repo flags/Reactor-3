@@ -89,7 +89,7 @@ def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
 
 	if gfx.window_is_closed():
-		RUNNING = False
+		SETTINGS['running'] = False
 		
 		return True
 	
@@ -99,7 +99,7 @@ def handle_input():
 			
 			return True
 			
-		RUNNING = False
+		SETTINGS['running'] = False
 		
 		return True
 	
@@ -352,7 +352,7 @@ menu_align()
 CURRENT_PREFAB = prefabs.create_new_prefab((10,10,3))
 
 def main():
-	while RUNNING:
+	while SETTINGS['running']:
 		get_input()
 		handle_input()
 

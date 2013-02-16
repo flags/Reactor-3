@@ -41,8 +41,10 @@ def generate_structure_map(source_map):
 							continue
 						
 						_walls.append((_x,_y,z+1))
-						_all_walls.append((_x,_y,z+1))
-						
+						_open_walls.append((_x,_y,z+1))
+						#_all_walls.append((_x,_y,z+1))
+			
+			_all_walls.extend(_walls)
 			_buildings.append(_walls)
 	
 	return _buildings
