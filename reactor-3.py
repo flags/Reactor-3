@@ -1,9 +1,11 @@
 """Reactor 3"""
+
 from libtcodpy import *
 from globals import *
 from inputs import *
 from player import *
 from tiles import *
+
 import graphics as gfx
 import maputils
 import drawing
