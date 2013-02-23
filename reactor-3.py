@@ -98,7 +98,7 @@ PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10
 PLAYER['player'] = True
 
 SETTINGS['controlling'] = PLAYER
-SETTINGS['following'] = _test
+SETTINGS['following'] = PLAYER#_test
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')

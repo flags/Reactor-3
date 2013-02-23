@@ -130,28 +130,10 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['c']:
-		if SETTINGS['controlling']['stance'] == 'standing':
-			_delay = 5
-		elif SETTINGS['controlling']['stance'] == 'crawling':
-			_delay = 15
-		else:
-			return False
-		
-		life.add_action(SETTINGS['controlling'],{'action': 'crouch'},
-			200,
-			delay=_delay)
+		life.crouch(SETTINGS['controlling'])
 	
 	if INPUT['C']:
-		if SETTINGS['controlling']['stance'] == 'crouching':
-			_delay = 5
-		elif SETTINGS['controlling']['stance'] == 'crawling':
-			_delay = 15
-		else:
-			return False
-		
-		life.add_action(SETTINGS['controlling'],{'action': 'stand'},
-			200,
-			delay=_delay)
+		life.stand(SETTINGS['controlling'])
 	
 	if INPUT['d']:
 		if menus.get_menu_by_name('Drop')>-1:
@@ -334,16 +316,7 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['Z']:
-		if SETTINGS['controlling']['stance'] == 'standing':
-			_delay = 15
-		elif SETTINGS['controlling']['stance'] == 'crouching':
-			_delay = 5
-		else:
-			return False
-		
-		life.add_action(SETTINGS['controlling'],{'action': 'crawl'},
-			200,
-			delay=_delay)
+		life.crawl(SETTINGS['controlling'])
 	
 	if INPUT[',']:
 		_items = items.get_items_at(SETTINGS['controlling']['pos'])
@@ -695,7 +668,7 @@ def pick_up_item_from_ground(entry):
 			life.add_action(SETTINGS['controlling'],{'action': 'pickupequipitem',
 				'item': entry['item']},
 				200,
-				delay=40)
+				delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
 		
 		elif entry['values'][entry['value']] in SETTINGS['controlling']['hands']:
 			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
@@ -704,7 +677,7 @@ def pick_up_item_from_ground(entry):
 				'item': entry['item'],
 				'hand': entry['values'][entry['value']]},
 				200,
-				delay=40)
+				delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
 		
 		return True
 	
@@ -715,7 +688,7 @@ def pick_up_item_from_ground(entry):
 		'item': entry['item'],
 		'container': entry['container']},
 		200,
-		delay=60)
+		delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
 	
 	return True
 

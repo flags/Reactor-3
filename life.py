@@ -288,6 +288,42 @@ def create_recent_history(life,depth=10):
 	
 	return _line	
 
+def crouch(life):
+	if life['stance'] == 'standing':
+		_delay = 5
+	elif life['stance'] == 'crawling':
+		_delay = 15
+	else:
+		return False
+	
+	add_action(life,{'action': 'crouch'},
+		200,
+		delay=_delay)
+
+def stand(life):
+	if life['stance'] == 'crouching':
+		_delay = 5
+	elif life['stance'] == 'crawling':
+		_delay = 15
+	else:
+		return False
+	
+	add_action(life,{'action': 'stand'},
+		200,
+		delay=_delay)
+
+def crawl(life):
+	if life['stance'] == 'standing':
+		_delay = 15
+	elif life['stance'] == 'crouching':
+		_delay = 5
+	else:
+		return False
+	
+	add_action(life,{'action': 'crawl'},
+		200,
+		delay=_delay)
+
 def path_dest(life):
 	"""Returns the end of the current path."""
 	if not life['path']:
@@ -967,9 +1003,19 @@ def get_all_inventory_items(life,matches=None):
 		
 	return _items
 
-def get_item_access_time(life,item):
+def get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""
 	#TODO: Where's it at on the body? How long does it take to get to it?
+	if isinstance(item, dict):
+		logging.debug('Getting access time for non-inventory item #%s' % item['uid'])
+		
+		if life['stance'] == 'standing':
+			return item['size']
+		elif life['stance'] == 'crouching':
+			return item['size'] * .8	
+		elif life['stance'] == 'crawling':
+			return item['size'] * .6	
+	
 	_item = get_inventory_item(life,item)
 	
 	if item_is_equipped(life,item):
