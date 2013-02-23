@@ -558,7 +558,7 @@ def perform_action(life):
 			
 			return False
 		
-		_stored = item_is_stored(life,_action['item'])
+		_stored = item_is_stored(life, _action['item'])
 
 		if _stored:
 			if 'player' in life:
@@ -909,9 +909,27 @@ def item_is_stored(life,id):
 	
 	return False
 
-def can_wear_item(life,item):
+def item_is_worn(life, item):
+	if not 'id' in item:
+		return False
+	
+	for limb in item['attaches_to']:
+		_limb = get_limb(life['body'],limb)
+		
+		if item['id'] in _limb['holding']:
+			return True
+	
+	return False
+
+def can_wear_item(life, item):
 	"""Attaches item to limbs. Returns False on failure."""
-	#TODO: Function name makes no sense.	
+	#TODO: Function name makes no sense.
+	if not 'CANWEAR' in item['flags']:
+		return False
+	
+	if item_is_worn(life, item):
+		return False
+	
 	for limb in item['attaches_to']:
 		_limb = get_limb(life['body'],limb)
 		
@@ -965,8 +983,6 @@ def get_item_access_time(life,item):
 	_stored = item_is_stored(life,item)
 	if _stored:
 		return get_item_access_time(life,_stored['id'])+_item['size']
-	
-	logging.warning('Could not find access time for %s.' % _item['name'])
 	
 	return _item['size']
 
@@ -1119,9 +1135,15 @@ def equip_item(life,id):
 	"""Helper function. Equips item."""	
 	item = get_inventory_item(life,id)
 	
-	if item['type'] == 'clothing':
+	if 'CANWEAR' in item['flags']:
 		if not _equip_clothing(life,id):
 			return False
+		
+		_held = is_holding(life, id)
+		if _held:			
+			#TODO: Don't breathe this!
+			_held['holding'].remove(id)
+		
 	elif item['type'] == 'gun':
 		_equip_weapon(life,id)
 	else:

@@ -693,10 +693,24 @@ def get_flag(life,flag):
 	
 	return life['flags'][flag]
 
+def manage_inventory(life):
+	_empty_hand = lfe.get_open_hands(life)
+	
+	if not _empty_hand:
+		for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
+			_equip_action = {'action': 'equipitem',
+					'item': item['id']}
+			if lfe.can_wear_item(life, item) and not len(lfe.find_action(life,matches=[_equip_action])):
+				lfe.add_action(life,_equip_action,
+					401,
+					delay=lfe.get_item_access_time(life,item['id']))
+
 def survive(life):
 	#What do we need to do?
 	#	- Get items?
 	#	- Find shelter?
+	
+	manage_inventory(life)
 	
 	if has_weapon(life):
 		unflag(life, 'no_weapon')
@@ -715,7 +729,6 @@ def survive(life):
 			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
 	elif get_flag(life, 'no_backpack'):
 		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
-		print 'now here'
 		
 		if _nearby_backpacks:
 			collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
