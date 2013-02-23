@@ -101,11 +101,13 @@
 	
 	<rthigh>
 		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>hip</parent>
 		<damage_mod>5</damage_mod>
 	</rthigh>
 	
 	<lknee>
 		<flags>SKIN|MUSCLE|BONE</flags>
+		<parent>lthigh</parent>
 		<damage_mod>3</damage_mod>
 	</lknee>
 	

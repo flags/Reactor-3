@@ -6,7 +6,9 @@
       "parent": "hip"
     }, 
     "lknee": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "damage_mod": "3", 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "lthigh"
     }, 
     "rfoot": {
       "damage_mod": "1", 
@@ -34,7 +36,9 @@
       "parent": "lforearm"
     }, 
     "rthigh": {
-      "flags": "SKIN|MUSCLE|BONE"
+      "damage_mod": "5", 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "hip"
     }, 
     "rknee": {
       "damage_mod": "3", 
