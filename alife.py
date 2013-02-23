@@ -697,13 +697,39 @@ def manage_inventory(life):
 	_empty_hand = lfe.get_open_hands(life)
 	
 	if not _empty_hand:
+		print 'DERP'
+		
 		for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 			_equip_action = {'action': 'equipitem',
 					'item': item['id']}
-			if lfe.can_wear_item(life, item) and not len(lfe.find_action(life,matches=[_equip_action])):
+			
+			if len(lfe.find_action(life,matches=[_equip_action])):
+				continue
+			
+			if lfe.can_wear_item(life, item):
 				lfe.add_action(life,_equip_action,
 					401,
 					delay=lfe.get_item_access_time(life,item['id']))
+				continue
+			
+			if not 'CANWEAR' in item['flags'] and lfe.get_all_storage(life):
+				_store_action = {'action': 'storeitem',
+					'item': item['id'],
+					'container': lfe.get_all_storage(life)[0]['id']}
+				
+				if len(lfe.find_action(life,matches=[_store_action])):
+					continue
+				
+				print 'derp',item['name']
+				lfe.add_action(life,_store_action,
+					401,
+					delay=lfe.get_item_access_time(life,item['id']))
+				
+
+def survive_has_ammo(life):
+	pass
+	#for weapon in has_weapon(life):
+	#	if not 
 
 def survive(life):
 	#What do we need to do?
@@ -727,7 +753,18 @@ def survive(life):
 		
 		if _nearby_weapons:
 			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
-	elif get_flag(life, 'no_backpack'):
+	
+	if not get_flag(life, 'no_weapon'):
+		_matches = []
+		for weapon in has_weapon(life):
+			_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
+		
+		_nearby_ammo = find_known_items(life, matches=_matches)
+		
+		if _nearby_ammo:
+			collect_nearby_wanted_items(life, matches=_matches)
+	
+	if get_flag(life, 'no_backpack'):
 		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
 		
 		if _nearby_backpacks:
