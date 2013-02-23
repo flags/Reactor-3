@@ -5,6 +5,6 @@
 "description": "A pair of running shoes.",
 "speed_mod": 4,
 "attaches_to": "lfoot|rfoot",
-"flags": "CANBURN|CANSOAK",
+"flags": "CANWEAR|CANBURN|CANSOAK",
 "size": "1x1",
 "thickness": 1}

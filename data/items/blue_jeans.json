@@ -4,7 +4,7 @@
 "icon": "H",
 "description": "A sturdy pair of blue jeans.",
 "attaches_to": "hip|rthigh|lthigh|lknee|rknee|llowerleg|rlowerleg",
-"flags": "CANBURN|CANSOAK",
+"flags": "CANWEAR|CANBURN|CANSOAK",
 "size": "1x1",
 "capacity": "2x1",
 "thickness": 1}
