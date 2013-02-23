@@ -92,13 +92,13 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
-_test = life.create_life('Human',name=['test','1'],map=MAP,position=[50,40,2])
+_test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 #_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,10,2])
 PLAYER['player'] = True
 
 SETTINGS['controlling'] = PLAYER
-SETTINGS['following'] = PLAYER#_test2
+SETTINGS['following'] = _test
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -121,7 +121,7 @@ _i9 = items.create_item('sneakers')
 _i10 = items.create_item('leather backpack')
 _i11 = items.create_item('glock')
 _i12 = items.create_item('9x19mm magazine')
-_i13 = items.create_item('leather backpack')
+_i13 = items.create_item('leather backpack',position=[40,50,2])
 _i14 = items.create_item('sneakers')
 _i15 = items.create_item('glock',position=[40,50,2])
 _i16 = items.create_item('9x19mm magazine',position=[41,50,2])
