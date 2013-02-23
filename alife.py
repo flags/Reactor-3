@@ -399,7 +399,7 @@ def flag_item(life,item,flag):
 	
 	return False
 
-def find_known_items(life,matches=[],visible=True):
+def find_known_items(life, matches=[], visible=True):
 	_match = []
 	
 	for item in [life['know_items'][item] for item in life['know_items']]:
@@ -422,13 +422,16 @@ def find_known_items(life,matches=[],visible=True):
 			if _break:
 				break
 		
+		if _break:
+			continue
+		
 		_match.append(item)
 	
 	return _match
 
-def collect_nearby_wanted_items(life):
+def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):
 	_highest = {'item': None,'score': 0}
-	_nearby = find_known_items(life,matches=[{'type': 'gun'}],visible=True)
+	_nearby = find_known_items(life, matches=matches, visible=True)
 	
 	for item in _nearby:
 		if item['score'] > _highest['score']:
@@ -448,7 +451,7 @@ def collect_nearby_wanted_items(life):
 	if life['pos'] == _highest['item']['pos']:
 		lfe.clear_actions(life)
 		
-		for action in lfe.find_action(life,matches=[{'action': 'pickupholditem'}]):
+		for action in lfe.find_action(life, matches=[{'action': 'pickupholditem'}]):
 			#print 'I was picking up something else...',_highest['item']['name']
 			return False
 		
@@ -696,18 +699,26 @@ def survive(life):
 	#	- Find shelter?
 	
 	if has_weapon(life):
-		unflag(life,'no_weapon')
+		unflag(life, 'no_weapon')
 	else:
-		flag(life,'no_weapon')
+		flag(life, 'no_weapon')
 	
-	if get_flag(life,'no_weapon'):
-		_nearby_weapons = find_known_items(life,matches=[{'type': 'gun'}])
+	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
+		unflag(life, 'no_backpack')
+	else:
+		flag(life, 'no_backpack')
+	
+	if get_flag(life, 'no_weapon'):
+		_nearby_weapons = find_known_items(life, matches=[{'type': 'gun'}])
 		
 		if _nearby_weapons:
-			collect_nearby_wanted_items(life)
-		else:
-			#escape(life
-			pass
+			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+	elif get_flag(life, 'no_backpack'):
+		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
+		print 'now here'
+		
+		if _nearby_backpacks:
+			collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
 
 def look(life):
 	life['seen'] = []
