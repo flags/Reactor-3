@@ -755,14 +755,16 @@ def survive(life):
 			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
 	
 	if not get_flag(life, 'no_weapon'):
-		_matches = []
+		_ammo_matches = []
+		_feed_matches = []
 		for weapon in has_weapon(life):
-			_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
+			_ammo_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
+			_feed_matches.append({'type': weapon['feed'],'ammotype': weapon['ammotype']})
 		
-		_nearby_ammo = find_known_items(life, matches=_matches)
-		
-		if _nearby_ammo:
-			collect_nearby_wanted_items(life, matches=_matches)
+		if find_known_items(life, matches=_ammo_matches):
+			collect_nearby_wanted_items(life, matches=_ammo_matches)
+		elif find_known_items(life, matches=_feed_matches):
+			collect_nearby_wanted_items(life, matches=_feed_matches)
 	
 	if get_flag(life, 'no_backpack'):
 		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
