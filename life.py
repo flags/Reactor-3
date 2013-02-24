@@ -1665,8 +1665,6 @@ def get_all_attached_limbs(life,limb):
 	return _attached
 
 def damage_from_fall(life,dist):
-	print 'FELL',dist
-	
 	memory(life,'fell %s feet' % (dist*15),
 		pos=life['pos'][:])
 	
