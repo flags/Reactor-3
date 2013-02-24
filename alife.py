@@ -48,7 +48,7 @@ def _get_feed(life,weapon):
 	return _highest_feed['feed']
 
 def _refill_feed(life,feed):
-	if not lfe.can_hold_item(life):
+	if not lfe.is_holding(life, feed['id']) and not lfe.can_hold_item(life):
 		logging.warning('No hands free to load ammo!')
 		
 		#TODO: We can't just return False. Handle dropping instead.
@@ -697,8 +697,6 @@ def manage_inventory(life):
 	_empty_hand = lfe.get_open_hands(life)
 	
 	if not _empty_hand:
-		print 'DERP'
-		
 		for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 			_equip_action = {'action': 'equipitem',
 					'item': item['id']}
@@ -720,7 +718,6 @@ def manage_inventory(life):
 				if len(lfe.find_action(life,matches=[_store_action])):
 					continue
 				
-				print 'derp',item['name']
 				lfe.add_action(life,_store_action,
 					401,
 					delay=lfe.get_item_access_time(life,item['id']))
