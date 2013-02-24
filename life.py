@@ -2,6 +2,7 @@ from globals import *
 import graphics as gfx
 import pathfinding
 import language
+import contexts
 import drawing
 import logging
 import weapons
@@ -199,6 +200,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['path'] = []
 	_life['actions'] = []
 	_life['conversations'] = []
+	_life['contexts'] = [] #TODO: Make this exclusive to the player
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
@@ -253,11 +255,28 @@ def create_conversation(life,gist,say=None,action=None,**kvargs):
 	
 	create_and_update_self_snapshot(life)
 
-def hear(life,what):
+def hear(life, what):
 	what['age'] = 0
 	life['heard'].append(what)
 	
-	logging.debug('%s heard %s.' % (' '.join(life['name']),' '.join(what['from']['name'])))
+	if 'player' in life:
+		_menu = []
+		for reaction in contexts.create_context(life, what):
+			_menu.append(menus.create_item('single',
+				reaction['action'],
+				reaction['text']))
+		
+		if _menu:
+			_i = menus.create_menu(title='React',
+				menu=_menu,
+				padding=(1,1),
+				position=(1,1),
+				format_str='$k: $v',
+				on_select=say)
+		
+			menus.activate_menu(_i)
+	
+	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
 def say(life,text,action=False,volume=30):
 	if action:
@@ -1498,6 +1517,19 @@ def draw_life_info():
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
 	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
+	
+	#Drawing contexts (player only)
+	if 'player' in life and life['contexts']:
+		console_set_default_foreground(0,white)
+		console_print(0,MAP_WINDOW_SIZE[0]+1,19,'React')
+		
+		_y_mod = 0
+		for context in life['contexts']:
+			console_print(0,MAP_WINDOW_SIZE[0]+2,20+_y_mod,'%s: %s' % (context['action'],context['text']))
+			
+			_y_mod += 1
+		
+		return True
 	
 	#Drawing the action queue
 	console_set_default_foreground(0,white)

@@ -51,7 +51,6 @@ def _refill_feed(life,feed):
 	if not lfe.is_holding(life, feed['id']) and not lfe.can_hold_item(life):
 		logging.warning('No hands free to load ammo!')
 		
-		#TODO: We can't just return False. Handle dropping instead.
 		return False
 	
 	if not lfe.get_held_items(life,matches=[{'id': feed['id']}]):
@@ -101,7 +100,7 @@ def _equip_weapon(life):
 	
 	#TODO: Need to refill ammo?
 	if not weapons.get_feed(_weapon):
-		_feed = _best_wep['feed']#_get_feed(life,_weapon)
+		_feed = _best_wep['feed']
 		
 		if _feed:
 			#TODO: How much time should we spend loading rounds if we're in danger?
