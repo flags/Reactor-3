@@ -264,7 +264,8 @@ def hear(life, what):
 		for reaction in contexts.create_context(life, what):
 			_menu.append(menus.create_item('single',
 				reaction['action'],
-				reaction['text']))
+				reaction['text'],
+				life=life))
 		
 		if _menu:
 			_i = menus.create_menu(title='React',
@@ -272,11 +273,19 @@ def hear(life, what):
 				padding=(1,1),
 				position=(1,1),
 				format_str='$k: $v',
-				on_select=say)
+				on_select=react)
 		
 			menus.activate_menu(_i)
 	
 	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+
+def react(reaction):
+	life = reaction['life']
+	action = reaction['key']
+	text = reaction['values'][0]
+
+	if action == 'say':
+		say(life, text)
 
 def say(life,text,action=False,volume=30):
 	if action:
