@@ -878,7 +878,6 @@ def listen(life):
 			#to intimiate the person right back
 			
 			if life == event['target']:
-				#We'll lie
 				lfe.say(life,'I\'ll shoot if you come any closer.')
 				communicate(life,'intimidate_with_weapon',target=event['from'])
 		
@@ -984,7 +983,6 @@ def understand(life,source_map):
 		survive(life)
 		#TODO: Idle?
 		#print 'Away from trouble.'
-		#lfe.clear_actions(life,matches=[{'action': 'shoot'}])
 
 def think(life,source_map):
 	look(life)
