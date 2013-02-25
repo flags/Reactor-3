@@ -265,6 +265,7 @@ def hear(life, what):
 			_menu.append(menus.create_item('single',
 				reaction['action'],
 				reaction['text'],
+				target=what['from'],
 				life=life))
 		
 		if _menu:
@@ -283,8 +284,11 @@ def react(reaction):
 	life = reaction['life']
 	action = reaction['key']
 	text = reaction['values'][0]
+	target = reaction['target']
 
 	if action == 'say':
+		#print target.keys()
+		alife.communicate(life, 'surrender', target=target)
 		say(life, text)
 
 def say(life,text,action=False,volume=30):
