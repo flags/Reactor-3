@@ -301,8 +301,6 @@ def react(reaction):
 	target = reaction['target']
 	score = reaction.get('score', 0)
 
-	print score
-
 	add_action(life,
 		{'action': 'communicate',
 			'what': reaction['communicate'],
