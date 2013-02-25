@@ -1,4 +1,5 @@
 from globals import *
+
 import graphics as gfx
 import pathfinding
 import language
@@ -262,11 +263,24 @@ def hear(life, what):
 	if 'player' in life:
 		_menu = []
 		for reaction in contexts.create_context(life, what):
-			_menu.append(menus.create_item('single',
-				reaction['action'],
-				reaction['text'],
-				target=what['from'],
-				life=life))
+			if reaction['type'] == 'say':
+				_menu.append(menus.create_item('single',
+					reaction['type'],
+					reaction['text'],
+					target=what['from'],
+					communicate=reaction['communicate'],
+					life=life))
+			elif reaction['type'] == 'action':
+				_menu.append(menus.create_item('single',
+					reaction['type'],
+					reaction['text'],
+					target=what['from'],
+					action=reaction['action'],
+					score=reaction['score'],
+					delay=reaction['delay'],
+					communicate=reaction['communicate'],
+					life=life))
+
 		
 		if _menu:
 			_i = menus.create_menu(title='React',
@@ -282,14 +296,30 @@ def hear(life, what):
 
 def react(reaction):
 	life = reaction['life']
-	action = reaction['key']
+	type = reaction['key']
 	text = reaction['values'][0]
 	target = reaction['target']
+	score = reaction.get('score', 0)
 
-	if action == 'say':
-		#print target.keys()
-		alife.communicate(life, 'surrender', target=target)
+	print score
+
+	add_action(life,
+		{'action': 'communicate',
+			'what': reaction['communicate'],
+			'target': target},
+		score+1,
+		delay=0)
+
+	if type == 'say':
 		say(life, text)
+	elif type == 'action':
+		print reaction.keys()
+		add_action(life,
+			reaction['action'],
+			reaction['score'],
+			delay=reaction['delay'])
+
+	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def say(life,text,action=False,volume=30):
 	if action:
@@ -772,7 +802,11 @@ def perform_action(life):
 	
 	elif _action['action'] == 'block':
 		delete_action(life,action)
-	
+
+	elif _action['action'] == 'communicate':
+		alife.communicate(life, _action['what'], target=_action['target'])
+		delete_action(life, action)
+
 	else:
 		logging.warning('Unhandled action: %s' % _action['action'])
 	

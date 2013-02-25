@@ -7,6 +7,7 @@
 ###################################
 
 from globals import *
+
 import life as lfe
 import pathfinding
 import render_los
