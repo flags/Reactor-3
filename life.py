@@ -836,7 +836,7 @@ def kill(life,how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	for item in life['inventory']:
+	for item in life['inventory'][:]:
 		drop_item(life, item)
 	
 	life['dead'] = True
