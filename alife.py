@@ -487,11 +487,12 @@ def handle_hide(life,target,source_map):
 		return escape(life,target,source_map)
 
 def handle_potential_combat_encounter(life,target,source_map):
-	if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
-		communicate(life,'comply',target=target['life'])
-		lfe.clear_actions(life)
-		
-		return True
+	if not has_considered(life,target['life'],'resist'):
+		if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
+			communicate(life,'comply',target=target['life'])
+			lfe.clear_actions(life)
+			
+			return True
 	
 	if is_weapon_equipped(life):
 		combat(life,target,source_map)
@@ -832,6 +833,11 @@ def listen(life):
 				
 				communicate(life,'stand_still',target=event['from'])
 		
+		elif event['gist'] == 'resist':
+			if life == event['target']:
+				if consider(life, event['from'], 'resist'):
+					logging.debug('%s realizes %s is resisting.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+		
 		elif event['gist'] == 'free_to_go':
 			if life == event['target']:
 				lfe.create_and_update_self_snapshot(event['from'])
@@ -901,6 +907,7 @@ def listen(life):
 		
 		elif event['gist'] == 'confidence':
 			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
+			consider(life,event['from'],'confidence')
 		
 		life['heard'].remove(event)
 
@@ -958,7 +965,7 @@ def understand(life,source_map):
 		if in_danger(life,_target):
 			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			if has_considered(life,_target['who']['life'],'surrender'):
+			if has_considered(life,_target['who']['life'],'surrender') and not has_considered(life,_target['who']['life'],'resist'):
 				if consider(life,_target['who']['life'],'asked_to_comply'):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					

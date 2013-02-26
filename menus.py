@@ -1,9 +1,10 @@
 from globals import *
 
-def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,dim=True):
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,dim=True):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
+		'on_close': on_close,
 		'index': 0,
 		'values':{}}
 		
@@ -115,6 +116,12 @@ def align_menus():
 		menu['settings']['position'][1] = _y_mod+1
 
 def delete_menu(id):
+	_menu = get_menu(id)
+	
+	if _menu['on_close']:
+		_entry = get_selected_item(id, _menu['index'])
+		_menu['on_close'](_entry)
+	
 	if ACTIVE_MENU['menu'] == id:
 		ACTIVE_MENU['menu'] -= 1
 	

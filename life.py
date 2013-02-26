@@ -288,11 +288,24 @@ def hear(life, what):
 				padding=(1,1),
 				position=(1,1),
 				format_str='$k: $v',
-				on_select=react)
+				on_select=react,
+				on_close=avoid_react)
 		
 			menus.activate_menu(_i)
 	
 	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+
+def avoid_react(reaction):
+	life = reaction['life']
+	target = reaction['target']
+	
+	#TODO: Target
+	add_action(life,
+		{'action': 'communicate',
+			'what': 'resist',
+			'target': target},
+		900,
+		delay=0)
 
 def react(reaction):
 	life = reaction['life']
@@ -305,13 +318,12 @@ def react(reaction):
 		{'action': 'communicate',
 			'what': reaction['communicate'],
 			'target': target},
-		score+1,
+		score-1,
 		delay=0)
 
 	if type == 'say':
 		say(life, text)
 	elif type == 'action':
-		print reaction.keys()
 		add_action(life,
 			reaction['action'],
 			reaction['score'],
@@ -824,7 +836,21 @@ def kill(life,how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
+	for item in life['inventory']:
+		drop_item(life, item)
+	
 	life['dead'] = True
+
+def can_die_via_critical_injury(life):
+	for limb in [life['body'][limb] for limb in life['body']]:
+		if not 'CRUCIAL' in limb['flags']:
+			continue
+		
+		#TODO: Max pain per limb
+		if limb['pain']>=20:
+			return True
+	
+	return False	
 
 def tick(life,source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
@@ -857,7 +883,7 @@ def tick(life,source_map):
 		
 		return False
 	
-	if get_total_pain(life)>=20:
+	if can_die_via_critical_injury(life):
 		kill(life,'pain')
 		
 		return False
@@ -1067,18 +1093,23 @@ def get_all_inventory_items(life,matches=None):
 		
 	return _items
 
-def get_item_access_time(life, item):
+def _get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""
 	#TODO: Where's it at on the body? How long does it take to get to it?
 	if isinstance(item, dict):
 		logging.debug('Getting access time for non-inventory item #%s' % item['uid'])
 		
+		#TODO: We kinda do this twice...
+		_time = 0
+		if 'max_capacity' in item:
+			_time += item['capacity']
+		
 		if life['stance'] == 'standing':
-			return item['size']
+			return item['size']+_time
 		elif life['stance'] == 'crouching':
-			return item['size'] * .8	
+			return (item['size']+_time) * .8
 		elif life['stance'] == 'crawling':
-			return item['size'] * .6	
+			return (item['size']+_time) * .6
 	
 	_item = get_inventory_item(life,item)
 	
@@ -1095,6 +1126,10 @@ def get_item_access_time(life, item):
 		return get_item_access_time(life,_stored['id'])+_item['size']
 	
 	return _item['size']
+
+def get_item_access_time(life, item):
+	#TODO: Don't breathe this!
+	return numbers.clip(_get_item_access_time(life, item),1,999)
 
 def direct_add_item_to_inventory(life,item,container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
@@ -1577,17 +1612,23 @@ def draw_life_info():
 		return True
 	
 	#Drawing the action queue
-	console_set_default_foreground(0,white)
-	console_print(0,MAP_WINDOW_SIZE[0]+1,19,'Queued Actions')
+	_y_mod = 1
+	_y_start = (MAP_WINDOW_SIZE[1]-2)-SETTINGS['action queue size']
 	
-	_y_mod = 0
-	for action in life['actions']:
+	if len(life['actions']) > SETTINGS['action queue size']:
+		_queued_actions = 'Queued Actions (+%s)' % (len(life['actions'])-SETTINGS['action queue size'])
+	else:
+		_queued_actions = 'Queued Actions'
+	
+	console_set_default_foreground(0, white)
+	console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
+	
+	for action in life['actions'][:SETTINGS['action queue size']]:
 		if not action['delay']:
 			continue
 				
 		_name = action['action']['action']
 		_bar_size = (action['delay']/float(action['delay_max']))*SETTINGS['progress bar max value']
-		
 		console_set_default_background(0,white)
 		
 		for i in range(SETTINGS['progress bar max value']):
@@ -1598,15 +1639,26 @@ def draw_life_info():
 			
 			if 1 <= i <= len(_name):
 				console_set_default_foreground(0,green)
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,20+_y_mod,_name[i-1])
+				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
 			else:
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,20+_y_mod,'|')
+				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
 		
 		console_set_default_foreground(0,white)
-		console_print(0,MAP_WINDOW_SIZE[0]+1,20+_y_mod,'[')
-		console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,20+_y_mod,']')
+		console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
+		console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
 			
 		_y_mod += 1
+
+def can_knock_over(life, damage, limb):
+	if limb in life['legs']:
+		if 'player' in life:
+			gfx.message('You fall over!', style='damage')
+		else:
+			say(life, '@n falls over!', action=True)
+		
+		return True
+	
+	return False
 
 def collapse(life):
 	if life['stance'] in ['standing','crouching']:
@@ -1830,6 +1882,9 @@ def damage_from_item(life,item,damage):
 	else:
 		bruise_limb(life,_hit_limb)
 		add_pain_to_limb(life,_hit_limb,amount=8)
+	
+	if can_knock_over(life, damage, _hit_limb):
+		collapse(life)
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
