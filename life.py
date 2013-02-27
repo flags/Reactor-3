@@ -1697,11 +1697,6 @@ def draw_life_info():
 
 def can_knock_over(life, damage, limb):
 	if limb in life['legs']:
-		if 'player' in life:
-			gfx.message('You fall over!', style='damage')
-		else:
-			say(life, '@n falls over!', action=True)
-		
 		return True
 	
 	return False
@@ -1713,7 +1708,7 @@ def collapse(life):
 		else:
 			say(life,'@n collapses.',action=True)
 		
-		life['stance'] == 'crawling'
+		life['stance'] = 'crawling'
 
 def pass_out(life,length=None):
 	if not length:
