@@ -152,7 +152,7 @@ for i in range(17):
 
 #for i in range(17):
 #	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
-
+life.kill(PLAYER, 'death')
 CURRENT_UPS = UPS
 
 while SETTINGS['running']:

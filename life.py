@@ -836,7 +836,8 @@ def kill(life,how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	for item in life['inventory'].keys():
+	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
+		
 		drop_item(life, item)
 	
 	life['dead'] = True
@@ -977,6 +978,14 @@ def update_container_capacity(life,container):
 		_capacity += get_inventory_item(life,item)['size']
 	
 	container['capacity'] = _capacity
+
+def is_item_in_storage(life, item):
+	"""Returns True if item is in storage."""
+	for container in get_all_storage(life):
+		if item in container['storing']:
+			return True
+	
+	return False
 
 def can_put_item_in_storage(life,item):
 	"""Returns available storage container that can fit `item`. Returns False if none is found."""
