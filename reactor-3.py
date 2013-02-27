@@ -97,7 +97,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 #_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
-PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[40,40,2])
+PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[10,40,2])
 PLAYER['player'] = True
 
 SETTINGS['controlling'] = PLAYER
