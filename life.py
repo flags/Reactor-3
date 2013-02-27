@@ -980,7 +980,7 @@ def update_container_capacity(life,container):
 	container['capacity'] = _capacity
 
 def is_item_in_storage(life, item):
-	"""Returns True if item is in storage."""
+	"""Returns True if item is in storage, else False."""
 	for container in get_all_storage(life):
 		if item in container['storing']:
 			return True

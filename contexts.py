@@ -12,12 +12,17 @@ def _create_context_from_phrase(life, phrase):
 			_reactions.append({'action': 'action',
 				'text': '<Shoot %s>' % ' '.join(phrase['from']['name'])})
 	elif phrase['gist'] == 'demand_drop_item':
-		print phrase.keys()
 		_reactions.append({'type': 'action','text': 'Drop the item.',
 			'action': {'action': 'dropitem','item': phrase['item']},
 			'score': 900,
 			'delay': lfe.get_item_access_time(life,phrase['item']),
 			'communicate': 'compliant'})
+	elif phrase['gist'] == 'greeting':
+		_reactions.append({'type': 'say','text': 'Hello there!',
+			'communicate': 'greeting'})
+		_reactions.append({'type': 'say','text': 'You\'re a jerk.',
+			'communicate': 'insult'})
+
 	else:
 		logging.warning('Unhandled player context: %s' % phrase['gist'])
 

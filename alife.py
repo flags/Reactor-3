@@ -489,7 +489,7 @@ def handle_hide(life,target,source_map):
 def handle_potential_combat_encounter(life,target,source_map):
 	if not has_considered(life,target['life'],'resist'):
 		if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
-			communicate(life,'comply',target=target['life'])
+			communicate(life,'comply',target=target['life']) #HOSTILE
 			lfe.clear_actions(life)
 			
 			return True
@@ -627,6 +627,9 @@ def judge(life,target):
 	
 	if _target_armed and weapons.get_feed(_target_armed):
 		_dislike += 30
+	elif not _target_armed:
+		_like += 30
+		_dislike = 0
 	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
@@ -908,11 +911,32 @@ def listen(life):
 		elif event['gist'] == 'confidence':
 			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
 			consider(life,event['from'],'confidence')
+
+		elif event['gist'] == 'greeting':
+			if event_delay(event, 60):
+				continue
+
+			if life == event['target']:
+				if not has_considered(life, event['from'], 'greeting'): 
+					communicate(life, 'greeting', target=event['from'])
+					lfe.say(life, 'Hello there, traveler!')
+				else:
+					print 'We past this dawg!!!'
+
+		elif event['gist'] == 'insult':
+			if event_delay(event, 30):
+				continue
+
+			if life == event['target']:
+				if not has_considered(life, event['from'], 'insult'):
+					communicate(life, 'insult', target=event['from'])
+					lfe.say(life, 'You\'re a jerk!')
 		
 		life['heard'].remove(event)
 
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
+	_neutral_targets = []
 	
 	_known_targets_not_seen = life['know'].keys()
 	
@@ -940,8 +964,7 @@ def understand(life,source_map):
 			_target['who'] = target
 			_target['score'] = _score
 		elif _score>0:
-			#print 'Friendly!'
-			pass
+			_neutral_targets.append(target)
 	
 	for _not_seen in _known_targets_not_seen:
 		#TODO: 350?
@@ -988,6 +1011,12 @@ def understand(life,source_map):
 				handle_potential_combat_encounter(life,_target['who'],source_map)
 		
 	else:
+		for neutral_target in _neutral_targets:
+			if has_considered(life, neutral_target['life'], 'greeting'):
+				continue
+
+			communicate(life, 'greeting', target=neutral_target['life'])
+
 		survive(life)
 		#TODO: Idle?
 		#print 'Away from trouble.'

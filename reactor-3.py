@@ -97,7 +97,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 _test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 #_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
-PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[20,10,2])
+PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[40,40,2])
 PLAYER['player'] = True
 
 SETTINGS['controlling'] = PLAYER
@@ -152,7 +152,7 @@ for i in range(17):
 
 #for i in range(17):
 #	life.add_item_to_inventory(_test,items.create_item('9x19mm round'))
-life.kill(PLAYER, 'death')
+
 CURRENT_UPS = UPS
 
 while SETTINGS['running']:
