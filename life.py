@@ -363,11 +363,11 @@ def react(reaction):
 
 def say(life,text,action=False,volume=30):
 	if action:
-		set_animation(life, ['!', '@'], loops=3)
+		set_animation(life, ['\\', '|', '/', '-'])
 		text = text.replace('@n',' '.join(life['name']))
 		_style = 'action'
 	else:
-		set_animation(life, ['?', '@'], loops=3)
+		set_animation(life, ['*'], speed=8)
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
@@ -400,6 +400,7 @@ def crouch(life):
 	else:
 		return False
 	
+	set_animation(life, ['n', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crouch'},
 		200,
 		delay=_delay)
@@ -412,6 +413,7 @@ def stand(life):
 	else:
 		return False
 	
+	set_animation(life, ['^', '@'], speed=_delay/2)
 	add_action(life,{'action': 'stand'},
 		200,
 		delay=_delay)
@@ -424,6 +426,7 @@ def crawl(life):
 	else:
 		return False
 	
+	set_animation(life, ['v', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crawl'},
 		200,
 		delay=_delay)
@@ -640,7 +643,7 @@ def perform_action(life):
 			gfx.message('You crouch down.')
 		else:
 			say(life,'@n crouches.',action=True)
-		
+
 		delete_action(life,action)
 	
 	elif _action['action'] == 'crawl':
