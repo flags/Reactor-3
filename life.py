@@ -197,7 +197,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	#TODO: We only need this for pathing, so maybe we should move this to
 	#the `walk` function?
 	_life['map'] = map
-	
+	_life['animation'] = {}
 	_life['path'] = []
 	_life['actions'] = []
 	_life['conversations'] = []
@@ -233,6 +233,36 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	LIFE.append(_life)
 	
 	return _life
+
+def set_animation(life, animation, speed=2, loops=0):
+	life['animation'] = {'images': animation,
+		'speed': speed,
+		'speed_max': speed,
+		'index': 0,
+		'loops': loops}
+	
+	logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
+
+def tick_animation(life):
+	if not life['animation']:
+		return life['icon']
+	
+	if life['animation']['speed']:
+		life['animation']['speed'] -= 1
+	else:
+		life['animation']['index'] += 1
+		life['animation']['speed'] = life['animation']['speed_max']
+		
+		if life['animation']['index']>=len(life['animation']['images']):
+			if life['animation']['loops']:
+				life['animation']['loops'] -= 1
+				life['animation']['index'] = 0
+				life['animation']['speed'] = 0
+			else:
+				life['animation'] = {}
+				return life['icon']
+		
+	return life['animation']['images'][life['animation']['index']]
 
 def create_conversation(life,gist,say=None,action=None,**kvargs):
 	_convo = {'gist': gist,'say': say,'action': action,'heard': []}
@@ -333,9 +363,11 @@ def react(reaction):
 
 def say(life,text,action=False,volume=30):
 	if action:
+		set_animation(life, ['!', '@'], loops=3)
 		text = text.replace('@n',' '.join(life['name']))
 		_style = 'action'
 	else:
+		set_animation(life, ['?', '@'], loops=3)
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
@@ -1427,7 +1459,9 @@ def show_life_info(life):
 	return True
 
 def draw_life():
-	for life in LIFE:		
+	for life in LIFE:
+		_icon = tick_animation(life)
+		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
@@ -1438,7 +1472,7 @@ def draw_life():
 			
 			gfx.blit_char(_x,
 				_y,
-				life['icon'],
+				_icon,
 				white,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
