@@ -945,15 +945,12 @@ def understand(life,source_map):
 	
 	for entry in life['seen']:
 		_known_targets_not_seen.remove(entry)
-		
 		target = life['know'][entry]
-		
 		_score = target['score']
 		
 		if target['life']['asleep']:
 			continue
 		
-		_stime = time.time()
 		if process_snapshot(life,target['life']):
 			_score = judge(life,target)
 			target['score'] = _score
