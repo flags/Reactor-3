@@ -115,10 +115,10 @@ def align_menus():
 		
 		menu['settings']['position'][1] = _y_mod+1
 
-def delete_menu(id):
+def delete_menu(id, abort=False):
 	_menu = get_menu(id)
 	
-	if _menu['on_close']:
+	if _menu['on_close'] and abort:
 		_entry = get_selected_item(id, _menu['index'])
 		_menu['on_close'](_entry)
 	

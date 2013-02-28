@@ -627,9 +627,9 @@ def judge(life,target):
 	
 	if _target_armed and weapons.get_feed(_target_armed):
 		_dislike += 30
-	elif not _target_armed:
-		_like += 30
-		_dislike = 0
+	#elif not _target_armed:
+	#	_like += 20
+	#	#_dislike = 0
 	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo

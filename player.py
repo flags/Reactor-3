@@ -15,7 +15,7 @@ def handle_input():
 	
 	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
-			menus.delete_menu(ACTIVE_MENU['menu'])
+			menus.delete_menu(ACTIVE_MENU['menu'], abort=True)
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'] = None
 			SETTINGS['controlling']['throwing'] = None
