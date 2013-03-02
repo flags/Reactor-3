@@ -660,6 +660,8 @@ def perform_action(life):
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		delete_action(life,action)
 		
+		set_animation(life, [',', 'x'], speed=6)
+		
 		if life.has_key('player'):
 			if _action.has_key('container'):
 				gfx.message('You store %s in your %s.'
@@ -688,8 +690,8 @@ def perform_action(life):
 		else:
 			say(life,'@n drops %s.' % _name,action=True)
 		
+		set_animation(life, ['o', ','], speed=6)
 		drop_item(life,_action['item'])
-		
 		delete_action(life,action)
 	
 	elif _action['action'] == 'equipitem':
@@ -709,12 +711,13 @@ def perform_action(life):
 			else:
 				pass
 		
-		delete_action(life,action)
-		
 		if 'player' in life:
 			gfx.message('You put on %s.' % _name)
 		else:
 			say(life,'@n puts on %s.' % _name,action=True)
+		
+		set_animation(life, [';', '*'], speed=6)
+		delete_action(life,action)
 	
 	elif _action['action'] == 'storeitem':
 		_item_to_store_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -728,8 +731,9 @@ def perform_action(life):
 		if life.has_key('player'):
 			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
 		else:
-			say(life,'@n stores %s in their %s.' % (_item_to_store_name,_container_name),action=True)
+			say(life,'@n stores %s in %s.' % (_item_to_store_name,_container_name),action=True)
 		
+		set_animation(life, [';', 'p'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupequipitem':
@@ -741,15 +745,14 @@ def perform_action(life):
 			
 			return False
 		
-		#TODO: Can we even equip this? Can we check here instead of later?
-		_id = direct_add_item_to_inventory(life,_action['item'])
-		
-		equip_item(life,_id)
-		
-		delete_action(life,action)
-		
 		if life.has_key('player'):
 			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
+			
+		#TODO: Can we even equip this? Can we check here instead of later?
+		_id = direct_add_item_to_inventory(life,_action['item'])
+		equip_item(life,_id)
+		set_animation(life, [',', '*'], speed=6)
+		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupholditem':
 		_hand = get_limb(life['body'],_action['hand'])
@@ -770,6 +773,7 @@ def perform_action(life):
 		else:
 			say(life,'@n holds %s in their %s.' % (items.get_name(_action['item']),_action['hand']),action=True)
 		
+		set_animation(life, [',', ';'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'removeandholditem':
@@ -788,6 +792,7 @@ def perform_action(life):
 		if 'player' in life:
 			gfx.message('You hold %s.' % items.get_name(_dropped_item))
 		
+		set_animation(life, ['*', ';'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'holditemthrow':
@@ -808,6 +813,7 @@ def perform_action(life):
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
 		
+		set_animation(life, [';', 'r'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'unload':	
@@ -828,6 +834,7 @@ def perform_action(life):
 			del _ammo['parent']
 			_ammo['pos'] = life['pos'][:]
 		
+		set_animation(life, [';', 'u'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'refillammo':	
@@ -1914,7 +1921,7 @@ def damage_from_item(life,item,damage):
 			if life.has_key('player'):
 				gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
 			else:
-				say(life,'%s lodges itself in %n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
+				say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
 
 		_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
 

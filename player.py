@@ -418,7 +418,7 @@ def inventory_unequip(entry):
 		200,
 		delay=life.get_item_access_time(SETTINGS['controlling'],item))
 	
-	gfx.message('You begin storing %s.' % _item['name'])
+	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
