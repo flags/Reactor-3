@@ -3,6 +3,7 @@ import life as lfe
 import combat
 import speech
 import sight
+import brain
 
 import numbers
 import random
@@ -88,8 +89,9 @@ def escape(life,target,source_map):
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
 	else:
-		if not speech.has_considered(life, target['life'], 'surrendered'):
+		if not speech.has_considered(life, target['life'], 'surrendered_to'):
 			speech.communicate(life, 'surrender', target=target['life'])
+			brain.flag(life, 'surrendered')
 			#print 'surrender'
 	
 	if lfe.path_dest(life):

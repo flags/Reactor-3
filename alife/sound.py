@@ -28,6 +28,8 @@ def listen(life):
 			#TODO: Judge who this is coming from...
 			if life == event['target']:
 				communicate(life,'surrender')
+				brain.flag(life, 'surrendered')
+				brain.consider(life, event['from'], 'surrendered_to')
 		
 		elif event['gist'] == 'demand_drop_item':
 			if life == event['target']:
@@ -48,10 +50,9 @@ def listen(life):
 					delay=20)
 		
 		elif event['gist'] == 'stand_still':
-			if life == event['target']:
-				lfe.add_action(life,{'action': 'block'},1000)
+			if life == event['target'] and brain.get_flag(life, 'surrendered'):
 				lfe.clear_actions(life)
-				brain.flag(life, 'surrendered')
+				lfe.add_action(life,{'action': 'block'},400)
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
@@ -72,9 +73,9 @@ def listen(life):
 				communicate(life,'intimidate_with_weapon',target=event['from'])
 		
 		elif event['gist'] == 'drop_everything':
-			if life == event['target'] and get_flag(life, 'surrendered'):
+			if life == event['target'] and brain.get_flag(life, 'surrendered'):
 				lfe.drop_all_items(life)
-				unflag(life, 'surrendered')
+				brain.unflag(life, 'surrendered')
 		
 		elif event['gist'] == 'intimidate_with_weapon':
 			if event_delay(event,60):

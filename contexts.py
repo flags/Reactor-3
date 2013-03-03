@@ -26,7 +26,7 @@ def _create_context_from_phrase(life, phrase):
 		_reactions.append({'type': 'say','text': 'Stay still!',
 			'communicate': 'stand_still'})
 		_reactions.append({'type': 'say','text': 'Drop everything.',
-			'communicate': 'stand_still|drop_everything'})
+			'communicate': 'stop|drop_everything|stand_still'})
 
 	else:
 		logging.warning('Unhandled player context: %s' % phrase['gist'])
