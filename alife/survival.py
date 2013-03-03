@@ -1,5 +1,9 @@
 import life as lfe
 
+#import alife.combat as combat
+#from alife import core
+#from alife import combat, core
+
 def survive(life):
 	#What do we need to do?
 	#	- Get items?
@@ -8,22 +12,22 @@ def survive(life):
 	manage_inventory(life)
 	
 	if combat.has_weapon(life):
-		unflag(life, 'no_weapon')
+		core.unflag(life, 'no_weapon')
 	else:
-		flag(life, 'no_weapon')
+		core.flag(life, 'no_weapon')
 	
 	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
-		unflag(life, 'no_backpack')
+		core.unflag(life, 'no_backpack')
 	else:
-		flag(life, 'no_backpack')
+		core.flag(life, 'no_backpack')
 	
-	if get_flag(life, 'no_weapon'):
+	if core.get_flag(life, 'no_weapon'):
 		_nearby_weapons = find_known_items(life, matches=[{'type': 'gun'}])
 		
 		if _nearby_weapons:
 			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
 	
-	if not get_flag(life, 'no_weapon'):
+	if not core.get_flag(life, 'no_weapon'):
 		_ammo_matches = []
 		_feed_matches = []
 		for weapon in combat.has_weapon(life):
@@ -35,7 +39,7 @@ def survive(life):
 		elif find_known_items(life, matches=_feed_matches):
 			collect_nearby_wanted_items(life, matches=_feed_matches)
 	
-	if get_flag(life, 'no_backpack'):
+	if core.get_flag(life, 'no_backpack'):
 		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
 		
 		if _nearby_backpacks:

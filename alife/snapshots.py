@@ -32,3 +32,6 @@ def process_snapshot(life,target):
 	update_snapshot_of_target(life,target,_ss)
 	
 	return True
+
+def check_snapshot(life,target):
+	return life['know'][str(target['id'])]['snapshot']

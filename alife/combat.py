@@ -192,3 +192,16 @@ def combat(life,target,source_map):
 	
 	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
 		lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
+
+def handle_potential_combat_encounter(life,target,source_map):
+	if not has_considered(life,target['life'],'resist'):
+		if not combat.is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
+			communicate(life,'comply',target=target['life']) #HOSTILE
+			lfe.clear_actions(life)
+			
+			return True
+	
+	if combat.is_weapon_equipped(life):
+		combat(life,target,source_map)
+	else:
+		handle_hide_and_decide(life,target,source_map)

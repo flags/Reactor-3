@@ -1,5 +1,7 @@
 from globals import *
 
+from alife import snapshots, items
+
 import graphics as gfx
 import pathfinding
 import language
@@ -175,8 +177,8 @@ def get_all_limbs(body):
 	return body
 
 def create_and_update_self_snapshot(life):
-	_ss = alife.create_snapshot(life)
-	alife.update_self_snapshot(life,_ss)
+	_ss = alife.snapshots.create_snapshot(life)
+	alife.snapshots.update_self_snapshot(life,_ss)
 	
 	logging.debug('%s updated their snapshot.' % life['name'][0])
 
@@ -1058,7 +1060,7 @@ def add_item_to_storage(life,item,container=None):
 	container['storing'].append(item['id'])
 	container['capacity'] += item['size']
 	
-	alife.remember_item(life,item)
+	alife.items.remember_item(life,item)
 	
 	return True
 

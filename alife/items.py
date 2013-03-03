@@ -1,9 +1,12 @@
 from globals import *
 
+import alife.combat as combat
+import alife.judgement as judgement
+
 def remember_item(life,item):
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item,
-			'score': judge_item(life,item),
+			'score': judgement.judge_item(life,item),
 			'last_seen_at': item['pos'][:],
 			'flags': []}
 		

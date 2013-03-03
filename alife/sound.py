@@ -113,3 +113,11 @@ def listen(life):
 					lfe.say(life, 'You\'re a jerk!')
 		
 		life['heard'].remove(event)
+
+def event_delay(event,time):
+	if event['age'] < time:
+		event['age'] += 1
+		
+		return True
+	
+	return False

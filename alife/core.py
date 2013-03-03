@@ -1,7 +1,6 @@
 import life as lfe
 
-import alife.sight as sight
-import alife.survival as survival
+from alife import sight, survival
 
 def flag(life,flag):
 	life['flags'][flag] = True

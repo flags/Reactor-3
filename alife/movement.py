@@ -100,3 +100,48 @@ def hide(life,target,source_map):
 		return False
 	
 	return True
+
+def handle_hide(life,target,source_map):
+	_weapon = combat.get_best_weapon(life)	
+	_feed = None
+	
+	if _weapon:
+		_feed = weapons.get_feed(_weapon['weapon'])		
+	
+	#TODO: Can we merge this into get_best_weapon()?
+	_has_loaded_ammo = False
+	if _feed:
+		if _feed['rounds']:
+			_has_loaded_ammo = True
+	
+	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
+		return escape(life,target,source_map)
+	elif not _weapon and find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
+		return collect_nearby_wanted_items(life)
+	else:
+		return escape(life,target,source_map)
+
+def handle_hide_and_decide(life,target,source_map):
+	if handle_hide(life,target,source_map):		
+		#TODO: Just need a general function to make sure we have a weapon
+		if combat.has_weapon(life):
+			if consider(life,target['life'],'shouted_at'):
+				if 'shown_scared' in target['consider']:
+					lfe.say(life,'I\'m coming for you!')
+					communicate(life,'confidence',target=target['life'])
+					target['consider'].remove('shown_scared')
+				else:
+					lfe.say(life,'I\'m coming for you!')
+					communicate(life,'intimidate',target=target['life'])
+			
+			#If we're not ready, prepare for combat
+			if not combat._weapon_equipped_and_ready(life):
+				if not 'equipping' in life:
+					if combat._equip_weapon(life):
+						life['equipping'] = True
+			else:
+				#TODO: ALife is hiding now...'
+				pass
+		else:
+			if consider(life,target['life'],'shown_scared'):
+				lfe.say(life,'@n panics!',action=True)

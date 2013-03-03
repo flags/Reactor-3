@@ -1,4 +1,62 @@
+from globals import *
+
+import life as lfe
+
+#from alife import judgement, items
 import render_los
+import numbers
+
+def look(life):
+	life['seen'] = []
+	
+	for ai in LIFE:
+		if ai['id'] == life['id']:
+			continue
+		
+		if numbers.distance(life['pos'],ai['pos']) > 30:
+			#TODO: "see" via other means?
+			continue
+		
+		if not lfe.can_see(life,ai['pos']):
+			continue
+		
+		life['seen'].append(str(ai['id']))
+		
+		#TODO: Don't pass entire life, just id
+		if str(ai['id']) in life['know']:
+			life['know'][str(ai['id'])]['last_seen_time'] = 0
+			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
+			life['know'][str(ai['id'])]['escaped'] = False
+			
+			continue
+			
+		logging.info('%s learned about %s.' % (' '.join(life['name']),' '.join(ai['name'])))
+		
+		life['know'][str(ai['id'])] = {'life': ai,
+			'score': 0,
+			'last_seen_time': 0,
+			'last_seen_at': ai['pos'][:],
+			'escaped': False,
+			'snapshot': {},
+			'consider': []}
+	
+	for item in [ITEMS[item] for item in ITEMS]:
+		if item.has_key('id'):
+			continue
+		
+		if item.has_key('parent'):
+			continue
+		
+		_can_see = lfe.can_see(life,item['pos'])
+		
+		if _can_see:
+			items.remember_item(life,item)
+		
+		if _can_see:
+			life['know_items'][item['uid']]['last_seen_time'] = 0
+			life['know_items'][item['uid']]['score'] = judgement.judge_item(life,item)
+		elif str(item['uid']) in life['know_items']:
+			life['know_items'][item['uid']]['last_seen_time'] += 1
 
 def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
 	#Step 1: Locate cover
@@ -44,3 +102,23 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 		return False
 	
 	return _cover
+
+def handle_lost_los(life):
+	if life['in_combat']:
+		#TODO: Do something here...
+		pass
+	
+	#TODO: Take the original score and subtract/add stuff from there...
+	_nearest_target = {'target': None,'score': 0}
+	for entry in life['know']:
+		_target = life['know'][entry]
+		_score = judge(life,_target)
+		
+		if _target['escaped']:
+			_score += (_target['last_seen_time']/2)
+		
+		if _score < _nearest_target['score']:
+			_nearest_target['target'] = _target
+			_nearest_target['score'] = _score
+	
+	return _nearest_target
