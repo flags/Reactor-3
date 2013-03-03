@@ -317,6 +317,7 @@ def hear(life, what):
 		
 		if _menu:		
 			life['contexts'].append({'items': _menu})
+			life['shoot_timer'] = 30
 			gfx.message('Context action added to queue.', style='important')
 	
 	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))

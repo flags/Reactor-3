@@ -76,7 +76,10 @@ def draw_targeting():
 def tick_all_objects():
 	if SETTINGS['controlling']['targeting'] and SETTINGS['controlling']['shoot_timer']:
 		SETTINGS['controlling']['shoot_timer']-=1
-		
+		return False
+	
+	if SETTINGS['controlling']['contexts'] and SETTINGS['controlling']['shoot_timer']:
+		SETTINGS['controlling']['shoot_timer'] -= 1
 		return False
 	
 	items.tick_all_items(MAP)
