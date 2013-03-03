@@ -323,7 +323,7 @@ def escape(life,target,source_map):
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
 	else:
-		if not has_considered(life, target['life'], 'surrender'):
+		if not has_considered(life, target['life'], 'surrendered'):
 			communicate(life, 'surrender', target=target['life'])
 			#print 'surrender'
 	
@@ -639,7 +639,7 @@ def judge(life,target):
 		_dislike += 30
 	#elif not _target_armed:
 	#	_like += 20
-	#	#_dislike = 0
+	#	_dislike = 0
 	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
@@ -841,7 +841,7 @@ def listen(life):
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			if consider(life,event['from'],'surrender'):
+			if consider(life,event['from'],'surrendered'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 				
 				communicate(life,'stand_still',target=event['from'])
@@ -905,7 +905,8 @@ def listen(life):
 		
 		elif event['gist'] == 'drop_everything':
 			if life == event['target'] and get_flag(life, 'surrendered'):
-				lfe.drop_all_items(life)					
+				lfe.drop_all_items(life)
+				unflag(life, 'surrendered')
 		
 		elif event['gist'] == 'intimidate_with_weapon':
 			if event_delay(event,60):
@@ -1004,7 +1005,7 @@ def understand(life,source_map):
 		if in_danger(life,_target):
 			handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			if has_considered(life,_target['who']['life'],'surrender') and not has_considered(life,_target['who']['life'],'resist'):
+			if has_considered(life,_target['who']['life'],'surrendered') and not has_considered(life,_target['who']['life'],'resist'):
 				if consider(life,_target['who']['life'],'asked_to_comply'):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					
