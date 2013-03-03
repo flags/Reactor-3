@@ -1,4 +1,8 @@
-import alife.combat as  combat
+import life as lfe
+
+import combat
+
+import weapons
 
 def judge_item(life, item):
 	_score = 0

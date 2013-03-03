@@ -1,6 +1,18 @@
 import life as lfe
 
-from alife import sight, survival
+import snapshots
+import judgement
+import survival
+import movement
+import sight
+import sound
+
+import logging
+
+def think(life, source_map):
+	sight.look(life)
+	sound.listen(life)
+	understand(life, source_map)
 
 def flag(life,flag):
 	life['flags'][flag] = True
@@ -13,6 +25,28 @@ def get_flag(life,flag):
 		return False
 	
 	return life['flags'][flag]
+
+def flag_item(life,item,flag):
+	print ' '.join(life['name'])
+	
+	if not flag in life['know_items'][item['uid']]['flags']:
+		life['know_items'][item['uid']]['flags'].append(flag)
+		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
+		
+		return True
+	
+	return False
+
+def remember_item(life,item):
+	if not item['uid'] in life['know_items']:
+		life['know_items'][item['uid']] = {'item': item,
+			'score': judgement.judge_item(life,item),
+			'last_seen_at': item['pos'][:],
+			'flags': []}
+		
+		return True
+	
+	return False
 
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
@@ -34,8 +68,8 @@ def understand(life,source_map):
 		if target['life']['asleep']:
 			continue
 		
-		if process_snapshot(life,target['life']):
-			_score = judge(life,target)
+		if snapshots.process_snapshot(life,target['life']):
+			_score = judgement.judge(life,target)
 			target['score'] = _score
 			
 			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
@@ -65,8 +99,8 @@ def understand(life,source_map):
 		#	print 'No lost targets'
 	
 	if _target['who']:
-		if in_danger(life,_target):
-			handle_hide_and_decide(life,_target['who'],source_map)
+		if judgement.in_danger(life,_target):
+			movement.handle_hide_and_decide(life,_target['who'],source_map)
 		else:
 			if has_considered(life,_target['who']['life'],'surrendered') and not has_considered(life,_target['who']['life'],'resist'):
 				if consider(life,_target['who']['life'],'asked_to_comply'):

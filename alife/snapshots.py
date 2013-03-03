@@ -1,4 +1,6 @@
 import life as lfe
+
+import logging
 import time
 
 def update_self_snapshot(life,snapshot):

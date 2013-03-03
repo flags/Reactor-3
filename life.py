@@ -1,6 +1,5 @@
 from globals import *
-
-from alife import snapshots, items
+from alife import *
 
 import graphics as gfx
 import pathfinding
@@ -177,8 +176,8 @@ def get_all_limbs(body):
 	return body
 
 def create_and_update_self_snapshot(life):
-	_ss = alife.snapshots.create_snapshot(life)
-	alife.snapshots.update_self_snapshot(life,_ss)
+	_ss = snapshots.create_snapshot(life)
+	snapshots.update_self_snapshot(life,_ss)
 	
 	logging.debug('%s updated their snapshot.' % life['name'][0])
 
@@ -862,7 +861,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		alife.communicate(life, _action['what'], target=_action['target'])
+		speech.communicate(life, _action['what'], target=_action['target'])
 		delete_action(life, action)
 
 	else:
@@ -954,7 +953,7 @@ def tick(life,source_map):
 	perform_collisions(life)
 	
 	if not 'player' in life:
-		alife.think(life,source_map)
+		brain.think(life,source_map)
 	
 	perform_action(life)
 
@@ -1060,7 +1059,7 @@ def add_item_to_storage(life,item,container=None):
 	container['storing'].append(item['id'])
 	container['capacity'] += item['size']
 	
-	alife.items.remember_item(life,item)
+	brain.remember_item(life,item)
 	
 	return True
 

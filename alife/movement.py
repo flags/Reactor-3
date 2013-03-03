@@ -1,5 +1,11 @@
 import life as lfe
+
+import combat
+import speech
+import sight
+
 import numbers
+import random
 
 def score_search(life,target,pos):
 	return -numbers.distance(life['pos'],pos)
@@ -75,15 +81,15 @@ def explore(life,source_map):
 	pass
 
 def escape(life,target,source_map):
-	_escape = generate_los(life,target,target['life']['pos'],source_map,score_escape)
+	_escape = sight.generate_los(life,target,target['life']['pos'],source_map,score_escape)
 	
 	if _escape:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
 	else:
-		if not has_considered(life, target['life'], 'surrendered'):
-			communicate(life, 'surrender', target=target['life'])
+		if not speech.has_considered(life, target['life'], 'surrendered'):
+			speech.communicate(life, 'surrender', target=target['life'])
 			#print 'surrender'
 	
 	if lfe.path_dest(life):
@@ -116,7 +122,7 @@ def handle_hide(life,target,source_map):
 	
 	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
 		return escape(life,target,source_map)
-	elif not _weapon and find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
+	elif not _weapon and sight.find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
 		return collect_nearby_wanted_items(life)
 	else:
 		return escape(life,target,source_map)
@@ -125,14 +131,14 @@ def handle_hide_and_decide(life,target,source_map):
 	if handle_hide(life,target,source_map):		
 		#TODO: Just need a general function to make sure we have a weapon
 		if combat.has_weapon(life):
-			if consider(life,target['life'],'shouted_at'):
+			if speech.consider(life,target['life'],'shouted_at'):
 				if 'shown_scared' in target['consider']:
 					lfe.say(life,'I\'m coming for you!')
-					communicate(life,'confidence',target=target['life'])
+					speech.communicate(life,'confidence',target=target['life'])
 					target['consider'].remove('shown_scared')
 				else:
 					lfe.say(life,'I\'m coming for you!')
-					communicate(life,'intimidate',target=target['life'])
+					speech.communicate(life,'intimidate',target=target['life'])
 			
 			#If we're not ready, prepare for combat
 			if not combat._weapon_equipped_and_ready(life):
@@ -143,5 +149,42 @@ def handle_hide_and_decide(life,target,source_map):
 				#TODO: ALife is hiding now...'
 				pass
 		else:
-			if consider(life,target['life'],'shown_scared'):
+			if speech.consider(life,target['life'],'shown_scared'):
 				lfe.say(life,'@n panics!',action=True)
+
+def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):
+	_highest = {'item': None,'score': 0}
+	_nearby = sight.find_known_items(life, matches=matches, visible=True)
+	
+	for item in _nearby:
+		if item['score'] > _highest['score']:
+			_highest['score'] = item['score']
+			_highest['item'] = item['item']
+	
+	if not _highest['item']:
+		return True
+	
+	_empty_hand = lfe.get_open_hands(life)
+	
+	if not _empty_hand:
+		print 'No open hands, managing....'
+		
+		return False
+	
+	if life['pos'] == _highest['item']['pos']:
+		lfe.clear_actions(life)
+		
+		for action in lfe.find_action(life, matches=[{'action': 'pickupholditem'}]):
+			#print 'I was picking up something else...',_highest['item']['name']
+			return False
+		
+		lfe.add_action(life,{'action': 'pickupholditem',
+			'item': _highest['item'],
+			'hand': random.choice(_empty_hand)},
+			200,
+			delay=40)
+	else:
+		lfe.clear_actions(life)
+		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+	
+	return False

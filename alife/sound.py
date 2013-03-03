@@ -1,3 +1,8 @@
+import life as lfe
+
+import speech
+import brain
+
 def listen(life):
 	for event in life['heard'][:]:
 		if not str(event['from']['id']) in life['know']:
@@ -7,7 +12,7 @@ def listen(life):
 			if consider(life,event['from'],'surrendered'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 				
-				communicate(life,'stand_still',target=event['from'])
+				speech.communicate(life,'stand_still',target=event['from'])
 		
 		elif event['gist'] == 'resist':
 			if life == event['target']:
@@ -46,7 +51,7 @@ def listen(life):
 			if life == event['target']:
 				lfe.add_action(life,{'action': 'block'},1000)
 				lfe.clear_actions(life)
-				flag(life, 'surrendered')
+				brain.flag(life, 'surrendered')
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:

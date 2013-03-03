@@ -2,9 +2,13 @@ from globals import *
 
 import life as lfe
 
-#from alife import judgement, items
+import judgement
+import brain
+
 import render_los
 import numbers
+import logging
+import time
 
 def look(life):
 	life['seen'] = []
@@ -50,7 +54,7 @@ def look(life):
 		_can_see = lfe.can_see(life,item['pos'])
 		
 		if _can_see:
-			items.remember_item(life,item)
+			brain.remember_item(life,item)
 		
 		if _can_see:
 			life['know_items'][item['uid']]['last_seen_time'] = 0
@@ -112,7 +116,7 @@ def handle_lost_los(life):
 	_nearest_target = {'target': None,'score': 0}
 	for entry in life['know']:
 		_target = life['know'][entry]
-		_score = judge(life,_target)
+		_score = judgement.judge(life,_target)
 		
 		if _target['escaped']:
 			_score += (_target['last_seen_time']/2)
@@ -122,3 +126,34 @@ def handle_lost_los(life):
 			_nearest_target['score'] = _score
 	
 	return _nearest_target
+
+def find_known_items(life, matches=[], visible=True):
+	_match = []
+	
+	for item in [life['know_items'][item] for item in life['know_items']]:
+		if visible and not lfe.can_see(life,item['item']['pos']):
+			continue
+		
+		if 'parent' in item['item'] or 'id' in item['item']:
+			continue
+		
+		if 'demand_drop' in item['flags']:
+			continue
+		
+		_break = False
+		for match in matches:
+			for key in match:
+				if not item['item'].has_key(key) or not item['item'][key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				break
+		
+		if _break:
+			continue
+		
+		_match.append(item)
+	
+	return _match
+

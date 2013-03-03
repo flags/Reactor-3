@@ -1,3 +1,5 @@
+import life as lfe
+
 def has_considered(life,target,what):
 	if what in life['know'][str(target['id'])]['consider']:
 		return True

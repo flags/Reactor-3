@@ -1,8 +1,10 @@
 import life as lfe
 
-#import alife.combat as combat
-#from alife import core
-#from alife import combat, core
+import movement
+import combat
+import items
+import brain
+import sight
 
 def survive(life):
 	#What do we need to do?
@@ -12,38 +14,38 @@ def survive(life):
 	manage_inventory(life)
 	
 	if combat.has_weapon(life):
-		core.unflag(life, 'no_weapon')
+		brain.unflag(life, 'no_weapon')
 	else:
-		core.flag(life, 'no_weapon')
+		brain.flag(life, 'no_weapon')
 	
 	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
-		core.unflag(life, 'no_backpack')
+		brain.unflag(life, 'no_backpack')
 	else:
-		core.flag(life, 'no_backpack')
+		brain.flag(life, 'no_backpack')
 	
-	if core.get_flag(life, 'no_weapon'):
-		_nearby_weapons = find_known_items(life, matches=[{'type': 'gun'}])
+	if brain.get_flag(life, 'no_weapon'):
+		_nearby_weapons = sight.find_known_items(life, matches=[{'type': 'gun'}])
 		
 		if _nearby_weapons:
-			collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
 	
-	if not core.get_flag(life, 'no_weapon'):
+	if not brain.get_flag(life, 'no_weapon'):
 		_ammo_matches = []
 		_feed_matches = []
 		for weapon in combat.has_weapon(life):
 			_ammo_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
 			_feed_matches.append({'type': weapon['feed'],'ammotype': weapon['ammotype']})
 		
-		if find_known_items(life, matches=_ammo_matches):
-			collect_nearby_wanted_items(life, matches=_ammo_matches)
-		elif find_known_items(life, matches=_feed_matches):
-			collect_nearby_wanted_items(life, matches=_feed_matches)
+		if sight.find_known_items(life, matches=_ammo_matches):
+			movement.collect_nearby_wanted_items(life, matches=_ammo_matches)
+		elif sight.find_known_items(life, matches=_feed_matches):
+			movement.collect_nearby_wanted_items(life, matches=_feed_matches)
 	
-	if core.get_flag(life, 'no_backpack'):
-		_nearby_backpacks = find_known_items(life, matches=[{'type': 'backpack'}])
+	if brain.get_flag(life, 'no_backpack'):
+		_nearby_backpacks = sight.find_known_items(life, matches=[{'type': 'backpack'}])
 		
 		if _nearby_backpacks:
-			collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
+			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
 
 def manage_inventory(life):
 	_empty_hand = lfe.get_open_hands(life)
