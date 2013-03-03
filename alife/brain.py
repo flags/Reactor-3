@@ -51,7 +51,6 @@ def remember_item(life,item):
 def understand(life,source_map):
 	_target = {'who': None,'score': -10000}
 	_neutral_targets = []
-	
 	_known_targets_not_seen = life['know'].keys()
 	
 	if get_flag(life, 'surrendered'):

@@ -3,33 +3,37 @@ import life as lfe
 import speech
 import brain
 
+import logging
+
 def listen(life):
 	for event in life['heard'][:]:
 		if not str(event['from']['id']) in life['know']:
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			if consider(life,event['from'],'surrendered'):
+			if speech.consider(life,event['from'],'surrendered'):
 				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 				
 				speech.communicate(life,'stand_still',target=event['from'])
 		
 		elif event['gist'] == 'resist':
 			if life == event['target']:
-				if consider(life, event['from'], 'resist'):
+				if speech.consider(life, event['from'], 'resist'):
 					logging.debug('%s realizes %s is resisting.' % (' '.join(life['name']),' '.join(event['from']['name'])))
 		
 		elif event['gist'] == 'free_to_go':
 			if life == event['target']:
 				lfe.create_and_update_self_snapshot(event['from'])
-				unconsider(life,event['from'],'surrender')
+				speech.unconsider(life,event['from'],'surrender')
+				brain.unflag(life, 'surrendered')
 		
 		elif event['gist'] == 'comply':
 			#TODO: Judge who this is coming from...
 			if life == event['target']:
-				communicate(life,'surrender')
+				lfe.clear_actions(life)
+				speech.communicate(life,'surrender')
+				speech.consider(life, event['from'], 'surrendered_to')
 				brain.flag(life, 'surrendered')
-				brain.consider(life, event['from'], 'surrendered_to')
 		
 		elif event['gist'] == 'demand_drop_item':
 			if life == event['target']:
@@ -75,7 +79,6 @@ def listen(life):
 		elif event['gist'] == 'drop_everything':
 			if life == event['target'] and brain.get_flag(life, 'surrendered'):
 				lfe.drop_all_items(life)
-				brain.unflag(life, 'surrendered')
 		
 		elif event['gist'] == 'intimidate_with_weapon':
 			if event_delay(event,60):

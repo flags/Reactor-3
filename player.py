@@ -1,4 +1,6 @@
 from globals import *
+from alife import *
+
 import graphics as gfx
 import weapons
 import menus
@@ -170,6 +172,53 @@ def handle_input():
 			position=(1,1),
 			format_str='[$i] $k: $v',
 			on_select=inventory_throw)
+		
+		menus.activate_menu(_i)
+	
+	if INPUT['v']:
+		if menus.get_menu_by_name('Talk')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Talk'))
+			return False
+		
+		if not SETTINGS['controlling']['targeting']:
+			SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['pos'][:]
+			return True
+		else:
+			_target = None
+			for entry in LIFE:
+				if entry['pos'] == SETTINGS['controlling']['targeting']:
+					_target = entry
+					break
+			
+			if not _target:
+				gfx.message('There\'s nobody standing here!')
+				return False
+		
+		SETTINGS['controlling']['targeting'] = None
+		SELECTED_TILES[0] = []
+		_phrases = []
+		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
+		
+		_menu = menus.create_menu(title='Talk',
+			menu=_phrases,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v',
+			on_select=talk_menu)
+		
+		menus.activate_menu(_menu)
+	
+	if INPUT['V']:
+		if not SETTINGS['controlling']['contexts']:
+			return False
+		
+		_i = menus.create_menu(title='React',
+			menu=SETTINGS['controlling']['contexts'].pop()['items'],
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v',
+			on_select=life.react,
+			on_close=life.avoid_react)
 		
 		menus.activate_menu(_i)
 	
@@ -766,3 +815,49 @@ def handle_options_menu(entry):
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def talk_menu_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	target = entry['target']
+	communicate = entry['communicate']
+	
+	for comm in communicate.split('|'):
+		life.add_action(SETTINGS['controlling'],
+			{'action': 'communicate',
+				'what': comm,
+				'target': target},
+			400,
+			delay=0)
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def talk_menu(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	target = entry['target']
+	_phrases = []
+
+	if key == 'Intimidate':
+		if brain.get_flag(target, 'surrendered'):
+			_phrases.append(menus.create_item('single',
+				'Drop items',
+				'Request target to drop all items.',
+				communicate='drop_everything',
+				target=target))
+		else:
+			_phrases.append(menus.create_item('single',
+				'Surrender',
+				'Demand target to stand down.',
+				communicate='comply',
+				target=target))
+		
+	_menu = menus.create_menu(title='Talk (%s)' % key,
+		menu=_phrases,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k: $v',
+		on_select=talk_menu_action)
+	
+	menus.activate_menu(_menu)

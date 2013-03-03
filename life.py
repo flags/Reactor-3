@@ -314,18 +314,10 @@ def hear(life, what):
 					delay=reaction['delay'],
 					communicate=reaction['communicate'],
 					life=life))
-
 		
-		if _menu:
-			_i = menus.create_menu(title='React',
-				menu=_menu,
-				padding=(1,1),
-				position=(1,1),
-				format_str='$k: $v',
-				on_select=react,
-				on_close=avoid_react)
-		
-			menus.activate_menu(_i)
+		if _menu:		
+			life['contexts'].append({'items': _menu})
+			gfx.message('Context action added to queue.', style='important')
 	
 	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
@@ -1661,17 +1653,17 @@ def draw_life_info():
 	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
 	
 	#Drawing contexts (player only)
-	if 'player' in life and life['contexts']:
-		console_set_default_foreground(0,white)
-		console_print(0,MAP_WINDOW_SIZE[0]+1,19,'React')
-		
-		_y_mod = 0
-		for context in life['contexts']:
-			console_print(0,MAP_WINDOW_SIZE[0]+2,20+_y_mod,'%s: %s' % (context['action'],context['text']))
-			
-			_y_mod += 1
-		
-		return True
+	#if 'player' in life and life['contexts']:
+	#	console_set_default_foreground(0,white)
+	#	console_print(0,MAP_WINDOW_SIZE[0]+1,19,'React')
+	#	
+	#	_y_mod = 0
+	#	for context in life['contexts']:
+	#		console_print(0,MAP_WINDOW_SIZE[0]+2,20+_y_mod,'%s: %s' % (context['action'],context['text']))
+	#		
+	#		_y_mod += 1
+	#	
+	#	return True
 	
 	#Drawing the action queue
 	_y_mod = 1

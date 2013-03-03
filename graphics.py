@@ -192,6 +192,8 @@ def draw_message_box():
 			console_set_default_foreground(MESSAGE_WINDOW,gray)
 		elif msg['style'] == 'action':
 			console_set_default_foreground(MESSAGE_WINDOW,lightest_gray)
+		elif msg['style'] == 'important':
+			console_set_default_foreground(MESSAGE_WINDOW,Color(150,150,255))
 		else:
 			console_set_default_foreground(MESSAGE_WINDOW,white)
 		

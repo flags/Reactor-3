@@ -79,9 +79,6 @@ def tick_all_objects():
 		
 		return False
 	
-	if SETTINGS['controlling']['contexts']:
-		return False
-	
 	items.tick_all_items(MAP)
 	life.tick_all_life(MAP)
 	bullets.tick_bullets(MAP)
