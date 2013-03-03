@@ -249,10 +249,14 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def score_escape(life,target,pos):
-	_score = -numbers.distance(target['pos'],pos)
+	_score = numbers.distance(life['pos'],pos)
+	_score += (30-numbers.distance(target['pos'],pos))
 	
 	if not lfe.can_see(target,pos):
-		_score -= 25
+		_score -= numbers.distance(target['pos'],pos)
+	
+	if not lfe.can_see(life,pos):
+		_score = 90000
 	
 	return _score
 
@@ -261,6 +265,8 @@ def score_find_target(life,target,pos):
 
 def score_hide(life,target,pos):
 	_score = numbers.distance(life['pos'],pos)
+	#_score += (30-numbers.distance(target['pos'],pos))
+	print 'hide'
 	
 	return _score
 
@@ -316,6 +322,10 @@ def escape(life,target,source_map):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
+	else:
+		if not has_considered(life, target['life'], 'surrender'):
+			communicate(life, 'surrender', target=target['life'])
+			#print 'surrender'
 	
 	if lfe.path_dest(life):
 		return True
@@ -480,7 +490,7 @@ def handle_hide(life,target,source_map):
 			_has_loaded_ammo = True
 	
 	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
-		return hide(life,target,source_map)
+		return escape(life,target,source_map)
 	elif not _weapon and find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
 		return collect_nearby_wanted_items(life)
 	else:
@@ -871,7 +881,9 @@ def listen(life):
 		
 		elif event['gist'] == 'stand_still':
 			if life == event['target']:
-				lfe.add_action(life,{'action': 'block'},400)
+				lfe.add_action(life,{'action': 'block'},1000)
+				lfe.clear_actions(life)
+				flag(life, 'surrendered')
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
@@ -890,6 +902,10 @@ def listen(life):
 			if life == event['target']:
 				lfe.say(life,'I\'ll shoot if you come any closer.')
 				communicate(life,'intimidate_with_weapon',target=event['from'])
+		
+		elif event['gist'] == 'drop_everything':
+			if life == event['target'] and get_flag(life, 'surrendered'):
+				lfe.drop_all_items(life)					
 		
 		elif event['gist'] == 'intimidate_with_weapon':
 			if event_delay(event,60):
@@ -939,6 +955,9 @@ def understand(life,source_map):
 	_neutral_targets = []
 	
 	_known_targets_not_seen = life['know'].keys()
+	
+	if get_flag(life, 'surrendered'):
+		return False
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
 		communicate(life,'surrender')

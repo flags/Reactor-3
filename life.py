@@ -223,6 +223,9 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['strafing'] = False
 	_life['aim_at'] = _life
 	
+	# expl = #chr(15)
+	# up   = chr(24)
+	# down = chr(25)
 	#ALife
 	_life['know'] = {}
 	_life['know_items'] = {}
@@ -344,12 +347,13 @@ def react(reaction):
 	target = reaction['target']
 	score = reaction.get('score', 0)
 
-	add_action(life,
-		{'action': 'communicate',
-			'what': reaction['communicate'],
-			'target': target},
-		score-1,
-		delay=0)
+	for comm in reaction['communicate'].split('|'):
+		add_action(life,
+			{'action': 'communicate',
+				'what': comm,
+				'target': target},
+			score-1,
+			delay=0)
 
 	if type == 'say':
 		say(life, text)
@@ -367,7 +371,7 @@ def say(life,text,action=False,volume=30):
 		text = text.replace('@n',' '.join(life['name']))
 		_style = 'action'
 	else:
-		set_animation(life, ['*'], speed=8)
+		set_animation(life, ['!'], speed=8)
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
@@ -864,7 +868,7 @@ def perform_action(life):
 	
 	return True
 
-def kill(life,how):
+def kill(life, how):
 	if how == 'bleedout':
 		if 'player' in life:
 			gfx.message('You die from blood loss.',style='death')
@@ -878,9 +882,7 @@ def kill(life,how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
-		
-		drop_item(life, item)
+	drop_all_items(life)
 	
 	life['dead'] = True
 
@@ -1360,6 +1362,12 @@ def drop_item(life,id):
 	item['pos'] = life['pos'][:]
 	
 	return item
+
+def drop_all_items(life):
+	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
+	
+	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
+		drop_item(life, item)
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""

@@ -13,7 +13,13 @@ def clip(number,start,end):
 	return max(start, min(number, end))
 
 def distance(pos1,pos2):
-	return abs(pos2[1]-pos1[1])+abs(pos2[0]-pos1[0])
+	x_dist = abs(pos1[0]-pos2[0])
+	y_dist = abs(pos1[1]-pos2[1])
+	
+	if x_dist > y_dist:
+		return y_dist + (x_dist-y_dist)
+	else:
+		return x_dist + (y_dist-x_dist)
 
 def velocity(direction,speed):
 	rad = direction*(pi/180)
