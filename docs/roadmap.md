@@ -195,4 +195,4 @@ Notice how this format puts a strict guideline on what variables are used and de
 Previous implementations avoided this and as a result ended up with a variety of one-off terms and garbage variables.
 This new structure defines when an action goes into effect and what conditions keep it active.
 They are intended to work in certain cases and only be triggered when all conditions are met (in a descending order.)
-Simply put, each condition is checked starting from the top, and if the ALife meets this then the function crawls the down the list. If everything checks out OK then the function is run.
+Simply put, each condition is checked starting from the top, and if the ALife meets this then the function crawls down the list. If everything checks out OK then the function is run.
