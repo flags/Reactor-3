@@ -100,15 +100,15 @@ def listen(life):
 		
 		elif event['gist'] == 'confidence':
 			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
-			consider(life,event['from'],'confidence')
+			speech.consider(life,event['from'],'confidence')
 
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 60):
+			if event_delay(event, 40):
 				continue
 
 			if life == event['target']:
-				if not has_considered(life, event['from'], 'greeting'): 
-					communicate(life, 'greeting', target=event['from'])
+				if not speech.has_considered(life, event['from'], 'greeting'): 
+					speech.communicate(life, 'greeting', target=event['from'])
 					lfe.say(life, 'Hello there, traveler!')
 				else:
 					print 'We past this dawg!!!'
@@ -118,8 +118,8 @@ def listen(life):
 				continue
 
 			if life == event['target']:
-				if not has_considered(life, event['from'], 'insult'):
-					communicate(life, 'insult', target=event['from'])
+				if not speech.has_considered(life, event['from'], 'insult'):
+					speech.communicate(life, 'insult', target=event['from'])
 					lfe.say(life, 'You\'re a jerk!')
 		
 		life['heard'].remove(event)

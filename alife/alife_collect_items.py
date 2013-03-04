@@ -6,7 +6,7 @@ import survival
 
 import logging
 
-STATE = 'surviving'
+STATE = 'looting'
 INITIAL_STATES = ['idle']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)

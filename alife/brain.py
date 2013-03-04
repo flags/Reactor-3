@@ -4,6 +4,7 @@ import life as lfe
 
 import alife_collect_items
 import alife_hidden
+import alife_talk
 import alife_hide
 import snapshots
 import judgement
@@ -15,6 +16,8 @@ import sight
 import sound
 
 import logging
+
+METHODS = [alife_hide, alife_hidden, alife_collect_items, alife_talk]
 
 def think(life, source_map):
 	sight.look(life)
@@ -118,7 +121,6 @@ def understand(life,source_map):
 	#if _target['who']:
 	#	_targets.append(_target['who'])
 	
-	METHODS = [alife_hide, alife_hidden, alife_collect_items]
 	_seen = [life['know'][entry] for entry in life['seen']]
 	
 	for method in METHODS:

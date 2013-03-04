@@ -84,26 +84,12 @@ def judge(life, target):
 	
 	if _target_armed and weapons.get_feed(_target_armed):
 		_dislike += 30
-	#elif not _target_armed:
-	#	_like += 20
-	#	_dislike = 0
+	elif not _target_armed:
+		_like += 20
+		_dislike = 0
 	
 	#TODO: Add modifier depending on type of weapon
 	#TODO: Consider if the AI has heard the target run out of ammo
 	#TODO: Added "scared by", so a fear of guns would subtract from
 	
 	return _like-_dislike
-
-def in_danger(life,target):
-	if 'last_seen_time' in target and not target['last_seen_time']:
-		#TODO: Courage here
-		#print abs(target['danger_score']),judge_self(life),time.time()
-		if abs(target['danger_score'])>=judge_self(life):
-			return True
-		else:
-			return False
-	
-	if abs(target['score']) >= judge_self(life):
-		return True
-	else:
-		return False
