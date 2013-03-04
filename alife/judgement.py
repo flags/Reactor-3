@@ -58,8 +58,16 @@ def judge(life, target):
 	if target['life']['asleep']:
 		return 0
 	
+	print target['consider']
+	
 	if 'surrender' in target['consider']:
 		return 0
+	
+	if 'greeted' in target['consider']:
+		_like += 15
+	
+	if 'insulted' in target['consider']:
+		_dislike += 15
 	
 	for limb in [target['life']['body'][limb] for limb in target['life']['body']]:
 		#TODO: Mark as target?

@@ -103,22 +103,20 @@ def listen(life):
 			speech.consider(life,event['from'],'confidence')
 
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 40):
+			if event_delay(event, 20):
 				continue
 
 			if life == event['target']:
-				if not speech.has_considered(life, event['from'], 'greeting'): 
+				if speech.consider(life, event['from'], 'greeted'): 
 					speech.communicate(life, 'greeting', target=event['from'])
 					lfe.say(life, 'Hello there, traveler!')
-				else:
-					print 'We past this dawg!!!'
 
 		elif event['gist'] == 'insult':
-			if event_delay(event, 30):
+			if event_delay(event, 20):
 				continue
 
 			if life == event['target']:
-				if not speech.has_considered(life, event['from'], 'insult'):
+				if speech.consider(life, event['from'], 'insulted'):
 					speech.communicate(life, 'insult', target=event['from'])
 					lfe.say(life, 'You\'re a jerk!')
 		

@@ -22,13 +22,14 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Add these two values to an array called PANIC_STATES
 	if not life['state'] in ['hiding', 'hidden'] and alife_seen:
-		_talk_to = [alife['who'] for alife in alife_seen if not 'greeted' in alife['who']['consider']]
+		_talk_to = [alife['who'] for alife in alife_seen if not 'tried_to_greet' in alife['who']['consider']]
 		
 		if len(_talk_to)>=2:
 			for alife in _talk_to:
-				print alife
 				speech.communicate(life, 'greeting', target=alife)
+				speech.has_considered(life, alife, 'greeted')
 		elif _talk_to:
 			speech.communicate(life, 'greeting', target=_talk_to[0]['life'])
+			speech.consider(life, _talk_to[0]['life'], 'tried_to_greet')
 			
 			
