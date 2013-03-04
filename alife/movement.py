@@ -131,7 +131,7 @@ def handle_hide(life,target,source_map):
 		return escape(life,target,source_map)
 
 def handle_hide_and_decide(life,target,source_map):
-	if handle_hide(life,target,source_map):		
+	if handle_hide(life,target,source_map):
 		#TODO: Just need a general function to make sure we have a weapon
 		if combat.has_weapon(life):
 			if speech.consider(life,target['life'],'shouted_at'):

@@ -207,6 +207,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['item_index'] = 0
 	_life['inventory'] = {}
 	_life['flags'] = {}
+	_life['state'] = 'idle'
+	_life['states'] = []
 	_life['gravity'] = 0
 	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
@@ -237,6 +239,14 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	LIFE.append(_life)
 	
 	return _life
+
+def change_state(life, state):
+	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
+	life['state'] = state
+	
+	life['states'].append(state)
+	if len(life['states'])>SETTINGS['state history size']:
+		life['states'].pop(0)
 
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,

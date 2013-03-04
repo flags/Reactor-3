@@ -17,6 +17,10 @@ PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 
+#Return values
+STATE_CHANGE = 2
+STATE_UNCHANGED = 3
+
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
@@ -87,7 +91,8 @@ SETTINGS = {'running': True,
 			'lifeid': 0,
 			'heatmap': None,
 			'controlling': None,
-			'following': None}
+			'following': None,
+			'state history size': 5}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
