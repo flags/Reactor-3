@@ -64,40 +64,9 @@ def judge(life, target):
 		return 0
 	
 	if 'greeted' in target['consider']:
-		_like += 15
+		_like += 1
 	
 	if 'insulted' in target['consider']:
-		_dislike += 15
-	
-	for limb in [target['life']['body'][limb] for limb in target['life']['body']]:
-		#TODO: Mark as target?
-		if limb['bleeding']:
-			_like += 1
-		else:
-			_dislike += 1
-		
-		if limb['bruised']:
-			_like += 2
-		else:
-			_dislike += 2
-		
-		if limb['broken']:
-			_like += 3
-		else:
-			_dislike += 3
-	
-	#Am I armed?
-	#_self_armed = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	_target_armed = combat.is_weapon_equipped(target['life'])#lfe.get_held_items(target['life'],matches=[{'type': 'gun'}])
-	
-	if _target_armed and weapons.get_feed(_target_armed):
-		_dislike += 30
-	elif not _target_armed:
-		_like += 20
-		_dislike = 0
-	
-	#TODO: Add modifier depending on type of weapon
-	#TODO: Consider if the AI has heard the target run out of ammo
-	#TODO: Added "scared by", so a fear of guns would subtract from
+		_dislike += 1
 	
 	return _like-_dislike

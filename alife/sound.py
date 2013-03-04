@@ -96,7 +96,6 @@ def listen(life):
 				
 				if _lying:
 					lfe.say(life,'I know you don\'t have a gun.')
-					#communicate(life,
 		
 		elif event['gist'] == 'confidence':
 			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))

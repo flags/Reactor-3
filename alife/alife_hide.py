@@ -12,7 +12,7 @@ INITIAL_STATES = ['idle', 'hidden']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)
 EXIT_SCORE = -75
-ENTRY_SCORE = -100
+ENTRY_SCORE = -1
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -20,7 +20,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	for entry in alife_seen:
 		_score += entry['score']
 	
-	_score += judgement.judge_self(life)
+	#_score += judgement.judge_self(life)
 	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):

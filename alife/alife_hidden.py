@@ -10,7 +10,7 @@ import logging
 STATE = 'hidden'
 INITIAL_STATE = 'hiding'
 EXIT_SCORE = -75
-ENTRY_SCORE = 0
+ENTRY_SCORE = -1
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
