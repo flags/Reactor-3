@@ -5,6 +5,7 @@ import speech
 import sight
 import brain
 
+import weapons
 import numbers
 import random
 
@@ -48,7 +49,7 @@ def position_for_combat(life,target,position,source_map):
 	
 	#What can the target see?
 	#TODO: Unchecked Cython flag
-	_attack_from = generate_los(life,target,position,source_map,score_shootcover,invert=True)
+	_attack_from = sight.generate_los(life,target,position,source_map,score_shootcover,invert=True)
 	
 	if _attack_from:
 		lfe.clear_actions(life)
@@ -89,7 +90,7 @@ def escape(life,target,source_map):
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
 	else:
-		if not speech.has_considered(life, target['life'], 'surrendered_to'):
+		if brain.get_flag(life, 'scared') and not speech.has_considered(life, target['life'], 'surrendered_to'):
 			speech.communicate(life, 'surrender', target=target['life'])
 			brain.flag(life, 'surrendered')
 			#print 'surrender'
@@ -152,6 +153,7 @@ def handle_hide_and_decide(life,target,source_map):
 				pass
 		else:
 			if speech.consider(life,target['life'],'shown_scared'):
+				brain.flag(life, 'scared')
 				lfe.say(life,'@n panics!',action=True)
 
 def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):

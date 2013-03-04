@@ -26,6 +26,7 @@ def listen(life):
 				lfe.create_and_update_self_snapshot(event['from'])
 				speech.unconsider(life,event['from'],'surrender')
 				brain.unflag(life, 'surrendered')
+				brain.unflag(life, 'scared')
 		
 		elif event['gist'] == 'comply':
 			#TODO: Judge who this is coming from...
@@ -60,7 +61,7 @@ def listen(life):
 		
 		elif event['gist'] == 'compliant':
 			if life == event['target']:
-				consider(life,event['from'],'compliant')
+				speech.consider(life,event['from'],'compliant')
 		
 		elif event['gist'] == 'intimidate':
 			if event_delay(event,60):

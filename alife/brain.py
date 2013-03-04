@@ -4,6 +4,8 @@ import snapshots
 import judgement
 import survival
 import movement
+import speech
+import combat
 import sight
 import sound
 
@@ -101,33 +103,33 @@ def understand(life,source_map):
 		if judgement.in_danger(life,_target):
 			movement.handle_hide_and_decide(life,_target['who'],source_map)
 		else:
-			if has_considered(life,_target['who']['life'],'surrendered') and not has_considered(life,_target['who']['life'],'resist'):
-				if consider(life,_target['who']['life'],'asked_to_comply'):
+			if speech.has_considered(life,_target['who']['life'],'surrendered') and not speech.has_considered(life,_target['who']['life'],'resist'):
+				if speech.consider(life,_target['who']['life'],'asked_to_comply'):
 					_visible_items = lfe.get_all_visible_items(_target['who']['life'])
 					
 					if _visible_items:
 						_item_to_drop = _visible_items[0]
-						communicate(life,'demand_drop_item',item=_item_to_drop,target=_target['who']['life'])
+						speech.communicate(life,'demand_drop_item',item=_item_to_drop,target=_target['who']['life'])
 						
 						lfe.say(life,'Drop that %s!' % lfe.get_inventory_item(_target['who']['life'],_item_to_drop)['name'])
 						lfe.clear_actions(life,matches=[{'action': 'shoot'}])
 					else:
 						logging.warning('No items visible on target!')
 				
-				if has_considered(life,_target['who']['life'],'compliant'):
+				if speech.has_considered(life,_target['who']['life'],'compliant'):
 					if not lfe.get_held_items(_target['who']['life'],matches=[{'type': 'gun'}]):
 						lfe.say(life,'Now get out of here!')
-						communicate(life,'free_to_go',target=_target['who']['life'])
-						unconsider(life,_target['who']['life'],'surrender')
+						speech.communicate(life,'free_to_go',target=_target['who']['life'])
+						speech.unconsider(life,_target['who']['life'],'surrendered')
 				
 			else:
-				handle_potential_combat_encounter(life,_target['who'],source_map)
+				combat.handle_potential_combat_encounter(life,_target['who'],source_map)
 		
 	else:
 		for neutral_target in _neutral_targets:
-			if has_considered(life, neutral_target['life'], 'greeting'):
+			if speech.has_considered(life, neutral_target['life'], 'greeting'):
 				continue
 
-			communicate(life, 'greeting', target=neutral_target['life'])
+			speech.communicate(life, 'greeting', target=neutral_target['life'])
 
 		survival.survive(life)

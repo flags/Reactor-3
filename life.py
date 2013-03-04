@@ -745,6 +745,8 @@ def perform_action(life):
 		
 		if life.has_key('player'):
 			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
+		else:
+			say(life,'@n puts on %s from the ground.' % _name,action=True)
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
 		_id = direct_add_item_to_inventory(life,_action['item'])
@@ -781,6 +783,7 @@ def perform_action(life):
 			if 'player' in life:
 				gfx.message('You have no hands free to hold the %s.' % items.get_name(get_inventory_item(life,_action['item'])))
 			
+			delete_action(life, action)
 			return False
 
 		_dropped_item = remove_item_from_inventory(life,_action['item'])

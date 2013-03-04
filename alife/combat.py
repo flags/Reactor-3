@@ -1,5 +1,10 @@
 import life as lfe
+
+import movement
+import speech
+
 import weapons
+import numbers
 
 def _weapon_equipped_and_ready(life):
 	_wep = lfe.get_held_items(life,matches=[{'type': 'gun'}])
@@ -174,7 +179,7 @@ def get_best_weapon(life):
 	return _best_wep
 
 def combat(life,target,source_map):
-	_pos_for_combat = position_for_combat(life,target,target['last_seen_at'],source_map)
+	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
 	if not target['escaped'] and not _pos_for_combat:
 		return False
@@ -182,11 +187,11 @@ def combat(life,target,source_map):
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
 	
 	if not lfe.can_see(life,target['life']['pos']):
-		if not target['escaped'] and not travel_to_target(life,target,target['last_seen_at'],source_map):
+		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at'],source_map):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			target['escaped'] = True
 		elif target['escaped']:
-			search_for_target(life,target,source_map)
+			movement.search_for_target(life,target,source_map)
 		
 		return False
 	
@@ -194,14 +199,14 @@ def combat(life,target,source_map):
 		lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
 
 def handle_potential_combat_encounter(life,target,source_map):
-	if not has_considered(life,target['life'],'resist'):
-		if not combat.is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
-			communicate(life,'comply',target=target['life']) #HOSTILE
+	if not speech.has_considered(life,target['life'],'resist'):
+		if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
+			speech.communicate(life,'comply',target=target['life']) #HOSTILE
 			lfe.clear_actions(life)
 			
 			return True
 	
-	if combat.is_weapon_equipped(life):
+	if is_weapon_equipped(life):
 		combat(life,target,source_map)
 	else:
 		handle_hide_and_decide(life,target,source_map)
