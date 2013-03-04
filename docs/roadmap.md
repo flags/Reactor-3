@@ -166,3 +166,32 @@ situations. Should the player predict a potentially deadly encounter from a dist
 the opportunity to shuffle their items as needed; holster the pistol, remove an SMG from their
 backpack, and engage. Some weapons could also be outfitted with a strap, allowing them to simply
 be swung around once the pistol is holstered.
+
+Milestone 5-2 - ALife Revision 2
+================================
+The previous system for handling ALife functionalities like understanding and performing actions as a result will be replaced with the second iteration of ALife.
+These changes will enforce a standard for all possible decisions, encouraging a common structure for current and future additions:
+
+	brain-escape.py
+		input:
+			alife_seen
+			alife_notseen
+			targets
+
+		qualifications (conditions):
+			initial_state = 'vulnerable' #Previous needed ALife state
+			attack <= 30%
+			defense <= 30%
+
+		actions:
+			escape for targets
+			state = 'panic' #State the ALife is now given
+
+*Note*: These don't have to be required (like initial-state)
+*Note*: Attack and defense are misleading (safety as just one variable)
+
+Notice how this format puts a strict guideline on what variables are used and defined.
+Previous implementations avoided this and as a result ended up with a variety of one-off terms and garbage variables.
+This new structure defines when an action goes into effect and what conditions keep it active.
+They are intended to work in certain cases and only be triggered when all conditions are met (in a descending order.)
+Simply put, if `initial_state` is present then it is checked first. If the ALife meets this then the function crawls the down the list. If everything checks out OK then the function is run.
