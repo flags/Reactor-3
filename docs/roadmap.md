@@ -188,10 +188,11 @@ These changes will enforce a standard for all possible decisions, encouraging a 
 			state = 'panic' #State the ALife is now given
 
 *Note*: These don't have to be required (like initial-state)
+
 *Note*: Attack and defense are misleading (safety as just one variable)
 
 Notice how this format puts a strict guideline on what variables are used and defined.
 Previous implementations avoided this and as a result ended up with a variety of one-off terms and garbage variables.
 This new structure defines when an action goes into effect and what conditions keep it active.
 They are intended to work in certain cases and only be triggered when all conditions are met (in a descending order.)
-Simply put, if `initial_state` is present then it is checked first. If the ALife meets this then the function crawls the down the list. If everything checks out OK then the function is run.
+Simply put, each condition is checked starting from the top, and if the ALife meets this then the function crawls the down the list. If everything checks out OK then the function is run.
