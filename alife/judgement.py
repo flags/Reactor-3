@@ -1,8 +1,12 @@
+from globals import *
+
 import life as lfe
 
 import combat
 
 import weapons
+import logging
+import numbers
 
 def judge_item(life, item):
 	_score = 0
@@ -70,3 +74,24 @@ def judge(life, target):
 		_dislike += 1
 	
 	return _like-_dislike
+
+def judge_chunk(life, chunk_key):
+	chunk = CHUNK_MAP[chunk_key]
+	
+	if chunk['type'] == 'grass':
+		return False
+	
+	if not chunk_key in life['judged_chunks']:
+		life['judged_chunks'][chunk_key] = {}
+	
+	_score = numbers.distance(life['pos'], chunk['pos'])
+	life['judged_chunks'][chunk_key]['score'] = _score
+	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_key, _score))
+
+def judge_all_chunks(life):
+	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
+	
+	for chunk in CHUNK_MAP:
+		judge_chunk(life, chunk)
+	
+	logging.warning('%s completed judging all chunks.' % (' '.join(life['name'])))

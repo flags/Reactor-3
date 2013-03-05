@@ -17,6 +17,9 @@ PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 
+#Map stuff
+CHUNK_MAP = {}
+
 #Return values
 STATE_CHANGE = 2
 STATE_UNCHANGED = 3
@@ -92,7 +95,8 @@ SETTINGS = {'running': True,
 			'heatmap': None,
 			'controlling': None,
 			'following': None,
-			'state history size': 5}
+			'state history size': 5,
+			'chunk size': 25}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}

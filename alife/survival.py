@@ -5,6 +5,7 @@ import combat
 import items
 import brain
 import sight
+import maps
 
 def loot(life):
 	#What do we need to do?
@@ -75,3 +76,20 @@ def manage_inventory(life):
 				lfe.add_action(life,_store_action,
 					401,
 					delay=lfe.get_item_access_time(life,item['id']))
+
+def explore(life):
+	#Our first order of business is to figure out exactly what we're looking for.
+	#There's a big difference between exploring the map looking for a purpose and
+	#exploring the map with a purpose. Both will use similar routines but I wager
+	#it'll actually be a lot harder to do it without there being some kind of goal
+	#to at least start us in the right direction.
+	
+	#This function will kick in only if the ALife is idling, so looting is handled
+	#automatically.
+	
+	#Note: Determining whether this fuction should run at all needs to be done inside
+	#the module itself.
+	
+	_chunk = maps.get_chunk(life['judged_chunks'].keys()[0])
+	
+	lfe.add_action(life,{'action': 'move','to': _chunk['pos']},200)

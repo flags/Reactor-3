@@ -32,7 +32,7 @@ class Astar:
 		_y_min = numbers.clip(start[1]-dist,0,MAP_SIZE[1])
 		_y_max = numbers.clip(start[1]+dist,0,MAP_SIZE[1])
 		
-		self.size = (_x_max,_y_max)
+		self.size = (_x_max+1,_y_max+1)
 		
 		#Let's make a few of these
 		self.fmap = numpy.zeros((self.size[1],self.size[0]))
@@ -72,6 +72,8 @@ class Astar:
 					#Not if there's a tile above the position we'd be climing to!
 					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
 						self.map[_y,_x] = 0
+		
+		print start,end
 		
 		start = (start[0]-_x_min,start[1]-_y_min)
 		

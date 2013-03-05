@@ -1,5 +1,3 @@
-#This is intended to be an example of how the new ALife
-#system works.
 from globals import *
 
 import judgement

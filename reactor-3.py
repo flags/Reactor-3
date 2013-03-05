@@ -56,6 +56,7 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+maps.update_chunk_map(MAP)
 gfx.init_libtcod()
 create_all_tiles()
 
@@ -100,6 +101,10 @@ _test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[25,40,2])
 PLAYER['player'] = True
 
+import alife.judgement
+
+alife.judgement.judge_all_chunks(_test)
+
 SETTINGS['controlling'] = PLAYER
 SETTINGS['following'] = PLAYER#_test
 
@@ -122,13 +127,13 @@ _i7 = items.create_item('glock')
 _i8 = items.create_item('9x19mm magazine')
 _i9 = items.create_item('sneakers')
 _i10 = items.create_item('leather backpack')
-_i11 = items.create_item('glock')
-_i12 = items.create_item('9x19mm magazine')
+#_i11 = items.create_item('glock')
+#_i12 = items.create_item('9x19mm magazine')
 _i13 = items.create_item('leather backpack',position=[40,50,2])
 _i14 = items.create_item('sneakers')
-_i15 = items.create_item('glock',position=[40,50,2])
-_i16 = items.create_item('9x19mm magazine',position=[41,50,2])
-items.create_item('9x19mm round',position=[44,50,2])
+#_i15 = items.create_item('glock',position=[40,50,2])
+#_i16 = items.create_item('9x19mm magazine',position=[41,50,2])
+#items.create_item('9x19mm round',position=[44,50,2])
 
 items.move(_i4,0,1,_velocity=1)
 items.move(_i4_,0,1,_velocity=1)

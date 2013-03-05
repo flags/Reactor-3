@@ -226,13 +226,16 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['strafing'] = False
 	_life['aim_at'] = _life
 	
+	#Various icons...
 	# expl = #chr(15)
 	# up   = chr(24)
 	# down = chr(25)
+	
 	#ALife
 	_life['know'] = {}
 	_life['know_items'] = {}
 	_life['memory'] = []
+	_life['judged_chunks'] = {}
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1

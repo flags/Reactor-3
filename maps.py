@@ -363,3 +363,44 @@ def get_collision_map(map_array,start,end,mark=1):
 				collision_map[y,x] = mark
 	
 	return collision_map
+
+def get_chunk(chunk_id):
+	return CHUNK_MAP[chunk_id]
+
+def update_chunk_map(source_map):
+	_stime = time.time()
+	_chunk_map = {}
+	
+	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
+		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+			_chunk_key = '%s,%s' % (x1, y1)
+			_chunk_map[_chunk_key] = {'pos': (x1, y1)}
+			
+			_tiles = {}
+			for y2 in range(y1, y1+SETTINGS['chunk size']):
+				for x2 in range(x1, x1+SETTINGS['chunk size']):
+					if not source_map[x2][y2][2]:
+						continue
+					
+					_tile_id = source_map[x2][y2][2]['id']
+					
+					if _tile_id in _tiles:
+						_tiles[_tile_id] += 1
+					else:
+						_tiles[_tile_id] = 1
+			
+			_most_common_tile = {'id': None, 'lead': 0, 'count': 0}
+			for tile in _tiles:
+				if _tiles[tile] > _most_common_tile['count']:
+					_most_common_tile['id'] = tile
+					_most_common_tile['lead'] = _tiles[tile]-_most_common_tile['count']
+					_most_common_tile['count'] = _tiles[tile]
+			
+			if _most_common_tile['id'].count('grass'):
+				_chunk_map[_chunk_key]['type'] = 'grass'
+			else:
+				_chunk_map[_chunk_key]['type'] = 'structure'
+	
+	CHUNK_MAP.update(_chunk_map)
+	logging.info('Chunk map updated in %s seconds.' % (time.time()-_stime))
+			
