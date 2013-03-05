@@ -127,6 +127,9 @@ def handle_lost_los(life):
 	
 	return _nearest_target
 
+def find_visible_items(life):
+	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'id' in item['item']]
+
 def find_known_items(life, matches=[], visible=True):
 	_match = []
 	

@@ -6,6 +6,11 @@ import brain
 import logging
 
 def listen(life):
+	_heard = False
+	
+	if life['heard']:
+		_heard = True
+	
 	for event in life['heard'][:]:
 		if not str(event['from']['id']) in life['know']:
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
@@ -120,6 +125,9 @@ def listen(life):
 					lfe.say(life, 'You\'re a jerk!')
 		
 		life['heard'].remove(event)
+	
+	if _heard:
+		lfe.create_and_update_self_snapshot(life)
 
 def event_delay(event,time):
 	if event['age'] < time:

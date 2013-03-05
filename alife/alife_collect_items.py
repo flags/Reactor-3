@@ -3,11 +3,15 @@
 from globals import *
 
 import survival
+import sight
 
 import logging
 
+#TODO: We need level states, so we can block
+#all states from a certain level
+
 STATE = 'looting'
-INITIAL_STATES = ['idle']
+INITIAL_STATES = ['idle', 'talking']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)
 EXIT_SCORE = -75
@@ -35,7 +39,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if len(targets_seen):
 		return False
 	
+	if not sight.find_visible_items(life):
+		return False
+	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	survival.survive(life)
+	survival.loot(life)
+	

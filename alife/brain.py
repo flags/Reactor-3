@@ -37,8 +37,6 @@ def get_flag(life,flag):
 	return life['flags'][flag]
 
 def flag_item(life,item,flag):
-	print ' '.join(life['name'])
-	
 	if not flag in life['know_items'][item['uid']]['flags']:
 		life['know_items'][item['uid']]['flags'].append(flag)
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
@@ -62,9 +60,9 @@ def understand(life,source_map):
 	_alife_seen = []
 	_alife_not_seen = []
 	_targets_seen = []
-	_targets_not_seen = []
 	_neutral_targets = []
-	_known_targets_not_seen = life['know'].keys()
+	_targets_not_seen_pre = life['know'].keys()
+	_targets_not_seen = []
 	
 	if get_flag(life, 'surrendered'):
 		return False
@@ -73,7 +71,7 @@ def understand(life,source_map):
 		communicate(life,'surrender')
 	
 	for entry in life['seen']:
-		_known_targets_not_seen.remove(entry)
+		_targets_not_seen_pre.remove(entry)
 		target = life['know'][entry]
 		_score = target['score']
 		
@@ -97,12 +95,25 @@ def understand(life,source_map):
 		#elif _score>0:
 		#	_neutral_targets.append(target)
 	
-	for _not_seen in _known_targets_not_seen:
+	for _not_seen in _targets_not_seen_pre:
+		target = life['know'][_not_seen]
+		#print _not_seen,target.keys()
+		
+		#life['know'][_not_seen]['who'] = life['know'][_not_seen]['life']
 		#TODO: 350?
 		if life['know'][_not_seen]['last_seen_time']<350:
-			life['know'][_not_seen]['last_seen_time'] += 1	
+			life['know'][_not_seen]['last_seen_time'] += 1
+		else:
+			break
+		
+		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
+			_score = judgement.judge(life, life['know'][_not_seen])
+			life['know'][_not_seen]['score'] = _score
+		
+		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
 	
-	_known_targets_not_seen = [life['know'][entry] for entry in _known_targets_not_seen]
+	#TODO: Check for time-out targets
+	#_targets_not_seen = [life['know'][entry] for entry in _targets_not_seen]
 	
 	#if not _targets_seen:
 	#	#TODO: No visible target, doesn't mean they're not there

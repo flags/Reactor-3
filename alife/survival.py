@@ -6,7 +6,7 @@ import items
 import brain
 import sight
 
-def survive(life):
+def loot(life):
 	#What do we need to do?
 	#	- Get items?
 	#	- Find shelter?

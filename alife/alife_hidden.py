@@ -15,7 +15,7 @@ ENTRY_SCORE = -1
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
 	
-	for entry in alife_seen:
+	for entry in targets_not_seen:
 		_score += entry['score']
 	
 	return _score
@@ -23,13 +23,15 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] == INITIAL_STATE:
-		if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
-			return False
-		
+	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
-	elif not life['state'] in [INITIAL_STATE, STATE]:
-		return False		
+	
+	#if life['state'] == INITIAL_STATE:
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) > ENTRY_SCORE:
+		return False
+	
+	#elif not life['state'] in [INITIAL_STATE, STATE]:
+	#	return False		
 	
 	if len(targets_seen):
 		return False

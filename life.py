@@ -1616,6 +1616,9 @@ def draw_life_info():
 	if life['asleep']:
 		_name_mods.append('(Asleep)')
 	
+	if not 'player' in life and life['state']:
+		_name_mods.append('(%s)' % life['state'])
+	
 	_name_mods.append(life['stance'].title())	
 	
 	console_set_default_foreground(0,BORDER_COLOR)
