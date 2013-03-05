@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import alife_collect_items
+import alife_explore
 import alife_hidden
 import alife_talk
 import alife_hide
@@ -17,7 +18,11 @@ import sound
 
 import logging
 
-METHODS = [alife_hide, alife_hidden, alife_collect_items, alife_talk]
+MODULES = [alife_hide,
+	alife_hidden,
+	alife_collect_items,
+	alife_talk,
+	alife_explore]
 
 def think(life, source_map):
 	sight.look(life)
@@ -112,36 +117,21 @@ def understand(life,source_map):
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
 	
-	#TODO: Check for time-out targets
-	#_targets_not_seen = [life['know'][entry] for entry in _targets_not_seen]
-	
-	#if not _targets_seen:
-	#	#TODO: No visible target, doesn't mean they're not there
-	#	#_lost_target = sight.handle_lost_los(life)
-	#	
-	#	#if _lost_target['target']:
-	#	#	_target = {}
-	#	#	_target['who'] = _lost_target['target']
-	#	#	_target['score'] = _lost_target['target']['score']
-	#	#	_target['danger_score'] = _lost_target['score']
-	#	#	_target['last_seen_time'] = _lost_target['target']['last_seen_time']
-	#	#else:
-	#	#	#TODO: Some kind of cooldown here...
-	#	#	print 'No lost targets'
-	
-	#if _target['who']:
-	#	_targets.append(_target['who'])
-	
 	_seen = [life['know'][entry] for entry in life['seen']]
 	
-	for method in METHODS:
-		_return = method.conditions(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+	_modules_run = False
+	for module in MODULES:
+		_return = module.conditions(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
 		
 		if _return == STATE_CHANGE:
-			lfe.change_state(life, method.STATE)
+			lfe.change_state(life, module.STATE)
 		
 		if _return:
-			method.tick(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+			module.tick(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+			_modules_run = True
+	
+	if not _modules_run:
+		lfe.change_state(life, 'idle')
 	
 	#if _target['who']:
 	#	if judgement.in_danger(life,_target):
