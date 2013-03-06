@@ -367,6 +367,11 @@ def get_collision_map(map_array,start,end,mark=1):
 def get_chunk(chunk_id):
 	return CHUNK_MAP[chunk_id]
 
+def refresh_chunk(chunk_id):
+	chunk = CHUNK_MAP[chunk_id]
+	
+	chunk['digest'] = '%s-%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][0]), chunk['score'])
+
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
@@ -387,7 +392,9 @@ def update_chunk_map(source_map):
 	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
 		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
 			_chunk_key = '%s,%s' % (x1, y1)
-			_chunk_map[_chunk_key] = {'pos': (x1, y1)}
+			_chunk_map[_chunk_key] = {'pos': (x1, y1),
+				'ground': [],
+				'life': 0}
 			
 			_tiles = {}
 			for y2 in range(y1, y1+SETTINGS['chunk size']):
@@ -395,7 +402,11 @@ def update_chunk_map(source_map):
 					if not source_map[x2][y2][2]:
 						continue
 					
+					_chunk_map[_chunk_key]['ground'].append((x2, y2))
 					_tile_id = source_map[x2][y2][2]['id']
+					
+					if _tile_id.count('grass'):
+						continue
 					
 					if _tile_id in _tiles:
 						_tiles[_tile_id] += 1
@@ -409,10 +420,12 @@ def update_chunk_map(source_map):
 					_most_common_tile['lead'] = _tiles[tile]-_most_common_tile['count']
 					_most_common_tile['count'] = _tiles[tile]
 			
-			if _most_common_tile['id'].count('grass'):
+			if not _most_common_tile['id']:
 				_chunk_map[_chunk_key]['type'] = 'grass'
+			elif _most_common_tile['id'].count('wall'):
+				_chunk_map[_chunk_key]['type'] = 'wall'
 			else:
-				_chunk_map[_chunk_key]['type'] = 'structure'
+				_chunk_map[_chunk_key]['type'] = 'floor'
 	
 	CHUNK_MAP.update(_chunk_map)
 	logging.info('Chunk map updated in %s seconds.' % (time.time()-_stime))

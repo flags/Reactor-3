@@ -7,6 +7,7 @@ import combat
 import weapons
 import logging
 import numbers
+import maps
 import time
 
 def judge_item(life, item):
@@ -76,17 +77,32 @@ def judge(life, target):
 	
 	return _like-_dislike
 
-def judge_chunk(life, chunk_key):
+def judge_chunk(life, chunk_key, long=True):
 	chunk = CHUNK_MAP[chunk_key]
 	
+	if long:
+		_max_score = 100
+	else:
+		_max_score = 35
+	
+	#TODO: No longer needed?
 	if chunk['type'] == 'grass':
 		return False
 	
-	if not chunk_key in life['judged_chunks']:
-		life['judged_chunks'][chunk_key] = {'last_visited': 0}
+	if not chunk_key in life['known_chunks']:
+		life['known_chunks'][chunk_key] = {'last_visited': 0
+			'digest': chunk['digest']}
 	
-	_score = numbers.distance(life['pos'], chunk['pos'])
-	life['judged_chunks'][chunk_key]['score'] = _score
+	_score = numbers.clip(_max_score-numbers.distance(life['pos'], chunk['pos']), 0, _max_score)/float(SETTINGS['chunk size'])
+	for _life in LIFE:
+		if _life == life:
+			continue
+		
+		if lfe.is_in_chunk(_life, chunk_key):
+			_score += 15
+	
+	maps.refresh_chunk(chunk_key)
+	life['known_chunks'][chunk_key]['score'] = _score
 	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_key, _score))
 
 def judge_all_chunks(life):

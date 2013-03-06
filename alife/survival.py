@@ -1,6 +1,8 @@
 import life as lfe
 
+import judgement
 import movement
+import random
 import combat
 import items
 import brain
@@ -92,20 +94,36 @@ def explore(life):
 	#the module itself.
 	_interesting_chunks = {}
 	
-	for chunk_key in life['judged_chunks']:
-		_chunk = life['judged_chunks'][chunk_key]
+	for chunk_key in life['known_chunks']:
+		_chunk = life['known_chunks'][chunk_key]
 		
 		if _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
-			_interesting_chunks[chunk_key] = life['judged_chunks'][chunk_key]
+			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
-	_chunk_key = _interesting_chunks.keys()[0]
+	_current_chunk = lfe.get_current_chunk(life)
+	if _current_chunk:
+		_initial_score = _current_chunk['score']
+	else:
+		_initial_score = 0
+	
+	_lowest = {'score': _initial_score, 'chunk_key': None}
+	for chunk_key in _interesting_chunks:
+		chunk = _interesting_chunks[chunk_key]
+		
+		if chunk['score']>_lowest['score']:
+			_lowest['score'] = chunk['score']
+			_lowest['chunk_key'] = chunk_key
+		
+	if not _lowest['chunk_key']:
+		return False
+	
+	_chunk_key = _lowest['chunk_key']
 	_chunk = maps.get_chunk(_chunk_key)
 	
-	print life['pos'],_chunk['pos']
-	
 	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
-		life['judged_chunks'][_chunk_key]['last_visited'] = time.time()
+		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
+		return False
 	
-	_pos_in_chunk = maps.get_open_position_in_chunk(life['map'], _interesting_chunks.keys()[0])
-	
+	_pos_in_chunk = random.choice(_chunk['ground'])
+	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)

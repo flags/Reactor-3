@@ -236,7 +236,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['know'] = {}
 	_life['know_items'] = {}
 	_life['memory'] = []
-	_life['judged_chunks'] = {}
+	_life['known_chunks'] = {}
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
@@ -291,6 +291,22 @@ def is_in_chunk(life, chunk_id):
 	if _chunk['pos'][0]+SETTINGS['chunk size'] > life['pos'][0] >= _chunk['pos'][0]\
 		and _chunk['pos'][1]+SETTINGS['chunk size'] > life['pos'][1] >= _chunk['pos'][1]:
 			return True
+	
+	return False
+
+def get_current_chunk(life):
+	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	
+	if _chunk_key in life['known_chunks']:
+		return life['known_chunks'][_chunk_key]
+	
+	return False
+
+def get_current_chunk_id(life):
+	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	
+	if _chunk_key in life['known_chunks']:
+		return _chunk_key
 	
 	return False
 
@@ -973,6 +989,10 @@ def tick(life,source_map):
 	
 	calculate_limb_conditions(life)
 	perform_collisions(life)
+	
+	_current_chunk = get_current_chunk_id(life)
+	if _current_chunk:
+		judgement.judge_chunk(life, _current_chunk)
 	
 	if not 'player' in life:
 		brain.think(life,source_map)

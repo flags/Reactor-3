@@ -96,7 +96,7 @@ SETTINGS = {'running': True,
 			'controlling': None,
 			'following': None,
 			'state history size': 5,
-			'chunk size': 10}
+			'chunk size': 5}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}

@@ -6,4 +6,4 @@
 # Ended: Probably not for a while #
 ###################################
 
-__all__ = ['snapshots', 'brain', 'speech']
+__all__ = ['snapshots', 'judgement', 'brain', 'speech']
