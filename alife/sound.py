@@ -12,7 +12,7 @@ def listen(life):
 		_heard = True
 	
 	for event in life['heard'][:]:
-		if not str(event['from']['id']) in life['know']:
+		if not event['from']['id'] in life['know']:
 			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':

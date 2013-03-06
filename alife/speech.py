@@ -1,14 +1,14 @@
 import life as lfe
 
 def has_considered(life,target,what):
-	if what in life['know'][str(target['id'])]['consider']:
+	if what in life['know'][target['id']]['consider']:
 		return True
 	
 	return False
 
 def consider(life,target,what):
-	if not what in life['know'][str(target['id'])]['consider']:
-		life['know'][str(target['id'])]['consider'].append(what)
+	if not what in life['know'][target['id']]['consider']:
+		life['know'][target['id']]['consider'].append(what)
 		lfe.create_and_update_self_snapshot(target)
 		
 		return True
@@ -16,8 +16,8 @@ def consider(life,target,what):
 	return False
 
 def unconsider(life,target,what):
-	if what in life['know'][str(target['id'])]['consider']:
-		life['know'][str(target['id'])]['consider'].remove(what)
+	if what in life['know'][target['id']]['consider']:
+		life['know'][target['id']]['consider'].remove(what)
 		lfe.create_and_update_self_snapshot(target)
 		
 		return True

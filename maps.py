@@ -392,7 +392,7 @@ def broadcast_chunk_change(chunk_id):
 			
 			_known_chunk['digest'] = _chunk['digest']
 			
-			logging.info('%s got update for chunk #%s' % (' '.join(life['name']), '%s,%s' % (_chunk['pos'][0],_chunk['pos'][1])))
+			#logging.debug('%s got update for chunk #%s' % (' '.join(life['name']), '%s,%s' % (_chunk['pos'][0],_chunk['pos'][1])))
 
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)

@@ -294,19 +294,33 @@ def is_in_chunk(life, chunk_id):
 	
 	return False
 
-def get_current_chunk(life):
-	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+def get_current_known_chunk(life):
+	_chunk_id = get_current_chunk_id(life)
 	
-	if _chunk_key in life['known_chunks']:
-		return life['known_chunks'][_chunk_key]
+	if _chunk_id in life['known_chunks']:
+		return life['known_chunks'][_chunk_id]
 	
 	return False
 
-def get_current_chunk_id(life):
+def get_current_known_chunk_id(life):
 	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
 	
 	if _chunk_key in life['known_chunks']:
 		return _chunk_key
+	
+	return False
+
+def get_current_chunk(life):
+	_chunk_id = get_current_chunk_id(life)
+	
+	return maps.get_chunk(_chunk_id)
+
+def get_current_chunk_id(life):
+	return '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+
+def get_known_life(life, id):
+	if id in life['know']:
+		return life['know'][id]
 	
 	return False
 
@@ -331,6 +345,29 @@ def create_conversation(life,gist,say=None,action=None,**kvargs):
 	life['conversations'].append(_convo)
 	
 	create_and_update_self_snapshot(life)
+
+def get_surrounding_chunks(life, distance=1):
+	_current_chunk_id = get_current_chunk_id(life)
+	_surrounding_chunks = []
+	_start_x,_start_y = [int(value) for value in _current_chunk_id.split(',')]
+	
+	for y in range(-distance,distance+1):
+		for x in range(-distance,distance+1):
+			if not x and not y:
+				continue
+			
+			_next_x = _start_x+(x*SETTINGS['chunk size'])
+			_next_y = _start_y+(y*SETTINGS['chunk size'])
+			
+			if _next_x<0 or _next_x>=MAP_SIZE[0]:
+				continue
+				
+			if _next_y<0 or _next_y>=MAP_SIZE[1]:
+				continue
+			
+			_surrounding_chunks.append('%s,%s' % (_next_x, _next_y))
+	
+	return _surrounding_chunks
 
 def hear(life, what):
 	what['age'] = 0
@@ -990,9 +1027,11 @@ def tick(life,source_map):
 	calculate_limb_conditions(life)
 	perform_collisions(life)
 	
-	_current_chunk = get_current_chunk_id(life)
-	if _current_chunk:
-		judgement.judge_chunk(life, _current_chunk)
+	_current_known_chunk_id = get_current_known_chunk_id(life)
+	if _current_known_chunk_id:
+		judgement.judge_chunk(life, _current_known_chunk_id)
+	else:
+		judgement.judge_chunk(life, get_current_chunk_id(life))
 	
 	if not 'player' in life:
 		brain.think(life,source_map)

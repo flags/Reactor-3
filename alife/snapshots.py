@@ -7,7 +7,7 @@ def update_self_snapshot(life,snapshot):
 	life['snapshot'] = snapshot
 
 def update_snapshot_of_target(life,target,snapshot):
-	life['know'][str(target['id'])]['snapshot'].update(snapshot)
+	life['know'][target['id']]['snapshot'].update(snapshot)
 	
 	logging.debug('%s updated their snapshot of %s.' % (life['name'][0],target['name'][0]))
 
@@ -26,7 +26,7 @@ def create_snapshot(life):
 	return _snapshot
 
 def process_snapshot(life,target):
-	if life['know'][str(target['id'])]['snapshot'] == target['snapshot']:
+	if life['know'][target['id']]['snapshot'] == target['snapshot']:
 		return False
 	
 	_ss = target['snapshot'].copy()
@@ -36,4 +36,4 @@ def process_snapshot(life,target):
 	return True
 
 def check_snapshot(life,target):
-	return life['know'][str(target['id'])]['snapshot']
+	return life['know'][target['id']]['snapshot']

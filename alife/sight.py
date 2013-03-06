@@ -21,22 +21,26 @@ def look(life):
 			#TODO: "see" via other means?
 			continue
 		
-		if not lfe.can_see(life,ai['pos']):
+		if not lfe.can_see(life, ai['pos']):
 			continue
 		
-		life['seen'].append(str(ai['id']))
+		life['seen'].append(ai['id'])
 		
 		#TODO: Don't pass entire life, just id
-		if str(ai['id']) in life['know']:
-			life['know'][str(ai['id'])]['last_seen_time'] = 0
-			life['know'][str(ai['id'])]['last_seen_at'] = ai['pos'][:]
-			life['know'][str(ai['id'])]['escaped'] = False
+		if ai['id'] in life['know']:
+			life['know'][ai['id']]['last_seen_time'] = 0
+			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
+			life['know'][ai['id']]['escaped'] = False
+			
+			_chunk_id = lfe.get_current_chunk_id(ai)
+			#if not _chunk_id in life['known_chunks']:
+			judgement.judge_chunk(life, _chunk_id)
 			
 			continue
 			
 		logging.info('%s learned about %s.' % (' '.join(life['name']),' '.join(ai['name'])))
 		
-		life['know'][str(ai['id'])] = {'life': ai,
+		life['know'][ai['id']] = {'life': ai,
 			'score': 0,
 			'last_seen_time': 0,
 			'last_seen_at': ai['pos'][:],

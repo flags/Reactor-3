@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import survival
 import chunks
 import sight
@@ -38,6 +40,5 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	if not survival.explore(life):
-		pass
+	survival.explore_known_chunks(life)
 	

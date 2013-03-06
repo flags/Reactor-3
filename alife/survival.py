@@ -82,7 +82,7 @@ def manage_inventory(life):
 					401,
 					delay=lfe.get_item_access_time(life,item['id']))
 
-def explore(life):
+def explore_known_chunks(life):
 	#Our first order of business is to figure out exactly what we're looking for.
 	#There's a big difference between exploring the map looking for a purpose and
 	#exploring the map with a purpose. Both will use similar routines but I wager
@@ -94,11 +94,7 @@ def explore(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.	
-	_chunk_key = chunks.find_best_chunk(life)
-	
-	if not _chunk_key:
-		return False
-	
+	_chunk_key = chunks.find_best_chunk(life)	
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):

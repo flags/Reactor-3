@@ -77,37 +77,36 @@ def judge(life, target):
 	
 	return _like-_dislike
 
-def judge_chunk(life, chunk_key, long=True):
-	chunk = CHUNK_MAP[chunk_key]
+def judge_chunk(life, chunk_id, long=True):
+	chunk = CHUNK_MAP[chunk_id]
 	
 	if long:
-		_max_score = 100
+		_max_score = SETTINGS['chunk size']*6
+		_distance = (numbers.distance(life['pos'], chunk['pos'])/SETTINGS['chunk size'])
 	else:
-		_max_score = 35
-	
-	#TODO: No longer needed?
-	if chunk['type'] == 'grass':
-		return False
+		_max_score = SETTINGS['chunk size']*3
+		_distance = 0
 	
 	_initial = False
-	if not chunk_key in life['known_chunks']:
-		life['known_chunks'][chunk_key] = {'last_visited': 0,
+	if not chunk_id in life['known_chunks']:
+		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
 		_initial = True
 	
-	_score = numbers.clip(_max_score-numbers.distance(life['pos'], chunk['pos']), 0, _max_score)/float(SETTINGS['chunk size'])
+	_score = numbers.clip(_max_score-_distance, 0, _max_score)
 	for _life in LIFE:
 		if _life == life:
 			continue
 		
-		if lfe.is_in_chunk(_life, chunk_key):
-			_score += 15
+		if lfe.is_in_chunk(_life, chunk_id):
+			if _life['id'] in life['know']:
+				_score += lfe.get_known_life(life, _life['id'])['score']*1.5
 	
-	maps.refresh_chunk(chunk_key)
-	life['known_chunks'][chunk_key]['score'] = _score
+	maps.refresh_chunk(chunk_id)
+	life['known_chunks'][chunk_id]['score'] = _score
 	
-	if _initial:
-		logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_key, _score))
+	#if _initial:
+	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
