@@ -73,7 +73,7 @@ def understand(life,source_map):
 		return False
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
-		communicate(life,'surrender')
+		speech.communicate(life,'surrender')
 	
 	for entry in life['seen']:
 		_targets_not_seen_pre.remove(entry)
@@ -116,8 +116,6 @@ def understand(life,source_map):
 			life['know'][_not_seen]['score'] = _score
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
-	
-	_seen = [life['know'][entry] for entry in life['seen']]
 	
 	_modules_run = False
 	for module in MODULES:

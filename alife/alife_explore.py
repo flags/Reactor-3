@@ -1,6 +1,7 @@
 from globals import *
 
 import survival
+import chunks
 import sight
 
 import logging
@@ -29,6 +30,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		RETURN_VALUE = STATE_CHANGE
 	
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen)<0:
+		return False
+	
+	if not chunks.find_best_chunk(life):
 		return False
 	
 	return RETURN_VALUE

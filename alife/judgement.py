@@ -89,9 +89,11 @@ def judge_chunk(life, chunk_key, long=True):
 	if chunk['type'] == 'grass':
 		return False
 	
+	_initial = False
 	if not chunk_key in life['known_chunks']:
-		life['known_chunks'][chunk_key] = {'last_visited': 0
+		life['known_chunks'][chunk_key] = {'last_visited': 0,
 			'digest': chunk['digest']}
+		_initial = True
 	
 	_score = numbers.clip(_max_score-numbers.distance(life['pos'], chunk['pos']), 0, _max_score)/float(SETTINGS['chunk size'])
 	for _life in LIFE:
@@ -103,7 +105,9 @@ def judge_chunk(life, chunk_key, long=True):
 	
 	maps.refresh_chunk(chunk_key)
 	life['known_chunks'][chunk_key]['score'] = _score
-	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_key, _score))
+	
+	if _initial:
+		logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_key, _score))
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))

@@ -101,9 +101,9 @@ _test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[25,40,2])
 PLAYER['player'] = True
 
-import alife.judgement
+#import alife.judgement
 
-alife.judgement.judge_all_chunks(_test)
+#alife.judgement.judge_all_chunks(_test)
 
 SETTINGS['controlling'] = PLAYER
 SETTINGS['following'] = PLAYER#_test

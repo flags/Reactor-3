@@ -1,5 +1,8 @@
 from globals import *
 from tiles import *
+
+import life as lfe
+
 import graphics as gfx
 import maputils
 import logging
@@ -368,9 +371,28 @@ def get_chunk(chunk_id):
 	return CHUNK_MAP[chunk_id]
 
 def refresh_chunk(chunk_id):
-	chunk = CHUNK_MAP[chunk_id]
+	chunk = get_chunk(chunk_id)
 	
-	chunk['digest'] = '%s-%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][0]), chunk['score'])
+	_life = []
+	for life in LIFE:
+		if lfe.is_in_chunk(life, chunk_id):
+			_life.append(life['id'])
+	
+	chunk['digest'] = '%s-P=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life)
+	broadcast_chunk_change(chunk_id)
+
+def broadcast_chunk_change(chunk_id):
+	for life in LIFE:
+		for known_chunk_key in life['known_chunks']:
+			_chunk = get_chunk(known_chunk_key)
+			_known_chunk = life['known_chunks'][known_chunk_key]
+			
+			if _chunk['digest'] == _known_chunk['digest']:
+				continue
+			
+			_known_chunk['digest'] = _chunk['digest']
+			
+			logging.info('%s got update for chunk #%s' % (' '.join(life['name']), '%s,%s' % (_chunk['pos'][0],_chunk['pos'][1])))
 
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
@@ -394,7 +416,8 @@ def update_chunk_map(source_map):
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
-				'life': 0}
+				'life': 0,
+				'digest': None}
 			
 			_tiles = {}
 			for y2 in range(y1, y1+SETTINGS['chunk size']):

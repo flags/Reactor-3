@@ -2,6 +2,8 @@ import life as lfe
 
 import judgement
 import movement
+import chunks
+
 import random
 import combat
 import items
@@ -91,33 +93,12 @@ def explore(life):
 	#automatically.
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
-	#the module itself.
-	_interesting_chunks = {}
+	#the module itself.	
+	_chunk_key = chunks.find_best_chunk(life)
 	
-	for chunk_key in life['known_chunks']:
-		_chunk = life['known_chunks'][chunk_key]
-		
-		if _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
-			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
-	
-	_current_chunk = lfe.get_current_chunk(life)
-	if _current_chunk:
-		_initial_score = _current_chunk['score']
-	else:
-		_initial_score = 0
-	
-	_lowest = {'score': _initial_score, 'chunk_key': None}
-	for chunk_key in _interesting_chunks:
-		chunk = _interesting_chunks[chunk_key]
-		
-		if chunk['score']>_lowest['score']:
-			_lowest['score'] = chunk['score']
-			_lowest['chunk_key'] = chunk_key
-		
-	if not _lowest['chunk_key']:
+	if not _chunk_key:
 		return False
 	
-	_chunk_key = _lowest['chunk_key']
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
