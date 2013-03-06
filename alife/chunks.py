@@ -1,3 +1,4 @@
+from globals import *
 import life as lfe
 
 import maps
@@ -37,7 +38,8 @@ def find_best_unknown_chunk(life, chunks):
 	_best_chunk = {'distance': 99999, 'chunk_key': None}
 	for chunk_key in chunks:
 		_chunk_pos = [int(value) for value in chunk_key.split(',')]
-		_distance = numbers.distance(life['pos'], _chunk_pos)
+		_chunk_center = (_chunk_pos[0]+SETTINGS['chunk size'], _chunk_pos[1]+SETTINGS['chunk size'])
+		_distance = numbers.distance(life['pos'], _chunk_center)
 		
 		if not can_see_chunk(life, chunk_key):
 			print 'Cant see yah boss'
