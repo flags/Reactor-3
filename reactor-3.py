@@ -148,7 +148,7 @@ life.add_item_to_inventory(PLAYER,_i8)
 #life.add_item_to_inventory(_test,_i9)
 #life.add_item_to_inventory(_test,_i10)
 #life.add_item_to_inventory(_test,_i11)
-#life.add_item_to_inventory(_test,_i12)
+life.add_item_to_inventory(_test,_i14)
 #life.add_item_to_inventory(_test2,_i14)
 #life.add_item_to_inventory(_test2,_i13)
 

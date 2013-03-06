@@ -14,6 +14,7 @@ import random
 import alife
 import items
 import menus
+import maps
 import copy
 import time
 import json
@@ -244,6 +245,9 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	return _life
 
 def change_state(life, state):
+	if life['state'] == state:
+		return False
+	
 	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
 	life['state'] = state
 	
@@ -280,6 +284,15 @@ def tick_animation(life):
 				return life['icon']
 		
 	return life['animation']['images'][life['animation']['index']]
+
+def is_in_chunk(life, chunk_id):
+	_chunk = maps.get_chunk(chunk_id)
+	
+	if _chunk['pos'][0]+SETTINGS['chunk size'] > life['pos'][0] >= _chunk['pos'][0]\
+		and _chunk['pos'][1]+SETTINGS['chunk size'] > life['pos'][1] >= _chunk['pos'][1]:
+			return True
+	
+	return False
 
 def create_conversation(life,gist,say=None,action=None,**kvargs):
 	_convo = {'gist': gist,'say': say,'action': action,'heard': []}

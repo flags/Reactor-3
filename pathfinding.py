@@ -8,7 +8,7 @@ import time
 import sys
 
 class Astar:
-	def __init__(self,start=None,end=None,omap=None,dist=None):
+	def __init__(self, start=None, end=None, omap=None, dist=None):
 		self.map = []
 		self.omap = omap
 
@@ -22,14 +22,14 @@ class Astar:
 		_s = time.time()
 		
 		if not dist:
-			dist = numbers.distance(start,end)
+			dist = numbers.distance(start,end)+1
 		
 		if dist<75:
 			dist=75
 		
-		_x_min = numbers.clip(start[0]-dist,0,MAP_SIZE[0])
+		_x_min = 0#numbers.clip(start[0]-dist,0,MAP_SIZE[0])
 		_x_max = numbers.clip(start[0]+dist,0,MAP_SIZE[0])
-		_y_min = numbers.clip(start[1]-dist,0,MAP_SIZE[1])
+		_y_min = 0#numbers.clip(start[1]-dist,0,MAP_SIZE[1])
 		_y_max = numbers.clip(start[1]+dist,0,MAP_SIZE[1])
 		
 		self.size = (_x_max+1,_y_max+1)
@@ -73,8 +73,6 @@ class Astar:
 					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
 						self.map[_y,_x] = 0
 		
-		print start,end
-		
 		start = (start[0]-_x_min,start[1]-_y_min)
 		
 		#Calculate our starting node
@@ -91,6 +89,7 @@ class Astar:
 		
 	def calculate(self):
 		if self.map[self.end[1],self.end[0]] == 0:
+			logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
 			return False
 		
 		node = self.olist[0]

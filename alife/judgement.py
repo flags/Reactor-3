@@ -7,6 +7,7 @@ import combat
 import weapons
 import logging
 import numbers
+import time
 
 def judge_item(life, item):
 	_score = 0
@@ -82,7 +83,7 @@ def judge_chunk(life, chunk_key):
 		return False
 	
 	if not chunk_key in life['judged_chunks']:
-		life['judged_chunks'][chunk_key] = {}
+		life['judged_chunks'][chunk_key] = {'last_visited': 0}
 	
 	_score = numbers.distance(life['pos'], chunk['pos'])
 	life['judged_chunks'][chunk_key]['score'] = _score
@@ -90,8 +91,9 @@ def judge_chunk(life, chunk_key):
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
+	_stime = time.time()
 	
 	for chunk in CHUNK_MAP:
 		judge_chunk(life, chunk)
 	
-	logging.warning('%s completed judging all chunks.' % (' '.join(life['name'])))
+	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))

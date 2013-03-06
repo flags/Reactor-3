@@ -6,6 +6,7 @@ import items
 import brain
 import sight
 import maps
+import time
 
 def loot(life):
 	#What do we need to do?
@@ -89,7 +90,22 @@ def explore(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.
+	_interesting_chunks = {}
 	
-	_chunk = maps.get_chunk(life['judged_chunks'].keys()[0])
+	for chunk_key in life['judged_chunks']:
+		_chunk = life['judged_chunks'][chunk_key]
+		
+		if _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+			_interesting_chunks[chunk_key] = life['judged_chunks'][chunk_key]
 	
-	lfe.add_action(life,{'action': 'move','to': _chunk['pos']},200)
+	_chunk_key = _interesting_chunks.keys()[0]
+	_chunk = maps.get_chunk(_chunk_key)
+	
+	print life['pos'],_chunk['pos']
+	
+	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
+		life['judged_chunks'][_chunk_key]['last_visited'] = time.time()
+	
+	_pos_in_chunk = maps.get_open_position_in_chunk(life['map'], _interesting_chunks.keys()[0])
+	
+	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)

@@ -367,6 +367,19 @@ def get_collision_map(map_array,start,end,mark=1):
 def get_chunk(chunk_id):
 	return CHUNK_MAP[chunk_id]
 
+def get_open_position_in_chunk(source_map, chunk_id):
+	_chunk = get_chunk(chunk_id)
+	
+	for x1 in range(SETTINGS['chunk size']):
+		for y1 in range(SETTINGS['chunk size']):
+			x = x1+_chunk['pos'][0]
+			y = y1+_chunk['pos'][1]
+			
+			if source_map[x][y][2] and not source_map[x][y][3]:
+				return (x, y)
+	
+	return False
+
 def update_chunk_map(source_map):
 	_stime = time.time()
 	_chunk_map = {}
