@@ -13,7 +13,8 @@ def listen(life):
 	
 	for event in life['heard'][:]:
 		if not event['from']['id'] in life['know']:
-			logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
+			pass
+			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
 			if speech.consider(life,event['from'],'surrendered'):

@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import alife_collect_items
+import alife_discover
 import alife_explore
 import alife_hidden
 import alife_talk
@@ -22,7 +23,8 @@ MODULES = [alife_hide,
 	alife_hidden,
 	alife_collect_items,
 	alife_talk,
-	alife_explore]
+	alife_explore,
+	alife_discover]
 
 def think(life, source_map):
 	sight.look(life)

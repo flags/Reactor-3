@@ -1,8 +1,11 @@
 import life as lfe
 
+import maps
+
+import numbers
 import time
 
-def find_best_chunk(life):
+def find_best_known_chunk(life):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
@@ -29,3 +32,41 @@ def find_best_chunk(life):
 		return False
 	
 	return _best_chunk['chunk_key']
+
+def find_best_unknown_chunk(life, chunks):
+	_best_chunk = {'distance': 99999, 'chunk_key': None}
+	for chunk_key in chunks:
+		_chunk_pos = [int(value) for value in chunk_key.split(',')]
+		_distance = numbers.distance(life['pos'], _chunk_pos)
+		
+		if not can_see_chunk(life, chunk_key):
+			print 'Cant see yah boss'
+			continue
+		
+		if _distance<_best_chunk['distance']:
+			_best_chunk['distance'] = _distance
+			_best_chunk['chunk_key'] = chunk_key
+		
+	if not _best_chunk['chunk_key']:
+		return False
+	
+	return _best_chunk['chunk_key']
+
+def can_see_chunk(life, chunk_id):
+	chunk = maps.get_chunk(chunk_id)
+	
+	for pos in chunk['ground']:
+		if lfe.can_see(life, pos):
+			return True
+	
+	return False
+
+def get_walkable_areas(life, chunk_id):
+	chunk = maps.get_chunk(chunk_id)
+	_walkable = []
+	
+	for pos in chunk['ground']:
+		if lfe.can_see(life, pos):
+			_walkable.append(pos)
+	
+	return _walkable

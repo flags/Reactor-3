@@ -346,7 +346,7 @@ def create_conversation(life,gist,say=None,action=None,**kvargs):
 	
 	create_and_update_self_snapshot(life)
 
-def get_surrounding_chunks(life, distance=1):
+def get_surrounding_unknown_chunks(life, distance=1):
 	_current_chunk_id = get_current_chunk_id(life)
 	_surrounding_chunks = []
 	_start_x,_start_y = [int(value) for value in _current_chunk_id.split(',')]
@@ -365,7 +365,12 @@ def get_surrounding_chunks(life, distance=1):
 			if _next_y<0 or _next_y>=MAP_SIZE[1]:
 				continue
 			
-			_surrounding_chunks.append('%s,%s' % (_next_x, _next_y))
+			_chunk_key = '%s,%s' % (_next_x, _next_y)
+			
+			if _chunk_key in life['known_chunks']:
+				continue
+			
+			_surrounding_chunks.append(_chunk_key)
 	
 	return _surrounding_chunks
 
@@ -1705,7 +1710,7 @@ def draw_life_info():
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
 		_held_string = language.prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Holding: %s' % _held_string, 'color': white})
+		_info.append({'text': 'Holding %s' % _held_string, 'color': white})
 	else:
 		_info.append({'text': 'You aren\'t holding anything.',
 			'color': Color(125,125,125)})

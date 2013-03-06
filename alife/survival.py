@@ -94,7 +94,7 @@ def explore_known_chunks(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.	
-	_chunk_key = chunks.find_best_chunk(life)	
+	_chunk_key = chunks.find_best_known_chunk(life)	
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
@@ -102,5 +102,26 @@ def explore_known_chunks(life):
 		return False
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])
+	lfe.clear_actions(life)
+	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+
+def explore_unknown_chunks(life):
+	_unknown_chunks = []
+	for chunk_id in lfe.get_surrounding_unknown_chunks(life):
+		if chunks.can_see_chunk(life, chunk_id):
+			_unknown_chunks.append(chunk_id)
+	
+	_chunk_key = chunks.find_best_unknown_chunk(life, _unknown_chunks)
+	
+	if not _chunk_key:
+		return False
+	
+	_chunk = maps.get_chunk(_chunk_key)
+	
+	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
+		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
+		return False
+	
+	_pos_in_chunk = random.choice(chunks.get_walkable_areas(life, _chunk_key))
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)

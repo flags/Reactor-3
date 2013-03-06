@@ -77,14 +77,14 @@ def judge(life, target):
 	
 	return _like-_dislike
 
-def judge_chunk(life, chunk_id, long=True):
+def judge_chunk(life, chunk_id, long=False):
 	chunk = CHUNK_MAP[chunk_id]
 	
 	if long:
 		_max_score = SETTINGS['chunk size']*6
 		_distance = (numbers.distance(life['pos'], chunk['pos'])/SETTINGS['chunk size'])
 	else:
-		_max_score = SETTINGS['chunk size']*3
+		_max_score = 0
 		_distance = 0
 	
 	_initial = False
@@ -100,7 +100,7 @@ def judge_chunk(life, chunk_id, long=True):
 		
 		if lfe.is_in_chunk(_life, chunk_id):
 			if _life['id'] in life['know']:
-				_score += lfe.get_known_life(life, _life['id'])['score']*1.5
+				_score += lfe.get_known_life(life, _life['id'])['score']*.5
 	
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
