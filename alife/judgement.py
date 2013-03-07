@@ -15,14 +15,16 @@ import time
 def judge_item(life, item):
 	_score = 0
 	
-	_has_weapon = combat.is_weapon_equipped(life)
+	#_has_weapon = combat.is_weapon_equipped(life)
 	
-	if not _has_weapon and item['type'] == 'gun':
+	#if not _has_weapon and item['type'] == 'gun':
+	#	_score += 30
+	#elif _has_weapon and item['type'] == _has_weapon['feed'] and item['ammotype'] == _has_weapon['ammotype']:
+	#	_score += 20	
+	if brain.get_flag(life, 'no_weapon') and item['type'] == 'gun':
 		_score += 30
-	elif _has_weapon and item['type'] == _has_weapon['feed'] and item['ammotype'] == _has_weapon['ammotype']:
-		_score += 20
-	else:
-		_score += 10
+	elif brain.get_flag(life, 'no_backpack') and item['type'] == 'backpack':
+		_score += 30
 	
 	return _score
 
@@ -86,8 +88,8 @@ def judge_chunk(life, chunk_id, long=False):
 		_max_score = SETTINGS['chunk size']*6
 		_distance = (numbers.distance(life['pos'], chunk['pos'])/SETTINGS['chunk size'])
 	else:
-		_max_score = 0
-		_distance = 0
+		_max_score = SETTINGS['chunk size']*4
+		_distance = (numbers.distance(life['pos'], chunk['pos'])/float(SETTINGS['chunk size']))
 	
 	_initial = False
 	if not chunk_id in life['known_chunks']:
@@ -108,10 +110,8 @@ def judge_chunk(life, chunk_id, long=False):
 		_score += len(chunk['items'])
 	else:
 		for item in chunk['items']:
-			#	_score += 1 #need score
 			_item = brain.remember_known_item(life, item)
-			
-			print _item['score']
+			_score += _item['score']
 	
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score

@@ -16,18 +16,7 @@ def loot(life):
 	#What do we need to do?
 	#	- Get items?
 	#	- Find shelter?
-	
 	manage_inventory(life)
-	
-	if combat.has_weapon(life):
-		brain.unflag(life, 'no_weapon')
-	else:
-		brain.flag(life, 'no_weapon')
-	
-	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
-		brain.unflag(life, 'no_backpack')
-	else:
-		brain.flag(life, 'no_backpack')
 	
 	if brain.get_flag(life, 'no_weapon'):
 		_nearby_weapons = sight.find_known_items(life, matches=[{'type': 'gun'}])
@@ -106,18 +95,12 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 
 def explore_unknown_chunks(life):
-	_unknown_chunks = []
-	for chunk_id in lfe.get_surrounding_unknown_chunks(life):
-		if chunks.can_see_chunk(life, chunk_id):
-			_unknown_chunks.append(chunk_id)
-	
-	_chunk_key = chunks.find_best_unknown_chunk(life, _unknown_chunks)
+	_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_unknown_chunks(life))
 	
 	if not _chunk_key:
 		return False
 	
 	_chunk = maps.get_chunk(_chunk_key)
-	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
 		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
 		return False

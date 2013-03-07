@@ -69,6 +69,17 @@ def remember_known_item(life, item_uid):
 	
 	return False
 
+def generate_needs(life):
+	if combat.has_weapon(life):
+		unflag(life, 'no_weapon')
+	else:
+		flag(life, 'no_weapon')
+	
+	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
+		unflag(life, 'no_backpack')
+	else:
+		flag(life, 'no_backpack')
+
 def understand(life,source_map):
 	_alife_seen = []
 	_alife_not_seen = []
@@ -124,6 +135,8 @@ def understand(life,source_map):
 			life['know'][_not_seen]['score'] = _score
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
+	
+	generate_needs(life)
 	
 	_modules_run = False
 	for module in MODULES:

@@ -54,6 +54,15 @@ def find_best_unknown_chunk(life, chunks):
 	
 	return _best_chunk['chunk_key']
 
+def find_unknown_chunks(life):
+	_unknown_chunks = []
+	
+	for chunk_id in lfe.get_surrounding_unknown_chunks(life):
+		if can_see_chunk(life, chunk_id):
+			_unknown_chunks.append(chunk_id)
+	
+	return _unknown_chunks
+
 def is_in_chunk(life, chunk_id):
 	_chunk = maps.get_chunk(chunk_id)
 	
