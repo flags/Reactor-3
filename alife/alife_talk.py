@@ -1,4 +1,5 @@
 from globals import *
+import life as lfe
 
 import judgement
 import movement
@@ -18,11 +19,14 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not alife_seen:
 		return False
 	
+	if life['state'] in ['hiding', 'hidden']:
+		return False
+	
 	return STATE_UNCHANGED
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Add these two values to an array called PANIC_STATES
-	if not life['state'] in ['hiding', 'hidden'] and alife_seen:
+	if alife_seen:
 		_talk_to = [alife['who'] for alife in alife_seen if not 'tried_to_greet' in alife['who']['consider']]
 		
 		if len(_talk_to)>=2:
@@ -32,5 +36,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		elif _talk_to:
 			speech.communicate(life, 'greeting', target=_talk_to[0]['life'])
 			speech.consider(life, _talk_to[0]['life'], 'tried_to_greet')
+		
+			#if _talk_to[0]['life']['state'] in ['idle']:
+			#	lfe.clear_actions(life)
+		
 			
 			

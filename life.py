@@ -391,7 +391,7 @@ def hear(life, what):
 					life=life))
 		
 		if _menu:		
-			life['contexts'].append({'items': _menu})
+			life['contexts'].append({'items': _menu,'from': what['from']})
 			life['shoot_timer'] = 30
 			gfx.message('Context action added to queue.', style='important')
 	
@@ -1272,8 +1272,9 @@ def direct_add_item_to_inventory(life,item,container=None):
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
-	
 	life['inventory'][str(_id)] = item
+	
+	maps.refresh_chunk(get_current_chunk_id(item))
 	
 	if 'max_capacity' in item:
 		logging.debug('Container found in direct_add')
@@ -1557,6 +1558,10 @@ def show_life_info(life):
 def draw_life():
 	for life in LIFE:
 		_icon = tick_animation(life)
+		
+		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
+			if time.time()%1>=0.5:
+				_icon = '?'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:

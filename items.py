@@ -225,7 +225,6 @@ def tick_all_items(MAP):
 		
 		if _break:
 			maps.refresh_chunk(life.get_current_chunk_id(item))
-			print 'REFRESHED DUE TO STOP'
 			continue
 		
 		item['pos'][0] = int(round(item['realpos'][0]))
