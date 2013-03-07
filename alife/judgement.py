@@ -2,9 +2,11 @@ from globals import *
 
 import life as lfe
 
-import combat
-
 import weapons
+import chunks
+import combat
+import brain
+
 import logging
 import numbers
 import maps
@@ -98,9 +100,18 @@ def judge_chunk(life, chunk_id, long=False):
 		if _life == life:
 			continue
 		
-		if lfe.is_in_chunk(_life, chunk_id):
+		if chunks.is_in_chunk(_life, chunk_id):
 			if _life['id'] in life['know']:
 				_score += lfe.get_known_life(life, _life['id'])['score']*.5
+	
+	if long:
+		_score += len(chunk['items'])
+	else:
+		for item in chunk['items']:
+			#	_score += 1 #need score
+			_item = brain.remember_known_item(life, item)
+			
+			print _item['score']
 	
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score

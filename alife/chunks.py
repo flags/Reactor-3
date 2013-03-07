@@ -54,6 +54,15 @@ def find_best_unknown_chunk(life, chunks):
 	
 	return _best_chunk['chunk_key']
 
+def is_in_chunk(life, chunk_id):
+	_chunk = maps.get_chunk(chunk_id)
+	
+	if _chunk['pos'][0]+SETTINGS['chunk size'] > life['pos'][0] >= _chunk['pos'][0]\
+		and _chunk['pos'][1]+SETTINGS['chunk size'] > life['pos'][1] >= _chunk['pos'][1]:
+			return True
+	
+	return False
+
 def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	

@@ -52,7 +52,7 @@ def flag_item(life,item,flag):
 	
 	return False
 
-def remember_item(life,item):
+def remember_item(life, item):
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item,
 			'score': judgement.judge_item(life,item),
@@ -60,6 +60,12 @@ def remember_item(life,item):
 			'flags': []}
 		
 		return True
+	
+	return False
+
+def remember_known_item(life, item_uid):
+	if item_uid in life['know_items']:
+		return life['know_items'][item_uid]
 	
 	return False
 

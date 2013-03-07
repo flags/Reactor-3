@@ -3,6 +3,8 @@ from tiles import *
 
 import life as lfe
 
+import alife
+
 import graphics as gfx
 import maputils
 import logging
@@ -375,10 +377,22 @@ def refresh_chunk(chunk_id):
 	
 	_life = []
 	for life in LIFE:
-		if lfe.is_in_chunk(life, chunk_id):
+		if alife.chunks.is_in_chunk(life, chunk_id):
 			_life.append(life['id'])
 	
-	chunk['digest'] = '%s-P=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life)
+	_items = []
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
+		if item.has_key('id'):
+			continue
+		
+		if alife.chunks.is_in_chunk(item, chunk_id):
+			_items.append(_item)
+		
+	chunk['items'] = _items[:]
+	
+	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
 	broadcast_chunk_change(chunk_id)
 
 def broadcast_chunk_change(chunk_id):
@@ -417,6 +431,7 @@ def update_chunk_map(source_map):
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
 				'life': 0,
+				'items': [],
 				'digest': None}
 			
 			_tiles = {}

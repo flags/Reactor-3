@@ -97,7 +97,7 @@ def explore_known_chunks(life):
 	_chunk_key = chunks.find_best_known_chunk(life)	
 	_chunk = maps.get_chunk(_chunk_key)
 	
-	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
+	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
 		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
 		return False
 	
@@ -118,7 +118,7 @@ def explore_unknown_chunks(life):
 	
 	_chunk = maps.get_chunk(_chunk_key)
 	
-	if lfe.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
+	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
 		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
 		return False
 	

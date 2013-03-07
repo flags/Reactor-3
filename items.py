@@ -1,8 +1,10 @@
 from globals import *
+
 import graphics as gfx
 import drawing
 import logging
 import numbers
+import maps
 import life
 
 try:
@@ -222,6 +224,8 @@ def tick_all_items(MAP):
 				break
 		
 		if _break:
+			maps.refresh_chunk(life.get_current_chunk_id(item))
+			print 'REFRESHED DUE TO STOP'
 			continue
 		
 		item['pos'][0] = int(round(item['realpos'][0]))
