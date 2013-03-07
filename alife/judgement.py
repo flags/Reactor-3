@@ -86,10 +86,10 @@ def judge_chunk(life, chunk_id, long=False):
 	
 	if long:
 		_max_score = SETTINGS['chunk size']*6
-		_distance = (numbers.distance(life['pos'], chunk['pos'])/SETTINGS['chunk size'])
 	else:
 		_max_score = SETTINGS['chunk size']*4
-		_distance = (numbers.distance(life['pos'], chunk['pos'])/float(SETTINGS['chunk size']))
+	
+	_distance = (numbers.distance(life['pos'], chunk['pos'])/float(SETTINGS['chunk size']))
 	
 	_initial = False
 	if not chunk_id in life['known_chunks']:
