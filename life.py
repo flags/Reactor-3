@@ -1224,6 +1224,21 @@ def get_all_inventory_items(life,matches=None):
 		
 	return _items
 
+def get_all_unequipped_items(life, check_hands=True, matches=[]):
+	_unequipped_items = []
+	
+	for entry in life['inventory']:
+		item = get_inventory_item(life,entry)
+		
+		if matches:
+			if not perform_match(item, matches):
+				continue					
+		
+		if not item_is_equipped(life,entry,check_hands=check_hands):				
+			_unequipped_items.append(entry)
+	
+	return _unequipped_items
+
 def _get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""
 	#TODO: Where's it at on the body? How long does it take to get to it?
@@ -1298,6 +1313,8 @@ def add_item_to_inventory(life,item):
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
+	
+	maps.refresh_chunk(get_current_chunk_id(item))
 	
 	if not add_item_to_storage(life,item):
 		if not can_wear_item(life,item):

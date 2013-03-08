@@ -3,12 +3,10 @@ from globals import *
 import life as lfe
 
 import survival
-import chunks
-import sight
 
 import logging
 
-STATE = 'discovering'
+STATE = 'managing'
 ENTRY_SCORE = 0
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
@@ -25,7 +23,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in ['exploring', 'looting', 'managing']:
+	if life['state'] in ['looting']:
 		return False
 	
 	if not life['state'] == STATE:
@@ -34,14 +32,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen)<0:
 		return False
 	
-	if chunks.find_best_known_chunk(life):
-		return False
-	
-	if not chunks.find_best_unknown_chunk(life, chunks.find_unknown_chunks(life)):
+	if not lfe.get_all_unequipped_items(life):
 		return False
 	
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	survival.explore_unknown_chunks(life)
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
+	survival.manage_inventory(life)
 	

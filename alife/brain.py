@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import alife_collect_items
+import alife_manage_items
 import alife_discover
 import alife_explore
 import alife_hidden
@@ -24,7 +25,8 @@ MODULES = [alife_hide,
 	alife_collect_items,
 	alife_talk,
 	alife_explore,
-	alife_discover]
+	alife_discover,
+	alife_manage_items]
 
 def think(life, source_map):
 	sight.look(life)
@@ -57,6 +59,7 @@ def remember_item(life, item):
 		life['know_items'][item['uid']] = {'item': item,
 			'score': judgement.judge_item(life,item),
 			'last_seen_at': item['pos'][:],
+			'last_seen_time': 0,
 			'flags': []}
 		
 		return True

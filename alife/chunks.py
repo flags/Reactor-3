@@ -42,7 +42,7 @@ def find_best_unknown_chunk(life, chunks):
 		_distance = numbers.distance(life['pos'], _chunk_center)
 		
 		if not can_see_chunk(life, chunk_key):
-			print 'Cant see yah boss'
+			print 'Cant see yah, boss'
 			continue
 		
 		if _distance<_best_chunk['distance']:

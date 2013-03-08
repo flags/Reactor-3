@@ -1,7 +1,19 @@
 from globals import *
+
+import items
 import tiles
+import life
 import maps
 import time
+
+RECRUIT_ITEMS = ['leather backpack', 'sneakers']
+
+def generate_life(source_map, amount=1):
+	for i in range(amount):
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[50,50-(i*10),2])
+		
+		for item in RECRUIT_ITEMS:
+			life.add_item_to_inventory(alife, items.create_item(item))
 
 def generate_structure_map(source_map):
 	_buildings = []
@@ -48,8 +60,3 @@ def generate_structure_map(source_map):
 			_buildings.append(_walls)
 	
 	return _buildings
-			
-_stime = time.time()
-MAP = maps.load_map('map1.dat')
-print len(generate_structure_map(MAP))
-print time.time()-_stime
