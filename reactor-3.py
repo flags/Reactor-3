@@ -117,7 +117,7 @@ items.create_item('glock',position=[40,35,2])
 #for i in range(17):
 #	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-worldgen.generate_world(MAP)
+worldgen.generate_world(MAP, simulate_ticks=0)
 
 CURRENT_UPS = UPS
 

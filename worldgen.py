@@ -11,31 +11,26 @@ import time
 RECRUIT_ITEMS = ['sneakers']
 
 class Runner(threading.Thread):
-	def __init__(self, function, source_map):
+	def __init__(self, function, source_map, amount):
 		self.function = function
 		self.source_map = source_map
+		self.amount = amount
 		self.running = True
 		
 		threading.Thread.__init__(self)
 	
 	def run(self):
-		self.function(self.source_map)
+		self.function(self.source_map, amount=self.amount)
 		self.running = False
 
-def generate_life(source_map, amount=1):
-	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[50,50-(i*10),2])
-		
-		for item in RECRUIT_ITEMS:
-			life.add_item_to_inventory(alife, items.create_item(item))
 
-def generate_world(source_map):
+def generate_world(source_map, life=1, simulate_ticks=1000):
 	console_print(0, 0, 0, 'Generating initial life...')
 	console_flush()
 	
-	generate_life(source_map)
+	generate_life(source_map, amount=life)
 	
-	_r = Runner(simulate_life, source_map)
+	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 	_r.start()
 	
 	while _r.running:
@@ -44,10 +39,17 @@ def generate_world(source_map):
 	
 	create_player(source_map)
 
-def simulate_life(source_map, steps=1000):
+def generate_life(source_map, amount=1):
+	for i in range(amount):
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[50,50-(i*10),2])
+		
+		for item in RECRUIT_ITEMS:
+			life.add_item_to_inventory(alife, items.create_item(item))
+
+def simulate_life(source_map, amount=1000):
 	sys_set_fps(9999)
 
-	for i in range(steps):
+	for i in range(amount):
 		logic.tick_all_objects(source_map)
 
 	sys_set_fps(FPS)
@@ -58,6 +60,8 @@ def create_player(source_map):
 		map=source_map,
 		position=[25,40,2])
 	PLAYER['player'] = True
+	
+	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER
