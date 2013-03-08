@@ -444,8 +444,9 @@ def say(life,text,action=False,volume=30):
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
-	if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
-		gfx.message(text,style=_style)
+	if SETTINGS['following']:
+		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
+			gfx.message(text,style=_style)
 
 def memory(life,memory,**kvargs):
 	_entry = {'text': memory}

@@ -8,15 +8,16 @@ from tiles import *
 
 import graphics as gfx
 import maputils
+import worldgen
 import drawing
 import logging
 import weapons
 import effects
 import numbers
 import bullets
-import worldgen
 import random
 import menus
+import logic
 import items
 import life
 import time
@@ -69,27 +70,11 @@ def move_camera(pos,scroll=False):
 	CAMERA_POS[2] = pos[2]
 
 def draw_targeting():
-	if PLAYER['targeting']:
+	if SETTINGS['controlling'] and SETTINGS['controlling']['targeting']:
 		
 		SELECTED_TILES[0] = []
-		for pos in drawing.diag_line(PLAYER['pos'],PLAYER['targeting']):
+		for pos in drawing.diag_line(SETTINGS['controlling']['pos'],SETTINGS['controlling']['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
-
-def tick_all_objects():
-	if SETTINGS['controlling']['targeting'] and SETTINGS['controlling']['shoot_timer']:
-		SETTINGS['controlling']['shoot_timer']-=1
-		return False
-	
-	if SETTINGS['controlling']['contexts'] and SETTINGS['controlling']['shoot_timer']:
-		SETTINGS['controlling']['shoot_timer'] -= 1
-		return False
-	
-	items.tick_all_items(MAP)
-	life.tick_all_life(MAP)
-	bullets.tick_bullets(MAP)
-	#effects.tick_effects()
-	
-	return True
 
 LIGHTS.append({'x': 12,'y': 20,'z': 2,'brightness': 50.0})
 
@@ -99,15 +84,6 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 #_test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
 #_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
-PLAYER = life.create_life('Human',name=['Tester','Toaster'],map=MAP,position=[25,40,2])
-PLAYER['player'] = True
-
-#import alife.judgement
-
-#alife.judgement.judge_all_chunks(_test)
-
-SETTINGS['controlling'] = PLAYER
-SETTINGS['following'] = PLAYER#_test
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -130,28 +106,29 @@ _i11 = items.create_item('glock', position=[10,5,2])
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-life.add_item_to_inventory(PLAYER,_i1)
-life.add_item_to_inventory(PLAYER,_i2)
-life.add_item_to_inventory(PLAYER,_i3)
-life.add_item_to_inventory(PLAYER,_i5)
-life.add_item_to_inventory(PLAYER,_i6)
-life.add_item_to_inventory(PLAYER,_i7)
-life.add_item_to_inventory(PLAYER,_i8)
+#life.add_item_to_inventory(PLAYER,_i1)
+#life.add_item_to_inventory(PLAYER,_i2)
+#life.add_item_to_inventory(PLAYER,_i3)
+#life.add_item_to_inventory(PLAYER,_i5)
+#life.add_item_to_inventory(PLAYER,_i6)
+#life.add_item_to_inventory(PLAYER,_i7)
+#life.add_item_to_inventory(PLAYER,_i8)
 
-for i in range(17):
-	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
+#for i in range(17):
+#	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
 
-worldgen.generate_life(MAP)
+worldgen.generate_world(MAP)
 
 CURRENT_UPS = UPS
+
 
 while SETTINGS['running']:
 	get_input()
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(PLAYER):
-		tick_all_objects()
+	while life.get_highest_action(SETTINGS['controlling']):
+		logic.tick_all_objects(MAP)
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -161,7 +138,7 @@ while SETTINGS['running']:
 			break
 	
 	if not _played_moved:
-		tick_all_objects()
+		logic.tick_all_objects(MAP)
 	
 	draw_targeting()
 	
@@ -178,7 +155,7 @@ while SETTINGS['running']:
 	
 	LOS_BUFFER[0] = maps._render_los(MAP,SETTINGS['following']['pos'],cython=CYTHON_ENABLED)
 	
-	if PLAYER['dead']:
+	if  SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
 		_col = 255-int(round(FADE_TO_WHITE[0]))*2
 		

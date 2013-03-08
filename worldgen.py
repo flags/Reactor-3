@@ -1,12 +1,26 @@
 from globals import *
 
+import threading
+import logic
 import items
 import tiles
 import life
 import maps
 import time
 
-RECRUIT_ITEMS = ['leather backpack', 'sneakers']
+RECRUIT_ITEMS = ['sneakers']
+
+class Runner(threading.Thread):
+	def __init__(self, function, source_map):
+		self.function = function
+		self.source_map = source_map
+		self.running = True
+		
+		threading.Thread.__init__(self)
+	
+	def run(self):
+		self.function(self.source_map)
+		self.running = False
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
@@ -14,6 +28,39 @@ def generate_life(source_map, amount=1):
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
+
+def generate_world(source_map):
+	console_print(0, 0, 0, 'Generating initial life...')
+	console_flush()
+	
+	generate_life(source_map)
+	
+	_r = Runner(simulate_life, source_map)
+	_r.start()
+	
+	while _r.running:
+		console_print(0, 0, 1, 'Simulating world: %s' % WORLD_INFO['ticks'])
+		console_flush()
+	
+	create_player(source_map)
+
+def simulate_life(source_map, steps=1000):
+	sys_set_fps(9999)
+
+	for i in range(steps):
+		logic.tick_all_objects(source_map)
+
+	sys_set_fps(FPS)
+
+def create_player(source_map):
+	PLAYER = life.create_life('Human',
+		name=['Tester','Toaster'],
+		map=source_map,
+		position=[25,40,2])
+	PLAYER['player'] = True
+
+	SETTINGS['controlling'] = PLAYER
+	SETTINGS['following'] = PLAYER
 
 def generate_structure_map(source_map):
 	_buildings = []

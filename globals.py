@@ -19,6 +19,7 @@ PREFAB_CURSOR = [0,0]
 
 #Map stuff
 CHUNK_MAP = {}
+WORLD_INFO = {'ticks': 0}
 
 #Return values
 STATE_CHANGE = 2
