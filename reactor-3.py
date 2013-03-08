@@ -121,7 +121,6 @@ worldgen.generate_world(MAP, simulate_ticks=0)
 
 CURRENT_UPS = UPS
 
-
 while SETTINGS['running']:
 	get_input()
 	handle_input()
@@ -183,3 +182,6 @@ while SETTINGS['running']:
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
+	
+	if time.time()%1>=.9:
+		print sys_get_fps()
