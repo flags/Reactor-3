@@ -74,7 +74,7 @@ def draw_targeting():
 		
 		SELECTED_TILES[0] = []
 		for pos in drawing.diag_line(SETTINGS['controlling']['pos'],SETTINGS['controlling']['targeting']):
-			SELECTED_TILES[0].append((pos[0],pos[1],PLAYER['pos'][2]))
+			SELECTED_TILES[0].append((pos[0],pos[1],SETTINGS['controlling']['pos'][2]))
 
 LIGHTS.append({'x': 12,'y': 20,'z': 2,'brightness': 50.0})
 
@@ -182,6 +182,3 @@ while SETTINGS['running']:
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
-	
-	if time.time()%1>=.9:
-		print sys_get_fps()

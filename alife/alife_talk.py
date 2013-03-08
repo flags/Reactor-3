@@ -36,7 +36,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		elif _talk_to:
 			speech.communicate(life, 'greeting', target=_talk_to[0]['life'])
 			speech.consider(life, _talk_to[0]['life'], 'tried_to_greet')
-		
+			
 			#if _talk_to[0]['life']['state'] in ['idle']:
 			#	lfe.clear_actions(life)
 		

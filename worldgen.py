@@ -8,7 +8,7 @@ import life
 import maps
 import time
 
-RECRUIT_ITEMS = ['sneakers']
+RECRUIT_ITEMS = ['sneakers', 'glock', '9x19mm magazine', '9x19mm round']
 
 class Runner(threading.Thread):
 	def __init__(self, function, source_map, amount):

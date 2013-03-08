@@ -151,6 +151,10 @@ def understand(life,source_map):
 		
 		if _return:
 			module.tick(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+			
+			if _return == RETURN_SKIP:
+				continue
+			
 			_modules_run = True
 	
 	if not _modules_run:

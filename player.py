@@ -166,6 +166,9 @@ def handle_input():
 		
 		_throwable = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],show_equipped=False,check_hands=True)
 		
+		if not _throwable:
+			return False
+		
 		_i = menus.create_menu(title='Throw',
 			menu=_throwable,
 			padding=(1,1),
