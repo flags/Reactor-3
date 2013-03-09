@@ -471,7 +471,7 @@ def update_chunk_map(source_map):
 				_chunk_map[_chunk_key]['type'] = 'other'
 	
 	CHUNK_MAP.update(_chunk_map)
-	logging.info('Chunk map updated in %s seconds.' % (time.time()-_stime))
+	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 			
 def smooth_chunk_map():
 	_stime = time.time()
@@ -498,9 +498,11 @@ def smooth_chunk_map():
 					
 					_neighbor_chunk_key = '%s,%s' % (x2, y2)
 					_neighbor_chunk = _chunk_map[_neighbor_chunk_key]
-					_neighbors.append(_neighbor_chunk)
+					_neighbors.append(_neighbor_chunk_key)
 				
-				for _neighbor_chunk in _neighbors:
+				for _neighbor_chunk_key in _neighbors:
+					_neighbor_chunk = _chunk_map[_neighbor_chunk_key]
+					
 					if _current_chunk['type'] == _neighbor_chunk['type']:
 						if not _neighbor_chunk_key in _current_chunk['neighbors']:
 							_current_chunk['neighbors'].append(_neighbor_chunk_key)
@@ -510,3 +512,53 @@ def smooth_chunk_map():
 	
 	CHUNK_MAP.update(_chunk_map)	
 	logging.info('Chunk map smoothing completed in %.2f seconds (%s runs).' % (time.time()-_stime, _runs))
+
+def find_all_linked_chunks(chunk_key, check=[]):
+	_linked_chunks = []
+	_unchecked_chunks = [chunk_key]
+	
+	_check = []
+	for _entry in check:
+		_check.extend(_entry)
+	
+	if chunk_key in _check:
+		return []
+	
+	while _unchecked_chunks:
+		_current_chunk_key = _unchecked_chunks.pop()
+		_linked_chunks.append(_current_chunk_key)
+		_current_chunk = get_chunk(_current_chunk_key)
+		
+		for neighbor_chunk_key in _current_chunk['neighbors']:
+			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
+				continue
+			
+			_neighbor_chunk = get_chunk(neighbor_chunk_key)
+			
+			if not _neighbor_chunk['type'] == _current_chunk['type']:
+				continue
+			
+			_unchecked_chunks.append(neighbor_chunk_key)
+	
+	return _linked_chunks
+
+def generate_reference_maps():
+	_stime = time.time()
+	
+	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
+		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+			_current_chunk_key = '%s,%s' % (x1, y1)
+			_current_chunk = get_chunk(_current_chunk_key)
+			
+			if _current_chunk['type'] == 'road':
+				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['roads'])
+				if _ret:
+					REFERENCE_MAP['roads'].append(_ret)
+			elif _current_chunk['type'] == 'building':
+				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['buildings'])
+				if _ret:
+					REFERENCE_MAP['buildings'].append(_ret)
+	
+	logging.info('Reference map created in %.2f seconds.' % (time.time()-_stime))
+	logging.info('\tRoads:\t\t %s' % (len(REFERENCE_MAP['roads'])))
+	logging.info('\tBuildings:\t %s' % (len(REFERENCE_MAP['buildings'])))

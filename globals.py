@@ -21,6 +21,8 @@ TICKER = ['\\', '|', '/', '-']
 #Map stuff
 CHUNK_MAP = {}
 WORLD_INFO = {'ticks': 0}
+REFERENCE_MAP = {'roads': [],
+	'buildings': []}
 
 #Return values
 STATE_CHANGE = 2

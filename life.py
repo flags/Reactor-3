@@ -1713,7 +1713,9 @@ def draw_life_info():
 	if not 'player' in life and life['state']:
 		_name_mods.append('(%s)' % life['state'])
 	
-	_name_mods.append(life['stance'].title())	
+	_name_mods.append(life['stance'].title())
+	_name_mods.append(get_current_chunk(life)['type'])
+	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
 	
 	console_set_default_foreground(0,BORDER_COLOR)
 	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
