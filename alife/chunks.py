@@ -37,6 +37,7 @@ def find_best_known_chunk(life):
 
 def find_best_unknown_chunk(life, chunks):
 	_best_chunk = {'distance': 99999, 'chunk_keys': []}
+	_building_found = False
 	for chunk_key in chunks:
 		_chunk_pos = [int(value) for value in chunk_key.split(',')]
 		_chunk_center = (_chunk_pos[0]+SETTINGS['chunk size'], _chunk_pos[1]+SETTINGS['chunk size'])
@@ -46,14 +47,21 @@ def find_best_unknown_chunk(life, chunks):
 			print 'Cant see yah, boss'
 			continue
 		
-		if maps.get_chunk(chunk_key)['type'] == 'road':
-			print 'ROADDDDDDDDDDDDDDDDDDDdd'
+		if maps.get_chunk(chunk_key)['type'] == 'building':
+			if not _building_found:
+				_best_chunk['chunk_keys'] = []
+				_building_found = True
+			
+			_best_chunk['chunk_keys'].append(chunk_key)
+		
+		if not _building_found:
+			_best_chunk['chunk_keys'].append(chunk_key)
 		
 		#if _distance<=_best_chunk['distance']:
 		#	_best_chunk['distance'] = _distance
 			
 		#	if _distance == _best_chunk['distance']:
-		_best_chunk['chunk_keys'].append(chunk_key)
+		#_best_chunk['chunk_keys'].append(chunk_key)
 		#	else:
 		#		_best_chunk['chunk_keys'] = [chunk_key]
 		

@@ -38,15 +38,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		return False
 	
 	_score = 0
-	#print sight.find_visible_items(life)
-	#if not sight.find_visible_items(life):
-	#	return False
 	if not [item['score'] for item in sight.find_visible_items(life) if item['score']]:
 		return False
-	
-	#if not _score:
-	#	print 'nothing!!!!'
-	#	return False
 	
 	return RETURN_VALUE
 
