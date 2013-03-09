@@ -96,9 +96,10 @@ def judge_chunk(life, chunk_id, long=False):
 		if _life == life:
 			continue
 		
-		if chunks.is_in_chunk(_life, chunk_id):
-			if _life['id'] in life['know']:
-				_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		#TODO: Re-enable
+		#if chunks.is_in_chunk(_life, chunk_id):
+		#	if _life['id'] in life['know']:
+		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
 	
 	if long:
 		_score += len(chunk['items'])

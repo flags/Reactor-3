@@ -4,6 +4,7 @@ import life as lfe
 import maps
 
 import numbers
+import random
 import time
 
 def find_best_known_chunk(life):
@@ -35,7 +36,7 @@ def find_best_known_chunk(life):
 	return _best_chunk['chunk_key']
 
 def find_best_unknown_chunk(life, chunks):
-	_best_chunk = {'distance': 99999, 'chunk_key': None}
+	_best_chunk = {'distance': 99999, 'chunk_keys': []}
 	for chunk_key in chunks:
 		_chunk_pos = [int(value) for value in chunk_key.split(',')]
 		_chunk_center = (_chunk_pos[0]+SETTINGS['chunk size'], _chunk_pos[1]+SETTINGS['chunk size'])
@@ -45,14 +46,21 @@ def find_best_unknown_chunk(life, chunks):
 			print 'Cant see yah, boss'
 			continue
 		
-		if _distance<_best_chunk['distance']:
-			_best_chunk['distance'] = _distance
-			_best_chunk['chunk_key'] = chunk_key
+		if maps.get_chunk(chunk_key)['type'] == 'road':
+			print 'ROADDDDDDDDDDDDDDDDDDDdd'
 		
-	if not _best_chunk['chunk_key']:
+		#if _distance<=_best_chunk['distance']:
+		#	_best_chunk['distance'] = _distance
+			
+		#	if _distance == _best_chunk['distance']:
+		_best_chunk['chunk_keys'].append(chunk_key)
+		#	else:
+		#		_best_chunk['chunk_keys'] = [chunk_key]
+		
+	if not _best_chunk['chunk_keys']:
 		return False
 	
-	return _best_chunk['chunk_key']
+	return random.choice(_best_chunk['chunk_keys'])
 
 def find_unknown_chunks(life):
 	_unknown_chunks = []

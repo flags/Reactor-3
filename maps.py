@@ -443,27 +443,35 @@ def update_chunk_map(source_map):
 					_chunk_map[_chunk_key]['ground'].append((x2, y2))
 					_tile_id = source_map[x2][y2][2]['id']
 					
-					if _tile_id.count('grass'):
-						continue
+					#if _tile_id.count('grass'):
+					#	continue
+					
+					if _tile_id in [tile['id'] for tile in CONCRETE_TILES]:
+						_type = 'road'
+					elif _tile_id in [tile['id'] for tile in DIRT_TILES]:
+						_type = 'dirt'
+					else:
+						_type = 'other'
 					
 					if _tile_id in _tiles:
-						_tiles[_tile_id] += 1
+						_tiles[_type] += 1
 					else:
-						_tiles[_tile_id] = 1
+						_tiles[_type] = 1
 			
-			_most_common_tile = {'id': None, 'lead': 0, 'count': 0}
+			_most_common_tile = {'type': None, 'lead': 0, 'count': 0}
 			for tile in _tiles:
 				if _tiles[tile] > _most_common_tile['count']:
-					_most_common_tile['id'] = tile
+					_most_common_tile['type'] = tile
 					_most_common_tile['lead'] = _tiles[tile]-_most_common_tile['count']
 					_most_common_tile['count'] = _tiles[tile]
 			
-			if not _most_common_tile['id']:
-				_chunk_map[_chunk_key]['type'] = 'grass'
-			elif _most_common_tile['id'].count('wall'):
-				_chunk_map[_chunk_key]['type'] = 'wall'
-			else:
-				_chunk_map[_chunk_key]['type'] = 'floor'
+			_chunk_map[_chunk_key]['type'] = _most_common_tile['type']
+			#if not _most_common_tile['id']:
+			#	_chunk_map[_chunk_key]['type'] = 'grass'
+			#elif _most_common_tile['id'].count('wall'):
+			#	_chunk_map[_chunk_key]['type'] = 'wall'
+			#else:
+			#	_chunk_map[_chunk_key]['type'] = 'floor'
 	
 	CHUNK_MAP.update(_chunk_map)
 	logging.info('Chunk map updated in %s seconds.' % (time.time()-_stime))

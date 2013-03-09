@@ -1,6 +1,7 @@
 from globals import *
 
 import threading
+import logging
 import logic
 import items
 import tiles
@@ -24,9 +25,18 @@ class Runner(threading.Thread):
 		self.running = False
 
 
-def generate_world(source_map, life=1, simulate_ticks=1000):
-	console_print(0, 0, 0, 'Generating initial life...')
+def draw_world_stats():	
+	console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
+	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in LIFE]))
+	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in LIFE]))
+	console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * (WORLD_INFO['ticks']/50)))
 	console_flush()
+
+def generate_world(source_map, life=1, simulate_ticks=1000):
+	console_print(0, 0, 0, 'World Generation')
+	console_flush()
+	
+	WORLD_INFO['inittime'] = time.time()
 	
 	generate_life(source_map, amount=life)
 	
@@ -34,25 +44,21 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	_r.start()
 	
 	while _r.running:
-		console_print(0, 0, 1, 'Simulating world: %s' % WORLD_INFO['ticks'])
-		console_flush()
+		draw_world_stats()
 	
 	create_player(source_map)
+	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[50,50-(i*10),2])
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[25,50-(i*10),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
 
 def simulate_life(source_map, amount=1000):
-	sys_set_fps(9999)
-
 	for i in range(amount):
 		logic.tick_all_objects(source_map)
-
-	sys_set_fps(FPS)
 
 def create_player(source_map):
 	PLAYER = life.create_life('Human',

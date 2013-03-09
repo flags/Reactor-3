@@ -16,6 +16,7 @@ Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
+TICKER = ['\\', '|', '/', '-']
 
 #Map stuff
 CHUNK_MAP = {}

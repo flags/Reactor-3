@@ -93,31 +93,11 @@ items.initiate_item('glock')
 items.initiate_item('9x19mm_mag')
 items.initiate_item('9x19mm_round')
 
-_i1 = items.create_item('white t-shirt')
-_i2 = items.create_item('sneakers')
-_i3 = items.create_item('sneakers')
-_i5 = items.create_item('leather backpack')
-_i6 = items.create_item('blue jeans')
-_i7 = items.create_item('glock')
-_i8 = items.create_item('9x19mm magazine')
-_i9 = items.create_item('sneakers')
-_i10 = items.create_item('leather backpack')
-_i11 = items.create_item('glock', position=[10,5,2])
+#items.create_item('glock', position=[10,5,2])
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-#life.add_item_to_inventory(PLAYER,_i1)
-#life.add_item_to_inventory(PLAYER,_i2)
-#life.add_item_to_inventory(PLAYER,_i3)
-#life.add_item_to_inventory(PLAYER,_i5)
-#life.add_item_to_inventory(PLAYER,_i6)
-#life.add_item_to_inventory(PLAYER,_i7)
-#life.add_item_to_inventory(PLAYER,_i8)
-
-#for i in range(17):
-#	life.add_item_to_inventory(PLAYER,items.create_item('9x19mm round'))
-
-worldgen.generate_world(MAP, simulate_ticks=0)
+worldgen.generate_world(MAP, life=1, simulate_ticks=1000)
 
 CURRENT_UPS = UPS
 

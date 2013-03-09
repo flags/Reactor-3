@@ -32,11 +32,13 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen)<0:
 		return False
 	
-	if not lfe.get_all_unequipped_items(life):
+	#if not lfe.get_all_unequipped_items(life):
+	#	return False
+	if lfe.get_open_hands(life):
 		return False
 	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	survival.manage_inventory(life)
+	#survival.manage_inventory(life)
 	survival.manage_hands(life)
