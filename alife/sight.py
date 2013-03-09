@@ -63,7 +63,7 @@ def look(life):
 		if _can_see:
 			life['know_items'][item['uid']]['last_seen_time'] = 0
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life,item)
-		elif str(item['uid']) in life['know_items']:
+		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
 
 def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
