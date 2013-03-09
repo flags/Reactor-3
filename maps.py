@@ -476,17 +476,17 @@ def update_chunk_map(source_map):
 def smooth_chunk_map():
 	_stime = time.time()
 	_runs = 0
-	_new_chunk_map = copy.deepcopy(CHUNK_MAP)
-	_chunk_map = []
+	_chunk_map = copy.deepcopy(CHUNK_MAP)
+	_change = True
 	
-	while not _new_chunk_map == _chunk_map:
+	while _change:
+		_change = False
 		_runs += 1
-		_chunk_map = copy.deepcopy(_new_chunk_map)
 		
 		for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
 			for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
 				_current_chunk_key = '%s,%s' % (x1, y1)
-				_current_chunk = _new_chunk_map[_current_chunk_key]
+				_current_chunk = _chunk_map[_current_chunk_key]
 				_neighbors = []
 				
 				for pos in [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]:
@@ -497,14 +497,16 @@ def smooth_chunk_map():
 						continue
 					
 					_neighbor_chunk_key = '%s,%s' % (x2, y2)
-					_neighbor_chunk = _new_chunk_map[_neighbor_chunk_key]
+					_neighbor_chunk = _chunk_map[_neighbor_chunk_key]
 					_neighbors.append(_neighbor_chunk)
 				
 				for _neighbor_chunk in _neighbors:
 					if _current_chunk['type'] == _neighbor_chunk['type']:
 						if not _neighbor_chunk_key in _current_chunk['neighbors']:
 							_current_chunk['neighbors'].append(_neighbor_chunk_key)
+							_change = True
 				
-				_new_chunk_map[_current_chunk_key] = _current_chunk
+				_chunk_map[_current_chunk_key] = _current_chunk
 	
+	CHUNK_MAP.update(_chunk_map)	
 	logging.info('Chunk map smoothing completed in %s seconds (%s runs).' % (time.time()-_stime, _runs))
