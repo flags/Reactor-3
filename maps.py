@@ -509,4 +509,4 @@ def smooth_chunk_map():
 				_chunk_map[_current_chunk_key] = _current_chunk
 	
 	CHUNK_MAP.update(_chunk_map)	
-	logging.info('Chunk map smoothing completed in %s seconds (%s runs).' % (time.time()-_stime, _runs))
+	logging.info('Chunk map smoothing completed in %.2f seconds (%s runs).' % (time.time()-_stime, _runs))
