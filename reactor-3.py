@@ -59,6 +59,7 @@ except IOError:
 	maps.save_map(MAP)
 
 maps.update_chunk_map(MAP)
+maps.smooth_chunk_map()
 gfx.init_libtcod()
 create_all_tiles()
 

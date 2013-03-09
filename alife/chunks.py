@@ -47,7 +47,7 @@ def find_best_unknown_chunk(life, chunks):
 			print 'Cant see yah, boss'
 			continue
 		
-		if maps.get_chunk(chunk_key)['type'] == 'building':
+		if maps.get_chunk(chunk_key)['type'] in ['building', 'road']:
 			if not _building_found:
 				_best_chunk['chunk_keys'] = []
 				_building_found = True
