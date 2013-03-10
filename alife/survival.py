@@ -1,3 +1,4 @@
+from globals import *
 import life as lfe
 
 import judgement
@@ -24,8 +25,9 @@ def loot(life):
 		
 		if _nearby_weapons:
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+			return True
 	
-	if not brain.get_flag(life, 'no_weapon'):
+	elif not brain.get_flag(life, 'no_weapon'):
 		_ammo_matches = []
 		_feed_matches = []
 		for weapon in combat.has_weapon(life):
@@ -34,14 +36,17 @@ def loot(life):
 		
 		if sight.find_known_items(life, matches=_ammo_matches):
 			movement.collect_nearby_wanted_items(life, matches=_ammo_matches)
+			return True
 		elif sight.find_known_items(life, matches=_feed_matches):
 			movement.collect_nearby_wanted_items(life, matches=_feed_matches)
+			return True
 	
 	if brain.get_flag(life, 'no_backpack'):
 		_nearby_backpacks = sight.find_known_items(life, matches=[{'type': 'backpack'}])
 		
 		if _nearby_backpacks:
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
+			return True
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
