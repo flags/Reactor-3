@@ -196,3 +196,19 @@ Previous implementations avoided this and as a result ended up with a variety of
 This new structure defines when an action goes into effect and what conditions keep it active.
 They are intended to work in certain cases and only be triggered when all conditions are met (in a descending order.)
 Simply put, each condition is checked starting from the top, and if the ALife meets this then the function crawls down the list. If everything checks out OK then the function is run.
+
+Milestone 5-3 - Traversing the Map
+==================================
+This sub-goal establishes the methods used by ALife to traverse the map in the most efficient way possible. Since pathfinding is a relatively intense operation, abstracted map data (chunks and reference maps) will be used instead of interpreting raw data.
+
+Discovering the Map
+-------------------
+Currently, the biggest flaw in the ALife is its inability to discover the map by itself. As a general test, I've instructed the ALife to automatically go to and (roughly) path along the nearest road, but this isn't intended to be final in any sense.
+For the sake of documentation, the offending fuction is `alife.survival.explore_unknown_chunks()`. The majority of the changes needed will be done in this file along with any files containing chunk functions.
+
+Since we are dealing with abstracted data, the amount of information to parse is much smaller than normal:
+
+    Amount of tiles to parse in raw form: 22500
+    Amount of tiles to prase in abstracted form: 900
+
+We must also consider how often the ALife will be performing these tasks. With any luck, we should be able to have the ALife run any of these pathfinding operations once every 30 seconds or so, as the other ALife module will 
