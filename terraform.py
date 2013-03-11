@@ -281,7 +281,7 @@ def menu_item_selected(entry):
 	if value == 'Save':
 		maps.save_map('map1.dat',MAP)
 	elif value == 'Exit':
-		RUNNING = False
+		SETTINGS['running'] = False
 
 def menu_item_changed(entry):
 	key = entry['key']
