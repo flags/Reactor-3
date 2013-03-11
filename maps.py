@@ -447,7 +447,7 @@ def update_chunk_map(source_map):
 					
 					if _tile_id in [tile['id'] for tile in CONCRETE_TILES]:
 						_type = 'road'
-					elif _tile_id == WALL_TILE['id']:
+					elif _tile_id == WALL_TILE['id'] or _tile_id in [tile['id'] for tile in CONCRETE_FLOOR_TILES]:
 						_type = 'wall'
 					elif _tile_id in [tile['id'] for tile in DIRT_TILES]:
 						_type = 'dirt'
