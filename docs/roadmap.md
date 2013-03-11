@@ -212,4 +212,5 @@ Since we are dealing with abstracted data, the amount of information to parse is
     Amount of tiles to parse in raw form: 22500
     Amount of tiles to parse in abstracted form: 900
 
+This should give us access to just about every form of pathfinding that previous had to be avoided due to the sheer size of the current map. Granted, we'll still be using A* to find the actual paths, but these new functions will give us a vague idea of where the A* needs to be pointed at.
 
