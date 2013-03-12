@@ -1,6 +1,7 @@
 from globals import *
 import life as lfe
 
+import references
 import judgement
 import movement
 import chunks
@@ -113,7 +114,13 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 
 def explore_unknown_chunks(life):
-	_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_unknown_chunks(life))
+	_chunk_key = references.path_along_reference(life, 'roads')
+	
+	if _chunk_key:
+		_chunk = maps.get_chunk(_chunk_key)
+	
+	if not _chunk_key:
+		_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
 	
 	if not _chunk_key:
 		return False
@@ -123,6 +130,11 @@ def explore_unknown_chunks(life):
 		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
 		return False
 	
-	_pos_in_chunk = random.choice(chunks.get_walkable_areas(life, _chunk_key))
+	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
+	
+	if not _walkable_area:
+		return False
+	
+	_pos_in_chunk = random.choice(_walkable_area)
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
