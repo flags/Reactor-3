@@ -12,7 +12,10 @@ def clip(number,start,end):
 	"""Returns `number`, but makes sure it's in the range of [start..end]"""
 	return max(start, min(number, end))
 
-def distance(pos1,pos2):
+def distance(pos1, pos2, old=True):
+	if old:
+		return abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
+		
 	x_dist = abs(pos1[0]-pos2[0])
 	y_dist = abs(pos1[1]-pos2[1])
 	

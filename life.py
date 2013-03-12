@@ -226,6 +226,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
 	_life['aim_at'] = _life
+	_life['discover_direction_history'] = []
+	_life['discover_direction'] = 270
 	
 	#Various icons...
 	# expl = #chr(15)

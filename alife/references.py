@@ -29,21 +29,19 @@ def path_along_reference(life, ref_type):
 	_chunk_path_keys = []
 	
 	_directions = {}
+	SELECTED_TILES[0] = []
 	for neighbor_key in _starting_chunk['neighbors']:
 		_neighbor_pos = [int(val) for val in neighbor_key.split(',')]
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
 		
-		_cent = (lfe.get_current_chunk(life)['pos'][0]+SETTINGS['chunk size'],
-			lfe.get_current_chunk(life)['pos'][1]+SETTINGS['chunk size'])
+		_cent = (lfe.get_current_chunk(life)['pos'][0]+(SETTINGS['chunk size']/2),
+			lfe.get_current_chunk(life)['pos'][1]+(SETTINGS['chunk size']/2))
 		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = neighbor_key
+		
+		SELECTED_TILES[0].append((_cent[0],_cent[1],2))
 	
-	#if life['discover_direction'] in _directions:
-	#	#print lfe.get_current_chunk_id(life),_directions[_discover_direction],life['discover_direction']
-	#	print 'yeah'
-	#	return _directions[life['discover_direction']]
-	#else:
 	for mod in [-45, 0, 45]:
 		_new_dir = life['discover_direction']+mod
 		
@@ -51,10 +49,8 @@ def path_along_reference(life, ref_type):
 			_new_dir -= 360
 		
 		if _new_dir in _directions:
+			life['discover_direction'] = _new_dir
 			return _directions[_new_dir]
-	
-	#print 'no!'
-	print _starting_chunk_key,lfe.get_current_chunk_id(life)
 		
 	return None
 
