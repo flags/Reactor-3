@@ -1718,6 +1718,7 @@ def draw_life_info():
 	_name_mods.append(life['stance'].title())
 	_name_mods.append(get_current_chunk(life)['type'])
 	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
+	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
 	console_set_default_foreground(0,BORDER_COLOR)
 	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])

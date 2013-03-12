@@ -123,3 +123,7 @@ def judge_all_chunks(life):
 		judge_chunk(life, chunk)
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
+
+def judge_reference(life, reference):
+	#TODO: Length, 
+	pass
