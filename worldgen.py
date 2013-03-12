@@ -21,7 +21,13 @@ class Runner(threading.Thread):
 		threading.Thread.__init__(self)
 	
 	def run(self):
-		self.function(self.source_map, amount=self.amount)
+		try:
+			self.function(self.source_map, amount=self.amount)
+		except Exception as e:
+			logging.error('Crash: %s' % e)
+			SETTINGS['running'] = False
+			raise
+		
 		self.running = False
 
 
@@ -45,6 +51,9 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	
 	while _r.running:
 		draw_world_stats()
+		
+		if not SETTINGS['running']:
+			return False
 	
 	create_player(source_map)
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))

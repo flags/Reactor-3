@@ -1,10 +1,12 @@
 from globals import *
 import life as lfe
 
+import references
 import judgement
 import movement
 import chunks
 
+import numbers
 import random
 import combat
 import items
@@ -113,16 +115,34 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 
 def explore_unknown_chunks(life):
-	_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_unknown_chunks(life))
+	_chunk_key = references.path_along_reference(life, 'roads')
+	
+	if _chunk_key:
+		_chunk = maps.get_chunk(_chunk_key)
+	
+	if not _chunk_key:
+		_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
 	
 	if not _chunk_key:
 		return False
 	
-	_chunk = maps.get_chunk(_chunk_key)
-	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
-		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
+	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
+	
+	if not _walkable_area:
 		return False
 	
-	_pos_in_chunk = random.choice(chunks.get_walkable_areas(life, _chunk_key))
+	_closest_pos = {'pos': None, 'distance': -1}
+	for pos in _walkable_area:
+		_distance = numbers.distance(life['pos'], pos, old=True)
+		
+		if _distance <= 1:
+			_closest_pos['pos'] = pos
+			break
+		
+		if not _closest_pos['pos'] or _distance<_closest_pos['distance']:
+			_closest_pos['pos'] = pos
+			_closest_pos['distance'] = _distance
+	
+	_pos_in_chunk = random.choice(_walkable_area)
 	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)
