@@ -143,6 +143,5 @@ def explore_unknown_chunks(life):
 			_closest_pos['pos'] = pos
 			_closest_pos['distance'] = _distance
 	
-	_pos_in_chunk = random.choice(_walkable_area)
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)

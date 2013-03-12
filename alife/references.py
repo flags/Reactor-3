@@ -6,11 +6,14 @@ import maps
 
 import numbers
 
-def _find_nearest_reference(life, ref_type, skip_current=False):
+def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	for reference in REFERENCE_MAP[ref_type]:
 		for _key in reference:
 			if skip_current and maps.get_chunk(_key) == lfe.get_current_chunk(life):
+				continue
+			
+			if skip_known and _key in life['known_chunks']:
 				continue
 			
 			_center = [int(val)+SETTINGS['chunk size'] for val in _key.split(',')]
@@ -24,9 +27,11 @@ def _find_nearest_reference(life, ref_type, skip_current=False):
 	return _lowest
 
 def path_along_reference(life, ref_type):
-	_starting_chunk_key = _find_nearest_reference(life, ref_type)['chunk_key']
+	_starting_chunk_key = _find_nearest_reference(life, ref_type, skip_known=True)['chunk_key']
 	_starting_chunk = maps.get_chunk(_starting_chunk_key)
 	_chunk_path_keys = []
+	
+	print _starting_chunk_key
 	
 	_directions = {}
 	SELECTED_TILES[0] = []
