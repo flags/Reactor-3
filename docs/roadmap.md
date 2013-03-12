@@ -214,3 +214,6 @@ Since we are dealing with abstracted data, the amount of information to parse is
 
 This should give us access to just about every form of pathfinding that previous had to be avoided due to the sheer size of the current map. Granted, we'll still be using A* to find the actual paths, but these new functions will give us a vague idea of where the A* needs to be pointed at.
 
+Finding a Place to Be Safe
+------------------------
+Next comes the issue of finding a proper place for the ALife to camp.
