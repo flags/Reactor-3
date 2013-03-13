@@ -137,8 +137,8 @@ def judge_reference(life, reference, reference_type):
 	
 	for key in reference:
 		_chunk = maps.get_chunk(key)
-		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk_size']/2),
-			_chunk['pos'][1]+(SETTINGS['chunk_size']/2))
+		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk size']/2),
+			_chunk['pos'][1]+(SETTINGS['chunk size']/2))
 		_distance = numbers.distance(life['pos'], _chunk_center)
 		
 		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:

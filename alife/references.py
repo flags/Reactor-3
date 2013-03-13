@@ -11,7 +11,8 @@ def _find_best_reference(life, ref_type, skip_current=False, skip_known=False):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	#TODO: We need to score these...
 	for reference in REFERENCE_MAP[ref_type]:
-		judgement.judge_reference(life, reference, ref_type)
+		if judgement.judge_reference(life, reference, ref_type):
+			print judgement.judge_reference(life, reference, ref_type)
 		
 		for _key in reference:
 			if skip_current and maps.get_chunk(_key) == lfe.get_current_chunk(life):
