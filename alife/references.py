@@ -7,13 +7,10 @@ import maps
 
 import numbers
 
-def _find_best_reference(life, ref_type, skip_current=False, skip_known=False):
+def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
-	#TODO: We need to score these...
-	for reference in REFERENCE_MAP[ref_type]:
-		if judgement.judge_reference(life, reference, ref_type):
-			print judgement.judge_reference(life, reference, ref_type)
-		
+	
+	for reference in REFERENCE_MAP[ref_type]:	
 		for _key in reference:
 			if skip_current and maps.get_chunk(_key) == lfe.get_current_chunk(life):
 				continue
@@ -30,6 +27,21 @@ def _find_best_reference(life, ref_type, skip_current=False, skip_known=False):
 				_lowest['reference'] = reference
 	
 	return _lowest
+
+def _find_best_reference(life, ref_type, skip_current=False, skip_known=False):
+	_best_reference = {'reference': None, 'score': -1}
+	
+	for reference in REFERENCE_MAP[ref_type]:
+		_score = judgement.judge_reference(life, reference, ref_type)
+		
+		if not _score:
+			continue
+		
+		if not _best_reference['reference'] or _score<_best_reference['score']:
+			_best_reference['score'] = _score
+			_best_reference['reference'] = reference
+	
+	return _best_reference
 
 def path_along_reference(life, ref_type):
 	_starting_chunk_key = _find_best_reference(life, ref_type, skip_known=True)['chunk_key']
@@ -63,7 +75,12 @@ def path_along_reference(life, ref_type):
 	return None
 
 def find_nearest_road(life):
-	return _find_best_reference(life, 'roads')['reference']
+	_best_reference = _find_best_reference(life, 'roads')['reference']
+	
+	if _best_reference:
+		return _best_reference
+	
+	return _find_nearest_reference(life, 'roads')['reference']
 
 def find_nearest_building(life):
 	return _find_best_reference(life, 'buildings')
