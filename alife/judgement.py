@@ -115,6 +115,12 @@ def judge_chunk(life, chunk_id, long=False):
 	#if _initial:
 	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 
+def knows_alife(life, alife):
+	if alife['id'] in life['know']:
+		return life['know'][alife['id']]
+	
+	return False
+
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
 	_stime = time.time()
@@ -126,12 +132,28 @@ def judge_all_chunks(life):
 
 def judge_reference(life, reference, reference_type):
 	#TODO: Length
+	_score = 0
+	_closest_chunk_key = {'key': None, 'distance': -1}
+	
 	for key in reference:
 		_chunk = maps.get_chunk(key)
+		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk_size']/2),
+			_chunk['pos'][1]+(SETTINGS['chunk_size']/2))
+		_distance = numbers.distance(life['pos'], _chunk_center)
+		
+		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
+			_closest_chunk_key['key'] = key
+			_closest_chunk_key['distance'] = _distance
 		
 		for ai in _chunk['life']:
 			if ai == life['id']:
 				continue
 			
-			#print 'STRANGER in chunk', LIFE[ai]
-			
+			if lfe.can_see(life, LIFE[ai]['pos']):
+				_knows = knows_alife(life, LIFE[ai])
+				if not _knows:
+					continue
+				
+				_score += _knows['score']
+	
+	return _score
