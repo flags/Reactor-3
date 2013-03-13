@@ -65,7 +65,7 @@ def fire(life,target):
 	_fx = numbers.clip(life['facing'][0]-target[0],-1,1)
 	_fy = numbers.clip(life['facing'][1]-target[1],-1,1)
 	
-	for _life in LIFE:
+	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
 			life['aim_at'] = _life
 			break

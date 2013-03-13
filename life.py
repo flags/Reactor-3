@@ -242,7 +242,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
-	LIFE.append(_life)
+	LIFE[_life['id']] = _life
 	
 	return _life
 
@@ -325,7 +325,7 @@ def create_conversation(life,gist,say=None,action=None,**kvargs):
 	
 	logging.debug('Created new conversation: %s' % gist)
 	
-	for entry in LIFE:
+	for entry in [LIFE[i] for i in LIFE]:
 		if entry['id'] == life['id']:
 			continue
 		
@@ -1311,7 +1311,7 @@ def direct_add_item_to_inventory(life,item,container=None):
 	
 	return _id
 
-def add_item_to_inventory(life,item):
+def add_item_to_inventory(life, item):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	life['item_index'] += 1
 	_id = life['item_index']
@@ -1576,7 +1576,7 @@ def show_life_info(life):
 	return True
 
 def draw_life():
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		_icon = tick_animation(life)
 		
 		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
@@ -2080,5 +2080,5 @@ def natural_healing(life):
 					gfx.message('Your %s stops bleeding.' % _limb)
 
 def tick_all_life(source_map):
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		tick(life,source_map)
