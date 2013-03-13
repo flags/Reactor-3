@@ -2,14 +2,17 @@ from globals import *
 
 import life as lfe
 
+import judgement
 import maps
 
 import numbers
 
-def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False):
+def _find_best_reference(life, ref_type, skip_current=False, skip_known=False):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	#TODO: We need to score these...
 	for reference in REFERENCE_MAP[ref_type]:
+		judgement.judge_reference(life, reference, ref_type)
+		
 		for _key in reference:
 			if skip_current and maps.get_chunk(_key) == lfe.get_current_chunk(life):
 				continue
@@ -28,7 +31,7 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 	return _lowest
 
 def path_along_reference(life, ref_type):
-	_starting_chunk_key = _find_nearest_reference(life, ref_type, skip_known=True)['chunk_key']
+	_starting_chunk_key = _find_best_reference(life, ref_type, skip_known=True)['chunk_key']
 	_starting_chunk = maps.get_chunk(_starting_chunk_key)
 	_chunk_path_keys = []
 	
@@ -59,7 +62,7 @@ def path_along_reference(life, ref_type):
 	return None
 
 def find_nearest_road(life):
-	return _find_nearest_reference(life, 'roads')['reference']
+	return _find_best_reference(life, 'roads')['reference']
 
 def find_nearest_building(life):
-	return _find_nearest_reference(life, 'buildings')
+	return _find_best_reference(life, 'buildings')

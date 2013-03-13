@@ -130,7 +130,6 @@ def explore_unknown_chunks(life):
 	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
 	
 	if not _walkable_area:
-		print 'not walk', _chunk_key
 		return False
 	
 	_closest_pos = {'pos': None, 'distance': -1}

@@ -391,8 +391,8 @@ def refresh_chunk(chunk_id):
 		if alife.chunks.is_in_chunk(item, chunk_id):
 			_items.append(_item)
 		
-	chunk['items'] = _items[:]
-	
+	chunk['items'] = _items
+	chunk['life'] = _life
 	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
 	broadcast_chunk_change(chunk_id)
 
@@ -431,7 +431,7 @@ def update_chunk_map(source_map):
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
-				'life': 0,
+				'life': [],
 				'items': [],
 				'neighbors': [],
 				'digest': None}
