@@ -128,9 +128,10 @@ def judge_reference(life, reference, reference_type):
 	#TODO: Length
 	for key in reference:
 		_chunk = maps.get_chunk(key)
+		
 		for ai in _chunk['life']:
 			if ai == life['id']:
 				continue
 			
-			#print 'STRANGER in chunk', LIFE[ai]['name']
+			#print 'STRANGER in chunk', LIFE[ai]
 			
