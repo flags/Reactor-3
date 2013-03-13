@@ -157,5 +157,7 @@ def judge_reference(life, reference, reference_type):
 				_score += _knows['score']
 	
 	#TODO: DISTANCE!
+	#TODO: Average time since last visit (check every key in reference)
+	#TODO: For tracking last visit use world ticks
 	
 	return _score
