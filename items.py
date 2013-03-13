@@ -102,7 +102,7 @@ def create_item(name,position=[0,0,2]):
 def delete_item(item):
 	logging.debug('Deleting references to item %s' % item['uid'])
 	
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		if item['uid'] in life['know_items']:
 			logging.debug('\tDeleted reference in life #%s' % life['id'])
 			
@@ -199,7 +199,7 @@ def tick_all_items(MAP):
 				break
 			
 			if item['type'] == 'bullet':
-				for _life in LIFE:
+				for _life in [LIFE[i] for i in LIFE]:
 					if _life['id'] == item['owner']:
 						continue
 					

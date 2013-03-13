@@ -92,7 +92,7 @@ def judge_chunk(life, chunk_id, long=False):
 		_initial = True
 	
 	_score = numbers.clip(_max_score-_distance, 0, _max_score)
-	for _life in LIFE:
+	for _life in [LIFE[i] for i in LIFE]:
 		if _life == life:
 			continue
 		
@@ -132,5 +132,5 @@ def judge_reference(life, reference, reference_type):
 			if ai == life['id']:
 				continue
 			
-			print 'STRANGER in chunk', ai['name']
+			#print 'STRANGER in chunk', LIFE[ai]['name']
 			

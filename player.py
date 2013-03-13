@@ -188,7 +188,7 @@ def handle_input():
 			return True
 		else:
 			_target = None
-			for entry in LIFE:
+			for entry in [LIFE[i] for i in LIFE]:
 				if entry['pos'] == SETTINGS['controlling']['targeting']:
 					_target = entry
 					break
@@ -383,14 +383,14 @@ def handle_input():
 		print life.create_recent_history(SETTINGS['following'])
 	
 	if INPUT['y']:
-		if LIFE.index(SETTINGS['following'])<len(LIFE)-1:
+		if LIFE.keys().index(SETTINGS['following'])<len(LIFE)-1:
 			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])+1]
 			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])+1]
 
 	if INPUT['u']:
-		if LIFE.index(SETTINGS['following'])>0:
-			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])-1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])-1]
+		if LIFE.keys().index(SETTINGS['following'])>0:
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following'])-1]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling'])-1]
 	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
@@ -811,7 +811,7 @@ def handle_options_menu(entry):
 		MAP = maps.load_map('map1.dat')
 		
 		logging.warning('Updating references to map. This may take a while.')
-		for entry in LIFE:
+		for entry in [LIFE[i] for i in LIFE]:
 			entry['map'] = MAP
 		
 		logging.warning('Redrawing LOS.')

@@ -33,8 +33,8 @@ class Runner(threading.Thread):
 
 def draw_world_stats():	
 	console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
-	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in LIFE]))
-	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in LIFE]))
+	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
+	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
 	console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * (WORLD_INFO['ticks']/50)))
 	console_flush()
 

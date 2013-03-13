@@ -13,7 +13,7 @@ import time
 def look(life):
 	life['seen'] = []
 	
-	for ai in LIFE:
+	for ai in [LIFE[i] for i in LIFE]:
 		if ai['id'] == life['id']:
 			continue
 		
