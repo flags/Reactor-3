@@ -156,4 +156,6 @@ def judge_reference(life, reference, reference_type):
 				
 				_score += _knows['score']
 	
+	#TODO: DISTANCE!
+	
 	return _score
