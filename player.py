@@ -383,9 +383,9 @@ def handle_input():
 		print life.create_recent_history(SETTINGS['following'])
 	
 	if INPUT['y']:
-		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE)-1:
-			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following']['id'])+1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling']['id'])+1]
+		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+1]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+1]
 
 	if INPUT['u']:
 		if LIFE.keys().index(SETTINGS['following']['id'])>0:
