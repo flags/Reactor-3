@@ -121,7 +121,8 @@ def explore_unknown_chunks(life):
 		_chunk = maps.get_chunk(_chunk_key)
 	
 	if not _chunk_key:
-		_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
+		return False
+		#_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
 	
 	if not _chunk_key:
 		print 'no key'

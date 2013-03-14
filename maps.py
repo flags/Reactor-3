@@ -434,7 +434,8 @@ def update_chunk_map(source_map):
 				'life': [],
 				'items': [],
 				'neighbors': [],
-				'digest': None}
+				'digest': None,
+				'last_visited': 0}
 			
 			_tiles = {}
 			for y2 in range(y1, y1+SETTINGS['chunk size']):

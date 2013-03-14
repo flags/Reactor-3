@@ -145,18 +145,30 @@ def judge_reference(life, reference, reference_type):
 			_closest_chunk_key['key'] = key
 			_closest_chunk_key['distance'] = _distance
 		
+		#Judge: ALife
 		for ai in _chunk['life']:
 			if ai == life['id']:
 				continue
 			
-			if lfe.can_see(life, LIFE[ai]['pos']):
-				_knows = knows_alife(life, LIFE[ai])
-				if not _knows:
-					continue
+			if not lfe.can_see(life, LIFE[ai]['pos']):
+				continue
+			
+			_knows = knows_alife(life, LIFE[ai])
+			if not _knows:
+				continue
 				
-				_score += _knows['score']
+			_score += _knows['score']
+		
+		#How long since we've been here?
+		_last_visit = numbers.clip(abs(_chunk['last_visited']-WORLD_INFO['ticks']/FPS), 2, 99999)
+		_score += _last_visit
+		
+	#Take length into account
+	_score += len(reference)
 	
-	#TODO: DISTANCE!
+	#Subtract distance in chunks
+	_score -= _closest_chunk_key['distance']/SETTINGS['chunk size']
+	
 	#TODO: Average time since last visit (check every key in reference)
 	#TODO: For tracking last visit use world ticks
 	
