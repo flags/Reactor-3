@@ -19,7 +19,7 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 		if skip_known and _nearest_key in life['known_chunks']:
 			continue
 
-		_center = [int(val)+SETTINGS['chunk size'] for val in _nearest_key.split(',')]
+		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
 		_distance = numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -61,46 +61,51 @@ def path_along_reference(life, ref_type):
 	_best_reference = _find_best_reference(life, ref_type)['reference']
 
 	if not _best_reference:
-		#print 'no best ref found'
 		return False
 
 	_starting_chunk_key = find_nearest_key_in_reference(life, _best_reference)
 	_starting_chunk = maps.get_chunk(_starting_chunk_key)
 	_chunk_path_keys = []
-	
 	SELECTED_TILES[0] = []
 	_directions = {}
-	print _starting_chunk_key, _starting_chunk
+	
+	#print _starting_chunk_key, lfe.get_current_chunk_id(life)
 	for neighbor_key in _starting_chunk['neighbors']:
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
 		
-		_neighbor_pos = [int(val)/SETTINGS['chunk size'] for val in neighbor_key.split(',')]		
-		_cent = (lfe.get_current_chunk(life)['pos'][0]/SETTINGS['chunk size'],
-			lfe.get_current_chunk(life)['pos'][1]/SETTINGS['chunk size'])
+		_neighbor_pos = [int(val)+(SETTINGS['chunk size']/2) for val in neighbor_key.split(',')]
+		_cent = (lfe.get_current_chunk(life)['pos'][0]+(SETTINGS['chunk size']/2),
+			lfe.get_current_chunk(life)['pos'][1]+(SETTINGS['chunk size']/2))
 		
 		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
-		_directions[_neighbor_direction] = neighbor_key
+		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
 		
-		SELECTED_TILES[0].append((_cent[0]*SETTINGS['chunk size'],
-			_cent[1]*SETTINGS['chunk size'],2))
+		SELECTED_TILES[0].append((_cent[0],
+			_cent[1],2))
 	
-	#TODO: If more than one direction is found, we can choose via how many neighbors the chunk has
-	
-	for mod in [-45, 0, 45]:
+	_best_dir = {'dir': None, 'score': 0}
+	for mod in range(0, 361, 45):
 		_new_dir = life['discover_direction']+mod
-		
-		#print _new_dir, _directions.keys()
 		
 		if _new_dir>=360:
 			_new_dir -= 360
 		
 		if _new_dir in _directions:
-			life['discover_direction'] = _new_dir
-			print 'fff'
-			return _directions[_new_dir]
+			_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
+			
+			if not _best_dir['dir'] or _score>_best_dir['score']:
+				_best_dir['dir'] = _new_dir
+				_best_dir['score'] = _score
+
+	print _best_dir
+
+	if not _best_dir['dir']:
+		print 'none'
+		return None
 	
-	return None
+	life['discover_direction'] = _best_dir['dir']
+	return _directions[_best_dir['dir']]['key']
 
 def find_nearest_road(life):
 	_best_reference = _find_best_reference(life, 'roads')['reference']
