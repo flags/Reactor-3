@@ -216,4 +216,4 @@ This should give us access to just about every form of pathfinding that previous
 
 Finding a Place to Be Safe
 ------------------------
-Next comes the issue of finding a proper place for the ALife to camp.
+Next comes the issue of finding a proper place for the ALife to camp. This subgoal involves finding an appropriate way to score chunks with an appropriate safety score. Calculating this score should factor in the any friendly ALife occupying that area in addition to any other factors that ensure the chunk(s) provide adequate protection.
