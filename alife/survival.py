@@ -121,7 +121,6 @@ def explore_unknown_chunks(life):
 		_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
-		print 'no key'
 		return False
 	
 	#_chunk = maps.get_chunk(_chunk_key)
