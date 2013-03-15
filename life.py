@@ -242,7 +242,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
-	LIFE.append(_life)
+	LIFE[_life['id']] = _life
 	
 	return _life
 
@@ -325,7 +325,7 @@ def create_conversation(life,gist,say=None,action=None,**kvargs):
 	
 	logging.debug('Created new conversation: %s' % gist)
 	
-	for entry in LIFE:
+	for entry in [LIFE[i] for i in LIFE]:
 		if entry['id'] == life['id']:
 			continue
 		
@@ -1028,9 +1028,9 @@ def tick(life,source_map):
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
-		judgement.judge_chunk(life, _current_known_chunk_id)
+		judgement.judge_chunk(life, _current_known_chunk_id, visited=True)
 	else:
-		judgement.judge_chunk(life, get_current_chunk_id(life))
+		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
 		brain.think(life,source_map)
@@ -1311,7 +1311,7 @@ def direct_add_item_to_inventory(life,item,container=None):
 	
 	return _id
 
-def add_item_to_inventory(life,item):
+def add_item_to_inventory(life, item):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	life['item_index'] += 1
 	_id = life['item_index']
@@ -1576,7 +1576,7 @@ def show_life_info(life):
 	return True
 
 def draw_life():
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		_icon = tick_animation(life)
 		
 		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
@@ -1718,6 +1718,7 @@ def draw_life_info():
 	_name_mods.append(life['stance'].title())
 	_name_mods.append(get_current_chunk(life)['type'])
 	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
+	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
 	console_set_default_foreground(0,BORDER_COLOR)
 	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
@@ -2079,5 +2080,5 @@ def natural_healing(life):
 					gfx.message('Your %s stops bleeding.' % _limb)
 
 def tick_all_life(source_map):
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		tick(life,source_map)

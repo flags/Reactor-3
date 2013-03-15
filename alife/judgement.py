@@ -75,7 +75,13 @@ def judge(life, target):
 	
 	return _like-_dislike
 
-def judge_chunk(life, chunk_id, long=False):
+def knows_alife(life, alife):
+	if alife['id'] in life['know']:
+		return life['know'][alife['id']]
+	
+	return False
+
+def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	
 	if long:
@@ -92,14 +98,16 @@ def judge_chunk(life, chunk_id, long=False):
 		_initial = True
 	
 	_score = numbers.clip(_max_score-_distance, 0, _max_score)
-	for _life in LIFE:
+	for _life in [LIFE[i] for i in LIFE]:
 		if _life == life:
 			continue
-		
 		#TODO: Re-enable
 		#if chunks.is_in_chunk(_life, chunk_id):
 		#	if _life['id'] in life['know']:
 		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
+	
+	if visited:
+		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
 	
 	if long:
 		_score += len(chunk['items'])
@@ -123,3 +131,50 @@ def judge_all_chunks(life):
 		judge_chunk(life, chunk)
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
+
+def judge_reference(life, reference, reference_type):
+	#TODO: Length
+	_score = 0
+	_closest_chunk_key = {'key': None, 'distance': -1}
+	
+	for key in reference:
+		_chunk = maps.get_chunk(key)
+		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk size']/2),
+			_chunk['pos'][1]+(SETTINGS['chunk size']/2))
+		_distance = numbers.distance(life['pos'], _chunk_center)
+		
+		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
+			_closest_chunk_key['key'] = key
+			_closest_chunk_key['distance'] = _distance
+		
+		#Judge: ALife
+		for ai in _chunk['life']:
+			if ai == life['id']:
+				continue
+			
+			if not lfe.can_see(life, LIFE[ai]['pos']):
+				continue
+			
+			_knows = knows_alife(life, LIFE[ai])
+			if not _knows:
+				continue
+				
+			_score += _knows['score']
+		
+		#How long since we've been here?
+		#if key in life['known_chunks']:
+		#	_last_visit = numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
+		#	_score += _last_visit
+		#else:
+		#	_score += WORLD_INFO['ticks']/FPS
+		
+	#Take length into account
+	_score += len(reference)
+	
+	#Subtract distance in chunks
+	_score -= _closest_chunk_key['distance']/SETTINGS['chunk size']
+	
+	#TODO: Average time since last visit (check every key in reference)
+	#TODO: For tracking last visit use world ticks
+	
+	return _score

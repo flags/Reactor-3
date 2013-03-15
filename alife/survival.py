@@ -121,9 +121,11 @@ def explore_unknown_chunks(life):
 		_chunk = maps.get_chunk(_chunk_key)
 	
 	if not _chunk_key:
-		_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
+		return False
+		#_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
 	
 	if not _chunk_key:
+		print 'no key'
 		return False
 	
 	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
@@ -143,6 +145,5 @@ def explore_unknown_chunks(life):
 			_closest_pos['pos'] = pos
 			_closest_pos['distance'] = _distance
 	
-	_pos_in_chunk = random.choice(_walkable_area)
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)
