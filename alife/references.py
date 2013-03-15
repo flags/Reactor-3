@@ -69,8 +69,6 @@ def path_along_reference(life, ref_type):
 	SELECTED_TILES[0] = []
 	_directions = {}
 	
-	#print _starting_chunk_key, lfe.get_current_chunk_id(life)
-	print _starting_chunk['neighbors']
 	for neighbor_key in _starting_chunk['neighbors']:
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
