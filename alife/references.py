@@ -103,7 +103,7 @@ def path_along_reference(life, ref_type):
 			_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
 			
 			if _directions[_new_dir]['key'] in life['known_chunks']:
-				_last_visit_score = numbers.clip((WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS, 30, 9000)-30
+				_last_visit_score = 0#(WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS
 			else:
 				_last_visit_score = WORLD_INFO['ticks']/FPS
 			
