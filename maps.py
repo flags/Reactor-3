@@ -442,8 +442,9 @@ def update_chunk_map(source_map):
 					if not source_map[x2][y2][2]:
 						continue
 					
-					_chunk_map[_chunk_key]['ground'].append((x2, y2))
-					_tile_id = source_map[x2][y2][2]['id']
+					if not source_map[x2][y2][4]:
+						_chunk_map[_chunk_key]['ground'].append((x2, y2))
+						_tile_id = source_map[x2][y2][2]['id']
 					
 					if _tile_id in [tile['id'] for tile in CONCRETE_TILES]:
 						_type = 'road'

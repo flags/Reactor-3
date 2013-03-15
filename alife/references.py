@@ -38,6 +38,16 @@ def _find_best_reference(life, ref_type):
 		if not _score:
 			continue
 		
+		#TODO: We do this twice (check in path_along_reference). Not good!
+		if numbers.distance(life['pos'],
+			maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/SETTINGS['chunk size']>10:
+			
+			#print find_nearest_key_in_reference(life, reference),numbers.distance(life['pos'],
+			#	maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/SETTINGS['chunk size']
+			#pass
+			continue
+		
+		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
 			_best_reference['score'] = _score
 			_best_reference['reference'] = reference
@@ -93,16 +103,18 @@ def path_along_reference(life, ref_type):
 			_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
 			
 			if _directions[_new_dir]['key'] in life['known_chunks']:
-				_score += (WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS
+				_last_visit_score = numbers.clip((WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS, 30, 9000)-30
 			else:
-				_score += (WORLD_INFO['ticks'])/FPS
+				_last_visit_score = WORLD_INFO['ticks']/FPS
 			
-			if _best_dir['dir'] == -1 or _score>_best_dir['score']:
+			if not _last_visit_score:
+				continue
+			
+			if _score>_best_dir['score']:
 				_best_dir['dir'] = _new_dir
 				_best_dir['score'] = _score
 
 	if _best_dir['dir'] == -1:
-		print 'none'
 		return None
 	
 	life['discover_direction'] = _best_dir['dir']

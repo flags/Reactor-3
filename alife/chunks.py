@@ -79,6 +79,9 @@ def can_see_chunk(life, chunk_id):
 	return False
 
 def get_walkable_areas(life, chunk_id):
+	return maps.get_chunk(chunk_id)['ground']
+
+def get_visible_walkable_areas(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	_walkable = []
 	
