@@ -101,10 +101,10 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life == life:
 			continue
-		#TODO: Re-enable
-		#if chunks.is_in_chunk(_life, chunk_id):
-		#	if _life['id'] in life['know']:
-		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		
+		if chunks.is_in_chunk(_life, chunk_id):
+			if _life['id'] in life['know']:
+				_score += lfe.get_known_life(life, _life['id'])['score']*.5
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
