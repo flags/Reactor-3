@@ -58,11 +58,11 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
 maps.generate_reference_maps()
 gfx.init_libtcod()
-create_all_tiles()
 
 PLACING_TILE = WALL_TILE
 
