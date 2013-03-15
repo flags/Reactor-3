@@ -84,8 +84,6 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
-#_test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
-#_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -95,7 +93,6 @@ items.initiate_item('glock')
 items.initiate_item('9x19mm_mag')
 items.initiate_item('9x19mm_round')
 
-#items.create_item('glock', position=[10,5,2])
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 

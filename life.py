@@ -1028,9 +1028,9 @@ def tick(life,source_map):
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
-		judgement.judge_chunk(life, _current_known_chunk_id)
+		judgement.judge_chunk(life, _current_known_chunk_id, visited=True)
 	else:
-		judgement.judge_chunk(life, get_current_chunk_id(life))
+		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
 		brain.think(life,source_map)
