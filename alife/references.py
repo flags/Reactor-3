@@ -70,6 +70,7 @@ def path_along_reference(life, ref_type):
 	_directions = {}
 	
 	#print _starting_chunk_key, lfe.get_current_chunk_id(life)
+	print _starting_chunk['neighbors']
 	for neighbor_key in _starting_chunk['neighbors']:
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
@@ -83,8 +84,8 @@ def path_along_reference(life, ref_type):
 		SELECTED_TILES[0].append((_cent[0],
 			_cent[1],2))
 	
-	_best_dir = {'dir': None, 'score': 0}
-	for mod in range(0, 361, 45):
+	_best_dir = {'dir': -1, 'score': 0}
+	for mod in range(-45, 361, 45):
 		_new_dir = life['discover_direction']+mod
 		
 		if _new_dir>=360:
@@ -98,13 +99,11 @@ def path_along_reference(life, ref_type):
 			else:
 				_score += (WORLD_INFO['ticks'])/FPS
 			
-			if not _best_dir['dir'] or _score>_best_dir['score']:
+			if _best_dir['dir'] == -1 or _score>_best_dir['score']:
 				_best_dir['dir'] = _new_dir
 				_best_dir['score'] = _score
 
-	print _best_dir
-
-	if not _best_dir['dir']:
+	if _best_dir['dir'] == -1:
 		print 'none'
 		return None
 	

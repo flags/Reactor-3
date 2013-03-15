@@ -162,11 +162,11 @@ def judge_reference(life, reference, reference_type):
 			_score += _knows['score']
 		
 		#How long since we've been here?
-		if key in life['known_chunks']:
-			_last_visit = numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
-			_score += _last_visit
-		else:
-			_score += WORLD_INFO['ticks']/FPS
+		#if key in life['known_chunks']:
+		#	_last_visit = numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
+		#	_score += _last_visit
+		#else:
+		#	_score += WORLD_INFO['ticks']/FPS
 		
 	#Take length into account
 	_score += len(reference)
