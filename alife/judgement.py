@@ -75,7 +75,13 @@ def judge(life, target):
 	
 	return _like-_dislike
 
-def judge_chunk(life, chunk_id, long=False):
+def knows_alife(life, alife):
+	if alife['id'] in life['know']:
+		return life['know'][alife['id']]
+	
+	return False
+
+def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	
 	if long:
@@ -95,11 +101,13 @@ def judge_chunk(life, chunk_id, long=False):
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life == life:
 			continue
-		
 		#TODO: Re-enable
 		#if chunks.is_in_chunk(_life, chunk_id):
 		#	if _life['id'] in life['know']:
 		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
+	
+	if visited:
+		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
 	
 	if long:
 		_score += len(chunk['items'])
@@ -114,12 +122,6 @@ def judge_chunk(life, chunk_id, long=False):
 	
 	#if _initial:
 	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
-
-def knows_alife(life, alife):
-	if alife['id'] in life['know']:
-		return life['know'][alife['id']]
-	
-	return False
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
@@ -160,8 +162,11 @@ def judge_reference(life, reference, reference_type):
 			_score += _knows['score']
 		
 		#How long since we've been here?
-		_last_visit = numbers.clip(abs(_chunk['last_visited']-WORLD_INFO['ticks']/FPS), 2, 99999)
-		_score += _last_visit
+		if key in life['known_chunks']:
+			_last_visit = numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
+			_score += _last_visit
+		else:
+			_score += WORLD_INFO['ticks']/FPS
 		
 	#Take length into account
 	_score += len(reference)

@@ -77,7 +77,6 @@ def path_along_reference(life, ref_type):
 		_neighbor_pos = [int(val)+(SETTINGS['chunk size']/2) for val in neighbor_key.split(',')]
 		_cent = (lfe.get_current_chunk(life)['pos'][0]+(SETTINGS['chunk size']/2),
 			lfe.get_current_chunk(life)['pos'][1]+(SETTINGS['chunk size']/2))
-		
 		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
 		
@@ -93,6 +92,11 @@ def path_along_reference(life, ref_type):
 		
 		if _new_dir in _directions:
 			_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
+			
+			if _directions[_new_dir]['key'] in life['known_chunks']:
+				_score += WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited']
+			else:
+				_score += WORLD_INFO['ticks']
 			
 			if not _best_dir['dir'] or _score>_best_dir['score']:
 				_best_dir['dir'] = _new_dir
