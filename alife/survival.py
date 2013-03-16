@@ -121,11 +121,13 @@ def explore_unknown_chunks(life):
 		_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
-		return False
+		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
+		if not _best_reference:
+			return False
+		
+		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
 	
-	#_chunk = maps.get_chunk(_chunk_key)
 	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
-	
 	if not _walkable_area:
 		return False
 	

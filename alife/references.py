@@ -29,11 +29,11 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 	
 	return _lowest
 
-def _find_best_reference(life, ref_type):
+def _find_best_unknown_reference(life, ref_type):
 	_best_reference = {'reference': None, 'score': -1}
 	
 	for reference in REFERENCE_MAP[ref_type]:
-		_score = judgement.judge_reference(life, reference, ref_type)
+		_score = judgement.judge_reference(life, reference, ref_type, known_penalty=True)
 		
 		if not _score:
 			continue
@@ -41,12 +41,7 @@ def _find_best_reference(life, ref_type):
 		#TODO: We do this twice (check in path_along_reference). Not good!
 		if numbers.distance(life['pos'],
 			maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/SETTINGS['chunk size']>10:
-			
-			#print find_nearest_key_in_reference(life, reference),numbers.distance(life['pos'],
-			#	maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/SETTINGS['chunk size']
-			#pass
 			continue
-		
 		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
 			_best_reference['score'] = _score
@@ -54,13 +49,16 @@ def _find_best_reference(life, ref_type):
 	
 	return _best_reference
 
-def find_nearest_key_in_reference(life, reference):
+def find_nearest_key_in_reference(life, reference, unknown=False):
 	_lowest = {'chunk_key': None, 'distance': -1}
 
 	for _key in reference:
+		if unknown and _key in life['known_chunks']:
+			continue
+		
 		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
 		_distance = numbers.distance(life['pos'], _center)
-			
+		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
 			_lowest['chunk_key'] = _key
@@ -68,9 +66,10 @@ def find_nearest_key_in_reference(life, reference):
 	return _lowest['chunk_key']
 
 def path_along_reference(life, ref_type):
-	_best_reference = _find_best_reference(life, ref_type)['reference']
+	_best_reference = _find_best_unknown_reference(life, ref_type)['reference']
 
 	if not _best_reference:
+		print 'NO BEST'
 		return False
 
 	_starting_chunk_key = find_nearest_key_in_reference(life, _best_reference)
@@ -100,15 +99,20 @@ def path_along_reference(life, ref_type):
 			_new_dir -= 360
 		
 		if _new_dir in _directions:
-			_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
+			#_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
+			_score = 0
 			
 			if _directions[_new_dir]['key'] in life['known_chunks']:
-				_last_visit_score = 0#(WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS
-			else:
-				_last_visit_score = WORLD_INFO['ticks']/FPS
-			
-			if not _last_visit_score:
 				continue
+			#	#_time = (WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS
+			#	_last_visit_score = 0#numbers.clip(_time, 30, 90000)-30
+			#else:
+			#	_last_visit_score = WORLD_INFO['ticks']/FPS
+			
+			_score += (180-(abs(_new_dir-life['discover_direction'])))/45
+			
+			#if not _last_visit_score:
+			#	continue
 			
 			if _score>_best_dir['score']:
 				_best_dir['dir'] = _new_dir

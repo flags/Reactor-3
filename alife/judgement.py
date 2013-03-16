@@ -132,12 +132,17 @@ def judge_all_chunks(life):
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
 
-def judge_reference(life, reference, reference_type):
+def judge_reference(life, reference, reference_type, known_penalty=False):
 	#TODO: Length
 	_score = 0
+	_count = 0
 	_closest_chunk_key = {'key': None, 'distance': -1}
 	
 	for key in reference:
+		if known_penalty and key in life['known_chunks']:
+			continue
+		
+		_count += 1
 		_chunk = maps.get_chunk(key)
 		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk size']/2),
 			_chunk['pos'][1]+(SETTINGS['chunk size']/2))
@@ -169,7 +174,7 @@ def judge_reference(life, reference, reference_type):
 		#	_score += WORLD_INFO['ticks']/FPS
 		
 	#Take length into account
-	_score += len(reference)
+	_score += _count
 	
 	#Subtract distance in chunks
 	_score -= _closest_chunk_key['distance']/SETTINGS['chunk size']
