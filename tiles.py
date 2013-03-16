@@ -27,6 +27,7 @@ DIRT_TILE = {'id':'dirt',
 			 'icon':'.',
 			 'color':(SAND_LIGHT,SAND),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 SAND_TILE_1 = {'id':'sand_1',
@@ -45,18 +46,21 @@ DIRT_TILE_1 = {'id':'dirt_1',
 			 'icon':'\\',
 			 'color':(BROWN_DARK,BROWN_DARK_ALT),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 DIRT_TILE_2 = {'id':'dirt_2',
 			 'icon':',',
 			 'color':(BROWN_DARK_ALT,BROWN_DARK),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 DIRT_TILE_3 = {'id':'dirt_3',
 			 'icon':'.',
 			 'color':(BROWN_DARK_ALT,BROWN_DARK_ALT_2),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 WALL_TILE = {'id':'wall',

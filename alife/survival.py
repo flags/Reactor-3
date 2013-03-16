@@ -123,9 +123,7 @@ def explore_unknown_chunks(life):
 	if not _chunk_key:
 		return False
 	
-	#_chunk = maps.get_chunk(_chunk_key)
 	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
-	
 	if not _walkable_area:
 		return False
 	
