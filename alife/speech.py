@@ -19,7 +19,7 @@ def has_heard(life, target, gist):
 	
 	return False
 
-def discussed(life, target, gist):
+def nas_discussed(life, target, gist):
 	if has_heard(life, target, gist):
 		return True
 	
@@ -27,7 +27,7 @@ def discussed(life, target, gist):
 		return True
 	
 	if has_asked(life, target, gist):
-		return True	
+		return True
 	
 	return False
 

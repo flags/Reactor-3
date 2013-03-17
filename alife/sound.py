@@ -93,6 +93,10 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 			
+			if speech.discussed(life, event['from'], 'greeting'):
+				print life['name'],'knew this'
+				continue
+			
 			if not speech.has_answered(life, event['from'], 'greeting'):
 				speech.communicate(life, 'greeting', target=event['from'])
 				speech.answer(life, event['from'], 'greeting')
