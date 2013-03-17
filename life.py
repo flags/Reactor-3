@@ -317,13 +317,16 @@ def get_known_life(life, id):
 	
 	return False
 
-def create_conversation(life, gist, matches=[], radio=False, say=None, **kvargs):
+def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs):
 	logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
 	_conversation = {'gist': gist,
 		'from': life,
 		'start_time': WORLD_INFO['ticks'],
 		'id': time.time()}
+	
+	if msg:
+		say(life, msg)
 	
 	for ai in [LIFE[i] for i in LIFE]:
 		#TODO: Do we really need to support more than one match?
@@ -984,7 +987,7 @@ def can_die_via_critical_injury(life):
 	
 	return False	
 
-def tick(life,source_map):
+def tick(life, source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 
 	if life['dead']:

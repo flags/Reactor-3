@@ -93,8 +93,8 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 			
-			if speech.discussed(life, event['from'], 'greeting'):
-				print life['name'],'knew this'
+			#TODO: Should we do this up at the start of the loop?
+			if speech.has_asked(life, event['from'], 'greeting'):
 				continue
 			
 			if not speech.has_answered(life, event['from'], 'greeting'):
@@ -110,15 +110,17 @@ def listen(life):
 				speech.communicate(life, 'insult', target=event['from'])
 				lfe.say(life, 'You\'re a jerk!')
 		
-		elif event['gist'] == 'ask_for_chunk_info':
+		elif event['gist'] == 'get_chunk_info':
 			if event_delay(event, 20):
 				continue
 
-			if speech.consider(life, event['from'], 'asked_for_chunk_info'):
-				#speech.communicate(life, 'ask_for_chunk_info', target=event['from'])
-				print 'derpppppppppppppp'
-				lfe.say(life, 'I haven\'t seen anything interesting lately.')
-				speech.communicate(life, 'ask_for_chunk_info', target=event['from'])
+			if speech.has_asked(life, event['from'], 'get_chunk_info'):
+				continue
+
+			if not speech.has_answered(life, event['from'], 'get_chunk_info'):
+				speech.communicate(life, 'get_chunk_info', target=event['from'])
+				speech.answer(life, event['from'], 'no_chunk_info')
+				lfe.say(life, 'I\'m new around here, sorry!')
 		
 		life['heard'].remove(event)
 

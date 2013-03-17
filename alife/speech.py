@@ -19,15 +19,15 @@ def has_heard(life, target, gist):
 	
 	return False
 
-def nas_discussed(life, target, gist):
+def discussed(life, target, gist):
 	if has_heard(life, target, gist):
 		return True
 	
 	if has_answered(life, target, gist):
 		return True
 	
-	if has_asked(life, target, gist):
-		return True
+	#if has_asked(life, target, gist):
+	#	return True
 	
 	return False
 
@@ -52,7 +52,7 @@ def answer(life, target, gist):
 #	
 #	return False
 
-def communicate(life, gist, radio=False, matches=[], **kvargs):
-	lfe.create_conversation(life, gist, radio=radio, matches=matches, **kvargs)
+def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
+	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
 
