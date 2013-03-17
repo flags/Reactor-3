@@ -36,6 +36,7 @@ def draw_world_stats():
 	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
 	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
 	console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * (WORLD_INFO['ticks']/50)))
+	console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	console_flush()
 
 def generate_world(source_map, life=1, simulate_ticks=1000):
@@ -73,7 +74,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[25,40,2])
+		position=[30,40,2])
 	PLAYER['player'] = True
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))

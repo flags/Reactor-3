@@ -110,9 +110,9 @@ def listen(life):
 		elif event['gist'] == 'greeting':
 			if event_delay(event, 20):
 				continue
-
+			
 			if life == event['target']:
-				if speech.consider(life, event['from'], 'greeted'): 
+				if speech.consider(life, event['from'], 'greeted'):
 					speech.communicate(life, 'greeting', target=event['from'])
 					lfe.say(life, 'Hello there, traveler!')
 
@@ -124,6 +124,17 @@ def listen(life):
 				if speech.consider(life, event['from'], 'insulted'):
 					speech.communicate(life, 'insult', target=event['from'])
 					lfe.say(life, 'You\'re a jerk!')
+		
+		elif event['gist'] == 'ask_for_chunk_info':
+			if event_delay(event, 20):
+				continue
+			print 'yeah'
+			if life == event['target']:
+				if speech.consider(life, event['from'], 'asked_for_chunk_info'):
+					#speech.communicate(life, 'ask_for_chunk_info', target=event['from'])
+					print 'derpppppppppppppp'
+					lfe.say(life, 'I haven\'t seen anything interesting lately.')
+					speech.communicate(life, 'ask_for_chunk_info', target=event['from'])
 		
 		life['heard'].remove(event)
 	

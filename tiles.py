@@ -126,14 +126,14 @@ WHITE_TILE_1 = {'id':'white_tile_1',
 			 'icon':',',
 			 'color':(lightest_gray,lighter_gray),
 			 'burnable':False,
-			 'type': 'road',
+			 'type': 'building',
 			 'cost':-1}
 
 WHITE_TILE_2 = {'id':'white_tile_2',
 			 'icon':'.',
 			 'color':(white,lightest_gray),
 			 'burnable':False,
-			 'type': 'road',
+			 'type': 'building',
 			 'cost':-1}
 
 #Groups

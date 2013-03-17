@@ -62,8 +62,6 @@ def judge(life, target):
 	if target['life']['asleep']:
 		return 0
 	
-	print target['consider']
-	
 	if 'surrender' in target['consider']:
 		return 0
 	

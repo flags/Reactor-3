@@ -974,6 +974,7 @@ def can_die_via_critical_injury(life):
 
 def tick(life,source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
+
 	if life['dead']:
 		return False
 	

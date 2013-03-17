@@ -104,22 +104,27 @@ def path_along_reference(life, ref_type):
 			
 			if _directions[_new_dir]['key'] in life['known_chunks']:
 				continue
-			#	#_time = (WORLD_INFO['ticks']-life['known_chunks'][_directions[_new_dir]['key']]['last_visited'])/FPS
-			#	_last_visit_score = 0#numbers.clip(_time, 30, 90000)-30
-			#else:
-			#	_last_visit_score = WORLD_INFO['ticks']/FPS
 			
 			_score += (180-(abs(_new_dir-life['discover_direction'])))/45
+			_score += life['discover_direction_history'].count(_new_dir)
 			
-			#if not _last_visit_score:
-			#	continue
-			
-			if _score>_best_dir['score']:
+			if _score>=_best_dir['score']:
+				if _score==_best_dir['score']:
+					_chunk = maps.get_chunk(_directions[_new_dir]['key'])
+					#_score += numbers.distance(life['pos'], _chunk['pos'])
+				
 				_best_dir['dir'] = _new_dir
 				_best_dir['score'] = _score
+				#print 'b'
 
 	if _best_dir['dir'] == -1:
 		return None
+	
+	#print _best_dir,_directions[_best_dir['dir']]
+	
+	life['discover_direction_history'].append(life['discover_direction'])
+	if len(life['discover_direction_history'])>=5:
+		life['discover_direction_history'].pop(0)
 	
 	life['discover_direction'] = _best_dir['dir']
 	return _directions[_best_dir['dir']]['key']
