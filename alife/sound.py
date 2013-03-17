@@ -95,6 +95,9 @@ def listen(life):
 			
 			#TODO: Should we do this up at the start of the loop?
 			if speech.has_asked(life, event['from'], 'greeting'):
+				if not speech.has_answered(life, event['from'], 'greeting'):
+					speech.communicate(life, 'greeting', target=event['from'])
+					speech.answer(life, event['from'], 'greeting')
 				continue
 			
 			if not speech.has_answered(life, event['from'], 'greeting'):
@@ -121,6 +124,19 @@ def listen(life):
 				speech.communicate(life, 'get_chunk_info', target=event['from'])
 				speech.answer(life, event['from'], 'no_chunk_info')
 				lfe.say(life, 'I\'m new around here, sorry!')
+		
+		elif event['gist'] == 'share_chunk_info':
+			if event_delay(event, 20):
+				continue
+
+			print  event['from']['known_chunks'][event['chunk_key']]
+			#if speech.has_asked(life, event['from'], 'share_chunk_info'):
+			#	continue
+
+			#if not speech.has_answered(life, event['from'], 'get_chunk_info'):
+			#	speech.communicate(life, 'get_chunk_info', target=event['from'])
+			#	speech.answer(life, event['from'], 'no_chunk_info')
+			#	lfe.say(life, 'I\'m new around here, sorry!')
 		
 		life['heard'].remove(event)
 

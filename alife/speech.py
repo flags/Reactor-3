@@ -33,13 +33,13 @@ def discussed(life, target, gist):
 
 def ask(life, target, gist):
 	life['know'][target['id']]['asked'].append(gist)
-	#lfe.create_and_update_self_snapshot(target)
+	lfe.create_and_update_self_snapshot(target)
 		
 	return True
 
 def answer(life, target, gist):
 	life['know'][target['id']]['answered'].append(gist)
-	#lfe.create_and_update_self_snapshot(target)
+	lfe.create_and_update_self_snapshot(target)
 		
 	return True
 

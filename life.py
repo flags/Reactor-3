@@ -324,6 +324,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		'from': life,
 		'start_time': WORLD_INFO['ticks'],
 		'id': time.time()}
+	_conversation.update(kvargs)
 	
 	if msg:
 		say(life, msg)
@@ -336,14 +337,15 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 			continue
 		
 		if not can_see(ai, life['pos']):
-			continue
+			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
+				continue
 		
 		_does_match = True
 		for match in matches:
 			for key in match:
 				if not key in ai or not ai[key] == match[key]:
 					_does_match = False
-					logging.debug('\t%s did not meet matches for this conversation' % ' '.join(life['name']))
+					#logging.debug('\t%s did not meet matches for this conversation' % ' '.join(ai['name']))
 					break
 		
 			if not _does_match:
