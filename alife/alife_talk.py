@@ -29,23 +29,23 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if not alife_seen:
 		return False
 	
-	_talk_to = [alife['who'] for alife in alife_seen if not 'tried_to_greet' in alife['who']['consider']]
-	
 	for ai in [alife['who'] for alife in alife_seen]:
+		#print life['know'][ai['life']['id']]['asked'],life['know'][ai['life']['id']]['answered']
 		#What's our relationship with them?
-		if 'tried_to_greet' in ai['consider']:
-			if not 'greeted' in ai['consider']:
-				continue
-			
-			#if 'asked_for_chunk_info' in ai['consider']:
-			#	pass
-			#else:
-			#	speech.communicate(life, 'ask_for_chunk_info', target=ai['life'])
-			#	speech.consider(life, ai['life'], 'asked_for_chunk_info')
+		if speech.has_asked(life, ai['life'], 'greeting'):
+			if speech.has_asked(life, ai['life'], 'get_chunk_info'):
+				pass
+			else:
+				if not speech.discussed(life, ai['life'], 'get_chunk_info'):
+					speech.communicate(life,
+						'get_chunk_info',
+						say='Hello!',
+						matches=[{'id': ai['life']['id']}])
+					speech.ask(life, ai['life'], 'get_chunk_info')
 		else:
-			speech.communicate(life, 'greeting', target=ai['life'])
-			speech.consider(life, ai['life'], 'tried_to_greet')
-			print life['name'], ai['life']['name']
+			if not speech.discussed(life, ai['life'], 'greeting'):
+				speech.communicate(life, 'greeting', say='Hello!', matches=[{'id': ai['life']['id']}])
+				speech.ask(life, ai['life'], 'greeting')
 	
 	#if len(_talk_to)>=2:
 	#	for alife in _talk_to:
