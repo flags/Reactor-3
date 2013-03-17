@@ -62,14 +62,14 @@ def judge(life, target):
 	if target['life']['asleep']:
 		return 0
 	
-	if 'surrender' in target['consider']:
-		return 0
+	#if 'surrender' in target['consider']:
+	#	return 0
 	
-	if 'greeted' in target['consider']:
-		_like += 1
+	#if 'greeted' in target['consider']:
+	#	_like += 1
 	
-	if 'insulted' in target['consider']:
-		_dislike += 1
+	#if 'insulted' in target['consider']:
+	#	_dislike += 1
 	
 	return _like-_dislike
 

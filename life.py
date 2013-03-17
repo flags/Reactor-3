@@ -317,27 +317,39 @@ def get_known_life(life, id):
 	
 	return False
 
-def create_conversation(life,gist,say=None,action=None,**kvargs):
-	_convo = {'gist': gist,'say': say,'action': action,'heard': []}
+def create_conversation(life, gist, matches=[], radio=False, say=None, **kvargs):
+	logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
-	if gist in [convo['gist'] for convo in life['conversations']]:
-		return False
+	_conversation = {'gist': gist,
+		'from': life,
+		'start_time': WORLD_INFO['ticks'],
+		'id': time.time()}
 	
-	logging.debug('Created new conversation: %s' % gist)
-	
-	for entry in [LIFE[i] for i in LIFE]:
-		if entry['id'] == life['id']:
+	for ai in [LIFE[i] for i in LIFE]:
+		#TODO: Do we really need to support more than one match?
+		#TODO: Handle radio
+		#TODO: can_hear
+		if ai == life:
 			continue
 		
-		#TODO: 30?
-		if numbers.distance(life['pos'],entry['pos'])<=30:
-			_broadcast_sound = {'from': life,'gist': gist}
-			_broadcast_sound.update(kvargs)
-			hear(entry,_broadcast_sound)
-	
-	life['conversations'].append(_convo)
-	
-	create_and_update_self_snapshot(life)
+		if not can_see(ai, life['pos']):
+			continue
+		
+		_does_match = True
+		for match in matches:
+			for key in match:
+				if not key in ai or not ai[key] == match[key]:
+					_does_match = False
+					logging.debug('\t%s did not meet matches for this conversation' % ' '.join(life['name']))
+					break
+		
+			if not _does_match:
+				break
+		
+		if not _does_match:
+			continue
+		
+		hear(ai, _conversation)
 
 def get_surrounding_unknown_chunks(life, distance=1):
 	_current_chunk_id = get_current_chunk_id(life)
