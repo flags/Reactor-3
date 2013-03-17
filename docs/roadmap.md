@@ -254,3 +254,5 @@ Thoughts:
 So we can create one entity (result  of `create_conversation`) and  pass it around to all ALife involved or go about it the old way, where each ALife has a view of the converation and that's it. Obviously there are several advantages to each one, with passing around the same entity getting into some messy memory access stuff possibly ending in a fractured packet of info being sent around... the best method after thinking about that would be having a unique view for each person and hoping that the ALife can ensure everyone involved in the conversation is on the same page.
 
 We must also consider that if someone says "Hello!" to a group of people not everyone responds. Usually if one person responds the rest of the group is considered to have had that same response also.
+
+Timing: Some questions need to be asked more than once, like requesting chunk info. There should be a delay or a way for topics to decay and leave the list eventually. This can *probably* be done in `alife.talk`, but there will need to be definite changes in `speech.listen()` for handling this behavior.
