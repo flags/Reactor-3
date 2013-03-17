@@ -62,6 +62,9 @@ def judge(life, target):
 	if target['life']['asleep']:
 		return 0
 	
+	if 'greeting' in target['answered']:
+		_like += 1
+	
 	#if 'surrender' in target['consider']:
 	#	return 0
 	
@@ -100,9 +103,9 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 		if _life == life:
 			continue
 		
-		if chunks.is_in_chunk(_life, chunk_id):
-			if _life['id'] in life['know']:
-				_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		#if chunks.is_in_chunk(_life, chunk_id):
+		#	if _life['id'] in life['know']:
+		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
