@@ -60,11 +60,41 @@ def remember_item(life, item):
 			'score': judgement.judge_item(life,item),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
+			'shared_with': [],
 			'flags': []}
 		
 		return True
 	
 	return False
+
+def remember_item_secondhand(life, target, item_memory):
+	_item = item_memory.copy()
+	_item['flags'] = []
+	_item['from'] = target['id']
+
+	life['know_items'][_item['item']['uid']] = _item
+
+	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+
+def get_remembered_item(life, item):
+	return life['know_items'][item['uid']]
+
+def has_remembered_item(life, item):
+	if item['uid'] in life['know_items']:
+		return True
+	
+	return False
+
+def has_shared_item_with(life, target, item):
+	if target['id'] in life['know_items'][item['uid']]['shared_with']:
+		return True
+	
+	return False
+
+def share_item_with(life, target, item):
+	life['know_items'][item['uid']]['shared_with'].append(target['id'])
+
+	logging.debug('%s shared item #%s with %s.' % (' '.join(life['name']), item['uid'], ' '.join(target['name'])))
 
 def remember_known_item(life, item_uid):
 	if item_uid in life['know_items']:

@@ -4,6 +4,7 @@ from tiles import *
 import life as lfe
 
 import alife
+import tiles
 
 import graphics as gfx
 import maputils
@@ -442,15 +443,13 @@ def update_chunk_map(source_map):
 					if not source_map[x2][y2][2]:
 						continue
 					
-					_chunk_map[_chunk_key]['ground'].append((x2, y2))
-					_tile_id = source_map[x2][y2][2]['id']
+					_tile_type = None
+					if not source_map[x2][y2][4]:
+						_chunk_map[_chunk_key]['ground'].append((x2, y2))
+						_tile = get_tile(source_map[x2][y2][2])
 					
-					if _tile_id in [tile['id'] for tile in CONCRETE_TILES]:
-						_type = 'road'
-					elif _tile_id == WALL_TILE['id'] or _tile_id in [tile['id'] for tile in CONCRETE_FLOOR_TILES]:
-						_type = 'wall'
-					elif _tile_id in [tile['id'] for tile in DIRT_TILES]:
-						_type = 'dirt'
+					if 'type' in _tile:
+						_type = _tile['type']
 					else:
 						_type = 'other'
 					
@@ -463,7 +462,7 @@ def update_chunk_map(source_map):
 			for tile in _tiles.keys():
 				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'wall' in _tiles and _tiles['wall']>=15:
+			if 'building' in _tiles and _tiles['building']>=15:
 				_chunk_map[_chunk_key]['type'] = 'building'
 			elif 'road' in _tiles and _tiles['road']>=15:
 				_chunk_map[_chunk_key]['type'] = 'road'

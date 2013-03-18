@@ -39,7 +39,7 @@ class Astar:
 		self.gmap = numpy.zeros((self.size[1],self.size[0]))
 		self.hmap = numpy.zeros((self.size[1],self.size[0]))
 		self.pmap = []
-		self.tmap = numpy.zeros((self.size[1],self.size[0]))
+		self.tmap = numpy.zeros((MAP_SIZE[1],MAP_SIZE[0]))
 		for x in range(self.size[0]):
 			self.pmap.append([0] * self.size[1])
 		

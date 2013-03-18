@@ -5,6 +5,7 @@ import references
 import judgement
 import movement
 import chunks
+import speech
 
 import numbers
 import random
@@ -27,6 +28,11 @@ def loot(life):
 		
 		if _nearby_weapons:
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+			
+			for ai in [life['know'][i] for i in life['know']]:
+				if ai['score']<=0:
+					continue
+				
 			return True
 	
 	elif not brain.get_flag(life, 'no_weapon'):
@@ -115,20 +121,19 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 
 def explore_unknown_chunks(life):
-	_chunk_key = references.path_along_reference(life, 'roads')
-	
-	if _chunk_key:
-		_chunk = maps.get_chunk(_chunk_key)
+	_chunk_key = references.path_along_reference(life, 'buildings')
 	
 	if not _chunk_key:
-		_chunk_key = chunks.find_best_unknown_chunk(life, chunks.find_surrounding_unknown_chunks(life))
+		_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
-		print 'no key'
-		return False
+		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
+		if not _best_reference:
+			return False
+		
+		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
 	
 	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
-	
 	if not _walkable_area:
 		return False
 	
