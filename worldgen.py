@@ -61,7 +61,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[25,50-(i*10),2])
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30,70+(i*20),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
@@ -69,6 +69,7 @@ def generate_life(source_map, amount=1):
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):
 		logic.tick_all_objects(source_map)
+		logic.tick_world()
 
 def create_player(source_map):
 	PLAYER = life.create_life('Human',

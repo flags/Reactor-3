@@ -15,6 +15,8 @@ def tick_all_objects(source_map):
 	
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
-	WORLD_INFO['ticks'] += 1
 	
 	return True
+
+def tick_world():
+	WORLD_INFO['ticks'] += 1

@@ -152,6 +152,7 @@ while SETTINGS['running']:
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
+	logic.tick_world()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
