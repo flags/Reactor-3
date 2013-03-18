@@ -97,7 +97,7 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-worldgen.generate_world(MAP, life=1, simulate_ticks=3000)
+worldgen.generate_world(MAP, life=2, simulate_ticks=1)
 
 CURRENT_UPS = UPS
 
@@ -152,6 +152,7 @@ while SETTINGS['running']:
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
+	logic.tick_world()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()

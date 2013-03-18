@@ -142,7 +142,7 @@ def explore_unknown_chunks(life):
 	
 	_closest_pos = {'pos': None, 'distance': -1}
 	for pos in _walkable_area:
-		_distance = numbers.distance(life['pos'], pos, old=True)
+		_distance = numbers.distance(life['pos'], pos, old=False)
 				
 		if _distance <= 1:
 			_closest_pos['pos'] = pos
@@ -152,7 +152,7 @@ def explore_unknown_chunks(life):
 			_closest_pos['pos'] = pos
 			_closest_pos['distance'] = _distance
 	
-	print _chunk_key, _closest_pos['pos']
+	#print _chunk_key, _closest_pos['pos']
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)

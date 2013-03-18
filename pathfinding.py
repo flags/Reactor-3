@@ -32,7 +32,7 @@ class Astar:
 		_y_min = 0#numbers.clip(start[1]-dist,0,MAP_SIZE[1])
 		_y_max = numbers.clip(start[1]+dist, 0, MAP_SIZE[1])
 		
-		self.size = (_x_max+1,_y_max+1)
+		self.size = (_x_max,_y_max)
 		
 		#Let's make a few of these
 		self.fmap = numpy.zeros((self.size[1],self.size[0]))
