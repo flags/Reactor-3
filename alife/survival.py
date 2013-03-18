@@ -130,6 +130,8 @@ def explore_unknown_chunks(life):
 		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
 		if not _best_reference:
 			return False
+		else:
+			print _best_reference
 		
 		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
 	

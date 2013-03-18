@@ -133,7 +133,7 @@ def listen(life):
 
 			if 'chunk_key' in event:
 				maps.refresh_chunk(event['chunk_key'])
-				print judgement.judge_chunk(life, event['chunk_key'])
+				judgement.judge_chunk(life, event['chunk_key'])
 			#elif 'chunk_keys' in event:
 			#	for chunk_key in event['chunk_keys']:
 			#		print judgement.judge_chunk(life, chunk_key)

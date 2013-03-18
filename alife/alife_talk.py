@@ -23,7 +23,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['hiding', 'hidden']:
 		return False
 	
-	return STATE_UNCHANGED
+	return RETURN_SKIP
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Add these two values to an array called PANIC_STATES

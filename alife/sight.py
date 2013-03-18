@@ -57,6 +57,9 @@ def look(life):
 			continue
 		
 		_can_see = lfe.can_see(life,item['pos'])
+		_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
+				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+		judgement.judge_chunk(life, _item_chunk_key)
 		
 		if _can_see:
 			brain.remember_item(life,item)
