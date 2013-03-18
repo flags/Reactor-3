@@ -217,3 +217,42 @@ This should give us access to just about every form of pathfinding that previous
 Finding a Place to Be Safe
 ------------------------
 Next comes the issue of finding a proper place for the ALife to camp. This subgoal involves finding an appropriate way to score chunks with an appropriate safety score. Calculating this score should factor in the any friendly ALife occupying that area in addition to any other factors that ensure the chunk(s) provide adequate protection.
+
+New Conversations
+----------------
+We need to track the following for all ALife:
+
+	* Their thoughts on other ALife
+	* Any current or previous conversations
+		* The state of any current conversations
+	* Any interrupts that should occur and how to judge what conversations are more important
+	* Overhearing conversations and how to handle second-hand information.
+
+Also implement a proper matching system so a message can be broadcasted to more than one ALife based on certain criteria (faction, location, etc.)
+This system will be used for all conversations.
+
+The structure for messages will be as follows:
+
+	Match: Series of requirements an ALife must have to be considered the target of a conversation.
+	Gist: Same as in the first revision: A summary of the message.
+
+ALife will maintain the following arrays in their `know` dictionary:
+
+	* Asked: Things we asked the ALife
+	* Answered: Responses given to the ALife
+
+ALife will store the following in their memory:
+
+	* The end result of any notable conversation event:
+		* First met
+		* Initial impression
+		* Who told them certain information
+
+In addition, we can pass along memories directly through conversation.
+
+Thoughts:
+So we can create one entity (result  of `create_conversation`) and  pass it around to all ALife involved or go about it the old way, where each ALife has a view of the converation and that's it. Obviously there are several advantages to each one, with passing around the same entity getting into some messy memory access stuff possibly ending in a fractured packet of info being sent around... the best method after thinking about that would be having a unique view for each person and hoping that the ALife can ensure everyone involved in the conversation is on the same page.
+
+We must also consider that if someone says "Hello!" to a group of people not everyone responds. Usually if one person responds the rest of the group is considered to have had that same response also.
+
+Timing: Some questions need to be asked more than once, like requesting chunk info. There should be a delay or a way for topics to decay and leave the list eventually. This can *probably* be done in `alife.talk`, but there will need to be definite changes in `sound.listen()` for handling this behavior.

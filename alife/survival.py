@@ -5,6 +5,7 @@ import references
 import judgement
 import movement
 import chunks
+import speech
 
 import numbers
 import random
@@ -27,6 +28,11 @@ def loot(life):
 		
 		if _nearby_weapons:
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+			
+			for ai in [life['know'][i] for i in life['know']]:
+				if ai['score']<=0:
+					continue
+				
 			return True
 	
 	elif not brain.get_flag(life, 'no_weapon'):

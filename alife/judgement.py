@@ -62,16 +62,17 @@ def judge(life, target):
 	if target['life']['asleep']:
 		return 0
 	
-	print target['consider']
-	
-	if 'surrender' in target['consider']:
-		return 0
-	
-	if 'greeted' in target['consider']:
+	if 'greeting' in target['answered']:
 		_like += 1
 	
-	if 'insulted' in target['consider']:
-		_dislike += 1
+	#if 'surrender' in target['consider']:
+	#	return 0
+	
+	#if 'greeted' in target['consider']:
+	#	_like += 1
+	
+	#if 'insulted' in target['consider']:
+	#	_dislike += 1
 	
 	return _like-_dislike
 
@@ -102,9 +103,9 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 		if _life == life:
 			continue
 		
-		if chunks.is_in_chunk(_life, chunk_id):
-			if _life['id'] in life['know']:
-				_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		#if chunks.is_in_chunk(_life, chunk_id):
+		#	if _life['id'] in life['know']:
+		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
@@ -116,10 +117,11 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 			_item = brain.remember_known_item(life, item)
 			if _item:
 				_score += _item['score']
-	
+
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
 	
+	return _score
 	#if _initial:
 	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 
