@@ -1,7 +1,9 @@
 import life as lfe
 
+import judgement
 import speech
 import brain
+import maps
 
 import logging
 
@@ -129,7 +131,12 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 
-			print  event['from']['known_chunks'][event['chunk_key']]
+			if 'chunk_key' in event:
+				maps.refresh_chunk(event['chunk_key'])
+				print judgement.judge_chunk(life, event['chunk_key'])
+			#elif 'chunk_keys' in event:
+			#	for chunk_key in event['chunk_keys']:
+			#		print judgement.judge_chunk(life, chunk_key)
 			#if speech.has_asked(life, event['from'], 'share_chunk_info'):
 			#	continue
 
@@ -137,6 +144,16 @@ def listen(life):
 			#	speech.communicate(life, 'get_chunk_info', target=event['from'])
 			#	speech.answer(life, event['from'], 'no_chunk_info')
 			#	lfe.say(life, 'I\'m new around here, sorry!')
+
+		elif event['gist'] == 'share_item_info':
+			if event_delay(event, 20):
+				continue
+
+			if brain.has_remembered_item(life, event['item']['item']):
+				print 'Already know about this item'
+			else:
+				print 'didnt know about this item!'
+				brain.remember_item_secondhand(life, event['from'], event['item'])
 		
 		life['heard'].remove(event)
 

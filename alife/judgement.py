@@ -117,10 +117,11 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 			_item = brain.remember_known_item(life, item)
 			if _item:
 				_score += _item['score']
-	
+
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
 	
+	return _score
 	#if _initial:
 	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 

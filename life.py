@@ -1093,7 +1093,10 @@ def can_see(life,pos):
 			_line = []
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
-	
+
+	if len(_line)>30:
+		return False
+
 	for pos in _line:
 		if life['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False
