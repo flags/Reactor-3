@@ -97,7 +97,7 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-worldgen.generate_world(MAP, life=1, simulate_ticks=2300)
+worldgen.generate_world(MAP, life=1, simulate_ticks=3000)
 
 CURRENT_UPS = UPS
 

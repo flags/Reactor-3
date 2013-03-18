@@ -121,6 +121,9 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 
 def explore_unknown_chunks(life):
+	if life['path']:
+		return True
+	
 	_chunk_key = references.path_along_reference(life, 'buildings')
 	
 	if not _chunk_key:
@@ -130,8 +133,6 @@ def explore_unknown_chunks(life):
 		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
 		if not _best_reference:
 			return False
-		else:
-			print _best_reference
 		
 		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
 	
@@ -142,7 +143,7 @@ def explore_unknown_chunks(life):
 	_closest_pos = {'pos': None, 'distance': -1}
 	for pos in _walkable_area:
 		_distance = numbers.distance(life['pos'], pos, old=True)
-		
+				
 		if _distance <= 1:
 			_closest_pos['pos'] = pos
 			break
@@ -150,6 +151,8 @@ def explore_unknown_chunks(life):
 		if not _closest_pos['pos'] or _distance<_closest_pos['distance']:
 			_closest_pos['pos'] = pos
 			_closest_pos['distance'] = _distance
+	
+	print _chunk_key, _closest_pos['pos']
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)
