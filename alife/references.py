@@ -7,7 +7,7 @@ import maps
 
 import numbers
 
-def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False):
+def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False, skip_unknown=False):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	
 	for reference in REFERENCE_MAP[ref_type]:
@@ -17,6 +17,9 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 			continue
 			
 		if skip_known and _nearest_key in life['known_chunks']:
+			continue
+
+		if skip_unknown and not _nearest_key in life['known_chunks']:
 			continue
 
 		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
@@ -137,5 +140,5 @@ def find_nearest_road(life):
 	
 	return _find_nearest_reference(life, 'roads')['reference']
 
-def find_nearest_building(life):
-	return _find_best_reference(life, 'buildings')
+def find_nearest_building(life, skip_unknown=True):
+	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown)

@@ -9,6 +9,7 @@ import alife_explore
 import alife_hidden
 import alife_talk
 import alife_hide
+import alife_camp
 import snapshots
 import judgement
 import survival
@@ -26,7 +27,8 @@ MODULES = [alife_hide,
 	alife_talk,
 	alife_explore,
 	alife_discover,
-	alife_manage_items]
+	alife_manage_items,
+	alife_camp]
 
 def think(life, source_map):
 	sight.look(life)

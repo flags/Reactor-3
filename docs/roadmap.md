@@ -218,6 +218,11 @@ Finding a Place to Be Safe
 ------------------------
 Next comes the issue of finding a proper place for the ALife to camp. This subgoal involves finding an appropriate way to score chunks with an appropriate safety score. Calculating this score should factor in the any friendly ALife occupying that area in addition to any other factors that ensure the chunk(s) provide adequate protection.
 
+Requirements:
+	* Easily fortified
+	* Either remote or in a central location
+		* When scoring for remote chunks we can check the distance to the nearest buidling
+
 New Conversations
 ----------------
 We need to track the following for all ALife:
