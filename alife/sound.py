@@ -14,10 +14,15 @@ def listen(life):
 			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			if speech.consider(life,event['from'],'surrendered'):
-				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-				
-				speech.communicate(life,'stand_still',target=event['from'])
+			if not speech.has_answered(life, event['from'], 'surrender'):
+				#if not speech.has_answered(life, event['from'], 'greeting'):
+				speech.communicate(life, 'surrender', target=event['from'])
+				speech.answer(life, event['from'], 'surrender')
+				print 'SURRENDERED'
+			#if speech.consider(life,event['from'],'surrendered'):
+			#	logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+			#	
+			#	speech.communicate(life,'stand_still',target=event['from'])
 		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):
@@ -134,6 +139,7 @@ def listen(life):
 			if 'chunk_key' in event:
 				maps.refresh_chunk(event['chunk_key'])
 				judgement.judge_chunk(life, event['chunk_key'])
+				lfe.memory(life, 'heard about a chunk', target=event['from']['id'])
 			#elif 'chunk_keys' in event:
 			#	for chunk_key in event['chunk_keys']:
 			#		print judgement.judge_chunk(life, chunk_key)
@@ -152,7 +158,9 @@ def listen(life):
 			if brain.has_remembered_item(life, event['item']['item']):
 				print 'Already know about this item'
 			else:
-				print 'didnt know about this item!'
+				lfe.memory(life, 'heard about an item',
+					item=event['item']['item']['uid'],
+					target=event['from']['id'])
 				brain.remember_item_secondhand(life, event['from'], event['item'])
 		
 		life['heard'].remove(event)

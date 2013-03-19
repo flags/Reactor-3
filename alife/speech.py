@@ -26,9 +26,6 @@ def discussed(life, target, gist):
 	if has_answered(life, target, gist):
 		return True
 	
-	#if has_asked(life, target, gist):
-	#	return True
-	
 	return False
 
 def ask(life, target, gist):
@@ -43,14 +40,16 @@ def answer(life, target, gist):
 		
 	return True
 
-#def unconsider(life,target,what):
-#	if what in life['know'][target['id']]['consider']:
-#		life['know'][target['id']]['consider'].remove(what)
-#		lfe.create_and_update_self_snapshot(target)
-#		
-#		return True
-#	
-#	return False
+def announce(life, gist):
+	for target in [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]:
+		if has_asked(life, target, gist):
+			continue
+		
+		print 'ASKING'
+		
+		ask(life, target, gist)
+	
+	return True
 
 def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
