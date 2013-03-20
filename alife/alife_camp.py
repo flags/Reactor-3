@@ -38,6 +38,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	#TODO: Rather, find BEST camp
-	_nearest_camp = camps.find_nearest_unfounded_camp(life)
-
-	camps.found_camp(life, _nearest_camp, announce=True)
+	if not life['known_camps']:
+		_nearest_camp = camps.find_nearest_unfounded_camp(life)
+		camps.found_camp(life, _nearest_camp, announce=True)
