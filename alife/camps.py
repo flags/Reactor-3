@@ -2,6 +2,7 @@ from globals import *
 
 import references
 import speech
+import chunks
 
 import logging
 
@@ -27,6 +28,7 @@ def unfound_camp(life, camp):
 
 def get_all_alife_in_camp(life, camp):
 	#TODO: We should write a function to do this for references, then filter the results here
+	#TODO: Can we just add a is_member funtion?
 	pass
 
 def has_discovered_camp(life, camp):
@@ -41,3 +43,9 @@ def discover_camp(life, camp):
 
 	if not camp['founder'] == life['id']:
 		logging.debug('%s discovered camp #%s.' % (' '.join(life['name']), camp['id']))
+
+def is_in_camp(life, camp):
+	for chunk_key in camp['reference']:
+		_chunk_pos = chunks.get_chunk(chunk_key)
+		
+		print _chunk_pos
