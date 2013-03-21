@@ -7,10 +7,13 @@ import maps
 
 import numbers
 
-def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False, skip_unknown=False):
+def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False, skip_unknown=False, ignore_array=[]):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	
 	for reference in REFERENCE_MAP[ref_type]:
+		if reference in ignore_array:
+			continue
+		
 		_nearest_key = find_nearest_key_in_reference(life, reference)
 
 		if skip_current and maps.get_chunk(_nearest_key) == lfe.get_current_chunk(life):
@@ -132,7 +135,7 @@ def path_along_reference(life, ref_type):
 	life['discover_direction'] = _best_dir['dir']
 	return _directions[_best_dir['dir']]['key']
 
-def find_nearest_road(life):
+def find_nearest_road(life, skip_unknown=True, ignore_array=[]):
 	_best_reference = _find_best_reference(life, 'roads')['reference']
 	
 	if _best_reference:
@@ -140,5 +143,5 @@ def find_nearest_road(life):
 	
 	return _find_nearest_reference(life, 'roads')['reference']
 
-def find_nearest_building(life, skip_unknown=True):
-	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown)
+def find_nearest_building(life, skip_unknown=True, ignore_array=[]):
+	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown, ignore_array=ignore_array)

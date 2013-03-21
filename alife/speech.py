@@ -1,5 +1,7 @@
 import life as lfe
 
+import logging
+
 def has_asked(life, target, gist):
 	if gist in life['know'][target['id']]['asked']:
 		return True
@@ -40,13 +42,15 @@ def answer(life, target, gist):
 		
 	return True
 
-def announce(life, gist):
+def announce(life, gist, **kvargs):
+	logging.debug('%s called announce: %s' % (' '.join(life['name']), gist))
+	
 	for target in [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]:
 		if has_asked(life, target, gist):
 			continue
-		
-		print 'ASKING'
-		
+	
+		logging.debug('\t%s got announce.' % ' '.join(target['name']))
+		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
 		ask(life, target, gist)
 	
 	return True

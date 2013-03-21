@@ -31,7 +31,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
 		return False
 	
-	if not camps.find_nearest_unfounded_camp(life):
+	if not life['known_camps'] and not camps.find_nearest_unfounded_camp(life):
 		return False
 
 	return RETURN_VALUE
@@ -40,4 +40,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#TODO: Rather, find BEST camp
 	if not life['known_camps']:
 		_nearest_camp = camps.find_nearest_unfounded_camp(life)
+		
 		camps.found_camp(life, _nearest_camp, announce=True)
