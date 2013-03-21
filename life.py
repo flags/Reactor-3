@@ -180,7 +180,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	logging.debug('%s updated their snapshot.' % life['name'][0])
+	logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	"""Initiates and returns a deepcopy of a life type."""
@@ -239,6 +239,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['know_items'] = {}
 	_life['memory'] = []
 	_life['known_chunks'] = {}
+	_life['known_camps'] = {} 
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
@@ -467,11 +468,12 @@ def say(life,text,action=False,volume=30):
 		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
 			gfx.message(text,style=_style)
 
-def memory(life,memory,**kvargs):
-	_entry = {'text': memory}
+def memory(life, gist, **kvargs):
+	_entry = {'text': gist}
 	_entry.update(kvargs)
-	print _entry
+	
 	life['memory'].append(_entry)
+	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]

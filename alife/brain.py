@@ -9,6 +9,7 @@ import alife_explore
 import alife_hidden
 import alife_talk
 import alife_hide
+import alife_camp
 import snapshots
 import judgement
 import survival
@@ -26,7 +27,8 @@ MODULES = [alife_hide,
 	alife_talk,
 	alife_explore,
 	alife_discover,
-	alife_manage_items]
+	alife_manage_items,
+	alife_camp]
 
 def think(life, source_map):
 	sight.look(life)
@@ -126,7 +128,10 @@ def understand(life,source_map):
 		return False
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
-		speech.communicate(life,'surrender')
+		speech.announce(life, 'call_for_help')
+		#if not speech.has_answered(life, event['from'], 'call_for_help'):
+		#	speech.communicate(life, 'call_for_help')
+		#	speech.answer(life, 'call_for_help')
 	
 	for entry in life['seen']:
 		_targets_not_seen_pre.remove(entry)

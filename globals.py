@@ -23,6 +23,7 @@ CHUNK_MAP = {}
 WORLD_INFO = {'ticks': 0}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
+CAMPS = {}
 
 #Return values
 STATE_CHANGE = 2

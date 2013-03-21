@@ -3,6 +3,7 @@ import life as lfe
 import judgement
 import speech
 import brain
+import camps
 import maps
 
 import logging
@@ -14,10 +15,15 @@ def listen(life):
 			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
 		if event['gist'] == 'surrender':
-			if speech.consider(life,event['from'],'surrendered'):
-				logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-				
-				speech.communicate(life,'stand_still',target=event['from'])
+			if not speech.has_answered(life, event['from'], 'surrender'):
+				#if not speech.has_answered(life, event['from'], 'greeting'):
+				speech.communicate(life, 'surrender', target=event['from'])
+				speech.answer(life, event['from'], 'surrender')
+				print 'SURRENDERED'
+			#if speech.consider(life,event['from'],'surrendered'):
+			#	logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+			#	
+			#	speech.communicate(life,'stand_still',target=event['from'])
 		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):
@@ -134,16 +140,7 @@ def listen(life):
 			if 'chunk_key' in event:
 				maps.refresh_chunk(event['chunk_key'])
 				judgement.judge_chunk(life, event['chunk_key'])
-			#elif 'chunk_keys' in event:
-			#	for chunk_key in event['chunk_keys']:
-			#		print judgement.judge_chunk(life, chunk_key)
-			#if speech.has_asked(life, event['from'], 'share_chunk_info'):
-			#	continue
-
-			#if not speech.has_answered(life, event['from'], 'get_chunk_info'):
-			#	speech.communicate(life, 'get_chunk_info', target=event['from'])
-			#	speech.answer(life, event['from'], 'no_chunk_info')
-			#	lfe.say(life, 'I\'m new around here, sorry!')
+				lfe.memory(life, 'heard about a chunk', target=event['from']['id'])
 
 		elif event['gist'] == 'share_item_info':
 			if event_delay(event, 20):
@@ -152,8 +149,20 @@ def listen(life):
 			if brain.has_remembered_item(life, event['item']['item']):
 				print 'Already know about this item'
 			else:
-				print 'didnt know about this item!'
+				lfe.memory(life, 'heard about an item',
+					item=event['item']['item']['uid'],
+					target=event['from']['id'])
 				brain.remember_item_secondhand(life, event['from'], event['item'])
+		
+		elif event['gist'] == 'share_camp_info':
+			if event_delay(event, 20):
+				continue
+			
+			if not camps.has_discovered_camp(life, event['camp']):
+				camps.discover_camp(life, event['camp'])
+				
+				#TODO: Judge and respond?
+				lfe.memory(life, 'heard about camp #%s' % event['camp']['id'], target=event['from']['id'])
 		
 		life['heard'].remove(event)
 
