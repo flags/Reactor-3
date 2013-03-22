@@ -41,12 +41,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if not speech.discussed(life, ai['life'], 'get_chunk_info'):
 					speech.communicate(life,
 						'get_chunk_info',
-						say='Hello!',
+						msg='Do you know of any interesting places?',
 						matches=[{'id': ai['life']['id']}])
 					speech.send(life, ai['life'], 'get_chunk_info')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
-				speech.communicate(life, 'greeting', say='Hello!', matches=[{'id': ai['life']['id']}])
+				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'greeting')
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]

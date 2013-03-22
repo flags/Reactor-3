@@ -101,7 +101,7 @@ def listen(life):
 			if event_delay(event, 40):
 				continue
 			
-			if not speech.has_received(life, event['from'], 'greeting'):
+			if not speech.has_sent(life, event['from'], 'greeting') and not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
 				speech.communicate(life, 'greeting', target=event['from'])
 				speech.send(life, event['from'], 'greeting')
@@ -126,7 +126,7 @@ def listen(life):
 				lfe.say(life, 'You\'re a jerk!')
 		
 		elif event['gist'] == 'get_chunk_info':
-			if event_delay(event, 40):
+			if event_delay(event, 60):
 				continue
 
 			if speech.has_sent(life, event['from'], 'get_chunk_info'):
@@ -159,7 +159,9 @@ def listen(life):
 				brain.remember_item_secondhand(life, event['from'], event['item'])
 		
 		elif event['gist'] == 'share_camp_info':
-			if event_delay(event, 20):
+			if event_delay(event, 30):
+				#TODO: This is only a PoC. The ALife stops to interpret the information.
+				lfe.clear_actions(life)
 				continue
 			
 			if not camps.has_discovered_camp(life, event['camp']):

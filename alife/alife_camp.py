@@ -45,6 +45,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_closest_key =  references.find_nearest_key_in_reference(life, life['known_camps'][0]['reference'])
 		_chunk = maps.get_chunk(_closest_key)
 		
+		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move',
 			'to': _chunk['pos']},
 			200)
