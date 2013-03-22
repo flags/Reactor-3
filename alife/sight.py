@@ -47,8 +47,8 @@ def look(life):
 			'last_seen_at': ai['pos'][:],
 			'escaped': False,
 			'snapshot': {},
-			'asked': [],
-			'answered': []}
+			'sent': [],
+			'received': []}
 	
 	for item in [ITEMS[item] for item in ITEMS]:
 		if item.has_key('id'):

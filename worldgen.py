@@ -61,7 +61,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30+(i*20),70+(i*15),2])
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30+(i*5),70+(i*15),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
