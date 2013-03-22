@@ -98,7 +98,7 @@ def listen(life):
 			speech.consider(life,event['from'],'confidence')
 
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 20):
+			if event_delay(event, 60):
 				continue
 			
 			#TODO: Should we do this up at the start of the loop?
@@ -122,7 +122,7 @@ def listen(life):
 				lfe.say(life, 'You\'re a jerk!')
 		
 		elif event['gist'] == 'get_chunk_info':
-			if event_delay(event, 20):
+			if event_delay(event, 60):
 				continue
 
 			if speech.has_asked(life, event['from'], 'get_chunk_info'):
@@ -163,6 +163,15 @@ def listen(life):
 				
 				#TODO: Judge and respond?
 				lfe.memory(life, 'heard about camp #%s' % event['camp']['id'], target=event['from']['id'])
+		
+		elif event['gist'] == 'welcome_to_camp':
+			if event_delay(event, 20):
+				continue
+			
+			if not speech.has_answered(life, event['from'], 'welcome_to_camp'):
+				#speech.communicate(life, 'greeting', target=event['from'])
+				#speech.answer(life, event['from'], 'greeting')
+				lfe.say(life, 'It\'s good to be here.')
 		
 		life['heard'].remove(event)
 

@@ -4,12 +4,13 @@ import life as lfe
 
 import alife_collect_items
 import alife_manage_items
+import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_camp
 import alife_talk
 import alife_hide
-import alife_camp
 import snapshots
 import judgement
 import survival
@@ -28,6 +29,7 @@ MODULES = [alife_hide,
 	alife_explore,
 	alife_discover,
 	alife_manage_items,
+	alife_find_camp,
 	alife_camp]
 
 def think(life, source_map):

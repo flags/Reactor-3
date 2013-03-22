@@ -1,3 +1,5 @@
+from globals import *
+
 import life as lfe
 
 import logging
@@ -42,16 +44,23 @@ def answer(life, target, gist):
 		
 	return True
 
-def announce(life, gist, **kvargs):
+def announce(life, gist, public=False, **kvargs):
 	logging.debug('%s called announce: %s' % (' '.join(life['name']), gist))
 	
-	for target in [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]:
-		if has_asked(life, target, gist):
+	if public:
+		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
+	else:
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
+	
+	for target in _announce_to:
+		if not public and has_asked(life, target, gist):
 			continue
 	
 		logging.debug('\t%s got announce.' % ' '.join(target['name']))
 		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
-		ask(life, target, gist)
+		
+		if not public:
+			ask(life, target, gist)
 	
 	return True
 

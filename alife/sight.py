@@ -43,6 +43,7 @@ def look(life):
 		life['know'][ai['id']] = {'life': ai,
 			'score': 0,
 			'last_seen_time': 0,
+			'met_at_time': WORLD_INFO['ticks'],
 			'last_seen_at': ai['pos'][:],
 			'escaped': False,
 			'snapshot': {},

@@ -21,7 +21,7 @@ def found_camp(life, reference, announce=False):
 	CAMPS[_camp['id']] = _camp 
 	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
 	discover_camp(life, _camp)
-	speech.announce(life, 'share_camp_info', camp=_camp)
+	speech.announce(life, 'share_camp_info', camp=_camp, public=True)
 
 def unfound_camp(life, camp):
 	pass
@@ -45,7 +45,4 @@ def discover_camp(life, camp):
 		logging.debug('%s discovered camp #%s.' % (' '.join(life['name']), camp['id']))
 
 def is_in_camp(life, camp):
-	for chunk_key in camp['reference']:
-		_chunk_pos = chunks.get_chunk(chunk_key)
-		
-		print _chunk_pos
+	return references.is_in_reference(life, camp['reference'])

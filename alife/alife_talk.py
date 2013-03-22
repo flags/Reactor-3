@@ -5,6 +5,7 @@ import judgement
 import movement
 import speech
 import brain
+import camps
 
 import logging
 
@@ -50,7 +51,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
-	#_chunk_keys_of_visible_items = set(['%s,%s' % ((item['item']['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (item['item']['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size']) for item in _visible_items])
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<=0:
 			continue
@@ -73,6 +73,14 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				matches=[{'id': ai['life']['id']}])
 			brain.share_item_with(life, ai['life'], item['item'])
 			#speech.ask(life, ai['life'], 'share_chunk_info')
+		
+		if life['known_camps'] and camps.is_in_camp(life, life['known_camps'][0]) and ai['last_seen_time']>=50:
+			if not speech.has_asked(life, ai['life'], 'welcome_to_camp'):
+				speech.communicate(life,
+						'welcome_to_camp',
+						msg='Welcome back to camp.',
+						matches=[{'id': ai['life']['id']}])
+				speech.ask(life, ai['life'], 'welcome_to_camp')
 
 	#if len(_talk_to)>=2:
 	#	for alife in _talk_to:
