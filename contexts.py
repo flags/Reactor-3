@@ -1,4 +1,7 @@
 import life as lfe
+
+import encounters
+
 import logging
 
 def _create_context_from_phrase(life, phrase):
@@ -34,6 +37,7 @@ def _create_context_from_phrase(life, phrase):
 
 def create_context(life, action):
 	logging.debug('Created new context.')
+	encounters.create_encounter(life, action['from'])
 	
 	if 'gist' in action:
 		return _create_context_from_phrase(life, action)

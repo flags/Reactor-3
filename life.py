@@ -389,7 +389,7 @@ def hear(life, what):
 	what['age'] = 0
 	life['heard'].append(what)
 	
-	if 'player' in life:
+	if 'player' in life:		
 		_menu = []
 		for reaction in contexts.create_context(life, what):
 			if reaction['type'] == 'say':

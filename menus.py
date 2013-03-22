@@ -30,6 +30,12 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
+def create_dialog(text, title='Dialog'):
+	_menu['settings']['size'] = (_size[0]+(_menu['settings']['padding'][0]*2),_size[1])
+	_menu['settings']['console'] = console_new(_menu['settings']['size'][0],_menu['settings']['size'][1])
+	
+	MENUS.append(_menu)
+
 def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	if not isinstance(values,list):
 		values = [values]

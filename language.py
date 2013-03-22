@@ -1,3 +1,5 @@
+import random
+
 def prettify_string_array(array,max_length):
 	"""Returns a human readable string from an array of strings."""
 	_string = ''
@@ -19,3 +21,9 @@ def prettify_string_array(array,max_length):
 		_i += 1
 	
 	return _string
+
+def get_name(life):
+	if random.randint(0, 1):
+		return ' '.join(life['name'])
+	else:
+		return 'He'
