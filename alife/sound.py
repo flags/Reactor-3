@@ -168,7 +168,9 @@ def listen(life):
 				camps.discover_camp(life, event['camp'])
 				
 				#TODO: Judge and respond?
-				lfe.memory(life, 'heard about camp #%s' % event['camp']['id'], target=event['from']['id'])
+				lfe.memory(life, 'heard about camp',
+					camp=event['camp']['id'],
+					target=event['from']['id'])
 		
 		elif event['gist'] == 'welcome_to_camp':
 			if event_delay(event, 20):

@@ -350,13 +350,22 @@ def end_of_frame_reactor3():
 def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
+	if SETTINGS['controlling']['encounters']:
+		console_blit(SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]['console'], 0, 0,
+			40,
+			40,
+			0,
+			0,
+			0,
+			1, 0.5)
+	
 	for menu in MENUS:
 		console_blit(menu['settings']['console'],0,0,
 			menu['settings']['size'][0],
 			menu['settings']['size'][1],0,
 			menu['settings']['position'][0],
 			menu['settings']['position'][1],1,0.5)
-	
+		
 	if SETTINGS['draw console']:
 		console_blit(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],0,0,0,1,0.5)
 	

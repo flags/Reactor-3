@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import language
 import alife
 import menus
@@ -7,9 +9,14 @@ import menus
 import logging
 
 def create_encounter(life, target, context=None):
+	_encounter = {}
+	
 	if not life['id'] in target['know']:
 		logging.warning('Encounter: %s does not know %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 		return False
+	
+	#_encounter['size'] = (_size[0]+(_dialog['settings']['padding'][0]*2),_size[1])
+	_encounter['console'] = console_new(40, 40)
 	
 	_remembered_alife = alife.brain.get_remembered_alife(target, life)
 	_stance = alife.stances.get_stance_towards(target, life)
@@ -17,14 +24,61 @@ def create_encounter(life, target, context=None):
 	
 	_text = []
 	_text.append('You see %s.' % ' '.join(target['name']))
-	_text.append('He appears to be %s towards you.' % _stance)
+	_text.append('_' * 38)
 	
 	if alife.brain.has_met_in_person(target, life) and _time_since_met<1000:
-		_text.append('You just met him recently and haven\'t heard about him.')
-		#TODO: You know he is a founder of a camp
+		_text.append('You just met %s recently.' % target['name'][0])
 	
-	print ' '.join(_text)
+	for _founded_camp in alife.camps.get_founded_camps(target):
+		if alife.camps.is_in_camp(target, _founded_camp):
+			_text.append('%s claims to be the founder of this camp.' % target['name'][0])
+			
+			if lfe.get_memory(life, matches={'from': target['id'], 'text': 'heard about camp'}):
+				_text.append('You heard this announced on the radio earlier.')
 	
-	language.get_name(target)
+	_text.append('He appears to be %s towards you.' % _stance)
+	_text.append('_' * 38)
+	_text.append('<Shift>+v - React')
+	_text.append('<Shift>+q - Ignore')
+	_text.append('_' * 38)
+	
+	_encounter['text'] = _text
+	_encounter['start_time'] = WORLD_INFO['ticks']
+	
+	SETTINGS['following'] = target
 	
 	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	
+	life['encounters'][target['id']] = _encounter
+	return _encounter
+
+def draw_encounter(life, encounter):
+	_y = 1
+	for line in encounter['text']:
+		_x = 1
+		
+		while line:
+			_line = line
+			while len(_line)>=40:
+				_words = _line.split(' ')
+				_line = ' '.join(_words[:len(_words)-1])
+				
+			_lines = [_line]
+			
+			if not _line == line:
+				_lines.append(line.replace(_line, ''))
+			
+			_i = 0
+			for txt in _lines:
+				console_print(encounter['console'],
+					_x+_i,
+					_y,
+					txt)
+				
+				_i += 1
+				_y += 1
+			
+			_x += 1
+			_y += 1
+			
+			break

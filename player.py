@@ -215,6 +215,10 @@ def handle_input():
 		if not SETTINGS['controlling']['contexts']:
 			return False
 		
+		if SETTINGS['controlling']['encounters']:
+			SETTINGS['following'] = SETTINGS['controlling']
+			del SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+		
 		_i = menus.create_menu(title='React',
 			menu=SETTINGS['controlling']['contexts'].pop()['items'],
 			padding=(1,1),

@@ -97,7 +97,7 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-worldgen.generate_world(MAP, life=2, simulate_ticks=1)
+worldgen.generate_world(MAP, life=1, simulate_ticks=1)
 
 CURRENT_UPS = UPS
 
@@ -134,7 +134,7 @@ while SETTINGS['running']:
 	
 	LOS_BUFFER[0] = maps._render_los(MAP,SETTINGS['following']['pos'],cython=CYTHON_ENABLED)
 	
-	if  SETTINGS['controlling']['dead']:
+	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
 		_col = 255-int(round(FADE_TO_WHITE[0]))*2
 		
@@ -156,6 +156,7 @@ while SETTINGS['running']:
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
+	logic.draw_encounter()
 	#gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()
