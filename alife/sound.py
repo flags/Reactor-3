@@ -181,6 +181,15 @@ def listen(life):
 				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
 		
+		elif event['gist'] == 'appear_friendly':
+			#if event_delay(event, 10):
+			#	continue
+			
+			lfe.memory(life, 'friendly',
+				target=event['from']['id'])
+			
+			print event['from']['name'],'friendly'
+		
 		life['heard'].remove(event)
 
 def event_delay(event,time):

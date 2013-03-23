@@ -476,16 +476,19 @@ def memory(life, gist, **kvargs):
 	life['memory'].append(_entry)
 	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 
-def get_memory(life, matches=[]):
+def get_memory(life, matches={}):
 	_memories = []
 	
 	for memory in life['memory']:
+		_break = False
 		for key in matches:
 			if not key in memory or not memory[key] == matches[key]:
-				continue
-			
+				_break = True
+				break
+		
+		if not _break:
 			_memories.append(memory)
-	
+			
 	return _memories
 
 def get_recent_memories(life,number):

@@ -17,6 +17,7 @@ def create_encounter(life, target, context=None):
 	
 	#_encounter['size'] = (_size[0]+(_dialog['settings']['padding'][0]*2),_size[1])
 	_encounter['console'] = console_new(40, 40)
+	_encounter['target'] = target
 	
 	_remembered_alife = alife.brain.get_remembered_alife(target, life)
 	_stance = alife.stances.get_stance_towards(target, life)
@@ -33,12 +34,14 @@ def create_encounter(life, target, context=None):
 		if alife.camps.is_in_camp(target, _founded_camp):
 			_text.append('%s claims to be the founder of this camp.' % target['name'][0])
 			
-			if lfe.get_memory(life, matches={'from': target['id'], 'text': 'heard about camp'}):
+			if lfe.get_memory(life, matches={'target': target['id'], 'text': 'heard about camp'}):
 				_text.append('You heard this announced on the radio earlier.')
 	
 	_text.append('He appears to be %s towards you.' % _stance)
 	_text.append('_' * 38)
-	_text.append('<Shift>+v - React')
+	_text.append('<Shift>+v - Talk')
+	_text.append('<Shift>+f - Appear Friendly')
+	_text.append('<Shift>+h - Appear Hostile')
 	_text.append('<Shift>+q - Ignore')
 	_text.append('_' * 38)
 	
