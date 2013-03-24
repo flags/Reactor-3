@@ -98,24 +98,16 @@ def listen(life):
 			speech.consider(life,event['from'],'confidence')
 
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 40):
+			if event_delay(event, 30):
 				continue
 			
-			if not speech.has_sent(life, event['from'], 'greeting') and not speech.has_received(life, event['from'], 'greeting'):
-				speech.receive(life, event['from'], 'greeting')
+			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'greeting', target=event['from'])
 				speech.send(life, event['from'], 'greeting')
 				lfe.say(life, 'Hello there, traveler!')
 			
-			#TODO: Should we do this up at the start of the loop?
-			#if speech.has_sent(life, event['from'], 'greeting'):
-			#	if not speech.has_received(life, event['from'], 'greeting'):
-			#		speech.communicate(life, 'greeting', target=event['from'])
-			#		speech.receive(life, event['from'], 'greeting')
-			#	continue
-			
-			#if not speech.has_sent(life, event['from'], 'greeting'):
-			#	print 'derp'
+			if not speech.has_received(life, event['from'], 'greeting'):
+				speech.receive(life, event['from'], 'greeting')
 
 		elif event['gist'] == 'insult':
 			if event_delay(event, 20):
