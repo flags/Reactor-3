@@ -15,10 +15,10 @@ def create_encounter(life, target, context=None):
 		logging.warning('Encounter: %s does not know %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 		return False
 	
-	if WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time']<ENCOUNTER_TIME_LIMIT:
-		logging.debug('== Encounter Muted, BELOW TIME ==')
-		print WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time'], ENCOUNTER_TIME_LIMIT
-		return False
+	#if WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time']<ENCOUNTER_TIME_LIMIT:
+	#	logging.debug('== Encounter Muted, BELOW TIME ==')
+	#	print WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time'], ENCOUNTER_TIME_LIMIT
+	#	return False
 	
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
 	#_encounter['size'] = (_size[0]+(_dialog['settings']['padding'][0]*2),_size[1])
@@ -29,8 +29,8 @@ def create_encounter(life, target, context=None):
 	_stance = alife.stances.get_stance_towards(target, life)
 	_time_since_met = WORLD_INFO['ticks'] - _remembered_alife['met_at_time']
 	
-	if _time_since_met>=1000:
-		return False
+	#if _time_since_met>=1000:
+	#	return False
 	
 	_text = []
 	_text.append('You see %s.' % ' '.join(target['name']))

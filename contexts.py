@@ -22,11 +22,6 @@ def _create_context_from_phrase(life, phrase):
 			'delay': lfe.get_item_access_time(life,phrase['item']),
 			'communicate': 'compliant'})
 	elif phrase['gist'] == 'greeting':
-		_reactions.append({'type': 'say','text': 'Hello there!',
-			'communicate': 'greeting'})
-		_reactions.append({'type': 'say','text': 'You\'re a jerk.',
-			'communicate': 'insult'})
-		
 		encounters.create_encounter(life, phrase['from'])
 		
 	elif phrase['gist'] == 'surrender':
@@ -40,6 +35,9 @@ def _create_context_from_phrase(life, phrase):
 			target=phrase['from']['id'])
 		
 		alife.camps.discover_camp(life, phrase['camp'])
+	elif phrase['gist'] == 'welcome_to_camp':
+		_reactions.append({'type': 'say','text': 'Good to be here!',
+			'communicate': 'greeting'})
 	else:
 		logging.warning('Unhandled player context: %s' % phrase['gist'])
 
@@ -49,6 +47,10 @@ def create_context(life, action):
 	logging.debug('Created new context.')
 	
 	if 'gist' in action:
-		return _create_context_from_phrase(life, action)
+		_reactions = _create_context_from_phrase(life, action)
 
-	return [{'action': 'None','text': 'Nothing here!'}]
+	return {'action': 'None',
+		'text': 'Nothing here!',
+		'items': [],
+		'reactions': _reactions,
+		'from': action['from']}

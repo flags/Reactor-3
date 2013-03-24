@@ -11,7 +11,7 @@ def tick_all_objects(source_map):
 			return False
 		
 		if SETTINGS['controlling']['contexts'] and SETTINGS['controlling']['shoot_timer']:
-			#SETTINGS['controlling']['shoot_timer'] -= 1
+			SETTINGS['controlling']['shoot_timer'] -= 1
 			return False
 		
 		if SETTINGS['controlling']['encounters']:

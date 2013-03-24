@@ -392,7 +392,10 @@ def hear(life, what):
 	
 	if 'player' in life:		
 		_menu = []
-		for reaction in contexts.create_context(life, what):
+		_context = contexts.create_context(life, what)
+		
+		_context['reactions']
+		for reaction in _context['reactions']:
 			if reaction['type'] == 'say':
 				_menu.append(menus.create_item('single',
 					reaction['type'],
@@ -411,8 +414,9 @@ def hear(life, what):
 					communicate=reaction['communicate'],
 					life=life))
 		
-		if _menu:		
-			life['contexts'].append({'items': _menu,'from': what['from']})
+		if _menu:
+			_context['items'] = _menu
+			life['contexts'].append(_context)
 			life['shoot_timer'] = 30
 			gfx.message('Context action added to queue.', style='important')
 	
