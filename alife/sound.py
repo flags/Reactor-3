@@ -14,6 +14,9 @@ def listen(life):
 			pass
 			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
+		if event_delay(event, 20):
+			return False
+		
 		if event['gist'] == 'surrender':
 			if not speech.has_answered(life, event['from'], 'surrender'):
 				#if not speech.has_answered(life, event['from'], 'greeting'):

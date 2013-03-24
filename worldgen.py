@@ -7,6 +7,8 @@ import items
 import tiles
 import life
 import maps
+
+import random
 import time
 
 RECRUIT_ITEMS = ['sneakers', 'leather backpack', '9x19mm magazine', '9x19mm round', 'radio']
@@ -46,6 +48,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	WORLD_INFO['inittime'] = time.time()
 	
 	generate_life(source_map, amount=life)
+	randomize_item_spawns()
 	
 	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 	_r.start()
@@ -58,6 +61,17 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	
 	create_player(source_map)
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
+
+def randomize_item_spawns():
+	for building in REFERENCE_MAP['buildings']:
+		_chunk_key = random.choice(building)
+		_chunk = maps.get_chunk(_chunk_key)
+		
+		if not _chunk['ground']:
+			continue
+		
+		_rand_pos = random.choice(_chunk['ground'])
+		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
