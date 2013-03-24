@@ -53,4 +53,5 @@ def create_context(life, action):
 		'text': 'Nothing here!',
 		'items': [],
 		'reactions': _reactions,
-		'from': action['from']}
+		'from': action['from'],
+		'time': 150}
