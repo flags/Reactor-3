@@ -49,7 +49,8 @@ def look(life):
 			'escaped': False,
 			'snapshot': {},
 			'sent': [],
-			'received': []}
+			'received': [],
+			'impressions': {}}
 	
 	for item in [ITEMS[item] for item in ITEMS]:
 		if item.has_key('id'):
