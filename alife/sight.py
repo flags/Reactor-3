@@ -45,6 +45,7 @@ def look(life):
 			'last_seen_time': 0,
 			'met_at_time': WORLD_INFO['ticks'],
 			'last_seen_at': ai['pos'][:],
+			'last_encounter_time': -1000,
 			'escaped': False,
 			'snapshot': {},
 			'sent': [],

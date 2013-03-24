@@ -73,11 +73,22 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			brain.share_item_with(life, ai['life'], item['item'])
 			#speech.send(life, ai['life'], 'share_chunk_info')
 		
-		if life['known_camps'] and camps.is_in_camp(life, life['known_camps'][0]) and ai['last_seen_time']>=50:
-			if not speech.has_sended(life, ai['life'], 'welcome_to_camp'):
+		if not lfe.can_see(life, ai['life']['pos']):
+			continue
+		
+		if life['known_camps'] and camps.is_in_camp(life, life['known_camps'][0]):
+			_nearest_camp_for_ai = camps.get_nearest_known_camp(ai['life'])
+			_nearest_camp = camps.get_nearest_known_camp(life)
+			
+			if not speech.has_sent(life, ai['life'], 'welcome_to_camp') and _nearest_camp['founder'] == life['id']:
+				if WORLD_INFO['ticks']-_nearest_camp_for_ai['time_discovered']<=1000:
+					msg = 'Welcome to camp, new guy!'
+				else:
+					msg = 'Welcome back to camp.'
+
 				speech.communicate(life,
 						'welcome_to_camp',
-						msg='Welcome back to camp.',
+						msg=msg,
 						matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'welcome_to_camp')
 

@@ -98,24 +98,16 @@ def listen(life):
 			speech.consider(life,event['from'],'confidence')
 
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 40):
+			if event_delay(event, 30):
 				continue
 			
-			if not speech.has_sent(life, event['from'], 'greeting') and not speech.has_received(life, event['from'], 'greeting'):
-				speech.receive(life, event['from'], 'greeting')
+			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'greeting', target=event['from'])
 				speech.send(life, event['from'], 'greeting')
 				lfe.say(life, 'Hello there, traveler!')
 			
-			#TODO: Should we do this up at the start of the loop?
-			#if speech.has_sent(life, event['from'], 'greeting'):
-			#	if not speech.has_received(life, event['from'], 'greeting'):
-			#		speech.communicate(life, 'greeting', target=event['from'])
-			#		speech.receive(life, event['from'], 'greeting')
-			#	continue
-			
-			#if not speech.has_sent(life, event['from'], 'greeting'):
-			#	print 'derp'
+			if not speech.has_received(life, event['from'], 'greeting'):
+				speech.receive(life, event['from'], 'greeting')
 
 		elif event['gist'] == 'insult':
 			if event_delay(event, 20):
@@ -176,16 +168,23 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 			
-			if not speech.has_answered(life, event['from'], 'welcome_to_camp'):
+			if not speech.has_received(life, event['from'], 'welcome_to_camp'):
 				#speech.communicate(life, 'greeting', target=event['from'])
 				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
+				speech.receive(life, event['from'], 'welcome_to_camp')
 		
 		elif event['gist'] == 'appear_friendly':
 			#if event_delay(event, 10):
 			#	continue
 			
 			lfe.memory(life, 'friendly',
+				target=event['from']['id'])
+			
+			print event['from']['name'],'friendly'
+		
+		elif event['gist'] == 'appear_hostile':			
+			lfe.memory(life, 'hostile',
 				target=event['from']['id'])
 			
 			print event['from']['name'],'friendly'

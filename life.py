@@ -327,9 +327,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		'start_time': WORLD_INFO['ticks'],
 		'id': time.time()}
 	_conversation.update(kvargs)
-	
-	if msg:
-		say(life, msg)
+	_for_player = False
 	
 	for ai in [LIFE[i] for i in LIFE]:
 		#TODO: Do we really need to support more than one match?
@@ -356,7 +354,13 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if not _does_match:
 			continue
 		
+		if 'player' in ai:
+			_for_player = True
+		
 		hear(ai, _conversation)
+	
+	if msg:
+		say(life, msg, context=_for_player)
 
 def get_surrounding_unknown_chunks(life, distance=1):
 	_current_chunk_id = get_current_chunk_id(life)
@@ -392,7 +396,10 @@ def hear(life, what):
 	
 	if 'player' in life:		
 		_menu = []
-		for reaction in contexts.create_context(life, what):
+		_context = contexts.create_context(life, what)
+		
+		_context['reactions']
+		for reaction in _context['reactions']:
 			if reaction['type'] == 'say':
 				_menu.append(menus.create_item('single',
 					reaction['type'],
@@ -411,10 +418,10 @@ def hear(life, what):
 					communicate=reaction['communicate'],
 					life=life))
 		
-		if _menu:		
-			life['contexts'].append({'items': _menu,'from': what['from']})
-			life['shoot_timer'] = 30
-			gfx.message('Context action added to queue.', style='important')
+		if _menu:
+			_context['items'] = _menu
+			life['contexts'].append(_context)
+			life['shoot_timer'] = DEFAULT_CONTEXT_TIME
 	
 	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
@@ -455,7 +462,7 @@ def react(reaction):
 
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def say(life,text,action=False,volume=30):
+def say(life, text, action=False, volume=30, context=False):
 	if action:
 		set_animation(life, ['\\', '|', '/', '-'])
 		text = text.replace('@n',' '.join(life['name']))
@@ -467,7 +474,10 @@ def say(life,text,action=False,volume=30):
 	
 	if SETTINGS['following']:
 		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
-			gfx.message(text,style=_style)
+			if context:
+				_style = 'important'
+			
+			gfx.message(text, style=_style)
 
 def memory(life, gist, **kvargs):
 	_entry = {'text': gist}
@@ -1070,6 +1080,13 @@ def tick(life, source_map):
 	
 	if not 'player' in life:
 		brain.think(life,source_map)
+	else:
+		for context in life['contexts'][:]:
+			context['time'] -= 1
+			
+			if not context['time']:
+				life['contexts'].remove(context)
+				logging.info('Context removed!')
 	
 	perform_action(life)
 
@@ -1112,7 +1129,7 @@ def can_see(life,pos):
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
 
-	if len(_line)>30:
+	if len(_line)>15:
 		return False
 
 	for pos in _line:
