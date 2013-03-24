@@ -80,6 +80,15 @@ def remember_item_secondhand(life, target, item_memory):
 
 	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
+def has_met_in_person(life, target):
+	if get_remembered_alife(life, target)['met_at_time'] == -1:
+		return False
+	
+	return True
+
+def get_remembered_alife(life, target):
+	return life['know'][target['id']]
+
 def get_remembered_item(life, item):
 	return life['know_items'][item['uid']]
 

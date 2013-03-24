@@ -168,7 +168,9 @@ def listen(life):
 				camps.discover_camp(life, event['camp'])
 				
 				#TODO: Judge and respond?
-				lfe.memory(life, 'heard about camp #%s' % event['camp']['id'], target=event['from']['id'])
+				lfe.memory(life, 'heard about camp',
+					camp=event['camp']['id'],
+					target=event['from']['id'])
 		
 		elif event['gist'] == 'welcome_to_camp':
 			if event_delay(event, 20):
@@ -178,6 +180,15 @@ def listen(life):
 				#speech.communicate(life, 'greeting', target=event['from'])
 				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
+		
+		elif event['gist'] == 'appear_friendly':
+			#if event_delay(event, 10):
+			#	continue
+			
+			lfe.memory(life, 'friendly',
+				target=event['from']['id'])
+			
+			print event['from']['name'],'friendly'
 		
 		life['heard'].remove(event)
 

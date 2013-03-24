@@ -46,3 +46,7 @@ def discover_camp(life, camp):
 
 def is_in_camp(life, camp):
 	return references.is_in_reference(life, camp['reference'])
+
+def get_founded_camps(life):
+	return [CAMPS[i] for i in CAMPS if CAMPS[i]['founder'] == life['id']]
+		

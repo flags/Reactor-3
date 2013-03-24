@@ -204,6 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
+	_life['encounters'] = {}
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
@@ -389,7 +390,7 @@ def hear(life, what):
 	what['age'] = 0
 	life['heard'].append(what)
 	
-	if 'player' in life:
+	if 'player' in life:		
 		_menu = []
 		for reaction in contexts.create_context(life, what):
 			if reaction['type'] == 'say':
@@ -474,6 +475,21 @@ def memory(life, gist, **kvargs):
 	
 	life['memory'].append(_entry)
 	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+
+def get_memory(life, matches={}):
+	_memories = []
+	
+	for memory in life['memory']:
+		_break = False
+		for key in matches:
+			if not key in memory or not memory[key] == matches[key]:
+				_break = True
+				break
+		
+		if not _break:
+			_memories.append(memory)
+			
+	return _memories
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]
