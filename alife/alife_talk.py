@@ -78,7 +78,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if life['known_camps'] and camps.is_in_camp(life, life['known_camps'][0]):
 			_nearest_camp_for_ai = camps.get_nearest_known_camp(ai['life'])
-			if _nearest_camp_for_ai and not speech.has_sent(life, ai['life'], 'welcome_to_camp'):
+			_nearest_camp = camps.get_nearest_known_camp(life)
+			
+			if not speech.has_sent(life, ai['life'], 'welcome_to_camp') and _nearest_camp['founder'] == life['id']:
 				if WORLD_INFO['ticks']-_nearest_camp_for_ai['time_discovered']<=1000:
 					msg = 'Welcome to camp, new guy!'
 				else:

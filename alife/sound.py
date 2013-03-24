@@ -168,10 +168,11 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 			
-			if not speech.has_answered(life, event['from'], 'welcome_to_camp'):
+			if not speech.has_received(life, event['from'], 'welcome_to_camp'):
 				#speech.communicate(life, 'greeting', target=event['from'])
 				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
+				speech.receive(life, event['from'], 'welcome_to_camp')
 		
 		elif event['gist'] == 'appear_friendly':
 			#if event_delay(event, 10):
