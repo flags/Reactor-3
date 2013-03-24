@@ -284,6 +284,19 @@ def handle_input():
 		
 		logging.debug('** APPEARING FRIENDLY **')
 	
+	if INPUT['H']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]['target']
+		del SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'appear_hostile', matches=[{'id': _target['id']}])
+		
+		logging.debug('** APPEARING HOSTILE **')
+	
 	if INPUT['r']:
 		if menus.get_menu_by_name('Reload')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Reload'))

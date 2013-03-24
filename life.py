@@ -1112,7 +1112,7 @@ def can_see(life,pos):
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
 
-	if len(_line)>30:
+	if len(_line)>20:
 		return False
 
 	for pos in _line:

@@ -190,6 +190,12 @@ def listen(life):
 			
 			print event['from']['name'],'friendly'
 		
+		elif event['gist'] == 'appear_hostile':			
+			lfe.memory(life, 'hostile',
+				target=event['from']['id'])
+			
+			print event['from']['name'],'friendly'
+		
 		life['heard'].remove(event)
 
 def event_delay(event,time):
