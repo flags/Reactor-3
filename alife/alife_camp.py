@@ -43,9 +43,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	if not camps.is_in_camp(life, life['known_camps'][life['known_camps'].keys()[0]]):
-		_closest_key =  references.find_nearest_key_in_reference(life, life['known_camps'][0]['reference'])
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_camp = life['known_camps'][life['known_camps'].keys()[0]]
+	if not camps.is_in_camp(life, _camp):
+		_closest_key =  references.find_nearest_key_in_reference(life, _camp['reference'])
 		_chunk = maps.get_chunk(_closest_key)
 		
 		lfe.clear_actions(life)
