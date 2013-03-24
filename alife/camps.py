@@ -1,6 +1,7 @@
 from globals import *
 
 import references
+import numbers
 import speech
 import chunks
 
@@ -11,6 +12,21 @@ def find_nearest_unfounded_camp(life):
 	_nearest_building = references.find_nearest_building(life, ignore_array=_founded_camps)
 	
 	return _nearest_building['reference']
+
+def get_nearest_known_camp(life):
+	_nearest_camp = {'score': -1, 'camp': None}
+	
+	for camp in [life['known_camps'][i] for i in life['known_camps']]:
+		_key = references.find_nearest_key_in_reference(life, camp['reference'])
+		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
+		
+		_distance = numbers.distance(life['pos'], _center)
+		
+		if not _nearest_camp['camp'] or _distance>_nearest_camp['score']:
+			_nearest_camp['camp'] = camp
+			_nearest_camp['score'] = _distance
+	
+	return _nearest_camp['camp']
 
 def found_camp(life, reference, announce=False):
 	_camp = {'id': len(CAMPS),

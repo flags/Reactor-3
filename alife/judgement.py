@@ -61,7 +61,7 @@ def judge(life, target):
 	
 	if target['life']['asleep']:
 		return 0
-	
+
 	if 'greeting' in target['received']:
 		_like += 1
 	
@@ -71,15 +71,14 @@ def judge(life, target):
 		
 		elif memory['text'] == 'hostile':
 			_dislike += 1
+
+	#First impressions go here
+	if WORLD_INFO['ticks']-target['met_at_time']<=50:
+		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
+			brain.add_impression(life, target['life'], 'had_weapon', 3)
 	
-	#if 'surrender' in target['consider']:
-	#	return 0
-	
-	#if 'greeted' in target['consider']:
-	#	_like += 1
-	
-	#if 'insulted' in target['consider']:
-	#	_dislike += 1
+	for impression in target['impressions']:
+		_dislike += target['impressions'][impression]['score']
 	
 	return _like-_dislike
 
