@@ -1,15 +1,17 @@
+from globals import *
+
 import life as lfe
 
 import logging
 
-def has_asked(life, target, gist):
-	if gist in life['know'][target['id']]['asked']:
+def has_sent(life, target, gist):
+	if gist in life['know'][target['id']]['sent']:
 		return True
 	
 	return False
 
-def has_answered(life, target, gist):
-	if gist in life['know'][target['id']]['answered']:
+def has_received(life, target, gist):
+	if gist in life['know'][target['id']]['received']:
 		return True
 	
 	return False
@@ -25,33 +27,40 @@ def discussed(life, target, gist):
 	if has_heard(life, target, gist):
 		return True
 	
-	if has_answered(life, target, gist):
+	if has_sent(life, target, gist):
 		return True
 	
 	return False
 
-def ask(life, target, gist):
-	life['know'][target['id']]['asked'].append(gist)
+def send(life, target, gist):
+	life['know'][target['id']]['sent'].append(gist)
 	lfe.create_and_update_self_snapshot(target)
 		
 	return True
 
-def answer(life, target, gist):
-	life['know'][target['id']]['answered'].append(gist)
+def receive(life, target, gist):
+	life['know'][target['id']]['received'].append(gist)
 	lfe.create_and_update_self_snapshot(target)
 		
 	return True
 
-def announce(life, gist, **kvargs):
+def announce(life, gist, public=False, **kvargs):
 	logging.debug('%s called announce: %s' % (' '.join(life['name']), gist))
 	
-	for target in [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]:
-		if has_asked(life, target, gist):
+	if public:
+		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
+	else:
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
+	
+	for target in _announce_to:
+		if not public and has_asked(life, target, gist):
 			continue
 	
 		logging.debug('\t%s got announce.' % ' '.join(target['name']))
 		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
-		ask(life, target, gist)
+		
+		if not public:
+			send(life, target, gist)
 	
 	return True
 

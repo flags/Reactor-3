@@ -1,4 +1,7 @@
 import life as lfe
+
+import encounters
+
 import logging
 
 def _create_context_from_phrase(life, phrase):
@@ -27,6 +30,10 @@ def _create_context_from_phrase(life, phrase):
 			'communicate': 'stand_still'})
 		_reactions.append({'type': 'say','text': 'Drop everything.',
 			'communicate': 'comply|drop_everything|stand_still'})
+	elif phrase['gist'] == 'share_camp_info':
+		lfe.memory(life, 'heard about camp',
+			camp=phrase['camp']['id'],
+			target=phrase['from']['id'])
 	else:
 		logging.warning('Unhandled player context: %s' % phrase['gist'])
 
@@ -34,6 +41,7 @@ def _create_context_from_phrase(life, phrase):
 
 def create_context(life, action):
 	logging.debug('Created new context.')
+	encounters.create_encounter(life, action['from'])
 	
 	if 'gist' in action:
 		return _create_context_from_phrase(life, action)

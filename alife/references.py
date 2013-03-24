@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import chunks
 import maps
 
 import numbers
@@ -134,6 +135,13 @@ def path_along_reference(life, ref_type):
 	
 	life['discover_direction'] = _best_dir['dir']
 	return _directions[_best_dir['dir']]['key']
+
+def is_in_reference(life, reference):
+	for chunk_key in reference:
+		if chunks.is_in_chunk(life, chunk_key):
+			return True
+	
+	return False
 
 def find_nearest_road(life, skip_unknown=True, ignore_array=[]):
 	_best_reference = _find_best_reference(life, 'roads')['reference']

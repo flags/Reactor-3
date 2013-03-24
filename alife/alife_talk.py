@@ -5,6 +5,7 @@ import judgement
 import movement
 import speech
 import brain
+import camps
 
 import logging
 
@@ -31,26 +32,24 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#	return False
 	
 	for ai in [alife['who'] for alife in alife_seen]:
-		#print life['know'][ai['life']['id']]['asked'],life['know'][ai['life']['id']]['answered']
+		#print life['know'][ai['life']['id']]['sended'],life['know'][ai['life']['id']]['receiveed']
 		#What's our relationship with them?
-		if speech.has_asked(life, ai['life'], 'greeting'):
-			if speech.has_asked(life, ai['life'], 'get_chunk_info'):
+		if speech.has_received(life, ai['life'], 'greeting'):
+			if speech.has_received(life, ai['life'], 'get_chunk_info'):
 				pass
 			else:
 				if not speech.discussed(life, ai['life'], 'get_chunk_info'):
 					speech.communicate(life,
 						'get_chunk_info',
-						say='Hello!',
+						msg='Do you know of any interesting places?',
 						matches=[{'id': ai['life']['id']}])
-					speech.ask(life, ai['life'], 'get_chunk_info')
+					speech.send(life, ai['life'], 'get_chunk_info')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
-				speech.communicate(life, 'greeting', say='Hello!', matches=[{'id': ai['life']['id']}])
-				speech.ask(life, ai['life'], 'greeting')
-
+				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
+				speech.send(life, ai['life'], 'greeting')
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
-	#_chunk_keys_of_visible_items = set(['%s,%s' % ((item['item']['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (item['item']['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size']) for item in _visible_items])
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<=0:
 			continue
@@ -72,7 +71,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				chunk_key=_item_chunk_key,
 				matches=[{'id': ai['life']['id']}])
 			brain.share_item_with(life, ai['life'], item['item'])
-			#speech.ask(life, ai['life'], 'share_chunk_info')
+			#speech.send(life, ai['life'], 'share_chunk_info')
+		
+		if life['known_camps'] and camps.is_in_camp(life, life['known_camps'][0]) and ai['last_seen_time']>=50:
+			if not speech.has_sended(life, ai['life'], 'welcome_to_camp'):
+				speech.communicate(life,
+						'welcome_to_camp',
+						msg='Welcome back to camp.',
+						matches=[{'id': ai['life']['id']}])
+				speech.send(life, ai['life'], 'welcome_to_camp')
 
 	#if len(_talk_to)>=2:
 	#	for alife in _talk_to:

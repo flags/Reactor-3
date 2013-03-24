@@ -4,12 +4,13 @@ import life as lfe
 
 import alife_collect_items
 import alife_manage_items
+import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_camp
 import alife_talk
 import alife_hide
-import alife_camp
 import snapshots
 import judgement
 import survival
@@ -28,6 +29,7 @@ MODULES = [alife_hide,
 	alife_explore,
 	alife_discover,
 	alife_manage_items,
+	alife_find_camp,
 	alife_camp]
 
 def think(life, source_map):
@@ -77,6 +79,15 @@ def remember_item_secondhand(life, target, item_memory):
 	life['know_items'][_item['item']['uid']] = _item
 
 	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+
+def has_met_in_person(life, target):
+	if get_remembered_alife(life, target)['met_at_time'] == -1:
+		return False
+	
+	return True
+
+def get_remembered_alife(life, target):
+	return life['know'][target['id']]
 
 def get_remembered_item(life, item):
 	return life['know_items'][item['uid']]
