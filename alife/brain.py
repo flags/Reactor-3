@@ -71,6 +71,11 @@ def remember_item(life, item):
 	
 	return False
 
+def add_impression(life, target, gist, score):
+	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
+	
+	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
+
 def remember_item_secondhand(life, target, item_memory):
 	_item = item_memory.copy()
 	_item['flags'] = []

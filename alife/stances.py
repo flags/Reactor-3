@@ -9,3 +9,5 @@ def get_stance_towards(life, target):
 		return 'friendly'
 	elif not _remembered_alife['score']:
 		return 'neutral'
+	else:
+		return 'hostile'

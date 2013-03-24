@@ -93,6 +93,8 @@ def create_player(source_map):
 	PLAYER['player'] = True
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))
+	life.add_item_to_inventory(PLAYER, items.create_item('leather backpack'))
+	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER

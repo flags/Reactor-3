@@ -1116,7 +1116,7 @@ def get_all_visible_items(life):
 	
 	return _ret
 
-def can_see(life,pos):
+def can_see(life, pos):
 	"""Returns `true` if the life can see a certain position."""
 	if CYTHON_RENDER_LOS:
 		_line = render_los.draw_line(life['pos'][0],
