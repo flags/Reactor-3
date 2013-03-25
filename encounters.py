@@ -21,8 +21,6 @@ def create_encounter(life, target, context=None):
 	#	return False
 	
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
-	#_encounter['size'] = (_size[0]+(_dialog['settings']['padding'][0]*2),_size[1])
-	_encounter['console'] = console_new(40, 40)
 	_encounter['target'] = target
 	
 	_remembered_alife = alife.brain.get_remembered_alife(target, life)
@@ -58,13 +56,25 @@ def create_encounter(life, target, context=None):
 	_encounter['start_time'] = WORLD_INFO['ticks']
 	
 	SETTINGS['following'] = target
-	
-	logging.debug('%s created encounter.' % ' '.join(life['name']))
-	
 	life['encounters'][target['id']] = _encounter
+	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
+	
 	return _encounter
 
 def draw_encounter(life, encounter):
+	if SETTINGS['encounter animation timer']>0:
+		if SETTINGS['encounter animation timer'] == ENCOUNTER_ANIMATION_TIME:
+			lfe.set_animation(encounter['target'], TICKER, speed=1, loops=2)
+		
+		SETTINGS['encounter animation timer']-=1
+		
+		if not SETTINGS['encounter animation timer']:
+			encounter['console'] = console_new(40, 40)
+			SETTINGS['encounter animation timer'] = -1
+		
+		return False
+	
 	_y = 1
 	for line in encounter['text']:
 		_x = 1

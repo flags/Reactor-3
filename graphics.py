@@ -350,7 +350,7 @@ def end_of_frame_reactor3():
 def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
-	if SETTINGS['controlling']['encounters']:
+	if SETTINGS['controlling']['encounters'] and SETTINGS['encounter animation timer']==-1:
 		console_blit(SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]['console'], 0, 0,
 			40,
 			40,
