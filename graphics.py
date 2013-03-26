@@ -352,7 +352,7 @@ def end_of_frame():
 	
 	_encounter = None
 	if SETTINGS['controlling']['encounters']:
-		_encounter = SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+		_encounter = SETTINGS['controlling']['encounters'][0]
 	
 	if _encounter and 'console' in _encounter:
 		console_blit(_encounter['console'], 0, 0,

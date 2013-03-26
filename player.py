@@ -219,7 +219,7 @@ def handle_input():
 		
 		if SETTINGS['controlling']['encounters']:
 			SETTINGS['following'] = SETTINGS['controlling']
-			del SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+			SETTINGS['controlling']['encounters'].pop(0)
 		
 		_i = menus.create_menu(title='React',
 			menu=SETTINGS['controlling']['contexts'].pop()['items'],
@@ -276,8 +276,7 @@ def handle_input():
 			return False
 		
 		SETTINGS['following'] = SETTINGS['controlling']
-		_target = SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]['target']
-		del SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
 		SETTINGS['controlling']['shoot_timer'] = 0
 		
 		speech.communicate(SETTINGS['controlling'], 'appear_friendly', matches=[{'id': _target['id']}])
@@ -289,8 +288,7 @@ def handle_input():
 			return False
 		
 		SETTINGS['following'] = SETTINGS['controlling']
-		_target = SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]['target']
-		del SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]]
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
 		SETTINGS['controlling']['shoot_timer'] = 0
 		
 		speech.communicate(SETTINGS['controlling'], 'appear_hostile', matches=[{'id': _target['id']}])

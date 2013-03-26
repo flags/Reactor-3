@@ -30,4 +30,4 @@ def draw_encounter():
 		return False
 	
 	encounters.draw_encounter(SETTINGS['controlling'],
-		SETTINGS['controlling']['encounters'][SETTINGS['controlling']['encounters'].keys()[0]])
+		SETTINGS['controlling']['encounters'][0])

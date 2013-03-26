@@ -204,7 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
-	_life['encounters'] = {}
+	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
