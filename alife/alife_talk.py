@@ -18,8 +18,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#life[['flags'] and spawning conversations based on that (and the state of course).
 	#The main focus is to provide effective output rather than a lot of it, so the less
 	#conversations we spawn the better.
-	#if not alife_seen:
-	#	return False
 	
 	if life['state'] in ['hiding', 'hidden']:
 		return False

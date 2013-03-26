@@ -44,7 +44,7 @@ def _create_context_from_phrase(life, phrase):
 	return _reactions
 
 def create_context(life, action):
-	logging.debug('Created new context.')
+	logging.debug('** Created new context **')
 	
 	if 'gist' in action:
 		_reactions = _create_context_from_phrase(life, action)

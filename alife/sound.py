@@ -105,7 +105,7 @@ def listen(life):
 				continue
 			
 			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.communicate(life, 'greeting', target=event['from'])
+				speech.communicate(life, 'greeting', matches=[{'id': event['from']['id']}])
 				speech.send(life, event['from'], 'greeting')
 				lfe.say(life, 'Hello there, traveler!')
 			
@@ -172,8 +172,6 @@ def listen(life):
 				continue
 			
 			if not speech.has_received(life, event['from'], 'welcome_to_camp'):
-				#speech.communicate(life, 'greeting', target=event['from'])
-				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
 				speech.receive(life, event['from'], 'welcome_to_camp')
 		
