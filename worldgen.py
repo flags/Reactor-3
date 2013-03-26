@@ -89,7 +89,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[15,45,2])
+		position=[35,65,2])
 	PLAYER['player'] = True
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))

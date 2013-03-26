@@ -27,9 +27,6 @@ def create_encounter(life, target, context=None):
 	_stance = alife.stances.get_stance_towards(target, life)
 	_time_since_met = WORLD_INFO['ticks'] - _remembered_alife['met_at_time']
 	
-	#if _time_since_met>=1000:
-	#	return False
-	
 	_text = []
 	_text.append('You see %s.' % ' '.join(target['name']))
 	_text.append('_' * 38)
@@ -68,12 +65,10 @@ def draw_encounter(life, encounter):
 			lfe.set_animation(encounter['target'], TICKER, speed=1, loops=2)
 		
 		SETTINGS['encounter animation timer']-=1
-		
-		if not SETTINGS['encounter animation timer']:
-			encounter['console'] = console_new(40, 40)
-			SETTINGS['encounter animation timer'] = -1
-		
 		return False
+	
+	if not 'console' in encounter:
+		encounter['console'] = console_new(40, 40)
 	
 	_y = 1
 	for line in encounter['text']:
