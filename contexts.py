@@ -1,6 +1,7 @@
 import life as lfe
 
 import encounters
+import graphics
 import alife
 
 import logging
@@ -35,6 +36,8 @@ def _create_context_from_phrase(life, phrase):
 			target=phrase['from']['id'])
 		
 		alife.camps.discover_camp(life, phrase['camp'])
+		
+		graphics.message('You discovered camp #%s from %s.' % (phrase['camp']['id'], ' '.join(phrase['from']['name'])))
 	elif phrase['gist'] == 'welcome_to_camp':
 		_reactions.append({'type': 'say','text': 'Good to be here!',
 			'communicate': 'greeting'})
