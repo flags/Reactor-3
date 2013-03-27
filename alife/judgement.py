@@ -191,3 +191,30 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 	#TODO: For tracking last visit use world ticks
 	
 	return _score
+
+def judge_camp(life, camp):
+	#This is kinda complicated so I'll do my best to describe what's happening.
+	#The ALife keeps track of chunks it's aware of, which we'll use when
+	#calculating how much of a camp we know about (value between 0..1)
+	#First we score the camp based on what we DO know, which is pretty cut and dry:
+	#
+	#We consider:
+	#	How big the camp is vs. how many people we think we're going to need to fit in it (not a factor ATM)
+	#		A big camp won't be attractive to just one ALife, but a faction will love the idea of having a larger base
+	#	Distance from other camps
+	#		Certain ALife will prefer isolation
+	#
+	#After scoring this camp, we simply multiply by the percentage of the camp
+	#that is known. This will encourage ALife to discover a camp first before
+	#moving in.
+	
+	_known_chunks_of_camp = []
+	for _chunk_key in camp:
+		if not _chunk_key in life['known_chunks']:
+			continue
+		
+		_known_chunks_of_camp.append(_chunk_key)
+	
+	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
+	
+	return len(camp)*_percent_known
