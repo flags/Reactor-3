@@ -19,8 +19,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#The main focus is to provide effective output rather than a lot of it, so the less
 	#conversations we spawn the better.
 	
-	if life['state'] in ['hiding', 'hidden']:
-		return False
+	#if life['state'] in ['hiding', 'hidden']:
+	#	return False
 	
 	return RETURN_SKIP
 
@@ -32,6 +32,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for ai in [alife['who'] for alife in alife_seen]:
 		#print life['know'][ai['life']['id']]['sended'],life['know'][ai['life']['id']]['receiveed']
 		#What's our relationship with them?
+		if ai['life']['state'] in ['hiding', 'hidden']:
+			break
+		
 		if speech.has_received(life, ai['life'], 'greeting'):
 			if speech.has_received(life, ai['life'], 'get_chunk_info'):
 				pass
@@ -51,9 +54,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<=0:
 			continue
+		
+		if ai['life']['state'] in ['hiding', 'hidden']:
+			break
 
 		for item in _visible_items:
-			if  brain.has_shared_item_with(life, ai['life'], item['item']):
+			if brain.has_shared_item_with(life, ai['life'], item['item']):
 				continue
 
 			_item_chunk_key = '%s,%s' % ((item['item']['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
@@ -91,5 +97,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 
 	_all_targets = targets_seen
 	_all_targets.extend(targets_not_seen)
-	for ai in [alife['who'] for alife in _all_targets]:
-		speech.announce(life, 'under_attack')
+	for ai in _all_targets:
+		speech.announce(life, 'under_attack', attacker=ai['who']['life'])

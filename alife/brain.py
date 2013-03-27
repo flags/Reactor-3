@@ -85,6 +85,27 @@ def remember_item_secondhand(life, target, item_memory):
 
 	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
+def knows_alife(life, alife):
+	if alife['id'] in life['know']:
+		return life['know'][alife['id']]
+	
+	return False
+
+def meet_alife(life, target):
+	life['know'][target['id']] = {'life': target,
+		'score': 0,
+		'last_seen_time': 0,
+		'met_at_time': WORLD_INFO['ticks'],
+		'last_seen_at': target['pos'][:],
+		'last_encounter_time': -1000,
+		'escaped': False,
+		'snapshot': {},
+		'sent': [],
+		'received': [],
+		'impressions': {}}
+	
+	logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
+
 def has_met_in_person(life, target):
 	if get_remembered_alife(life, target)['met_at_time'] == -1:
 		return False
