@@ -24,7 +24,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
 		return False
 	
-	if not len(targets_seen) and not len(targets_not_seen):
+	if (not len(targets_seen) and not len(targets_not_seen)) or not combat.has_usable_weapon(life):
 		return False
 	
 	return RETURN_VALUE
