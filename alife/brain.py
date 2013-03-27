@@ -8,6 +8,7 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_combat
 import alife_camp
 import alife_talk
 import alife_hide
@@ -30,7 +31,8 @@ MODULES = [alife_hide,
 	alife_discover,
 	alife_manage_items,
 	alife_find_camp,
-	alife_camp]
+	alife_camp,
+	alife_combat]
 
 def think(life, source_map):
 	sight.look(life)
@@ -102,7 +104,8 @@ def meet_alife(life, target):
 		'snapshot': {},
 		'sent': [],
 		'received': [],
-		'impressions': {}}
+		'impressions': {},
+		'flags': {}}
 	
 	logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 

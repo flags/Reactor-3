@@ -178,7 +178,7 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def combat(life,target,source_map):
+def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
 	if not target['escaped'] and not _pos_for_combat:

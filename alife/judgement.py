@@ -99,9 +99,7 @@ def judge(life, target):
 		
 		if _life_combat_score>_target_combat_score:
 			#TODO: Mark ALife as enemy
-			return _life_combat_score-_target_combat_score
-		else:
-			return _dislike
+			target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
 	return _like-_dislike
 
