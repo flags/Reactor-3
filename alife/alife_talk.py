@@ -77,7 +77,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_nearest_camp = camps.get_nearest_known_camp(life)
 		
 		if _nearest_camp and camps.is_in_camp(life, _nearest_camp):
-			
 			if not speech.has_sent(life, ai['life'], 'welcome_to_camp') and _nearest_camp['founder'] == life['id']:
 				if WORLD_INFO['ticks']-_nearest_camp['time_discovered']<=1000:
 					msg = 'Welcome to camp, new guy!'
@@ -90,10 +89,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'welcome_to_camp')
 
-	#if len(_talk_to)>=2:
-	#	for alife in _talk_to:
-	#		speech.communicate(life, 'greeting', target=alife)
-	#		speech.has_considered(life, alife, 'greeted')
-	#elif _talk_to:
-	#	speech.communicate(life, 'greeting', target=_talk_to[0]['life'])
-	#	speech.consider(life, _talk_to[0]['life'], 'tried_to_greet')	
+	_all_targets = targets_seen
+	_all_targets.extend(targets_not_seen)
+	for ai in [alife['who'] for alife in _all_targets]:
+		speech.announce(life, 'under_attack')

@@ -165,7 +165,7 @@ def understand(life,source_map):
 		
 		_alife_seen.append({'who': target,'score': _score})
 		
-		if _score <= 0:
+		if _score < 0:
 			_targets_seen.append({'who': target,'score': _score})
 		
 		#if _score <= 0 and _score > _target['score']:
@@ -188,6 +188,9 @@ def understand(life,source_map):
 		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
 			_score = judgement.judge(life, life['know'][_not_seen])
 			life['know'][_not_seen]['score'] = _score
+		
+		if life['know'][_not_seen]['score'] >= 0:
+			continue
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
 	

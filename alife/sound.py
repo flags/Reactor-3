@@ -175,20 +175,13 @@ def listen(life):
 				lfe.say(life, 'It\'s good to be here.')
 				speech.receive(life, event['from'], 'welcome_to_camp')
 		
-		elif event['gist'] == 'appear_friendly':
-			#if event_delay(event, 10):
-			#	continue
-			
+		elif event['gist'] == 'appear_friendly':			
 			lfe.memory(life, 'friendly',
 				target=event['from']['id'])
-			
-			print event['from']['name'],'friendly'
 		
 		elif event['gist'] == 'appear_hostile':			
 			lfe.memory(life, 'hostile',
 				target=event['from']['id'])
-			
-			print event['from']['name'],'friendly'
 		
 		life['heard'].remove(event)
 

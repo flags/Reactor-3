@@ -53,7 +53,7 @@ def announce(life, gist, public=False, **kvargs):
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
 	
 	for target in _announce_to:
-		if not public and has_asked(life, target, gist):
+		if not public and has_sent(life, target, gist):
 			continue
 	
 		logging.debug('\t%s got announce.' % ' '.join(target['name']))

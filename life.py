@@ -485,6 +485,9 @@ def memory(life, gist, **kvargs):
 	
 	life['memory'].append(_entry)
 	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	
+	if 'target' in kvargs:
+		create_and_update_self_snapshot(LIFE[kvargs['target']])
 
 def get_memory(life, matches={}):
 	_memories = []
