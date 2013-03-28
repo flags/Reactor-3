@@ -45,7 +45,7 @@ def receive(life, target, gist):
 	return True
 
 def announce(life, gist, public=False, **kvargs):
-	logging.debug('%s called announce: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s called announce: %s' % (' '.join(life['name']), gist))
 	
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
@@ -53,10 +53,10 @@ def announce(life, gist, public=False, **kvargs):
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
 	
 	for target in _announce_to:
-		if not public and has_asked(life, target, gist):
+		if not public and has_sent(life, target, gist):
 			continue
 	
-		logging.debug('\t%s got announce.' % ' '.join(target['name']))
+		#logging.debug('\t%s got announce.' % ' '.join(target['name']))
 		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
 		
 		if not public:

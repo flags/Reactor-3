@@ -105,7 +105,7 @@ def listen(life):
 				continue
 			
 			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.communicate(life, 'greeting', target=event['from'])
+				speech.communicate(life, 'greeting', matches=[{'id': event['from']['id']}])
 				speech.send(life, event['from'], 'greeting')
 				lfe.say(life, 'Hello there, traveler!')
 			
@@ -172,25 +172,31 @@ def listen(life):
 				continue
 			
 			if not speech.has_received(life, event['from'], 'welcome_to_camp'):
-				#speech.communicate(life, 'greeting', target=event['from'])
-				#speech.answer(life, event['from'], 'greeting')
 				lfe.say(life, 'It\'s good to be here.')
 				speech.receive(life, event['from'], 'welcome_to_camp')
 		
-		elif event['gist'] == 'appear_friendly':
-			#if event_delay(event, 10):
-			#	continue
-			
+		elif event['gist'] == 'appear_friendly':			
 			lfe.memory(life, 'friendly',
 				target=event['from']['id'])
-			
-			print event['from']['name'],'friendly'
 		
 		elif event['gist'] == 'appear_hostile':			
 			lfe.memory(life, 'hostile',
 				target=event['from']['id'])
+		
+		elif event['gist'] == 'under_attack':
+			if not brain.knows_alife(life, event['from']):
+				brain.meet_alife(life, event['from'])
 			
-			print event['from']['name'],'friendly'
+			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
+				lfe.memory(life, 'traitor',
+					target=event['from']['id'])
+				lfe.say(life, 'You no-good traitor!')
+			else:
+				lfe.memory(life, 'hostile',
+					target=event['from']['id'])
+		
+		else:
+			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		
 		life['heard'].remove(event)
 

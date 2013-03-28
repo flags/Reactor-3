@@ -11,7 +11,7 @@ import maps
 import random
 import time
 
-RECRUIT_ITEMS = ['sneakers', 'leather backpack', '9x19mm magazine', '9x19mm round', 'radio']
+RECRUIT_ITEMS = ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', '9x19mm round', 'radio']
 
 class Runner(threading.Thread):
 	def __init__(self, function, source_map, amount):
@@ -75,7 +75,7 @@ def randomize_item_spawns():
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30+(i*30),70+(i*15),2])
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30+(i*2),70+(i*15),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
@@ -89,12 +89,12 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[15,45,2])
+		position=[35,65,2])
 	PLAYER['player'] = True
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))
 	life.add_item_to_inventory(PLAYER, items.create_item('leather backpack'))
-	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
+	#life.add_item_to_inventory(PLAYER, items.create_item('glock'))
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER

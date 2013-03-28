@@ -1,5 +1,3 @@
-#This is intended to be an example of how the new ALife
-#system works.
 from globals import *
 
 import judgement
@@ -31,18 +29,20 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
 		return False
 	
-	if not life['known_camps'] and not camps.find_nearest_unfounded_camp(life):
+	if not life['known_camps'] and not camps.find_best_unfounded_camp(life):
 		return False
 
 	if life['known_camps']:
 		return False
-	# and camps.is_in_camp(life, life['known_camps'][0]):
-	#	return False
 
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	#TODO: Rather, find BEST camp
 	if not life['known_camps']:
-		_nearest_camp = camps.find_nearest_unfounded_camp(life)
-		camps.found_camp(life, _nearest_camp, announce=True)
+		_best_camp = camps.find_best_unfounded_camp(life)
+		
+		if not _best_camp:
+			return False
+		
+		camps.found_camp(life, _best_camp, announce=True)

@@ -8,6 +8,7 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_combat
 import alife_camp
 import alife_talk
 import alife_hide
@@ -30,7 +31,8 @@ MODULES = [alife_hide,
 	alife_discover,
 	alife_manage_items,
 	alife_find_camp,
-	alife_camp]
+	alife_camp,
+	alife_combat]
 
 def think(life, source_map):
 	sight.look(life)
@@ -84,6 +86,28 @@ def remember_item_secondhand(life, target, item_memory):
 	life['know_items'][_item['item']['uid']] = _item
 
 	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+
+def knows_alife(life, alife):
+	if alife['id'] in life['know']:
+		return life['know'][alife['id']]
+	
+	return False
+
+def meet_alife(life, target):
+	life['know'][target['id']] = {'life': target,
+		'score': 0,
+		'last_seen_time': 0,
+		'met_at_time': WORLD_INFO['ticks'],
+		'last_seen_at': target['pos'][:],
+		'last_encounter_time': -1000,
+		'escaped': False,
+		'snapshot': {},
+		'sent': [],
+		'received': [],
+		'impressions': {},
+		'flags': {}}
+	
+	logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 
 def has_met_in_person(life, target):
 	if get_remembered_alife(life, target)['met_at_time'] == -1:
@@ -165,7 +189,7 @@ def understand(life,source_map):
 		
 		_alife_seen.append({'who': target,'score': _score})
 		
-		if _score <= 0:
+		if _score < 0:
 			_targets_seen.append({'who': target,'score': _score})
 		
 		#if _score <= 0 and _score > _target['score']:
@@ -188,6 +212,9 @@ def understand(life,source_map):
 		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
 			_score = judgement.judge(life, life['know'][_not_seen])
 			life['know'][_not_seen]['score'] = _score
+		
+		if life['know'][_not_seen]['score'] >= 0:
+			continue
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
 	

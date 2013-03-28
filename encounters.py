@@ -15,22 +15,12 @@ def create_encounter(life, target, context=None):
 		logging.warning('Encounter: %s does not know %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 		return False
 	
-	#if WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time']<ENCOUNTER_TIME_LIMIT:
-	#	logging.debug('== Encounter Muted, BELOW TIME ==')
-	#	print WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time'], ENCOUNTER_TIME_LIMIT
-	#	return False
-	
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
-	#_encounter['size'] = (_size[0]+(_dialog['settings']['padding'][0]*2),_size[1])
-	_encounter['console'] = console_new(40, 40)
 	_encounter['target'] = target
 	
 	_remembered_alife = alife.brain.get_remembered_alife(target, life)
 	_stance = alife.stances.get_stance_towards(target, life)
 	_time_since_met = WORLD_INFO['ticks'] - _remembered_alife['met_at_time']
-	
-	#if _time_since_met>=1000:
-	#	return False
 	
 	_text = []
 	_text.append('You see %s.' % ' '.join(target['name']))
@@ -58,13 +48,23 @@ def create_encounter(life, target, context=None):
 	_encounter['start_time'] = WORLD_INFO['ticks']
 	
 	SETTINGS['following'] = target
-	
+	life['encounters'].append(_encounter)
 	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
 	
-	life['encounters'][target['id']] = _encounter
 	return _encounter
 
 def draw_encounter(life, encounter):
+	if SETTINGS['encounter animation timer']>0:
+		if SETTINGS['encounter animation timer'] == ENCOUNTER_ANIMATION_TIME:
+			lfe.set_animation(encounter['target'], TICKER, speed=1, loops=2)
+		
+		SETTINGS['encounter animation timer']-=1
+		return False
+	
+	if not 'console' in encounter:
+		encounter['console'] = console_new(40, 40)
+	
 	_y = 1
 	for line in encounter['text']:
 		_x = 1

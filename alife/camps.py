@@ -1,6 +1,7 @@
 from globals import *
 
 import references
+import judgement
 import numbers
 import speech
 import chunks
@@ -12,6 +13,21 @@ def find_nearest_unfounded_camp(life):
 	_nearest_building = references.find_nearest_building(life, ignore_array=_founded_camps)
 	
 	return _nearest_building['reference']
+
+def find_best_unfounded_camp(life):
+	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
+	
+	_best_camp = {'camp': None, 'score': 4}
+	for camp in REFERENCE_MAP['buildings']:
+		if camp in _founded_camps:
+			continue
+	
+		_score = judgement.judge_camp(life, camp)
+		if _score>_best_camp['score']:
+			_best_camp['camp'] = camp
+			_best_camp['score'] = _score
+	
+	return _best_camp['camp']
 
 def get_nearest_known_camp(life):
 	_nearest_camp = {'score': -1, 'camp': None}
