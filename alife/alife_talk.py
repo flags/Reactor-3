@@ -18,11 +18,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#life[['flags'] and spawning conversations based on that (and the state of course).
 	#The main focus is to provide effective output rather than a lot of it, so the less
 	#conversations we spawn the better.
-	#if not alife_seen:
-	#	return False
 	
-	if life['state'] in ['hiding', 'hidden']:
-		return False
+	#if life['state'] in ['hiding', 'hidden']:
+	#	return False
 	
 	return RETURN_SKIP
 
@@ -34,6 +32,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for ai in [alife['who'] for alife in alife_seen]:
 		#print life['know'][ai['life']['id']]['sended'],life['know'][ai['life']['id']]['receiveed']
 		#What's our relationship with them?
+		if ai['life']['state'] in ['hiding', 'hidden']:
+			break
+		
 		if speech.has_received(life, ai['life'], 'greeting'):
 			if speech.has_received(life, ai['life'], 'get_chunk_info'):
 				pass
@@ -53,9 +54,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<=0:
 			continue
+		
+		if ai['life']['state'] in ['hiding', 'hidden']:
+			break
 
 		for item in _visible_items:
-			if  brain.has_shared_item_with(life, ai['life'], item['item']):
+			if brain.has_shared_item_with(life, ai['life'], item['item']):
 				continue
 
 			_item_chunk_key = '%s,%s' % ((item['item']['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
@@ -79,7 +83,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_nearest_camp = camps.get_nearest_known_camp(life)
 		
 		if _nearest_camp and camps.is_in_camp(life, _nearest_camp):
-			
 			if not speech.has_sent(life, ai['life'], 'welcome_to_camp') and _nearest_camp['founder'] == life['id']:
 				if WORLD_INFO['ticks']-_nearest_camp['time_discovered']<=1000:
 					msg = 'Welcome to camp, new guy!'
@@ -92,10 +95,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'welcome_to_camp')
 
-	#if len(_talk_to)>=2:
-	#	for alife in _talk_to:
-	#		speech.communicate(life, 'greeting', target=alife)
-	#		speech.has_considered(life, alife, 'greeted')
-	#elif _talk_to:
-	#	speech.communicate(life, 'greeting', target=_talk_to[0]['life'])
-	#	speech.consider(life, _talk_to[0]['life'], 'tried_to_greet')	
+	_all_targets = targets_seen
+	_all_targets.extend(targets_not_seen)
+	for ai in _all_targets:
+		speech.announce(life, 'under_attack', attacker=ai['who']['life'])

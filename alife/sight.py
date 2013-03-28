@@ -37,20 +37,8 @@ def look(life):
 			judgement.judge_chunk(life, _chunk_id)
 			
 			continue
-			
-		logging.info('%s learned about %s.' % (' '.join(life['name']),' '.join(ai['name'])))
 		
-		life['know'][ai['id']] = {'life': ai,
-			'score': 0,
-			'last_seen_time': 0,
-			'met_at_time': WORLD_INFO['ticks'],
-			'last_seen_at': ai['pos'][:],
-			'last_encounter_time': -1000,
-			'escaped': False,
-			'snapshot': {},
-			'sent': [],
-			'received': [],
-			'impressions': {}}
+		brain.meet_alife(life, ai)
 	
 	for item in [ITEMS[item] for item in ITEMS]:
 		if item.has_key('id'):

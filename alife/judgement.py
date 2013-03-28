@@ -55,9 +55,19 @@ def judge_self(life):
 	
 	return _confidence+_limb_confidence
 
+def get_combat_rating(life):
+	_score = 0
+	
+	#TODO: CLose? Check equipped items only. Far away? Check inventory.
+	if lfe.get_held_items(life, matches=[{'type': 'gun'}]) or lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
+		_score += 10
+	
+	return _score
+
 def judge(life, target):
 	_like = 0
 	_dislike = 0
+	_is_hostile = False
 	
 	if target['life']['asleep']:
 		return 0
@@ -70,6 +80,7 @@ def judge(life, target):
 			_like += 1
 		
 		elif memory['text'] == 'hostile':
+			_is_hostile = True
 			_dislike += 1
 
 	#First impressions go here
@@ -80,13 +91,17 @@ def judge(life, target):
 	for impression in target['impressions']:
 		_dislike += target['impressions'][impression]['score']
 	
-	return _like-_dislike
-
-def knows_alife(life, alife):
-	if alife['id'] in life['know']:
-		return life['know'][alife['id']]
+	if _is_hostile:
+		_life_combat_score = get_combat_rating(life)
+		_target_combat_score = get_combat_rating(target['life'])
+		
+		logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
+		
+		if _life_combat_score>_target_combat_score:
+			#TODO: Mark ALife as enemy
+			target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
-	return False
+	return _like-_dislike
 
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
@@ -168,7 +183,7 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 			if not lfe.can_see(life, LIFE[ai]['pos']):
 				continue
 			
-			_knows = knows_alife(life, LIFE[ai])
+			_knows = brain.knows_alife(life, LIFE[ai])
 			if not _knows:
 				continue
 				
@@ -191,3 +206,30 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 	#TODO: For tracking last visit use world ticks
 	
 	return _score
+
+def judge_camp(life, camp):
+	#This is kinda complicated so I'll do my best to describe what's happening.
+	#The ALife keeps track of chunks it's aware of, which we'll use when
+	#calculating how much of a camp we know about (value between 0..1)
+	#First we score the camp based on what we DO know, which is pretty cut and dry:
+	#
+	#We consider:
+	#	How big the camp is vs. how many people we think we're going to need to fit in it (not a factor ATM)
+	#		A big camp won't be attractive to just one ALife, but a faction will love the idea of having a larger base
+	#	Distance from other camps
+	#		Certain ALife will prefer isolation
+	#
+	#After scoring this camp, we simply multiply by the percentage of the camp
+	#that is known. This will encourage ALife to discover a camp first before
+	#moving in.
+	
+	_known_chunks_of_camp = []
+	for _chunk_key in camp:
+		if not _chunk_key in life['known_chunks']:
+			continue
+		
+		_known_chunks_of_camp.append(_chunk_key)
+	
+	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
+	
+	return len(camp)*_percent_known

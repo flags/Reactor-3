@@ -204,7 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
-	_life['encounters'] = {}
+	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
@@ -485,6 +485,9 @@ def memory(life, gist, **kvargs):
 	
 	life['memory'].append(_entry)
 	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	
+	if 'target' in kvargs:
+		create_and_update_self_snapshot(LIFE[kvargs['target']])
 
 def get_memory(life, matches={}):
 	_memories = []

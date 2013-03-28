@@ -15,11 +15,6 @@ def create_encounter(life, target, context=None):
 		logging.warning('Encounter: %s does not know %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 		return False
 	
-	#if WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time']<ENCOUNTER_TIME_LIMIT:
-	#	logging.debug('== Encounter Muted, BELOW TIME ==')
-	#	print WORLD_INFO['ticks']-target['know'][life['id']]['last_encounter_time'], ENCOUNTER_TIME_LIMIT
-	#	return False
-	
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
 	_encounter['target'] = target
 	
@@ -53,7 +48,7 @@ def create_encounter(life, target, context=None):
 	_encounter['start_time'] = WORLD_INFO['ticks']
 	
 	SETTINGS['following'] = target
-	life['encounters'][target['id']] = _encounter
+	life['encounters'].append(_encounter)
 	logging.debug('%s created encounter.' % ' '.join(life['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
 	
