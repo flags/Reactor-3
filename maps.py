@@ -134,7 +134,7 @@ def _render_los(map,pos,cython=False):
 def render_los(map,position,los_buffer=LOS_BUFFER[0]):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
-	for pos1 in drawing.draw_circle(position,SETTINGS['los']):
+	for pos1 in drawing.draw_circle(position, SETTINGS['los']):
 
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):

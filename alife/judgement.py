@@ -75,13 +75,17 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
+	print life['name'],target['life']['name'],lfe.get_memory(life, matches={'target': target['life']['id']})
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
 			_like += 1
 		
 		elif memory['text'] == 'hostile':
 			_is_hostile = True
-			_dislike += 1
+			_dislike += 2
+		
+		elif memory['text'] == 'shot by':
+			_dislike += 2
 
 	#First impressions go here
 	if WORLD_INFO['ticks']-target['met_at_time']<=50:
@@ -98,7 +102,6 @@ def judge(life, target):
 		logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
 		
 		if _life_combat_score>_target_combat_score:
-			#TODO: Mark ALife as enemy
 			target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
 	return _like-_dislike

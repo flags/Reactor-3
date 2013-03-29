@@ -92,9 +92,8 @@ def create_player(source_map):
 		position=[35,65,2])
 	PLAYER['player'] = True
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))
-	life.add_item_to_inventory(PLAYER, items.create_item('leather backpack'))
-	#life.add_item_to_inventory(PLAYER, items.create_item('glock'))
+	for item in ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', '9x19mm round']:
+		life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER

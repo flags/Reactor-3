@@ -221,7 +221,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
-	_life['shoot_timer_max'] = 60
+	_life['shoot_timer_max'] = 180
 	_life['strafing'] = False
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
@@ -488,6 +488,8 @@ def memory(life, gist, **kvargs):
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
+	else:
+		print 'NO TARGET?', gist, life['name']
 
 def get_memory(life, matches={}):
 	_memories = []
@@ -2078,6 +2080,12 @@ def damage_from_item(life,item,damage):
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
 	_rand_limb = random.choice(life['body'].keys())
 	_poss_limbs = [_rand_limb]
+	_shot_by_alife = LIFE[item['owner']]
+	
+	memory(life, 'shot by',
+		target=item['owner'])
+	memory(life, 'hostile',
+		target=item['owner'])
 	
 	if 'parent' in life['body'][_rand_limb]:
 		_poss_limbs.append(life['body'][_rand_limb]['parent'])

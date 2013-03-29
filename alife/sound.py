@@ -184,16 +184,24 @@ def listen(life):
 				target=event['from']['id'])
 		
 		elif event['gist'] == 'under_attack':
-			if not brain.knows_alife(life, event['from']):
-				brain.meet_alife(life, event['from'])
+			if not brain.knows_alife(life, event['attacker']):
+				brain.meet_alife(life, event['attacker'])
+			
+			print life['name'],'heard from',event['from']['name'],'that enemy is',event['attacker']['name']
+			
+			_target = brain.knows_alife(life, event['attacker'])
 			
 			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
 				lfe.memory(life, 'traitor',
-					target=event['from']['id'])
+					target=event['attacker']['id'])
 				lfe.say(life, 'You no-good traitor!')
 			else:
 				lfe.memory(life, 'hostile',
-					target=event['from']['id'])
+					target=event['attacker']['id'])
+				lfe.memory(life, 'traitor',
+					targetevent['attacker']['id'])
+			
+			_target['flags']['refresh_snapshot'] = 1
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

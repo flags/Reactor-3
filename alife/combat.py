@@ -1,31 +1,30 @@
 import life as lfe
 
 import movement
+import weapons
 import speech
 
-import weapons
 import numbers
+import logging
 
-def _weapon_equipped_and_ready(life):
-	_wep = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	
-	if not _wep:
+def weapon_equipped_and_ready(life):
+	if not is_any_weapon_equipped(life):
 		return False
 	
-	#TODO: More than one weapon
-	_wep = lfe.get_inventory_item(life,_wep[0])
-	_feed = weapons.get_feed(_wep)
-	
-	if not _feed:
-		return False
-	
-	if not _feed['rounds']:
-		print 'feed in gun with no ammo'
+	_loaded_feed = None
+	for weapon in get_equipped_weapons(life):
+		_feed = weapons.get_feed(weapon)
+		
+		if _feed['rounds']:
+			_loaded_feed = _feed
+
+	if not _loaded_feed:
+		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
 		return False
 	
 	return True
 
-def _get_feed(life,weapon):
+def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
 
 	_highest_feed = {'rounds': -1,'feed': None}
@@ -47,8 +46,6 @@ def _refill_feed(life,feed):
 			'item': feed['id']},
 			200,
 			delay=0)
-	
-	#logging.info('%s is refilling ammo.' % life['name'][0])
 
 	#TODO: No check for ammo type.
 	
@@ -116,13 +113,16 @@ def _equip_weapon(life):
 	
 	return True
 
-def is_weapon_equipped(life):
+def is_any_weapon_equipped(life):
 	_weapon = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 	
-	if not _weapon:
-		return False
+	if _weapon:
+		return True
 	
-	return lfe.get_inventory_item(life,_weapon[0])
+	return False
+
+def get_equipped_weapons(life):
+	return [lfe.get_inventory_item(life, _wep) for _wep in lfe.get_held_items(life,matches=[{'type': 'gun'}])]
 
 def has_weapon(life):
 	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
@@ -206,7 +206,7 @@ def handle_potential_combat_encounter(life,target,source_map):
 			
 			return True
 	
-	if is_weapon_equipped(life):
+	if is_any_weapon_equipped(life):
 		combat(life,target,source_map)
 	else:
 		handle_hide_and_decide(life,target,source_map)
