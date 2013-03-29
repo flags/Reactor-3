@@ -198,8 +198,31 @@ def listen(life):
 				target=event['attacker']['id'])
 			
 			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
-			_target['last_seen_at'] = event['attacker']['pos'][:]
-				
+			if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):
+				speech.communicate(life,
+					'get_alife_location',
+					alife=event['attacker'],
+					matches=[{'id': event['from']['id']}])
+				lfe.say(life, 'Where is he?')
+			elif 'location' in event:
+				_target['last_seen_at'] = event['attacker']['pos'][:]
+		
+		elif event['gist'] == 'get_alife_location':
+			_target = brain.knows_alife(life, event['alife'])
+			
+			#speech.send(life, event['from'], 'alife_location', alife=event['alife'], location=_target['last_seen_at'])
+			speech.communicate(life,
+				'alife_location',
+				alife=event['alife'],
+				location=_target['last_seen_at'][:],
+				matches=[{'id': event['from']['id']}])
+		
+		elif event['gist'] == 'alife_location':
+			_target = brain.knows_alife(life, event['alife'])
+			
+			#TODO: Trust should play a factor here (and also when we ask for the location too)
+			_target['last_seen_at'] = event['location']
+		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		
