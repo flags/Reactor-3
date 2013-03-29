@@ -187,8 +187,6 @@ def listen(life):
 			if not brain.knows_alife(life, event['attacker']):
 				brain.meet_alife(life, event['attacker'])
 			
-			print life['name'],'heard from',event['from']['name'],'that enemy is',event['attacker']['name']
-			
 			_target = brain.knows_alife(life, event['attacker'])
 			
 			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):

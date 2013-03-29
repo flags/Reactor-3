@@ -205,27 +205,17 @@ def understand(life,source_map):
 	for _not_seen in _targets_not_seen_pre:
 		target = life['know'][_not_seen]
 		
-		#if 'refresh_snapshot' in target['flags']:
-		#	if snapshots.process_snapshot(life, target['life']):
-		#		print '** REFRESHING SNAPSHOT **'
-		#		_score = judgement.judge(life, target)
-		#		target['score'] = _score
-		#		del target['flags']['refresh_snapshot']
-		#		logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
-		#	else:
-		#		print 'Had nothing to parse'
-		
 		#life['know'][_not_seen]['who'] = life['know'][_not_seen]['life']
 		#TODO: 350?
-		#if life['know'][_not_seen]['last_seen_time']<350:
-		#	life['know'][_not_seen]['last_seen_time'] += 1
+		#if target['last_seen_time']<350:
+		#	target['last_seen_time'] += 1
 		#else:
-		#	break
+		#	continue
 		
 		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
 			_score = judgement.judge(life, life['know'][_not_seen])
 			life['know'][_not_seen]['score'] = _score
-			lfe.show_debug_info(life)
+			
 			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		if life['know'][_not_seen]['score'] >= 0:
