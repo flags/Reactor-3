@@ -75,13 +75,15 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
-	print life['name'],target['life']['name'],lfe.get_memory(life, matches={'target': target['life']['id']})
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
 			_like += 1
 		
 		elif memory['text'] == 'hostile':
 			_is_hostile = True
+			_dislike += 2
+		
+		elif memory['text'] == 'traitor':
 			_dislike += 2
 		
 		elif memory['text'] == 'shot by':

@@ -397,6 +397,9 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['O']:
+		life.show_debug_info(SETTINGS['following'])
+	
 	if INPUT['Z']:
 		life.crawl(SETTINGS['controlling'])
 	

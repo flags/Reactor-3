@@ -246,7 +246,17 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	SETTINGS['lifeid'] += 1
 	LIFE[_life['id']] = _life
 	
+	print  name,_life['id']
+	
 	return _life
+
+def show_debug_info(life):
+	print ' '.join(life['name'])
+	print '*'*10
+	print 'Dumping memory'
+	print '*'*10
+	for memory in life['memory']:
+		print memory['target'], memory['text']
 
 def change_state(life, state):
 	if life['state'] == state:

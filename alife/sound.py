@@ -195,14 +195,13 @@ def listen(life):
 				lfe.memory(life, 'traitor',
 					target=event['attacker']['id'])
 				lfe.say(life, 'You no-good traitor!')
-			else:
-				lfe.memory(life, 'hostile',
-					target=event['attacker']['id'])
-				lfe.memory(life, 'traitor',
-					targetevent['attacker']['id'])
 			
-			_target['flags']['refresh_snapshot'] = 1
-		
+			lfe.memory(life, 'hostile',
+				target=event['attacker']['id'])
+			
+			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
+			_target['last_seen_at'] = event['attacker']['pos'][:]
+				
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		
