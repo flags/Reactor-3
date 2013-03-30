@@ -210,7 +210,6 @@ def listen(life):
 		elif event['gist'] == 'get_alife_location':
 			_target = brain.knows_alife(life, event['alife'])
 			
-			#speech.send(life, event['from'], 'alife_location', alife=event['alife'], location=_target['last_seen_at'])
 			speech.communicate(life,
 				'alife_location',
 				alife=event['alife'],

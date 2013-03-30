@@ -2095,6 +2095,10 @@ def damage_from_item(life,item,damage):
 	memory(life, 'hostile',
 		target=item['owner'])
 	
+	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
+		memory(life, 'traitor',
+			target=item['owner'])
+	
 	if 'parent' in life['body'][_rand_limb]:
 		_poss_limbs.append(life['body'][_rand_limb]['parent'])
 	
