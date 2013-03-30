@@ -26,7 +26,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	#if life['state'] == INITIAL_STATE:
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) > ENTRY_SCORE:
 		return False
 	
