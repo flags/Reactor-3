@@ -91,10 +91,10 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[35,35,2])
+		position=[25,50,2])
 	PLAYER['player'] = True
 	
-	for item in ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', '9x19mm round']:
+	for item in RECRUIT_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER

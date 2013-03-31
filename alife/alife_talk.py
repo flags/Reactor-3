@@ -46,15 +46,21 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					speech.send(life, ai['life'], 'get_chunk_info')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
-				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
+				_knows = brain.knows_alife(life, ai['life'])
+				
+				if _knows['score']<0:
+					speech.communicate(life, 'greeting', msg='...', matches=[{'id': ai['life']['id']}])
+				else:
+					speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
+				
 				speech.send(life, ai['life'], 'greeting')
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
-	for ai in [life['know'][i] for i in life['know']]:
+	for ai in [life['know'][i] for i in life['know']]:		
 		if ai['score']<=0:
 			continue
 		
-		if ai['life']['state'] in ['hiding', 'hidden']:
+		if ai['life']['state'] in ['hiding', 'hidden', 'combat']:
 			break
 
 		for item in _visible_items:

@@ -221,7 +221,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
-	_life['shoot_timer_max'] = 180
+	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
