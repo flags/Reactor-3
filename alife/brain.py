@@ -22,6 +22,7 @@ import sight
 import sound
 
 import logging
+import time
 
 MODULES = [alife_hide,
 	alife_hidden,
@@ -204,7 +205,9 @@ def understand(life,source_map):
 	generate_needs(life)
 	
 	_modules_run = False
+	_times = []
 	for module in MODULES:
+		_stime = time.time()
 		_return = module.conditions(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
 		
 		if _return == STATE_CHANGE:
@@ -217,6 +220,12 @@ def understand(life,source_map):
 				continue
 			
 			_modules_run = True
+		
+		_times.append({'time': time.time()-_stime, 'module': module.STATE})
 	
 	if not _modules_run:
 		lfe.change_state(life, 'idle')
+	
+	#print ' '.join(life['name'])
+	#for entry in _times:
+	#	print '\t%s: %s' % (entry['module'], entry['time'])

@@ -30,7 +30,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#	return False
 	
 	for ai in [alife['who'] for alife in alife_seen]:
-		#print life['know'][ai['life']['id']]['sended'],life['know'][ai['life']['id']]['receiveed']
 		#What's our relationship with them?
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break

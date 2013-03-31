@@ -11,7 +11,9 @@ import maps
 import random
 import time
 
-RECRUIT_ITEMS = ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', '9x19mm round', 'radio']
+RECRUIT_ITEMS = ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', 'radio']
+for i in range(10):
+	RECRUIT_ITEMS.append('9x19mm round')
 
 class Runner(threading.Thread):
 	def __init__(self, function, source_map, amount):
@@ -89,7 +91,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[35,65,2])
+		position=[35,35,2])
 	PLAYER['player'] = True
 	
 	for item in ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', '9x19mm round']:

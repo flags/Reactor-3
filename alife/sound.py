@@ -17,6 +17,11 @@ def listen(life):
 		if event_delay(event, 20):
 			return False
 		
+		if not brain.knows_alife(life, event['from']):
+			brain.meet_alife(life, event['from'])
+			
+			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
+		
 		if event['gist'] == 'surrender':
 			if not speech.has_answered(life, event['from'], 'surrender'):
 				#if not speech.has_answered(life, event['from'], 'greeting'):
@@ -129,6 +134,7 @@ def listen(life):
 
 			if not speech.has_received(life, event['from'], 'get_chunk_info'):
 				speech.communicate(life, 'get_chunk_info', target=event['from'])
+				speech.receive(life, event['from'], 'get_chunk_info')
 				speech.send(life, event['from'], 'no_chunk_info')
 				lfe.say(life, 'I\'m new around here, sorry!')
 		
