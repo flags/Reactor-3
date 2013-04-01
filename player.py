@@ -269,6 +269,7 @@ def handle_input():
 			format_str='[$i] $k: $v',
 			on_select=inventory_fire)
 		
+		SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 		menus.activate_menu(_i)
 	
 	if INPUT['F']:
@@ -612,7 +613,6 @@ def inventory_fire(entry):
 			return False
 	
 	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
-	SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
