@@ -11,6 +11,7 @@ import camps
 import maps
 
 import logging
+import random
 
 STATE = 'camping'
 INITIAL_STATES = ['idle', 'hidden']
@@ -51,5 +52,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move',
-			'to': _chunk['pos']},
+			'to': random.choice(_chunk['ground'])},
 			200)
