@@ -38,9 +38,9 @@ def create_encounter(life, target, context=None):
 	
 	_text.append('He appears to be %s towards you.' % _stance)
 	_text.append('_' * 38)
-	_text.append('<Shift>+v - Talk')
 	_text.append('<Shift>+f - Appear Friendly')
 	_text.append('<Shift>+h - Appear Hostile')
+	_text.append('<Shift>+s - Surrender')
 	_text.append('<Shift>+q - Ignore')
 	_text.append('_' * 38)
 	

@@ -23,15 +23,10 @@ def listen(life):
 			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
 		if event['gist'] == 'surrender':
-			if not speech.has_answered(life, event['from'], 'surrender'):
-				#if not speech.has_answered(life, event['from'], 'greeting'):
-				speech.communicate(life, 'surrender', target=event['from'])
-				speech.answer(life, event['from'], 'surrender')
-				print 'SURRENDERED'
-			#if speech.consider(life,event['from'],'surrendered'):
-			#	logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-			#	
-			#	speech.communicate(life,'stand_still',target=event['from'])
+			if not speech.has_received(life, event['from'], 'surrender'):
+				speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
+				speech.receive(life, event['from'], 'surrender')
+				lfe.memory(life, 'surrendered', target=event['from']['id'])
 		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):

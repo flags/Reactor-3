@@ -68,6 +68,7 @@ def judge(life, target):
 	_like = 0
 	_dislike = 0
 	_is_hostile = False
+	_surrendered = False
 	
 	if target['life']['asleep']:
 		return 0
@@ -88,6 +89,9 @@ def judge(life, target):
 		
 		elif memory['text'] == 'shot by':
 			_dislike += 2
+		
+		elif memory['text'] == 'surrendered':
+			_surrendered = True
 
 	#First impressions go here
 	if WORLD_INFO['ticks']-target['met_at_time']<=50:
@@ -98,13 +102,16 @@ def judge(life, target):
 		_dislike += target['impressions'][impression]['score']
 	
 	if _is_hostile:
-		_life_combat_score = get_combat_rating(life)
-		_target_combat_score = get_combat_rating(target['life'])
-		
-		logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
-		
-		if _life_combat_score>_target_combat_score:
-			target['flags']['enemy'] = _life_combat_score-_target_combat_score
+		if _surrendered:
+			print 'Surrendered',target['flags'].keys()
+		else:
+			_life_combat_score = get_combat_rating(life)
+			_target_combat_score = get_combat_rating(target['life'])
+			
+			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
+			
+			if _life_combat_score>_target_combat_score:
+				target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
 	return _like-_dislike
 

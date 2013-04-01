@@ -371,13 +371,25 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
-	if INPUT['S']:
+	if INPUT['s']:
 		if SETTINGS['controlling']['strafing']:
 			SETTINGS['controlling']['strafing'] = False
 			print 'Not strafing'
 		else:
 			SETTINGS['controlling']['strafing'] = True
 			print 'Strafing'
+	
+	if INPUT['S']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
+		
+		logging.debug('** SURRENDERING **')
 	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
