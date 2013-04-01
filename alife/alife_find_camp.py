@@ -38,7 +38,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	#TODO: Rather, find BEST camp
 	if not life['known_camps']:
 		_best_camp = camps.find_best_unfounded_camp(life)
 		

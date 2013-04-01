@@ -24,7 +24,6 @@ def _create_context_from_phrase(life, phrase):
 			'communicate': 'compliant'})
 	elif phrase['gist'] == 'greeting':
 		encounters.create_encounter(life, phrase['from'])
-		
 	elif phrase['gist'] == 'surrender':
 		_reactions.append({'type': 'say','text': 'Stay still!',
 			'communicate': 'stand_still'})
@@ -35,9 +34,8 @@ def _create_context_from_phrase(life, phrase):
 			camp=phrase['camp']['id'],
 			target=phrase['from']['id'])
 		
-		alife.camps.discover_camp(life, phrase['camp'])
-		
-		graphics.message('You discovered camp #%s from %s.' % (phrase['camp']['id'], ' '.join(phrase['from']['name'])))
+		alife.camps.discover_camp(life, phrase['camp'])		
+		graphics.message('You discovered a camp via %s.' % (' '.join(phrase['from']['name'])), style='important')
 	elif phrase['gist'] == 'welcome_to_camp':
 		_reactions.append({'type': 'say','text': 'Good to be here!',
 			'communicate': 'greeting'})

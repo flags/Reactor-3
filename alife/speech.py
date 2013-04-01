@@ -64,8 +64,8 @@ def announce(life, gist, public=False, **kvargs):
 	return True
 
 def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
-	if 'target ' in kvargs:
-		logging.warning('Deprecated keyword to speech.communicate(): target')
+	if 'target' in kvargs:
+		logging.warning('Deprecated keyword in speech.communicate(): target')
 	
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
