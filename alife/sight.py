@@ -41,10 +41,10 @@ def look(life):
 		brain.meet_alife(life, ai)
 	
 	for item in [ITEMS[item] for item in ITEMS]:
-		if item.has_key('id'):
+		if item.has_key('id') or item.has_key('parent'):
 			continue
 		
-		if item.has_key('parent'):
+		if not item['uid'] in life['know_items']:
 			continue
 		
 		_can_see = lfe.can_see(life,item['pos'])
