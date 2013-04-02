@@ -62,6 +62,7 @@ def flag_item(life,item,flag):
 	return False
 
 def remember_item(life, item):
+	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item,
 			'score': judgement.judge_item(life,item),
