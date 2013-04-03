@@ -226,6 +226,11 @@ def tick_all_items(MAP):
 		item['pos'][0] = int(round(item['realpos'][0]))
 		item['pos'][1] = int(round(item['realpos'][1]))
 		item['pos'][2] = int(round(item['realpos'][2]))
+
+		if item['pos'][0] < MAP_SIZE[0] or item['pos'][0] > MAP_SIZE[0] \
+			or item['pos'][1] < MAP_SIZE[1] or item['pos'][1] > MAP_SIZE[1]:
+			_remove.append(item['uid'])
+			continue
 	
 		if _break:
 			maps.refresh_chunk(life.get_current_chunk_id(item))
