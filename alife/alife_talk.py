@@ -34,6 +34,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
 		
+		if life['state'] == 'combat':
+			break
+		
 		if speech.has_received(life, ai['life'], 'greeting'):
 			if speech.has_received(life, ai['life'], 'get_chunk_info'):
 				pass
@@ -60,7 +63,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if ai['score']<=0:
 			continue
 		
-		if ai['life']['state'] in ['hiding', 'hidden', 'combat']:
+		if life['state'] == 'combat':
+			break
+		
+		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
 
 		for item in _visible_items:

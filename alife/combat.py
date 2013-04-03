@@ -210,3 +210,8 @@ def handle_potential_combat_encounter(life,target,source_map):
 		combat(life,target,source_map)
 	else:
 		handle_hide_and_decide(life,target,source_map)
+
+def disarm(life, target, source_map):
+	#Figure out who should handle this...
+	#TODO: Should be announce_to_camp/group()
+	speech.announce(life, 'target_needs_disarmed', target=target)

@@ -387,7 +387,7 @@ def handle_input():
 		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
 		SETTINGS['controlling']['shoot_timer'] = 0
 		
-		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
+		speech.communicate(SETTINGS['controlling'], 'surrender')#, matches=[{'id': _target['id']}])
 		
 		logging.debug('** SURRENDERING **')
 	

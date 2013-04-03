@@ -37,6 +37,19 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if combat._equip_weapon(life):
 					life['equipping'] = True
 		else:
-			_targets = targets_seen
-			_targets.extend(targets_not_seen)
-			combat.combat(life, _targets[0]['who'], life['map'])
+			_targets = []
+			_neutral_targets = []
+			_all_targets = targets_seen
+			_all_targets.extend(targets_not_seen)
+			
+			for _target in _all_targets:
+				if 'surrendered' in _target['who']['flags']:
+					_neutral_targets.append(_target)
+					continue
+				
+				_targets.append(_target)
+
+			if _targets:
+				combat.combat(life, _targets[0]['who'], life['map'])
+			elif _neutral_targets:
+				combat.disarm(life, _neutral_targets[0]['who'], life['map'])
