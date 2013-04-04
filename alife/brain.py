@@ -233,6 +233,12 @@ def understand(life,source_map):
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
 	
+	#print life['name']
+	#for t in _targets_seen:
+	#	print '\t',t['who']['life']['id']
+	#for t in _targets_not_seen:
+	#	print '\t',t['who']['life']['id']
+	
 	generate_needs(life)
 	
 	_modules_run = False

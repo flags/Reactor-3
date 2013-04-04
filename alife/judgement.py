@@ -133,7 +133,7 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 	
 	_score = numbers.clip(_max_score-_distance, 0, _max_score)
 	for _life in [LIFE[i] for i in LIFE]:
-		if _life == life:
+		if _life['id'] == life['id']:
 			continue
 		
 		#if chunks.is_in_chunk(_life, chunk_id):
