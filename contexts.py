@@ -20,8 +20,7 @@ def _create_context_from_phrase(life, phrase):
 		_reactions.append({'type': 'action','text': 'Drop the item.',
 			'action': {'action': 'dropitem','item': phrase['item']},
 			'score': 900,
-			'delay': lfe.get_item_access_time(life,phrase['item']),
-			'communicate': 'compliant'})
+			'delay': lfe.get_item_access_time(life,phrase['item'])})
 	elif phrase['gist'] == 'greeting':
 		encounters.create_encounter(life, phrase['from'])
 	elif phrase['gist'] == 'surrender':

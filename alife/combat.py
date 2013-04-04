@@ -211,7 +211,14 @@ def handle_potential_combat_encounter(life,target,source_map):
 	else:
 		handle_hide_and_decide(life,target,source_map)
 
-def disarm(life, target, source_map):
+def disarm(life, target, item):
 	#Figure out who should handle this...
 	#TODO: Should be announce_to_camp/group()
-	speech.announce(life, 'target_needs_disarmed', target=target)
+	#speech.announce(life, 'target_needs_disarmed', alife=target)
+	if lfe.can_see(life, target['pos']):
+		lfe.clear_actions(life)
+		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item)
+		speech.send(life, target, 'demand_drop_item')
+	else:
+		_target_pos = (target['pos'][0], target['pos'][1])
+		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)

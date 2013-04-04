@@ -1,6 +1,8 @@
 from globals import *
 
 import combat
+import speech
+import brain
 
 import logging
 
@@ -31,25 +33,33 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Ugly hack. We're already doing this in alife_hidden.py
-	if combat.has_weapon(life):
+	_targets = []
+	_neutral_targets = []
+	_all_targets = targets_seen
+	_all_targets.extend(targets_not_seen)
+	
+	for _target in _all_targets[:]:
+		if 'surrendered' in _target['who']['flags']:
+			_neutral_targets.append(_target)
+			_all_targets.remove(_target)
+			continue
+		
+		_targets.append(_target)
+	
+	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):
 			if not 'equipping' in life:
 				if combat._equip_weapon(life):
 					life['equipping'] = True
-		else:
-			_targets = []
-			_neutral_targets = []
-			_all_targets = targets_seen
-			_all_targets.extend(targets_not_seen)
 			
-			for _target in _all_targets:
-				if 'surrendered' in _target['who']['flags']:
-					_neutral_targets.append(_target)
-					continue
-				
-				_targets.append(_target)
-
 			if _targets:
 				combat.combat(life, _targets[0]['who'], life['map'])
-			elif _neutral_targets:
-				combat.disarm(life, _neutral_targets[0]['who'], life['map'])
+	elif _neutral_targets:
+		for _ntarget in [_target['who']['life'] for _target in _neutral_targets]:
+			_has_weapon = combat.get_equipped_weapons(_ntarget)
+			
+			if _has_weapon:
+				if not speech.has_sent(life, _ntarget, 'demand_drop_item') and not brain.get_alife_flag(life, _ntarget, 'not_handling_surrender'):
+					combat.disarm(life, _ntarget, _has_weapon[0]['id'])
+			else:
+				continue

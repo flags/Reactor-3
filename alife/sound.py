@@ -24,9 +24,17 @@ def listen(life):
 		
 		if event['gist'] == 'surrender':
 			if not speech.has_received(life, event['from'], 'surrender'):
-				speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 				speech.receive(life, event['from'], 'surrender')
 				lfe.memory(life, 'surrendered', target=event['from']['id'])
+				speech.announce(life, 'target_surrendered', handler=life, target=event['from'])
+		
+		elif event['gist'] == 'target_surrendered':
+			if not brain.knows_alife(life, event['target']):
+				brain.meet_alife(life, event['target'])
+			
+			print 'Got secondhand knowledge of a surrender'
+			lfe.memory(life, 'surrendered', target=event['from']['id'])
+			brain.flag_alife(life, event['from'], 'not_handling_surrender', value=event['handler'])
 		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):
@@ -66,9 +74,6 @@ def listen(life):
 			if brain.get_flag(life, 'surrendered'):
 				lfe.clear_actions(life)
 				lfe.add_action(life,{'action': 'block'},400)
-		
-		elif event['gist'] == 'compliant':
-			speech.consider(life,event['from'],'compliant')
 		
 		elif event['gist'] == 'intimidate':
 			if event_delay(event,60):
@@ -222,6 +227,14 @@ def listen(life):
 			
 			#TODO: Trust should play a factor here (and also when we ask for the location too)
 			_target['last_seen_at'] = event['location']
+		
+		elif event['gist'] == 'target_needs_disarmed':
+			if not brain.knows_alife(life, event['alife']):
+				brain.meet_alife(life, event['alife'])
+			
+			#TODO: In the future we should consider giving this task to another ALife
+			#_target = brain.knows_alife(life, event['alife'])['score']
+			logging.warning('target_needs_disarmed: Needs handling code.')
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

@@ -103,7 +103,6 @@ def judge(life, target):
 	
 	if _is_hostile:
 		if _surrendered:
-			print 'Surrendered',target['flags'].keys()
 			target['flags']['surrendered'] = True
 		else:
 			_life_combat_score = get_combat_rating(life)

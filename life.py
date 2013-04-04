@@ -416,15 +416,25 @@ def hear(life, what):
 					communicate=reaction['communicate'],
 					life=life))
 			elif reaction['type'] == 'action':
-				_menu.append(menus.create_item('single',
-					reaction['type'],
-					reaction['text'],
-					target=what['from'],
-					action=reaction['action'],
-					score=reaction['score'],
-					delay=reaction['delay'],
-					communicate=reaction['communicate'],
-					life=life))
+				if 'communicate' in reaction:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						communicate=reaction['communicate'],
+						life=life))
+				else:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						life=life))
 		
 		if _menu:
 			_context['items'] = _menu
@@ -452,13 +462,14 @@ def react(reaction):
 	target = reaction['target']
 	score = reaction.get('score', 0)
 
-	for comm in reaction['communicate'].split('|'):
-		add_action(life,
-			{'action': 'communicate',
-				'what': comm,
-				'target': target},
-			score-1,
-			delay=0)
+	if 'communicate' in reaction:
+		for comm in reaction['communicate'].split('|'):
+			add_action(life,
+				{'action': 'communicate',
+					'what': comm,
+					'target': target},
+				score-1,
+				delay=0)
 
 	if type == 'say':
 		say(life, text)

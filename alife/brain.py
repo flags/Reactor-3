@@ -40,17 +40,29 @@ def think(life, source_map):
 	sound.listen(life)
 	understand(life, source_map)
 
-def flag(life,flag):
+def flag(life, flag):
 	life['flags'][flag] = True
 
-def unflag(life,flag):
+def unflag(life, flag):
 	life['flags'][flag] = False
 
-def get_flag(life,flag):
+def get_flag(life, flag):
 	if not flag in life['flags']:
 		return False
 	
 	return life['flags'][flag]
+
+def flag_alife(life, target, flag, value=True):
+	life['know'][target['id']]['flags'][flag] = value
+
+def unflag_alife(life, target, flag):
+	del life['know'][target['id']]['flags'][flag] 
+
+def get_alife_flag(life, target, flag):
+	if not flag in life['know'][target['id']]['flags']:
+		return False
+	
+	return life['know'][target['id']]['flags'][flag]
 
 def flag_item(life,item,flag):
 	if not flag in life['know_items'][item['uid']]['flags']:
