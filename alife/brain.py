@@ -40,6 +40,18 @@ def think(life, source_map):
 	sound.listen(life)
 	understand(life, source_map)
 
+def store_in_memory(life, key, value):
+	print life['name']
+	for key in life.keys():
+		print key
+	life['tempstor2'][key] = value
+
+def retrieve_from_memory(life, key):
+	if key in life['tempstor2']:
+		return life['tempstor2'][key]
+	
+	return None
+
 def flag(life, flag):
 	life['flags'][flag] = True
 
@@ -64,12 +76,21 @@ def get_alife_flag(life, target, flag):
 	
 	return life['know'][target['id']]['flags'][flag]
 
-def flag_item(life,item,flag):
+def flag_item(life, item, flag, value=True):
+	if not item['uid'] in life['know_items']:
+		remember_item(life, item)
+	
 	if not flag in life['know_items'][item['uid']]['flags']:
-		life['know_items'][item['uid']]['flags'].append(flag)
+		life['know_items'][item['uid']]['flags'][flag] = value
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
 		
 		return True
+	
+	return False
+
+def get_item_flag(life, item, flag):
+	if flag in life['know_items'][item['uid']]['flags']:
+		return life['know_items'][item['uid']]['flags'][flag]
 	
 	return False
 
@@ -81,16 +102,11 @@ def remember_item(life, item):
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
 			'shared_with': [],
-			'flags': []}
+			'flags': {}}
 		
 		return True
 	
 	return False
-
-def add_impression(life, target, gist, score):
-	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
-	
-	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
 
 def remember_item_secondhand(life, target, item_memory):
 	_item = item_memory.copy()
@@ -100,6 +116,11 @@ def remember_item_secondhand(life, target, item_memory):
 	life['know_items'][_item['item']['uid']] = _item
 
 	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+
+def add_impression(life, target, gist, score):
+	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
+	
+	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
 
 def knows_alife(life, alife):
 	if alife['id'] in life['know']:

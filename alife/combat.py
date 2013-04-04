@@ -3,6 +3,7 @@ import life as lfe
 import movement
 import weapons
 import speech
+import brain
 
 import numbers
 import logging
@@ -215,10 +216,12 @@ def disarm(life, target, item):
 	#Figure out who should handle this...
 	#TODO: Should be announce_to_camp/group()
 	#speech.announce(life, 'target_needs_disarmed', alife=target)
+	
 	if lfe.can_see(life, target['pos']):
 		lfe.clear_actions(life)
-		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item)
+		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
 		speech.send(life, target, 'demand_drop_item')
+		brain.flag_item(life, item, 'disallow_pickup_from', value=target)
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)

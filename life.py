@@ -240,7 +240,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['know_items'] = {}
 	_life['memory'] = []
 	_life['known_chunks'] = {}
-	_life['known_camps'] = {} 
+	_life['known_camps'] = {}
+	_life['tempstor2'] = {}
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1

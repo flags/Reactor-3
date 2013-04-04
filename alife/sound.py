@@ -26,15 +26,15 @@ def listen(life):
 			if not speech.has_received(life, event['from'], 'surrender'):
 				speech.receive(life, event['from'], 'surrender')
 				lfe.memory(life, 'surrendered', target=event['from']['id'])
-				speech.announce(life, 'target_surrendered', handler=life, target=event['from'])
+				speech.announce(life, 'target_surrendered', target=event['from'])
 		
 		elif event['gist'] == 'target_surrendered':
 			if not brain.knows_alife(life, event['target']):
 				brain.meet_alife(life, event['target'])
 			
-			print 'Got secondhand knowledge of a surrender'
+			print life['name'],'Got secondhand knowledge of a surrender'
 			lfe.memory(life, 'surrendered', target=event['from']['id'])
-			brain.flag_alife(life, event['from'], 'not_handling_surrender', value=event['handler'])
+			brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
 		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):
