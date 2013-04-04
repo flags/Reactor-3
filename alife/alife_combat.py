@@ -26,31 +26,39 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
 		return False
 	
-	_targets = []
 	_neutral_targets = []
 	_all_targets = targets_seen
 	_all_targets.extend(targets_not_seen)
 	
 	for _target in _all_targets[:]:
-		if 'surrendered' in _target['who']['flags'] and not brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):
-			_neutral_targets.append(_target)
+		if 'surrendered' in _target['who']['flags']:
+			if not brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):
+				_neutral_targets.append(_target)
+			
 			_all_targets.remove(_target)
-			continue
-		
-		_targets.append(_target)
+	
+	print targets_seen.keys()
+	print life['name']
+	for target in _all_targets:
+		print '\t',target['who']['life']['name'],target['who']['flags'].keys()
 	
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
 	
-	if not brain.retrieve_from_memory(life, 'combat_target'):
+	if not brain.retrieve_from_memory(life, 'combat_targets') and not brain.retrieve_from_memory(life, 'neutral_combat_targets'):
 		return False
 		
-	if (not len(targets_seen) and not len(targets_not_seen)) or not combat.weapon_equipped_and_ready(life):
+	if not combat.weapon_equipped_and_ready(life):
 		return False
+	#if (not len(targets_seen) and not len(targets_not_seen)) or 
+	#	return False
 	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
+	_all_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	_neutral_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
 	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):
 			if not 'equipping' in life:

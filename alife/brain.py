@@ -41,9 +41,6 @@ def think(life, source_map):
 	understand(life, source_map)
 
 def store_in_memory(life, key, value):
-	print life['name']
-	for key in life.keys():
-		print key
 	life['tempstor2'][key] = value
 
 def retrieve_from_memory(life, key):
