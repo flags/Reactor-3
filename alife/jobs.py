@@ -48,8 +48,7 @@ def complete_task(life):
 		_open_task = find_open_task(life, life['job'])
 		
 		if _open_task:
-			life['task'] = _open_task
-			life['task']['workers'].append(life['id'])
+			take_job(life, life['job'], _open_task)
 		else:
 			life['job']['workers'].remove(life['id'])
 			life['job'] = None
@@ -100,24 +99,14 @@ def is_job_candidate(job, life):
 	return False
 
 def take_job(life, job, task):
-	job['workers'].append(life['id'])
-	_t = None
+	if not life['id'] in job['workers']:
+		job['workers'].append(life['id'])
 	
-	for _task in job['tasks']:
-		if not _task['task'] == task:
-			continue
-		
-		_t = _task
-		_task['workers'].append(life['id'])
-		break
-	
-	if not _t:
-		return False
-	
+	task['workers'].append(life['id'])
 	life['job'] = job
-	life['task'] = _t
+	life['task'] = task
 	
-	logging.debug('%s joined task \'%s\' in job \'%s\'' % (' '.join(life['name']), task, job['gist']))
+	logging.debug('%s joined task \'%s\' in job \'%s\'' % (' '.join(life['name']), task['task'], job['gist']))
 
 def is_working_job(life, job):
 	if life['id'] in job['workers']:
@@ -188,4 +177,4 @@ def process_job(job):
 	
 	_task = find_open_task(LIFE[_scores[_scores.keys()[0]]], job)
 	if _task:
-		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task['task'])
+		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task)

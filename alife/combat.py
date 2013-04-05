@@ -225,16 +225,22 @@ def disarm(life):#disarm(life, target, item):
 		return False
 	
 	target = _targets[0]['who']['life']
-	item = get_equipped_weapons(target)[0]
+	item = get_equipped_weapons(target)
+	
+	if not item:
+		return True
+	
+	item = item[0]
 	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
 	
 	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
 		lfe.clear_actions(life)
-		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
-		speech.send(life, target, 'demand_drop_item')
-		#brain.flag_item(life, item, 'disallow_pickup_from', value=target)
 		
-		return True
+		if not speech.has_sent(life, target, 'demand_drop_item'):
+			speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
+			speech.send(life, target, 'demand_drop_item')
+		
+		return False
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
@@ -261,6 +267,5 @@ def guard(life):
 
 def retrieve_weapon(life):
 	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
-	#print _weapon
-	
+	lfe.clear_actions(life)
 	return False
