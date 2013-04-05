@@ -212,16 +212,27 @@ def handle_potential_combat_encounter(life,target,source_map):
 	else:
 		handle_hide_and_decide(life,target,source_map)
 
-def disarm(life, target, item):
+def disarm(life):#disarm(life, target, item):
 	#Figure out who should handle this...
 	#TODO: Should be announce_to_camp/group()
 	#speech.announce(life, 'target_needs_disarmed', alife=target)
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	item = get_equipped_weapons(target)[0]
 	
 	if lfe.can_see(life, target['pos']):
 		lfe.clear_actions(life)
 		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
 		speech.send(life, target, 'demand_drop_item')
 		brain.flag_item(life, item, 'disallow_pickup_from', value=target)
+		
+		return True
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+		
+		return False

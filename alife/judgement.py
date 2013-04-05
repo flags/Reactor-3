@@ -245,3 +245,16 @@ def judge_camp(life, camp):
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	
 	return len(camp)*_percent_known
+
+def judge_job(life, job):
+	_score = 0
+	for factor in job['factors']:
+		if factor['type'] == 'alife':
+			_alife = brain.knows_alife_by_id(life, factor['value'])
+			
+			if not _alife:
+				continue
+			
+			_score += judge(life, _alife)
+
+	return _score

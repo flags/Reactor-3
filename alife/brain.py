@@ -11,6 +11,7 @@ import alife_hidden
 import alife_combat
 import alife_camp
 import alife_talk
+import alife_work
 import alife_hide
 import snapshots
 import judgement
@@ -33,7 +34,8 @@ MODULES = [alife_hide,
 	alife_manage_items,
 	alife_find_camp,
 	alife_camp,
-	alife_combat]
+	alife_combat,
+	alife_work]
 
 def think(life, source_map):
 	sight.look(life)
@@ -122,6 +124,12 @@ def add_impression(life, target, gist, score):
 def knows_alife(life, alife):
 	if alife['id'] in life['know']:
 		return life['know'][alife['id']]
+	
+	return False
+
+def knows_alife_by_id(life, alife_id):
+	if alife_id in life['know']:
+		return life['know'][alife_id]
 	
 	return False
 

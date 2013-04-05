@@ -10,15 +10,38 @@ def create_job(creator, gist):
 	_job = {'creator': creator}
 	_job['gist'] = gist
 	_job['score'] = 0
+	_job['callback'] = None
 	_job['tasks'] = []
 	_job['factors'] = []
 	_job['workers'] = []
 	_job['candidates'] = []
-	JOBS[len(JOBS)] = _job
+	_job['id'] = len(JOBS)
+	JOBS[_job['id']] = _job
 	
 	logging.debug('%s created new job: %s' % (' '.join(creator['name']), gist))
 	
 	return _job
+
+def add_job_callback(job, callback):
+	job['callback'] = callback
+	
+	logging.debug('Job callback set for: %s' % job['gist'])
+
+def add_task_callback(job, task, callback):
+	job[task]['callback'] = callback
+	
+	logging.debug('Callback set for task \'%s\' in job \'%s\'' % (task, job['gist']))
+
+def complete_task(life):
+	life['job']['tasks'].remove(life['task'])	
+	life['job']['workers'].remove(life['id'])
+	
+	if not life['job']['tasks']:
+		del JOBS[life['job']['id']]
+		
+		logging.debug('Job completed: %s' % life['job']['gist'])
+	else:
+		logging.debug('Task \'%s\' for job \'%s\' completed.' % (life['task']['task'], life['job']['gist']))
 
 def add_job_factor(job, factor_type, value):
 	_factor = {'type': factor_type,
@@ -31,10 +54,11 @@ def add_job_factor(job, factor_type, value):
 	
 	logging.debug('Added factor to job: %s' % factor_type)
 
-def add_job_task(job, task, required=False):
+def add_job_task(job, task, required=False, callback=None):
 	_task = {'task': task,
 		'workers': [],
-		'required': required}
+		'required': required,
+		'callback': callback}
 	job['tasks'].append(_task)
 	
 	logging.debug('Added task to job: %s' % task)
@@ -60,7 +84,10 @@ def take_job(life, job, task):
 		_task['workers'].append(life['id'])
 		break
 	
-	logging.debug('%s joined job: %s' % (' '.join(life['name']), job['gist']))
+	life['job'] = job
+	life['task'] = _task
+	
+	logging.debug('%s joined task \'%s\' in job \'%s\'' % (' '.join(life['name']), task, job['gist']))
 
 def is_working_job(life, job):
 	if life['id'] in job['workers']:
@@ -69,8 +96,19 @@ def is_working_job(life, job):
 	return False
 
 def alife_is_factor_of_job(life, job):
-	if life['id'] in job['factors']:
-		return True
+	for factor in job['factors']:
+		if not factor['type'] == 'alife':
+			continue
+		
+		if factor['value'] == life['id']:
+			return True
+	
+	return False
+
+def alife_is_factor_of_any_job(life):
+	for job in [JOBS[i] for i in JOBS]:
+		if alife_is_factor_of_job(life, job):
+			return True
 	
 	return False
 
@@ -93,6 +131,9 @@ def find_jobs_of_type(gist):
 def process_job(job):
 	_scores = {}
 	for candidate in job['candidates']:
-		_score = judgement.judge_job(candidate, job)
+		_score = judgement.judge_job(LIFE[candidate], job)
+		_scores[_score] = LIFE[candidate]
 		
-		logging.debug('%s judged job \'%s\' with score %s' % (' '.join(candidate['name']), job['gist'], _score))
+		logging.debug('%s judged job \'%s\' with score %s' % (' '.join(LIFE[candidate]['name']), job['gist'], _score))
+	
+	take_job(_scores[_scores.keys()[0]], job, 'disarm')
