@@ -36,6 +36,16 @@ def listen(life):
 			lfe.memory(life, 'surrendered', target=event['from']['id'])
 			brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
 		
+		elif event['gist'] == 'dropped_demanded_item':
+			if brain.knows_alife(life, event['from']):
+				brain.flag_alife(life, event['from'], 'dropped_demanded_item')
+			#else:
+			#	print life['name'],'dont know this guy'
+			
+			print life['name']
+			if life == event['target']:
+				print 'OKAY, BITCH'
+		
 		elif event['gist'] == 'resist':
 			if speech.consider(life, event['from'], 'resist'):
 				logging.debug('%s realizes %s is resisting.' % (' '.join(life['name']),' '.join(event['from']['name'])))

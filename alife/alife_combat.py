@@ -76,4 +76,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if not speech.has_sent(life, _ntarget, 'demand_drop_item'):
 					combat.disarm(life, _ntarget, _has_weapon[0])
 			else:
-				continue
+				if brain.get_alife_flag(life, _ntarget, 'dropped_demanded_item'):
+					print 'Youre good to go!'
+				else:
+					print life['name'],'dadasd'
