@@ -11,6 +11,7 @@ import alife_hidden
 import alife_combat
 import alife_camp
 import alife_talk
+import alife_work
 import alife_hide
 import snapshots
 import judgement
@@ -33,7 +34,8 @@ MODULES = [alife_hide,
 	alife_manage_items,
 	alife_find_camp,
 	alife_camp,
-	alife_combat]
+	alife_combat,
+	alife_work]
 
 def think(life, source_map):
 	sight.look(life)
@@ -125,6 +127,12 @@ def knows_alife(life, alife):
 	
 	return False
 
+def knows_alife_by_id(life, alife_id):
+	if alife_id in life['know']:
+		return life['know'][alife_id]
+	
+	return False
+
 def meet_alife(life, target):
 	life['know'][target['id']] = {'life': target,
 		'score': 0,
@@ -211,7 +219,7 @@ def understand(life,source_map):
 			_score = judgement.judge(life, target)
 			target['score'] = _score
 			
-			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		_alife_seen.append({'who': target,'score': _score})
 		
@@ -225,7 +233,7 @@ def understand(life,source_map):
 			_score = judgement.judge(life, life['know'][_not_seen])
 			life['know'][_not_seen]['score'] = _score
 			
-			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		if life['know'][_not_seen]['score'] >= 0:
 			_alife_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})

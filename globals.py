@@ -116,6 +116,7 @@ ITEMS = {}
 BULLETS = []
 EFFECTS = []
 SPLATTERS = []
+JOBS = {}
 
 #Consoles
 MAP_WINDOW = None

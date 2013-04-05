@@ -1,9 +1,12 @@
+from globals import *
+
 import life as lfe
 
 import movement
 import weapons
 import speech
 import brain
+import jobs
 
 import numbers
 import logging
@@ -212,16 +215,57 @@ def handle_potential_combat_encounter(life,target,source_map):
 	else:
 		handle_hide_and_decide(life,target,source_map)
 
-def disarm(life, target, item):
+def disarm(life):#disarm(life, target, item):
 	#Figure out who should handle this...
 	#TODO: Should be announce_to_camp/group()
 	#speech.announce(life, 'target_needs_disarmed', alife=target)
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 	
-	if lfe.can_see(life, target['pos']):
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	item = get_equipped_weapons(target)
+	
+	if not item:
+		return True
+	
+	item = item[0]
+	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
+	
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
 		lfe.clear_actions(life)
-		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
-		speech.send(life, target, 'demand_drop_item')
-		brain.flag_item(life, item, 'disallow_pickup_from', value=target)
+		
+		if not speech.has_sent(life, target, 'demand_drop_item'):
+			speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
+			speech.send(life, target, 'demand_drop_item')
+		
+		return False
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+		
+		return False
+
+def guard(life):
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=5:
+		lfe.clear_actions(life)
+	else:
+		_target_pos = (target['pos'][0], target['pos'][1])
+		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+	
+	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
+	if _dropped and not 'id' in ITEMS[_dropped]:
+		return True
+
+def retrieve_weapon(life):
+	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+	lfe.clear_actions(life)
+	return False

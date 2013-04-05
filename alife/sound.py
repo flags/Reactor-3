@@ -2,9 +2,11 @@ import life as lfe
 
 import judgement
 import speech
+import combat
 import brain
 import camps
 import maps
+import jobs
 
 import logging
 
@@ -22,11 +24,34 @@ def listen(life):
 			
 			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
-		if event['gist'] == 'surrender':
-			if not speech.has_received(life, event['from'], 'surrender'):
-				speech.receive(life, event['from'], 'surrender')
-				lfe.memory(life, 'surrendered', target=event['from']['id'])
-				speech.announce(life, 'target_surrendered', target=event['from'])
+		if event['gist'] == 'job':
+			print 'Got job:', event['job']['gist']
+			jobs.add_job_candidate(event['job'], life)
+			jobs.process_job(event['job'])
+		
+		elif event['gist'] == 'surrender':
+			_found_related_job = False
+			for _j in jobs.find_jobs_of_type('surrender'):
+				if jobs.alife_is_factor_of_job(event['from'], _j):
+					_found_related_job = True
+					break
+			
+			if not _found_related_job:
+				_j = jobs.create_job(life, 'surrender')
+				#jobs.add_job_callback(_j, )
+				jobs.add_job_factor(_j, 'alife', event['from'])
+				jobs.add_job_task(_j, 'disarm', callback=combat.disarm, required=True)
+				jobs.add_job_task(_j, 'guard', callback=combat.guard, depends_on='disarm')
+				jobs.add_job_task(_j, 'fetch_item', callback=combat.retrieve_weapon, depends_on='guard')
+				jobs.add_job_task(_j, 'guard', callback=combat.guard)
+				jobs.add_job_candidate(_j, life)
+				jobs.announce_job(life, _j)
+				jobs.process_job(_j)
+					
+			#if not speech.has_received(life, event['from'], 'surrender'):
+			#	speech.receive(life, event['from'], 'surrender')
+			#	lfe.memory(life, 'surrendered', target=event['from']['id'])
+			#	speech.announce(life, 'target_surrendered', target=event['from'])
 		
 		elif event['gist'] == 'target_surrendered':
 			if not brain.knows_alife(life, event['target']):
@@ -37,31 +62,9 @@ def listen(life):
 			brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
 		
 		elif event['gist'] == 'dropped_demanded_item':
-			if brain.knows_alife(life, event['from']):
-				brain.flag_alife(life, event['from'], 'dropped_demanded_item')
-			#else:
-			#	print life['name'],'dont know this guy'
-			
-			print life['name']
-			if life == event['target']:
-				print 'OKAY, BITCH'
-		
-		elif event['gist'] == 'resist':
-			if speech.consider(life, event['from'], 'resist'):
-				logging.debug('%s realizes %s is resisting.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-		
-		elif event['gist'] == 'free_to_go':
-			lfe.create_and_update_self_snapshot(event['from'])
-			speech.unconsider(life,event['from'],'surrender')
-			brain.unflag(life, 'surrendered')
-			brain.unflag(life, 'scared')
-		
-		elif event['gist'] == 'comply':
-			#TODO: Judge who this is coming from...
-			lfe.clear_actions(life)
-			speech.communicate(life,'surrender')
-			speech.consider(life, event['from'], 'surrendered_to')
-			brain.flag(life, 'surrendered')
+			#if brain.knows_alife(life, event['from']):
+			#	#brain.flag_alife(life, event['from'], 'dropped_demanded_item')
+			pass
 		
 		elif event['gist'] == 'demand_drop_item':
 			if event['age'] < 40:
@@ -80,41 +83,6 @@ def listen(life):
 				401,
 				delay=20)
 		
-		elif event['gist'] == 'stand_still':
-			if brain.get_flag(life, 'surrendered'):
-				lfe.clear_actions(life)
-				lfe.add_action(life,{'action': 'block'},400)
-		
-		elif event['gist'] == 'intimidate':
-			if event_delay(event,60):
-				continue
-			
-			lfe.say(life,'I\'ll shoot if you come any closer.')
-			communicate(life,'intimidate_with_weapon',target=event['from'])
-		
-		elif event['gist'] == 'drop_everything':
-			if life == event['target'] and brain.get_flag(life, 'surrendered'):
-				lfe.drop_all_items(life)
-		
-		elif event['gist'] == 'intimidate_with_weapon':
-			if event_delay(event,60):
-				continue
-			
-			#TODO: We should also use sounds (reloading, etc) to confirm
-			#if the ALife is telling the truth.
-			_lying = True
-			
-			for item in [lfe.get_inventory_item(event['from'],item) for item in check_snapshot(life,event['from'])['visible_items']]:
-				if item['type'] == 'gun':
-					_lying = False
-			
-			if _lying:
-				lfe.say(life,'I know you don\'t have a gun.')
-		
-		elif event['gist'] == 'confidence':
-			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
-			speech.consider(life,event['from'],'confidence')
-
 		elif event['gist'] == 'greeting':
 			if event_delay(event, 30):
 				continue
@@ -126,14 +94,6 @@ def listen(life):
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
-
-		elif event['gist'] == 'insult':
-			if event_delay(event, 20):
-				continue
-
-			if speech.consider(life, event['from'], 'insulted'):
-				speech.communicate(life, 'insult', target=event['from'])
-				lfe.say(life, 'You\'re a jerk!')
 		
 		elif event['gist'] == 'get_chunk_info':
 			if event_delay(event, 60):

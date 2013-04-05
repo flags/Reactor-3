@@ -180,7 +180,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
+	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	"""Initiates and returns a deepcopy of a life type."""
@@ -242,6 +242,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
 	_life['tempstor2'] = {}
+	_life['job'] = {}
+	_life['task'] = ''
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
@@ -275,7 +277,7 @@ def set_animation(life, animation, speed=2, loops=0):
 		'index': 0,
 		'loops': loops}
 	
-	logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
+	#logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
 
 def tick_animation(life):
 	if not life['animation']:
@@ -329,7 +331,7 @@ def get_known_life(life, id):
 	return False
 
 def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs):
-	logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
+	#logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
 	_conversation = {'gist': gist,
 		'from': life,
@@ -442,7 +444,7 @@ def hear(life, what):
 			life['contexts'].append(_context)
 			life['shoot_timer'] = DEFAULT_CONTEXT_TIME
 	
-	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+	#logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
 def avoid_react(reaction):
 	life = reaction['life']
@@ -504,7 +506,7 @@ def memory(life, gist, **kvargs):
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])

@@ -3,6 +3,7 @@ from globals import *
 import combat
 import speech
 import brain
+import jobs
 
 import logging
 
@@ -37,8 +38,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			_all_targets.append(target)
 	
 	for _target in _all_targets[:]:
-		if 'surrendered' in _target['who']['flags']:
-			_neutral_targets.append(_target)
+		if jobs.alife_is_factor_of_any_job(_target['who']['life']):
+			if life['job']:
+				_neutral_targets.append(_target)
 			_all_targets.remove(_target)
 		
 		if brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):
@@ -46,6 +48,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
+
+	if life['state'] == 'working':
+		return False
 	
 	if not brain.retrieve_from_memory(life, 'combat_targets') and not brain.retrieve_from_memory(life, 'neutral_combat_targets'):
 		return False
@@ -61,7 +66,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):
-			print 'in combat'
 			if not 'equipping' in life:
 				if combat._equip_weapon(life):
 					life['equipping'] = True
@@ -74,7 +78,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			if _has_weapon:
 				if not speech.has_sent(life, _ntarget, 'demand_drop_item'):
-					combat.disarm(life, _ntarget, _has_weapon[0])
+					combat.disarm(life)
 			else:
 				if brain.get_alife_flag(life, _ntarget, 'dropped_demanded_item'):
 					print 'Youre good to go!'
