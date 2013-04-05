@@ -331,7 +331,7 @@ def get_known_life(life, id):
 	return False
 
 def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs):
-	logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
+	#logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
 	_conversation = {'gist': gist,
 		'from': life,
@@ -444,7 +444,7 @@ def hear(life, what):
 			life['contexts'].append(_context)
 			life['shoot_timer'] = DEFAULT_CONTEXT_TIME
 	
-	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+	#logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
 def avoid_react(reaction):
 	life = reaction['life']
@@ -506,7 +506,7 @@ def memory(life, gist, **kvargs):
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])

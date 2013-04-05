@@ -40,8 +40,10 @@ def listen(life):
 				_j = jobs.create_job(life, 'surrender')
 				#jobs.add_job_callback(_j, )
 				jobs.add_job_factor(_j, 'alife', event['from'])
-				jobs.add_job_task(_j, 'disarm', callback=combat.disarm)
+				jobs.add_job_task(_j, 'disarm', callback=combat.disarm, required=True)
 				jobs.add_job_task(_j, 'guard', callback=combat.guard, depends_on='disarm')
+				jobs.add_job_task(_j, 'fetch_item', callback=combat.retrieve_weapon, depends_on='guard')
+				jobs.add_job_task(_j, 'guard', callback=combat.guard)
 				jobs.add_job_candidate(_j, life)
 				jobs.announce_job(life, _j)
 				jobs.process_job(_j)
@@ -60,13 +62,9 @@ def listen(life):
 			brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
 		
 		elif event['gist'] == 'dropped_demanded_item':
-			if brain.knows_alife(life, event['from']):
-				#brain.flag_alife(life, event['from'], 'dropped_demanded_item')
-				
-				if jobs.alife_is_factor_of_any_job(event['from']):
-					print 'yeah!'
-			#else:
-			#	print life['name'],'dont know this guy'
+			#if brain.knows_alife(life, event['from']):
+			#	#brain.flag_alife(life, event['from'], 'dropped_demanded_item')
+			pass
 		
 		elif event['gist'] == 'demand_drop_item':
 			if event['age'] < 40:

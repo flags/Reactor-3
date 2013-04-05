@@ -15,6 +15,7 @@ def create_job(creator, gist):
 	_job['factors'] = []
 	_job['workers'] = []
 	_job['candidates'] = []
+	_job['details'] = {}
 	_job['id'] = len(JOBS)
 	JOBS[_job['id']] = _job
 	
@@ -63,6 +64,18 @@ def add_job_factor(job, factor_type, value):
 	job['factors'].append(_factor)
 	
 	logging.debug('Added factor to job: %s' % factor_type)
+
+def add_detail_to_job(job, detail, value):
+	if not detail in job['details']:
+		logging.debug('Added detail to job: %s' % detail)
+	
+	job['details'][detail] = value
+
+def get_job_detail(job, detail):
+	if detail in job['details']:
+		return job['details'][detail]
+	
+	return None
 
 def add_job_task(job, task, required=False, callback=None, depends_on=[]):
 	_task = {'task': task,
@@ -145,19 +158,22 @@ def find_jobs_of_type(gist):
 	return _jobs
 
 def find_open_task(life, job):
+	_task_to_take = None
+	
 	for task in job['tasks']:
 		#TODO: How many workers are needed?
 		if not task['workers']:
 			if task['depends_on']:
-				if not life['task']:
-					continue
+				if life['task'] and life['task']['task'] == task['depends_on']:
+					return task
+			
+			if task['required']:
+				print 'TASK REQUIRED!!!!!'
+				return task
 				
-				if not life['task']['task'] == task['depends_on']:
-					continue
-				
-			return task
+			_task_to_take = task
 	
-	return False
+	return _task_to_take
 
 def process_job(job):
 	_scores = {}

@@ -1,9 +1,12 @@
+from globals import *
+
 import life as lfe
 
 import movement
 import weapons
 import speech
 import brain
+import jobs
 
 import numbers
 import logging
@@ -223,12 +226,13 @@ def disarm(life):#disarm(life, target, item):
 	
 	target = _targets[0]['who']['life']
 	item = get_equipped_weapons(target)[0]
+	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
 	
-	if lfe.can_see(life, target['pos']):
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
 		lfe.clear_actions(life)
 		speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
 		speech.send(life, target, 'demand_drop_item')
-		brain.flag_item(life, item, 'disallow_pickup_from', value=target)
+		#brain.flag_item(life, item, 'disallow_pickup_from', value=target)
 		
 		return True
 	else:
@@ -238,4 +242,25 @@ def disarm(life):#disarm(life, target, item):
 		return False
 
 def guard(life):
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=5:
+		lfe.clear_actions(life)
+	else:
+		_target_pos = (target['pos'][0], target['pos'][1])
+		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+	
+	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
+	if _dropped and not 'id' in ITEMS[_dropped]:
+		return True
+
+def retrieve_weapon(life):
+	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+	#print _weapon
+	
 	return False
