@@ -26,6 +26,8 @@ def listen(life):
 		
 		if event['gist'] == 'job':
 			print 'Got job:', event['job']['gist']
+			jobs.add_job_candidate(event['job'], life)
+			jobs.process_job(event['job'])
 		
 		elif event['gist'] == 'surrender':
 			_found_related_job = False
@@ -39,6 +41,7 @@ def listen(life):
 				#jobs.add_job_callback(_j, )
 				jobs.add_job_factor(_j, 'alife', event['from'])
 				jobs.add_job_task(_j, 'disarm', callback=combat.disarm)
+				jobs.add_job_task(_j, 'guard', callback=combat.guard, depends_on='disarm')
 				jobs.add_job_candidate(_j, life)
 				jobs.announce_job(life, _j)
 				jobs.process_job(_j)

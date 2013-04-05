@@ -236,3 +236,6 @@ def disarm(life):#disarm(life, target, item):
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
 		
 		return False
+
+def guard(life):
+	return False

@@ -39,7 +39,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	for _target in _all_targets[:]:
 		if jobs.alife_is_factor_of_any_job(_target['who']['life']):
-			_neutral_targets.append(_target)
+			if life['job']:
+				_neutral_targets.append(_target)
 			_all_targets.remove(_target)
 		
 		if brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):

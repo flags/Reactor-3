@@ -34,14 +34,24 @@ def add_task_callback(job, task, callback):
 
 def complete_task(life):
 	life['job']['tasks'].remove(life['task'])	
-	life['job']['workers'].remove(life['id'])
 	
 	if not life['job']['tasks']:
 		del JOBS[life['job']['id']]
 		
 		logging.debug('Job completed: %s' % life['job']['gist'])
+		life['job']['workers'].remove(life['id'])
+		life['job'] = None
+		life['task'] = None
 	else:
 		logging.debug('Task \'%s\' for job \'%s\' completed.' % (life['task']['task'], life['job']['gist']))
+		_open_task = find_open_task(life, life['job'])
+		
+		if _open_task:
+			life['task'] = _open_task
+		else:
+			life['job']['workers'].remove(life['id'])
+			life['job'] = None
+			life['task'] = None		
 
 def add_job_factor(job, factor_type, value):
 	_factor = {'type': factor_type,
@@ -54,11 +64,12 @@ def add_job_factor(job, factor_type, value):
 	
 	logging.debug('Added factor to job: %s' % factor_type)
 
-def add_job_task(job, task, required=False, callback=None):
+def add_job_task(job, task, required=False, callback=None, depends_on=[]):
 	_task = {'task': task,
 		'workers': [],
 		'required': required,
-		'callback': callback}
+		'callback': callback,
+		'depends_on': depends_on}
 	job['tasks'].append(_task)
 	
 	logging.debug('Added task to job: %s' % task)
@@ -76,16 +87,21 @@ def is_job_candidate(job, life):
 
 def take_job(life, job, task):
 	job['workers'].append(life['id'])
+	_t = None
 	
 	for _task in job['tasks']:
 		if not _task['task'] == task:
 			continue
 		
+		_t = _task
 		_task['workers'].append(life['id'])
 		break
 	
+	if not _t:
+		return False
+	
 	life['job'] = job
-	life['task'] = _task
+	life['task'] = _t
 	
 	logging.debug('%s joined task \'%s\' in job \'%s\'' % (' '.join(life['name']), task, job['gist']))
 
@@ -128,12 +144,31 @@ def find_jobs_of_type(gist):
 	
 	return _jobs
 
+def find_open_task(life, job):
+	for task in job['tasks']:
+		#TODO: How many workers are needed?
+		if not task['workers']:
+			if task['depends_on']:
+				if not life['task']:
+					continue
+				
+				if not life['task']['task'] == task['depends_on']:
+					continue
+				
+			return task
+	
+	return False
+
 def process_job(job):
 	_scores = {}
 	for candidate in job['candidates']:
 		_score = judgement.judge_job(LIFE[candidate], job)
-		_scores[_score] = LIFE[candidate]
+		_scores[_score] = candidate
 		
 		logging.debug('%s judged job \'%s\' with score %s' % (' '.join(LIFE[candidate]['name']), job['gist'], _score))
 	
-	take_job(_scores[_scores.keys()[0]], job, 'disarm')
+	job['candidates'].remove(_scores[_scores.keys()[0]])
+	
+	_task = find_open_task(LIFE[_scores[_scores.keys()[0]]], job)
+	if _task:
+		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task['task'])
