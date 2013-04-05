@@ -34,7 +34,7 @@ def add_task_callback(job, task, callback):
 	logging.debug('Callback set for task \'%s\' in job \'%s\'' % (task, job['gist']))
 
 def complete_task(life):
-	life['job']['tasks'].remove(life['task'])	
+	life['job']['tasks'].remove(life['task'])
 	
 	if not life['job']['tasks']:
 		del JOBS[life['job']['id']]
@@ -49,6 +49,7 @@ def complete_task(life):
 		
 		if _open_task:
 			life['task'] = _open_task
+			life['task']['workers'].append(life['id'])
 		else:
 			life['job']['workers'].remove(life['id'])
 			life['job'] = None
