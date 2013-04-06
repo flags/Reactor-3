@@ -25,9 +25,10 @@ def listen(life):
 			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
 		if event['gist'] == 'job':
-			print 'Got job:', event['job']['gist']
-			jobs.add_job_candidate(event['job'], life)
-			jobs.process_job(event['job'])
+			if not jobs.alife_is_factor_of_job(life, event['job']):
+				print 'Got job:', event['job']['gist']
+				jobs.add_job_candidate(event['job'], life)
+				jobs.process_job(event['job'])
 		
 		elif event['gist'] == 'surrender':
 			_found_related_job = False
@@ -48,24 +49,12 @@ def listen(life):
 				jobs.add_job_candidate(_j, life)
 				jobs.announce_job(life, _j)
 				jobs.process_job(_j)
-					
-			#if not speech.has_received(life, event['from'], 'surrender'):
-			#	speech.receive(life, event['from'], 'surrender')
-			#	lfe.memory(life, 'surrendered', target=event['from']['id'])
-			#	speech.announce(life, 'target_surrendered', target=event['from'])
 		
 		elif event['gist'] == 'target_surrendered':
 			if not brain.knows_alife(life, event['target']):
 				brain.meet_alife(life, event['target'])
 			
 			print life['name'],'Got secondhand knowledge of a surrender'
-			#lfe.memory(life, 'surrendered', target=event['from']['id'])
-			#brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
-		
-		elif event['gist'] == 'dropped_demanded_item':
-			#if brain.knows_alife(life, event['from']):
-			#	#brain.flag_alife(life, event['from'], 'dropped_demanded_item')
-			pass
 		
 		elif event['gist'] == 'demand_drop_item':
 			if event['age'] < 40:

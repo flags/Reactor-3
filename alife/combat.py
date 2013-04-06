@@ -270,7 +270,6 @@ def guard(life):
 	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 	
 	if not _targets:
-		print 'guard fail'
 		return False
 	
 	target = _targets[0]['who']['life']
@@ -283,7 +282,13 @@ def guard(life):
 	
 	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
 	if _dropped and not 'id' in ITEMS[_dropped]:
-		return True
+		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
+		
+		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'], old=False)>=5:
+			return True
+	
+	if _dropped and 'id' in ITEMS[_dropped] and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
+		wont_disarm(life)
 
 def retrieve_weapon(life):
 	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
