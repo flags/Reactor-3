@@ -185,6 +185,8 @@ def get_best_weapon(life):
 def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
+	brain.flag_alife(life, target['life'], 'enemy')
+	
 	if not target['escaped'] and not _pos_for_combat:
 		return False
 	elif _pos_for_combat:
@@ -215,10 +217,10 @@ def handle_potential_combat_encounter(life,target,source_map):
 	else:
 		handle_hide_and_decide(life,target,source_map)
 
-def disarm(life):#disarm(life, target, item):
-	#Figure out who should handle this...
-	#TODO: Should be announce_to_camp/group()
-	#speech.announce(life, 'target_needs_disarmed', alife=target)
+def wont_disarm(life):
+	jobs.cancel_job(life['job'])
+
+def disarm(life):
 	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 	
 	if not _targets:
@@ -228,6 +230,7 @@ def disarm(life):#disarm(life, target, item):
 	item = get_equipped_weapons(target)
 	
 	if not item:
+		lfe.say(life, 'Now get out of here!')
 		return True
 	
 	item = item[0]
@@ -237,7 +240,11 @@ def disarm(life):#disarm(life, target, item):
 		lfe.clear_actions(life)
 		
 		if not speech.has_sent(life, target, 'demand_drop_item'):
-			speech.communicate(life, 'demand_drop_item', matches=[{'id': target['id']}], item=item['id'])
+			speech.communicate(life,
+				'demand_drop_item',
+				matches=[{'id': target['id']}],
+				timeout_callback=wont_disarm,
+				item=item['id'])
 			speech.send(life, target, 'demand_drop_item')
 		
 		return False
@@ -251,6 +258,7 @@ def guard(life):
 	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 	
 	if not _targets:
+		print 'guard fail'
 		return False
 	
 	target = _targets[0]['who']['life']
@@ -268,4 +276,11 @@ def guard(life):
 def retrieve_weapon(life):
 	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
 	lfe.clear_actions(life)
-	return False
+	
+	for _target in [i['who']['life'] for i in brain.retrieve_from_memory(life, 'neutral_combat_targets')]:
+		if numbers.distance(ITEMS[_weapon]['pos'], _target['pos'], old=False)<5:
+			return False
+		else:
+			brain.add_impression(life, _target, 'disarmed', 3)
+			#speech.announce(life, 'target_disarmed', target=_target)
+			jobs.cancel_job(life['job'])

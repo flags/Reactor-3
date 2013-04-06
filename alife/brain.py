@@ -114,12 +114,20 @@ def remember_item_secondhand(life, target, item_memory):
 
 	life['know_items'][_item['item']['uid']] = _item
 
-	logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
 def add_impression(life, target, gist, score):
 	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
 	
+	lfe.create_and_update_self_snapshot(target)
+	
 	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
+
+def get_impression(life, target, gist):
+	if gist in life['know'][target['id']]['impressions']:
+		return life['know'][target['id']]['impressions'][gist]
+	
+	return None
 
 def knows_alife(life, alife):
 	if alife['id'] in life['know']:

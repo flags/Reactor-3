@@ -11,6 +11,9 @@ import logging
 def create_encounter(life, target, context=None):
 	_encounter = {}
 	
+	if life['encounters']:
+		return None
+	
 	if not life['id'] in target['know']:
 		logging.warning('Encounter: %s does not know %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 		return False

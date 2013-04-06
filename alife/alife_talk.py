@@ -32,13 +32,16 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	for ai in [alife['who'] for alife in alife_seen]:
 		#What's our relationship with them?
-		if ai['life']['state'] in ['hiding', 'hidden']:
-			break
+		#if ai['life']['state'] in ['hiding', 'hidden']:
+		#	break
 		
-		if life['state'] == 'combat':
+		if life['state'] in ['combat']:
 			break
 		
 		if jobs.alife_is_factor_of_any_job(ai['life']):
+			break
+		
+		if brain.get_alife_flag(life, ai['life'], 'enemy'):
 			break
 		
 		if speech.has_received(life, ai['life'], 'greeting'):

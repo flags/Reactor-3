@@ -1,6 +1,8 @@
 #Let's do this the right way...
 from globals import *
 
+import life as lfe
+
 import judgement
 import speech
 
@@ -33,6 +35,16 @@ def add_task_callback(job, task, callback):
 	
 	logging.debug('Callback set for task \'%s\' in job \'%s\'' % (task, job['gist']))
 
+def cancel_job(job):
+	for worker in [LIFE[i] for i in job['workers']]:
+		worker['job'] = None
+		worker['task'] = None
+		lfe.create_and_update_self_snapshot(worker)
+	
+	del JOBS[job['id']]
+	
+	logging.debug('Job canceled: %s' % job['gist'])
+
 def complete_task(life):
 	life['job']['tasks'].remove(life['task'])
 	
@@ -43,6 +55,7 @@ def complete_task(life):
 		life['job']['workers'].remove(life['id'])
 		life['job'] = None
 		life['task'] = None
+		lfe.create_and_update_self_snapshot(life)
 	else:
 		logging.debug('Task \'%s\' for job \'%s\' completed.' % (life['task']['task'], life['job']['gist']))
 		_open_task = find_open_task(life, life['job'])
@@ -52,7 +65,8 @@ def complete_task(life):
 		else:
 			life['job']['workers'].remove(life['id'])
 			life['job'] = None
-			life['task'] = None		
+			life['task'] = None	
+			lfe.create_and_update_self_snapshot(life)
 
 def add_job_factor(job, factor_type, value):
 	_factor = {'type': factor_type,

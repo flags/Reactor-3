@@ -336,6 +336,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 	_conversation = {'gist': gist,
 		'from': life,
 		'start_time': WORLD_INFO['ticks'],
+		'timeout_callback': None,
 		'id': time.time()}
 	_conversation.update(kvargs)
 	_for_player = False
@@ -407,7 +408,7 @@ def hear(life, what):
 	
 	if 'player' in life:		
 		_menu = []
-		_context = contexts.create_context(life, what)
+		_context = contexts.create_context(life, what, timeout_callback=what['timeout_callback'])
 		
 		_context['reactions']
 		for reaction in _context['reactions']:
@@ -1112,6 +1113,11 @@ def tick(life, source_map):
 			context['time'] -= 1
 			
 			if not context['time']:
+				if context['timeout_callback']:
+					context['timeout_callback'](context['from'])
+				else:
+					print 'No callback'
+				
 				life['contexts'].remove(context)
 				logging.info('Context removed!')
 	

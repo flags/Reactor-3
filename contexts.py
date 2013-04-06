@@ -44,7 +44,7 @@ def _create_context_from_phrase(life, phrase):
 
 	return _reactions
 
-def create_context(life, action):
+def create_context(life, action, timeout_callback=None):
 	logging.debug('** Created new context **')
 	
 	if 'gist' in action:
@@ -55,4 +55,5 @@ def create_context(life, action):
 		'items': [],
 		'reactions': _reactions,
 		'from': action['from'],
+		'timeout_callback': timeout_callback,
 		'time': 150}

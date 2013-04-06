@@ -28,7 +28,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in ['hiding', 'hidden']:
+	if life['state'] in ['hiding', 'hidden', 'working']:
 		return False
 	
 	if not life['state'] == STATE:

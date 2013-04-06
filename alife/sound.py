@@ -58,8 +58,8 @@ def listen(life):
 				brain.meet_alife(life, event['target'])
 			
 			print life['name'],'Got secondhand knowledge of a surrender'
-			lfe.memory(life, 'surrendered', target=event['from']['id'])
-			brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
+			#lfe.memory(life, 'surrendered', target=event['from']['id'])
+			#brain.flag_alife(life, event['target'], 'not_handling_surrender', value=event['from'])
 		
 		elif event['gist'] == 'dropped_demanded_item':
 			#if brain.knows_alife(life, event['from']):

@@ -96,10 +96,22 @@ def judge(life, target):
 	#First impressions go here
 	if WORLD_INFO['ticks']-target['met_at_time']<=50:
 		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life'], 'had_weapon', 3)
+			brain.add_impression(life, target['life'], 'had_weapon', -3)
+	
+	if brain.get_impression(life, target['life'], 'had_weapon'):
+		print 'REVERSING!!!!!!!!'
+		if not lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
+			_like += abs(target['impressions']['had_weapon']['score'])
 	
 	for impression in target['impressions']:
-		_dislike += target['impressions'][impression]['score']
+		_score = target['impressions'][impression]['score']
+		
+		if _score < 0:
+			print '-',impression
+			_dislike += abs(_score)
+		else:
+			print '+',impression
+			_like += _score
 	
 	if _is_hostile:
 		if _surrendered:
