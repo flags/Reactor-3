@@ -220,6 +220,17 @@ def handle_potential_combat_encounter(life,target,source_map):
 def wont_disarm(life):
 	jobs.cancel_job(life['job'])
 
+def disarm_completed(job):
+	print 'DISARM COMPLETED!!!'
+
+def disarm_left(life):
+	print 'LEFT DISARM'
+	_target = jobs.get_job_detail(life['job'], 'target')
+	
+	lfe.delete_memory(life, matches={'target': _target, 'text': 'hostile'})
+	
+	print _target
+
 def disarm(life):
 	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 	
@@ -234,6 +245,7 @@ def disarm(life):
 		return True
 	
 	item = item[0]
+	jobs.add_detail_to_job(life['job'], 'target', target['id'])
 	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
 	
 	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
@@ -282,5 +294,6 @@ def retrieve_weapon(life):
 			return False
 		else:
 			brain.add_impression(life, _target, 'disarmed', 3)
-			#speech.announce(life, 'target_disarmed', target=_target)
-			jobs.cancel_job(life['job'])
+			lfe.memory(life, 'compliant', target=_target['id'])
+			lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
+			jobs.cancel_job(life['job'], completed=True)

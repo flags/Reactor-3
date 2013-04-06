@@ -184,7 +184,7 @@ def has_shared_item_with(life, target, item):
 def share_item_with(life, target, item):
 	life['know_items'][item['uid']]['shared_with'].append(target['id'])
 
-	logging.debug('%s shared item #%s with %s.' % (' '.join(life['name']), item['uid'], ' '.join(target['name'])))
+	#logging.debug('%s shared item #%s with %s.' % (' '.join(life['name']), item['uid'], ' '.join(target['name'])))
 
 def remember_known_item(life, item_uid):
 	if item_uid in life['know_items']:

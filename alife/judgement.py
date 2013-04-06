@@ -90,16 +90,18 @@ def judge(life, target):
 		elif memory['text'] == 'shot by':
 			_dislike += 2
 		
+		elif memory['text'] == 'compliant':
+			_like += 2
+		
 		elif memory['text'] == 'surrendered':
 			_surrendered = True
 
 	#First impressions go here
-	if WORLD_INFO['ticks']-target['met_at_time']<=50:
+	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life'], 'had_weapon'):
 		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
 			brain.add_impression(life, target['life'], 'had_weapon', -3)
 	
 	if brain.get_impression(life, target['life'], 'had_weapon'):
-		print 'REVERSING!!!!!!!!'
 		if not lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
 			_like += abs(target['impressions']['had_weapon']['score'])
 	
@@ -107,10 +109,10 @@ def judge(life, target):
 		_score = target['impressions'][impression]['score']
 		
 		if _score < 0:
-			print '-',impression
+			#print '-',impression
 			_dislike += abs(_score)
 		else:
-			print '+',impression
+			#print '+',impression
 			_like += _score
 	
 	if _is_hostile:
@@ -122,8 +124,8 @@ def judge(life, target):
 			
 			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
 			
-			if _life_combat_score>_target_combat_score:
-				target['flags']['enemy'] = _life_combat_score-_target_combat_score
+			#if _life_combat_score>_target_combat_score:
+			#	target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
 	return _like-_dislike
 

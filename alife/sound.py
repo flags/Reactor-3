@@ -38,7 +38,8 @@ def listen(life):
 			
 			if not _found_related_job:
 				_j = jobs.create_job(life, 'surrender')
-				#jobs.add_job_callback(_j, )
+				jobs.add_job_completed_callback(_j, combat.disarm_completed)
+				jobs.add_leave_job_callback(_j, combat.disarm_left)
 				jobs.add_job_factor(_j, 'alife', event['from'])
 				jobs.add_job_task(_j, 'disarm', callback=combat.disarm, required=True)
 				jobs.add_job_task(_j, 'guard', callback=combat.guard, depends_on='disarm')

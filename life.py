@@ -529,6 +529,11 @@ def get_memory(life, matches={}):
 			
 	return _memories
 
+def delete_memory(life, matches={}):
+	for _memory in get_memory(life, matches=matches):
+		life['memory'].remove(_memory)
+		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
+
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]
 
@@ -1134,7 +1139,7 @@ def remove_item_from_limb(life,item,limb):
 	"""Removes item from limb. Returns True."""
 	life['body'][limb]['holding'].remove(item)
 	create_and_update_self_snapshot(life)
-	logging.debug('%s removed from %s' % (item,limb))
+	#logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
 
@@ -1241,7 +1246,7 @@ def remove_item_in_storage(life,id):
 		if id in _container['storing']:
 			_container['storing'].remove(id)
 			_container['capacity'] -= get_inventory_item(life,id)['size']
-			logging.debug('Removed item #%s from %s' % (id,_container['name']))
+			#logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
 			return _container
 	
@@ -1465,7 +1470,7 @@ def remove_item_from_inventory(life,id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['id']})
 	
-	logging.debug('Removed from inventory: %s' % item['name'])
+	#logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']

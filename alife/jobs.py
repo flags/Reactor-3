@@ -12,7 +12,8 @@ def create_job(creator, gist):
 	_job = {'creator': creator}
 	_job['gist'] = gist
 	_job['score'] = 0
-	_job['callback'] = None
+	_job['completed_callback'] = None
+	_job['leave_job_callback'] = None
 	_job['tasks'] = []
 	_job['factors'] = []
 	_job['workers'] = []
@@ -25,21 +26,29 @@ def create_job(creator, gist):
 	
 	return _job
 
-def add_job_callback(job, callback):
-	job['callback'] = callback
+def add_job_completed_callback(job, callback):
+	job['completed_callback'] = callback
 	
-	logging.debug('Job callback set for: %s' % job['gist'])
+	logging.debug('Job completed callback set for: %s' % job['gist'])
+
+def add_leave_job_callback(job, callback):
+	job['leave_job_callback'] = callback
+	
+	logging.debug('Added leave job callback for: %s' % job['gist'])
 
 def add_task_callback(job, task, callback):
 	job[task]['callback'] = callback
 	
 	logging.debug('Callback set for task \'%s\' in job \'%s\'' % (task, job['gist']))
 
-def cancel_job(job):
+def cancel_job(job, completed=False):
 	for worker in [LIFE[i] for i in job['workers']]:
 		worker['job'] = None
 		worker['task'] = None
 		lfe.create_and_update_self_snapshot(worker)
+	
+	if completed:
+		job['completed_callback'](job)
 	
 	del JOBS[job['id']]
 	
@@ -63,7 +72,10 @@ def complete_task(life):
 		if _open_task:
 			take_job(life, life['job'], _open_task)
 		else:
-			life['job']['workers'].remove(life['id'])
+			if life['job']['leave_job_callback']:
+				life['job']['leave_job_callback'](life)
+			
+			life['job']['workers'].remove(life['id'])			
 			life['job'] = None
 			life['task'] = None	
 			lfe.create_and_update_self_snapshot(life)
