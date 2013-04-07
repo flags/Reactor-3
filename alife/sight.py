@@ -22,6 +22,11 @@ def look(life):
 			continue
 		
 		if not lfe.can_see(life, ai['pos']):
+			if ai['id'] in life['know']:
+				life['know'][ai['id']]['last_seen_time'] += 1
+				
+				if life['know'][ai['id']]['last_seen_time']>=300:
+					life['know'][ai['id']]['escaped'] = False
 			continue
 		
 		life['seen'].append(ai['id'])

@@ -185,8 +185,6 @@ def get_best_weapon(life):
 def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
-	brain.flag_alife(life, target['life'], 'enemy')
-	
 	if not target['escaped'] and not _pos_for_combat:
 		return False
 	elif _pos_for_combat:

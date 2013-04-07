@@ -202,7 +202,6 @@ def generate_needs(life):
 		unflag(life, 'no_backpack')
 	else:
 		flag(life, 'no_backpack')
-		
 
 def understand(life,source_map):
 	_alife_seen = []

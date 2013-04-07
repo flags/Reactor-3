@@ -1037,8 +1037,11 @@ def kill(life, how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	drop_all_items(life)
+	for ai in [LIFE[i] for i in LIFE]:
+		if can_see(ai, life['pos']):
+			memory(ai, 'death', target=life['id'])
 	
+	drop_all_items(life)
 	life['dead'] = True
 
 def can_die_via_critical_injury(life):
@@ -1299,8 +1302,8 @@ def can_wear_item(life, item):
 def get_inventory_item(life,id):
 	"""Returns inventory item."""
 	if not life['inventory'].has_key(str(id)):
-		raise Exception('Life \'%s\' does not have item of id #%s'
-			% (life['name'][0],id))
+		raise Exception('%s does not have item of id #%s'
+			% (' '.join(life['name']),id))
 	
 	return life['inventory'][str(id)]
 
@@ -1555,6 +1558,13 @@ def drop_item(life,id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]
+	
+	#TODO: Don't do this here/should probably be a function anyway.
+	for hand in life['hands']:
+		_hand = get_limb(life['body'], hand)
+		
+		if str(id) in _hand['holding']:
+			_hand['holding'].remove(str(id))
 	
 	return item
 
@@ -2117,10 +2127,9 @@ def damage_from_item(life,item,damage):
 	_poss_limbs = [_rand_limb]
 	_shot_by_alife = LIFE[item['owner']]
 	
-	memory(life, 'shot by',
-		target=item['owner'])
-	memory(life, 'hostile',
-		target=item['owner'])
+	memory(_shot_by_alife, 'shot', target=life['id'])
+	memory(life, 'shot by', target=item['owner'])
+	memory(life, 'hostile', target=item['owner'])
 	
 	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
 		memory(life, 'traitor',

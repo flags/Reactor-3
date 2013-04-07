@@ -57,21 +57,20 @@ def listen(life):
 			print life['name'],'Got secondhand knowledge of a surrender'
 		
 		elif event['gist'] == 'demand_drop_item':
-			if event['age'] < 40:
-				event['age'] += 1
-				communicate(life,'compliant',target=event['from'])
-				
-				continue
-			
 			_inventory_item = lfe.get_inventory_item(life,event['item'])
 			
-			flag_item(life,_inventory_item,'demand_drop')
+			brain.flag_item(life, _inventory_item,'demand_drop')
 			lfe.say(life,'@n begins to drop their %s.' % _inventory_item['name'],action=True)
+			
+			speech.communicate(life, 'dropped_demanded_item', matches=[{'id': event['from']['id']}])
 			
 			lfe.add_action(life,{'action': 'dropitem',
 				'item': event['item']},
 				401,
 				delay=20)
+		
+		elif event['gist'] == 'looks_hostile':
+			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		
 		elif event['gist'] == 'greeting':
 			if not speech.has_sent(life, event['from'], 'greeting'):
