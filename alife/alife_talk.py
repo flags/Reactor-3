@@ -57,6 +57,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
 				_knows = brain.knows_alife(life, ai['life'])
+				print fWORLD_INFO['ticks']-ai['met_at_time']
 				
 				if _knows['score']<0:
 					speech.communicate(life, 'greeting', msg='...', matches=[{'id': ai['life']['id']}])
