@@ -81,6 +81,10 @@ def generate_life(source_map, amount=1):
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
+		
+		if i == 2:
+			_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
+			life.equip_item(alife, _wep[0])
 
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):
