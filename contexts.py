@@ -25,6 +25,9 @@ def _create_context_from_phrase(life, phrase):
 			'communicate': 'dropped_demanded_item'})
 	
 	elif phrase['gist'] == 'greeting':
+		pass
+	
+	elif phrase['gist'] == 'looks_hostile':
 		encounters.create_encounter(life, phrase['from'])
 	
 	elif phrase['gist'] == 'surrender':
