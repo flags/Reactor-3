@@ -71,6 +71,8 @@ def travel_to_target(life,target,pos,source_map):
 def search_for_target(life,target,source_map):
 	_cover = sight.generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
+	print 'search'
+	
 	if _cover:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)

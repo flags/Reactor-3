@@ -2,7 +2,10 @@ from globals import *
 
 import life as lfe
 
+import language
+
 import logging
+import random
 
 def has_sent(life, target, gist):
 	if gist in life['know'][target['id']]['sent']:
@@ -70,3 +73,25 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
 
+def determine_interesting_event(life, target):
+	_valid_phrases = []
+	for memory in life['memory']:
+		_memory_age = WORLD_INFO['ticks']-memory['time_created']
+		
+		if _memory_age >= 500:
+			continue
+		
+		if memory['target'] == target['id']:
+			continue
+		
+		_phrase = language.generate_memory_phrase(memory)
+		
+		if not _phrase:
+			continue
+		
+		_valid_phrases.append(_phrase)
+	
+	if not _valid_phrases:
+		return 'I don\'t have anything interesting to say.'
+		
+	return random.choice(_valid_phrases)

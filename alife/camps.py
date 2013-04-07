@@ -50,6 +50,9 @@ def found_camp(life, reference, announce=False):
 		'founder': life['id'],
 		'time_founded': WORLD_INFO['ticks']}
 	
+	if not life['known_camps']:
+		life['camp'] = _camp['id']
+	
 	CAMPS[_camp['id']] = _camp 
 	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
 	discover_camp(life, _camp)
@@ -70,6 +73,8 @@ def has_discovered_camp(life, camp):
 	return False
 
 def discover_camp(life, camp):
+	if not life['known_camps']:
+		life['camp'] = camp['id']
 	life['known_camps'][camp['id']] = camp
 	life['known_camps'][camp['id']]['time_discovered'] = WORLD_INFO['ticks']
 

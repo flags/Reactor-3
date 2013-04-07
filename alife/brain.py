@@ -227,7 +227,7 @@ def understand(life,source_map):
 			_score = judgement.judge(life, target)
 			target['score'] = _score
 			
-			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		_alife_seen.append({'who': target,'score': _score})
 		

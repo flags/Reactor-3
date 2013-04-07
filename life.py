@@ -241,6 +241,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['memory'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
+	_life['camp'] = None
 	_life['tempstor2'] = {}
 	_life['job'] = {}
 	_life['task'] = ''
@@ -345,7 +346,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		#TODO: Do we really need to support more than one match?
 		#TODO: Handle radio
 		#TODO: can_hear
-		if ai == life:
+		if ai['id'] == life['id']:
 			continue
 		
 		if not can_see(ai, life['pos']):
@@ -504,6 +505,7 @@ def say(life, text, action=False, volume=30, context=False):
 
 def memory(life, gist, **kvargs):
 	_entry = {'text': gist}
+	_entry['time_created'] = WORLD_INFO['ticks']
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
@@ -1013,7 +1015,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		speech.communicate(life, _action['what'], target=_action['target'])
+		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
 	else:

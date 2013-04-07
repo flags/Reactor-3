@@ -74,16 +74,19 @@ def listen(life):
 				delay=20)
 		
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 30):
-				continue
-			
 			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.communicate(life, 'greeting', matches=[{'id': event['from']['id']}])
-				speech.send(life, event['from'], 'greeting')
+				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
+				speech.send(life, event['from'], 'compliment')
 				lfe.say(life, 'Hello there, traveler!')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
+		
+		elif event['gist'] == 'ask_about_recent_events':
+			_event = speech.determine_interesting_event(life, event['from'])
+			
+			if _event:
+				lfe.say(life, _event)
 		
 		elif event['gist'] == 'get_chunk_info':
 			if event_delay(event, 60):

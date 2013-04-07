@@ -184,7 +184,6 @@ def find_open_task(life, job):
 					return task
 			
 			if task['required']:
-				print 'TASK REQUIRED!!!!!'
 				return task
 				
 			_task_to_take = task

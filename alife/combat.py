@@ -19,7 +19,7 @@ def weapon_equipped_and_ready(life):
 	for weapon in get_equipped_weapons(life):
 		_feed = weapons.get_feed(weapon)
 		
-		if _feed['rounds']:
+		if _feed and _feed['rounds']:
 			_loaded_feed = _feed
 
 	if not _loaded_feed:
@@ -221,10 +221,9 @@ def wont_disarm(life):
 	jobs.cancel_job(life['job'])
 
 def disarm_completed(job):
-	print 'DISARM COMPLETED!!!'
+	pass
 
 def disarm_left(life):
-	print 'LEFT DISARM'
 	_target = jobs.get_job_detail(life['job'], 'target')
 	
 	lfe.delete_memory(life, matches={'target': _target, 'text': 'hostile'})
