@@ -63,6 +63,7 @@ def get_children_of_tag(taglist):
 		if _key.count('/'):
 			if not _parent:
 				_limbs[_name] = {'flags': _flags}
+				_limbs[_name]['damage_mod'] = _damage_mod
 			else:
 				_limb = {'flags': _flags}
 				_limb['parent'] = _parent

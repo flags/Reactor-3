@@ -180,7 +180,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
+	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	"""Initiates and returns a deepcopy of a life type."""
@@ -221,7 +221,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
-	_life['shoot_timer_max'] = 60
+	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
@@ -240,13 +240,25 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['know_items'] = {}
 	_life['memory'] = []
 	_life['known_chunks'] = {}
-	_life['known_camps'] = {} 
+	_life['known_camps'] = {}
+	_life['camp'] = None
+	_life['tempstor2'] = {}
+	_life['job'] = {}
+	_life['task'] = ''
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
 	LIFE[_life['id']] = _life
 	
 	return _life
+
+def show_debug_info(life):
+	print ' '.join(life['name'])
+	print '*'*10
+	print 'Dumping memory'
+	print '*'*10
+	for memory in life['memory']:
+		print memory['target'], memory['text']
 
 def change_state(life, state):
 	if life['state'] == state:
@@ -266,7 +278,7 @@ def set_animation(life, animation, speed=2, loops=0):
 		'index': 0,
 		'loops': loops}
 	
-	logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
+	#logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
 
 def tick_animation(life):
 	if not life['animation']:
@@ -320,11 +332,12 @@ def get_known_life(life, id):
 	return False
 
 def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs):
-	logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
+	#logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
 	_conversation = {'gist': gist,
 		'from': life,
 		'start_time': WORLD_INFO['ticks'],
+		'timeout_callback': None,
 		'id': time.time()}
 	_conversation.update(kvargs)
 	_for_player = False
@@ -333,7 +346,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		#TODO: Do we really need to support more than one match?
 		#TODO: Handle radio
 		#TODO: can_hear
-		if ai == life:
+		if ai['id'] == life['id']:
 			continue
 		
 		if not can_see(ai, life['pos']):
@@ -396,7 +409,7 @@ def hear(life, what):
 	
 	if 'player' in life:		
 		_menu = []
-		_context = contexts.create_context(life, what)
+		_context = contexts.create_context(life, what, timeout_callback=what['timeout_callback'])
 		
 		_context['reactions']
 		for reaction in _context['reactions']:
@@ -408,22 +421,32 @@ def hear(life, what):
 					communicate=reaction['communicate'],
 					life=life))
 			elif reaction['type'] == 'action':
-				_menu.append(menus.create_item('single',
-					reaction['type'],
-					reaction['text'],
-					target=what['from'],
-					action=reaction['action'],
-					score=reaction['score'],
-					delay=reaction['delay'],
-					communicate=reaction['communicate'],
-					life=life))
+				if 'communicate' in reaction:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						communicate=reaction['communicate'],
+						life=life))
+				else:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						life=life))
 		
 		if _menu:
 			_context['items'] = _menu
 			life['contexts'].append(_context)
 			life['shoot_timer'] = DEFAULT_CONTEXT_TIME
 	
-	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+	#logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
 def avoid_react(reaction):
 	life = reaction['life']
@@ -444,13 +467,14 @@ def react(reaction):
 	target = reaction['target']
 	score = reaction.get('score', 0)
 
-	for comm in reaction['communicate'].split('|'):
-		add_action(life,
-			{'action': 'communicate',
-				'what': comm,
-				'target': target},
-			score-1,
-			delay=0)
+	if 'communicate' in reaction:
+		for comm in reaction['communicate'].split('|'):
+			add_action(life,
+				{'action': 'communicate',
+					'what': comm,
+					'target': target},
+				score-1,
+				delay=0)
 
 	if type == 'say':
 		say(life, text)
@@ -481,13 +505,16 @@ def say(life, text, action=False, volume=30, context=False):
 
 def memory(life, gist, **kvargs):
 	_entry = {'text': gist}
+	_entry['time_created'] = WORLD_INFO['ticks']
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
+	else:
+		print 'NO TARGET?', gist, life['name']
 
 def get_memory(life, matches={}):
 	_memories = []
@@ -503,6 +530,11 @@ def get_memory(life, matches={}):
 			_memories.append(memory)
 			
 	return _memories
+
+def delete_memory(life, matches={}):
+	for _memory in get_memory(life, matches=matches):
+		life['memory'].remove(_memory)
+		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]
@@ -983,7 +1015,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		speech.communicate(life, _action['what'], target=_action['target'])
+		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
 	else:
@@ -1005,8 +1037,11 @@ def kill(life, how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	drop_all_items(life)
+	for ai in [LIFE[i] for i in LIFE]:
+		if can_see(ai, life['pos']):
+			memory(ai, 'death', target=life['id'])
 	
+	drop_all_items(life)
 	life['dead'] = True
 
 def can_die_via_critical_injury(life):
@@ -1088,6 +1123,11 @@ def tick(life, source_map):
 			context['time'] -= 1
 			
 			if not context['time']:
+				if context['timeout_callback']:
+					context['timeout_callback'](context['from'])
+				else:
+					print 'No callback'
+				
 				life['contexts'].remove(context)
 				logging.info('Context removed!')
 	
@@ -1104,7 +1144,7 @@ def remove_item_from_limb(life,item,limb):
 	"""Removes item from limb. Returns True."""
 	life['body'][limb]['holding'].remove(item)
 	create_and_update_self_snapshot(life)
-	logging.debug('%s removed from %s' % (item,limb))
+	#logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
 
@@ -1211,7 +1251,7 @@ def remove_item_in_storage(life,id):
 		if id in _container['storing']:
 			_container['storing'].remove(id)
 			_container['capacity'] -= get_inventory_item(life,id)['size']
-			logging.debug('Removed item #%s from %s' % (id,_container['name']))
+			#logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
 			return _container
 	
@@ -1262,8 +1302,8 @@ def can_wear_item(life, item):
 def get_inventory_item(life,id):
 	"""Returns inventory item."""
 	if not life['inventory'].has_key(str(id)):
-		raise Exception('Life \'%s\' does not have item of id #%s'
-			% (life['name'][0],id))
+		raise Exception('%s does not have item of id #%s'
+			% (' '.join(life['name']),id))
 	
 	return life['inventory'][str(id)]
 
@@ -1435,7 +1475,7 @@ def remove_item_from_inventory(life,id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['id']})
 	
-	logging.debug('Removed from inventory: %s' % item['name'])
+	#logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
@@ -1518,6 +1558,13 @@ def drop_item(life,id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]
+	
+	#TODO: Don't do this here/should probably be a function anyway.
+	for hand in life['hands']:
+		_hand = get_limb(life['body'], hand)
+		
+		if str(id) in _hand['holding']:
+			_hand['holding'].remove(str(id))
 	
 	return item
 
@@ -2078,6 +2125,15 @@ def damage_from_item(life,item,damage):
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
 	_rand_limb = random.choice(life['body'].keys())
 	_poss_limbs = [_rand_limb]
+	_shot_by_alife = LIFE[item['owner']]
+	
+	memory(_shot_by_alife, 'shot', target=life['id'])
+	memory(life, 'shot by', target=item['owner'])
+	memory(life, 'hostile', target=item['owner'])
+	
+	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
+		memory(life, 'traitor',
+			target=item['owner'])
 	
 	if 'parent' in life['body'][_rand_limb]:
 		_poss_limbs.append(life['body'][_rand_limb]['parent'])

@@ -1,3 +1,5 @@
+from globals import *
+
 import random
 
 def prettify_string_array(array,max_length):
@@ -27,3 +29,13 @@ def get_name(life):
 		return ' '.join(life['name'])
 	else:
 		return 'He'
+
+def generate_memory_phrase(memory):
+	_details = [key for key in memory.keys() if not key == 'text']
+	_memory_age = WORLD_INFO['ticks']-memory['time_created']
+	_topic = memory['text']
+	
+	if _topic == 'friendly':
+		return '%s seems like a good guy.' % (' '.join(LIFE[memory['target']]['name']))
+	else:
+		print 'DIDNT HAVE A PHRASE FOR',_topic

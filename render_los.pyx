@@ -1,4 +1,5 @@
 from globals import *
+
 import cython
 import time
 
@@ -93,7 +94,7 @@ def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
 	
 	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
-	for _pos in draw_circle(POSITION[0],POSITION[1],30):
+	for _pos in draw_circle(POSITION[0], POSITION[1], SETTINGS['los']):
 
 		_dark = 0
 		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):

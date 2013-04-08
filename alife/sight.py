@@ -22,6 +22,11 @@ def look(life):
 			continue
 		
 		if not lfe.can_see(life, ai['pos']):
+			if ai['id'] in life['know']:
+				life['know'][ai['id']]['last_seen_time'] += 1
+				
+				if life['know'][ai['id']]['last_seen_time']>=300:
+					life['know'][ai['id']]['escaped'] = False
 			continue
 		
 		life['seen'].append(ai['id'])
@@ -41,23 +46,20 @@ def look(life):
 		brain.meet_alife(life, ai)
 	
 	for item in [ITEMS[item] for item in ITEMS]:
-		if item.has_key('id'):
-			continue
-		
-		if item.has_key('parent'):
+		if item.has_key('id') or item.has_key('parent'):
 			continue
 		
 		_can_see = lfe.can_see(life,item['pos'])
-		_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
+		if _can_see:
+			_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
 				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
-		judgement.judge_chunk(life, _item_chunk_key)
+			judgement.judge_chunk(life, _item_chunk_key)
 		
-		if _can_see:
-			brain.remember_item(life,item)
-		
-		if _can_see:
+			if not item['uid'] in life['know_items']:
+				brain.remember_item(life, item)
+
 			life['know_items'][item['uid']]['last_seen_time'] = 0
-			life['know_items'][item['uid']]['score'] = judgement.judge_item(life,item)
+			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
 		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
 

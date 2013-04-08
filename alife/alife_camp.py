@@ -1,5 +1,3 @@
-#This is intended to be an example of how the new ALife
-#system works.
 from globals import *
 
 import life as lfe
@@ -11,6 +9,7 @@ import camps
 import maps
 
 import logging
+import random
 
 STATE = 'camping'
 INITIAL_STATES = ['idle', 'hidden']
@@ -29,7 +28,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in ['hiding', 'hidden']:
+	if life['state'] in ['hiding', 'hidden', 'working']:
 		return False
 	
 	if not life['state'] == STATE:
@@ -44,12 +43,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_camp = life['known_camps'][life['known_camps'].keys()[0]]
+	_camp = life['known_camps'][life['camp']]
 	if not camps.is_in_camp(life, _camp):
 		_closest_key =  references.find_nearest_key_in_reference(life, _camp['reference'])
 		_chunk = maps.get_chunk(_closest_key)
 		
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move',
-			'to': _chunk['pos']},
+			'to': random.choice(_chunk['ground'])},
 			200)

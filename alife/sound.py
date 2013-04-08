@@ -2,9 +2,11 @@ import life as lfe
 
 import judgement
 import speech
+import combat
 import brain
 import camps
 import maps
+import jobs
 
 import logging
 
@@ -17,108 +19,77 @@ def listen(life):
 		if event_delay(event, 20):
 			return False
 		
-		if event['gist'] == 'surrender':
-			if not speech.has_answered(life, event['from'], 'surrender'):
-				#if not speech.has_answered(life, event['from'], 'greeting'):
-				speech.communicate(life, 'surrender', target=event['from'])
-				speech.answer(life, event['from'], 'surrender')
-				print 'SURRENDERED'
-			#if speech.consider(life,event['from'],'surrendered'):
-			#	logging.debug('%s realizes %s has surrendered.' % (' '.join(life['name']),' '.join(event['from']['name'])))
-			#	
-			#	speech.communicate(life,'stand_still',target=event['from'])
+		if not brain.knows_alife(life, event['from']):
+			brain.meet_alife(life, event['from'])
+			
+			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
-		elif event['gist'] == 'resist':
-			if speech.consider(life, event['from'], 'resist'):
-				logging.debug('%s realizes %s is resisting.' % (' '.join(life['name']),' '.join(event['from']['name'])))
+		if event['gist'] == 'job':
+			if not jobs.alife_is_factor_of_job(life, event['job']):
+				print 'Got job:', event['job']['gist']
+				jobs.add_job_candidate(event['job'], life)
+				jobs.process_job(event['job'])
 		
-		elif event['gist'] == 'free_to_go':
-			lfe.create_and_update_self_snapshot(event['from'])
-			speech.unconsider(life,event['from'],'surrender')
-			brain.unflag(life, 'surrendered')
-			brain.unflag(life, 'scared')
+		elif event['gist'] == 'surrender':
+			_found_related_job = False
+			for _j in jobs.find_jobs_of_type('surrender'):
+				if jobs.alife_is_factor_of_job(event['from'], _j):
+					_found_related_job = True
+					break
+			
+			if not _found_related_job:
+				_j = jobs.create_job(life, 'surrender')
+				jobs.add_job_completed_callback(_j, combat.disarm_completed)
+				jobs.add_leave_job_callback(_j, combat.disarm_left)
+				jobs.add_job_factor(_j, 'alife', event['from'])
+				jobs.add_job_task(_j, 'disarm', callback=combat.disarm, required=True)
+				jobs.add_job_task(_j, 'guard', callback=combat.guard, depends_on='disarm')
+				jobs.add_job_task(_j, 'fetch_item', callback=combat.retrieve_weapon, depends_on='guard')
+				jobs.add_job_task(_j, 'guard', callback=combat.guard)
+				jobs.add_job_candidate(_j, life)
+				jobs.announce_job(life, _j)
+				jobs.process_job(_j)
 		
-		elif event['gist'] == 'comply':
-			#TODO: Judge who this is coming from...
-			lfe.clear_actions(life)
-			speech.communicate(life,'surrender')
-			speech.consider(life, event['from'], 'surrendered_to')
-			brain.flag(life, 'surrendered')
+		elif event['gist'] == 'target_surrendered':
+			if not brain.knows_alife(life, event['target']):
+				brain.meet_alife(life, event['target'])
+			
+			print life['name'],'Got secondhand knowledge of a surrender'
 		
 		elif event['gist'] == 'demand_drop_item':
-			if event['age'] < 40:
-				event['age'] += 1
-				communicate(life,'compliant',target=event['from'])
-				
-				continue
-			
 			_inventory_item = lfe.get_inventory_item(life,event['item'])
 			
-			flag_item(life,_inventory_item,'demand_drop')
+			brain.flag_item(life, _inventory_item,'demand_drop')
 			lfe.say(life,'@n begins to drop their %s.' % _inventory_item['name'],action=True)
+			
+			speech.communicate(life, 'dropped_demanded_item', matches=[{'id': event['from']['id']}])
 			
 			lfe.add_action(life,{'action': 'dropitem',
 				'item': event['item']},
 				401,
 				delay=20)
 		
-		elif event['gist'] == 'stand_still':
-			if brain.get_flag(life, 'surrendered'):
-				lfe.clear_actions(life)
-				lfe.add_action(life,{'action': 'block'},400)
+		elif event['gist'] == 'move_away_from_item':
+			#'/'''/s'/sc'/sc/sc/'/'ssc/''/'ssc/'sc/'sc/'sc/'sac/'asc/'cas/''s/as/'s/'aasc/'
+			pass
 		
-		elif event['gist'] == 'compliant':
-			speech.consider(life,event['from'],'compliant')
+		elif event['gist'] == 'looks_hostile':
+			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		
-		elif event['gist'] == 'intimidate':
-			if event_delay(event,60):
-				continue
-			
-			lfe.say(life,'I\'ll shoot if you come any closer.')
-			communicate(life,'intimidate_with_weapon',target=event['from'])
-		
-		elif event['gist'] == 'drop_everything':
-			if life == event['target'] and brain.get_flag(life, 'surrendered'):
-				lfe.drop_all_items(life)
-		
-		elif event['gist'] == 'intimidate_with_weapon':
-			if event_delay(event,60):
-				continue
-			
-			#TODO: We should also use sounds (reloading, etc) to confirm
-			#if the ALife is telling the truth.
-			_lying = True
-			
-			for item in [lfe.get_inventory_item(event['from'],item) for item in check_snapshot(life,event['from'])['visible_items']]:
-				if item['type'] == 'gun':
-					_lying = False
-			
-			if _lying:
-				lfe.say(life,'I know you don\'t have a gun.')
-		
-		elif event['gist'] == 'confidence':
-			logging.debug('%s realizes %s is no longer afraid!' % (' '.join(life['name']),' '.join(event['from']['name'])))
-			speech.consider(life,event['from'],'confidence')
-
 		elif event['gist'] == 'greeting':
-			if event_delay(event, 30):
-				continue
-			
 			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.communicate(life, 'greeting', matches=[{'id': event['from']['id']}])
-				speech.send(life, event['from'], 'greeting')
+				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
+				speech.send(life, event['from'], 'compliment')
 				lfe.say(life, 'Hello there, traveler!')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
-
-		elif event['gist'] == 'insult':
-			if event_delay(event, 20):
-				continue
-
-			if speech.consider(life, event['from'], 'insulted'):
-				speech.communicate(life, 'insult', target=event['from'])
-				lfe.say(life, 'You\'re a jerk!')
+		
+		elif event['gist'] == 'ask_about_recent_events':
+			_event = speech.determine_interesting_event(life, event['from'])
+			
+			if _event:
+				lfe.say(life, _event)
 		
 		elif event['gist'] == 'get_chunk_info':
 			if event_delay(event, 60):
@@ -129,6 +100,7 @@ def listen(life):
 
 			if not speech.has_received(life, event['from'], 'get_chunk_info'):
 				speech.communicate(life, 'get_chunk_info', target=event['from'])
+				speech.receive(life, event['from'], 'get_chunk_info')
 				speech.send(life, event['from'], 'no_chunk_info')
 				lfe.say(life, 'I\'m new around here, sorry!')
 		
@@ -184,16 +156,51 @@ def listen(life):
 				target=event['from']['id'])
 		
 		elif event['gist'] == 'under_attack':
-			if not brain.knows_alife(life, event['from']):
-				brain.meet_alife(life, event['from'])
+			if not brain.knows_alife(life, event['attacker']):
+				brain.meet_alife(life, event['attacker'])
+			
+			_target = brain.knows_alife(life, event['attacker'])
 			
 			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
 				lfe.memory(life, 'traitor',
-					target=event['from']['id'])
+					target=event['attacker']['id'])
 				lfe.say(life, 'You no-good traitor!')
-			else:
-				lfe.memory(life, 'hostile',
-					target=event['from']['id'])
+			
+			lfe.memory(life, 'hostile',
+				target=event['attacker']['id'])
+			
+			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
+			if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):
+				speech.communicate(life,
+					'get_alife_location',
+					alife=event['attacker'],
+					matches=[{'id': event['from']['id']}])
+				lfe.say(life, 'Where is he?')
+			elif 'location' in event:
+				_target['last_seen_at'] = event['attacker']['pos'][:]
+		
+		elif event['gist'] == 'get_alife_location':
+			_target = brain.knows_alife(life, event['alife'])
+			
+			speech.communicate(life,
+				'alife_location',
+				alife=event['alife'],
+				location=_target['last_seen_at'][:],
+				matches=[{'id': event['from']['id']}])
+		
+		elif event['gist'] == 'alife_location':
+			_target = brain.knows_alife(life, event['alife'])
+			
+			#TODO: Trust should play a factor here (and also when we ask for the location too)
+			_target['last_seen_at'] = event['location']
+		
+		elif event['gist'] == 'target_needs_disarmed':
+			if not brain.knows_alife(life, event['alife']):
+				brain.meet_alife(life, event['alife'])
+			
+			#TODO: In the future we should consider giving this task to another ALife
+			#_target = brain.knows_alife(life, event['alife'])['score']
+			logging.warning('target_needs_disarmed: Needs handling code.')
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

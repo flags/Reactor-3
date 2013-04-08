@@ -201,7 +201,12 @@ def handle_input():
 		
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
+		
+		if SETTINGS['controlling']['memory']:
+			print SETTINGS['controlling']['memory'][0]['text']
 		_phrases = []
+		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
+		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
 		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
 		
 		_menu = menus.create_menu(title='Talk',
@@ -269,6 +274,7 @@ def handle_input():
 			format_str='[$i] $k: $v',
 			on_select=inventory_fire)
 		
+		SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 		menus.activate_menu(_i)
 	
 	if INPUT['F']:
@@ -370,13 +376,25 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
-	if INPUT['S']:
+	if INPUT['s']:
 		if SETTINGS['controlling']['strafing']:
 			SETTINGS['controlling']['strafing'] = False
 			print 'Not strafing'
 		else:
 			SETTINGS['controlling']['strafing'] = True
 			print 'Strafing'
+	
+	if INPUT['S']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
+		
+		logging.debug('** SURRENDERING **')
 	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
@@ -396,6 +414,9 @@ def handle_input():
 			on_select=handle_options_menu)
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['O']:
+		life.show_debug_info(SETTINGS['following'])
 	
 	if INPUT['Z']:
 		life.crawl(SETTINGS['controlling'])
@@ -609,7 +630,6 @@ def inventory_fire(entry):
 			return False
 	
 	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
-	SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -872,7 +892,18 @@ def talk_menu(entry):
 	target = entry['target']
 	_phrases = []
 
-	if key == 'Intimidate':
+	if key == 'Discuss':
+		_phrases.append(menus.create_item('single',
+			'Recent',
+			'Talk about recent events.',
+			communicate='ask_about_recent_events',
+			target=target))
+		_phrases.append(menus.create_item('single',
+			'Legends',
+			'Talk about heard legends.',
+			communicate='ask_about_legends',
+			target=target))
+	elif key == 'Intimidate':
 		if brain.get_flag(target, 'surrendered'):
 			_phrases.append(menus.create_item('single',
 				'Drop items',

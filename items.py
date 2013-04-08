@@ -223,14 +223,19 @@ def tick_all_items(MAP):
 				_break = True
 				break
 		
-		if _break:
-			maps.refresh_chunk(life.get_current_chunk_id(item))
-			continue
-		
 		item['pos'][0] = int(round(item['realpos'][0]))
 		item['pos'][1] = int(round(item['realpos'][1]))
 		item['pos'][2] = int(round(item['realpos'][2]))
-		
+
+		if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
+			or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
+			if not item['uid'] in _remove:
+				_remove.append(item['uid'])
+				continue
+		elif _break:
+			maps.refresh_chunk(life.get_current_chunk_id(item))
+			continue
+
 		#TODO: Min/max
 		item['velocity'][0] -= (item['velocity'][0]*item['gravity'])
 		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])

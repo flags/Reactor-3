@@ -99,7 +99,7 @@ SETTINGS = {'running': True,
 			'progress bar max value': 25,
 			'action queue size': 4,
 			'world gravity': 0.09,
-			'los': 35,
+			'los': 40,
 			'lifeid': 0,
 			'heatmap': None,
 			'controlling': None,
@@ -116,6 +116,7 @@ ITEMS = {}
 BULLETS = []
 EFFECTS = []
 SPLATTERS = []
+JOBS = {}
 
 #Consoles
 MAP_WINDOW = None
@@ -159,6 +160,7 @@ INPUT = {'up':False,
 		'm':False,
 		'n':False,
 		'o':False,
+		'O':False,
 		'p':False,
 		'q':False,
 		'r':False,

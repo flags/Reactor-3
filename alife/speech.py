@@ -2,7 +2,10 @@ from globals import *
 
 import life as lfe
 
+import language
+
 import logging
+import random
 
 def has_sent(life, target, gist):
 	if gist in life['know'][target['id']]['sent']:
@@ -52,7 +55,7 @@ def announce(life, gist, public=False, **kvargs):
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
 	
 	for target in _announce_to:
-		if has_sent(life, target, gist):
+		if not public and has_sent(life, target, gist):
 			continue
 	
 		#logging.debug('\t%s got announce.' % ' '.join(target['name']))
@@ -64,6 +67,31 @@ def announce(life, gist, public=False, **kvargs):
 	return True
 
 def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
+	if 'target' in kvargs:
+		logging.warning('Deprecated keyword in speech.communicate(): target')
+	
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
 
+def determine_interesting_event(life, target):
+	_valid_phrases = []
+	for memory in life['memory']:
+		_memory_age = WORLD_INFO['ticks']-memory['time_created']
+		
+		if _memory_age >= 500:
+			continue
+		
+		if memory['target'] == target['id']:
+			continue
+		
+		_phrase = language.generate_memory_phrase(memory)
+		
+		if not _phrase:
+			continue
+		
+		_valid_phrases.append(_phrase)
+	
+	if not _valid_phrases:
+		return 'I don\'t have anything interesting to say.'
+		
+	return random.choice(_valid_phrases)

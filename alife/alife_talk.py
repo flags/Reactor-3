@@ -6,6 +6,7 @@ import movement
 import speech
 import brain
 import camps
+import jobs
 
 import logging
 
@@ -15,7 +16,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#Note: We don't want to change the state because we're running this module alongside
 	#other modules that will (most likely) be changing states for us...
 	#Instead we're going to read the current state and react accordingly via flipping
-	#life[['flags'] and spawning conversations based on that (and the state of course).
+	#life['flags'] and spawning conversations based on that (and the state of course).
 	#The main focus is to provide effective output rather than a lot of it, so the less
 	#conversations we spawn the better.
 	
@@ -30,21 +31,39 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#	return False
 	
 	for ai in [alife['who'] for alife in alife_seen]:
-		#print life['know'][ai['life']['id']]['sended'],life['know'][ai['life']['id']]['receiveed']
 		#What's our relationship with them?
-		if ai['life']['state'] in ['hiding', 'hidden']:
+		#if ai['life']['state'] in ['hiding', 'hidden']:
+		#	break
+		
+		if life['state'] in ['combat']:
 			break
 		
-		if speech.has_received(life, ai['life'], 'greeting'):
-			if speech.has_received(life, ai['life'], 'get_chunk_info'):
-				pass
-			else:
-				if not speech.discussed(life, ai['life'], 'get_chunk_info'):
-					speech.communicate(life,
-						'get_chunk_info',
-						msg='Do you know of any interesting places?',
-						matches=[{'id': ai['life']['id']}])
-					speech.send(life, ai['life'], 'get_chunk_info')
+		if jobs.alife_is_factor_of_any_job(ai['life']):
+			break
+		
+		#if brain.get_alife_flag(life, ai['life'], 'enemy'):
+		#	break
+		
+		#if not life['camp'] == target['life']['camp']:
+		
+		#TODO: Way too scripted. ALife shouldn't really talk until provoked.
+		#if speech.has_received(life, ai['life'], 'greeting'):
+		#	if speech.has_received(life, ai['life'], 'get_chunk_info'):
+		#		pass
+		#	else:
+		#		if not speech.discussed(life, ai['life'], 'get_chunk_info'):
+		#			speech.communicate(life,
+		#				'get_chunk_info',
+		#				msg='Do you know of any interesting places?',
+		#				matches=[{'id': ai['life']['id']}])
+		#			speech.send(life, ai['life'], 'get_chunk_info')
+		#else:
+		_knows = brain.knows_alife(life, ai['life'])
+		
+		if _knows['score']<0:
+			if not speech.discussed(life, ai['life'], 'looks_hostile'):
+				speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
+				speech.send(life, ai['life'], 'looks_hostile')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
 				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
@@ -54,6 +73,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<=0:
 			continue
+		
+		if life['state'] == 'combat':
+			break
 		
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
