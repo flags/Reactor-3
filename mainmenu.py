@@ -3,17 +3,21 @@ from libtcodpy import *
 
 import graphics
 
-MAIN_MENU_TEXT = ['Reactor 3',
+HEADER = ['Reactor 3',
 	'- - -',
-	'STRATEGIC ROGUELIKE ACTION',
+	'Return to Pripyat',
 	'- - -',
-	'',
-	's - Start',
-	'g - Generate World',
-	'q - Quit']
+	'']
+HEADER.reverse()
 
-WORLD_INFO_TEXT = ['World Info',
-	'placeholder']
+MAIN_MENU_TEXT = ['s - Start  ',
+	'o - Options',
+	'q - Quit   ']
+
+WORLD_INFO_TEXT = ['placeholder']
+
+[MAIN_MENU_TEXT.insert(0, line) for line in HEADER]
+[WORLD_INFO_TEXT.insert(0, line) for line in HEADER]
 
 MENU = [MAIN_MENU_TEXT]
 

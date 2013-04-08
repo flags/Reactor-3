@@ -98,23 +98,22 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-while 1:
-	get_input()
-	mainmenu.draw_main_menu()
-	
-	if INPUT['s']:
-		break
-	elif INPUT['g']:
-		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
-			print 'yeah'
-			mainmenu.MENU[0] = mainmenu.WORLD_INFO_TEXT
-		
-	elif INPUT['q']:
-		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
-			SETTINGS['running'] = False
-			break
-		else:
-			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
+#while 1:
+#	get_input()
+#	mainmenu.draw_main_menu()
+#	
+#	if INPUT['s']:
+#		break
+#	elif INPUT['o']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			mainmenu.MENU[0] = mainmenu.WORLD_INFO_TEXT
+#		
+#	elif INPUT['q']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			SETTINGS['running'] = False
+#			break
+#		else:
+#			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
 
 worldgen.generate_world(MAP, life=3, simulate_ticks=1)
 

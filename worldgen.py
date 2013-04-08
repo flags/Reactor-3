@@ -52,6 +52,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	generate_life(source_map, amount=life)
 	randomize_item_spawns()
 	
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
 	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 	_r.start()
 	
