@@ -42,13 +42,13 @@ def add_task_callback(job, task, callback):
 	logging.debug('Callback set for task \'%s\' in job \'%s\'' % (task, job['gist']))
 
 def cancel_job(job, completed=False):
+	if completed:
+		job['completed_callback'](job)
+	
 	for worker in [LIFE[i] for i in job['workers']]:
 		worker['job'] = None
 		worker['task'] = None
 		lfe.create_and_update_self_snapshot(worker)
-	
-	if completed:
-		job['completed_callback'](job)
 	
 	del JOBS[job['id']]
 	
@@ -79,6 +79,13 @@ def complete_task(life):
 			life['job'] = None
 			life['task'] = None	
 			lfe.create_and_update_self_snapshot(life)
+
+def job_has_task(job, task, is_open=True):
+	for _task in job['tasks']:
+		if task == _task['task'] and not _task['workers']:
+			return _task
+	
+	return False
 
 def add_job_factor(job, factor_type, value):
 	_factor = {'type': factor_type,

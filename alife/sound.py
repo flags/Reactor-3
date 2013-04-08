@@ -69,6 +69,10 @@ def listen(life):
 				401,
 				delay=20)
 		
+		elif event['gist'] == 'move_away_from_item':
+			#'/'''/s'/sc'/sc/sc/'/'ssc/''/'ssc/'sc/'sc/'sc/'sac/'asc/'cas/''s/as/'s/'aasc/'
+			pass
+		
 		elif event['gist'] == 'looks_hostile':
 			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		

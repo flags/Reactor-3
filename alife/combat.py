@@ -219,9 +219,13 @@ def wont_disarm(life):
 	jobs.cancel_job(life['job'])
 
 def disarm_completed(job):
-	pass
+	_target = jobs.get_job_detail(job, 'target')
+	
+	for worker in [LIFE[i] for i in job['workers']]:
+		lfe.delete_memory(worker, matches={'target': _target, 'text': 'hostile'})
 
 def disarm_left(life):
+	print life['name'],'LEAVING DISARM'
 	_target = jobs.get_job_detail(life['job'], 'target')
 	
 	lfe.delete_memory(life, matches={'target': _target, 'text': 'hostile'})
@@ -238,6 +242,12 @@ def disarm(life):
 	item = get_equipped_weapons(target)
 	
 	if not item:
+		_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+		
+		speech.communicate(life,
+			'move_away_from_item',
+			matches=[{'id': target['id']}],
+			item=_weapon)
 		lfe.say(life, 'Now get out of here!')
 		return True
 	
@@ -252,7 +262,6 @@ def disarm(life):
 			speech.communicate(life,
 				'demand_drop_item',
 				matches=[{'id': target['id']}],
-				timeout_callback=wont_disarm,
 				item=item['id'])
 			speech.send(life, target, 'demand_drop_item')
 		
@@ -281,21 +290,30 @@ def guard(life):
 	if _dropped and not 'id' in ITEMS[_dropped]:
 		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
 		
-		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'], old=False)>=5:
+		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'], old=False)>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
 			return True
 	
 	if _dropped and 'id' in ITEMS[_dropped] and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
 		wont_disarm(life)
 
 def retrieve_weapon(life):
+	_target = LIFE[jobs.get_job_detail(life['job'], 'target')]
 	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+	_weapon_pos = ITEMS[_weapon]['pos']
 	lfe.clear_actions(life)
 	
-	for _target in [i['who']['life'] for i in brain.retrieve_from_memory(life, 'neutral_combat_targets')]:
-		if numbers.distance(ITEMS[_weapon]['pos'], _target['pos'], old=False)<5:
-			return False
-		else:
-			brain.add_impression(life, _target, 'disarmed', 3)
-			lfe.memory(life, 'compliant', target=_target['id'])
-			lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
-			jobs.cancel_job(life['job'], completed=True)
+	if life['pos'] == _weapon_pos:
+		lfe.add_action(life,
+			{'action': 'pickupholditem',
+				'item': ITEMS[_weapon],
+				'hand': lfe.get_open_hands(life)[0]},
+			 200)
+		
+		brain.add_impression(life, _target, 'disarmed', 3)
+		lfe.memory(life, 'compliant', target=_target['id'])
+		lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
+		jobs.cancel_job(life['job'], completed=True)
+	else:
+		lfe.add_action(life, {'action': 'move','to': _weapon_pos[:2]}, 200)
+		return False
+
