@@ -121,11 +121,9 @@ def judge(life, target):
 		else:
 			_life_combat_score = get_combat_rating(life)
 			_target_combat_score = get_combat_rating(target['life'])
+			brain.flag_alife(life, target['life'], 'combat_score', value=_life_combat_score-_target_combat_score)
 			
 			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
-			
-			#if _life_combat_score>_target_combat_score:
-			#	target['flags']['enemy'] = _life_combat_score-_target_combat_score
 	
 	return _like-_dislike
 
@@ -271,4 +269,21 @@ def judge_job(life, job):
 			
 			_score += judge(life, _alife)
 
+	return _score
+
+def judge_raid(life, raiders, camp):
+	# score >= 0: We can handle it
+	# 		<  0: We can't handle it 
+	_score = 0
+	for raider in raiders:
+		_knows = brain.knows_alife_by_id(life, raider)
+		if not _knows:
+			#TODO: Confidence
+			_score -= 2
+			continue
+		
+		_score += _knows['flags']['combat_score']
+	
+	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))
+	
 	return _score

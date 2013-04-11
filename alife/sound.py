@@ -82,6 +82,11 @@ def listen(life):
 		elif event['gist'] == 'camp_raid':
 			print 'RAID IN EFFECT!!!!!!!!!!'
 			lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
+			_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
+			speech.announce(life, 'raid_score', raid_score=_raid_score)
+		
+		elif event['gist'] == 'raid_score':
+			print 'Got friendly raid score:', event['raid_score'] 
 		
 		elif event['gist'] == 'greeting':
 			if not speech.has_sent(life, event['from'], 'greeting'):

@@ -66,8 +66,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_neutral_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
 
 	if _all_targets and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
-		print 'fo def running now'
-		speech.announce(life, 'camp_raid', camp=camps.get_nearest_known_camp(life))
+		speech.announce(life,
+			'camp_raid',
+			camp=camps.get_nearest_known_camp(life),
+			raiders=[t['who']['life']['id'] for t in _all_targets])
 	
 	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):
