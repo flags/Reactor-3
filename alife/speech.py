@@ -21,7 +21,7 @@ def has_received(life, target, gist):
 
 def has_heard(life, target, gist):
 	for heard in life['heard']:
-		if heard['from'] == target and heard['gist'] == gist:
+		if heard['from']['id'] == target['id'] and heard['gist'] == gist:
 			return True
 	
 	return False
