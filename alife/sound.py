@@ -16,8 +16,8 @@ def listen(life):
 			pass
 			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
-		if event_delay(event, 20):
-			return False
+		#if event_delay(event, 20):
+		#	return False
 		
 		if not brain.knows_alife(life, event['from']):
 			brain.meet_alife(life, event['from'])
@@ -57,6 +57,9 @@ def listen(life):
 			print life['name'],'Got secondhand knowledge of a surrender'
 		
 		elif event['gist'] == 'demand_drop_item':
+			if event_delay(event, 120):
+				continue
+			
 			_inventory_item = lfe.get_inventory_item(life,event['item'])
 			
 			brain.flag_item(life, _inventory_item,'demand_drop')
