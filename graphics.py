@@ -351,7 +351,7 @@ def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
-	if SETTINGS['controlling']['encounters']:
+	if SETTINGS['controlling'] and SETTINGS['controlling']['encounters']:
 		_encounter = SETTINGS['controlling']['encounters'][0]
 	
 	if _encounter and 'console' in _encounter:
