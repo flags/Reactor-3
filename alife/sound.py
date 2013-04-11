@@ -79,6 +79,10 @@ def listen(life):
 		elif event['gist'] == 'looks_hostile':
 			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		
+		elif event['gist'] == 'camp_raid':
+			print 'RAID IN EFFECT!!!!!!!!!!'
+			lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
+		
 		elif event['gist'] == 'greeting':
 			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])

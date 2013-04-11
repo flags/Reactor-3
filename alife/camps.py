@@ -29,7 +29,7 @@ def find_best_unfounded_camp(life):
 	
 	return _best_camp['camp']
 
-def get_nearest_known_camp(life):
+def _get_nearest_known_camp(life):
 	_nearest_camp = {'score': -1, 'camp': None}
 	
 	for camp in [life['known_camps'][i] for i in life['known_camps']]:
@@ -42,7 +42,13 @@ def get_nearest_known_camp(life):
 			_nearest_camp['camp'] = camp
 			_nearest_camp['score'] = _distance
 	
-	return _nearest_camp['camp']
+	return _nearest_camp
+
+def get_nearest_known_camp(life):
+	return _get_nearest_known_camp(life)['camp']
+
+def get_distance_to_nearest_known_camp(life):
+	return _get_nearest_known_camp(life)['score']
 
 def found_camp(life, reference, announce=False):
 	_camp = {'id': len(CAMPS),

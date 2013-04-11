@@ -115,7 +115,7 @@ items.create_item('glock',position=[40,35,2])
 #		else:
 #			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
 
-worldgen.generate_world(MAP, life=3, simulate_ticks=1)
+worldgen.generate_world(MAP, life=2, simulate_ticks=1)
 
 CURRENT_UPS = UPS
 
