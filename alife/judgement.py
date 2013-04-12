@@ -285,7 +285,8 @@ def judge_raid(life, raiders, camp):
 		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
 			judge(life, _knows)
 		
-		_score += _knows['flags']['combat_score']
+		if brain.get_alife_flag(life, _knows['life'], 'combat_score'):
+			_score += _knows['flags']['combat_score']
 	
 	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))
 	
