@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import combat
 import speech
 import brain
@@ -16,7 +18,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 
-	if not life['job']:
+	if not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	
 	if not life['state'] == STATE:
@@ -25,5 +27,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	if life['task']['callback'](life):
+	if jobs.alife_is_factor_of_any_job(life):
+		lfe.clear_actions(life)
+		return True
+	
+	if life['task'] and life['task']['callback'](life):
 		jobs.complete_task(life)

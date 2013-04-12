@@ -1,7 +1,9 @@
 from globals import *
 
+import numbers
 import combat
 import speech
+import camps
 import brain
 import jobs
 
@@ -60,9 +62,26 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	return RETURN_VALUE
 
+def get_closest_target(life, targets):
+	_closest = {'dist': -1, 'life': None}
+	for target in targets:
+		_dist = numbers.distance(life['pos'], target['who']['life']['pos'])
+		
+		if _dist<_closest['dist'] or not _closest['life']:
+			_closest['life'] = target
+			_closest['dist'] = _dist
+	
+	return _closest['life']
+
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	_all_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	_neutral_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+
+	if _all_targets and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
+		speech.announce(life,
+			'camp_raid',
+			camp=camps.get_nearest_known_camp(life),
+			raiders=[t['who']['life']['id'] for t in _all_targets])
 	
 	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):
@@ -71,7 +90,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					life['equipping'] = True
 			
 		if _all_targets:
-			combat.combat(life, _all_targets[0]['who'], life['map'])
+			_closest_target = get_closest_target(life, _all_targets)
+			combat.combat(life, _closest_target['who'], life['map'])
 	elif _neutral_targets:
 		for _ntarget in [_target['who']['life'] for _target in _neutral_targets]:
 			_has_weapon = combat.get_equipped_weapons(_ntarget)

@@ -52,6 +52,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	generate_life(source_map, amount=life)
 	randomize_item_spawns()
 	
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
 	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 	_r.start()
 	
@@ -77,14 +78,18 @@ def randomize_item_spawns():
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[30+(i*2),70+(i*15),2])
+		if i % 2:
+			_spawn = (40, 40)
+		else:
+			_spawn = (30, 70)
+		
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
 		
-		if i == 2:
-			_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
-			life.equip_item(alife, _wep[0])
+		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
+		#life.equip_item(alife, _wep[0])
 
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):

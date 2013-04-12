@@ -92,6 +92,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				item=brain.get_remembered_item(life, item['item']),
 				matches=[{'id': ai['life']['id']}])
 
+			if not item['item']['uid'] in ITEMS:
+				print 'INVALID ITEM!!!!!!!!!!!!'
+
 			speech.communicate(life,
 				'share_chunk_info',
 				chunk_key=_item_chunk_key,

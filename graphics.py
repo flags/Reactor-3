@@ -170,12 +170,12 @@ def draw_bottom_ui_terraform():
 	_string += 'X: %s Y: %s Z: %s' % (MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2])
 	
 	blit_string(MAP_WINDOW_SIZE[0]-len(_string),
-			MAP_WINDOW_SIZE[1]-1,
-			_string,
-			console=MAP_WINDOW,
-			fore_color=Color(255,255,255),
-			back_color=Color(0,0,0),
-			flicker=0)
+		MAP_WINDOW_SIZE[1]-1,
+		_string,
+		console=MAP_WINDOW,
+		fore_color=Color(255,255,255),
+		back_color=Color(0,0,0),
+		flicker=0)
 
 def draw_message_box():	
 	console_set_default_foreground(MESSAGE_WINDOW,Color(128,128,128))
@@ -351,7 +351,7 @@ def end_of_frame():
 	console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
-	if SETTINGS['controlling']['encounters']:
+	if SETTINGS['controlling'] and SETTINGS['controlling']['encounters']:
 		_encounter = SETTINGS['controlling']['encounters'][0]
 	
 	if _encounter and 'console' in _encounter:

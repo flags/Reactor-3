@@ -9,6 +9,7 @@ from tiles import *
 import graphics as gfx
 import maputils
 import worldgen
+import mainmenu
 import drawing
 import logging
 import weapons
@@ -97,7 +98,24 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-worldgen.generate_world(MAP, life=3, simulate_ticks=1)
+#while 1:
+#	get_input()
+#	mainmenu.draw_main_menu()
+#	
+#	if INPUT['s']:
+#		break
+#	elif INPUT['o']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			mainmenu.MENU[0] = mainmenu.WORLD_INFO_TEXT
+#		
+#	elif INPUT['q']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			SETTINGS['running'] = False
+#			break
+#		else:
+#			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
+
+worldgen.generate_world(MAP, life=4, simulate_ticks=100)
 
 CURRENT_UPS = UPS
 

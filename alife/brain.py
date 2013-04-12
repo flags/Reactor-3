@@ -4,6 +4,7 @@ import life as lfe
 
 import alife_collect_items
 import alife_manage_items
+import alife_visit_camp
 import alife_find_camp
 import alife_discover
 import alife_explore
@@ -33,6 +34,7 @@ MODULES = [alife_hide,
 	alife_discover,
 	alife_manage_items,
 	alife_find_camp,
+	alife_visit_camp,
 	alife_camp,
 	alife_combat,
 	alife_work]

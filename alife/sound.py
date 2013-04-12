@@ -16,8 +16,8 @@ def listen(life):
 			pass
 			#logging.warning('%s does not know %s!' % (' '.join(event['from']['name']),' '.join(life['name'])))
 		
-		if event_delay(event, 20):
-			return False
+		#if event_delay(event, 20):
+		#	return False
 		
 		if not brain.knows_alife(life, event['from']):
 			brain.meet_alife(life, event['from'])
@@ -57,6 +57,9 @@ def listen(life):
 			print life['name'],'Got secondhand knowledge of a surrender'
 		
 		elif event['gist'] == 'demand_drop_item':
+			if event_delay(event, 120):
+				continue
+			
 			_inventory_item = lfe.get_inventory_item(life,event['item'])
 			
 			brain.flag_item(life, _inventory_item,'demand_drop')
@@ -76,10 +79,23 @@ def listen(life):
 		elif event['gist'] == 'looks_hostile':
 			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		
+		elif event['gist'] == 'camp_raid':
+			print 'RAID IN EFFECT!!!!!!!!!!'
+			if brain.knows_alife(life, event['from'])['score']>0:
+				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
+				_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
+				speech.announce(life, 'raid_score', raid_score=_raid_score)
+		
+		elif event['gist'] == 'raid_score':
+			print 'Got friendly raid score:', event['raid_score'] 
+		
 		elif event['gist'] == 'greeting':
+			if event['from']['camp'] and not camps.has_discovered_camp(life, event['from']['camp']):
+				camps.discover_camp(life, event['from']['known_camps'][event['from']['camp']])
+			
 			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
-				speech.send(life, event['from'], 'compliment')
+				speech.send(life, event['from'], 'friendly')
 				lfe.say(life, 'Hello there, traveler!')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
@@ -131,7 +147,7 @@ def listen(life):
 				lfe.clear_actions(life)
 				continue
 			
-			if not camps.has_discovered_camp(life, event['camp']):
+			if not camps.has_discovered_camp(life, event['camp']['id']):
 				camps.discover_camp(life, event['camp'])
 				
 				#TODO: Judge and respond?
@@ -160,14 +176,19 @@ def listen(life):
 				brain.meet_alife(life, event['attacker'])
 			
 			_target = brain.knows_alife(life, event['attacker'])
+			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']['id']])
 			
-			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
-				lfe.memory(life, 'traitor',
+			if _believes == event['from']['id']:
+				if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
+					lfe.memory(life, 'traitor',
+						target=event['attacker']['id'])
+					lfe.say(life, 'You no-good traitor!')
+			
+				lfe.memory(life, 'hostile',
 					target=event['attacker']['id'])
-				lfe.say(life, 'You no-good traitor!')
-			
-			lfe.memory(life, 'hostile',
-				target=event['attacker']['id'])
+			else:
+				lfe.memory(life, 'hostile',
+					target=event['from']['id'])
 			
 			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
 			if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):
