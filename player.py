@@ -25,6 +25,11 @@ def handle_input():
 			SETTINGS['controlling']['throwing'] = None
 			SETTINGS['controlling']['firing'] = None
 			SELECTED_TILES[0] = []
+		elif SETTINGS['controlling']['actions']:
+			life.clear_actions(SETTINGS['controlling'])
+			
+			if SETTINGS['controlling']['actions']:
+				SETTINGS['controlling']['actions'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -202,8 +207,6 @@ def handle_input():
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
 		
-		if SETTINGS['controlling']['memory']:
-			print SETTINGS['controlling']['memory'][0]['text']
 		_phrases = []
 		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
 		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
@@ -220,7 +223,7 @@ def handle_input():
 	
 	if INPUT['V']:
 		if not SETTINGS['controlling']['contexts']:
-			return False
+			return create_radio_menu()
 		
 		if SETTINGS['controlling']['encounters']:
 			SETTINGS['following'] = SETTINGS['controlling']
@@ -923,5 +926,28 @@ def talk_menu(entry):
 		position=(1,1),
 		format_str='$k: $v',
 		on_select=talk_menu_action)
+	
+	menus.activate_menu(_menu)
+
+def radio_menu(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_phrases = []
+	
+	if key == 'Distress':
+		speech.announce(life, 'under_attack')
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_radio_menu():
+	_phrases = []
+	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	
+	_menu = menus.create_menu(title='Radio',
+		menu=_phrases,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k: $v',
+		on_select=radio_menu)
 	
 	menus.activate_menu(_menu)
