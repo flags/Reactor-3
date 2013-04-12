@@ -81,9 +81,10 @@ def listen(life):
 		
 		elif event['gist'] == 'camp_raid':
 			print 'RAID IN EFFECT!!!!!!!!!!'
-			lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
-			_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
-			speech.announce(life, 'raid_score', raid_score=_raid_score)
+			if brain.knows_alife(life, event['from'])['score']>0:
+				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
+				_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
+				speech.announce(life, 'raid_score', raid_score=_raid_score)
 		
 		elif event['gist'] == 'raid_score':
 			print 'Got friendly raid score:', event['raid_score'] 
@@ -94,7 +95,7 @@ def listen(life):
 			
 			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
-				speech.send(life, event['from'], 'compliment')
+				speech.send(life, event['from'], 'friendly')
 				lfe.say(life, 'Hello there, traveler!')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
@@ -175,14 +176,19 @@ def listen(life):
 				brain.meet_alife(life, event['attacker'])
 			
 			_target = brain.knows_alife(life, event['attacker'])
+			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']['id']])
 			
-			if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
-				lfe.memory(life, 'traitor',
+			if _believes == event['from']['id']:
+				if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
+					lfe.memory(life, 'traitor',
+						target=event['attacker']['id'])
+					lfe.say(life, 'You no-good traitor!')
+			
+				lfe.memory(life, 'hostile',
 					target=event['attacker']['id'])
-				lfe.say(life, 'You no-good traitor!')
-			
-			lfe.memory(life, 'hostile',
-				target=event['attacker']['id'])
+			else:
+				lfe.memory(life, 'hostile',
+					target=event['from']['id'])
 			
 			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
 			if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):

@@ -78,7 +78,7 @@ def judge(life, target):
 	
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
-			_like += 1
+			_like += 2
 		
 		elif memory['text'] == 'hostile':
 			_is_hostile = True
@@ -282,8 +282,26 @@ def judge_raid(life, raiders, camp):
 			_score -= 2
 			continue
 		
+		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
+			judge(life, _knows)
+		
 		_score += _knows['flags']['combat_score']
 	
 	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))
 	
 	return _score
+
+#TODO: Should be in brain.py?
+def get_trust(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	
+	return WORLD_INFO['ticks']-_knows['met_at_time']
+
+def believe_which_alife(life, alife):
+	_scores = {}
+	for ai in alife:
+		_score = get_trust(life, ai)
+		_scores[_score] = ai
+	
+	return _scores[max(_scores)]
+		
