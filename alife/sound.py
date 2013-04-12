@@ -89,6 +89,9 @@ def listen(life):
 			print 'Got friendly raid score:', event['raid_score'] 
 		
 		elif event['gist'] == 'greeting':
+			if event['from']['camp'] and not camps.has_discovered_camp(life, event['from']['camp']):
+				camps.discover_camp(life, event['from']['known_camps'][event['from']['camp']])
+			
 			if not speech.has_sent(life, event['from'], 'greeting'):
 				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
 				speech.send(life, event['from'], 'compliment')
@@ -143,7 +146,7 @@ def listen(life):
 				lfe.clear_actions(life)
 				continue
 			
-			if not camps.has_discovered_camp(life, event['camp']):
+			if not camps.has_discovered_camp(life, event['camp']['id']):
 				camps.discover_camp(life, event['camp'])
 				
 				#TODO: Judge and respond?

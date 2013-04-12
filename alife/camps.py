@@ -51,7 +51,7 @@ def get_distance_to_nearest_known_camp(life):
 	return _get_nearest_known_camp(life)['score']
 
 def found_camp(life, reference, announce=False):
-	_camp = {'id': len(CAMPS),
+	_camp = {'id': len(CAMPS)+1,
 		'reference': reference,
 		'founder': life['id'],
 		'time_founded': WORLD_INFO['ticks']}
@@ -62,7 +62,7 @@ def found_camp(life, reference, announce=False):
 	CAMPS[_camp['id']] = _camp 
 	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
 	discover_camp(life, _camp)
-	speech.announce(life, 'share_camp_info', camp=_camp, public=True)
+	speech.announce(life, 'share_camp_info', camp=_camp, public=False)
 
 def unfound_camp(life, camp):
 	pass
@@ -73,7 +73,7 @@ def get_all_alife_in_camp(life, camp):
 	pass
 
 def has_discovered_camp(life, camp):
-	if camp['id'] in life['known_camps']:
+	if camp in life['known_camps']:
 		return True
 	
 	return False
