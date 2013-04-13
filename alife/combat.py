@@ -297,6 +297,10 @@ def guard(life):
 		wont_disarm(life)
 
 def retrieve_weapon(life):
+	if not jobs.get_job_detail(life['job'], 'target') in LIFE:
+		print 'NONE'
+		return False
+	
 	_target = LIFE[jobs.get_job_detail(life['job'], 'target')]
 	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
 	_weapon_pos = ITEMS[_weapon]['pos']

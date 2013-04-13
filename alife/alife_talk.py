@@ -93,7 +93,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				matches=[{'id': ai['life']['id']}])
 
 			if not item['item']['uid'] in ITEMS:
-				print 'INVALID ITEM!!!!!!!!!!!!'
+				continue
 
 			speech.communicate(life,
 				'share_chunk_info',
