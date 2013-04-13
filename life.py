@@ -1692,12 +1692,14 @@ def draw_life():
 		
 		_targets = brain.retrieve_from_memory(life, 'combat_targets')
 		if _targets:
-			_targets = [l['who']['life']['id'] for l in _targets]
+			if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+				_color = light_red
 		
-		if _targets and SETTINGS['controlling']['id'] in _targets:
-			_color = red
-		elif life['dead']:
+		if life['dead']:
 			_icon = 'X'
+		elif life['asleep']:
+			if time.time()%1>=0.5:
+				_icon = 'S'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
