@@ -59,8 +59,6 @@ def position_for_combat(life,target,position,source_map):
 	return True
 
 def travel_to_target(life,target,pos,source_map):
-	#print 'Traveling'
-	
 	if not tuple(life['pos']) == tuple(pos):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -69,7 +67,7 @@ def travel_to_target(life,target,pos,source_map):
 	return False
 
 def search_for_target(life,target,source_map):
-	_cover = generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
+	_cover = sight.generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
 	if _cover:
 		lfe.clear_actions(life)

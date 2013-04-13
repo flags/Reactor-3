@@ -4,6 +4,7 @@ from tiles import *
 import life as lfe
 
 import alife
+import tiles
 
 import graphics as gfx
 import maputils
@@ -133,7 +134,7 @@ def _render_los(map,pos,cython=False):
 def render_los(map,position,los_buffer=LOS_BUFFER[0]):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
-	for pos1 in drawing.draw_circle(position,SETTINGS['los']):
+	for pos1 in drawing.draw_circle(position, SETTINGS['los']):
 
 		_dark = False
 		for pos in drawing.diag_line(position,pos1):
@@ -377,7 +378,7 @@ def refresh_chunk(chunk_id):
 	chunk = get_chunk(chunk_id)
 	
 	_life = []
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		if alife.chunks.is_in_chunk(life, chunk_id):
 			_life.append(life['id'])
 	
@@ -391,13 +392,13 @@ def refresh_chunk(chunk_id):
 		if alife.chunks.is_in_chunk(item, chunk_id):
 			_items.append(_item)
 		
-	chunk['items'] = _items[:]
-	
+	chunk['items'] = _items
+	chunk['life'] = _life
 	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
 	broadcast_chunk_change(chunk_id)
 
 def broadcast_chunk_change(chunk_id):
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		for known_chunk_key in life['known_chunks']:
 			_chunk = get_chunk(known_chunk_key)
 			_known_chunk = life['known_chunks'][known_chunk_key]
@@ -431,7 +432,7 @@ def update_chunk_map(source_map):
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
-				'life': 0,
+				'life': [],
 				'items': [],
 				'neighbors': [],
 				'digest': None}
@@ -442,15 +443,13 @@ def update_chunk_map(source_map):
 					if not source_map[x2][y2][2]:
 						continue
 					
-					_chunk_map[_chunk_key]['ground'].append((x2, y2))
-					_tile_id = source_map[x2][y2][2]['id']
+					_tile_type = None
+					if not source_map[x2][y2][4]:
+						_chunk_map[_chunk_key]['ground'].append((x2, y2))
+						_tile = get_tile(source_map[x2][y2][2])
 					
-					if _tile_id in [tile['id'] for tile in CONCRETE_TILES]:
-						_type = 'road'
-					elif _tile_id == WALL_TILE['id'] or _tile_id in [tile['id'] for tile in CONCRETE_FLOOR_TILES]:
-						_type = 'wall'
-					elif _tile_id in [tile['id'] for tile in DIRT_TILES]:
-						_type = 'dirt'
+					if 'type' in _tile:
+						_type = _tile['type']
 					else:
 						_type = 'other'
 					
@@ -463,7 +462,7 @@ def update_chunk_map(source_map):
 			for tile in _tiles.keys():
 				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'wall' in _tiles and _tiles['wall']>=15:
+			if 'building' in _tiles and _tiles['building']>=15:
 				_chunk_map[_chunk_key]['type'] = 'building'
 			elif 'road' in _tiles and _tiles['road']>=15:
 				_chunk_map[_chunk_key]['type'] = 'road'

@@ -71,6 +71,7 @@
       "parent": "stomach"
     }, 
     "head": {
+      "damage_mod": "20", 
       "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
     }, 
     "stomach": {

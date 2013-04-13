@@ -7,6 +7,8 @@ import menus
 import items
 import life
 
+import logging
+
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
@@ -23,6 +25,11 @@ def handle_input():
 			SETTINGS['controlling']['throwing'] = None
 			SETTINGS['controlling']['firing'] = None
 			SELECTED_TILES[0] = []
+		elif SETTINGS['controlling']['actions']:
+			life.clear_actions(SETTINGS['controlling'])
+			
+			if SETTINGS['controlling']['actions']:
+				SETTINGS['controlling']['actions'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -188,7 +195,7 @@ def handle_input():
 			return True
 		else:
 			_target = None
-			for entry in LIFE:
+			for entry in [LIFE[i] for i in LIFE]:
 				if entry['pos'] == SETTINGS['controlling']['targeting']:
 					_target = entry
 					break
@@ -199,7 +206,10 @@ def handle_input():
 		
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
+		
 		_phrases = []
+		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
+		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
 		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
 		
 		_menu = menus.create_menu(title='Talk',
@@ -213,7 +223,11 @@ def handle_input():
 	
 	if INPUT['V']:
 		if not SETTINGS['controlling']['contexts']:
-			return False
+			return create_radio_menu()
+		
+		if SETTINGS['controlling']['encounters']:
+			SETTINGS['following'] = SETTINGS['controlling']
+			SETTINGS['controlling']['encounters'].pop(0)
 		
 		_i = menus.create_menu(title='React',
 			menu=SETTINGS['controlling']['contexts'].pop()['items'],
@@ -263,7 +277,32 @@ def handle_input():
 			format_str='[$i] $k: $v',
 			on_select=inventory_fire)
 		
+		SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 		menus.activate_menu(_i)
+	
+	if INPUT['F']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'appear_friendly', matches=[{'id': _target['id']}])
+		
+		logging.debug('** APPEARING FRIENDLY **')
+	
+	if INPUT['H']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'appear_hostile', matches=[{'id': _target['id']}])
+		
+		logging.debug('** APPEARING HOSTILE **')
 	
 	if INPUT['r']:
 		if menus.get_menu_by_name('Reload')>-1:
@@ -340,13 +379,25 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
-	if INPUT['S']:
+	if INPUT['s']:
 		if SETTINGS['controlling']['strafing']:
 			SETTINGS['controlling']['strafing'] = False
 			print 'Not strafing'
 		else:
 			SETTINGS['controlling']['strafing'] = True
 			print 'Strafing'
+	
+	if INPUT['S']:
+		if not SETTINGS['controlling']['encounters']:
+			return False
+		
+		SETTINGS['following'] = SETTINGS['controlling']
+		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
+		SETTINGS['controlling']['shoot_timer'] = 0
+		
+		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
+		
+		logging.debug('** SURRENDERING **')
 	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
@@ -367,6 +418,9 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['O']:
+		life.show_debug_info(SETTINGS['following'])
+	
 	if INPUT['Z']:
 		life.crawl(SETTINGS['controlling'])
 	
@@ -379,18 +433,19 @@ def handle_input():
 		create_pick_up_item_menu(_items)
 	
 	if INPUT['b']:
-		print SETTINGS['following']['actions']
-		print life.create_recent_history(SETTINGS['following'])
+		#print SETTINGS['following']['actions']
+		#print life.create_recent_history(SETTINGS['following'])
+		life.print_life_table()
 	
 	if INPUT['y']:
-		if LIFE.index(SETTINGS['following'])<len(LIFE)-1:
-			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])+1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])+1]
+		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+1]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+1]
 
 	if INPUT['u']:
-		if LIFE.index(SETTINGS['following'])>0:
-			SETTINGS['following'] = LIFE[LIFE.index(SETTINGS['following'])-1]
-			SETTINGS['controlling'] = LIFE[LIFE.index(SETTINGS['controlling'])-1]
+		if LIFE.keys().index(SETTINGS['following']['id'])>0:
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])-1]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
 	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
@@ -579,7 +634,6 @@ def inventory_fire(entry):
 			return False
 	
 	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
-	SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -811,7 +865,7 @@ def handle_options_menu(entry):
 		MAP = maps.load_map('map1.dat')
 		
 		logging.warning('Updating references to map. This may take a while.')
-		for entry in LIFE:
+		for entry in [LIFE[i] for i in LIFE]:
 			entry['map'] = MAP
 		
 		logging.warning('Redrawing LOS.')
@@ -842,7 +896,18 @@ def talk_menu(entry):
 	target = entry['target']
 	_phrases = []
 
-	if key == 'Intimidate':
+	if key == 'Discuss':
+		_phrases.append(menus.create_item('single',
+			'Recent',
+			'Talk about recent events.',
+			communicate='ask_about_recent_events',
+			target=target))
+		_phrases.append(menus.create_item('single',
+			'Legends',
+			'Talk about heard legends.',
+			communicate='ask_about_legends',
+			target=target))
+	elif key == 'Intimidate':
 		if brain.get_flag(target, 'surrendered'):
 			_phrases.append(menus.create_item('single',
 				'Drop items',
@@ -862,5 +927,28 @@ def talk_menu(entry):
 		position=(1,1),
 		format_str='$k: $v',
 		on_select=talk_menu_action)
+	
+	menus.activate_menu(_menu)
+
+def radio_menu(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_phrases = []
+	
+	if key == 'Distress':
+		speech.announce(life, 'under_attack')
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_radio_menu():
+	_phrases = []
+	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	
+	_menu = menus.create_menu(title='Radio',
+		menu=_phrases,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k: $v',
+		on_select=radio_menu)
 	
 	menus.activate_menu(_menu)

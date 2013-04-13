@@ -9,6 +9,7 @@ from tiles import *
 import graphics as gfx
 import maputils
 import worldgen
+import mainmenu
 import drawing
 import logging
 import weapons
@@ -58,11 +59,11 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
 maps.generate_reference_maps()
 gfx.init_libtcod()
-create_all_tiles()
 
 PLACING_TILE = WALL_TILE
 
@@ -84,8 +85,6 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('Human')
-#_test = life.create_life('Human',name=['test','1'],map=MAP,position=[40,50,2])
-#_test2 = life.create_life('Human',name=['test','2'],map=MAP,position=[50,50,2])
 
 items.initiate_item('white_shirt')
 items.initiate_item('sneakers')
@@ -94,12 +93,29 @@ items.initiate_item('blue_jeans')
 items.initiate_item('glock')
 items.initiate_item('9x19mm_mag')
 items.initiate_item('9x19mm_round')
+items.initiate_item('radio')
 
-#items.create_item('glock', position=[10,5,2])
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-worldgen.generate_world(MAP, life=1, simulate_ticks=1)
+#while 1:
+#	get_input()
+#	mainmenu.draw_main_menu()
+#	
+#	if INPUT['s']:
+#		break
+#	elif INPUT['o']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			mainmenu.MENU[0] = mainmenu.WORLD_INFO_TEXT
+#		
+#	elif INPUT['q']:
+#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
+#			SETTINGS['running'] = False
+#			break
+#		else:
+#			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
+
+worldgen.generate_world(MAP, life=4, simulate_ticks=100)
 
 CURRENT_UPS = UPS
 
@@ -131,12 +147,16 @@ while SETTINGS['running']:
 	#maps.render_lights(MAP)
 	items.draw_items()
 	bullets.draw_bullets()
+	
 	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
 	
-	LOS_BUFFER[0] = maps._render_los(MAP,SETTINGS['following']['pos'],cython=CYTHON_ENABLED)
+	if SETTINGS['controlling']['encounters']:
+		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
+	else:
+		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
 	
-	if  SETTINGS['controlling']['dead']:
+	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
 		_col = 255-int(round(FADE_TO_WHITE[0]))*2
 		
@@ -154,9 +174,11 @@ while SETTINGS['running']:
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
+	logic.tick_world()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
+	logic.draw_encounter()
 	#gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()

@@ -1,0 +1,15 @@
+*.pyc
+*.c
+*.so
+*.xcf
+*.swp
+*.patch
+*.idea_wall
+
+build/*
+tests/*
+tools/*
+docs/devjournal.md
+
+profile.dat
+terminal.png

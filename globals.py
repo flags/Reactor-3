@@ -17,12 +17,14 @@ PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 TICKER = ['\\', '|', '/', '-']
+ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
 WORLD_INFO = {'ticks': 0}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
+CAMPS = {}
 
 #Return values
 STATE_CHANGE = 2
@@ -85,6 +87,8 @@ LIFE_MAX_SPEED = 12
 LIFE_BLEED_RATE = .05 #Lower is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
+ENCOUNTER_TIME_LIMIT = 150
+DEFAULT_CONTEXT_TIME = 25
 
 #Non-constants
 SETTINGS = {'running': True,
@@ -95,7 +99,7 @@ SETTINGS = {'running': True,
 			'progress bar max value': 25,
 			'action queue size': 4,
 			'world gravity': 0.09,
-			'los': 35,
+			'los': 40,
 			'lifeid': 0,
 			'heatmap': None,
 			'controlling': None,
@@ -106,12 +110,13 @@ KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
 LIFE_TYPES = {}
-LIFE = []
+LIFE = {}
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
 EFFECTS = []
 SPLATTERS = []
+JOBS = {}
 
 #Consoles
 MAP_WINDOW = None
@@ -144,8 +149,10 @@ INPUT = {'up':False,
 		'e':False,
 		'E':False,
 		'f':False,
+		'F':False,
 		'g':False,
 		'h':False,
+		'H':False,
 		'i':False,
 		'j':False,
 		'k':False,
@@ -153,6 +160,7 @@ INPUT = {'up':False,
 		'm':False,
 		'n':False,
 		'o':False,
+		'O':False,
 		'p':False,
 		'q':False,
 		'r':False,

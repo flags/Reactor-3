@@ -180,7 +180,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	logging.debug('%s updated their snapshot.' % life['name'][0])
+	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	"""Initiates and returns a deepcopy of a life type."""
@@ -204,6 +204,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
+	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
@@ -220,7 +221,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['snapshot'] = {}
 	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
-	_life['shoot_timer_max'] = 60
+	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
@@ -239,12 +240,25 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['know_items'] = {}
 	_life['memory'] = []
 	_life['known_chunks'] = {}
+	_life['known_camps'] = {}
+	_life['camp'] = None
+	_life['tempstor2'] = {}
+	_life['job'] = {}
+	_life['task'] = ''
 	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
-	LIFE.append(_life)
+	LIFE[_life['id']] = _life
 	
 	return _life
+
+def show_debug_info(life):
+	print ' '.join(life['name'])
+	print '*'*10
+	print 'Dumping memory'
+	print '*'*10
+	for memory in life['memory']:
+		print memory['target'], memory['text']
 
 def change_state(life, state):
 	if life['state'] == state:
@@ -264,7 +278,7 @@ def set_animation(life, animation, speed=2, loops=0):
 		'index': 0,
 		'loops': loops}
 	
-	logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
+	#logging.debug('%s set new animation (%s loops).' % (' '.join(life['name']), loops))
 
 def tick_animation(life):
 	if not life['animation']:
@@ -317,27 +331,49 @@ def get_known_life(life, id):
 	
 	return False
 
-def create_conversation(life,gist,say=None,action=None,**kvargs):
-	_convo = {'gist': gist,'say': say,'action': action,'heard': []}
+def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs):
+	#logging.debug('%s started new conversation (%s)' % (' '.join(life['name']), gist))
 	
-	if gist in [convo['gist'] for convo in life['conversations']]:
-		return False
+	_conversation = {'gist': gist,
+		'from': life,
+		'start_time': WORLD_INFO['ticks'],
+		'timeout_callback': None,
+		'id': time.time()}
+	_conversation.update(kvargs)
+	_for_player = False
 	
-	logging.debug('Created new conversation: %s' % gist)
-	
-	for entry in LIFE:
-		if entry['id'] == life['id']:
+	for ai in [LIFE[i] for i in LIFE]:
+		#TODO: Do we really need to support more than one match?
+		#TODO: Handle radio
+		#TODO: can_hear
+		if ai['id'] == life['id']:
 			continue
 		
-		#TODO: 30?
-		if numbers.distance(life['pos'],entry['pos'])<=30:
-			_broadcast_sound = {'from': life,'gist': gist}
-			_broadcast_sound.update(kvargs)
-			hear(entry,_broadcast_sound)
+		if not can_see(ai, life['pos']):
+			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
+				continue
+		
+		_does_match = True
+		for match in matches:
+			for key in match:
+				if not key in ai or not ai[key] == match[key]:
+					_does_match = False
+					#logging.debug('\t%s did not meet matches for this conversation' % ' '.join(ai['name']))
+					break
+		
+			if not _does_match:
+				break
+		
+		if not _does_match:
+			continue
+		
+		if 'player' in ai:
+			_for_player = True
+		
+		hear(ai, _conversation)
 	
-	life['conversations'].append(_convo)
-	
-	create_and_update_self_snapshot(life)
+	if msg:
+		say(life, msg, context=_for_player)
 
 def get_surrounding_unknown_chunks(life, distance=1):
 	_current_chunk_id = get_current_chunk_id(life)
@@ -371,9 +407,12 @@ def hear(life, what):
 	what['age'] = 0
 	life['heard'].append(what)
 	
-	if 'player' in life:
+	if 'player' in life:		
 		_menu = []
-		for reaction in contexts.create_context(life, what):
+		_context = contexts.create_context(life, what, timeout_callback=what['timeout_callback'])
+		
+		_context['reactions']
+		for reaction in _context['reactions']:
 			if reaction['type'] == 'say':
 				_menu.append(menus.create_item('single',
 					reaction['type'],
@@ -382,22 +421,32 @@ def hear(life, what):
 					communicate=reaction['communicate'],
 					life=life))
 			elif reaction['type'] == 'action':
-				_menu.append(menus.create_item('single',
-					reaction['type'],
-					reaction['text'],
-					target=what['from'],
-					action=reaction['action'],
-					score=reaction['score'],
-					delay=reaction['delay'],
-					communicate=reaction['communicate'],
-					life=life))
+				if 'communicate' in reaction:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						communicate=reaction['communicate'],
+						life=life))
+				else:
+					_menu.append(menus.create_item('single',
+						reaction['type'],
+						reaction['text'],
+						target=what['from'],
+						action=reaction['action'],
+						score=reaction['score'],
+						delay=reaction['delay'],
+						life=life))
 		
-		if _menu:		
-			life['contexts'].append({'items': _menu,'from': what['from']})
-			life['shoot_timer'] = 30
-			gfx.message('Context action added to queue.', style='important')
+		if _menu:
+			_context['items'] = _menu
+			life['contexts'].append(_context)
+			life['shoot_timer'] = DEFAULT_CONTEXT_TIME
 	
-	logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
+	#logging.debug('%s heard %s: %s' % (' '.join(life['name']), ' '.join(what['from']['name']) ,what['gist']))
 
 def avoid_react(reaction):
 	life = reaction['life']
@@ -418,13 +467,14 @@ def react(reaction):
 	target = reaction['target']
 	score = reaction.get('score', 0)
 
-	for comm in reaction['communicate'].split('|'):
-		add_action(life,
-			{'action': 'communicate',
-				'what': comm,
-				'target': target},
-			score-1,
-			delay=0)
+	if 'communicate' in reaction:
+		for comm in reaction['communicate'].split('|'):
+			add_action(life,
+				{'action': 'communicate',
+					'what': comm,
+					'target': target},
+				score-1,
+				delay=0)
 
 	if type == 'say':
 		say(life, text)
@@ -436,7 +486,7 @@ def react(reaction):
 
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def say(life,text,action=False,volume=30):
+def say(life, text, action=False, volume=30, context=False):
 	if action:
 		set_animation(life, ['\\', '|', '/', '-'])
 		text = text.replace('@n',' '.join(life['name']))
@@ -448,13 +498,43 @@ def say(life,text,action=False,volume=30):
 	
 	if SETTINGS['following']:
 		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
-			gfx.message(text,style=_style)
+			if context:
+				_style = 'important'
+			
+			gfx.message(text, style=_style)
 
-def memory(life,memory,**kvargs):
-	_entry = {'text': memory}
+def memory(life, gist, **kvargs):
+	_entry = {'text': gist}
+	_entry['time_created'] = WORLD_INFO['ticks']
 	_entry.update(kvargs)
-	print _entry
+	
 	life['memory'].append(_entry)
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	
+	if 'target' in kvargs:
+		create_and_update_self_snapshot(LIFE[kvargs['target']])
+	else:
+		print 'NO TARGET?', gist, life['name']
+
+def get_memory(life, matches={}):
+	_memories = []
+	
+	for memory in life['memory']:
+		_break = False
+		for key in matches:
+			if not key in memory or not memory[key] == matches[key]:
+				_break = True
+				break
+		
+		if not _break:
+			_memories.append(memory)
+			
+	return _memories
+
+def delete_memory(life, matches={}):
+	for _memory in get_memory(life, matches=matches):
+		life['memory'].remove(_memory)
+		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]
@@ -935,7 +1015,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		speech.communicate(life, _action['what'], target=_action['target'])
+		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
 	else:
@@ -957,8 +1037,11 @@ def kill(life, how):
 			say(life,'@n dies.',action=True)
 			logging.debug('%s dies.' % life['name'][0])
 	
-	drop_all_items(life)
+	for ai in [LIFE[i] for i in LIFE]:
+		if can_see(ai, life['pos']):
+			memory(ai, 'death', target=life['id'])
 	
+	drop_all_items(life)
 	life['dead'] = True
 
 def can_die_via_critical_injury(life):
@@ -972,8 +1055,9 @@ def can_die_via_critical_injury(life):
 	
 	return False	
 
-def tick(life,source_map):
+def tick(life, source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
+
 	if life['dead']:
 		return False
 	
@@ -1028,12 +1112,24 @@ def tick(life,source_map):
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
-		judgement.judge_chunk(life, _current_known_chunk_id)
+		judgement.judge_chunk(life, _current_known_chunk_id, visited=True)
 	else:
-		judgement.judge_chunk(life, get_current_chunk_id(life))
+		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
 		brain.think(life,source_map)
+	else:
+		for context in life['contexts'][:]:
+			context['time'] -= 1
+			
+			if not context['time']:
+				if context['timeout_callback']:
+					context['timeout_callback'](context['from'])
+				else:
+					print 'No callback'
+				
+				life['contexts'].remove(context)
+				logging.info('Context removed!')
 	
 	perform_action(life)
 
@@ -1048,7 +1144,7 @@ def remove_item_from_limb(life,item,limb):
 	"""Removes item from limb. Returns True."""
 	life['body'][limb]['holding'].remove(item)
 	create_and_update_self_snapshot(life)
-	logging.debug('%s removed from %s' % (item,limb))
+	#logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
 
@@ -1063,7 +1159,7 @@ def get_all_visible_items(life):
 	
 	return _ret
 
-def can_see(life,pos):
+def can_see(life, pos):
 	"""Returns `true` if the life can see a certain position."""
 	if CYTHON_RENDER_LOS:
 		_line = render_los.draw_line(life['pos'][0],
@@ -1075,7 +1171,10 @@ def can_see(life,pos):
 			_line = []
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
-	
+
+	if len(_line)>15:
+		return False
+
 	for pos in _line:
 		if life['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False
@@ -1152,7 +1251,7 @@ def remove_item_in_storage(life,id):
 		if id in _container['storing']:
 			_container['storing'].remove(id)
 			_container['capacity'] -= get_inventory_item(life,id)['size']
-			logging.debug('Removed item #%s from %s' % (id,_container['name']))
+			#logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
 			return _container
 	
@@ -1203,8 +1302,8 @@ def can_wear_item(life, item):
 def get_inventory_item(life,id):
 	"""Returns inventory item."""
 	if not life['inventory'].has_key(str(id)):
-		raise Exception('Life \'%s\' does not have item of id #%s'
-			% (life['name'][0],id))
+		raise Exception('%s does not have item of id #%s'
+			% (' '.join(life['name']),id))
 	
 	return life['inventory'][str(id)]
 
@@ -1311,7 +1410,7 @@ def direct_add_item_to_inventory(life,item,container=None):
 	
 	return _id
 
-def add_item_to_inventory(life,item):
+def add_item_to_inventory(life, item):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	life['item_index'] += 1
 	_id = life['item_index']
@@ -1376,7 +1475,7 @@ def remove_item_from_inventory(life,id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['id']})
 	
-	logging.debug('Removed from inventory: %s' % item['name'])
+	#logging.debug('Removed from inventory: %s' % item['name'])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
@@ -1459,6 +1558,13 @@ def drop_item(life,id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = remove_item_from_inventory(life,id)
 	item['pos'] = life['pos'][:]
+	
+	#TODO: Don't do this here/should probably be a function anyway.
+	for hand in life['hands']:
+		_hand = get_limb(life['body'], hand)
+		
+		if str(id) in _hand['holding']:
+			_hand['holding'].remove(str(id))
 	
 	return item
 
@@ -1576,25 +1682,37 @@ def show_life_info(life):
 	return True
 
 def draw_life():
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		_icon = tick_animation(life)
+		_color = white
 		
 		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
 			if time.time()%1>=0.5:
 				_icon = '?'
+		
+		_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		if _targets:
+			if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+				_color = light_red
+		
+		if life['dead']:
+			_icon = 'X'
+		elif life['asleep']:
+			if time.time()%1>=0.5:
+				_icon = 'S'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:
+			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
 			gfx.blit_char(_x,
 				_y,
 				_icon,
-				white,
+				_color,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
@@ -1718,6 +1836,7 @@ def draw_life_info():
 	_name_mods.append(life['stance'].title())
 	_name_mods.append(get_current_chunk(life)['type'])
 	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
+	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
 	console_set_default_foreground(0,BORDER_COLOR)
 	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
@@ -2018,6 +2137,15 @@ def damage_from_item(life,item,damage):
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
 	_rand_limb = random.choice(life['body'].keys())
 	_poss_limbs = [_rand_limb]
+	_shot_by_alife = LIFE[item['owner']]
+	
+	memory(_shot_by_alife, 'shot', target=life['id'])
+	memory(life, 'shot by', target=item['owner'])
+	memory(life, 'hostile', target=item['owner'])
+	
+	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
+		memory(life, 'traitor',
+			target=item['owner'])
 	
 	if 'parent' in life['body'][_rand_limb]:
 		_poss_limbs.append(life['body'][_rand_limb]['parent'])
@@ -2078,6 +2206,39 @@ def natural_healing(life):
 				if 'player' in life:
 					gfx.message('Your %s stops bleeding.' % _limb)
 
+def generate_life_info(life):
+	_stats_for = ['name', 'id', 'pos', 'memory']
+	_lines = []
+	
+	for key in _stats_for:
+		if isinstance(life[key], list):
+			print '\n',key,'\t-',
+			for value in life[key]:
+				if isinstance(value, dict):
+					print '\n'
+					for _key in value:
+						print '\t',_key,'\t' * (2-(len(_key)/8)),value[_key]
+				else:
+					print value,
+			print '\t\t',
+		elif isinstance(life[key], dict):
+			for _key in life[key]:
+				print '\t',_key,'\t' * (2-(len(_key)/8)),life[key][_key]
+		
+		else:
+			print '\n',key,'\t-',life[key],
+		
+	return _lines
+
+def print_life_table():
+	print '%' * 16
+	print '^ Life (Table) ^'
+	print '%' * 16,'\n'
+	
+	for life in [LIFE[i] for i in LIFE]:
+		generate_life_info(life)
+		print '\n','%' * 16,'\n'
+
 def tick_all_life(source_map):
-	for life in LIFE:
+	for life in [LIFE[i] for i in LIFE]:
 		tick(life,source_map)

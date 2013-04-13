@@ -30,6 +30,8 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
+
+
 def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	if not isinstance(values,list):
 		values = [values]
@@ -78,7 +80,7 @@ def draw_menus():
 			_y_offset,
 			menu['settings']['title'])
 		
-		_y_offset += 2
+		_y_offset += 2		
 		
 		for item in menu['menu']:
 			if item['type'] == 'title':

@@ -26,7 +26,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	#if life['state'] == INITIAL_STATE:
+	if life['state'] in ['combat', 'working']:
+		return False
+	
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) > ENTRY_SCORE:
 		return False
 	
@@ -37,7 +39,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	if combat.has_weapon(life):
-		if not combat._weapon_equipped_and_ready(life):
-				if not 'equipping' in life:
-					if combat._equip_weapon(life):
-						life['equipping'] = True
+		if not combat.weapon_equipped_and_ready(life):
+			if not 'equipping' in life:
+				if combat._equip_weapon(life):
+					life['equipping'] = True

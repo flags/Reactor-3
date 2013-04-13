@@ -1,31 +1,34 @@
+from globals import *
+
 import life as lfe
 
 import movement
-import speech
-
 import weapons
-import numbers
+import speech
+import brain
+import jobs
 
-def _weapon_equipped_and_ready(life):
-	_wep = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-	
-	if not _wep:
+import numbers
+import logging
+
+def weapon_equipped_and_ready(life):
+	if not is_any_weapon_equipped(life):
 		return False
 	
-	#TODO: More than one weapon
-	_wep = lfe.get_inventory_item(life,_wep[0])
-	_feed = weapons.get_feed(_wep)
-	
-	if not _feed:
-		return False
-	
-	if not _feed['rounds']:
-		print 'feed in gun with no ammo'
+	_loaded_feed = None
+	for weapon in get_equipped_weapons(life):
+		_feed = weapons.get_feed(weapon)
+		
+		if _feed and _feed['rounds']:
+			_loaded_feed = _feed
+
+	if not _loaded_feed:
+		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
 		return False
 	
 	return True
 
-def _get_feed(life,weapon):
+def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
 
 	_highest_feed = {'rounds': -1,'feed': None}
@@ -47,8 +50,6 @@ def _refill_feed(life,feed):
 			'item': feed['id']},
 			200,
 			delay=0)
-	
-	#logging.info('%s is refilling ammo.' % life['name'][0])
 
 	#TODO: No check for ammo type.
 	
@@ -116,13 +117,16 @@ def _equip_weapon(life):
 	
 	return True
 
-def is_weapon_equipped(life):
+def is_any_weapon_equipped(life):
 	_weapon = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 	
-	if not _weapon:
-		return False
+	if _weapon:
+		return True
 	
-	return lfe.get_inventory_item(life,_weapon[0])
+	return False
+
+def get_equipped_weapons(life):
+	return [lfe.get_inventory_item(life, _wep) for _wep in lfe.get_held_items(life,matches=[{'type': 'gun'}])]
 
 def has_weapon(life):
 	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
@@ -178,7 +182,7 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def combat(life,target,source_map):
+def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
 	if not target['escaped'] and not _pos_for_combat:
@@ -206,7 +210,114 @@ def handle_potential_combat_encounter(life,target,source_map):
 			
 			return True
 	
-	if is_weapon_equipped(life):
+	if is_any_weapon_equipped(life):
 		combat(life,target,source_map)
 	else:
 		handle_hide_and_decide(life,target,source_map)
+
+def wont_disarm(life):
+	jobs.cancel_job(life['job'])
+
+def disarm_completed(job):
+	_target = jobs.get_job_detail(job, 'target')
+	
+	for worker in [LIFE[i] for i in job['workers']]:
+		lfe.delete_memory(worker, matches={'target': _target, 'text': 'hostile'})
+
+def disarm_left(life):
+	print life['name'],'LEAVING DISARM'
+	_target = jobs.get_job_detail(life['job'], 'target')
+	
+	lfe.delete_memory(life, matches={'target': _target, 'text': 'hostile'})
+	
+	print _target
+
+def disarm(life):
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	item = get_equipped_weapons(target)
+	
+	if not item:
+		_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+		
+		speech.communicate(life,
+			'move_away_from_item',
+			matches=[{'id': target['id']}],
+			item=_weapon)
+		lfe.say(life, 'Now get out of here!')
+		return True
+	
+	item = item[0]
+	jobs.add_detail_to_job(life['job'], 'target', target['id'])
+	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
+	
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
+		lfe.clear_actions(life)
+		
+		if not speech.has_sent(life, target, 'demand_drop_item'):
+			speech.communicate(life,
+				'demand_drop_item',
+				matches=[{'id': target['id']}],
+				item=item['id'])
+			speech.send(life, target, 'demand_drop_item')
+		
+		return False
+	else:
+		_target_pos = (target['pos'][0], target['pos'][1])
+		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+		
+		return False
+
+def guard(life):
+	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
+	
+	if not _targets:
+		return False
+	
+	target = _targets[0]['who']['life']
+	
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=5:
+		lfe.clear_actions(life)
+	else:
+		_target_pos = (target['pos'][0], target['pos'][1])
+		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
+	
+	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
+	if _dropped and not 'id' in ITEMS[_dropped]:
+		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
+		
+		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'], old=False)>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
+			return True
+	
+	if _dropped and 'id' in ITEMS[_dropped] and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
+		wont_disarm(life)
+
+def retrieve_weapon(life):
+	if not jobs.get_job_detail(life['job'], 'target') in LIFE:
+		print 'NONE'
+		return False
+	
+	_target = LIFE[jobs.get_job_detail(life['job'], 'target')]
+	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+	_weapon_pos = ITEMS[_weapon]['pos']
+	lfe.clear_actions(life)
+	
+	if life['pos'] == _weapon_pos:
+		lfe.add_action(life,
+			{'action': 'pickupholditem',
+				'item': ITEMS[_weapon],
+				'hand': lfe.get_open_hands(life)[0]},
+			 200)
+		
+		brain.add_impression(life, _target, 'disarmed', 3)
+		lfe.memory(life, 'compliant', target=_target['id'])
+		lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
+		jobs.cancel_job(life['job'], completed=True)
+	else:
+		lfe.add_action(life, {'action': 'move','to': _weapon_pos[:2]}, 200)
+		return False
+

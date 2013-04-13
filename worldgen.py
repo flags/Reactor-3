@@ -7,9 +7,13 @@ import items
 import tiles
 import life
 import maps
+
+import random
 import time
 
-RECRUIT_ITEMS = ['sneakers', 'glock', '9x19mm magazine', '9x19mm round']
+RECRUIT_ITEMS = ['sneakers', 'leather backpack', 'glock', '9x19mm magazine', 'radio']
+for i in range(10):
+	RECRUIT_ITEMS.append('9x19mm round')
 
 class Runner(threading.Thread):
 	def __init__(self, function, source_map, amount):
@@ -33,9 +37,10 @@ class Runner(threading.Thread):
 
 def draw_world_stats():	
 	console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
-	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in LIFE]))
-	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in LIFE]))
+	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
+	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
 	console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * (WORLD_INFO['ticks']/50)))
+	console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	console_flush()
 
 def generate_world(source_map, life=1, simulate_ticks=1000):
@@ -45,7 +50,9 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	WORLD_INFO['inittime'] = time.time()
 	
 	generate_life(source_map, amount=life)
+	randomize_item_spawns()
 	
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
 	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 	_r.start()
 	
@@ -58,25 +65,46 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 	create_player(source_map)
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
+def randomize_item_spawns():
+	for building in REFERENCE_MAP['buildings']:
+		_chunk_key = random.choice(building)
+		_chunk = maps.get_chunk(_chunk_key)
+		
+		if not _chunk['ground']:
+			continue
+		
+		_rand_pos = random.choice(_chunk['ground'])
+		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
+
 def generate_life(source_map, amount=1):
 	for i in range(amount):
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[25,50-(i*10),2])
+		if i % 2:
+			_spawn = (40, 40)
+		else:
+			_spawn = (30, 70)
+		
+		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		for item in RECRUIT_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
+		
+		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
+		#life.equip_item(alife, _wep[0])
 
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):
 		logic.tick_all_objects(source_map)
+		logic.tick_world()
 
 def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[25,40,2])
+		position=[15,50,2])
 	PLAYER['player'] = True
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('sneakers'))
+	for item in RECRUIT_ITEMS:
+		life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER

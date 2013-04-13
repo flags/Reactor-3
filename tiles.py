@@ -27,6 +27,7 @@ DIRT_TILE = {'id':'dirt',
 			 'icon':'.',
 			 'color':(SAND_LIGHT,SAND),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 SAND_TILE_1 = {'id':'sand_1',
@@ -45,48 +46,56 @@ DIRT_TILE_1 = {'id':'dirt_1',
 			 'icon':'\\',
 			 'color':(BROWN_DARK,BROWN_DARK_ALT),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 DIRT_TILE_2 = {'id':'dirt_2',
 			 'icon':',',
 			 'color':(BROWN_DARK_ALT,BROWN_DARK),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 DIRT_TILE_3 = {'id':'dirt_3',
 			 'icon':'.',
 			 'color':(BROWN_DARK_ALT,BROWN_DARK_ALT_2),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 WALL_TILE = {'id':'wall',
 			 'icon':'#',
 			 'color':(black,dark_gray),
 			 'burnable':False,
+			 'type': 'building',
 			 'cost':-1}
 
 CONCRETE_TILE_1 = {'id':'concrete_1',
 			 'icon':'.',
 			 'color':(Color(130,130,130),Color(70,70,70)),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 CONCRETE_TILE_2 = {'id':'concrete_2',
 			 'icon':'.',
 			 'color':(Color(95,95,95),Color(62,62,62)),
 			 'burnable':False,
+			 'type': 'road',
 			 'cost':2}
 
 CONCRETE_FLOOR_1 = {'id':'concrete_floor_1',
 			 'icon':'.',
 			 'color':(Color(115,115,115),Color(100,100,100)),
 			 'burnable':False,
+			 'type': 'building',
 			 'cost':2}
 
 CONCRETE_FLOOR_2 = {'id':'concrete_floor_2',
 			 'icon':'.',
 			 'color':(Color(125,125,125),Color(110,110,110)),
 			 'burnable':False,
+			 'type': 'building',
 			 'cost':2}
 
 ROAD_STRIPE_1 = {'id':'road_stripe_1',
@@ -117,12 +126,14 @@ WHITE_TILE_1 = {'id':'white_tile_1',
 			 'icon':',',
 			 'color':(lightest_gray,lighter_gray),
 			 'burnable':False,
+			 'type': 'building',
 			 'cost':-1}
 
 WHITE_TILE_2 = {'id':'white_tile_2',
 			 'icon':'.',
 			 'color':(white,lightest_gray),
 			 'burnable':False,
+			 'type': 'building',
 			 'cost':-1}
 
 #Groups
