@@ -1697,14 +1697,14 @@ def draw_life():
 		if _targets and SETTINGS['following']['id'] in _targets:
 			_color = red
 		elif life['dead']:
-			_icon = 'D'
+			_icon = 'X'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:
+			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['following']['know']:
 				continue
 			
 			gfx.blit_char(_x,
