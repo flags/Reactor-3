@@ -82,7 +82,6 @@ def path_along_reference(life, ref_type):
 	_starting_chunk_key = find_nearest_key_in_reference(life, _best_reference)
 	_starting_chunk = maps.get_chunk(_starting_chunk_key)
 	_chunk_path_keys = []
-	SELECTED_TILES[0] = []
 	_directions = {}
 	
 	for neighbor_key in _starting_chunk['neighbors']:
@@ -94,9 +93,6 @@ def path_along_reference(life, ref_type):
 			lfe.get_current_chunk(life)['pos'][1]+(SETTINGS['chunk size']/2))
 		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
-		
-		SELECTED_TILES[0].append((_cent[0],
-			_cent[1],2))
 	
 	_best_dir = {'dir': -1, 'score': 0}
 	for mod in range(-45, 361, 45):

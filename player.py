@@ -433,8 +433,9 @@ def handle_input():
 		create_pick_up_item_menu(_items)
 	
 	if INPUT['b']:
-		print SETTINGS['following']['actions']
-		print life.create_recent_history(SETTINGS['following'])
+		#print SETTINGS['following']['actions']
+		#print life.create_recent_history(SETTINGS['following'])
+		life.print_life_table()
 	
 	if INPUT['y']:
 		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:

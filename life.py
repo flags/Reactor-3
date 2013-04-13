@@ -509,7 +509,7 @@ def memory(life, gist, **kvargs):
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
@@ -1684,23 +1684,35 @@ def show_life_info(life):
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
 		_icon = tick_animation(life)
+		_color = white
 		
 		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
 			if time.time()%1>=0.5:
 				_icon = '?'
+		
+		_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		if _targets:
+			if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+				_color = light_red
+		
+		if life['dead']:
+			_icon = 'X'
+		elif life['asleep']:
+			if time.time()%1>=0.5:
+				_icon = 'S'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:
+			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
 			gfx.blit_char(_x,
 				_y,
 				_icon,
-				white,
+				_color,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
@@ -2193,6 +2205,39 @@ def natural_healing(life):
 				
 				if 'player' in life:
 					gfx.message('Your %s stops bleeding.' % _limb)
+
+def generate_life_info(life):
+	_stats_for = ['name', 'id', 'pos', 'memory']
+	_lines = []
+	
+	for key in _stats_for:
+		if isinstance(life[key], list):
+			print '\n',key,'\t-',
+			for value in life[key]:
+				if isinstance(value, dict):
+					print '\n'
+					for _key in value:
+						print '\t',_key,'\t' * (2-(len(_key)/8)),value[_key]
+				else:
+					print value,
+			print '\t\t',
+		elif isinstance(life[key], dict):
+			for _key in life[key]:
+				print '\t',_key,'\t' * (2-(len(_key)/8)),life[key][_key]
+		
+		else:
+			print '\n',key,'\t-',life[key],
+		
+	return _lines
+
+def print_life_table():
+	print '%' * 16
+	print '^ Life (Table) ^'
+	print '%' * 16,'\n'
+	
+	for life in [LIFE[i] for i in LIFE]:
+		generate_life_info(life)
+		print '\n','%' * 16,'\n'
 
 def tick_all_life(source_map):
 	for life in [LIFE[i] for i in LIFE]:

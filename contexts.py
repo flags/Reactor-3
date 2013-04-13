@@ -49,13 +49,13 @@ def _create_context_from_phrase(life, phrase):
 	elif phrase['gist'] == 'welcome_to_camp':
 		_reactions.append({'type': 'say','text': 'Good to be here!',
 			'communicate': 'greeting'})
-	else:
-		logging.warning('Unhandled player context: %s' % phrase['gist'])
+	#else:
+	#	logging.warning('Unhandled player context: %s' % phrase['gist'])
 
 	return _reactions
 
 def create_context(life, action, timeout_callback=None):
-	logging.debug('** Created new context %s **' % action['gist'])
+	#logging.debug('** Created new context %s **' % action['gist'])
 	
 	if 'gist' in action:
 		_reactions = _create_context_from_phrase(life, action)

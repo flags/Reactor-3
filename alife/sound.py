@@ -32,10 +32,25 @@ def listen(life):
 		
 		elif event['gist'] == 'surrender':
 			_found_related_job = False
-			for _j in jobs.find_jobs_of_type('surrender'):
-				if jobs.alife_is_factor_of_job(event['from'], _j):
-					_found_related_job = True
-					break
+			
+			if not life['task']:
+				for _j in jobs.find_jobs_of_type('surrender'):
+					if jobs.alife_is_factor_of_job(event['from'], _j):
+						_found_related_job = True
+						break
+					
+					if jobs.is_working_job(life, _j):
+						_found_related_job = True
+						break
+					
+					if jobs.is_job_candidate(_j, life):
+						_found_related_job = True
+						break
+			else:
+				_found_related_job = True
+			
+			#DEBUG
+			_found_related_job = True
 			
 			if not _found_related_job:
 				_j = jobs.create_job(life, 'surrender')
@@ -133,9 +148,7 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 
-			if brain.has_remembered_item(life, event['item']['item']):
-				print 'Already know about this item'
-			else:
+			if not brain.has_remembered_item(life, event['item']['item']):
 				lfe.memory(life, 'heard about an item',
 					item=event['item']['item']['uid'],
 					target=event['from']['id'])
@@ -163,11 +176,13 @@ def listen(life):
 				lfe.say(life, 'It\'s good to be here.')
 				speech.receive(life, event['from'], 'welcome_to_camp')
 		
-		elif event['gist'] == 'appear_friendly':			
+		elif event['gist'] == 'appear_friendly':
+			#if not lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'hostile'}):
 			lfe.memory(life, 'friendly',
 				target=event['from']['id'])
 		
-		elif event['gist'] == 'appear_hostile':			
+		elif event['gist'] == 'appear_hostile':
+			#if not lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'friendly'}):
 			lfe.memory(life, 'hostile',
 				target=event['from']['id'])
 		
@@ -187,6 +202,11 @@ def listen(life):
 				lfe.memory(life, 'hostile',
 					target=event['attacker']['id'])
 			else:
+				if lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'friendly'}):
+					lfe.memory(life, 'traitor',
+						target=event['from']['id'])
+					lfe.say(life, 'You no-good traitor!')
+				
 				lfe.memory(life, 'hostile',
 					target=event['from']['id'])
 			
