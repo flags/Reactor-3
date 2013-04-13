@@ -38,8 +38,19 @@ def listen(life):
 					if jobs.alife_is_factor_of_job(event['from'], _j):
 						_found_related_job = True
 						break
+					
+					if jobs.is_working_job(life, _j):
+						_found_related_job = True
+						break
+					
+					if jobs.is_job_candidate(_j, life):
+						_found_related_job = True
+						break
 			else:
 				_found_related_job = True
+			
+			#DEBUG
+			_found_related_job = True
 			
 			if not _found_related_job:
 				_j = jobs.create_job(life, 'surrender')
@@ -137,9 +148,7 @@ def listen(life):
 			if event_delay(event, 20):
 				continue
 
-			if brain.has_remembered_item(life, event['item']['item']):
-				print 'Already know about this item'
-			else:
+			if not brain.has_remembered_item(life, event['item']['item']):
 				lfe.memory(life, 'heard about an item',
 					item=event['item']['item']['uid'],
 					target=event['from']['id'])

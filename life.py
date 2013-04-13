@@ -1684,10 +1684,20 @@ def show_life_info(life):
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
 		_icon = tick_animation(life)
+		_color = white
 		
 		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
 			if time.time()%1>=0.5:
 				_icon = '?'
+		
+		_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		if _targets:
+			_targets = [l['who']['life']['id'] for l in _targets]
+		
+		if _targets and SETTINGS['following']['id'] in _targets:
+			_color = red
+		elif life['dead']:
+			_icon = 'D'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
@@ -1700,7 +1710,7 @@ def draw_life():
 			gfx.blit_char(_x,
 				_y,
 				_icon,
-				white,
+				_color,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
