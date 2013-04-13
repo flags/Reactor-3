@@ -1694,7 +1694,7 @@ def draw_life():
 		if _targets:
 			_targets = [l['who']['life']['id'] for l in _targets]
 		
-		if _targets and SETTINGS['following']['id'] in _targets:
+		if _targets and SETTINGS['controlling']['id'] in _targets:
 			_color = red
 		elif life['dead']:
 			_icon = 'X'
@@ -1704,7 +1704,7 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['following']['know']:
+			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
 			gfx.blit_char(_x,
