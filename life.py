@@ -1705,17 +1705,6 @@ def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
 		_icon,_color = draw_life_icon(life)
 		
-		#_targets = brain.retrieve_from_memory(life, 'combat_targets')
-		#if _targets:
-		#	if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-		#		_color = light_red
-		
-		#if life['dead']:
-		#	_icon = 'X'
-		#elif life['asleep']:
-		#	if time.time()%1>=0.5:
-		#		_icon = 'S'
-		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
@@ -1913,17 +1902,16 @@ def draw_life_info():
 		
 		if alife['pos'][0]>CAMERA_POS[0]:
 			_x = alife['pos'][0]-CAMERA_POS[0]
-			
-			
+		
 		if alife['pos'][1]>CAMERA_POS[1]:
 			_y = alife['pos'][1]-CAMERA_POS[1]
-			
+		
 		if _x>=40:
 			continue
 		
 		if _y>=40:
 			continue
-			
+		
 		if not LOS_BUFFER[0][_y, _x]:
 			continue
 		
@@ -1934,15 +1922,13 @@ def draw_life_info():
 		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
 		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
 			console_set_default_foreground(0, red)
+			console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
 			console_set_default_foreground(0, white)
 		
 		if alife in [context['from'] for context in SETTINGS['controlling']['contexts']]:
 			if time.time()%1>=0.5:
 				console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
-		
-		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-			console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		
 		if alife['dead']:
 			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (Identified)' % ' '.join(alife['name']))
