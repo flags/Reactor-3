@@ -1684,6 +1684,10 @@ def show_life_info(life):
 def draw_life_icon(life):
 	_icon = ['@', white]
 	
+	if life in [context['from'] for context in SETTINGS['following']['contexts']]:
+		if time.time()%1>=0.5:
+			_icon[0] = '?'
+	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
 		if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
@@ -1702,20 +1706,18 @@ def draw_life():
 		_icon = tick_animation(life)
 		_color = white
 		
-		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
-			if time.time()%1>=0.5:
-				_icon = '?'
+		_icon,_color = draw_life_icon(life)
 		
-		_targets = brain.retrieve_from_memory(life, 'combat_targets')
-		if _targets:
-			if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-				_color = light_red
+		#_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		#if _targets:
+		#	if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+		#		_color = light_red
 		
-		if life['dead']:
-			_icon = 'X'
-		elif life['asleep']:
-			if time.time()%1>=0.5:
-				_icon = 'S'
+		#if life['dead']:
+		#	_icon = 'X'
+		#elif life['asleep']:
+		#	if time.time()%1>=0.5:
+		#		_icon = 'S'
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
@@ -1910,6 +1912,24 @@ def draw_life_info():
 		if life['id'] == alife['id']:
 			continue
 		
+		_x,_y = alife['pos'][:2]
+		
+		if alife['pos'][0]>CAMERA_POS[0]:
+			_x = alife['pos'][0]-CAMERA_POS[0]
+			
+			
+		if alife['pos'][1]>CAMERA_POS[1]:
+			_y = alife['pos'][1]-CAMERA_POS[1]
+			
+		if _x>=40:
+			continue
+		
+		if _y>=40:
+			continue
+			
+		if not LOS_BUFFER[0][_y, _x]:
+			continue
+		
 		_icon = draw_life_icon(alife)
 		console_set_default_foreground(0, _icon[1])
 		console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
@@ -1927,24 +1947,13 @@ def draw_life_info():
 		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
 			console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		
-		if alife['asleep']:
+		if alife['dead']:
+			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (Identified)' % ' '.join(alife['name']))
+		elif alife['asleep']:
 			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
 		else:
 			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(alife['name']))
 		_i += 1
-	
-	#Drawing contexts (player only)
-	#if 'player' in life and life['contexts']:
-	#	console_set_default_foreground(0,white)
-	#	console_print(0,MAP_WINDOW_SIZE[0]+1,19,'React')
-	#	
-	#	_y_mod = 0
-	#	for context in life['contexts']:
-	#		console_print(0,MAP_WINDOW_SIZE[0]+2,20+_y_mod,'%s: %s' % (context['action'],context['text']))
-	#		
-	#		_y_mod += 1
-	#	
-	#	return True
 	
 	#Drawing the action queue
 	_y_mod = 1
