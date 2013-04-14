@@ -1680,6 +1680,22 @@ def show_life_info(life):
 		logging.debug('%s: %s' % (key,life[key]))
 	
 	return True
+	
+def draw_life_icon(life):
+	_icon = ['@', white]
+	
+	_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	if _targets:
+		if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+			_icon[1] = light_red
+	
+	if life['dead']:
+		_icon[0] = 'X'
+	elif life['asleep']:
+		if time.time()%1>=0.5:
+			_icon[0] = 'S'
+	
+	return _icon
 
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
@@ -1885,6 +1901,37 @@ def draw_life_info():
 	_blood_g = numbers.clip(int(life['blood']),0,255)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
 	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
+	console_set_default_foreground(0, light_grey)
+	console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
+	
+	_xmod = 8
+	_i = 5
+	for alife in [LIFE[i] for i in LIFE]:
+		if life['id'] == alife['id']:
+			continue
+		
+		_icon = draw_life_icon(alife)
+		console_set_default_foreground(0, _icon[1])
+		console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
+		
+		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
+		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+			console_set_default_foreground(0, red)
+		else:
+			console_set_default_foreground(0, white)
+		
+		if alife in [context['from'] for context in SETTINGS['controlling']['contexts']]:
+			if time.time()%1>=0.5:
+				console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
+		
+		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+			console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
+		
+		if alife['asleep']:
+			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
+		else:
+			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(alife['name']))
+		_i += 1
 	
 	#Drawing contexts (player only)
 	#if 'player' in life and life['contexts']:
