@@ -52,7 +52,7 @@ def create_encounter(life, target, context=None):
 	
 	SETTINGS['following'] = target
 	life['encounters'].append(_encounter)
-	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	logging.debug('%s created encounter.' % ' '.join(target['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
 	
 	return _encounter
