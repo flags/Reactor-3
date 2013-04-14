@@ -21,7 +21,8 @@ ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
-WORLD_INFO = {'ticks': 0}
+WORLD_INFO = {'ticks': 0,
+	'pause_ticks': 0}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
 CAMPS = {}

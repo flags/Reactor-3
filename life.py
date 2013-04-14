@@ -1682,7 +1682,7 @@ def show_life_info(life):
 	return True
 	
 def draw_life_icon(life):
-	_icon = ['@', white]
+	_icon = [tick_animation(life), white]
 	
 	if life in [context['from'] for context in SETTINGS['following']['contexts']]:
 		if time.time()%1>=0.5:
@@ -1703,9 +1703,6 @@ def draw_life_icon(life):
 
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
-		_icon = tick_animation(life)
-		_color = white
-		
 		_icon,_color = draw_life_icon(life)
 		
 		#_targets = brain.retrieve_from_memory(life, 'combat_targets')
@@ -2215,11 +2212,13 @@ def damage_from_item(life,item,damage):
 		if not limb_is_cut(life,_hit_limb):
 			if life.has_key('player'):
 				gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
+				WORLD_INFO['pause_ticks'] = 40
 			else:
 				say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
 		else:
 			if life.has_key('player'):
 				gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
+				WORLD_INFO['pause_ticks'] = 40
 			else:
 				say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
 

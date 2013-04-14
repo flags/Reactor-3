@@ -17,6 +17,10 @@ def tick_all_objects(source_map):
 		if SETTINGS['controlling']['encounters']:
 			return False
 	
+	if WORLD_INFO['pause_ticks']:
+		WORLD_INFO['pause_ticks'] -= 1
+		return False
+	
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
 	
