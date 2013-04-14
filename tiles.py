@@ -7,19 +7,19 @@ BLANK_TILE = {'id':'blank_tile',
 
 SHORT_GRASS_TILE = {'id':'short_grass',
 					'icon':'.',
-					'color':(GRASS_GREEN_DARK,GRASS_GREEN),
+					'color':(GRASS_GREEN_DARK,desaturated_green),
 					'burnable':True,
 					'cost':1}
 
 GRASS_TILE = {'id':'grass',
 			  'icon':';',
-			  'color':(GRASS_GREEN,GRASS_GREEN_DARK),
+			  'color':(GRASS_GREEN,desaturated_sea),
 			  'burnable':True,
 			  'cost':1}
 
 TALL_GRASS_TILE = {'id':'tall_grass',
 				   'icon':'\\',
-				   'color':(GRASS_GREEN,GREEN_ALT),
+				   'color':(GRASS_GREEN,desaturated_chartreuse),
 				   'burnable':True,
 				   'cost':1}
 
