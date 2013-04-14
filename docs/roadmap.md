@@ -261,3 +261,19 @@ So we can create one entity (result  of `create_conversation`) and  pass it arou
 We must also consider that if someone says "Hello!" to a group of people not everyone responds. Usually if one person responds the rest of the group is considered to have had that same response also.
 
 Timing: Some questions need to be asked more than once, like requesting chunk info. There should be a delay or a way for topics to decay and leave the list eventually. This can *probably* be done in `alife.talk`, but there will need to be definite changes in `sound.listen()` for handling this behavior.
+
+Milestone 6 - Growing Content
+=============================
+
+Goal
+----
+With all the systems in place, we must now generate content to build up the game's depth. The UI will also be reworked and extended to give the player a better understanding of the world. We'll also start creating personalities for ALife and extending their logic.
+
+Problem 1: The UI
+----------------
+We'll attempt to give the player a better understanding of the world and the people inhabiting it with these changes.
+
+Acknowledging the following issues:
+	* The player's lack of situational awareness
+		* Information not CLEARLY displayed on the map needs to be re-represented on the right
+			* EX: Target name - (Status)
