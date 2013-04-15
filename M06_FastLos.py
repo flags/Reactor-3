@@ -7,9 +7,12 @@ _stime = time.time()
 sight = 30
 start_point = (45, 45)
 source_map = numpy.zeros((100, 100))
-source_map[30,31] = 1
 source_map[46,46] = 1
-los = numpy.zeros((30, 30))
+source_map[55,35] = 1
+source_map[47,40] = 1
+source_map[39,43] = 1
+source_map[39,49] = 1
+los = numpy.ones((60, 60))
 
 #At 45 degrees we are sending out 8 feelers
 #If they don't find anything then we'll scale down
@@ -26,12 +29,20 @@ def check_dirs(intensity=45, already_checked={}, scan=(0, 360), quad_check=True)
 		end_point = (int(start_point[0]+_end_x), int(start_point[1]+_end_y))
 		_line = drawing.diag_line(start_point, end_point)
 		_i = 0
+		_wall = False
 		for pos in _line:
+			_x,_y = pos
+			_x -= 30
+			_y -= 30
 			_i += 1
-			los[pos[1]-start_point[1], pos[0]-start_point[0]] = 1
+			
 			if source_map[pos[1], pos[0]]:
 				_check_dirs[deg] = _line[:_i]
-				break
+				_wall = True
+				continue
+			
+			if _wall:
+				los[_y, _x] = 0
 	
 	return _check_dirs
 
@@ -49,33 +60,18 @@ while 1:
 for quad in quads_to_check:
 	_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
 	#print _scan
-	_check_dirs.update(check_dirs(intensity=1, scan=_scan, quad_check=False))
-
-#for line in [_check_dirs[entry] for entry in _check_dirs if _check_dirs[entry]]:
-#	for pos in line:
-#		#print pos
-#		x,y = pos
-#		x-=start_point[0]
-#		y-=start_point[1]
-#		
-#		los[y,x] = 1
-#		#print x, y
+	check_dirs(intensity=2, scan=_scan, quad_check=False)
 
 print time.time()-_stime
-print _check_dirs.keys()
+#print _check_dirs.keys()
 print quads_to_check
 
 for _y in range(30):
 	for _x in range(30):
-		#x = (start_point[0]-_x)
-		#y = _y-(start_point[1]-15)
-		#print x,y
-		if (_x,_y) == start_point:
-			print '@',
-		elif los[_y, _x]:
+		if los[_y, _x]:
 			print int(los[_y, _x]),
 		else:
-			print '',
+			print ' ',
 	print
 
 #for entry in to_check:
