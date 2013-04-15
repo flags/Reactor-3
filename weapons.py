@@ -15,6 +15,18 @@ def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
 
+def get_recoil(life):
+	_recoil = 0
+	
+	if life['stance'] == 'standing':
+		_recoil = 25
+	elif life['stance'] == 'crouching':
+		_recoil = 15
+	elif life['stance'] == 'crawling':
+		_recoil = 10
+	
+	return _recoil
+
 def fire(life,target):
 	#TODO: Don't breathe this!
 	if 'player' in life:

@@ -245,7 +245,12 @@ def handle_input():
 			return False
 		
 		if SETTINGS['controlling']['targeting']:
-			weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
+			life.add_action(SETTINGS['controlling'],
+				{'action': 'shoot',
+				'target': SETTINGS['controlling']['targeting']},
+				200,
+				delay=0)
+			#weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
 			SETTINGS['controlling']['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True

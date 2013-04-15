@@ -1009,6 +1009,11 @@ def perform_action(life):
 	elif _action['action'] == 'shoot':
 		weapons.fire(life,_action['target'])
 		
+		add_action(life,
+			{'action': 'recoil'},
+			200,
+			delay=weapons.get_recoil(life))
+		
 		delete_action(life,action)
 	
 	elif _action['action'] == 'block':
@@ -1016,6 +1021,9 @@ def perform_action(life):
 
 	elif _action['action'] == 'communicate':
 		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
+		delete_action(life, action)
+
+	elif _action['action'] == 'recoil':
 		delete_action(life, action)
 
 	else:
