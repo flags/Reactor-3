@@ -245,12 +245,12 @@ def handle_input():
 			return False
 		
 		if SETTINGS['controlling']['targeting']:
-			life.add_action(SETTINGS['controlling'],
-				{'action': 'shoot',
-				'target': SETTINGS['controlling']['targeting']},
-				200,
-				delay=0)
-			#weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
+			#life.add_action(SETTINGS['controlling'],
+			#	{'action': 'shoot',
+			#	'target': SETTINGS['controlling']['targeting']},
+			#	900,
+			#	delay=0)
+			weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
 			SETTINGS['controlling']['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
@@ -911,6 +911,11 @@ def talk_menu(entry):
 			'Legends',
 			'Talk about heard legends.',
 			communicate='ask_about_legends',
+			target=target))
+		_phrases.append(menus.create_item('single',
+			'Join',
+			'Ask to join your squad.',
+			communicate='invite_to_group',
 			target=target))
 	elif key == 'Intimidate':
 		if brain.get_flag(target, 'surrendered'):

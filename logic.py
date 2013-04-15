@@ -30,6 +30,9 @@ def tick_all_objects(source_map):
 			if SETTINGS['controlling']['id'] == alife['id']:
 				continue
 			
+			if alife['asleep'] or alife['dead']:
+				continue
+			
 			_x,_y = alife['pos'][:2]
 			
 			if alife['pos'][0]>CAMERA_POS[0]:

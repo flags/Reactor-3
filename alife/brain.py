@@ -9,6 +9,7 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_follow
 import alife_combat
 import alife_camp
 import alife_talk
@@ -37,7 +38,8 @@ MODULES = [alife_hide,
 	alife_visit_camp,
 	alife_camp,
 	alife_combat,
-	alife_work]
+	alife_work,
+	alife_follow]
 
 def think(life, source_map):
 	sight.look(life)

@@ -1011,7 +1011,7 @@ def perform_action(life):
 		
 		add_action(life,
 			{'action': 'recoil'},
-			200,
+			899,
 			delay=weapons.get_recoil(life))
 		
 		delete_action(life,action)
