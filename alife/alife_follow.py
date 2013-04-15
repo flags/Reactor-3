@@ -42,10 +42,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			_top_invite['score'] = _known['score']
 			_top_invite['leader'] = _known['life']
 	
+	brain.store_in_memory(life, 'following', _top_invite['leader'])
+	
 	if not _top_invite['leader']:
 		return False
-	
-	brain.store_in_memory(life, 'following', _top_invite['leader'])
 	
 	return RETURN_VALUE
 
