@@ -1,6 +1,5 @@
 from globals import *
 
-#import drawing
 import render_los
 import numbers
 import numpy
@@ -8,9 +7,6 @@ import time
 import math
 
 import cython
-
-#start_point = (45, 45)
-#source_map = numpy.zeros((100, 100))
 
 cpdef int clip(int number, int start, int end):
 	return max(start, min(number, end))
@@ -74,16 +70,18 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 				continue
 			
 			if _wall:
-				los[_y, _x] = 0
-								
-				if 'score_callback' in kvargs and 'invert' in kvargs and not kvargs['invert']:
-					_score = kvargs['score_callback'](kvargs['life'], kvargs['target'], pos)
+				#TODO: Only do this once...
+				los[_y, _x] = 0	
+				if 'invert' in kvargs and not kvargs['invert']:
 					
-					if _score<_cover['score']:
+					_score = kvargs['callback'](kvargs['life'], kvargs['target'], pos)
+					
+					if not _cover['pos'] or _score<_cover['score']:
 						_cover['score'] = _score
 						_cover['pos'] = list(pos)
 	
 	if 'invert' in kvargs:
+		#print 'ret cover',_cover
 		return _cover
 	
 	return _check_dirs
@@ -104,6 +102,16 @@ def render_fast_los(at, sight_length, source_map, **kvargs):
 		if intensity<=6:
 			break
 
+	_cover = {'pos': None,'score':9000}
 	for quad in quads_to_check:
 		_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
-		check_dirs(at, sight, source_map, los, intensity=2, scan=_scan, quad_check=False, **kvargs)
+		_cover_temp = check_dirs(at, sight, source_map, los, intensity=2, scan=_scan, quad_check=False, **kvargs)
+		
+		if not _cover['pos'] or _cover_temp['score']<_cover['score']:
+			_cover['pos'] = _cover_temp['pos']
+			_cover['score'] = _cover_temp['score']
+			
+			#if _cover['score'] == 1:
+			#	return _cover
+	
+	return _cover

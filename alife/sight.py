@@ -71,15 +71,22 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
 	_top_left = (_x,_y,at[2])
 	
-	render_fast_los.render_fast_los(at, 30, source_map, life=life, target=target, invert=invert, callback=score_callback)
+	_cover = render_fast_los.render_fast_los(at, 30, source_map, life=life, target=target['life'], invert=invert, callback=score_callback)
+	
+	if not _cover or (_cover and not _cover['pos']):
+		return False
 	
 	print time.time()-_stime
-	print 'Trying'
-	return False
+	return _cover
 
 def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
 	#0.011883020401
 	#0.0237231254578
+	
+	#Laptop:
+	#New: 0.0239999294281
+	#Old: 0.0350000858307
+	
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
 	

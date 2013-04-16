@@ -153,11 +153,6 @@ while SETTINGS['running']:
 	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
 	
-	if SETTINGS['controlling']:
-		a = time.time()
-		render_fast_los.render_fast_los(SETTINGS['controlling']['pos'], 30, SETTINGS['controlling']['map'])
-		#print 'new',time.time()-a
-	
 	a = time.time()
 	if SETTINGS['controlling']['encounters']:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
