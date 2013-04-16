@@ -23,7 +23,7 @@ def velocity(direction,speed):
 	return [velocity[0],-velocity[1],0]
 
 @cython.locals(sight=cython.int, intensity=cython.int)
-def check_dirs(life, sight, source_map, los, intensity=45, already_checked={}, scan=(0, 360), quad_check=True):
+def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, scan=(0, 360), quad_check=True, **kvargs):
 	cdef int deg, _i, _x, _y, __x, __y, _wall, _end_x, _end_y, end_point[2], start_point[3], _top_left[3]
 	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
 	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
@@ -32,9 +32,15 @@ def check_dirs(life, sight, source_map, los, intensity=45, already_checked={}, s
 	
 	_check_dirs = already_checked
 	_checked_quads = [deg/90 for deg in already_checked]
-	start_point[0] = life['pos'][0]
-	start_point[1] = life['pos'][1]
-	start_point[2] = life['pos'][2]
+	start_point[0] = at[0]
+	start_point[1] = at[1]
+	start_point[2] = at[2]
+	
+	if 'invert' in kvargs:
+		_cover = {'pos': None,'score':9000}
+		
+		if kvargs['invert']:
+			print 'INVERTS ARE UNHANDLED'
 	
 	for deg in range(scan[0], scan[1], intensity):
 		if quad_check and deg/90 in _checked_quads:
@@ -64,14 +70,25 @@ def check_dirs(life, sight, source_map, los, intensity=45, already_checked={}, s
 			if source_map[pos[0]][pos[1]][start_point[2]+1]:
 				_check_dirs[deg] = _line[:_i]
 				_wall = 1
+				
 				continue
 			
 			if _wall:
 				los[_y, _x] = 0
+								
+				if 'score_callback' in kvargs and 'invert' in kvargs and not kvargs['invert']:
+					_score = kvargs['score_callback'](kvargs['life'], kvargs['target'], pos)
+					
+					if _score<_cover['score']:
+						_cover['score'] = _score
+						_cover['pos'] = list(pos)
+	
+	if 'invert' in kvargs:
+		return _cover
 	
 	return _check_dirs
 
-def draw_los(life, sight_length, source_map):
+def render_fast_los(at, sight_length, source_map, **kvargs):
 	_stime = time.time()
 	cdef int sight = sight_length*2
 	cdef int intensity = 45
@@ -80,7 +97,7 @@ def draw_los(life, sight_length, source_map):
 	
 	_check_dirs = {}
 	while 1:
-		_check_dirs = check_dirs(life, sight, source_map, los, intensity=intensity, already_checked=_check_dirs)
+		_check_dirs = check_dirs(at, sight, source_map, los, intensity=intensity, already_checked=_check_dirs)
 		quads_to_check = [entry/90 for entry in _check_dirs if _check_dirs[entry]]
 		intensity /= 2
 		
@@ -89,5 +106,4 @@ def draw_los(life, sight_length, source_map):
 
 	for quad in quads_to_check:
 		_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
-		#print _scan
-		check_dirs(life, sight, source_map, los, intensity=2, scan=_scan, quad_check=False)
+		check_dirs(at, sight, source_map, los, intensity=2, scan=_scan, quad_check=False, **kvargs)

@@ -155,7 +155,7 @@ while SETTINGS['running']:
 	
 	if SETTINGS['controlling']:
 		a = time.time()
-		render_fast_los.draw_los(SETTINGS['controlling'], 30, SETTINGS['controlling']['map'])
+		render_fast_los.render_fast_los(SETTINGS['controlling']['pos'], 30, SETTINGS['controlling']['map'])
 		#print 'new',time.time()-a
 	
 	a = time.time()

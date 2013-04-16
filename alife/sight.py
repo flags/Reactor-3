@@ -5,7 +5,7 @@ import life as lfe
 import judgement
 import brain
 
-import render_los
+import render_fast_los
 import numbers
 import logging
 import time
@@ -66,8 +66,19 @@ def look(life):
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()
 	_cover = {'pos': None,'score':9000}
+	
+	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
+	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_top_left = (_x,_y,at[2])
+	
+	render_fast_los.render_fast_los(at, 30, source_map, life=life, target=target, invert=invert, callback=score_callback)
+	
+	print time.time()-_stime
+	print 'Trying'
+	return False
 
 def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
+	#0.011883020401
 	#0.0237231254578
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
