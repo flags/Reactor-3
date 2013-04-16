@@ -6,6 +6,8 @@ from inputs import *
 from player import *
 from tiles import *
 
+import render_fast_los
+
 import graphics as gfx
 import maputils
 import worldgen
@@ -151,10 +153,18 @@ while SETTINGS['running']:
 	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
 	
+	if SETTINGS['controlling']:
+		a = time.time()
+		render_fast_los.draw_los(SETTINGS['controlling'], 30, SETTINGS['controlling']['map'])
+		#print 'new',time.time()-a
+	
+	a = time.time()
 	if SETTINGS['controlling']['encounters']:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
 	else:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
+	
+	#print 'old', time.time()-a
 	
 	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

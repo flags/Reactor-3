@@ -63,7 +63,6 @@ for quad in quads_to_check:
 	check_dirs(intensity=2, scan=_scan, quad_check=False)
 
 print time.time()-_stime
-#print _check_dirs.keys()
 print quads_to_check
 
 for _y in range(30):
@@ -73,6 +72,3 @@ for _y in range(30):
 		else:
 			print ' ',
 	print
-
-#for entry in to_check:
-#	print entry

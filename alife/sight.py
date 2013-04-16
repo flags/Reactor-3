@@ -63,7 +63,12 @@ def look(life):
 		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
 
-def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
+def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
+	_stime = time.time()
+	_cover = {'pos': None,'score':9000}
+
+def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
+	#0.0237231254578
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score':9000}
 	
@@ -105,6 +110,8 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 	if not _cover['pos']:
 		print 'Nowhere to hide'
 		return False
+	
+	print time.time()-_a
 	
 	return _cover
 
