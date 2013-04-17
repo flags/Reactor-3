@@ -33,11 +33,11 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 	start_point[2] = at[2]
 	check_los = numpy.zeros((sight, sight))
 	
-	if 'invert' in kvargs:
-		_cover = {'pos': None,'score':9000}
-		
-		if kvargs['invert']:
-			print 'INVERTS ARE UNHANDLED'
+	#if 'invert' in kvargs:
+	#	_cover = {'pos': None,'score':9000}
+	#	
+	#	if kvargs['invert']:
+	#		print 'INVERTS ARE UNHANDLED'
 	
 	for deg in range(scan[0], scan[1], intensity):
 		if quad_check and deg/90 in _checked_quads:
@@ -72,25 +72,25 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 			
 			if _wall:
 				#TODO: Only do this once...
-				if not check_los[_y, _x] and 'invert' in kvargs and not kvargs['invert']:
-					_score = kvargs['callback'](kvargs['life'], kvargs['target'], pos)
-					
-					if pos == kvargs['ignore_position']:
-						_cover['pos'] = list(pos)
-						_cover['score'] = -1234
-						return _cover
-					
-					if not _cover['pos'] or _score<_cover['score']:
-						_cover['score'] = _score
-						_cover['pos'] = list(pos)
-					
-					check_los[_y, _x] = 1
+				#if not check_los[_y, _x] and 'invert' in kvargs and not kvargs['invert']:
+				#	_score = kvargs['callback'](kvargs['life'], kvargs['target'], pos)
+				#	
+				#	if pos == kvargs['ignore_position']:
+				#		_cover['pos'] = list(pos)
+				#		_cover['score'] = -1234
+				#		return _cover
+				#	
+				#	if not _cover['pos'] or _score<_cover['score']:
+				#		_cover['score'] = _score
+				#		_cover['pos'] = list(pos)
+				#	
+				#	check_los[_y, _x] = 1
 				
 				los[_y, _x] = 0
 	
-	if 'invert' in kvargs:
-		#print 'ret cover',_cover
-		return _cover
+	#if 'invert' in kvargs:
+	#	#print 'ret cover',_cover
+	#	return _cover
 	
 	return _check_dirs
 
@@ -115,15 +115,15 @@ def render_fast_los(at, sight_length, source_map, **kvargs):
 		_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
 		_cover_temp = check_dirs(at, sight, source_map, los, intensity=3, scan=_scan, quad_check=False, **kvargs)
 		
-		if _cover_temp['score'] == -1234:
-			print 'Found ignore'
-			return _cover_temp
+		#if _cover_temp['score'] == -1234:
+		#	print 'Found ignore'
+		#	return _cover_temp
 		
-		if not _cover['pos'] or _cover_temp['score']<_cover['score']:
-			_cover['pos'] = _cover_temp['pos']
-			_cover['score'] = _cover_temp['score']
-			
-			#if _cover['score'] == 1:
-			#	return _cover
+		#if not _cover['pos'] or _cover_temp['score']<_cover['score']:
+		#	_cover['pos'] = _cover_temp['pos']
+		#	_cover['score'] = _cover_temp['score']
+		#	
+		#	#if _cover['score'] == 1:
+		#	#	return _cover
 	
-	return _cover
+	return los
