@@ -66,13 +66,25 @@ def look(life):
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()
-	_cover = {'pos': None,'score':9000}
+	_cover = {'pos': None,'score': 9000}
 	
 	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
 	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
 	_top_left = (_x,_y,at[2])
 	
-	_cover = render_fast_los.render_fast_los(at, 30, source_map, life=life, target=target['life'], invert=invert, callback=score_callback)
+	if ignore_starting:
+		_ignore_position = tuple(life['pos'][:2])
+	else:
+		_ignore_position = None
+	
+	_cover = render_fast_los.render_fast_los(at,
+		30,
+		source_map,
+		life=life,
+		target=target['life'],
+		invert=invert,
+		ignore_position=_ignore_position,
+		callback=score_callback)
 	
 	if not _cover or (_cover and not _cover['pos']):
 		return False
@@ -86,11 +98,11 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	#Old: 0.0237522125244
 	
 	#Laptop:
-	#New: 0.0239999294281
+	#New: 0.0139999389648
 	#Old: 0.0350000858307
 	
 	#Step 1: Locate cover
-	_cover = {'pos': None,'score':9000}
+	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Unchecked Cython flag
 	_a = time.time()

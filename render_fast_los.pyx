@@ -75,6 +75,11 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 				if not check_los[_y, _x] and 'invert' in kvargs and not kvargs['invert']:
 					_score = kvargs['callback'](kvargs['life'], kvargs['target'], pos)
 					
+					if pos == kvargs['ignore_position']:
+						_cover['pos'] = list(pos)
+						_cover['score'] = -1234
+						return _cover
+					
 					if not _cover['pos'] or _score<_cover['score']:
 						_cover['score'] = _score
 						_cover['pos'] = list(pos)
@@ -109,6 +114,10 @@ def render_fast_los(at, sight_length, source_map, **kvargs):
 	for quad in quads_to_check:
 		_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
 		_cover_temp = check_dirs(at, sight, source_map, los, intensity=3, scan=_scan, quad_check=False, **kvargs)
+		
+		if _cover_temp['score'] == -1234:
+			print 'Found ignore'
+			return _cover_temp
 		
 		if not _cover['pos'] or _cover_temp['score']<_cover['score']:
 			_cover['pos'] = _cover_temp['pos']
