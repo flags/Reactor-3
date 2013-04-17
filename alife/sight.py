@@ -6,6 +6,7 @@ import judgement
 import brain
 
 import render_fast_los
+import render_los
 import numbers
 import logging
 import time
@@ -76,12 +77,13 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	if not _cover or (_cover and not _cover['pos']):
 		return False
 	
-	print time.time()-_stime
+	print 'new',time.time()-_stime
 	return _cover
 
 def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
-	#0.011883020401
-	#0.0237231254578
+	#Destktop
+	#New: 0.0127160549164
+	#Old: 0.0237522125244
 	
 	#Laptop:
 	#New: 0.0239999294281

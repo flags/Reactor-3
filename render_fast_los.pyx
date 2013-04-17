@@ -31,6 +31,7 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 	start_point[0] = at[0]
 	start_point[1] = at[1]
 	start_point[2] = at[2]
+	check_los = numpy.zeros((sight, sight))
 	
 	if 'invert' in kvargs:
 		_cover = {'pos': None,'score':9000}
@@ -71,14 +72,16 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 			
 			if _wall:
 				#TODO: Only do this once...
-				los[_y, _x] = 0	
-				if 'invert' in kvargs and not kvargs['invert']:
-					
+				if not check_los[_y, _x] and 'invert' in kvargs and not kvargs['invert']:
 					_score = kvargs['callback'](kvargs['life'], kvargs['target'], pos)
 					
 					if not _cover['pos'] or _score<_cover['score']:
 						_cover['score'] = _score
 						_cover['pos'] = list(pos)
+					
+					check_los[_y, _x] = 1
+				
+				los[_y, _x] = 0
 	
 	if 'invert' in kvargs:
 		#print 'ret cover',_cover
@@ -105,7 +108,7 @@ def render_fast_los(at, sight_length, source_map, **kvargs):
 	_cover = {'pos': None,'score':9000}
 	for quad in quads_to_check:
 		_scan = scan=(numbers.clip(quad*90, 0, 360), (numbers.clip((quad+1)*90, 0, 360)))
-		_cover_temp = check_dirs(at, sight, source_map, los, intensity=2, scan=_scan, quad_check=False, **kvargs)
+		_cover_temp = check_dirs(at, sight, source_map, los, intensity=3, scan=_scan, quad_check=False, **kvargs)
 		
 		if not _cover['pos'] or _cover_temp['score']<_cover['score']:
 			_cover['pos'] = _cover_temp['pos']
