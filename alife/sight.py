@@ -68,21 +68,13 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	_stime = time.time()
 	_cover = {'pos': None,'score': 9000}
 	
-	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_x = numbers.clip(at[0]-(SETTINGS['los']/2),0,MAP_SIZE[0]-(SETTINGS['los']/2))
+	_y = numbers.clip(at[1]-(SETTINGS['los']/2),0,MAP_SIZE[1]-(SETTINGS['los']/2))
 	_top_left = (_x,_y,at[2])
-	
-	#if ignore_starting:
-	#	_ignore_position = tuple(life['pos'][:2])
-	#else:
-	#	_ignore_position = None
 	
 	target_los = render_fast_los.render_fast_los(at,
 		SETTINGS['los'],
-		source_map,
-		life=life,
-		target=target['life'],
-		invert=invert)
+		source_map)
 	
 	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
 		x = pos[0]-_top_left[0]
@@ -94,7 +86,7 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 		if x<0 or y<0 or x>=target_los.shape[1] or y>=target_los.shape[0]:
 			continue
 		
-		if life['pos'][0]-_top_left[0]>=target_los.shape[0] or life['pos'][1]-_top_left[1]>=target_los.shape[1]:
+		if life['pos'][0]-_top_left[0]>=target_los.shape[1] or life['pos'][1]-_top_left[1]>=target_los.shape[0]:
 			continue
 		
 		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]==invert and not ignore_starting:
@@ -112,9 +104,10 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 				_cover['score'] = _score
 				_cover['pos'] = list(pos)
 	
-	print time.time()-_stime
+	#print time.time()-_stime
 	if not _cover['pos']:
-		print 'Nowhere to hide'
+		print 'Nowhere to hide', target['life']['name'], _top_left
+				
 		return False
 	
 	return _cover
@@ -167,7 +160,7 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 				_cover['pos'] = list(pos)
 	
 	if not _cover['pos']:
-		print 'Nowhere to hide'
+		print 'Nowhere to hide'		
 		return False
 	
 	print time.time()-_a
