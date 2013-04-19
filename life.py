@@ -2208,8 +2208,8 @@ def damage_from_item(life,item,damage):
 
 	_hit_limb = random.choice(_poss_limbs)
 
-	if _shot_by_alife.has_key('player'):
-		gfx.message(dam.bullet_hit(life, item, _hit_limb))
+	#if _shot_by_alife.has_key('player'):
+	gfx.message(dam.bullet_hit(life, item, _hit_limb))
 
 	if 'SHARP' in item['flags']:
 		if not limb_is_cut(life,_hit_limb):
