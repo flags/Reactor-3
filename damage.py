@@ -24,26 +24,38 @@ def bullet_hit(life, bullet, limb):
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
 		print 'cut',_cut
 	
-	if _cut:		
+	if _cut:
+		_items_to_check = []
 		for _item in [lfe.get_inventory_item(life, i) for i in lfe.get_items_attached_to_limb(life, limb)]:
+			_items_to_check.append({'item': _item, 'visible': True})
+			
+			if 'container' in _item:
+				for _item_in_container in _item['contains']:
+					_items_to_check.append({'item': _item_in_container, 'visible': False, 'inside': _item['name']})
+		
+		for entry in _items_to_check:
+			_item = entry['item']
 			_thickness = _item['thickness']
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
 			_cut -= _thickness
 			_tear = _item['thickness']-_thickness
 			_limb_in_context = False
-							
-			if _thickness and not _item['thickness']:
-				_msg.append('completely tearing apart the %s' % _item['name'])
-			elif _tear<=-3:
-				_msg.append('ripping through the %s' % _item['name'])
-			elif _tear<=-2:
-				_msg.append('tearing the %s' % _item['name'])
-			elif _tear<=-1:
-				_msg.append('slightly tearing the %s' % _item['name'])
 			
-			if _cut <= 0 and _item['thickness']:
-				_msg.append(', finally stopped by the %s' % _item['name'])
-				break
+			if _item['material'] == 'cloth':
+				if _thickness and not _item['thickness']:
+					_msg.append('completely tearing apart the %s' % _item['name'])
+				elif _tear<=-3:
+					_msg.append('ripping through the %s' % _item['name'])
+				elif _tear<=-2:
+					_msg.append('tearing the %s' % _item['name'])
+				elif _tear<=-1:
+					_msg.append('slightly tearing the %s' % _item['name'])
+				
+				if _cut <= 0 and _item['thickness']:
+					_msg.append(', finally stopped by the %s' % _item['name'])
+					break
+			elif _item['material'] == 'metal':
+				
 	
 		if not lfe.limb_is_cut(life, limb):
 			if _cut==1:
