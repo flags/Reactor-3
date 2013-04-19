@@ -55,8 +55,16 @@ def initiate_item(name):
 	if item['type'] == 'gun':
 		item[item['feed']] = None
 	
-	item['flags'] = item['flags'].split('|')
+	#item['flags'] = []
+	_flags = {}
+	for flag in item['flags'].split('|'):
+		_flag_split = flag.split('=')
+		_flags[_flag_split[0]] = None
+		
+		if len(_flag_split)==2:
+			_flags[_flag_split[0]] = _flag_split[1]
 	
+	item['flags'] = _flags
 	item['size'] = 	[int(c) for c in item['size'].split('x')]
 	item['size'] = item['size'][0]*item['size'][1]
 	
@@ -94,6 +102,11 @@ def create_item(name,position=[0,0,2]):
 	item['velocity'] = [0,0,0]
 	item['friction'] = 0
 	item['gravity'] = SETTINGS['world gravity']
+	
+	if 'speed' in item:
+		item['max_speed'] = item['speed']
+	else:
+		item['max_speed'] = 2
 	
 	ITEMS[item['uid']] = item
 	

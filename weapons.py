@@ -68,7 +68,7 @@ def fire(life,target):
 		_bullet['pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
 		del _bullet['parent']
-		items.move(_bullet,direction,15)
+		items.move(_bullet, direction, _bullet['max_speed'])
 	
 	if _ooa:
 		if 'player' in life:

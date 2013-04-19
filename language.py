@@ -2,7 +2,7 @@ from globals import *
 
 import random
 
-def prettify_string_array(array,max_length):
+def prettify_string_array(array, max_length):
 	"""Returns a human readable string from an array of strings."""
 	_string = ''
 	

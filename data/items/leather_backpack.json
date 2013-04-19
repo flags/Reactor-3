@@ -7,4 +7,5 @@
 "flags": "CANWEAR|CANBURN|CANSOAK",
 "size": "6x5",
 "capacity": "6x5",
-"thickness": 3}
+"thickness": 3,
+"material": "leather"}
