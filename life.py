@@ -10,6 +10,7 @@ import logging
 import weapons
 import numbers
 import effects
+import damage as dam
 import random
 import alife
 import items
@@ -1665,6 +1666,11 @@ def get_held_items(life,matches=None):
 	
 	return _holding
 
+def get_items_attached_to_limb(life, limb):
+	_limb = life['body'][limb]
+	
+	return _limb['holding']	
+
 def item_is_equipped(life,id,check_hands=False):
 	"""Returns limb where item is equipped. Returns False othewise.
 	
@@ -2202,7 +2208,10 @@ def damage_from_item(life,item,damage):
 
 	_hit_limb = random.choice(_poss_limbs)
 
-	if item['sharp']:
+	if _shot_by_alife.has_key('player'):
+		gfx.message(dam.bullet_hit(life, item, _hit_limb))
+
+	if 'SHARP' in item['flags']:
 		if not limb_is_cut(life,_hit_limb):
 			if life.has_key('player'):
 				gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
