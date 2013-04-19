@@ -15,6 +15,10 @@ def bullet_hit(life, bullet, limb):
 	_bruise = 0
 	_breaking = False
 	_msg = ['The %(name)s' % bullet]
+	_msg.insert(1, 'hits the %s' % limb)
+	
+	#Language stuff
+	_limb_in_context = True
 	
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
@@ -26,6 +30,7 @@ def bullet_hit(life, bullet, limb):
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
 			_cut -= _thickness
 			_tear = _item['thickness']-_thickness
+			_limb_in_context = False
 							
 			if _thickness and not _item['thickness']:
 				_msg.append('completely tearing apart the %s' % _item['name'])
@@ -41,19 +46,31 @@ def bullet_hit(life, bullet, limb):
 				break
 	
 		if not lfe.limb_is_cut(life, limb):
-			_msg.append('entering the %s' % limb)
-			
 			if _cut==1:
-				_msg.append(', barely cutting it.')
+				if _limb_in_context:
+					_msg.append(', barely cutting it.')
+				else:
+					_msg.append(', barely cutting the %s.' % limb)
 			elif _cut==2:
-				_msg.append(', tearing it open.')
+				if _limb_in_context:
+					_msg.append(', tearing it open.')
+				else:
+					_msg.append(', tearing open the %s.' % limb)
 			elif _cut==3:
-				_msg.append(', severing it!')
-				return _msg
+				if _limb_in_context:
+					_msg.append(', ripping it open!')
+				else:
+					_msg.append(', ripping open the %s!' % limb)
+			elif _cut==4:
+				if _limb_in_context:
+					_msg.append(', severing it!')
+				else:
+					_msg.append(', severing the %s!' % limb)
+				return ' '.join(_msg)
 			else:
-				_msg.insert(1, 'hits the %s' % limb)
 				_bruise = _cut
 	
 	print _falloff	, _cut
 	
+	print ' '.join(_msg)
 	return ' '.join(_msg)
