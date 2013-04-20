@@ -15,7 +15,7 @@ def bullet_hit(life, bullet, limb):
 	_bruise = 0
 	_breaking = False
 	_msg = ['The %(name)s' % bullet]
-	_msg.insert(1, 'hits the %s' % limb)
+	_msg.append('hits the %s' % limb)
 	
 	#Language stuff
 	_limb_in_context = True
@@ -41,6 +41,7 @@ def bullet_hit(life, bullet, limb):
 			_tear = _item['thickness']-_thickness
 			_limb_in_context = False
 			
+			print _item['name']
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:
 					_msg.append('completely tearing apart the %s' % _item['name'])
@@ -55,7 +56,19 @@ def bullet_hit(life, bullet, limb):
 					_msg.append(', finally stopped by the %s' % _item['name'])
 					break
 			elif _item['material'] == 'metal':
+				if _thickness and not _item['thickness']:
+					_msg.append('puncturing the %s' % _item['name'])
+				elif _tear<=-3:
+					_msg.append('denting the %s' % _item['name'])
+				elif _tear<=-2:
+					_msg.append('lightly denting the %s' % _item['name'])
+				elif _tear<=-1:
+					_msg.append('scraping the %s' % _item['name'])
 				
+				if _cut <= 0 and _item['thickness']:
+					_msg.append(', finally stopped by the %s' % _item['name'])
+					#Ricochet?
+					break
 	
 		if not lfe.limb_is_cut(life, limb):
 			if _cut==1:
@@ -65,14 +78,14 @@ def bullet_hit(life, bullet, limb):
 					_msg.append(', barely cutting the %s.' % limb)
 			elif _cut==2:
 				if _limb_in_context:
-					_msg.append(', tearing it open.')
+					_msg.append(', tearing it open')
 				else:
-					_msg.append(', tearing open the %s.' % limb)
+					_msg.append(', tearing open the %s' % limb)
 			elif _cut==3:
 				if _limb_in_context:
-					_msg.append(', ripping it open!')
+					_msg.append(', ripping it open')
 				else:
-					_msg.append(', ripping open the %s!' % limb)
+					_msg.append(', ripping open the %s' % limb)
 			elif _cut==4:
 				if _limb_in_context:
 					_msg.append(', severing it!')
@@ -81,6 +94,18 @@ def bullet_hit(life, bullet, limb):
 				return ' '.join(_msg)
 			else:
 				_bruise = _cut
+		
+			#TODO: How thick is skin?
+			_cut -= 1
+		
+		if not _cut:
+			return ' '.join(_msg)
+		
+		if not lfe.artery_is_ruptured(life, limb) and random.randint(5)<=3:
+			_msg.append(' and rupturing an artery!')
+			#['artery_ruptured']
+			
+		
 	
 	print _falloff	, _cut
 	

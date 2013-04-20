@@ -157,6 +157,7 @@ def initiate_limbs(body):
 		body[limb]['bleeding'] = False
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
+		body[limb]['artery_ruptured'] = False
 		body[limb]['pain'] = 0
 		
 		if not 'parent' in body[limb]:
@@ -2089,6 +2090,16 @@ def limb_is_cut(life,limb):
 	
 	return _limb['cut']
 
+def limb_is_broken(life,limb):
+	_limb = life['body'][limb]
+	
+	return _limb['broken']
+
+def artery_is_ruptured(life, limb):
+	_limb = life['body'][limb]
+	
+	return _limb['artery_ruptured']
+
 def cut_limb(life,limb,amount=2):
 	_limb = life['body'][limb]
 	
@@ -2110,6 +2121,11 @@ def bruise_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['bruised'] = True
+
+def rupture_artery(life, limb):
+	_limb = life['body'][limb]
+	
+	_limb['artery_ruptured'] = True
 
 def add_pain_to_limb(life,limb,amount=1):
 	_limb = life['body'][limb]
