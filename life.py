@@ -1696,6 +1696,17 @@ def item_is_equipped(life,id,check_hands=False):
 	
 	return False
 
+def get_all_life_at_position(life, position):
+	_life = []
+	
+	for alife in [LIFE[i] for i in LIFE]:
+		if not tuple(alife['pos'][:2]) == tuple(position[:2]):
+			continue
+		
+		_life.append(alife['id'])
+	
+	return _life
+
 def show_life_info(life):
 	for key in life:
 		if key == 'body':
@@ -2233,7 +2244,12 @@ def damage_from_item(life,item,damage):
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	_rand_limb = random.choice(life['body'].keys())
+	#TODO: Accuracy
+	if item['aim_at_limb'] and random.randint(0, 9)>=5:
+		_rand_limb = item['aim_at_limb']
+	else:
+		_rand_limb = random.choice(life['body'].keys())
+	
 	_poss_limbs = [_rand_limb]
 	_shot_by_alife = LIFE[item['owner']]
 	
@@ -2252,8 +2268,6 @@ def damage_from_item(life,item,damage):
 		_poss_limbs.append(life['body'][_rand_limb]['children'][0])
 
 	_hit_limb = random.choice(_poss_limbs)
-
-	#if _shot_by_alife.has_key('player'):
 	gfx.message(dam.bullet_hit(life, item, _hit_limb))
 
 	#if 'SHARP' in item['flags']:
@@ -2283,7 +2297,7 @@ def damage_from_item(life,item,damage):
 	
 	item['damage'] = damage
 	_damage = item['damage']#TODO: armor here
-	damage_limb(life,_hit_limb,damage)
+	#damage_limb(life,_hit_limb,damage)
 	
 	create_and_update_self_snapshot(life)
 

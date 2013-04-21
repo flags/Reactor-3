@@ -245,14 +245,31 @@ def handle_input():
 			return False
 		
 		if SETTINGS['controlling']['targeting']:
-			#life.add_action(SETTINGS['controlling'],
-			#	{'action': 'shoot',
-			#	'target': SETTINGS['controlling']['targeting']},
-			#	900,
-			#	delay=0)
-			weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
-			SETTINGS['controlling']['targeting'] = None
-			SELECTED_TILES[0] = []
+			if menus.get_menu_by_name('Select Target')>-1:
+				return False
+			
+			_alife_menu = []
+			for _life in life.get_all_life_at_position(life, SETTINGS['controlling']['targeting']):
+				_alife = LIFE[_life]
+				
+				_alife_menu.append(menus.create_item('single',
+					'%s' % ' '.join(_alife['name']),
+					'Nearby',
+					target=_alife))
+			
+			if len(_alife_menu)>=2:
+				_i = menus.create_menu(title='Select Target',
+					menu=_alife_menu,
+					padding=(1,1),
+					position=(1,1),
+					format_str='$k: $v',
+					on_select=inventory_fire_select_limb)
+				
+				menus.activate_menu(_i)
+			elif _alife_menu:
+				#print _alife_menu
+				inventory_fire_select_limb(_alife_menu[0], no_delete=True)
+			
 			return True
 		
 		_weapons = []
@@ -639,6 +656,40 @@ def inventory_fire(entry):
 			return False
 	
 	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_fire_select_limb(entry, no_delete=False):	
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if not no_delete:
+		menus.delete_menu(ACTIVE_MENU['menu'])
+	
+	_limbs = []
+	for limb in entry['target']['body']:
+		_limbs.append(menus.create_item('single',
+			limb,
+			None,
+			target=entry['target'],
+			limb=limb))
+		
+	_i = menus.create_menu(title='Select Limb',
+		menu=_limbs,
+		padding=(1,1),
+		position=(1,1),
+		on_select=inventory_fire_action,
+		format_str='$k')
+	
+	menus.activate_menu(_i)
+
+def inventory_fire_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	weapons.fire(SETTINGS['controlling'], entry['target']['pos'], limb=entry['limb'])
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

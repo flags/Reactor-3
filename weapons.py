@@ -27,7 +27,7 @@ def get_recoil(life):
 	
 	return _recoil
 
-def fire(life,target):
+def fire(life, target, limb=None):
 	#TODO: Don't breathe this!
 	if 'player' in life:
 		weapon = life['firing']
@@ -67,6 +67,7 @@ def fire(life,target):
 		_bullet = _feed['rounds'].pop()
 		_bullet['pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
+		_bullet['aim_at_limb'] = limb
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
 	

@@ -88,7 +88,7 @@
 	</stomach>
 	
 	<hip>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|CRUCIAL</flags>
 		<parent>stomach</parent>
 		<damage_mod>6</damage_mod>
 	</hip>
