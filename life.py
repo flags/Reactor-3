@@ -159,6 +159,7 @@ def initiate_limbs(body):
 		body[limb]['broken'] = False
 		body[limb]['artery_ruptured'] = False
 		body[limb]['pain'] = 0
+		body[limb]['wounds'] = []
 		
 		if not 'parent' in body[limb]:
 			continue
@@ -1033,20 +1034,27 @@ def perform_action(life):
 	
 	return True
 
-def kill(life, how):
-	if how == 'bleedout':
-		if 'player' in life:
-			gfx.message('You die from blood loss.',style='death')
-		else:
-			say(life,'@n dies from blood loss.',action=True)
-			logging.debug('%s dies from blood loss.' % life['name'][0])
-	elif how == 'pain':
-		if 'player' in life:
-			gfx.message('You die.',style='death')
-		else:
-			say(life,'@n dies.',action=True)
-			logging.debug('%s dies.' % life['name'][0])
-	
+def kill(life, injury):
+	#if how == 'bleedout':
+	#	if 'player' in life:
+	#		gfx.message('You die from blood loss.',style='death')
+	#	else:
+	#		say(life,'@n dies from blood loss.',action=True)
+	#		logging.debug('%s dies from blood loss.' % life['name'][0])
+	#elif how == 'injury':
+	#	if 'player' in life:
+	#		gfx.message('You die.',style='death')
+	#	else:
+	#		say(life,'@n dies.',action=True)
+	#
+	if isinstance(injury, str):
+		life['cause_of_death'] = injury
+		logging.debug('%s dies: %s' % (life['name'][0], injury))
+	else:
+		life['cause_of_death'] = language.format_injury(injury)
+		say(life, '@n dies from %s' % life['cause_of_death'], action=True)
+		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
+		
 	for ai in [LIFE[i] for i in LIFE]:
 		if can_see(ai, life['pos']):
 			memory(ai, 'death', target=life['id'])
@@ -1060,8 +1068,8 @@ def can_die_via_critical_injury(life):
 			continue
 		
 		#TODO: Max pain per limb
-		if limb['pain']>=20:
-			return True
+		if limb['pain']>=4:
+			return limb
 	
 	return False	
 
@@ -1097,8 +1105,9 @@ def tick(life, source_map):
 		
 		return False
 	
-	if can_die_via_critical_injury(life):
-		kill(life,'pain')
+	_crit_injury = can_die_via_critical_injury(life)
+	if _crit_injury:
+		kill(life ,_crit_injury['wounds'].pop())
 		
 		return False
 	
@@ -1699,7 +1708,7 @@ def show_life_info(life):
 def draw_life_icon(life):
 	_icon = [tick_animation(life), white]
 	
-	if life in [context['from'] for context in SETTINGS['following']['contexts']]:
+	if life['id'] in [context['from']['id'] for context in SETTINGS['following']['contexts']]:
 		if time.time()%1>=0.5:
 			_icon[0] = '?'
 	
@@ -2103,7 +2112,7 @@ def artery_is_ruptured(life, limb):
 def cut_limb(life,limb,amount=2):
 	_limb = life['body'][limb]
 	
-	_limb['bleeding'] += amount
+	#_limb['bleeding'] += amount
 	_limb['cut'] = True
 	
 	effects.create_splatter('blood',life['pos'],velocity=1)
@@ -2115,7 +2124,7 @@ def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
-	_limb['bleeding'] += 3
+	#_limb['bleeding'] += 3
 
 def bruise_limb(life,limb):
 	_limb = life['body'][limb]
@@ -2131,6 +2140,26 @@ def add_pain_to_limb(life,limb,amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount
+
+def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
+	_limb = life['body'][limb]
+	
+	if cut:
+		cut_limb(life, limb)
+		_limb['bleeding'] += cut
+		add_pain_to_limb(life, limb, amount=cut/2)
+	
+	if artery_ruptured:
+		_limb['bleeding'] += 3
+		rupture_artery(life, limb)
+		add_pain_to_limb(life, limb, amount=3)
+	
+	_injury = {'limb': limb,
+		'cut': cut,
+		'artery_ruptured': artery_ruptured,
+		'lodged_item': lodged_item}
+	
+	_limb['wounds'].append(_injury)
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -2227,27 +2256,27 @@ def damage_from_item(life,item,damage):
 	#if _shot_by_alife.has_key('player'):
 	gfx.message(dam.bullet_hit(life, item, _hit_limb))
 
-	if 'SHARP' in item['flags']:
-		if not limb_is_cut(life,_hit_limb):
-			if life.has_key('player'):
-				gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
-				WORLD_INFO['pause_ticks'] = 40
-			else:
-				say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
-		else:
-			if life.has_key('player'):
-				gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
-				WORLD_INFO['pause_ticks'] = 40
-			else:
-				say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
-
-		_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
-
-		cut_limb(life,_hit_limb,amount=4)
-		add_pain_to_limb(life,_hit_limb,amount=12)
-	else:
-		bruise_limb(life,_hit_limb)
-		add_pain_to_limb(life,_hit_limb,amount=8)
+	#if 'SHARP' in item['flags']:
+	#	if not limb_is_cut(life,_hit_limb):
+	#		if life.has_key('player'):
+	#			gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
+	#			WORLD_INFO['pause_ticks'] = 40
+	#		else:
+	#			say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
+	#	else:
+	#		if life.has_key('player'):
+	#			gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
+	#			WORLD_INFO['pause_ticks'] = 40
+	#		else:
+	#			say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
+	#
+	#	_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
+	#
+	#	cut_limb(life,_hit_limb,amount=4)
+	#	add_pain_to_limb(life,_hit_limb,amount=12)
+	#else:
+	#	bruise_limb(life,_hit_limb)
+	#	add_pain_to_limb(life,_hit_limb,amount=8)
 	
 	if can_knock_over(life, damage, _hit_limb):
 		collapse(life)
@@ -2264,21 +2293,25 @@ def natural_healing(life):
 	else:
 		_heal_rate = 0.03
 	
-	for _limb in life['body']:
-		limb = life['body'][_limb]
+	for _limb in [life['body'][limb] for limb in life['body']]:
+		if _limb['bleeding'] > 0:
+			_limb['bleeding'] -= 0.001
+		#if limb_is_cut(life, _limb):
+		#limb = life['body'][_limb]
 		
-		if limb['pain'] > 4:
-			limb['pain'] -= 0.05
+		#if limb['pain'] > 4:
+		#	limb['pain'] -= 0.05
 		
-		if limb['cut']:
-			if limb['bleeding']>0:
-				limb['bleeding'] -= 0.0005
-			
-			if limb['bleeding']<0:
-				limb['bleeding'] = 0
-				
-				if 'player' in life:
-					gfx.message('Your %s stops bleeding.' % _limb)
+		#if limb['cut']:
+		#	if limb['bleeding']>0:
+		#		limb['bleeding'] -= 0.0005
+		#	
+		#	if limb['bleeding']<0:
+		#		limb['bleeding'] = 0
+		#		
+		#		if 'player' in life:
+		#			gfx.message('Your %s stops bleeding.' % _limb)
+		
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

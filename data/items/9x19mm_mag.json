@@ -8,6 +8,8 @@
 "maxrounds": 17,
 "rounds": [],
 "ammotype": "9x19mm",
+"material": "metal",
+"thickness": 3,
 "upgrades":
 	{"ext. 9x19mm mag floor plate":
 		{"magsize": 19}

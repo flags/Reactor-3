@@ -9,4 +9,5 @@
 "ammotype": "9x19mm",
 "firemodes": ["single", "3burst"],
 "firemode": 0,
-"material": "metal"}
+"material": "metal",
+"thickness": 3}

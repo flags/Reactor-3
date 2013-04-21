@@ -30,6 +30,14 @@ def get_name(life):
 	else:
 		return 'He'
 
+def format_injury(injury):
+	if injury['artery_ruptured']:
+		return 'a ruptured artery in the %s' % injury['limb']
+	elif injury['cut']:
+		return 'a cut to the %s' % injury['limb']
+	
+	return 'nothing in particular.'
+
 def generate_memory_phrase(memory):
 	_details = [key for key in memory.keys() if not key == 'text']
 	_memory_age = WORLD_INFO['ticks']-memory['time_created']

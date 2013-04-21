@@ -4,6 +4,8 @@ import language
 import numbers
 import items
 
+import random
+
 DAMAGE_LOOKUP = {'leather': 3}
 
 def bullet_hit(life, bullet, limb):
@@ -14,8 +16,9 @@ def bullet_hit(life, bullet, limb):
 	_cut = 0
 	_bruise = 0
 	_breaking = False
+	_lodged = False
 	_msg = ['The %(name)s' % bullet]
-	_msg.append('hits the %s' % limb)
+	_msg.append('hits the %s,' % limb)
 	
 	#Language stuff
 	_limb_in_context = True
@@ -35,13 +38,13 @@ def bullet_hit(life, bullet, limb):
 		
 		for entry in _items_to_check:
 			_item = entry['item']
+			print _item['name']
 			_thickness = _item['thickness']
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
 			_cut -= _thickness
 			_tear = _item['thickness']-_thickness
 			_limb_in_context = False
 			
-			print _item['name']
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:
 					_msg.append('completely tearing apart the %s' % _item['name'])
@@ -67,8 +70,7 @@ def bullet_hit(life, bullet, limb):
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append(', finally stopped by the %s' % _item['name'])
-					#Ricochet?
-					break
+					return ' '.join(_msg)
 	
 		if not lfe.limb_is_cut(life, limb):
 			if _cut==1:
@@ -95,19 +97,19 @@ def bullet_hit(life, bullet, limb):
 			else:
 				_bruise = _cut
 		
+			if _cut:
+				lfe.add_wound(life, limb, cut=_cut)
+			
 			#TODO: How thick is skin?
 			_cut -= 1
 		
 		if not _cut:
 			return ' '.join(_msg)
 		
-		if not lfe.artery_is_ruptured(life, limb) and random.randint(5)<=3:
-			_msg.append(' and rupturing an artery!')
-			#['artery_ruptured']
-			
-		
+		if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
+			_msg.append('and rupturing an artery!')
+			lfe.add_wound(life, limb, artery_ruptured=True)
 	
 	print _falloff	, _cut
-	
 	print ' '.join(_msg)
 	return ' '.join(_msg)
