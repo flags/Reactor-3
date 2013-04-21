@@ -2246,11 +2246,11 @@ def damage_from_item(life,item,damage):
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
 	#TODO: Accuracy
 	if item['aim_at_limb'] and random.randint(0, 9)>=5:
-		_rand_limb = item['aim_at_limb']
+		_rand_limb = [item['aim_at_limb'] for i in range(5)]
 	else:
-		_rand_limb = random.choice(life['body'].keys())
+		_rand_limb = [random.choice(life['body'].keys())]
 	
-	_poss_limbs = [_rand_limb]
+	_poss_limbs = _rand_limb
 	_shot_by_alife = LIFE[item['owner']]
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
@@ -2261,11 +2261,11 @@ def damage_from_item(life,item,damage):
 		memory(life, 'traitor',
 			target=item['owner'])
 	
-	if 'parent' in life['body'][_rand_limb]:
-		_poss_limbs.append(life['body'][_rand_limb]['parent'])
+	if 'parent' in life['body'][_rand_limb[0]]:
+		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])
 	
-	if 'children' in life['body'][_rand_limb]:
-		_poss_limbs.append(life['body'][_rand_limb]['children'][0])
+	if 'children' in life['body'][_rand_limb[0]]:
+		_poss_limbs.append(life['body'][_rand_limb[0]]['children'][0])
 
 	_hit_limb = random.choice(_poss_limbs)
 	gfx.message(dam.bullet_hit(life, item, _hit_limb))
