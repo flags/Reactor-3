@@ -2163,7 +2163,11 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	if artery_ruptured:
 		_limb['bleeding'] += 3
 		rupture_artery(life, limb)
-		add_pain_to_limb(life, limb, amount=3)
+		
+		if 'CRUCIAL' in _limb['flags']:
+			add_pain_to_limb(life, limb, amount=4)
+		else:
+			add_pain_to_limb(life, limb, amount=3)
 	
 	_injury = {'limb': limb,
 		'cut': cut,

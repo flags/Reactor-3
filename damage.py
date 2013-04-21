@@ -107,7 +107,11 @@ def bullet_hit(life, bullet, limb):
 			return ' '.join(_msg)
 		
 		if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
-			_msg.append('and rupturing an artery!')
+			if _limb_in_context:
+				_msg.append('rupturing an artery!')
+			else:
+				_msg.append('and rupturing an artery!')
+			
 			lfe.add_wound(life, limb, artery_ruptured=True)
 	
 	print _falloff	, _cut
