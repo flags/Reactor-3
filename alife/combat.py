@@ -200,7 +200,11 @@ def combat(life, target, source_map):
 		return False
 	
 	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
-		lfe.add_action(life,{'action': 'shoot','target': target['life']['pos'][:]},50,delay=15)
+		lfe.add_action(life,{'action': 'shoot',
+			'target': target['life']['pos'][:],
+			'limb': 'chest'},
+			50,
+			delay=15)
 
 def handle_potential_combat_encounter(life,target,source_map):
 	if not speech.has_considered(life,target['life'],'resist'):

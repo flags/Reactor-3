@@ -1010,7 +1010,7 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'shoot':
-		weapons.fire(life,_action['target'])
+		weapons.fire(life, _action['target'], limb=_action['limb'])
 		
 		add_action(life,
 			{'action': 'recoil'},
