@@ -6,8 +6,6 @@ import items
 
 import random
 
-DAMAGE_LOOKUP = {'leather': 3}
-
 def bullet_hit(life, bullet, limb):
 	_velos = sum([abs(i) for i in bullet['velocity']])
 	_falloff = numbers.clip(_velos, 0, bullet['max_speed'])/float(bullet['max_speed'])
@@ -57,7 +55,8 @@ def bullet_hit(life, bullet, limb):
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append(', finally stopped by the %s' % _item['name'])
-					break
+					return ' '.join(_msg)
+			
 			elif _item['material'] == 'metal':
 				if _thickness and not _item['thickness']:
 					_msg.append('puncturing the %s' % _item['name'])
@@ -108,11 +107,19 @@ def bullet_hit(life, bullet, limb):
 		
 		if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
 			if _limb_in_context:
-				_msg.append('rupturing an artery!')
+				_msg.append('rupturing an artery')
 			else:
-				_msg.append('and rupturing an artery!')
+				_msg.append('and rupturing an artery,')
 			
 			lfe.add_wound(life, limb, artery_ruptured=True)
+		
+		if random.randint(0, 9)>=9-(_cut*2):
+			_msg.append(', lodging itself in the %s' % limb)
+			lfe.add_wound(life, limb, lodged_item=bullet)
+			return ' '.join(_msg)
+		else:
+			_msg.append('exiting through the %s' % limb)
+			lfe.add_wound(life, limb, cut=_cut/2)
 	
 	print _falloff	, _cut
 	print ' '.join(_msg)

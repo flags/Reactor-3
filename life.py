@@ -1087,7 +1087,7 @@ def tick(life, source_map):
 	natural_healing(life)
 	
 	if get_bleeding_limbs(life):
-		if random.randint(0,50)<7:
+		if random.randint(0,50)<9:
 			effects.create_splatter('blood',life['pos'])
 	
 	if life['asleep']:
@@ -2157,17 +2157,20 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	
 	if cut:
 		cut_limb(life, limb)
-		_limb['bleeding'] += cut
-		add_pain_to_limb(life, limb, amount=cut/2)
+		_limb['bleeding'] += cut*float(_limb['bleed_mod'])
+		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
 	
 	if artery_ruptured:
 		_limb['bleeding'] += 3
 		rupture_artery(life, limb)
 		
-		if 'CRUCIAL' in _limb['flags']:
-			add_pain_to_limb(life, limb, amount=4)
+		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
+	
+	if lodged_item:
+		if 'sharp' in lodged_item['damage']:
+			add_pain_to_limb(life, limb, amount=lodged_item['damage']['sharp'])
 		else:
-			add_pain_to_limb(life, limb, amount=3)
+			add_pain_to_limb(life, limb, amount=2)
 	
 	_injury = {'limb': limb,
 		'cut': cut,
@@ -2248,9 +2251,9 @@ def damage_from_item(life,item,damage):
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	#TODO: Accuracy
-	if item['aim_at_limb'] and random.randint(0, 9)>=5:
-		_rand_limb = [item['aim_at_limb'] for i in range(5)]
+	
+	if item['aim_at_limb'] and random.randint(0, 10-item['accuracy'])>=item['accuracy']:
+		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]
 	
@@ -2273,35 +2276,9 @@ def damage_from_item(life,item,damage):
 
 	_hit_limb = random.choice(_poss_limbs)
 	gfx.message(dam.bullet_hit(life, item, _hit_limb))
-
-	#if 'SHARP' in item['flags']:
-	#	if not limb_is_cut(life,_hit_limb):
-	#		if life.has_key('player'):
-	#			gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
-	#			WORLD_INFO['pause_ticks'] = 40
-	#		else:
-	#			say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
-	#	else:
-	#		if life.has_key('player'):
-	#			gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
-	#			WORLD_INFO['pause_ticks'] = 40
-	#		else:
-	#			say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
-	#
-	#	_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
-	#
-	#	cut_limb(life,_hit_limb,amount=4)
-	#	add_pain_to_limb(life,_hit_limb,amount=12)
-	#else:
-	#	bruise_limb(life,_hit_limb)
-	#	add_pain_to_limb(life,_hit_limb,amount=8)
 	
 	if can_knock_over(life, damage, _hit_limb):
 		collapse(life)
-	
-	item['damage'] = damage
-	_damage = item['damage']#TODO: armor here
-	#damage_limb(life,_hit_limb,damage)
 	
 	create_and_update_self_snapshot(life)
 
@@ -2313,23 +2290,7 @@ def natural_healing(life):
 	
 	for _limb in [life['body'][limb] for limb in life['body']]:
 		if _limb['bleeding'] > 0:
-			_limb['bleeding'] -= 0.001
-		#if limb_is_cut(life, _limb):
-		#limb = life['body'][_limb]
-		
-		#if limb['pain'] > 4:
-		#	limb['pain'] -= 0.05
-		
-		#if limb['cut']:
-		#	if limb['bleeding']>0:
-		#		limb['bleeding'] -= 0.0005
-		#	
-		#	if limb['bleeding']<0:
-		#		limb['bleeding'] = 0
-		#		
-		#		if 'player' in life:
-		#			gfx.message('Your %s stops bleeding.' % _limb)
-		
+			_limb['bleeding'] -= 0.001		
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']
