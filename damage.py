@@ -118,9 +118,7 @@ def bullet_hit(life, bullet, limb):
 			lfe.add_wound(life, limb, lodged_item=bullet)
 			return ' '.join(_msg)
 		else:
-			_msg.append('exiting through the %s' % limb)
+			_msg.append('and exiting through the %s' % limb)
 			lfe.add_wound(life, limb, cut=_cut/2)
 	
-	print _falloff	, _cut
-	print ' '.join(_msg)
 	return ' '.join(_msg)

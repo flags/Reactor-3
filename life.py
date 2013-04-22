@@ -2275,7 +2275,9 @@ def damage_from_item(life,item,damage):
 		_poss_limbs.append(life['body'][_rand_limb[0]]['children'][0])
 
 	_hit_limb = random.choice(_poss_limbs)
-	gfx.message(dam.bullet_hit(life, item, _hit_limb))
+	_dam_message = dam.bullet_hit(life, item, _hit_limb)
+	print _dam_message
+	gfx.message(_dam_message)
 	
 	if can_knock_over(life, damage, _hit_limb):
 		collapse(life)
@@ -2290,7 +2292,9 @@ def natural_healing(life):
 	
 	for _limb in [life['body'][limb] for limb in life['body']]:
 		if _limb['bleeding'] > 0:
-			_limb['bleeding'] -= 0.001		
+			_limb['bleeding'] -= 0.001
+		elif _limb['bleeding'] < 0:
+			_limb['bleeding'] = 0
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

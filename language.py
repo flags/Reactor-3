@@ -31,7 +31,9 @@ def get_name(life):
 		return 'He'
 
 def format_injury(injury):
-	if injury['artery_ruptured']:
+	if injury['lodged_item']:
+		return 'a %s lodged in the %s' % (injury['lodged_item']['name'], injury['limb'])
+	elif injury['artery_ruptured']:
 		return 'a ruptured artery in the %s' % injury['limb']
 	elif injury['cut']:
 		return 'a cut to the %s' % injury['limb']
