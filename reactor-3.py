@@ -61,6 +61,7 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+WORLD_INFO['map'] = MAP
 create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
@@ -110,7 +111,8 @@ while SETTINGS['running']==1:
 	handle_input()
 	mainmenu.draw_main_menu()
 
-worldgen.generate_world(MAP, life=4, simulate_ticks=100)
+if not 'start_age' in WORLD_INFO:
+	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=100)
 
 CURRENT_UPS = UPS
 

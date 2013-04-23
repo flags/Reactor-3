@@ -2168,7 +2168,7 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	
 	if lodged_item:
 		if 'sharp' in lodged_item['damage']:
-			add_pain_to_limb(life, limb, amount=lodged_item['damage']['sharp'])
+			add_pain_to_limb(life, limb, amount=lodged_item['damage']['sharp']*2)
 		else:
 			add_pain_to_limb(life, limb, amount=2)
 	

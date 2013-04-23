@@ -63,6 +63,7 @@ def handle_input():
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][0]+=1
 		else:
@@ -72,6 +73,7 @@ def handle_input():
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][0]-=1
 		else:
