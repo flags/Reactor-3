@@ -121,14 +121,13 @@ while SETTINGS['running']==2:
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(SETTINGS['controlling']):
-		logic.tick_all_objects(MAP)
-		_played_moved = True
-		
+	while life.get_highest_action(SETTINGS['controlling']):		
 		if CURRENT_UPS:
 			CURRENT_UPS-=1
 		else:
 			CURRENT_UPS = UPS
+			logic.tick_all_objects(MAP)
+			_played_moved = True
 			break
 	
 	if not _played_moved:

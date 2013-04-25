@@ -1933,21 +1933,7 @@ def draw_life_info():
 		if life['id'] == alife['id']:
 			continue
 		
-		_x,_y = alife['pos'][:2]
-		
-		if alife['pos'][0]>CAMERA_POS[0]:
-			_x = alife['pos'][0]-CAMERA_POS[0]
-		
-		if alife['pos'][1]>CAMERA_POS[1]:
-			_y = alife['pos'][1]-CAMERA_POS[1]
-		
-		if _x>=40:
-			continue
-		
-		if _y>=40:
-			continue
-		
-		if not LOS_BUFFER[0][_y, _x]:
+		if not can_see(SETTINGS['controlling'], alife['pos']):
 			continue
 		
 		_icon = draw_life_icon(alife)
