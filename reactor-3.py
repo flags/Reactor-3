@@ -112,7 +112,7 @@ while SETTINGS['running']==1:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=100)
+	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=1)
 
 CURRENT_UPS = UPS
 
@@ -121,17 +121,26 @@ while SETTINGS['running']==2:
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(SETTINGS['controlling']):		
+	while life.get_highest_action(SETTINGS['controlling']) and not life.find_action(SETTINGS['controlling'], matches=[{'action': 'move'}]):
+		logic.tick_all_objects(MAP)
+		_played_moved = True
+		
 		if CURRENT_UPS:
 			CURRENT_UPS-=1
 		else:
-			CURRENT_UPS = UPS
-			logic.tick_all_objects(MAP)
-			_played_moved = True
+			if life.is_target_of(SETTINGS['controlling']):
+				CURRENT_UPS = 2
+			else:
+				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
 			break
 	
 	if not _played_moved:
-		logic.tick_all_objects(MAP)
+		if CURRENT_UPS:
+			CURRENT_UPS-=1
+		else:
+			CURRENT_UPS = 3
+			logic.tick_all_objects(MAP)
+			
 	
 	draw_targeting()
 	

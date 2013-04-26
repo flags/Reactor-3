@@ -1997,6 +1997,23 @@ def draw_life_info():
 			
 		_y_mod += 1
 
+def is_target_of(life):
+	_targets = []
+	
+	for alife in [LIFE[i] for i in LIFE]:
+		if life['id'] == alife['id']:
+			continue
+		
+		if not can_see(life, alife['pos']):
+			continue
+		
+		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
+		if _targets and life['id'] in [l for l in _targets]:
+			_targets.append(alife)
+			break
+	
+	return _targets
+
 def can_knock_over(life, damage, limb):
 	if limb in life['legs']:
 		return True
