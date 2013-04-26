@@ -59,7 +59,7 @@ def tick_all_objects(source_map):
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:
-					WORLD_INFO['pause_ticks'] = 7
+					WORLD_INFO['pause_ticks'] = 3
 			
 			WORLD_INFO['in_combat'] = _in_combat
 	

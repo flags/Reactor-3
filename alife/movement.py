@@ -43,7 +43,7 @@ def position_for_combat(life,target,position,source_map):
 	#print 'Finding position for combat'
 	
 	#TODO: Eventually this should be written into the pathfinding logic
-	if lfe.can_see(life,target['life']['pos']):
+	if lfe.can_see(life,target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
 		lfe.clear_actions(life)
 		return True
 	

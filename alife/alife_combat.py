@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import numbers
 import combat
 import speech
@@ -40,6 +42,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			_all_targets.append(target)
 	
 	for _target in _all_targets[:]:
+		if lfe.get_memory(life, matches={'target': _target, 'text': 'death'}):
+			_all_targets.remove(_target)
+			print 'see the dead'
+			continue
+		
 		if jobs.alife_is_factor_of_any_job(_target['who']['life']):
 			if life['job']:
 				_neutral_targets.append(_target)

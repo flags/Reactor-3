@@ -2,6 +2,7 @@ from globals import *
 
 import threading
 import logging
+import profiles
 import logic
 import items
 import tiles
@@ -64,6 +65,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 			return False
 	
 	create_player(source_map)
+	profiles.create_world()
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def randomize_item_spawns():

@@ -101,7 +101,7 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-SETTINGS['running'] = 2
+SETTINGS['running'] = 1
 
 while SETTINGS['running']==1:
 	if not MENUS:
@@ -129,7 +129,7 @@ while SETTINGS['running']==2:
 			CURRENT_UPS-=1
 		else:
 			if life.is_target_of(SETTINGS['controlling']):
-				CURRENT_UPS = 2
+				CURRENT_UPS = 1
 			else:
 				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
 			break

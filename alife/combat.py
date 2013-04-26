@@ -186,9 +186,11 @@ def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
 	if not target['escaped'] and not _pos_for_combat:
+		lfe.stand(life)
 		return False
 	elif _pos_for_combat:
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
+		lfe.crouch(life)
 	
 	if not lfe.can_see(life,target['life']['pos']):
 		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at'],source_map):
@@ -204,7 +206,7 @@ def combat(life, target, source_map):
 			'target': target['life']['pos'][:],
 			'limb': 'chest'},
 			50,
-			delay=15)
+			delay=7)
 
 def handle_potential_combat_encounter(life,target,source_map):
 	if not speech.has_considered(life,target['life'],'resist'):

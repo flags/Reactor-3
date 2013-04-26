@@ -3,6 +3,7 @@ from libtcodpy import *
 
 import graphics
 import worldgen
+import profiles
 import menus
 
 HEADER = ['Reactor 3',
@@ -30,8 +31,10 @@ def draw_main_menu():
 
 def switch_to_main_menu():
 	menus.delete_active_menu()
+	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Start', None))
+	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
 	_menu_items.append(menus.create_item('single', 'World Generation', None))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
 	
@@ -60,6 +63,25 @@ def switch_to_start_game():
 		position=(MAP_WINDOW_SIZE[0],0),
 		format_str='$k',
 		on_select=start_menu_select,
+		on_change=None)
+	
+	menus.activate_menu(_i)
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+
+def switch_to_select_world():
+	menus.delete_active_menu()
+	_menu_items = []
+	
+	for world in profiles.get_worlds():
+		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world))
+	_menu_items.append(menus.create_item('single', 'Back', None))
+	
+	_i = menus.create_menu(title='Scenario',
+		menu=_menu_items,
+		padding=(1,1),
+		position=(MAP_WINDOW_SIZE[0],0),
+		format_str='$k',
+		on_select=world_select_select,
 		on_change=None)
 	
 	menus.activate_menu(_i)
@@ -142,6 +164,8 @@ def main_menu_select(entry):
 	
 	if key == 'Start':
 		switch_to_start_game()
+	elif key == 'Select World':
+		switch_to_select_world()
 	elif key == 'World Generation':
 		switch_to_world_gen()
 	elif key == 'Quit':
@@ -152,6 +176,15 @@ def start_menu_select(entry):
 	
 	if key == 'New Character':
 		switch_to_spawn_point()
+	elif key == 'Back':
+		switch_to_main_menu()
+
+def world_select_select(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if key.count('World'):
+		print 'Load',entry['world']
 	elif key == 'Back':
 		switch_to_main_menu()
 

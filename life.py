@@ -249,6 +249,9 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['job'] = {}
 	_life['task'] = ''
 	
+	#Stats
+	_life['engage_distance'] = 15+random.randint(-5, 5)
+	
 	initiate_limbs(_life['body'])
 	SETTINGS['lifeid'] += 1
 	LIFE[_life['id']] = _life
