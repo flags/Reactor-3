@@ -11,6 +11,7 @@ import maps
 
 import random
 import time
+import json
 
 RECRUIT_ITEMS = ['sneakers', 'blue jeans', 'leather backpack', 'glock', '9x19mm magazine', 'radio']
 for i in range(10):
@@ -75,7 +76,14 @@ def load_world(world):
 	logging.info('World loaded.')
 
 def save_world():
+	logging.debug('Offloading world...')
 	maps.save_map('map', WORLD_INFO['map'], base_dir=profiles.get_world(WORLD_INFO['id']))
+	logging.debug('Saving life...')
+	_life = life.save_all_life()
+	
+	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
+		e.write(_life)
+	
 	logging.info('World saved.')
 
 def randomize_item_spawns():

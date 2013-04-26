@@ -258,6 +258,44 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	return _life
 
+def sanitize_heard(life):
+	del life['heard']
+
+def sanitize_know(life):
+	del life['know']
+
+def prepare_for_save(life):
+	_delete_keys = ['map', 'aim_at']
+	_sanitize_keys = {'heard': sanitize_heard,
+		'know': sanitize_know}
+	
+	for key in life.keys():#_delete_keys:
+		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'race', u'flags', 'known_chunks']:
+		#	continue
+		if key in _sanitize_keys:
+			_sanitize_keys[key](life)
+		elif key in _delete_keys:
+			del life[key]
+	
+	#print life.keys()
+	#_save_string = json.dumps(life)
+
+def post_save(life):
+	'''This is for getting the entity back in working order after a save.'''
+	life['map'] = WORLD_INFO['map']
+
+def save_all_life():
+	for life in [LIFE[i] for i in LIFE]:
+		#_life.append(get_save_string(life))
+		prepare_for_save(life)
+	
+	_life = json.dumps(LIFE)
+	
+	for life in [LIFE[i] for i in LIFE]:
+		post_save(life)
+	
+	return _life
+
 def show_debug_info(life):
 	print ' '.join(life['name'])
 	print '*'*10
