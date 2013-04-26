@@ -1,8 +1,8 @@
 from globals import *
 
 import threading
-import logging
 import profiles
+import logging
 import logic
 import items
 import tiles
@@ -65,8 +65,18 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 			return False
 	
 	create_player(source_map)
-	profiles.create_world()
+	WORLD_INFO['id'] = profiles.create_world()
+	save_world()
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
+
+def load_world(world):
+	WORLD_INFO['id'] = world
+	maps.load_map('map', base_dir=profiles.get_world(world))
+	logging.info('World loaded.')
+
+def save_world():
+	maps.save_map('map', WORLD_INFO['map'], base_dir=profiles.get_world(WORLD_INFO['id']))
+	logging.info('World saved.')
 
 def randomize_item_spawns():
 	for building in REFERENCE_MAP['buildings']:

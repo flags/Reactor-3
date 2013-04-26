@@ -76,7 +76,7 @@ def switch_to_select_world():
 		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
-	_i = menus.create_menu(title='Scenario',
+	_i = menus.create_menu(title='Select World',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(MAP_WINDOW_SIZE[0],0),
@@ -184,9 +184,9 @@ def world_select_select(entry):
 	value = entry['values'][entry['value']]
 	
 	if key.count('World'):
-		print 'Load',entry['world']
-	elif key == 'Back':
-		switch_to_main_menu()
+		worldgen.load_world(entry['world'])
+
+	switch_to_main_menu()
 
 def spawn_menu_select(entry):
 	key = entry['key']

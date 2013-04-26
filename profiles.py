@@ -10,8 +10,13 @@ def has_reactor3():
 	
 	try:
 		os.mkdir(_config_directory)
-		os.mkdir(_worlds_directory)
 		logging.info('Created config directory: %s' % _config_directory)
+	except OSError:
+		pass
+	
+	try:
+		os.mkdir(_worlds_directory)
+		logging.info('Created worlds directory: %s' % _worlds_directory)
 		return (_config_directory, _worlds_directory)
 	except OSError:
 		return (_config_directory, _worlds_directory)
@@ -35,9 +40,12 @@ def create_world():
 	try:
 		os.mkdir(_world_directory)
 		logging.info('Created world: %s' % _world_name)
-		return True
+		return _world_name
 	except OSError:
 		return False
 
-#has_reactor3()
-print get_worlds()
+def get_world(world):
+	_config_directory, _worlds_directory = has_reactor3()
+	_world_directory = os.path.join(_worlds_directory, str(world))
+	
+	return _world_directory
