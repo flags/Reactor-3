@@ -262,7 +262,13 @@ def sanitize_heard(life):
 	del life['heard']
 
 def sanitize_know(life):
-	del life['know']
+	if life['know']:
+		print life['know'][life['know'].keys()[0]].keys()
+	
+	for entry in life['know'].values():
+		entry['life'] = entry['life']['id']
+	
+	#del life['know']
 
 def prepare_for_save(life):
 	_delete_keys = ['map', 'aim_at']
@@ -283,6 +289,10 @@ def prepare_for_save(life):
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
 	life['map'] = WORLD_INFO['map']
+	life['heard'] = []
+	
+	for entry in life['know'].values():
+		entry['life'] = LIFE[entry['life']]
 
 def save_all_life():
 	for life in [LIFE[i] for i in LIFE]:

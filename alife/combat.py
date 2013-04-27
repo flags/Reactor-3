@@ -186,11 +186,9 @@ def combat(life, target, source_map):
 	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
 	
 	if not target['escaped'] and not _pos_for_combat:
-		lfe.stand(life)
 		return False
 	elif _pos_for_combat:
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
-		lfe.crouch(life)
 	
 	if not lfe.can_see(life,target['life']['pos']):
 		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at'],source_map):

@@ -101,7 +101,7 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-SETTINGS['running'] = 1
+SETTINGS['running'] = 2
 
 while SETTINGS['running']==1:
 	if not MENUS:

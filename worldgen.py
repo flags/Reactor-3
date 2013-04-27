@@ -73,6 +73,10 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 def load_world(world):
 	WORLD_INFO['id'] = world
 	maps.load_map('map', base_dir=profiles.get_world(world))
+	
+	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'r') as e:
+		LIFE.update(json.loads(e.readline()))
+	
 	logging.info('World loaded.')
 
 def save_world():
