@@ -16,14 +16,15 @@ def get_fire_mode(weapon):
 	return weapon['firemodes'][weapon['firemode']]
 
 def get_recoil(life):
-	_recoil = 0
+	weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+	_recoil = weapon['recoil']
 	
 	if life['stance'] == 'standing':
-		_recoil = 25
+		_recoil *= 1
 	elif life['stance'] == 'crouching':
-		_recoil = 15
+		_recoil *= .75
 	elif life['stance'] == 'crawling':
-		_recoil = 10
+		_recoil *= .50
 	
 	return _recoil
 

@@ -203,8 +203,8 @@ def combat(life, target, source_map):
 		lfe.add_action(life,{'action': 'shoot',
 			'target': target['life']['pos'][:],
 			'limb': 'chest'},
-			50,
-			delay=7)
+			5000,
+			delay=3)
 
 def handle_potential_combat_encounter(life,target,source_map):
 	if not speech.has_considered(life,target['life'],'resist'):
