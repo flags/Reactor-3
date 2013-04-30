@@ -113,7 +113,7 @@ while SETTINGS['running']==1:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=1, save=False)
+	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=1, save=False, thread=True)
 
 CURRENT_UPS = UPS
 
