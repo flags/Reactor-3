@@ -66,7 +66,7 @@ def found_camp(life, reference, announce=False):
 	CAMPS[_camp['id']] = _camp 
 	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
 	discover_camp(life, _camp)
-	speech.announce(life, 'share_camp_info', camp=_camp, founder=True, public=False)
+	speech.announce(life, 'share_camp_info', camp=_camp, founder=life['id'], public=False)
 
 def unfound_camp(life, camp):
 	pass
@@ -104,8 +104,11 @@ def get_camp_info(life, camp):
 	_info = {'founder': None,
 		'estimated_population': 0}
 	
-	for founder in lfe.get_memory(life, matches={'camp': camp['id'], 'text': 'heard about camp', 'founder': True}):
-		_info['target'] = founder['target']
+	if camp['id'] in [camp['id'] for camp in get_founded_camps(life)]:
+		_info['founder'] = life['id']
+	else:
+		for founder in lfe.get_memory(life, matches={'camp': camp['id'], 'text': 'heard about camp', 'founder': '*'}):
+			_info['founder'] = founder['founder']
 	
 	for _life in life['know'].values():
 		#TODO: 300?

@@ -179,6 +179,7 @@ def listen(life):
 		
 		elif event['gist'] == 'who_is_founder':
 			#TODO: Who do we believe is the founder?
+			_helped = False
 			
 			if event['camp'] in [camp['id'] for camp in camps.get_founded_camps(life)]:
 				speech.communicate(life,
@@ -186,14 +187,31 @@ def listen(life):
 					founder=life['id'],
 					camp=event['camp'],
 					matches=[{'id': event['from']['id']}])
+				_helped = True
 			
 			else:
-				for founder in lfe.get_memory(life, matches={'camp': event['camp'], 'text': 'heard about camp', 'founder': True}):
+				for founder in lfe.get_memory(life, matches={'camp': event['camp'], 'text': 'heard about camp', 'founder': '*'}):
 					speech.communicate(life,
 						'camp_founder',
 						founder=founder['target'],
 						camp=event['camp'],
 						matches=[{'id': event['from']['id']}])
+					_helped = True
+					break
+			
+			if not _helped:
+				lfe.memory(life, 'help find founder',
+					camp=event['camp'],
+					target=event['from']['id'])
+				speech.communicate(life,
+					'dont_know_founder',
+					camp=event['camp'],
+					matches=[{'id': event['from']['id']}])
+		
+		elif event['gist'] == 'dont_know_founder':
+			lfe.memory(life, 'dont know founder',
+				camp=event['camp'],
+				target=event['from']['id'])
 		
 		elif event['gist'] == 'camp_founder':
 			lfe.memory(life, 'heard about camp',

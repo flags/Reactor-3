@@ -60,12 +60,31 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#NOTE: We've already been attracted here. Think twice before abandoning...
 	_info = camps.get_camp_info(life, _camp)
 	
-	if not _info['founder']:
+	if _info['founder']:
+		print 'can help!',_info['founder']
+		#print life['name'],_camp['id'],lfe.get_memory(life, matches={'text': 'help find founder'})
+		#for can_help_find in lfe.get_memory(life, matches={'camp': _camp['id'], 'text': 'help find founder'}):
+		#	print can_help_find['target']
+	else:
 		#print 'Looking for founder...'
 		
 		#Try to find out who he is...
 		speech.announce(life, 'who_is_founder', camp=_camp['id'])
 		
-		
+		#if lfe.ticker(life, 'who_is_founder', 100):
+		for target in speech.get_announce_list(life):
+			#TODO: In this case we'll be approached (maybe) by the ALife if they find the info...
+			if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'dont know founder'}):
+				continue
+			
+			if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'heard about camp', 'founder': '*'}):
+				continue
+			
+			speech.unsend(life, target, 'who_is_founder')
+		#print 'missed announce',speech.who_missed_announce(life, 'who_is_founder')
+		#We don't have a founder still
+		#for target in speech.who_missed_announce(life, 'who_is_founder'):
+		#speech.unsend(life, LIFE[target], 'who_is_founder')		
+	
 	#if _info['estimated_population']<2:
 		

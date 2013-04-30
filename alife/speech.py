@@ -41,6 +41,13 @@ def send(life, target, gist):
 		
 	return True
 
+def unsend(life, target, gist):
+	if gist in life['know'][target['id']]['sent']:
+		life['know'][target['id']]['sent'].remove(gist)
+		return True
+	
+	return False
+
 def receive(life, target, gist):
 	life['know'][target['id']]['received'].append(gist)
 	lfe.create_and_update_self_snapshot(target)
@@ -56,6 +63,11 @@ def announce(life, gist, public=False, **kvargs):
 	
 	for target in _announce_to:
 		if not public and has_sent(life, target, gist):
+			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
+			continue
+		
+		if not lfe.can_see(life, target['pos']):
+			#print life['name'],'cant see',target['id']
 			continue
 	
 		#logging.debug('\t%s got announce.' % ' '.join(target['name']))
@@ -65,6 +77,9 @@ def announce(life, gist, public=False, **kvargs):
 			send(life, target, gist)
 	
 	return True
+
+def get_announce_list(life):
+	return [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
 
 def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	if 'target' in kvargs:
