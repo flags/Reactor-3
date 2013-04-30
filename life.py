@@ -232,6 +232,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['aim_at'] = _life
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
+	_life['tickers'] = {}
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -257,6 +258,17 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	LIFE[_life['id']] = _life
 	
 	return _life
+
+def ticker(life, name, time):
+	if name in life['tickers']:
+		if life['tickers'][name]:
+			life['tickers'][name] -= 1
+			return False
+		else:
+			return True
+	else:
+		life['tickers'][name] = time
+		return False
 
 def sanitize_heard(life):
 	del life['heard']
@@ -579,7 +591,7 @@ def get_memory(life, matches={}):
 	for memory in life['memory']:
 		_break = False
 		for key in matches:
-			if not key in memory or not memory[key] == matches[key]:
+			if not key in memory or not (matches[key] == '*' or memory[key] == matches[key]):
 				_break = True
 				break
 		
