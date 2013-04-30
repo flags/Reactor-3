@@ -45,7 +45,7 @@ def draw_world_stats():
 	console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	console_flush()
 
-def generate_world(source_map, life=1, simulate_ticks=1000, save=True):
+def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=True):
 	console_print(0, 0, 0, 'World Generation')
 	console_flush()
 	
@@ -55,15 +55,18 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True):
 	generate_life(source_map, amount=life)
 	randomize_item_spawns()
 	
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
-	_r = Runner(simulate_life, source_map, amount=simulate_ticks)
-	_r.start()
-	
-	while _r.running:
-		draw_world_stats()
-		
-		if not SETTINGS['running']:
-			return False
+	if thread:
+		console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+		_r = Runner(simulate_life, source_map, amount=simulate_ticks)
+		_r.start()
+
+		while _r.running:
+			draw_world_stats()
+			
+			if not SETTINGS['running']:
+				return False
+	else:
+		simulate_life(source_map, amount=simulate_ticks)
 	
 	create_player(source_map)
 	WORLD_INFO['id'] = 0
