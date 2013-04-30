@@ -5,6 +5,7 @@ import life as lfe
 import references
 import judgement
 import movement
+import speech
 import camps
 import maps
 
@@ -44,13 +45,27 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_camp = life['known_camps'][life['camp']]
-	if camps.is_in_camp(life, _camp):
+	if not camps.is_in_camp(life, _camp):
+		_closest_key =  references.find_nearest_key_in_reference(life, _camp['reference'])
+		_chunk = maps.get_chunk(_closest_key)
+		
+		lfe.clear_actions(life)
+		lfe.add_action(life,{'action': 'move',
+			'to': random.choice(_chunk['ground'])},
+			200)
 		return False
 	
-	_closest_key =  references.find_nearest_key_in_reference(life, _camp['reference'])
-	_chunk = maps.get_chunk(_closest_key)
+	#Start figuring out what's going on inside the camp
+	#We're asking ourselves what needs to be done? Is someone in charge? Do we need supplies?
+	#NOTE: We've already been attracted here. Think twice before abandoning...
+	_info = camps.get_camp_info(life, _camp)
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move',
-		'to': random.choice(_chunk['ground'])},
-		200)
+	if not _info['founder']:
+		#print 'Looking for founder...'
+		
+		#Try to find out who he is...
+		speech.announce(life, 'who_is_founder', camp=_camp['id'])
+		
+		
+	#if _info['estimated_population']<2:
+		

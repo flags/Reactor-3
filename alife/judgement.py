@@ -256,7 +256,7 @@ def judge_camp(life, camp):
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	
-	return len(camp)*_percent_known
+	return int(round(_percent_known*10))
 
 def judge_job(life, job):
 	_score = 0

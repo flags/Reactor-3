@@ -45,7 +45,7 @@ def draw_world_stats():
 	console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	console_flush()
 
-def generate_world(source_map, life=1, simulate_ticks=1000):
+def generate_world(source_map, life=1, simulate_ticks=1000, save=True):
 	console_print(0, 0, 0, 'World Generation')
 	console_flush()
 	
@@ -66,8 +66,12 @@ def generate_world(source_map, life=1, simulate_ticks=1000):
 			return False
 	
 	create_player(source_map)
-	WORLD_INFO['id'] = profiles.create_world()
-	save_world()
+	WORLD_INFO['id'] = 0
+	
+	if save:
+		WORLD_INFO['id'] = profiles.create_world()
+		save_world()
+	
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def load_world(world):

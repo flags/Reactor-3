@@ -314,6 +314,9 @@ def show_debug_info(life):
 	for memory in life['memory']:
 		print memory['target'], memory['text']
 
+def get_engage_distance(life):
+	return 0
+
 def change_state(life, state):
 	if life['state'] == state:
 		return False

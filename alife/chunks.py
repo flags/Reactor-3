@@ -69,6 +69,15 @@ def is_in_chunk(life, chunk_id):
 	
 	return False
 
+def position_is_in_chunk(position, chunk_id):
+	_chunk = maps.get_chunk(chunk_id)
+	
+	if position[0] >= _chunk['pos'][0] and position[0] <= _chunk['pos'][0]+SETTINGS['chunk size']\
+		and position[1] >= _chunk['pos'][1] and position[1] <= _chunk['pos'][1]+SETTINGS['chunk size']:
+			return True
+	
+	return False
+
 def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	
