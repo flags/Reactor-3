@@ -210,6 +210,7 @@ def handle_input():
 		SELECTED_TILES[0] = []
 		
 		_phrases = []
+		_phrases.append(menus.create_item('single', 'Greet', 'Say hi.', target=_target))
 		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
 		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
 		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
@@ -983,6 +984,12 @@ def talk_menu(entry):
 				'Demand target to stand down.',
 				communicate='comply',
 				target=target))
+	elif key == 'Greet':
+		_phrases.append(menus.create_item('single',
+			'What\'s up?',
+			'Ask to join your squad.',
+			communicate='invite_to_group',
+			target=target))
 		
 	_menu = menus.create_menu(title='Talk (%s)' % key,
 		menu=_phrases,
