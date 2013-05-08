@@ -216,6 +216,10 @@ def find_alife_and_say(life):
 	if find_alife(life, _target['life']['id']):
 		_say = jobs.get_job_detail(life['job'], 'say')
 		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], camp=_say['camp'], founder=_say['founder'])
+		lfe.memory(life,
+			'told about founder',
+			camp=_say['camp'],
+			target=_target['life']['id'])
 		return True
 	
 	return False

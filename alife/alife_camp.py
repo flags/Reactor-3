@@ -66,8 +66,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		_can_actually_help = []
 		for can_help_find in lfe.get_memory(life, matches={'camp': _camp['id'], 'text': 'help find founder'}):
-			#TODO: Haven't implemented `knows about founder`
-			if not lfe.get_memory(life, matches={'target': can_help_find['target'], 'camp': _camp['id'], 'text': 'knows about founder'}):
+			if not lfe.get_memory(life, matches={'target': can_help_find['target'], 'camp': _camp['id'], 'text': 'told about founder'}):
 				_can_actually_help.append(can_help_find['target'])
 		
 		#TODO: Score these
@@ -90,13 +89,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				jobs.add_job_task(_j, 'find alife', callback=movement.find_alife_and_say, required=True)
 				jobs.add_job_candidate(_j, life)
 				jobs.process_job(_j)
-			else:
-				print 'Already done...'
 			
-			#lfe.clear_actions(life)
-			#lfe.add_action(life,{'action': 'move',
-			#	'to': _target['last_seen_at'][:2]},
-			#	200)
 	else:		
 		#Try to find out who he is...
 		speech.announce(life, 'who_is_founder', camp=_camp['id'])
