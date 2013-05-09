@@ -201,7 +201,6 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	#TODO: We only need this for pathing, so maybe we should move this to
 	#the `walk` function?
-	_life['map'] = map
 	_life['animation'] = {}
 	_life['path'] = []
 	_life['actions'] = []
@@ -283,7 +282,7 @@ def sanitize_know(life):
 	#del life['know']
 
 def prepare_for_save(life):
-	_delete_keys = ['map', 'aim_at']
+	_delete_keys = ['aim_at']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
