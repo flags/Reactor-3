@@ -59,7 +59,7 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life,target,pos,source_map):
+def travel_to_target(life, target, pos):
 	if not tuple(life['pos']) == tuple(pos):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)

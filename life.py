@@ -300,7 +300,7 @@ def prepare_for_save(life):
 
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
-	life['map'] = WORLD_INFO['map']
+	#TODO: Don't needs this any more...
 	life['heard'] = []
 	
 	for entry in life['know'].values():
@@ -663,7 +663,7 @@ def path_dest(life):
 	
 	return tuple(life['path'][len(life['path'])-1])
 
-def walk(life,to):
+def walk(life, to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']>0:
 		if life['stance'] == 'standing':
@@ -682,7 +682,7 @@ def walk(life,to):
 	
 	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
 		_stime = time.time()
-		life['path'] = pathfinding.create_path(life['pos'],to,source_map=life['map'])
+		life['path'] = pathfinding.create_path(life['pos'], to, source_map=WORLD_INFO['map'])
 		#print '\ttotal',time.time()-_stime
 	
 	return walk_path(life)
@@ -719,8 +719,8 @@ def walk_path(life):
 
 def perform_collisions(life):
 	"""Performs gravity. Returns True if falling."""
-	if not life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
-		if life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
+	if not WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
+		if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
 			life['pos'][2] -= 1
 			
 			return True
@@ -1202,7 +1202,7 @@ def tick(life, source_map):
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
-		brain.think(life,source_map)
+		brain.think(life, source_map)
 	else:
 		for context in life['contexts'][:]:
 			context['time'] -= 1
@@ -1261,7 +1261,7 @@ def can_see(life, pos):
 		return False
 
 	for pos in _line:
-		if life['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False
 	
 	return True
