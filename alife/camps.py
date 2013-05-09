@@ -101,7 +101,7 @@ def get_founded_camps(life):
 	return [CAMPS[i] for i in CAMPS if CAMPS[i]['founder'] == life['id']]
 
 def get_camp_info(life, camp):
-	_info = {'founder': None,
+	_info = {'founder': -1,
 		'estimated_population': 0}
 	
 	if camp['id'] in [camp['id'] for camp in get_founded_camps(life)]:

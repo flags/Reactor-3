@@ -1,12 +1,13 @@
 import life as lfe
 
+import weapons
+import numbers
 import combat
 import speech
 import sight
 import brain
+import jobs
 
-import weapons
-import numbers
 import random
 
 def score_search(life,target,pos):
@@ -58,7 +59,7 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life,target,pos,source_map):
+def travel_to_target(life, target, pos):
 	if not tuple(life['pos']) == tuple(pos):
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -191,5 +192,34 @@ def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):
 	else:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+	
+	return False
+
+def find_alife(life, target):
+	#Almost a 100% chance we know who this person is...
+	_target = brain.knows_alife_by_id(life, target)
+	
+	#We'll try last_seen_at first
+	#TODO: In the future we should consider how long it's been since we've seen them
+	lfe.clear_actions(life)
+	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
+	
+	if lfe.can_see(life, _target['life']['pos']):
+		return True
+	
+	return False
+
+#TODO: Put this in a new file
+def find_alife_and_say(life):
+	_target = brain.knows_alife_by_id(life, jobs.get_job_detail(life['job'], 'target'))
+	
+	if find_alife(life, _target['life']['id']):
+		_say = jobs.get_job_detail(life['job'], 'say')
+		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], camp=_say['camp'], founder=_say['founder'])
+		lfe.memory(life,
+			'told about founder',
+			camp=_say['camp'],
+			target=_target['life']['id'])
+		return True
 	
 	return False

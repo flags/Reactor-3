@@ -182,8 +182,8 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def combat(life, target, source_map):
-	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],source_map)
+def combat(life, target):
+	_pos_for_combat = movement.position_for_combat(life,target,target['last_seen_at'],WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:
 		return False
@@ -191,7 +191,7 @@ def combat(life, target, source_map):
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
 	
 	if not lfe.can_see(life,target['life']['pos']):
-		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at'],source_map):
+		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			target['escaped'] = True
 		elif target['escaped']:

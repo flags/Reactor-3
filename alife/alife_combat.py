@@ -98,7 +98,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 		if _all_targets:
 			_closest_target = get_closest_target(life, _all_targets)
-			combat.combat(life, _closest_target['who'], life['map'])
+			combat.combat(life, _closest_target['who'])
 	elif _neutral_targets:
 		for _ntarget in [_target['who']['life'] for _target in _neutral_targets]:
 			_has_weapon = combat.get_equipped_weapons(_ntarget)

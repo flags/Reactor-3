@@ -277,3 +277,18 @@ Acknowledging the following issues:
 	* The player's lack of situational awareness
 		* Information not CLEARLY displayed on the map needs to be re-represented on the right
 			* EX: Target name - (Status)
+
+Problem 2: The Combat
+---------------------
+The damage model makes no sense in a lot of applications. While damage is handled, the appropriate action is not, so the ALife is only affected in the long-lasting negative effects and not the reaction (stumbling, twirling, etc)
+
+Problem 3: Group Tasks
+----------------------
+Like deciding how to flank a target, etc. Engage them.
+
+Problem 4: Misc Stuff
+---------------------
+Message boxes on map screen for conversations.
+
+GoGame?
+

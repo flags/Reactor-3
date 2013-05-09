@@ -210,3 +210,5 @@ def process_job(job):
 	_task = find_open_task(LIFE[_scores[_scores.keys()[0]]], job)
 	if _task:
 		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task)
+	else:
+		logging.warning('No open tasks for job: %s' % job['gist'])
