@@ -93,6 +93,10 @@ PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
 DEFAULT_CONTEXT_TIME = 25
 
+GIST_MAP = {'how_are_you': 0,
+	'ignore': 0,
+	'ignore_rude': -1}
+
 #Non-constants
 SETTINGS = {'running': True,
 			'draw lights': True,

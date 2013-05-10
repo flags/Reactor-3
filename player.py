@@ -3,6 +3,7 @@ from alife import *
 
 import graphics as gfx
 import weapons
+import dialog
 import menus
 import items
 import life
@@ -225,6 +226,11 @@ def handle_input():
 		menus.activate_menu(_menu)
 	
 	if INPUT['V']:
+		if SETTINGS['controlling']['dialogs']:
+			_dialog = SETTINGS['controlling']['dialogs'].pop()
+			dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog)
+			return True
+		
 		if not SETTINGS['controlling']['contexts']:
 			return create_radio_menu()
 		

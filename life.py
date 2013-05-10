@@ -206,6 +206,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
+	_life['dialogs'] = []
 	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
@@ -479,7 +480,6 @@ def hear(life, what):
 		_menu = []
 		_context = contexts.create_context(life, what, timeout_callback=what['timeout_callback'])
 		
-		_context['reactions']
 		for reaction in _context['reactions']:
 			if reaction['type'] == 'say':
 				_menu.append(menus.create_item('single',
@@ -508,6 +508,9 @@ def hear(life, what):
 						score=reaction['score'],
 						delay=reaction['delay'],
 						life=life))
+			elif reaction['type'] == 'dialog':
+				life['dialogs'].append(reaction)
+				print 'CREATED DIALOG'
 		
 		if _menu:
 			_context['items'] = _menu
@@ -1203,6 +1206,8 @@ def tick(life, source_map):
 	if not 'player' in life:
 		brain.think(life, source_map)
 	else:
+		brain.sight.look(life)
+		
 		for context in life['contexts'][:]:
 			context['time'] -= 1
 			
