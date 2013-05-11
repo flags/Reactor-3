@@ -95,7 +95,14 @@ DEFAULT_CONTEXT_TIME = 25
 
 GIST_MAP = {'how_are_you': 0,
 	'ignore': 0,
-	'ignore_rude': -1}
+	'ignore_rude': -1,
+	'inquire_about': 0,
+	'tell_about': 0,
+	'inquire_response_knows_positive': 1,
+	'inquire_response_knows_neutral': 0,
+	'inquire_response_knows_negative': -1,
+	'inquire_response_neutral': 0,
+	'inquire_response_negative': -1}
 
 #Non-constants
 SETTINGS = {'running': True,

@@ -31,6 +31,8 @@ def handle_input():
 			
 			if SETTINGS['controlling']['actions']:
 				SETTINGS['controlling']['actions'] = []
+		elif SETTINGS['controlling']['dialogs']:
+			SETTINGS['controlling']['dialogs'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -48,9 +50,9 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
-		elif SETTINGS['controlling']['dialogs']:
+		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
-			
+
 			if _dialog['index']:
 				_dialog['index'] -= 1
 		else:
@@ -62,7 +64,7 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
-		elif SETTINGS['controlling']['dialogs']:
+		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
@@ -220,25 +222,28 @@ def handle_input():
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
 		
-		_phrases = []
-		_phrases.append(menus.create_item('single', 'Greet', 'Say hi.', target=_target))
-		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
-		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
-		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
+		#_phrases = []
+		#_phrases.append(menus.create_item('single', 'Greet', 'Say hi.', target=_target))
+		#_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
+		#_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
+		#_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
 		
-		_menu = menus.create_menu(title='Talk',
-			menu=_phrases,
-			padding=(1,1),
-			position=(1,1),
-			format_str='$k: $v',
-			on_select=talk_menu)
-		
-		menus.activate_menu(_menu)
+		#_menu = menus.create_menu(title='Talk',
+		#	menu=_phrases,
+		#	padding=(1,1),
+		#	position=(1,1),
+		#	format_str='$k: $v',
+		#	on_select=talk_menu)
+		#
+		#menus.activate_menu(_menu)
+		_dialog = {'type': 'dialog',
+			'from': SETTINGS['controlling']['id'],
+			'enabled': True}
+		SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target['id'], _dialog))
 	
 	if INPUT['V']:
 		if SETTINGS['controlling']['dialogs']:
 			_dialog = SETTINGS['controlling']['dialogs'].pop()
-			print dialog
 			SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog))
 			return True
 		

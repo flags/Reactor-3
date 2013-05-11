@@ -9,7 +9,10 @@ from alife import judgement, brain
 
 import life as lfe
 
+import numbers
+
 import logging
+import random
 
 def create_dialog_with(life, target, info):
 	#If we're getting a gist then the conversation has already been started in some respect...
@@ -80,8 +83,8 @@ def get_all_responses_to(life, **kwargs):
 		print memory
 
 def calculate_impacts(life, target, topics):
-	#TODO: Unused
-	_score = judgement.judge(life, brain.knows_alife_by_id(life, target))
+	#TODO: Unused arguments
+	#_score = judgement.judge(life, brain.knows_alife_by_id(life, target))
 	
 	for topic in topics:
 		if 'subtopic' in topic:
@@ -101,7 +104,8 @@ def get_known_alife(life, gist):
 		_name = ' '.join(LIFE[ai]['name'])
 		_topics.append({'text': _name,
 			'message': 'Do you know %s?' % _name,
-			'gist': gist})
+			'gist': gist,
+			'target': ai})
 	
 	return _topics
 
@@ -117,7 +121,59 @@ def reset_dialog(dialog):
 	if dialog['previous_topics']:
 		dialog['topics'] = dialog['previous_topics'].pop(0)
 		dialog['previous_topics'] = []
-		dialog['title'] = ''
+	
+	dialog['title'] = ''
+	dialog['index'] = 0
+
+def alife_choose_response(life, target, dialog, responses):
+	_score = judgement.judge(life, brain.knows_alife_by_id(life, target['id']))
+	_chosen = random.choice([r for r in responses if numbers.clip(_score, -1, 1) == r['impact']])
+	
+	add_message(life, dialog, _chosen)
+	process_response(target, life, dialog, _chosen)
+
+def process_response(life, target, dialog, chosen):
+	_responses = []
+	
+	#TODO: Unused
+	if chosen['gist'].count('positive'):
+		_impact = 1
+	elif chosen['gist'].count('negative'):
+		_impact = -1
+	else:
+		_impact = 0
+	
+	if chosen['gist'] == 'inquire_about':
+		print chosen['target'], life['id']
+		if chosen['target'] == life['id']:
+			_responses.append({'text': 'That\'s my name.', 'gist': 'inquire_response_neutral'})
+		else:
+			if chosen['target'] in life['know']:
+				_responses.append({'text': 'Yes, I know him!', 'gist': 'inquire_response_knows_positive'})
+				_responses.append({'text': 'Sure.', 'gist': 'inquire_response_knows_neutral'})
+				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative'})
+	elif chosen['gist'].count('inquire_response'):
+		#TODO: How about something similar to get_known_life()?
+		#TODO: Or just a way to trigger a submenu response from a gist
+		if chosen['gist'].count('knows'):
+			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'inquire_response_knows_positive'})
+	
+	if not 'player' in life and not _responses:
+		_responses.append({'text': 'No valid response.', 'gist': 'conversation_error'})
+	
+	calculate_impacts(life, target, _responses)
+	
+	if 'player' in life:
+		if _responses:
+			dialog['topics'] = _responses
+			dialog['index'] = 0
+		else:
+			reset_dialog(dialog)			
+			
+		return True
+	
+	alife_choose_response(life, target, dialog, _responses)
 
 def give_menu_response(life, dialog):
 	_chosen = dialog['topics'][dialog['index']]
@@ -128,7 +184,7 @@ def give_menu_response(life, dialog):
 		dialog['index'] = 0
 	else:
 		add_message(life, dialog, _chosen)
-		reset_dialog(dialog)
+		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 
 def draw_dialog():
 	if not [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
@@ -153,6 +209,7 @@ def draw_dialog():
 			1,
 			dialog['title'])
 	
+	console_set_default_background(dialog['console'], black)
 	for d in dialog['topics']:
 		line = d['text']
 		_index += 1
@@ -204,11 +261,17 @@ def draw_dialog():
 		_impact = m['impact']
 		for line in part:			
 			if _impact == 1:
-				console_set_default_foreground(dialog['console'], green)
+				console_set_default_foreground(dialog['console'], black)
+				console_set_default_background(dialog['console'], green)
+				console_set_background_flag(dialog['console'], BKGND_SET)
 			elif not _impact:
 				console_set_default_foreground(dialog['console'], white)
+				console_set_default_background(dialog['console'], black)
+				console_set_background_flag(dialog['console'], BKGND_NONE)
 			else:
-				console_set_default_foreground(dialog['console'], red)
+				console_set_default_foreground(dialog['console'], black)
+				console_set_default_background(dialog['console'], red)
+				console_set_background_flag(dialog['console'], BKGND_SET)
 			
 			_impact = False
 			
@@ -237,4 +300,6 @@ def draw_dialog():
 				_y += 1
 				
 				break
+	
+	console_set_background_flag(dialog['console'], BKGND_NONE)
 
