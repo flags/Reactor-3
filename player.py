@@ -48,6 +48,11 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
+		elif SETTINGS['controlling']['dialogs']:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			
+			if _dialog['index']:
+				_dialog['index'] -= 1
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]-1)},200)
@@ -57,6 +62,11 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
+		elif SETTINGS['controlling']['dialogs']:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			
+			if _dialog['index']<len(_dialog['topics'])-1:
+				_dialog['index'] += 1
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]+1)},200)
@@ -228,7 +238,8 @@ def handle_input():
 	if INPUT['V']:
 		if SETTINGS['controlling']['dialogs']:
 			_dialog = SETTINGS['controlling']['dialogs'].pop()
-			dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog)
+			print dialog
+			SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog))
 			return True
 		
 		if not SETTINGS['controlling']['contexts']:
@@ -479,6 +490,11 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
 	
 	if INPUT['\r']:
+		_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+		if _dialog:
+			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
+			return False
+		
 		if ACTIVE_MENU['menu'] == -1:
 			return False
 		

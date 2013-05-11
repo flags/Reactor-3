@@ -26,7 +26,8 @@ def _create_context_from_phrase(life, phrase):
 	
 	elif phrase['gist'] == 'greeting':
 		_reactions.append({'type': 'dialog',
-			'from': phrase['from']['id']})
+			'from': phrase['from']['id'],
+			'enabled': False})
 			#'gist': 'greeting'})
 	
 	elif phrase['gist'] == 'looks_hostile':

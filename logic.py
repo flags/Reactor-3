@@ -29,6 +29,9 @@ def tick_all_objects(source_map):
 		
 		if SETTINGS['controlling']['encounters']:
 			return False
+		
+		if [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+			return False
 	
 		_in_combat = False
 		for alife in [LIFE[i] for i in LIFE]:

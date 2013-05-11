@@ -18,6 +18,7 @@ import weapons
 import effects
 import numbers
 import bullets
+import dialog
 import random
 import menus
 import logic
@@ -142,7 +143,6 @@ while SETTINGS['running']==2:
 			CURRENT_UPS = 3
 			logic.tick_all_objects(MAP)
 			
-	
 	draw_targeting()
 	
 	if CYTHON_ENABLED:
@@ -188,6 +188,7 @@ while SETTINGS['running']==2:
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
+	dialog.draw_dialog()
 	#gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()
