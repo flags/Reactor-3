@@ -28,10 +28,12 @@ def create_dialog_with(life, target, info):
 		calculate_impacts(life, target, _topics)
 	
 	return {'enabled': True,
+		'title': '',
 		'sender': life['id'],
 		'receiver': target,
 		'info': info,
 		'topics': _topics,
+		'previous_topics': [],
 		'memories': _memories,
 		'messages': _messages,
 		'index': 0}
@@ -65,7 +67,8 @@ def get_all_irrelevant_target_topics(life, target):
 	_memories = []
 	
 	#TODO: This spawns a menu for the player to choose the desired ALife
-	_topics.append({'text': 'Do you know...', 'subtopic': get_known_alife})
+	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
+	_topics.append({'text': 'Did you know...', 'gist': 'tell_about', 'subtopics': get_known_alife})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
@@ -85,19 +88,47 @@ def calculate_impacts(life, target, topics):
 			continue
 		
 		if not topic['gist'] in GIST_MAP:
-			logging.warning('\'%s\' was not found in GIST_MAP.')
+			logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
 			topic['impact'] = 0
 			continue
 		
 		topic['impact'] = GIST_MAP[topic['gist']]
-		
-def get_known_alife(life):
-	pass
+
+def get_known_alife(life, gist):
+	_topics = []
+	
+	for ai in life['know']:
+		_name = ' '.join(LIFE[ai]['name'])
+		_topics.append({'text': _name,
+			'message': 'Do you know %s?' % _name,
+			'gist': gist})
+	
+	return _topics
+
+def add_message(life, dialog, chosen):
+	_text = chosen['text']
+	if 'message' in chosen:
+		_text = chosen['message']
+	
+	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
+	dialog['messages'].append(_message)
+
+def reset_dialog(dialog):
+	if dialog['previous_topics']:
+		dialog['topics'] = dialog['previous_topics'].pop(0)
+		dialog['previous_topics'] = []
+		dialog['title'] = ''
 
 def give_menu_response(life, dialog):
 	_chosen = dialog['topics'][dialog['index']]
-	_message = {'sender': life['id'], 'text': _chosen['text'], 'impact': 1}
-	dialog['messages'].append(_message)
+	if 'subtopics' in _chosen:
+		dialog['previous_topics'].append(dialog['topics'])
+		dialog['title'] = _chosen['text']
+		dialog['topics'] = _chosen['subtopics'](life, _chosen['gist'])
+		dialog['index'] = 0
+	else:
+		add_message(life, dialog, _chosen)
+		reset_dialog(dialog)
 
 def draw_dialog():
 	if not [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
@@ -111,14 +142,30 @@ def draw_dialog():
 		dialog['console'] = console_new(WINDOW_SIZE[0], 40)
 	else:
 		console_rect(dialog['console'],0,0,WINDOW_SIZE[0],40,True,flag=BKGND_DEFAULT)
-		console_set_default_foreground(dialog['console'], white)
 
 	#TODO: Too tired to do this... :-)
 	_index = -1
-	_y = 1
-	for line in [d['text'] for d in dialog['topics']]:
+	_y = 2
+	
+	if dialog['title']:
+		console_print(dialog['console'],
+			1,
+			1,
+			dialog['title'])
+	
+	for d in dialog['topics']:
+		line = d['text']
 		_index += 1
 		_x = 1
+		
+		if not 'impact' in d:
+			console_set_default_foreground(dialog['console'], white)
+		elif d['impact'] == 1:
+			console_set_default_foreground(dialog['console'], green)
+		elif not d['impact']:
+			console_set_default_foreground(dialog['console'], white)
+		else:
+			console_set_default_foreground(dialog['console'], red)
 		
 		if _index == dialog['index']:
 			line = '> %s' % line
