@@ -32,7 +32,11 @@ def handle_input():
 			if SETTINGS['controlling']['actions']:
 				SETTINGS['controlling']['actions'] = []
 		elif SETTINGS['controlling']['dialogs']:
-			SETTINGS['controlling']['dialogs'] = []
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]
+			if _dialog:
+				_dialog = _dialog[0]
+				if not dialog.reset_dialog(_dialog):
+					SETTINGS['controlling']['dialogs'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -222,20 +226,6 @@ def handle_input():
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
 		
-		#_phrases = []
-		#_phrases.append(menus.create_item('single', 'Greet', 'Say hi.', target=_target))
-		#_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
-		#_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
-		#_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
-		
-		#_menu = menus.create_menu(title='Talk',
-		#	menu=_phrases,
-		#	padding=(1,1),
-		#	position=(1,1),
-		#	format_str='$k: $v',
-		#	on_select=talk_menu)
-		#
-		#menus.activate_menu(_menu)
 		_dialog = {'type': 'dialog',
 			'from': SETTINGS['controlling']['id'],
 			'enabled': True}
@@ -495,8 +485,8 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
 	
 	if INPUT['\r']:
-		_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
-		if _dialog:
+		if [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
 			return False
 		
@@ -958,74 +948,6 @@ def handle_options_menu(entry):
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
-
-def talk_menu_action(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	target = entry['target']
-	communicate = entry['communicate']
-	
-	for comm in communicate.split('|'):
-		life.add_action(SETTINGS['controlling'],
-			{'action': 'communicate',
-				'what': comm,
-				'target': target},
-			400,
-			delay=0)
-	
-	menus.delete_menu(ACTIVE_MENU['menu'])
-	menus.delete_menu(ACTIVE_MENU['menu'])
-
-def talk_menu(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	target = entry['target']
-	_phrases = []
-
-	if key == 'Discuss':
-		_phrases.append(menus.create_item('single',
-			'Recent',
-			'Talk about recent events.',
-			communicate='ask_about_recent_events',
-			target=target))
-		_phrases.append(menus.create_item('single',
-			'Legends',
-			'Talk about heard legends.',
-			communicate='ask_about_legends',
-			target=target))
-		_phrases.append(menus.create_item('single',
-			'Join',
-			'Ask to join your squad.',
-			communicate='invite_to_group',
-			target=target))
-	elif key == 'Intimidate':
-		if brain.get_flag(target, 'surrendered'):
-			_phrases.append(menus.create_item('single',
-				'Drop items',
-				'Request target to drop all items.',
-				communicate='drop_everything',
-				target=target))
-		else:
-			_phrases.append(menus.create_item('single',
-				'Surrender',
-				'Demand target to stand down.',
-				communicate='comply',
-				target=target))
-	elif key == 'Greet':
-		_phrases.append(menus.create_item('single',
-			'What\'s up?',
-			'Ask to join your squad.',
-			communicate='invite_to_group',
-			target=target))
-		
-	_menu = menus.create_menu(title='Talk (%s)' % key,
-		menu=_phrases,
-		padding=(1,1),
-		position=(1,1),
-		format_str='$k: $v',
-		on_select=talk_menu_action)
-	
-	menus.activate_menu(_menu)
 
 def radio_menu(entry):
 	key = entry['key']
