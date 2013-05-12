@@ -12,6 +12,7 @@ import graphics as gfx
 import maputils
 import worldgen
 import mainmenu
+import language
 import drawing
 import logging
 import weapons
@@ -67,6 +68,7 @@ create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
 maps.generate_reference_maps()
+language.load_strings()
 gfx.init_libtcod()
 
 PLACING_TILE = WALL_TILE

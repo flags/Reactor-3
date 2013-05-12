@@ -72,6 +72,7 @@ RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
+TEXT_DIR = os.path.join(DATA_DIR,'text')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
@@ -85,6 +86,9 @@ FADE_TO_WHITE = [0]
 BLEEDING_STRING_MAX_LENGTH = 25
 BORDER_COLOR = Color(128,128,128)
 MAX_MESSAGES_IN_DIALOG = 9
+
+#Strings
+NAMES_FOR_PLACES = []
 
 #Life constants
 LIFE_MAX_SPEED = 5
@@ -110,9 +114,12 @@ GIST_MAP = {'how_are_you': 0,
 	'last_seen_target_at': 0,
 	'status_response': 0,
 	'status_response_neutral': 0,
-	'status_response_neutral_question': 0}
+	'status_response_neutral_question': 0,
+	'irritated_neutral': 0,
+	'irritated_negative': -1}
 
-POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8]}
+POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
+	'how_are_you': [1.0, 0.7]}
 
 #Non-constants
 SETTINGS = {'running': True,

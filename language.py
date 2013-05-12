@@ -30,6 +30,13 @@ def get_name(life):
 	else:
 		return 'He'
 
+def load_strings():
+	with open(os.path.join(TEXT_DIR,'places.txt'),'r') as e:
+		NAMES_FOR_PLACES.extend([line.strip() for line in e.readlines()])
+
+def generate_place_name():
+	return NAMES_FOR_PLACES.pop(random.randint(0, len(NAMES_FOR_PLACES)-1))
+
 def format_injury(injury):
 	if injury['lodged_item']:
 		return 'a %s lodged in the %s' % (injury['lodged_item']['name'], injury['limb'])
