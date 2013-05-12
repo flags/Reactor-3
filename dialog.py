@@ -167,16 +167,17 @@ def modify_trust(life, target, _chosen):
 	_knows = brain.knows_alife_by_id(life, target['id'])
 	
 	if 'like' in _chosen:
+		_like = _chosen['like']
+		
 		for key in _knows['likes']:
 			if key.count('*') and _chosen['gist'].count(key[:len(key)-1]):
-				_chosen['like'] *= _knows['likes'][key][0]
+				_like *= _knows['likes'][key][0]
 				_knows['likes'][key][0] *= _knows['likes'][key][1]
 		
-		_knows['trust'] += _chosen['like']
+		_knows['trust'] += _like
 	elif 'dislike' in _chosen:
+		_dislike = _chosen['like']
 		_knows['trust'] -= _chosen['dislike']
-	
-	print _knows['trust'], POSSIBLE_LIKES
 
 def alife_choose_response(life, target, dialog, responses):
 	_knows = brain.knows_alife_by_id(life, target['id'])
