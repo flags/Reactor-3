@@ -169,6 +169,9 @@ def initiate_limbs(body):
 		else:
 			body[body[limb]['parent']]['children'].append(limb)
 
+def generate_likes(life):
+	return copy.deepcopy(POSSIBLE_LIKES)
+
 def get_limb(body,limb):
 	"""Helper function. Finds ands returns a limb."""
 	return body[limb]
@@ -249,6 +252,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['tempstor2'] = {}
 	_life['job'] = {}
 	_life['task'] = ''
+	_life['likes'] = generate_likes(_life)
+	_life['dislikes'] = {}
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)

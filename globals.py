@@ -112,6 +112,8 @@ GIST_MAP = {'how_are_you': 0,
 	'status_response_neutral': 0,
 	'status_response_neutral_question': 0}
 
+POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8]}
+
 #Non-constants
 SETTINGS = {'running': True,
 			'draw lights': True,

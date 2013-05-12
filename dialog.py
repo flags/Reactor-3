@@ -163,12 +163,30 @@ def reset_dialog(dialog):
 	
 	return _ret
 
+def modify_trust(life, target, _chosen):
+	_knows = brain.knows_alife_by_id(life, target['id'])
+	
+	if 'like' in _chosen:
+		for key in _knows['likes']:
+			if key.count('*') and _chosen['gist'].count(key[:len(key)-1]):
+				_chosen['like'] *= _knows['likes'][key][0]
+				_knows['likes'][key][0] *= _knows['likes'][key][1]
+		
+		_knows['trust'] += _chosen['like']
+	elif 'dislike' in _chosen:
+		_knows['trust'] -= _chosen['dislike']
+	
+	print _knows['trust'], POSSIBLE_LIKES
+
 def alife_choose_response(life, target, dialog, responses):
-	_score = judgement.judge(life, brain.knows_alife_by_id(life, target['id']))
+	_knows = brain.knows_alife_by_id(life, target['id'])
+	_score = judgement.judge(life, _knows)
 	_choices = [r for r in responses if numbers.clip(_score, -1, 1) == r['impact']]
 	
 	if _choices:
 		_chosen = random.choice(_choices)
+		modify_trust(life, target, _chosen)
+		modify_trust(target, life, _chosen)
 		add_message(life, dialog, _chosen)
 		process_response(target, life, dialog, _chosen)
 	else:
@@ -187,11 +205,11 @@ def process_response(life, target, dialog, chosen):
 		_impact = 0
 	
 	if chosen['gist'] == 'how_are_you':
-		_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral'})
-		_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question'})
+		_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
+		_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
-			_responses.append({'text': 'Same.', 'gist': 'status_response'})
+			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
 	elif chosen['gist'] == 'inquire_about':
 		if chosen['target'] == life['id']:
 			_responses.append({'text': 'That\'s me. Did you forget who I was?', 'gist': 'inquire_response_positive'})
@@ -217,8 +235,10 @@ def process_response(life, target, dialog, chosen):
 		if chosen['gist'].count('knows'):
 			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'last_seen_target_at', 'target': chosen['target']})
 	elif chosen['gist'] == 'last_seen_target_at':
-		if 'target' in chosen:
-			_responses.append({'text': 'Check here: ', 'gist': 'saw_target_at', 'target': chosen['target']})
+		if lfe.can_see(life, LIFE[chosen['target']]['pos']):
+			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target']})
+		elif _impact>=0:
+			_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target']})
 		else:
 			_responses.append({'text': 'Not telling you!', 'gist': 'saw_target_at'})
 	else:
