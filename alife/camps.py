@@ -4,6 +4,7 @@ import life as lfe
 
 import references
 import judgement
+import language
 import numbers
 import speech
 import chunks
@@ -54,6 +55,7 @@ def get_distance_to_nearest_known_camp(life):
 
 def found_camp(life, reference, announce=False):
 	_camp = {'id': len(CAMPS)+1,
+		'name': language.generate_place_name(),
 		'reference': reference,
 		'founder': life['id'],
 		'time_founded': WORLD_INFO['ticks'],

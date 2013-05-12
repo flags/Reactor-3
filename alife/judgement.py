@@ -118,6 +118,8 @@ def judge(life, target):
 			#print '+',impression
 			_like += _score
 	
+	_like *= brain.get_trust(life, target['life']['id'])
+	
 	if _is_hostile:
 		if _surrendered:
 			target['flags']['surrendered'] = True

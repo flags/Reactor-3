@@ -5,7 +5,7 @@
 #finding responses.
 
 from globals import *
-from alife import judgement, brain
+from alife import judgement, brain, camps
 
 import life as lfe
 
@@ -59,7 +59,8 @@ def get_all_relevant_target_topics(life, target):
 	_topics = []
 	_memories = []
 	
-	_topics.append({'text': 'How are you?', 'gist': 'how_are_you'})
+	_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
+	_topics.append({'text': 'How are you?', 'gist': 'how_are_you', 'like': 1})
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
@@ -72,6 +73,7 @@ def get_all_irrelevant_target_topics(life, target):
 	
 	#TODO: This spawns a menu for the player to choose the desired ALife
 	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
+	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'subtopics': get_known_alife_questions})
 	
 	for ai in life['know']:
 		if lfe.get_memory(life, matches={'target': ai}):
@@ -114,6 +116,9 @@ def get_known_alife(life, chosen):
 	
 	return _topics
 
+def get_known_alife_questions(life, chosen):
+	pass
+
 def tell_about_alife_select(life, chosen):
 	_topics = []
 	
@@ -141,6 +146,19 @@ def tell_about_alife_memories(life, chosen):
 	
 	return _topics
 
+def get_responses_about_self(life):
+	_responses = []
+	
+	for camp in camps.get_founded_camps(life):
+		_responses.append({'text': 'I\'m the founder of camp %s.' % camp['name'],
+			'gist': 'talk_about_camp',
+			'camp': camp['id']})
+	
+	if not _responses:
+		_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
+	
+	return _responses
+
 def add_message(life, dialog, chosen):
 	_text = chosen['text']
 	if 'message' in chosen:
@@ -163,16 +181,35 @@ def reset_dialog(dialog):
 	
 	return _ret
 
+def get_matching_likes(life, target, gist):
+	_knows = brain.knows_alife_by_id(life, target)
+	_matching = []
+	
+	for key in _knows['likes']:
+		if key.count('*') and gist.count(key[:len(key)-1]):
+			_matching.append(key)
+		elif key == gist:
+			_matching.append(key)
+	
+	return _matching
+
+def get_freshness_of_gist(life, target, gist):
+	_knows = brain.knows_alife_by_id(life, target)
+	_freshness = 0
+	
+	for key in get_matching_likes(life, target, gist):
+		_freshness += _knows['likes'][key][0]
+	return _freshness
+
 def modify_trust(life, target, _chosen):
-	_knows = brain.knows_alife_by_id(life, target['id'])
+	_knows = brain.knows_alife_by_id(life, target)
 	
 	if 'like' in _chosen:
 		_like = _chosen['like']
 		
-		for key in _knows['likes']:
-			if key.count('*') and _chosen['gist'].count(key[:len(key)-1]):
-				_like *= _knows['likes'][key][0]
-				_knows['likes'][key][0] *= _knows['likes'][key][1]
+		for key in get_matching_likes(life, target, _chosen['gist']):
+			_like *= _knows['likes'][key][0]
+			_knows['likes'][key][0] *= _knows['likes'][key][1]
 		
 		_knows['trust'] += _like
 	elif 'dislike' in _chosen:
@@ -186,10 +223,10 @@ def alife_choose_response(life, target, dialog, responses):
 	
 	if _choices:
 		_chosen = random.choice(_choices)
-		modify_trust(life, target, _chosen)
-		modify_trust(target, life, _chosen)
 		add_message(life, dialog, _chosen)
 		process_response(target, life, dialog, _chosen)
+		modify_trust(life, target['id'], _chosen)
+		modify_trust(target, life['id'], _chosen)
 	else:
 		reset_dialog(dialog)
 		logging.error('Dialog didn\'t return anything.')
@@ -206,8 +243,26 @@ def process_response(life, target, dialog, chosen):
 		_impact = 0
 	
 	if chosen['gist'] == 'how_are_you':
-		_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
-		_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
+		if get_freshness_of_gist(life, target['id'], chosen['gist'])<0.5:
+			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
+			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
+		else:
+			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
+			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
+	elif chosen['gist'] == 'talk_about_self':
+		_responses.extend(get_responses_about_self(life))
+	elif chosen['gist'] == 'talk_about_camp':
+		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': chosen['camp']}):
+			_responses.append({'text': 'I\'ve heard of it.', 'gist': 'heard_of_camp'})
+		else:
+			_responses.append({'text': 'I\'ve never heard of it.', 'gist': 'never_heard_of_camp', 'camp': chosen['camp']})
+	elif chosen['gist'].count('heard_of_camp'):
+		if chosen['gist'].count('never'):
+			if camps.is_in_camp(life, CAMPS[chosen['camp']]):
+				_responses.append({'text': 'You\'re in it right now!', 'gist': 'inform_of_camp', 'camp': chosen['camp']})
+				_responses.append({'text': 'Well, this is it.', 'gist': 'inform_of_camp', 'camp': chosen['camp']})
+			else:
+				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp'})
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
@@ -271,6 +326,8 @@ def give_menu_response(life, dialog):
 	else:
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
+		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
+		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 
 def draw_dialog():
 	if not [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
