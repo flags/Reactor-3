@@ -84,6 +84,7 @@ MAP_RENDER_VERSION = 4
 FADE_TO_WHITE = [0]
 BLEEDING_STRING_MAX_LENGTH = 25
 BORDER_COLOR = Color(128,128,128)
+MAX_MESSAGES_IN_DIALOG = 9
 
 #Life constants
 LIFE_MAX_SPEED = 5
@@ -98,11 +99,18 @@ GIST_MAP = {'how_are_you': 0,
 	'ignore_rude': -1,
 	'inquire_about': 0,
 	'tell_about': 0,
+	'inquire_response_positive': 1,
+	'inquire_response_neutral': 0,
+	'inquire_response_negative': -1,
 	'inquire_response_knows_positive': 1,
 	'inquire_response_knows_neutral': 0,
 	'inquire_response_knows_negative': -1,
 	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1}
+	'inquire_response_negative': -1,
+	'last_seen_target_at': 0,
+	'status_response': 0,
+	'status_response_neutral': 0,
+	'status_response_neutral_question': 0}
 
 #Non-constants
 SETTINGS = {'running': True,

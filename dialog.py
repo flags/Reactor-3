@@ -35,6 +35,7 @@ def create_dialog_with(life, target, info):
 		'sender': life['id'],
 		'receiver': target,
 		'info': info,
+		'starting_topics': _topics,
 		'topics': _topics,
 		'previous_topics': [],
 		'memories': _memories,
@@ -71,7 +72,11 @@ def get_all_irrelevant_target_topics(life, target):
 	
 	#TODO: This spawns a menu for the player to choose the desired ALife
 	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
-	_topics.append({'text': 'Did you know...', 'gist': 'tell_about', 'subtopics': get_known_alife})
+	
+	for ai in life['know']:
+		if lfe.get_memory(life, matches={'target': ai}):
+			_topics.append({'text': 'Did you know...', 'gist': 'tell_about', 'subtopics': tell_about_alife_select})
+			break
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
@@ -97,15 +102,42 @@ def calculate_impacts(life, target, topics):
 		
 		topic['impact'] = GIST_MAP[topic['gist']]
 
-def get_known_alife(life, gist):
+def get_known_alife(life, chosen):
 	_topics = []
 	
 	for ai in life['know']:
 		_name = ' '.join(LIFE[ai]['name'])
 		_topics.append({'text': _name,
 			'message': 'Do you know %s?' % _name,
-			'gist': gist,
+			'gist': chosen['gist'],
 			'target': ai})
+	
+	return _topics
+
+def tell_about_alife_select(life, chosen):
+	_topics = []
+	
+	for ai in life['know']:		
+		_name = ' '.join(LIFE[ai]['name'])
+		_topics.append({'text': _name,
+			'gist': chosen['gist'],
+			'target': ai,
+			'subtopics': tell_about_alife_memories})
+	
+	return _topics
+
+def tell_about_alife_memories(life, chosen):
+	_topics = []
+	
+	for memory in lfe.get_memory(life, matches={'target': chosen['target']}):
+		_topics.append({'text': memory['text'],
+			'gist': chosen['gist'],
+			'target': chosen['target']})
+	
+	if not _topics:
+		_topics.append({'text': 'No memory of this person!',
+			'gist': chosen['gist'],
+			'target': chosen['target']})
 	
 	return _topics
 
@@ -118,19 +150,30 @@ def add_message(life, dialog, chosen):
 	dialog['messages'].append(_message)
 
 def reset_dialog(dialog):
+	_ret = False
 	if dialog['previous_topics']:
 		dialog['topics'] = dialog['previous_topics'].pop(0)
 		dialog['previous_topics'] = []
+		_ret = True
+	else:
+		dialog['topics'] = dialog['starting_topics']
 	
 	dialog['title'] = ''
 	dialog['index'] = 0
+	
+	return _ret
 
 def alife_choose_response(life, target, dialog, responses):
 	_score = judgement.judge(life, brain.knows_alife_by_id(life, target['id']))
-	_chosen = random.choice([r for r in responses if numbers.clip(_score, -1, 1) == r['impact']])
+	_choices = [r for r in responses if numbers.clip(_score, -1, 1) == r['impact']]
 	
-	add_message(life, dialog, _chosen)
-	process_response(target, life, dialog, _chosen)
+	if _choices:
+		_chosen = random.choice(_choices)
+		add_message(life, dialog, _chosen)
+		process_response(target, life, dialog, _chosen)
+	else:
+		reset_dialog(dialog)
+		logging.error('Dialog didn\'t return anything.')
 
 def process_response(life, target, dialog, chosen):
 	_responses = []
@@ -143,24 +186,46 @@ def process_response(life, target, dialog, chosen):
 	else:
 		_impact = 0
 	
-	if chosen['gist'] == 'inquire_about':
-		print chosen['target'], life['id']
+	if chosen['gist'] == 'how_are_you':
+		_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral'})
+		_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question'})
+	elif chosen['gist'].count('status_response'):
+		if chosen['gist'].count('question'):
+			_responses.append({'text': 'Same.', 'gist': 'status_response'})
+	elif chosen['gist'] == 'inquire_about':
 		if chosen['target'] == life['id']:
+			_responses.append({'text': 'That\'s me. Did you forget who I was?', 'gist': 'inquire_response_positive'})
 			_responses.append({'text': 'That\'s my name.', 'gist': 'inquire_response_neutral'})
+			_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative'})
 		else:
 			if chosen['target'] in life['know']:
-				_responses.append({'text': 'Yes, I know him!', 'gist': 'inquire_response_knows_positive'})
-				_responses.append({'text': 'Sure.', 'gist': 'inquire_response_knows_neutral'})
+				_responses.append({'text': 'Yes, I know him!', 'gist': 'inquire_response_knows_positive', 'target': chosen['target']})
+				_responses.append({'text': 'Sure.', 'gist': 'inquire_response_knows_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'flags': ['CANBRIBE']})
-				_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative'})
+			else:
+				_responses.append({'text': 'I don\'t know who that is, sorry.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
+				_responses.append({'text': 'Sorry, I don\'t know who that is.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
+				_responses.append({'text': 'Can\'t help yah, friend...', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
+				_responses.append({'text': 'I don\'t.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
+				_responses.append({'text': 'Never heard that name before.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
+				_responses.append({'text': 'I don\'t recall hearing that name.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
+				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
 	elif chosen['gist'].count('inquire_response'):
 		#TODO: How about something similar to get_known_life()?
-		#TODO: Or just a way to trigger a submenu response from a gist
+		#TODO: Or just a way to trigger a submenu response from a gist?
 		if chosen['gist'].count('knows'):
-			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'inquire_response_knows_positive'})
+			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'last_seen_target_at', 'target': chosen['target']})
+	elif chosen['gist'] == 'last_seen_target_at':
+		if 'target' in chosen:
+			_responses.append({'text': 'Check here: ', 'gist': 'saw_target_at', 'target': chosen['target']})
+		else:
+			_responses.append({'text': 'Not telling you!', 'gist': 'saw_target_at'})
+	else:
+		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	
-	if not 'player' in life and not _responses:
-		_responses.append({'text': 'No valid response.', 'gist': 'conversation_error'})
+	#if not 'player' in life and not _responses:
+	#	_responses.append({'text': 'No valid response.', 'gist': 'conversation_error'})
 	
 	calculate_impacts(life, target, _responses)
 	
@@ -169,7 +234,7 @@ def process_response(life, target, dialog, chosen):
 			dialog['topics'] = _responses
 			dialog['index'] = 0
 		else:
-			reset_dialog(dialog)			
+			reset_dialog(dialog)
 			
 		return True
 	
@@ -180,7 +245,7 @@ def give_menu_response(life, dialog):
 	if 'subtopics' in _chosen:
 		dialog['previous_topics'].append(dialog['topics'])
 		dialog['title'] = _chosen['text']
-		dialog['topics'] = _chosen['subtopics'](life, _chosen['gist'])
+		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
 		add_message(life, dialog, _chosen)
@@ -254,7 +319,7 @@ def draw_dialog():
 			break
 	
 	_y = 1
-	for m in dialog['messages']:
+	for m in dialog['messages'][numbers.clip(abs(len(dialog['messages']))-MAX_MESSAGES_IN_DIALOG, 0, 99999):]:
 		part = (' '.join(LIFE[m['sender']]['name']), m['text'])
 		_x = 41
 		
@@ -267,7 +332,7 @@ def draw_dialog():
 			elif not _impact:
 				console_set_default_foreground(dialog['console'], white)
 				console_set_default_background(dialog['console'], black)
-				console_set_background_flag(dialog['console'], BKGND_NONE)
+				console_set_background_flag(dialog['console'], BKGND_SET)
 			else:
 				console_set_default_foreground(dialog['console'], black)
 				console_set_default_background(dialog['console'], red)

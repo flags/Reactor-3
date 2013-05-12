@@ -67,7 +67,7 @@ def travel_to_target(life, target, pos):
 	
 	return False
 
-def search_for_target(life,target,source_map):
+def search_for_target(life, target, source_map):
 	_cover = sight.generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
 	
 	if _cover:

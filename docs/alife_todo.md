@@ -17,3 +17,4 @@ ALife cases:
 	
 	Conversations:
 		Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
+		When letting the player answer, only pick one response to show from multiple ones of the same gist.

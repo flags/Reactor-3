@@ -510,7 +510,6 @@ def hear(life, what):
 						life=life))
 			elif reaction['type'] == 'dialog':
 				life['dialogs'].append(reaction)
-				print 'CREATED DIALOG'
 		
 		if _menu:
 			_context['items'] = _menu
@@ -2050,7 +2049,6 @@ def draw_life_info():
 				
 		_name = action['action']['action']
 		_bar_size = (action['delay']/float(action['delay_max']))*SETTINGS['progress bar max value']
-		console_set_default_background(0,white)
 		
 		for i in range(SETTINGS['progress bar max value']):
 			if i <= _bar_size:

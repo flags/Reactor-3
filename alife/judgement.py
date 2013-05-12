@@ -76,6 +76,9 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
+	#if 'greeting' in target['sent']:
+	#	_like += 1
+	
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
 			_like += 2

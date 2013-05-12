@@ -195,7 +195,7 @@ def combat(life, target):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			target['escaped'] = True
 		elif target['escaped']:
-			movement.search_for_target(life,target,source_map)
+			movement.search_for_target(life, target, WORLD_INFO['map'])
 		
 		return False
 	
