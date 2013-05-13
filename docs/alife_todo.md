@@ -16,12 +16,15 @@ ALife cases:
 			This is just to help ju
 	
 	Conversations:
-		[ ] Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
+		[/] Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
 		[ ] When letting the player answer, only pick one response to show from multiple ones of the same gist.
 		[ ] When told about a location, add to map
+		[ ] Could ALife use new conversation system to talk?
+				How would the whole "find founder" situation be done in the new system? Just through topics?
 	
 	Likes/Dislikes:
 		[x] Each ALife will have a set of likes/dislikes based on gists. These are measured in a float from 0.0 to 1.0.
 			response['like'] *= life['likes'][gist]
 			trust += response['like']
 		[ ] dialog.get_freshness_of_gist can be used to figure out if a topic is getting old or not
+	
