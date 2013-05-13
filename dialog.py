@@ -73,7 +73,7 @@ def get_all_irrelevant_target_topics(life, target):
 	
 	#TODO: This spawns a menu for the player to choose the desired ALife
 	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
-	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'subtopics': get_known_alife_questions})
+	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'target': target, 'subtopics': get_known_alife_questions})
 	
 	for ai in life['know']:
 		if lfe.get_memory(life, matches={'target': ai}):
@@ -116,8 +116,46 @@ def get_known_alife(life, chosen):
 	
 	return _topics
 
+def get_known_camps(life, chosen):
+	_topics = []
+	
+	#for ai in life['know']:
+	for camp in life['known_camps'].values():
+		_topics.append({'text': camp['name'],
+			'gist': 'inquire_about_camp',
+			'target':chosen['target'],
+			'camp': camp['id'],
+			'subtopics': get_questions_for_camp})
+	
+	return _topics
+
+def get_questions_for_camp(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Who founded %s?' % CAMPS[chosen['camp']]['name'],
+		'gist': 'inquire_about_camp_founder',
+		'camp': chosen['camp']})
+	_topics.append({'text': 'What\'s the population of %s?' % CAMPS[chosen['camp']]['name'],
+		'gist': 'inquire_about_camp_population',
+		'camp': chosen['camp']})
+	
+	return _topics
+
+#TODO: Rename this...
 def get_known_alife_questions(life, chosen):
-	pass
+	_topics = []
+	
+	_topics.append({'text': 'Camps',
+		'gist': 'inquire_about',
+		'subtopics': get_known_camps,
+		'target': chosen['target']})
+	#for memory in lfe.get_memory(life, matches={'target': chosen['target']}):
+	#	if memory['text'] == 'heard about camp':
+	#		_topics.append({'text': '',
+	#			'gist': chosen['gist'],
+	#			'target': chosen['target']})
+	
+	return _topics
 
 def tell_about_alife_select(life, chosen):
 	_topics = []
@@ -252,17 +290,25 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'talk_about_self':
 		_responses.extend(get_responses_about_self(life))
 	elif chosen['gist'] == 'talk_about_camp':
-		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': chosen['camp']}):
+		if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp']}):
 			_responses.append({'text': 'I\'ve heard of it.', 'gist': 'heard_of_camp'})
+			_responses.extend(get_questions_for_camp(life, chosen))
 		else:
 			_responses.append({'text': 'I\'ve never heard of it.', 'gist': 'never_heard_of_camp', 'camp': chosen['camp']})
 	elif chosen['gist'].count('heard_of_camp'):
 		if chosen['gist'].count('never'):
 			if camps.is_in_camp(life, CAMPS[chosen['camp']]):
-				_responses.append({'text': 'You\'re in it right now!', 'gist': 'inform_of_camp', 'camp': chosen['camp']})
-				_responses.append({'text': 'Well, this is it.', 'gist': 'inform_of_camp', 'camp': chosen['camp']})
+				_responses.append({'text': 'You\'re in it right now!', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
+				_responses.append({'text': 'Well, this is it.', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
 			else:
 				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp'})
+	elif chosen['gist'].count('inform_of_camp'):
+		camps.discover_camp(life, CAMPS[chosen['camp']])
+		
+		lfe.memory(life, 'heard about camp',
+			camp=chosen['camp'],
+			target=chosen['sender'],
+			founder=chosen['founder'])
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
