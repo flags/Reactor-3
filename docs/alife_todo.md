@@ -13,7 +13,6 @@ ALife cases:
 		
 	judgement.py
 		[ ] Placeholder: ALife now view someone positively just by saying hello to them (no response needed)
-			This is just to help ju
 	
 	Conversations:
 		[/] Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
@@ -24,7 +23,5 @@ ALife cases:
 	
 	Likes/Dislikes:
 		[x] Each ALife will have a set of likes/dislikes based on gists. These are measured in a float from 0.0 to 1.0.
-			response['like'] *= life['likes'][gist]
-			trust += response['like']
-		[ ] dialog.get_freshness_of_gist can be used to figure out if a topic is getting old or not
+		[x] dialog.get_freshness_of_gist can be used to figure out if a topic is getting old or not
 	

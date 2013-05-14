@@ -300,3 +300,10 @@ To explain, this new system is very centralized, so about 90% of all dialog-rela
 
 Another advantage is that I'll no longer need to write separate dialog menus for the player since this code generates these for us. I made a somewhat risky decision and wrote a new, less-complicated menu structure to use instead. There isn't anything wrong with the menus I use across the rest of the game, but I wanted to do some very specific things and knew I would just be bloating up a working system if decided to extend existing code to satisfy one case.
 
+Questions
+---------
+Now there is a need for ALife to ask about certain topics. This could be done in one fell swoop when beginning dialog, but we specifically want the ALife to know they have questions to ask beforehand so they can pursue dialogs by themselves.
+
+Example case: An ALife joins a camp but is unaware of who the founder is. After running out of people to ask, the ALife simply idles in the camp until someone can help them (during this time they are always broadcasting the request for founder info.) I won't say it's easier, but I'd like to get this behavior into the dialog tree instead, giving me an opportunity to implement dialogs started with the player by the ALife.
+
+I think the main idea here is just attaching the ALife to the dialog tree and hoping they are able to figure it out. After all, it should solve the issue of having multiple conversations active (but not running) at once, in addition to giving me some amount of context to deal with instead of just having a random phrase in an array I have to parse to find its origin (and even then I can't be sure what the context is.)
