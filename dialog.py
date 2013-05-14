@@ -156,12 +156,12 @@ def give_camp_founder(life, chosen):
 		
 		_name = ' '.join(LIFE[ai]['name'])
 		_topics.append({'text': _name,
-			'message': '%s did.' % _name,
+			'message': '%s is.' % _name,
 			'gist': 'tell_about_camp_founder',
 			'founder': ai,
 			'lie': _lie})
 		_topics.append({'text': _name,
-			'message': '%s founded %s.' % (_name, CAMPS[chosen['camp']]['name']),
+			'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
 			'gist': 'tell_about_camp_founder',
 			'founder': ai,
 			'lie': _lie})
