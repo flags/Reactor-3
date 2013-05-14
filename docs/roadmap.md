@@ -292,4 +292,11 @@ Message boxes on map screen for conversations.
 
 New(er) Conversations
 -------------------
-Conversations have been revamped and the old system has been axed (for the most part.)
+Conversations have been revamped and the old system has been axed (for the most part.) While there are still bits and pieces of it scattered about, I don't think there is a use for it anymore. As a result, all the features of the old system need to be ported to the new one.
+
+However, I am still unsure if these features can be recreated properly in the new code. The only real advantage of the old structure was that there wasn't any real structure at all- just a way for ALife to "hear" things and react accordingly. I'm hoping that what I have now can emulate that, because otherwise a lot of code is now obsolete (for the greater good.) To test, I've written the proper dialog for learning about camps and asking camp-related questions. This is still in its infancy, but it's interesting to see that it works rather well, so I'm inclined to believe that the old code should work too.
+
+To explain, this new system is very centralized, so about 90% of all dialog-related code is contained in a single file. I guess that isn't much different than the previous code, but I think the big difference here is that the back-and-forth nature of certain conversations is a lot more organized and open to expansion than before. I really did feel like getting ALife to talk before was probably my least favorite thing to do, but if I am able to apply this to ALife vs. ALife situations instead of just Player vs. ALife, I think I might be on to something.
+
+Another advantage is that I'll no longer need to write separate dialog menus for the player since this code generates these for us. I made a somewhat risky decision and wrote a new, less-complicated menu structure to use instead. There isn't anything wrong with the menus I use across the rest of the game, but I wanted to do some very specific things and knew I would just be bloating up a working system if decided to extend existing code to satisfy one case.
+
