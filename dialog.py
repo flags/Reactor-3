@@ -62,6 +62,7 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
 	_topics.append({'text': 'How are you?', 'gist': 'how_are_you', 'like': 1})
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
+	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
@@ -98,6 +99,10 @@ def calculate_impacts(life, target, topics):
 			continue
 		
 		if not topic['gist'] in GIST_MAP:
+			if 'lie' in topic and topic['lie']:
+				topic['impact'] = -1
+				continue
+			
 			logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
 			topic['impact'] = 0
 			continue
@@ -141,6 +146,28 @@ def get_questions_for_camp(life, chosen):
 	
 	return _topics
 
+def give_camp_founder(life, chosen):
+	_topics = []
+	
+	for ai in life['know']:
+		_lie = False
+		if not CAMPS[chosen['camp']]['founder'] == ai:
+			_lie = True
+		
+		_name = ' '.join(LIFE[ai]['name'])
+		_topics.append({'text': _name,
+			'message': '%s did.' % _name,
+			'gist': 'tell_about_camp_founder',
+			'founder': ai,
+			'lie': _lie})
+		_topics.append({'text': _name,
+			'message': '%s founded %s.' % (_name, CAMPS[chosen['camp']]['name']),
+			'gist': 'tell_about_camp_founder',
+			'founder': ai,
+			'lie': _lie})
+	
+	return _topics
+
 #TODO: Rename this...
 def get_known_alife_questions(life, chosen):
 	_topics = []
@@ -154,6 +181,23 @@ def get_known_alife_questions(life, chosen):
 	#		_topics.append({'text': '',
 	#			'gist': chosen['gist'],
 	#			'target': chosen['target']})
+	
+	return _topics
+
+def get_questions_to_ask(life, chosen):
+	_topics = []
+	
+	for memory in lfe.get_memory(life, matches={'question': True}):
+		if memory['text'] == 'wants_founder_info':
+			_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
+				'gist': 'who_founded_camp',
+				'camp': memory['camp']})
+			_topics.append({'text': 'Who runs camp %s?' % CAMPS[memory['camp']]['name'],
+				'gist': 'who_founded_camp',
+				'camp': memory['camp']})
+			_topics.append({'text': 'Any idea who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
+				'gist': 'who_founded_camp',
+				'camp': memory['camp']})
 	
 	return _topics
 
@@ -309,6 +353,10 @@ def process_response(life, target, dialog, chosen):
 			camp=chosen['camp'],
 			target=chosen['sender'],
 			founder=chosen['founder'])
+	elif chosen['gist'].count('who_founded_camp'):
+		_responses.extend(give_camp_founder(life, chosen))
+	elif chosen['gist'] == 'offering_help':
+		_responses.extend(get_questions_to_ask(life, chosen))
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
