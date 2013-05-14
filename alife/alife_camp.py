@@ -123,7 +123,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					'to': _target['last_seen_at'][:2]},
 					200)
 		else:
-			print life['name'],'Nobody to ask'
+			if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
+				lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
 
 		#print 'missed announce',speech.who_missed_announce(life, 'who_is_founder')
 		#We don't have a founder still
