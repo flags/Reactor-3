@@ -261,3 +261,49 @@ So we can create one entity (result  of `create_conversation`) and  pass it arou
 We must also consider that if someone says "Hello!" to a group of people not everyone responds. Usually if one person responds the rest of the group is considered to have had that same response also.
 
 Timing: Some questions need to be asked more than once, like requesting chunk info. There should be a delay or a way for topics to decay and leave the list eventually. This can *probably* be done in `alife.talk`, but there will need to be definite changes in `sound.listen()` for handling this behavior.
+
+Milestone 6 - Growing Content
+=============================
+
+Goal
+----
+With all the systems in place, we must now generate content to build up the game's depth. The UI will also be reworked and extended to give the player a better understanding of the world. We'll also start creating personalities for ALife and extending their logic.
+
+Problem 1: The UI
+----------------
+We'll attempt to give the player a better understanding of the world and the people inhabiting it with these changes.
+
+Acknowledging the following issues:
+	* The player's lack of situational awareness
+		* Information not CLEARLY displayed on the map needs to be re-represented on the right
+			* EX: Target name - (Status)
+
+Problem 2: The Combat
+---------------------
+The damage model makes no sense in a lot of applications. While damage is handled, the appropriate reaction is not, so the ALife is only affected in the long-lasting negative effects and not the reaction (stumbling, twirling, etc)
+
+Problem 3: Group Tasks
+----------------------
+Like deciding how to flank a target, etc. Engage them.
+
+Problem 4: Misc Stuff
+---------------------
+Message boxes on map screen for conversations.
+
+New(er) Conversations
+-------------------
+Conversations have been revamped and the old system has been axed (for the most part.) While there are still bits and pieces of it scattered about, I don't think there is a use for it anymore. As a result, all the features of the old system need to be ported to the new one.
+
+However, I am still unsure if these features can be recreated properly in the new code. The only real advantage of the old structure was that there wasn't any real structure at all- just a way for ALife to "hear" things and react accordingly. I'm hoping that what I have now can emulate that, because otherwise a lot of code is now obsolete (for the greater good.) To test, I've written the proper dialog for learning about camps and asking camp-related questions. This is still in its infancy, but it's interesting to see that it works rather well, so I'm inclined to believe that the old code should work too.
+
+To explain, this new system is very centralized, so about 90% of all dialog-related code is contained in a single file. I guess that isn't much different than the previous code, but I think the big difference here is that the back-and-forth nature of certain conversations is a lot more organized and open to expansion than before. I really did feel like getting ALife to talk before was probably my least favorite thing to do, but if I am able to apply this to ALife vs. ALife situations instead of just Player vs. ALife, I think I might be on to something.
+
+Another advantage is that I'll no longer need to write separate dialog menus for the player since this code generates these for us. I made a somewhat risky decision and wrote a new, less-complicated menu structure to use instead. There isn't anything wrong with the menus I use across the rest of the game, but I wanted to do some very specific things and knew I would just be bloating up a working system if decided to extend existing code to satisfy one case.
+
+Questions
+---------
+Now there is a need for ALife to ask about certain topics. This could be done in one fell swoop when beginning dialog, but we specifically want the ALife to know they have questions to ask beforehand so they can pursue dialogs by themselves.
+
+Example case: An ALife joins a camp but is unaware of who the founder is. After running out of people to ask, the ALife simply idles in the camp until someone can help them (during this time they are always broadcasting the request for founder info.) I won't say it's easier, but I'd like to get this behavior into the dialog tree instead, giving me an opportunity to implement dialogs started with the player by the ALife.
+
+I think the main idea here is just attaching the ALife to the dialog tree and hoping they are able to figure it out. After all, it should solve the issue of having multiple conversations active (but not running) at once, in addition to giving me some amount of context to deal with instead of just having a random phrase in an array I have to parse to find its origin (and even then I can't be sure what the context is.)

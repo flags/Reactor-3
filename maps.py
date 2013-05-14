@@ -48,8 +48,10 @@ def create_map():
 	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
 	return _map
 
-def save_map(map_name,map):
-	_map_dir = os.path.join(DATA_DIR,'maps')
+def save_map(map_name, map, base_dir=DATA_DIR):
+	_map_dir = os.path.join(base_dir,'maps')
+	if not map_name.count('.dat'):
+		map_name+='.dat'
 
 	try:
 		os.mkdir(_map_dir)
@@ -65,8 +67,10 @@ def save_map(map_name,map):
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
-def load_map(map_name):
-	_map_dir = os.path.join(DATA_DIR,'maps')
+def load_map(map_name, base_dir=DATA_DIR):
+	_map_dir = os.path.join(base_dir,'maps')
+	if not map_name.count('.dat'):
+		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		try:

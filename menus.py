@@ -30,8 +30,6 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
-
-
 def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	if not isinstance(values,list):
 		values = [values]
@@ -128,6 +126,10 @@ def delete_menu(id, abort=False):
 		ACTIVE_MENU['menu'] -= 1
 	
 	MENUS.pop(id)
+
+def delete_active_menu(abort=False):
+	if MENUS:
+		delete_menu(ACTIVE_MENU['menu'], abort=abort)
 
 def get_menu(id):
 	return MENUS[id]

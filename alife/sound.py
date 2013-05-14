@@ -166,7 +166,8 @@ def listen(life):
 				#TODO: Judge and respond?
 				lfe.memory(life, 'heard about camp',
 					camp=event['camp']['id'],
-					target=event['from']['id'])
+					target=event['from']['id'],
+					founder=event['founder'])
 		
 		elif event['gist'] == 'welcome_to_camp':
 			if event_delay(event, 20):
@@ -175,6 +176,50 @@ def listen(life):
 			if not speech.has_received(life, event['from'], 'welcome_to_camp'):
 				lfe.say(life, 'It\'s good to be here.')
 				speech.receive(life, event['from'], 'welcome_to_camp')
+		
+		elif event['gist'] == 'who_is_founder':
+			#TODO: Who do we believe is the founder?
+			_helped = False
+			
+			if event['camp'] in [camp['id'] for camp in camps.get_founded_camps(life)]:
+				speech.communicate(life,
+					'camp_founder',
+					founder=life['id'],
+					camp=event['camp'],
+					matches=[{'id': event['from']['id']}])
+				_helped = True
+			
+			else:
+				for founder in lfe.get_memory(life, matches={'camp': event['camp'], 'text': 'heard about camp', 'founder': '*'}):
+					speech.communicate(life,
+						'camp_founder',
+						founder=founder['target'],
+						camp=event['camp'],
+						matches=[{'id': event['from']['id']}])
+					_helped = True
+					break
+			
+			if not _helped:
+				lfe.memory(life, 'help find founder',
+					camp=event['camp'],
+					target=event['from']['id'])
+				speech.communicate(life,
+					'dont_know_founder',
+					camp=event['camp'],
+					matches=[{'id': event['from']['id']}])
+		
+		elif event['gist'] == 'dont_know_founder':
+			lfe.memory(life, 'dont know founder',
+				camp=event['camp'],
+				target=event['from']['id'])
+		
+		elif event['gist'] == 'camp_founder':
+			lfe.memory(life, 'heard about camp',
+				camp=event['camp'],
+				target=event['founder'],
+				founder=event['founder'])
+			
+			print 'Thanks for the camp founder info!'
 		
 		elif event['gist'] == 'appear_friendly':
 			#if not lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'hostile'}):
@@ -242,6 +287,13 @@ def listen(life):
 			#TODO: In the future we should consider giving this task to another ALife
 			#_target = brain.knows_alife(life, event['alife'])['score']
 			logging.warning('target_needs_disarmed: Needs handling code.')
+		
+		elif event['gist'] == 'invite_to_group':
+			if life['state'] == 'working':
+				lfe.say(life, 'Sorry, I\'m busy.')
+			
+			lfe.memory(life, 'was invited to group',
+				target=event['from']['id'])
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

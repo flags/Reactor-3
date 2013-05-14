@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import brain
 
+import render_fast_los
 import render_los
 import numbers
 import logging
@@ -63,9 +64,65 @@ def look(life):
 		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
 
-def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
+def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
+	_stime = time.time()
+	_cover = {'pos': None,'score': 9000}
+	
+	_x = numbers.clip(at[0]-(SETTINGS['los']/2),0,MAP_SIZE[0]-(SETTINGS['los']/2))
+	_y = numbers.clip(at[1]-(SETTINGS['los']/2),0,MAP_SIZE[1]-(SETTINGS['los']/2))
+	_top_left = (_x,_y,at[2])
+	
+	target_los = render_fast_los.render_fast_los(at,
+		SETTINGS['los'],
+		source_map)
+	
+	for pos in render_los.draw_circle(life['pos'][0],life['pos'][1],30):
+		x = pos[0]-_top_left[0]
+		y = pos[1]-_top_left[1]
+		
+		if pos[0]<0 or pos[1]<0 or pos[0]>=MAP_SIZE[0] or pos[1]>=MAP_SIZE[0]:
+			continue
+		
+		if x<0 or y<0 or x>=target_los.shape[1] or y>=target_los.shape[0]:
+			continue
+		
+		if life['pos'][0]-_top_left[0]>=target_los.shape[1] or life['pos'][1]-_top_left[1]>=target_los.shape[0]:
+			continue
+		
+		if target_los[life['pos'][1]-_top_left[1],life['pos'][0]-_top_left[0]]==invert and not ignore_starting:
+			_cover['pos'] = life['pos'][:]
+			return False
+		
+		if source_map[pos[0]][pos[1]][at[2]+1] or source_map[pos[0]][pos[1]][at[2]+2]:
+			continue
+		
+		if target_los[y,x] == invert:
+			#TODO: Additional scores, like distance from target
+			_score = score_callback(life,target['life'],pos)
+			
+			if _score<_cover['score']:
+				_cover['score'] = _score
+				_cover['pos'] = list(pos)
+	
+	#print time.time()-_stime
+	if not _cover['pos']:
+		print 'Nowhere to hide', target['life']['name'], _top_left
+				
+		return False
+	
+	return _cover
+
+def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
+	#Destktop
+	#New: 0.0127160549164
+	#Old: 0.0237522125244
+	
+	#Laptop:
+	#New: 0.0139999389648
+	#Old: 0.0350000858307
+	
 	#Step 1: Locate cover
-	_cover = {'pos': None,'score':9000}
+	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Unchecked Cython flag
 	_a = time.time()
@@ -103,8 +160,10 @@ def generate_los(life,target,at,source_map,score_callback,invert=False,ignore_st
 				_cover['pos'] = list(pos)
 	
 	if not _cover['pos']:
-		print 'Nowhere to hide'
+		print 'Nowhere to hide'		
 		return False
+	
+	print time.time()-_a
 	
 	return _cover
 

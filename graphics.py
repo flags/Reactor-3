@@ -363,6 +363,19 @@ def end_of_frame():
 			0,
 			1, 0.5)
 	
+	_dialog = None
+	if SETTINGS['controlling'] and SETTINGS['controlling']['dialogs']:
+		_dialog = SETTINGS['controlling']['dialogs'][0]
+	
+	if _dialog and 'console' in _dialog:
+		console_blit(_dialog['console'], 0, 0,
+			WINDOW_SIZE[0],
+			40,
+			0,
+			0,
+			0,
+			1, 0.9)
+	
 	for menu in MENUS:
 		console_blit(menu['settings']['console'],0,0,
 			menu['settings']['size'][0],

@@ -9,7 +9,7 @@ MAP_SIZE = [500,500,5]
 MAP_WINDOW_SIZE = (40,40)
 ITEM_WINDOW_SIZE = (40,1)
 CONSOLE_WINDOW_SIZE = (40,30)
-MESSAGE_WINDOW_SIZE = (60,10)
+MESSAGE_WINDOW_SIZE = (100,10)
 PREFAB_WINDOW_SIZE = (40,40)
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
@@ -21,7 +21,10 @@ ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
-WORLD_INFO = {'ticks': 0}
+WORLD_INFO = {'map': [],
+	'ticks': 0,
+	'pause_ticks': 0,
+	'in_combat': False}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
 CAMPS = {}
@@ -69,6 +72,7 @@ RENDERER = RENDERER_GLSL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
+TEXT_DIR = os.path.join(DATA_DIR,'text')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
@@ -81,14 +85,41 @@ MAP_RENDER_VERSION = 4
 FADE_TO_WHITE = [0]
 BLEEDING_STRING_MAX_LENGTH = 25
 BORDER_COLOR = Color(128,128,128)
+MAX_MESSAGES_IN_DIALOG = 9
+
+#Strings
+NAMES_FOR_PLACES = []
 
 #Life constants
-LIFE_MAX_SPEED = 12
+LIFE_MAX_SPEED = 5
 LIFE_BLEED_RATE = .05 #Lower is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
 DEFAULT_CONTEXT_TIME = 25
+
+GIST_MAP = {'how_are_you': 0,
+	'ignore': 0,
+	'ignore_rude': -1,
+	'inquire_about': 0,
+	'tell_about': 0,
+	'inquire_response_positive': 1,
+	'inquire_response_neutral': 0,
+	'inquire_response_negative': -1,
+	'inquire_response_knows_positive': 1,
+	'inquire_response_knows_neutral': 0,
+	'inquire_response_knows_negative': -1,
+	'inquire_response_neutral': 0,
+	'inquire_response_negative': -1,
+	'last_seen_target_at': 0,
+	'status_response': 0,
+	'status_response_neutral': 0,
+	'status_response_neutral_question': 0,
+	'irritated_neutral': 0,
+	'irritated_negative': -1}
+
+POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
+	'how_are_you': [1.0, 0.7]}
 
 #Non-constants
 SETTINGS = {'running': True,
@@ -98,7 +129,7 @@ SETTINGS = {'running': True,
 			'draw z-levels below': False,
 			'progress bar max value': 25,
 			'action queue size': 4,
-			'world gravity': 0.09,
+			'world gravity': 0.3,
 			'los': 40,
 			'lifeid': 0,
 			'heatmap': None,

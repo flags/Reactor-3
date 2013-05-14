@@ -36,7 +36,7 @@ def create_encounter(life, target, context=None):
 		if alife.camps.is_in_camp(target, _founded_camp):
 			_text.append('%s claims to be the founder of this camp.' % target['name'][0])
 			
-			if lfe.get_memory(life, matches={'target': target['id'], 'text': 'heard about camp'}):
+			if lfe.get_memory(life, matches={'camp': _founded_camp['id'],'target': target['id'], 'text': 'heard about camp', 'founder': True}):
 				_text.append('You heard this announced on the radio earlier.')
 	
 	_text.append('He appears to be %s towards you.' % _stance)
@@ -52,7 +52,7 @@ def create_encounter(life, target, context=None):
 	
 	SETTINGS['following'] = target
 	life['encounters'].append(_encounter)
-	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	logging.debug('%s created encounter.' % ' '.join(target['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
 	
 	return _encounter

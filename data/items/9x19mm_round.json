@@ -3,9 +3,10 @@
 "type": "bullet",
 "icon": ".",
 "description": "Pistol round effective at short to mid-range combat.",
-"sharp": true,
+"speed": 10,
 "fallspeed": 0.05,
 "flags": "",
+"damage": {"sharp": 3},
 "size": "1x1",
-"ammotype": "9x19mm"
-}
+"ammotype": "9x19mm",
+"material": "metal"}

@@ -76,6 +76,9 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
+	#if 'greeting' in target['sent']:
+	#	_like += 1
+	
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
 			_like += 2
@@ -114,6 +117,8 @@ def judge(life, target):
 		else:
 			#print '+',impression
 			_like += _score
+	
+	_like *= brain.get_trust(life, target['life']['id'])
 	
 	if _is_hostile:
 		if _surrendered:
@@ -256,6 +261,8 @@ def judge_camp(life, camp):
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	
+	#TODO: Why does this cause a crash?
+	#return int(round(_percent_known*10))
 	return len(camp)*_percent_known
 
 def judge_job(life, job):

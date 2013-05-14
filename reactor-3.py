@@ -6,16 +6,20 @@ from inputs import *
 from player import *
 from tiles import *
 
+import render_fast_los
+
 import graphics as gfx
 import maputils
 import worldgen
 import mainmenu
+import language
 import drawing
 import logging
 import weapons
 import effects
 import numbers
 import bullets
+import dialog
 import random
 import menus
 import logic
@@ -59,10 +63,12 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+WORLD_INFO['map'] = MAP
 create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
 maps.generate_reference_maps()
+language.load_strings()
 gfx.init_libtcod()
 
 PLACING_TILE = WALL_TILE
@@ -91,6 +97,7 @@ items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
 items.initiate_item('blue_jeans')
 items.initiate_item('glock')
+items.initiate_item('22_rifle')
 items.initiate_item('9x19mm_mag')
 items.initiate_item('9x19mm_round')
 items.initiate_item('radio')
@@ -98,45 +105,46 @@ items.initiate_item('radio')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-#while 1:
-#	get_input()
-#	mainmenu.draw_main_menu()
-#	
-#	if INPUT['s']:
-#		break
-#	elif INPUT['o']:
-#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
-#			mainmenu.MENU[0] = mainmenu.WORLD_INFO_TEXT
-#		
-#	elif INPUT['q']:
-#		if mainmenu.MENU[0] == mainmenu.MAIN_MENU_TEXT:
-#			SETTINGS['running'] = False
-#			break
-#		else:
-#			mainmenu.MENU[0] = mainmenu.MAIN_MENU_TEXT
+SETTINGS['running'] = 2
 
-worldgen.generate_world(MAP, life=4, simulate_ticks=100)
+while SETTINGS['running']==1:
+	if not MENUS:
+		mainmenu.switch_to_main_menu()
+	
+	get_input()
+	handle_input()
+	mainmenu.draw_main_menu()
+
+if not 'start_age' in WORLD_INFO:
+	worldgen.generate_world(WORLD_INFO['map'], life=4, simulate_ticks=1, save=False, thread=True)
 
 CURRENT_UPS = UPS
 
-while SETTINGS['running']:
+while SETTINGS['running']==2:
 	get_input()
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(SETTINGS['controlling']):
+	while life.get_highest_action(SETTINGS['controlling']) and not life.find_action(SETTINGS['controlling'], matches=[{'action': 'move'}]):
 		logic.tick_all_objects(MAP)
 		_played_moved = True
 		
 		if CURRENT_UPS:
 			CURRENT_UPS-=1
 		else:
-			CURRENT_UPS = UPS
+			if life.is_target_of(SETTINGS['controlling']):
+				CURRENT_UPS = 1
+			else:
+				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
 			break
 	
 	if not _played_moved:
-		logic.tick_all_objects(MAP)
-	
+		if CURRENT_UPS:
+			CURRENT_UPS-=1
+		else:
+			CURRENT_UPS = 3
+			logic.tick_all_objects(MAP)
+			
 	draw_targeting()
 	
 	if CYTHON_ENABLED:
@@ -151,10 +159,13 @@ while SETTINGS['running']:
 	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
 	
+	a = time.time()
 	if SETTINGS['controlling']['encounters']:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
 	else:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
+	
+	#print 'old', time.time()-a
 	
 	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
@@ -179,6 +190,7 @@ while SETTINGS['running']:
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
+	dialog.draw_dialog()
 	#gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()

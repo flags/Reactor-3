@@ -3,6 +3,7 @@ from alife import *
 
 import graphics as gfx
 import weapons
+import dialog
 import menus
 import items
 import life
@@ -30,6 +31,12 @@ def handle_input():
 			
 			if SETTINGS['controlling']['actions']:
 				SETTINGS['controlling']['actions'] = []
+		elif SETTINGS['controlling']['dialogs']:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]
+			if _dialog:
+				_dialog = _dialog[0]
+				if not dialog.reset_dialog(_dialog):
+					SETTINGS['controlling']['dialogs'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -47,6 +54,11 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
+		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+
+			if _dialog['index']:
+				_dialog['index'] -= 1
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]-1)},200)
@@ -56,6 +68,11 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
+		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			
+			if _dialog['index']<len(_dialog['topics'])-1:
+				_dialog['index'] += 1
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]+1)},200)
@@ -63,6 +80,7 @@ def handle_input():
 	if INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][0]+=1
 		else:
@@ -72,6 +90,7 @@ def handle_input():
 	if INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][0]-=1
 		else:
@@ -207,21 +226,17 @@ def handle_input():
 		SETTINGS['controlling']['targeting'] = None
 		SELECTED_TILES[0] = []
 		
-		_phrases = []
-		_phrases.append(menus.create_item('single', 'Discuss', 'Talk about current or historic events.', target=_target))
-		_phrases.append(menus.create_item('single', 'Group', 'Group management.', target=_target))
-		_phrases.append(menus.create_item('single', 'Intimidate', 'Force a target to perform a task.', target=_target))
-		
-		_menu = menus.create_menu(title='Talk',
-			menu=_phrases,
-			padding=(1,1),
-			position=(1,1),
-			format_str='$k: $v',
-			on_select=talk_menu)
-		
-		menus.activate_menu(_menu)
+		_dialog = {'type': 'dialog',
+			'from': SETTINGS['controlling']['id'],
+			'enabled': True}
+		SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target['id'], _dialog))
 	
 	if INPUT['V']:
+		if SETTINGS['controlling']['dialogs']:
+			_dialog = SETTINGS['controlling']['dialogs'].pop()
+			SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog))
+			return True
+		
 		if not SETTINGS['controlling']['contexts']:
 			return create_radio_menu()
 		
@@ -245,9 +260,31 @@ def handle_input():
 			return False
 		
 		if SETTINGS['controlling']['targeting']:
-			weapons.fire(SETTINGS['controlling'],SETTINGS['controlling']['targeting'])
-			SETTINGS['controlling']['targeting'] = None
-			SELECTED_TILES[0] = []
+			if menus.get_menu_by_name('Select Target')>-1:
+				return False
+			
+			_alife_menu = []
+			for _life in life.get_all_life_at_position(life, SETTINGS['controlling']['targeting']):
+				_alife = LIFE[_life]
+				
+				_alife_menu.append(menus.create_item('single',
+					'%s' % ' '.join(_alife['name']),
+					'Nearby',
+					target=_alife))
+			
+			if len(_alife_menu)>=2:
+				_i = menus.create_menu(title='Select Target',
+					menu=_alife_menu,
+					padding=(1,1),
+					position=(1,1),
+					format_str='$k: $v',
+					on_select=inventory_fire_select_limb)
+				
+				menus.activate_menu(_i)
+			elif _alife_menu:
+				#print _alife_menu
+				inventory_fire_select_limb(_alife_menu[0], no_delete=True)
+			
 			return True
 		
 		_weapons = []
@@ -277,7 +314,7 @@ def handle_input():
 			format_str='[$i] $k: $v',
 			on_select=inventory_fire)
 		
-		SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
+		#SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
 		menus.activate_menu(_i)
 	
 	if INPUT['F']:
@@ -448,6 +485,11 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
 	
 	if INPUT['\r']:
+		if [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
+			return False
+		
 		if ACTIVE_MENU['menu'] == -1:
 			return False
 		
@@ -634,6 +676,40 @@ def inventory_fire(entry):
 			return False
 	
 	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_fire_select_limb(entry, no_delete=False):	
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if not no_delete:
+		menus.delete_menu(ACTIVE_MENU['menu'])
+	
+	_limbs = []
+	for limb in entry['target']['body']:
+		_limbs.append(menus.create_item('single',
+			limb,
+			None,
+			target=entry['target'],
+			limb=limb))
+		
+	_i = menus.create_menu(title='Select Limb',
+		menu=_limbs,
+		padding=(1,1),
+		position=(1,1),
+		on_select=inventory_fire_action,
+		format_str='$k')
+	
+	menus.activate_menu(_i)
+
+def inventory_fire_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	weapons.fire(SETTINGS['controlling'], entry['target']['pos'], limb=entry['limb'])
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -872,63 +948,6 @@ def handle_options_menu(entry):
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
-
-def talk_menu_action(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	target = entry['target']
-	communicate = entry['communicate']
-	
-	for comm in communicate.split('|'):
-		life.add_action(SETTINGS['controlling'],
-			{'action': 'communicate',
-				'what': comm,
-				'target': target},
-			400,
-			delay=0)
-	
-	menus.delete_menu(ACTIVE_MENU['menu'])
-	menus.delete_menu(ACTIVE_MENU['menu'])
-
-def talk_menu(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
-	target = entry['target']
-	_phrases = []
-
-	if key == 'Discuss':
-		_phrases.append(menus.create_item('single',
-			'Recent',
-			'Talk about recent events.',
-			communicate='ask_about_recent_events',
-			target=target))
-		_phrases.append(menus.create_item('single',
-			'Legends',
-			'Talk about heard legends.',
-			communicate='ask_about_legends',
-			target=target))
-	elif key == 'Intimidate':
-		if brain.get_flag(target, 'surrendered'):
-			_phrases.append(menus.create_item('single',
-				'Drop items',
-				'Request target to drop all items.',
-				communicate='drop_everything',
-				target=target))
-		else:
-			_phrases.append(menus.create_item('single',
-				'Surrender',
-				'Demand target to stand down.',
-				communicate='comply',
-				target=target))
-		
-	_menu = menus.create_menu(title='Talk (%s)' % key,
-		menu=_phrases,
-		padding=(1,1),
-		position=(1,1),
-		format_str='$k: $v',
-		on_select=talk_menu_action)
-	
-	menus.activate_menu(_menu)
 
 def radio_menu(entry):
 	key = entry['key']

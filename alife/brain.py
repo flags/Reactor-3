@@ -9,6 +9,7 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
+import alife_follow
 import alife_combat
 import alife_camp
 import alife_talk
@@ -25,6 +26,7 @@ import sound
 
 import logging
 import time
+import copy
 
 MODULES = [alife_hide,
 	alife_hidden,
@@ -37,7 +39,8 @@ MODULES = [alife_hide,
 	alife_visit_camp,
 	alife_camp,
 	alife_combat,
-	alife_work]
+	alife_work,
+	alife_follow]
 
 def think(life, source_map):
 	sight.look(life)
@@ -143,9 +146,20 @@ def knows_alife_by_id(life, alife_id):
 	
 	return False
 
+def get_trust(life, target):
+	_knows = knows_alife_by_id(life, target)
+	
+	if _knows:
+		return int(round(_knows['trust']))
+	
+	logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
+	return 0
+
 def meet_alife(life, target):
 	life['know'][target['id']] = {'life': target,
 		'score': 0,
+		'trust': 0,
+		'likes': copy.deepcopy(target['likes']),
 		'last_seen_time': 0,
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': target['pos'][:],
