@@ -94,37 +94,37 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		#Try to find out who he is...
 		speech.announce(life, 'who_is_founder', camp=_camp['id'])
 		
-		_possible_people_to_ask = []
-		for target in speech.get_announce_list(life):
-			#TODO: In this case we'll be approached (maybe) by the ALife if they find the info...
-			if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'dont know founder'}):
-				continue
-			
-			if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'heard about camp', 'founder': '*'}):
-				continue
-			
-			speech.unsend(life, target, 'who_is_founder')
-			_possible_people_to_ask.append(target)
-		
-		if _possible_people_to_ask:
-			#TODO: Who to see first?
-			_found = False
-			for target in _possible_people_to_ask:
-				_target = brain.knows_alife_by_id(life, target['id'])
-			
-				if not life['pos'][:2] == _target['last_seen_at'][:2]:
-					_found = True
-					break					
-			
-			#TODO: Job needed here
-			if _found:
-				lfe.clear_actions(life)
-				lfe.add_action(life,{'action': 'move',
-					'to': _target['last_seen_at'][:2]},
-					200)
-		else:
-			if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
-				lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
+		#_possible_people_to_ask = []
+		#for target in speech.get_announce_list(life):
+		#	#TODO: In this case we'll be approached (maybe) by the ALife if they find the info...
+		#	if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'dont know founder'}):
+		#		continue
+		#	
+		#	if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'heard about camp', 'founder': '*'}):
+		#		continue
+		#	
+		#	speech.unsend(life, target, 'who_is_founder')
+		#	_possible_people_to_ask.append(target)
+		#
+		#if _possible_people_to_ask:
+		#	#TODO: Who to see first?
+		#	_found = False
+		#	for target in _possible_people_to_ask:
+		#		_target = brain.knows_alife_by_id(life, target['id'])
+		#	
+		#		if not life['pos'][:2] == _target['last_seen_at'][:2]:
+		#			_found = True
+		#			break					
+		#	
+		#	#TODO: Job needed here
+		#	if _found:
+		#		lfe.clear_actions(life)
+		#		lfe.add_action(life,{'action': 'move',
+		#			'to': _target['last_seen_at'][:2]},
+		#			200)
+		#else:
+		if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
+			lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
 
 		#print 'missed announce',speech.who_missed_announce(life, 'who_is_founder')
 		#We don't have a founder still
