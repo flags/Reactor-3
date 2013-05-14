@@ -92,7 +92,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 	else:		
 		#Try to find out who he is...
-		speech.announce(life, 'who_is_founder', camp=_camp['id'])
+		#speech.announce(life, 'who_is_founder', camp=_camp['id'])
 		
 		#_possible_people_to_ask = []
 		#for target in speech.get_announce_list(life):
