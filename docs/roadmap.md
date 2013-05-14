@@ -280,7 +280,7 @@ Acknowledging the following issues:
 
 Problem 2: The Combat
 ---------------------
-The damage model makes no sense in a lot of applications. While damage is handled, the appropriate action is not, so the ALife is only affected in the long-lasting negative effects and not the reaction (stumbling, twirling, etc)
+The damage model makes no sense in a lot of applications. While damage is handled, the appropriate reaction is not, so the ALife is only affected in the long-lasting negative effects and not the reaction (stumbling, twirling, etc)
 
 Problem 3: Group Tasks
 ----------------------
@@ -290,5 +290,6 @@ Problem 4: Misc Stuff
 ---------------------
 Message boxes on map screen for conversations.
 
-GoGame?
-
+New(er) Conversations
+-------------------
+Conversations have been revamped and the old system has been axed (for the most part.)
