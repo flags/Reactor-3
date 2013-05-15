@@ -193,9 +193,13 @@ def give_camp_founder(life, chosen):
 	_topics = []
 	
 	for ai in life['know']:
-		_lie = False
-		if not CAMPS[chosen['camp']]['founder'] == ai:
-			_lie = True
+		_lie = True
+		
+		for memory in lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp'], 'founder': '*'}):
+			if memory['founder'] == ai:
+				_line = False
+		#if not CAMPS[chosen['camp']]['founder'] == ai:
+		#	_lie = True
 		
 		_name = ' '.join(LIFE[ai]['name'])
 		_topics.append({'text': _name,
