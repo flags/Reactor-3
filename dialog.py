@@ -42,6 +42,28 @@ def create_dialog_with(life, target, info):
 		'messages': _messages,
 		'index': 0}
 
+def add_message(life, dialog, chosen):
+	_text = chosen['text']
+	if 'message' in chosen:
+		_text = chosen['message']
+	
+	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
+	dialog['messages'].append(_message)
+
+def reset_dialog(dialog):
+	_ret = False
+	if dialog['previous_topics']:
+		dialog['topics'] = dialog['previous_topics'].pop(0)
+		dialog['previous_topics'] = []
+		_ret = True
+	else:
+		dialog['topics'] = dialog['starting_topics']
+	
+	dialog['title'] = ''
+	dialog['index'] = 0
+	
+	return _ret
+
 def get_all_relevant_gist_responses(life, gist):
 	#TODO: We'll definitely need to extend this for fuzzy searching	
 	#return [memory for memory in lfe.get_memory(life, matches={'text': gist})]
@@ -74,7 +96,7 @@ def get_all_irrelevant_target_topics(life, target):
 	
 	#TODO: This spawns a menu for the player to choose the desired ALife
 	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
-	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'target': target, 'subtopics': get_known_alife_questions})
+	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'target': target, 'subtopics': get_possible_alife_questions})
 	
 	for ai in life['know']:
 		if lfe.get_memory(life, matches={'target': ai}):
@@ -84,6 +106,17 @@ def get_all_irrelevant_target_topics(life, target):
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
 	return _topics, _memories
+
+def get_possible_alife_questions(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Camps...',
+		'gist': 'inquire_about',
+		'subtopics': get_known_camps})
+	_topics.append({'text': 'What\'s nearby?',
+		'gist': 'inquire_about_nearby_locations'})
+	
+	return _topics
 
 def get_all_responses_to(life, **kwargs):
 	print 'Search:',kwargs
@@ -125,14 +158,20 @@ def get_known_alife(life, chosen):
 	
 	return _topics
 
-def get_known_camps(life, chosen):
+def get_known_locations(life, chosen):
+	_topics = []
+	
+	_topics.extend(get_known_camps(life, chosen, gist='talk_about_camp'))
+	
+	return _topics
+
+def get_known_camps(life, chosen, gist='inquire_about_camp'):
 	_topics = []
 	
 	#for ai in life['know']:
 	for camp in life['known_camps'].values():
 		_topics.append({'text': camp['name'],
-			'gist': 'inquire_about_camp',
-			'target':chosen['target'],
+			'gist': gist,
 			'camp': camp['id'],
 			'subtopics': get_questions_for_camp})
 	
@@ -171,22 +210,6 @@ def give_camp_founder(life, chosen):
 			'camp': chosen['camp'],
 			'founder': ai,
 			'lie': _lie})
-	
-	return _topics
-
-#TODO: Rename this...
-def get_known_alife_questions(life, chosen):
-	_topics = []
-	
-	_topics.append({'text': 'Camps',
-		'gist': 'inquire_about',
-		'subtopics': get_known_camps,
-		'target': chosen['target']})
-	#for memory in lfe.get_memory(life, matches={'target': chosen['target']}):
-	#	if memory['text'] == 'heard about camp':
-	#		_topics.append({'text': '',
-	#			'gist': chosen['gist'],
-	#			'target': chosen['target']})
 	
 	return _topics
 
@@ -256,28 +279,6 @@ def get_responses_about_self(life):
 		_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
 	return _responses
-
-def add_message(life, dialog, chosen):
-	_text = chosen['text']
-	if 'message' in chosen:
-		_text = chosen['message']
-	
-	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
-	dialog['messages'].append(_message)
-
-def reset_dialog(dialog):
-	_ret = False
-	if dialog['previous_topics']:
-		dialog['topics'] = dialog['previous_topics'].pop(0)
-		dialog['previous_topics'] = []
-		_ret = True
-	else:
-		dialog['topics'] = dialog['starting_topics']
-	
-	dialog['title'] = ''
-	dialog['index'] = 0
-	
-	return _ret
 
 def get_matching_likes(life, target, gist):
 	_knows = brain.knows_alife_by_id(life, target)
@@ -403,6 +404,8 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'I don\'t recall hearing that name.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
 				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
+	elif chosen['gist'] == 'inquire_about_nearby_locations':
+		_responses.extend(get_known_locations(life, chosen))
 	elif chosen['gist'].count('inquire_response'):
 		#TODO: How about something similar to get_known_life()?
 		#TODO: Or just a way to trigger a submenu response from a gist?
