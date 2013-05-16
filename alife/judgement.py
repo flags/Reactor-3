@@ -252,6 +252,7 @@ def judge_camp(life, camp):
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
 	
+	_bonus = 0
 	_known_chunks_of_camp = []
 	for _chunk_key in camp:
 		if not _chunk_key in life['known_chunks']:
@@ -261,9 +262,17 @@ def judge_camp(life, camp):
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	
+	_known_camps = [c['reference'] for c in life['known_camps'].values()]
+	#print life['known_camps']
+	#if camp in _known_camps:
+	#	print 'ssssssssssssssssss'
+	#if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': camp['id']}):
+	#	_bonus += 2
+	#	print 'bonus!!!!!!!!!'
+	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
-	return len(camp)*_percent_known
+	return (len(camp)*_percent_known)+_bonus
 
 def judge_job(life, job):
 	_score = 0

@@ -49,6 +49,7 @@ def add_message(life, dialog, chosen):
 	
 	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
 	dialog['messages'].append(_message)
+	print '%s: %s' % (' '.join(life['name']), _text)
 
 def reset_dialog(dialog):
 	_ret = False
@@ -64,6 +65,36 @@ def reset_dialog(dialog):
 	
 	return _ret
 
+def give_menu_response(life, dialog):
+	_chosen = dialog['topics'][dialog['index']]
+	if 'subtopics' in _chosen:
+		dialog['previous_topics'].append(dialog['topics'])
+		dialog['title'] = _chosen['text']
+		dialog['topics'] = _chosen['subtopics'](life, _chosen)
+		dialog['index'] = 0
+	else:
+		add_message(life, dialog, _chosen)
+		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
+		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
+		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
+
+def alife_response(life, dialog):
+	#List of topics should be fairly relevant if the ALife created the dialog properly.
+	#TODO: Score these
+	_chosen = random.choice(dialog['topics'])
+	
+	#TODO: Too tired :-)
+	if 'subtopics' in _chosen:
+		dialog['previous_topics'].append(dialog['topics'])
+		dialog['title'] = _chosen['text']
+		dialog['topics'] = _chosen['subtopics'](life, _chosen)
+		dialog['index'] = 0
+	else:
+		add_message(life, dialog, _chosen)
+		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
+		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
+		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
+
 def get_all_relevant_gist_responses(life, gist):
 	#TODO: We'll definitely need to extend this for fuzzy searching	
 	#return [memory for memory in lfe.get_memory(life, matches={'text': gist})]
@@ -74,6 +105,8 @@ def get_all_relevant_gist_responses(life, gist):
 		_topics.append({'text': 'How are you?', 'gist': 'how_are_you'})
 		_topics.append({'text': 'I don\'t have time to talk.', 'gist': 'ignore'})
 		_topics.append({'text': 'Get out of my face!', 'gist': 'ignore_rude'})
+	elif gist == 'questions':
+		_topics.extend(get_questions_to_ask(life, {}))
 	
 	return _topics, _memories
 
@@ -443,19 +476,6 @@ def process_response(life, target, dialog, chosen):
 		return True
 	
 	alife_choose_response(life, target, dialog, _responses)
-
-def give_menu_response(life, dialog):
-	_chosen = dialog['topics'][dialog['index']]
-	if 'subtopics' in _chosen:
-		dialog['previous_topics'].append(dialog['topics'])
-		dialog['title'] = _chosen['text']
-		dialog['topics'] = _chosen['subtopics'](life, _chosen)
-		dialog['index'] = 0
-	else:
-		add_message(life, dialog, _chosen)
-		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
-		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
-		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 
 def draw_dialog():
 	if not [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
