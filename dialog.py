@@ -222,11 +222,7 @@ def get_questions_to_ask(life, chosen):
 	
 	for memory in lfe.get_memory(life, matches={'question': True}):
 		if memory['text'] == 'wants_founder_info':
-			if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
-				_topics.append({'text': 'I already know who runs camp %s.' % CAMPS[memory['camp']]['name'],
-					'gist': 'knew_who_founded_camp',
-					'camp': memory['camp']})
-			else:
+			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
 					'camp': memory['camp']})
@@ -236,6 +232,12 @@ def get_questions_to_ask(life, chosen):
 				_topics.append({'text': 'Any idea who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
 					'camp': memory['camp']})
+		#TODO: Possibly never triggered
+		elif memory['text'] == 'help find founder':
+			_topics.append({'text': 'Help %s locate the founder of %s.' % (' '.join(LIFE[memory['target']]['name']), CAMPS[memory['camp']]['name']),
+				'gist': 'help_find_founder',
+				'target': memory['target'],
+				'camp': memory['camp']})
 	
 	if not _topics:
 		_topics.append({'text': 'Not really.', 'gist': 'nothing'})
