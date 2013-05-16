@@ -579,9 +579,12 @@ def say(life, text, action=False, volume=30, context=False):
 			gfx.message(text, style=_style)
 
 def memory(life, gist, **kvargs):
-	_entry = {'text': gist}
+	_entry = {'text': gist, 'id': len(life['memory'])}
 	_entry['time_created'] = WORLD_INFO['ticks']
 	_entry.update(kvargs)
+	
+	if 'question' in kvargs:
+		_entry['answered'] = []
 	
 	life['memory'].append(_entry)
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
@@ -610,6 +613,15 @@ def delete_memory(life, matches={}):
 	for _memory in get_memory(life, matches=matches):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
+
+def get_questions(life):
+	_questions = []
+	
+	for question in get_memory(life, matches={'question': True}):
+		if not question['answered']:
+			_questions.append(question)
+	
+	return _questions
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]

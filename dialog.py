@@ -21,7 +21,6 @@ def create_dialog_with(life, target, info):
 	
 	if 'gist' in info:
 		_topics, _memories = get_all_relevant_gist_responses(life, info['gist'])
-		_messages = [{'sender': life['id'], 'text': info['gist']}]
 	else:
 		_topics, _memories = get_all_relevant_target_topics(life, target)
 		_t, _m = get_all_irrelevant_target_topics(life, target)
@@ -58,7 +57,10 @@ def reset_dialog(dialog):
 		dialog['previous_topics'] = []
 		_ret = True
 	else:
-		dialog['topics'] = dialog['starting_topics']
+		if not 'player' in LIFE[dialog['sender']]:
+			LIFE[dialog['sender']]['dialogs'].remove(dialog)
+		else:
+			dialog['topics'] = dialog['starting_topics']
 	
 	dialog['title'] = ''
 	dialog['index'] = 0
@@ -169,7 +171,7 @@ def calculate_impacts(life, target, topics):
 				topic['impact'] = -1
 				continue
 			
-			logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
+			#logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
 			topic['impact'] = 0
 			continue
 		
@@ -225,35 +227,41 @@ def get_questions_for_camp(life, chosen):
 def give_camp_founder(life, chosen):
 	_topics = []
 	
-	for ai in life['know']:
-		_lie = True
-		
-		for memory in lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp'], 'founder': '*'}):
-			if memory['founder'] == ai:
-				_lie = False
-		#if not CAMPS[chosen['camp']]['founder'] == ai:
-		#	_lie = True
-		
-		_name = ' '.join(LIFE[ai]['name'])
-		_topics.append({'text': _name,
-			'message': '%s is.' % _name,
+	if chosen['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
+		_topics.append({'text': 'I am.',
 			'gist': 'tell_about_camp_founder',
 			'camp': chosen['camp'],
-			'founder': ai,
-			'lie': _lie})
-		_topics.append({'text': _name,
-			'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
-			'gist': 'tell_about_camp_founder',
-			'camp': chosen['camp'],
-			'founder': ai,
-			'lie': _lie})
+			'founder': life['id']})
+	else:
+		for ai in life['know']:
+			_lie = True
+			
+			for memory in lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp'], 'founder': '*'}):
+				if memory['founder'] == ai:
+					_lie = False
+			#if not CAMPS[chosen['camp']]['founder'] == ai:
+			#	_lie = True
+			
+			_name = ' '.join(LIFE[ai]['name'])
+			_topics.append({'text': _name,
+				'message': '%s is.' % _name,
+				'gist': 'tell_about_camp_founder',
+				'camp': chosen['camp'],
+				'founder': ai,
+				'lie': _lie})
+			_topics.append({'text': _name,
+				'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
+				'gist': 'tell_about_camp_founder',
+				'camp': chosen['camp'],
+				'founder': ai,
+				'lie': _lie})
 	
 	return _topics
 
 def get_questions_to_ask(life, chosen):
 	_topics = []
 	
-	for memory in lfe.get_memory(life, matches={'question': True}):
+	for memory in lfe.get_questions(life):
 		if memory['text'] == 'wants_founder_info':
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],

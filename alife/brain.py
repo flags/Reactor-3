@@ -19,6 +19,7 @@ import snapshots
 import judgement
 import survival
 import movement
+import memory
 import speech
 import combat
 import sight
@@ -45,6 +46,7 @@ MODULES = [alife_hide,
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
+	memory.process(life)
 	understand(life, source_map)
 
 def store_in_memory(life, key, value):

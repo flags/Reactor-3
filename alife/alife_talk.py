@@ -70,7 +70,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'greeting')
 
-	_questions = lfe.get_memory(life, matches={'question': True})
+	_questions = lfe.get_questions(life)
 	_potential_talking_targets = []
 	for ai in [life['know'][i] for i in life['know']]:
 		if ai['score']<0:
