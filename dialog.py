@@ -5,11 +5,11 @@
 #finding responses.
 
 from globals import *
-from alife import judgement, brain, camps
 
 import life as lfe
 
 import numbers
+import alife
 
 import logging
 import random
@@ -276,7 +276,7 @@ def tell_about_alife_memories(life, chosen):
 def get_responses_about_self(life):
 	_responses = []
 	
-	for camp in camps.get_founded_camps(life):
+	for camp in alife.camps.get_founded_camps(life):
 		_responses.append({'text': 'I\'m the founder of camp %s.' % camp['name'],
 			'gist': 'talk_about_camp',
 			'camp': camp['id']})
@@ -287,7 +287,7 @@ def get_responses_about_self(life):
 	return _responses
 
 def get_matching_likes(life, target, gist):
-	_knows = brain.knows_alife_by_id(life, target)
+	_knows = alife.brain.knows_alife_by_id(life, target)
 	_matching = []
 	
 	for key in _knows['likes']:
@@ -299,7 +299,7 @@ def get_matching_likes(life, target, gist):
 	return _matching
 
 def get_freshness_of_gist(life, target, gist):
-	_knows = brain.knows_alife_by_id(life, target)
+	_knows = alife.brain.knows_alife_by_id(life, target)
 	_freshness = 0
 	
 	for key in get_matching_likes(life, target, gist):
@@ -307,7 +307,7 @@ def get_freshness_of_gist(life, target, gist):
 	return _freshness
 
 def modify_trust(life, target, _chosen):
-	_knows = brain.knows_alife_by_id(life, target)
+	_knows = alife.brain.knows_alife_by_id(life, target)
 	
 	if 'like' in _chosen:
 		_like = _chosen['like']
@@ -322,8 +322,8 @@ def modify_trust(life, target, _chosen):
 		_knows['trust'] -= _chosen['dislike']
 
 def alife_choose_response(life, target, dialog, responses):
-	_knows = brain.knows_alife_by_id(life, target['id'])
-	_score = judgement.judge(life, _knows)
+	_knows = alife.brain.knows_alife_by_id(life, target['id'])
+	_score = alife.judgement.judge(life, _knows)
 	_choices = [r for r in responses if numbers.clip(_score, -1, 1) == r['impact']]
 	
 	if _choices:
@@ -364,13 +364,13 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'ve never heard of it.', 'gist': 'never_heard_of_camp', 'camp': chosen['camp']})
 	elif chosen['gist'].count('heard_of_camp'):
 		if chosen['gist'].count('never'):
-			if camps.is_in_camp(life, CAMPS[chosen['camp']]):
+			if alife.camps.is_in_camp(life, CAMPS[chosen['camp']]):
 				_responses.append({'text': 'You\'re in it right now!', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
 				_responses.append({'text': 'Well, this is it.', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
 			else:
 				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp'})
 	elif chosen['gist'].count('inform_of_camp'):
-		camps.discover_camp(life, CAMPS[chosen['camp']])
+		alife.camps.discover_camp(life, CAMPS[chosen['camp']])
 		
 		lfe.memory(life, 'heard about camp',
 			camp=chosen['camp'],
