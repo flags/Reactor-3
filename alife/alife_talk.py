@@ -70,8 +70,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not speech.discussed(life, ai['life'], 'greeting'):
 				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'greeting')
-
-	_questions = lfe.get_questions(life)
 	_potential_talking_targets = []
 	for ai in [life['know'][i] for i in life['know']]:
 		if life['state'] == 'combat':
@@ -92,7 +90,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
-		if not life['dialogs'] and _potential_talking_targets and _questions:
+		if not lfe.get_questions(life, target=target['id']):
+			continue
+		
+		if not life['dialogs'] and _potential_talking_targets:
 			_dialog = {'type': 'dialog',
 				'from': life,
 				'enabled': True,
@@ -101,7 +102,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			if _dialog:
 				life['dialogs'].append(_dialog)
-				print 'Starting dialog'
 				break
 	
 	if life['dialogs']:

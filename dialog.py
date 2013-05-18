@@ -20,7 +20,7 @@ def create_dialog_with(life, target, info):
 	_messages = []
 	
 	if 'gist' in info:
-		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])
+		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])					
 	else:
 		_topics, _memories = get_all_relevant_target_topics(life, target)
 		_t, _m = get_all_irrelevant_target_topics(life, target)
@@ -83,6 +83,10 @@ def reset_dialog(dialog):
 
 def give_menu_response(life, dialog):
 	_chosen = dialog['topics'][dialog['index']]
+	
+	if _chosen['gist'] == 'ignore_question':
+		dialog['question']['ignore'].append(life['id'])
+	
 	if 'subtopics' in _chosen:
 		dialog['previous_topics'].append(dialog['topics'])
 		dialog['title'] = _chosen['text']
@@ -99,6 +103,9 @@ def alife_response(life, dialog):
 	#TODO: Score these
 	_chosen = random.choice(dialog['topics'])
 	
+	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
+		dialog['question'] = _chosen['memory']
+	
 	#TODO: Too tired :-)
 	if 'subtopics' in _chosen:
 		dialog['previous_topics'].append(dialog['topics'])
@@ -106,7 +113,6 @@ def alife_response(life, dialog):
 		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
-		print 'RESPOSNE',_chosen
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
@@ -249,12 +255,15 @@ def give_camp_founder(life, chosen):
 	if chosen['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
 		_lie = False
 	
+	_topics.append({'text': 'I don\'t know.', 'gist': 'ignore_question'})
+	
 	_topics.append({'text': 'I am.',
 		'gist': 'tell_about_camp_founder',
 		'camp': chosen['camp'],
 		'founder': life['id'],
 		'like': 1,
-		'lie': _lie})
+		'lie': _lie,
+		'from': life['id']})
 	
 	for ai in life['know']:
 		_lie = True
@@ -272,21 +281,23 @@ def give_camp_founder(life, chosen):
 			'camp': chosen['camp'],
 			'founder': ai,
 			'lie': _lie,
-			'like': 1})
+			'like': 1,
+			'from': life['id']})
 		_topics.append({'text': _name,
 			'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
 			'gist': 'tell_about_camp_founder',
 			'camp': chosen['camp'],
 			'founder': ai,
 			'like': 1,
-			'lie': _lie})
+			'lie': _lie,
+			'from': life['id']})
 	
 	return _topics
 
 def get_questions_to_ask(life, chosen):
 	_topics = []
 	
-	for memory in lfe.get_questions(life):		
+	for memory in lfe.get_questions(life, target=chosen['target']):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
 		
@@ -402,15 +413,16 @@ def alife_choose_response(life, target, dialog, responses):
 	_choices = [r for r in responses if numbers.clip(_score, -1, 1) >= r['impact']]
 	
 	for _choice in _choices[:]:
-		print 'Trust: ', _knows['trust']
 		if 'lie' in _choice:
 			if _choice['lie'] and numbers.clip(_knows['trust'], -1, 1)>=0:
 				_choices.remove(_choice)
 	
 	if _choices:
-		_chosen = random.choice(_choices)
-		
+		_chosen = random.choice(_choices)		
 		add_message(life, dialog, _chosen)
+		
+		if _chosen['gist'] == 'ignore_question':
+			dialog['question']['ignore'].append(life['id'])
 		
 		process_response(target, life, dialog, _chosen)
 		modify_trust(life, target['id'], _chosen)
@@ -424,6 +436,11 @@ def process_response(life, target, dialog, chosen):
 		reset_dialog(dialog)
 		return True
 	
+	if 'from' in chosen:
+		if chosen['from'] == life['id']:
+			_receiver = target['id']
+		else:
+			_receiver = life['id']	
 	_responses = []
 	
 	#TODO: Unused
@@ -470,7 +487,7 @@ def process_response(life, target, dialog, chosen):
 		_responses.append({'text': 'Thanks!', 'gist': 'nothing', 'like': 1})
 		_responses.append({'text': 'Good to know.', 'gist': 'nothing', 'like': 1})
 		
-		lfe.memory(life, 'heard about camp',
+		lfe.memory(LIFE[_receiver], 'heard about camp',
 			camp=chosen['camp'],
 			target=chosen['sender'],
 			founder=chosen['founder'])

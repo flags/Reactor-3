@@ -586,10 +586,11 @@ def memory(life, gist, **kvargs):
 	if 'question' in kvargs:
 		_entry['answered'] = []
 		_entry['asked'] = {}
+		_entry['ignore'] = []
 		#_entry['last_asked'] = -1000
 	
 	life['memory'].append(_entry)
-	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
@@ -633,11 +634,14 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def get_questions(life):
+def get_questions(life, target=None):
 	_questions = []
 	
 	for question in get_memory(life, matches={'question': True}):
 		if not question['answered']:
+			if target and target in question['ignore']:
+				continue
+			
 			_questions.append(question)
 	
 	return _questions

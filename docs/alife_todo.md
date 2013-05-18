@@ -35,3 +35,4 @@ ALife cases:
 	Camps:
 		[ ] Founder should give out jobs (patrol, etc)
 		[ ] Founder can hire people to work under him
+		[ ] Claim to be Founder

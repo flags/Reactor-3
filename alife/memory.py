@@ -7,10 +7,12 @@ import logging
 def process_questions(life):
 	for question in lfe.get_questions(life):
 		if not question['text'] in QUESTIONS_ANSWERS:
+			logging.error('%s not in QUESTIONS_ANSWERS' % question['text'])
 			continue
 		
 		_answered = False
 		_matches = {requirement: '*' for requirement in QUESTIONS_ANSWERS[question['text']]}
+		print lfe.get_memory(life, matches=_matches)
 		for memory in lfe.get_memory(life, matches=_matches):
 			if not memory['id'] in question['answered']:
 				question['answered'].append(memory['id'])
