@@ -54,6 +54,9 @@ def add_message(life, dialog, chosen):
 	if 'message' in chosen:
 		_text = chosen['message']
 	
+	if not _text:
+		return False
+	
 	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
 	dialog['messages'].append(_message)
 	print '%s: %s' % (' '.join(life['name']), _text)
@@ -242,34 +245,41 @@ def get_questions_for_camp(life, chosen):
 def give_camp_founder(life, chosen):
 	_topics = []
 	
+	_lie = True
 	if chosen['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
-		_topics.append({'text': 'I am.',
+		_lie = False
+	
+	_topics.append({'text': 'I am.',
+		'gist': 'tell_about_camp_founder',
+		'camp': chosen['camp'],
+		'founder': life['id'],
+		'like': 1,
+		'lie': _lie})
+	
+	for ai in life['know']:
+		_lie = True
+		for memory in lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp'], 'founder': '*'}):
+			if memory['founder'] == ai:
+				_lie = False
+				break
+		#if not CAMPS[chosen['camp']]['founder'] == ai:
+		#	_lie = True
+		
+		_name = ' '.join(LIFE[ai]['name'])
+		_topics.append({'text': _name,
+			'message': '%s is.' % _name,
 			'gist': 'tell_about_camp_founder',
 			'camp': chosen['camp'],
-			'founder': life['id']})
-	else:
-		for ai in life['know']:
-			_lie = True
-			
-			for memory in lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp'], 'founder': '*'}):
-				if memory['founder'] == ai:
-					_lie = False
-			#if not CAMPS[chosen['camp']]['founder'] == ai:
-			#	_lie = True
-			
-			_name = ' '.join(LIFE[ai]['name'])
-			_topics.append({'text': _name,
-				'message': '%s is.' % _name,
-				'gist': 'tell_about_camp_founder',
-				'camp': chosen['camp'],
-				'founder': ai,
-				'lie': _lie})
-			_topics.append({'text': _name,
-				'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
-				'gist': 'tell_about_camp_founder',
-				'camp': chosen['camp'],
-				'founder': ai,
-				'lie': _lie})
+			'founder': ai,
+			'lie': _lie,
+			'like': 1})
+		_topics.append({'text': _name,
+			'message': '%s is in charge of %s.' % (_name, CAMPS[chosen['camp']]['name']),
+			'gist': 'tell_about_camp_founder',
+			'camp': chosen['camp'],
+			'founder': ai,
+			'like': 1,
+			'lie': _lie})
 	
 	return _topics
 
@@ -389,7 +399,13 @@ def modify_trust(life, target, _chosen):
 def alife_choose_response(life, target, dialog, responses):
 	_knows = alife.brain.knows_alife_by_id(life, target['id'])
 	_score = alife.judgement.judge(life, _knows)
-	_choices = [r for r in responses if numbers.clip(_score, -1, 1) == r['impact']]
+	_choices = [r for r in responses if numbers.clip(_score, -1, 1) >= r['impact']]
+	
+	for _choice in _choices[:]:
+		print 'Trust: ', _knows['trust']
+		if 'lie' in _choice:
+			if _choice['lie'] and numbers.clip(_knows['trust'], -1, 1)>=0:
+				_choices.remove(_choice)
 	
 	if _choices:
 		_chosen = random.choice(_choices)
@@ -423,6 +439,7 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
 			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
 		else:
+			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
 	elif chosen['gist'] == 'talk_about_self':

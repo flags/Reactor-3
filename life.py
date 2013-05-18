@@ -598,7 +598,10 @@ def memory(life, gist, **kvargs):
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:
-		 if not dialog['messages'][len(dialog['messages'])-1]['sender'] == life['id']:
+		if not len(dialog['messages']):
+			return True
+		
+		if not dialog['messages'][len(dialog['messages'])-1]['sender'] == life['id']:
 			 return True
 	
 	return False

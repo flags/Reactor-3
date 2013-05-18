@@ -22,8 +22,8 @@ def find_best_unfounded_camp(life):
 	
 	_best_camp = {'camp': None, 'score': 4}
 	for camp in REFERENCE_MAP['buildings']:
-		#if camp in _founded_camps:
-		#	continue
+		if camp in _founded_camps:
+			continue
 	
 		_score = judgement.judge_camp(life, camp)
 		if _score>_best_camp['score']:

@@ -25,3 +25,13 @@ ALife cases:
 		[x] Each ALife will have a set of likes/dislikes based on gists. These are measured in a float from 0.0 to 1.0.
 		[x] dialog.get_freshness_of_gist can be used to figure out if a topic is getting old or not
 	
+	Sight:
+		[ ] Every tick: If target seen, update last_seen_at. If target not seen and last_seen_at is visible, mark as lost
+	
+	Factions
+		[ ] Each camp has a set of alignments towards other camps. "Factions" are just multiple camps with the same views.
+		[ ] Chunk ownership
+	
+	Camps:
+		[ ] Founder should give out jobs (patrol, etc)
+		[ ] Founder can hire people to work under him
