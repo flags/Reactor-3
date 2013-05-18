@@ -585,6 +585,8 @@ def memory(life, gist, **kvargs):
 	
 	if 'question' in kvargs:
 		_entry['answered'] = []
+		_entry['asked'] = {}
+		#_entry['last_asked'] = -1000
 	
 	life['memory'].append(_entry)
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
@@ -593,6 +595,20 @@ def memory(life, gist, **kvargs):
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
 	else:
 		print 'NO TARGET?', gist, life['name']
+
+def has_dialog(life):
+	for dialog in [d for d in life['dialogs'] if d['enabled']]:
+		 if not dialog['messages'][len(dialog['messages'])-1]['sender'] == life['id']:
+			 return True
+	
+	return False
+
+def can_ask(life, chosen, memory):
+	if chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
+		print WORLD_INFO['ticks']-memory['asked'][chosen['target']]
+		return False
+	
+	return True
 
 def get_memory(life, matches={}):
 	_memories = []

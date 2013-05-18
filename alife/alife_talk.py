@@ -10,6 +10,7 @@ import camps
 import jobs
 
 import logging
+import random
 
 ENTRY_SCORE = 0
 
@@ -73,11 +74,14 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_questions = lfe.get_questions(life)
 	_potential_talking_targets = []
 	for ai in [life['know'][i] for i in life['know']]:
+		if life['state'] == 'combat':
+			break
+		
 		if ai['score']<0:
 			continue
 		
-		if life['state'] == 'combat':
-			break
+		if not lfe.can_see(life, ai['life']['pos']):
+			continue
 		
 		#TODO: Not always true.
 		if ai['life']['state'] in ['hiding', 'hidden']:
@@ -85,14 +89,22 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		_potential_talking_targets.append(ai['life'])
 	
-	if not life['dialogs'] and _potential_talking_targets and _questions:
-		_dialog = {'type': 'dialog',
-			'from': life,
-			'enabled': True,
-			'gist': 'questions'}
-		life['dialogs'].append(dialog.create_dialog_with(life, _potential_talking_targets[0]['id'], _dialog))
-		print 'Starting dialog'
-	elif life['dialogs']:
+	random.shuffle(_potential_talking_targets)
+	
+	for target in _potential_talking_targets:
+		if not life['dialogs'] and _potential_talking_targets and _questions:
+			_dialog = {'type': 'dialog',
+				'from': life,
+				'enabled': True,
+				'gist': 'questions'}
+			_dialog = dialog.create_dialog_with(life, target['id'], _dialog)
+			
+			if _dialog:
+				life['dialogs'].append(_dialog)
+				print 'Starting dialog'
+				break
+	
+	if life['dialogs']:
 		_dialog = life['dialogs'][0]
 		dialog.alife_response(life, _dialog)
 

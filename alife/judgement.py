@@ -76,6 +76,8 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
+	_like += target['trust']
+	
 	#if 'greeting' in target['sent']:
 	#	_like += 1
 	
@@ -263,10 +265,11 @@ def judge_camp(life, camp):
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	
 	_known_camps = [c['reference'] for c in life['known_camps'].values()]
-	#print life['known_camps']
-	#if camp in _known_camps:
-	#	print 'ssssssssssssssssss'
-	#if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': camp['id']}):
+	#print _known_camps
+	if camp in _known_camps:
+		print 'ssssssssssssssssss'
+	#print _known_camps
+	#if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': camp}):
 	#	_bonus += 2
 	#	print 'bonus!!!!!!!!!'
 	

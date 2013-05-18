@@ -54,7 +54,7 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
-		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		elif life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 
 			if _dialog['index']:
@@ -68,7 +68,7 @@ def handle_input():
 			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
-		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		elif life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
@@ -485,7 +485,7 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
 	
 	if INPUT['\r']:
-		if [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		if life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
 			return False

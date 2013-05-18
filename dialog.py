@@ -20,7 +20,7 @@ def create_dialog_with(life, target, info):
 	_messages = []
 	
 	if 'gist' in info:
-		_topics, _memories = get_all_relevant_gist_responses(life, info['gist'])
+		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])
 	else:
 		_topics, _memories = get_all_relevant_target_topics(life, target)
 		_t, _m = get_all_irrelevant_target_topics(life, target)
@@ -29,7 +29,10 @@ def create_dialog_with(life, target, info):
 		
 		calculate_impacts(life, target, _topics)
 	
-	return {'enabled': True,
+	if not _topics:
+		return False
+	
+	_dialog = {'enabled': True,
 		'title': '',
 		'sender': life['id'],
 		'receiver': target,
@@ -40,6 +43,11 @@ def create_dialog_with(life, target, info):
 		'memories': _memories,
 		'messages': _messages,
 		'index': 0}
+	
+	if 'player' in LIFE[target]:
+		LIFE[target]['dialogs'].append(_dialog)
+	
+	return _dialog
 
 def add_message(life, dialog, chosen):
 	_text = chosen['text']
@@ -59,6 +67,9 @@ def reset_dialog(dialog):
 	else:
 		if not 'player' in LIFE[dialog['sender']]:
 			LIFE[dialog['sender']]['dialogs'].remove(dialog)
+			
+			if dialog in LIFE[dialog['receiver']]['dialogs']:
+				LIFE[dialog['receiver']]['dialogs'].remove(dialog)
 		else:
 			dialog['topics'] = dialog['starting_topics']
 	
@@ -92,12 +103,13 @@ def alife_response(life, dialog):
 		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
+		print 'RESPOSNE',_chosen
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 
-def get_all_relevant_gist_responses(life, gist):
+def get_all_relevant_gist_responses(life, target, gist):
 	#TODO: We'll definitely need to extend this for fuzzy searching	
 	#return [memory for memory in lfe.get_memory(life, matches={'text': gist})]
 	_topics = []
@@ -108,7 +120,10 @@ def get_all_relevant_gist_responses(life, gist):
 		_topics.append({'text': 'I don\'t have time to talk.', 'gist': 'ignore'})
 		_topics.append({'text': 'Get out of my face!', 'gist': 'ignore_rude'})
 	elif gist == 'questions':
-		_topics.extend(get_questions_to_ask(life, {}))
+		_topics.extend(get_questions_to_ask(life, {'target': target}))
+	
+	if _topics and _topics[0]['gist'] == 'end':
+		_topics = []
 	
 	return _topics, _memories
 
@@ -261,29 +276,38 @@ def give_camp_founder(life, chosen):
 def get_questions_to_ask(life, chosen):
 	_topics = []
 	
-	for memory in lfe.get_questions(life):
-		if memory['text'] == 'wants_founder_info':
+	for memory in lfe.get_questions(life):		
+		if not lfe.can_ask(life, chosen, memory):
+			continue
+		
+		if memory['text'] == 'wants_founder_info':			
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
-					'camp': memory['camp']})
+					'camp': memory['camp'],
+					'memory': memory})
 				_topics.append({'text': 'Who runs camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
-					'camp': memory['camp']})
+					'camp': memory['camp'],
+					'memory': memory})
 				_topics.append({'text': 'Any idea who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
-					'camp': memory['camp']})
+					'camp': memory['camp'],
+					'memory': memory})
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
 		#TODO: Possibly never triggered
 		elif memory['text'] == 'help find founder':
 			_topics.append({'text': 'Help %s locate the founder of %s.' % (' '.join(LIFE[memory['target']]['name']), CAMPS[memory['camp']]['name']),
 				'gist': 'help_find_founder',
 				'target': memory['target'],
-				'camp': memory['camp']})
+				'camp': memory['camp'],
+				'memory': memory})
+			memory['asked'][chosen['target']] = WORLD_INFO['ticks']
 	
 	if not _topics:
-		_topics.append({'text': 'Not really.', 'gist': 'nothing'})
-		_topics.append({'text': 'No.', 'gist': 'nothing'})
-		_topics.append({'text': 'Nope.', 'gist': 'nothing'})
+		_topics.append({'text': 'Not really.', 'gist': 'end'})
+		_topics.append({'text': 'No.', 'gist': 'end'})
+		_topics.append({'text': 'Nope.', 'gist': 'end'})
 	
 	return _topics
 
@@ -369,7 +393,9 @@ def alife_choose_response(life, target, dialog, responses):
 	
 	if _choices:
 		_chosen = random.choice(_choices)
+		
 		add_message(life, dialog, _chosen)
+		
 		process_response(target, life, dialog, _chosen)
 		modify_trust(life, target['id'], _chosen)
 		modify_trust(target, life['id'], _chosen)
@@ -378,6 +404,10 @@ def alife_choose_response(life, target, dialog, responses):
 		logging.error('Dialog didn\'t return anything.')
 
 def process_response(life, target, dialog, chosen):
+	if chosen['gist'] == 'end':
+		reset_dialog(dialog)
+		return True
+	
 	_responses = []
 	
 	#TODO: Unused
@@ -468,14 +498,14 @@ def process_response(life, target, dialog, chosen):
 	else:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	
-	#if not 'player' in life and not _responses:
-	#	_responses.append({'text': 'No valid response.', 'gist': 'conversation_error'})
+	if not 'player' in life and not _responses:
+		_responses.append({'text': '', 'gist': 'end'})
 	
 	calculate_impacts(life, target, _responses)
 	format_responses(life, target, _responses)
 	
 	if 'player' in life:
-		if _responses:
+		if _responses and not _responses[0]['gist'] == 'end':
 			dialog['topics'] = _responses
 			dialog['index'] = 0
 		else:
@@ -486,7 +516,7 @@ def process_response(life, target, dialog, chosen):
 	alife_choose_response(life, target, dialog, _responses)
 
 def draw_dialog():
-	if not [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+	if not lfe.has_dialog(SETTINGS['controlling']):
 		return False
 	
 	dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
