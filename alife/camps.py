@@ -8,6 +8,7 @@ import language
 import numbers
 import speech
 import chunks
+import jobs
 
 import logging
 
@@ -124,3 +125,17 @@ def get_camp_info(life, camp):
 
 def register_camp_info(life, camp, info):
 	camp['info'].update(info)
+
+def derp(life):
+	print 'yerp'
+
+def get_camp_jobs(camp_id):
+	_jobs = []
+	camp = CAMPS[camp_id]
+	
+	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp')
+	jobs.add_detail_to_job(_j, 'camp', camp_id)
+	jobs.add_job_task(_j, 'guard', callback=derp, required=True)
+	
+	_jobs.append(_j)
+	return _jobs

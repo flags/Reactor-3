@@ -4,6 +4,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import dialog
 import speech
 
 import logging
@@ -212,3 +213,18 @@ def process_job(job):
 		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task)
 	else:
 		logging.warning('No open tasks for job: %s' % job['gist'])
+
+def ask_for_job(life):
+	_target = get_job_detail(life['job'], 'target')
+	
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': 'jobs'}
+	_dialog = dialog.create_dialog_with(life, _target, _dialog)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
+		return True
+	
+	return False

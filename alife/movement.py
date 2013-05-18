@@ -195,7 +195,7 @@ def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):
 	
 	return False
 
-def find_alife(life, target):
+def _find_alife(life, target):
 	#Almost a 100% chance we know who this person is...
 	_target = brain.knows_alife_by_id(life, target)
 	
@@ -209,11 +209,14 @@ def find_alife(life, target):
 	
 	return False
 
+def find_alife(life):
+	return _find_alife(life, jobs.get_job_detail(life['job'], 'target'))
+
 #TODO: Put this in a new file
 def find_alife_and_say(life):
 	_target = brain.knows_alife_by_id(life, jobs.get_job_detail(life['job'], 'target'))
 	
-	if find_alife(life, _target['life']['id']):
+	if _find_alife(life, _target['life']['id']):
 		_say = jobs.get_job_detail(life['job'], 'say')
 		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], camp=_say['camp'], founder=_say['founder'])
 		lfe.memory(life,

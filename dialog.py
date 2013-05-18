@@ -138,6 +138,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.append({'text': 'Get out of my face!', 'gist': 'ignore_rude'})
 	elif gist == 'questions':
 		_topics.extend(get_questions_to_ask(life, {'target': target}))
+	elif gist == 'jobs':
+		_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -327,7 +329,9 @@ def get_questions_to_ask(life, chosen):
 					'gist': 'who_founded_camp',
 					'camp': memory['camp'],
 					'memory': memory})
-				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+				
+				if 'target' in chosen:
+					memory['asked'][chosen['target']] = WORLD_INFO['ticks']
 		#TODO: Possibly never triggered
 		elif memory['text'] == 'help find founder':
 			_topics.append({'text': 'Help %s locate the founder of %s.' % (' '.join(LIFE[memory['target']]['name']), CAMPS[memory['camp']]['name']),
@@ -335,14 +339,24 @@ def get_questions_to_ask(life, chosen):
 				'target': memory['target'],
 				'camp': memory['camp'],
 				'memory': memory})
-			memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+			
+			if 'target' in chosen:
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+		elif memory['text'] == 'where is target':
+			_topics.append({'text': 'Do you know where %s is?' % ' '.join(LIFE[memory['target']]['name']),
+				'gist': 'last_seen_target_at',
+				'target': memory['target'],
+				'memory': memory})
+			
+			if 'target' in chosen:
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
 	
 	if not _topics:
 		_topics.append({'text': 'Not really.', 'gist': 'end'})
 		_topics.append({'text': 'No.', 'gist': 'end'})
 		_topics.append({'text': 'Nope.', 'gist': 'end'})
 	
-	return _topics
+	return _topics	
 
 def tell_about_alife_select(life, chosen):
 	_topics = []
@@ -368,6 +382,17 @@ def tell_about_alife_memories(life, chosen):
 		_topics.append({'text': 'No memory of this person!',
 			'gist': chosen['gist'],
 			'target': chosen['target']})
+	
+	return _topics
+
+def get_jobs(life, chosen):
+	_topics = []
+	
+	if life['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
+		for job in alife.camps.get_camp_jobs(life['camp']):
+			_topics.append({'text': 'Do this job lol',
+			'gist': 'offer_job',
+			'job': job})
 	
 	return _topics
 
@@ -500,6 +525,11 @@ def process_response(life, target, dialog, chosen):
 			founder=chosen['founder'])
 	elif chosen['gist'] == 'offering_help':
 		_responses.extend(get_questions_to_ask(life, chosen))
+	elif chosen['gist'] == 'ask_for_jobs':
+		_responses.extend(get_jobs(life, chosen))
+	elif chosen['gist'] == 'offer_job':
+		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['listener']])
+		alife.jobs.process_job(chosen['job'])
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
