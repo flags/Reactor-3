@@ -106,7 +106,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
-		dialog.alife_response(life, _dialog)
+		dialog.tick(life, _dialog)
 
 	#_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
 	#for ai in [life['know'][i] for i in life['know']]:

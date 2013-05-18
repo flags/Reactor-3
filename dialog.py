@@ -36,6 +36,8 @@ def create_dialog_with(life, target, info):
 		'title': '',
 		'sender': life['id'],
 		'receiver': target,
+		'speaker': life['id'],
+		'listener': target,
 		'info': info,
 		'starting_topics': _topics,
 		'topics': _topics,
@@ -117,6 +119,12 @@ def alife_response(life, dialog):
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
+
+def tick(life, dialog):
+	if not dialog['speaker'] == life['id']:
+		return False
+	
+	alife_response(life, dialog)
 
 def get_all_relevant_gist_responses(life, target, gist):
 	#TODO: We'll definitely need to extend this for fuzzy searching	
@@ -296,8 +304,12 @@ def give_camp_founder(life, chosen):
 
 def get_questions_to_ask(life, chosen):
 	_topics = []
+	_target = None
 	
-	for memory in lfe.get_questions(life, target=chosen['target']):
+	if 'target' in chosen:
+		_target = chosen['target']
+	
+	for memory in lfe.get_questions(life, target=_target):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
 		
@@ -436,11 +448,6 @@ def process_response(life, target, dialog, chosen):
 		reset_dialog(dialog)
 		return True
 	
-	if 'from' in chosen:
-		if chosen['from'] == life['id']:
-			_receiver = target['id']
-		else:
-			_receiver = life['id']	
 	_responses = []
 	
 	#TODO: Unused
@@ -487,7 +494,7 @@ def process_response(life, target, dialog, chosen):
 		_responses.append({'text': 'Thanks!', 'gist': 'nothing', 'like': 1})
 		_responses.append({'text': 'Good to know.', 'gist': 'nothing', 'like': 1})
 		
-		lfe.memory(LIFE[_receiver], 'heard about camp',
+		lfe.memory(LIFE[dialog['listener']], 'heard about camp',
 			camp=chosen['camp'],
 			target=chosen['sender'],
 			founder=chosen['founder'])
@@ -537,6 +544,11 @@ def process_response(life, target, dialog, chosen):
 	
 	calculate_impacts(life, target, _responses)
 	format_responses(life, target, _responses)
+	
+	_speaker = dialog['speaker']
+	_listener = dialog['listener']
+	dialog['speaker'] = _listener
+	dialog['listener'] = _speaker
 	
 	if 'player' in life:
 		if _responses and not _responses[0]['gist'] == 'end':

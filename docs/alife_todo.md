@@ -4,6 +4,9 @@ ALife cases:
 		[ ] Do we even want to help other ALife find the founder?
 		[ ] Who do we think the founder is?
 		[ ] Watch over camp
+	
+	alife_talk.py
+		[ ] Score _potential_talking_targets
 		
 	damage.py
 		[ ] Fix language output
