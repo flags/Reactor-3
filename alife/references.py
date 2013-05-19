@@ -100,7 +100,14 @@ def find_least_controlled_key_in_reference(life, reference):
 	
 	for _key in reference:
 		_chunk = maps.get_chunk(_key)
-		_score = _chunk['control'][CAMPS[life['camp']]]
+		
+		if CAMPS[life['camp']]['name'] in _chunk['control']:
+			_score = _chunk['control'][CAMPS[life['camp']]['name']]
+			
+			if chunks.is_in_chunk(life, _key) and _score == 1:
+				_score = -1
+		else:
+			_score = 0
 		
 		if not _lowest['chunk_key'] or _score<_lowest['score']:
 			_lowest['chunk_key'] = _key
