@@ -142,7 +142,7 @@ def get_camp_jobs(camp_id):
 	_jobs = []
 	camp = CAMPS[camp_id]
 	
-	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp')
+	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp', description='Guard the camp.')
 	jobs.add_detail_to_job(_j, 'camp', camp_id)
 	jobs.add_detail_to_job(_j, 'pause', 90)
 	jobs.add_job_task(_j, 'guard', callback=guard_camp, required=True)

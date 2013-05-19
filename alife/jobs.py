@@ -12,7 +12,7 @@ import logging
 def create_job(creator, gist, description='Job description needed.'):
 	_job = {'creator': creator}
 	_job['gist'] = gist
-	_job['desciption'] = description
+	_job['description'] = description
 	_job['score'] = 0
 	_job['completed_callback'] = None
 	_job['leave_job_callback'] = None
@@ -217,6 +217,8 @@ def process_job(job):
 
 def ask_for_job(life):
 	_target = get_job_detail(life['job'], 'target')
+	
+	print life['name'],'is asking for job.'
 	
 	_dialog = {'type': 'dialog',
 		'from': life,

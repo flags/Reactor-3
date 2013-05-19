@@ -19,6 +19,8 @@ def create_dialog_with(life, target, info):
 	#we'll get responses for now
 	_messages = []
 	
+	print life['name'],'creating conversation with',LIFE[target]['name']
+	
 	if 'gist' in info:
 		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])					
 	else:
@@ -583,7 +585,7 @@ def process_response(life, target, dialog, chosen):
 	dialog['speaker'] = _listener
 	dialog['listener'] = _speaker
 	
-	if 'player' in life:
+	if 'player' in  life:
 		if _responses and not _responses[0]['gist'] == 'end':
 			dialog['topics'] = _responses
 			dialog['index'] = 0
