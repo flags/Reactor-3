@@ -24,6 +24,7 @@ ALife cases:
 		[x] Could ALife use new conversation system to talk?
 				How would the whole "find founder" situation be done in the new system? Just through topics?
 		[ ] Spotting lies (lying about being the camp founder, giving wrong info, etc)
+		[ ] Dialogs are still controlled by one entity. Check to make sure the other involved entity is even awake/existing in dialog.tick()
 	
 	Likes/Dislikes:
 		[x] Each ALife will have a set of likes/dislikes based on gists. These are measured in a float from 0.0 to 1.0.

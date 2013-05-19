@@ -11,6 +11,7 @@ import chunks
 import jobs
 
 import logging
+import random
 
 def find_nearest_unfounded_camp(life):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
@@ -126,8 +127,16 @@ def get_camp_info(life, camp):
 def register_camp_info(life, camp, info):
 	camp['info'].update(info)
 
-def derp(life):
-	print 'yerp'
+def guard_camp(life):
+	_delay = random.randint(25, jobs.get_job_detail(life['job'], 'pause'))
+	
+	if not life['path'] and not lfe.find_action(life, matches=[{'action': 'move'}]):
+		_chunk = CHUNK_MAP[references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
+		lfe.add_action(life,{'action': 'move',
+			'to': random.choice(_chunk['ground'])},
+			200,
+			delay=_delay)
+	return False
 
 def get_camp_jobs(camp_id):
 	_jobs = []
@@ -135,7 +144,8 @@ def get_camp_jobs(camp_id):
 	
 	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp')
 	jobs.add_detail_to_job(_j, 'camp', camp_id)
-	jobs.add_job_task(_j, 'guard', callback=derp, required=True)
+	jobs.add_detail_to_job(_j, 'pause', 90)
+	jobs.add_job_task(_j, 'guard', callback=guard_camp, required=True)
 	
 	_jobs.append(_j)
 	return _jobs

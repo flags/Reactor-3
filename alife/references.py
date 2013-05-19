@@ -57,7 +57,7 @@ def _find_best_unknown_reference(life, ref_type):
 	return _best_reference
 
 def find_nearest_key_in_reference(life, reference, unknown=False):
-	_lowest = {'chunk_key': None, 'distance': -1}
+	_lowest = {'chunk_key': None, 'distance': 100}
 
 	for _key in reference:
 		if unknown and _key in life['known_chunks']:
@@ -69,6 +69,45 @@ def find_nearest_key_in_reference(life, reference, unknown=False):
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
 			_lowest['chunk_key'] = _key
+	
+	return _lowest['chunk_key']
+
+def find_least_populated_key_in_reference(life, reference):
+	_lowest = {'chunk_key': None, 'score': 0}
+	
+	for _key in reference:
+		_chunk = maps.get_chunk(_key)
+		_score = len(_chunk['life'])
+		
+		if chunks.is_in_chunk(life, _key) and _score == 1:
+			_score = -1
+		
+		if not _lowest['chunk_key'] or _score<_lowest['score']:
+			_lowest['chunk_key'] = _key
+			_lowest['score'] = _score
+		
+		if _score == -1:
+			break
+	
+	return _lowest['chunk_key']
+
+def find_least_controlled_key_in_reference(life, reference):
+	_lowest = {'chunk_key': None, 'score': 0}
+	
+	if not life['camp']:
+		logging.warning('Should not be happening!')
+		return None
+	
+	for _key in reference:
+		_chunk = maps.get_chunk(_key)
+		_score = _chunk['control'][CAMPS[life['camp']]]
+		
+		if not _lowest['chunk_key'] or _score<_lowest['score']:
+			_lowest['chunk_key'] = _key
+			_lowest['score'] = _score
+		
+		if _score == -1:
+			break
 	
 	return _lowest['chunk_key']
 

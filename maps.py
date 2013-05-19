@@ -386,6 +386,16 @@ def refresh_chunk(chunk_id):
 		if alife.chunks.is_in_chunk(life, chunk_id):
 			_life.append(life['id'])
 	
+	_control = {}
+	for life in [LIFE[i] for i in _life]:
+		if not life['camp']:
+			continue
+			
+		if CAMPS[life['camp']]['name'] in _control:
+			_control[CAMPS[life['camp']]['name']] += 1
+		else:
+			_control[CAMPS[life['camp']]['name']] = 1
+	
 	_items = []
 	for _item in ITEMS:
 		item = ITEMS[_item]
@@ -398,6 +408,7 @@ def refresh_chunk(chunk_id):
 		
 	chunk['items'] = _items
 	chunk['life'] = _life
+	chunk['control'] = _control
 	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
 	broadcast_chunk_change(chunk_id)
 

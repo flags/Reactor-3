@@ -404,6 +404,8 @@ def get_responses_about_self(life):
 			'gist': 'talk_about_camp',
 			'camp': camp['id']})
 	
+	if life['job']:
+		print life['job'].keys()
 	if not _responses:
 		_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
