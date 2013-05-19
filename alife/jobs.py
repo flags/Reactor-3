@@ -9,9 +9,10 @@ import speech
 
 import logging
 
-def create_job(creator, gist):
+def create_job(creator, gist, description='Job description needed.'):
 	_job = {'creator': creator}
 	_job['gist'] = gist
+	_job['desciption'] = description
 	_job['score'] = 0
 	_job['completed_callback'] = None
 	_job['leave_job_callback'] = None

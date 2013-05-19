@@ -210,7 +210,11 @@ def _find_alife(life, target):
 	return False
 
 def find_alife(life):
-	return _find_alife(life, jobs.get_job_detail(life['job'], 'target'))
+	if _find_alife(life, jobs.get_job_detail(life['job'], 'target')):
+		lfe.stop(life)
+		return True
+	
+	return False
 
 #TODO: Put this in a new file
 def find_alife_and_say(life):

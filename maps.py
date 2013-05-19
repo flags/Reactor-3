@@ -449,6 +449,7 @@ def update_chunk_map(source_map):
 				'ground': [],
 				'life': [],
 				'items': [],
+				'control': {},
 				'neighbors': [],
 				'digest': None}
 			

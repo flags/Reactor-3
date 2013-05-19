@@ -154,6 +154,7 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'How are you?', 'gist': 'how_are_you', 'like': 1})
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
+	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
@@ -389,10 +390,10 @@ def get_jobs(life, chosen):
 	_topics = []
 	
 	if life['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
-		for job in alife.camps.get_camp_jobs(life['camp']):
-			_topics.append({'text': 'Do this job lol',
-			'gist': 'offer_job',
-			'job': job})
+		for job in alife.camps.get_camp_jobs(life['camp']):			
+			_topics.append({'text': job['description'],
+				'gist': 'offer_job',
+				'job': job})
 	
 	return _topics
 

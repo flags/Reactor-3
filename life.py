@@ -697,6 +697,10 @@ def crawl(life):
 		200,
 		delay=_delay)
 
+def stop(life):
+	clear_actions(life)
+	life['path'] = []
+
 def path_dest(life):
 	"""Returns the end of the current path."""
 	if not life['path']:

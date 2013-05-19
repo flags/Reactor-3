@@ -45,6 +45,11 @@ ALife cases:
 
 	Jobs:
 		[ ] Consider moving logic (like finding targets, etc) to own file
+		[ ] Jobs ("quests") dialog
+		[ ] "Repeat" flag so ALife can switch between tasks in a job without deleting them
+	
+	Combat:
+		[ ] Add `can_engage` function
 	
 	Misc:
 		[ ] ID vs. dictionary reference mismatch
