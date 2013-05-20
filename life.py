@@ -2080,8 +2080,12 @@ def draw_life_info():
 	
 	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
+	_blood_str = 'Blood: %s' % int(life['blood'])
+	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
+	_hunger_str = get_thirst(life)
 	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
+	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
+	console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
 	console_set_default_foreground(0, light_grey)
 	console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
 	
@@ -2205,6 +2209,33 @@ def get_total_pain(life):
 		_pain += limb['pain']
 	
 	return _pain
+
+def get_hunger(life):
+	if 'HUNGER' in life['life_flags']:
+		_hunger = life['hunger']/float(life['hunger_max'])
+		
+		if _hunger>.5:
+			#TODO: Spelling?
+			return 'Satiated'
+		elif 0.3>=_hunger<=.5:
+			return 'Hungry'
+		else:
+			return 'Starving'
+	
+	return 'Not hungry'
+
+def get_thirst(life):
+	if 'THIRST' in life['life_flags']:
+		_thirst = life['thirst']/float(life['thirst_max'])
+		
+		if _thirst>.5:
+			return 'Satiated'
+		elif 0.3>=_thirst<=.5:
+			return 'Thirsty'
+		else:
+			return 'Dehydrated'
+	
+	return 'Not thirsty'
 
 def calculate_blood(life):
 	_blood = 0
