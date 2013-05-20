@@ -599,14 +599,8 @@ def memory(life, gist, **kvargs):
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:
-		#if not len(dialog['messages']):
-		#	return True
-		
-		#if not dialog['messages'][len(dialog['messages'])-1]['sender'] == life['id']:
 		if dialog['speaker'] == life['id']:
 			 return True
-		
-		print LIFE[dialog['speaker']]['name']
 	
 	return False
 
@@ -632,16 +626,23 @@ def get_memory(life, matches={}):
 			
 	return _memories
 
+def get_memory_via_id(life, memory_id):
+	for memory in life['memory']:
+		if memory['id'] == memory_id:
+			return memory
+	
+	raise Exception('Invalid memory passed to get_memory_via_id(): %s' % memory_id)
+
 def delete_memory(life, matches={}):
 	for _memory in get_memory(life, matches=matches):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def get_questions(life, target=None):
+def get_questions(life, target=None, no_filter=False):
 	_questions = []
 	
 	for question in get_memory(life, matches={'question': True}):
-		if not question['answered']:
+		if not no_filter:
 			if target and target in question['ignore']:
 				continue
 			

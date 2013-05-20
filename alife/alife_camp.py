@@ -96,12 +96,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					lfe.memory(life, 'where is target', target=_info['founder'], question=True)
 				
 			elif not life['job']:
-				_j = jobs.create_job(life, 'get camp job')
-				jobs.add_detail_to_job(_j, 'target', _info['founder'])
-				jobs.add_job_task(_j, 'find alife', callback=movement.find_alife, required=True)
-				jobs.add_job_task(_j, 'ask for job', callback=jobs.ask_for_job, required=True)
-				jobs.add_job_candidate(_j, life)
-				jobs.process_job(_j)
+				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):
+					_j = jobs.create_job(life, 'get camp job')
+					jobs.add_detail_to_job(_j, 'target', _info['founder'])
+					jobs.add_job_task(_j, 'find alife', callback=movement.find_alife, required=True)
+					jobs.add_job_task(_j, 'ask for job', callback=jobs.ask_for_job, required=True)
+					jobs.add_job_candidate(_j, life)
+					jobs.process_job(_j)
 		else:
 			#TODO: Create jobs here?
 			pass

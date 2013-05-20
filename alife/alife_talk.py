@@ -27,6 +27,19 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	return RETURN_SKIP
 
+def start_dialog(life, target, gist):
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': gist}
+	_dialog = dialog.create_dialog_with(life, target, _dialog)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
+		return True
+	
+	return False	
+
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
@@ -90,19 +103,14 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
-		if not lfe.get_questions(life, target=target['id']):
-			continue
+		if life['dialogs']:
+			break
 		
-		if not life['dialogs'] and _potential_talking_targets:
-			_dialog = {'type': 'dialog',
-				'from': life,
-				'enabled': True,
-				'gist': 'questions'}
-			_dialog = dialog.create_dialog_with(life, target['id'], _dialog)
-			
-			if _dialog:
-				life['dialogs'].append(_dialog)
-				break
+		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}):
+			start_dialog(life, target['id'], 'introduction')
+		elif lfe.get_questions(life, target=target['id']):
+			if _potential_talking_targets:
+				start_dialog(life, target['id'], 'questions')
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]

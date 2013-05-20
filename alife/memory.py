@@ -23,5 +23,16 @@ def process_questions(life):
 			else:
 				logging.debug('%s added more detail to question: %s' % (' '.join(life['name']), memory['text']))
 
+def detect_lies(life):
+	#for memory in life['memories']:
+	for question in lfe.get_questions(life, no_filter=True):
+		if not question['text'] in QUESTIONS_ANSWERS:
+			logging.error('%s not in QUESTIONS_ANSWERS' % question['text'])
+			continue
+		
+		for answer in [get_memory_via_id(life, a) for a in question['answered']]:
+			print answer.keys()
+		
 def process(life):
 	process_questions(life)
+	detect_lies(life)

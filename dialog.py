@@ -142,6 +142,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.extend(get_questions_to_ask(life, {'target': target}))
 	elif gist == 'jobs':
 		_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
+	elif gist == 'introduction':
+		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -397,6 +399,9 @@ def get_jobs(life, chosen):
 				'gist': 'offer_job',
 				'job': job})
 	
+	if not _topics:
+		_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
+	
 	return _topics
 
 def get_responses_about_self(life):
@@ -407,8 +412,6 @@ def get_responses_about_self(life):
 			'gist': 'talk_about_camp',
 			'camp': camp['id']})
 	
-	if life['job']:
-		print life['job'].keys()
 	if not _responses:
 		_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
@@ -450,7 +453,10 @@ def modify_trust(life, target, _chosen):
 		_knows['trust'] -= _chosen['dislike']
 
 def alife_choose_response(life, target, dialog, responses):
-	_knows = alife.brain.knows_alife_by_id(life, target['id'])
+	if not alife.brain.knows_alife(life, target):
+		alife.brain.meet_alife(life, target)
+	
+	_knows = alife.brain.knows_alife(life, target)
 	_score = alife.judgement.judge(life, _knows)
 	_choices = [r for r in responses if numbers.clip(_score, -1, 1) >= r['impact']]
 	
@@ -496,8 +502,10 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
+		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
 		_responses.extend(get_responses_about_self(life))
+		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_camp':
 		if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp']}):
 			_responses.append({'text': 'I\'ve heard of it.', 'gist': 'heard_of_camp'})
@@ -514,7 +522,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'].count('inform_of_camp'):
 		alife.camps.discover_camp(life, CAMPS[chosen['camp']])
 		
-		lfe.memory(life, 'heard about camp',
+		lfe.memory(LIFE[dialog['listener']], 'heard about camp',
 			camp=chosen['camp'],
 			target=chosen['sender'],
 			founder=chosen['founder'])
@@ -535,6 +543,11 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'offer_job':
 		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['listener']])
 		alife.jobs.process_job(chosen['job'])
+	elif chosen['gist'] == 'no_jobs':
+		_responses.append({'text': 'Okay.', 'gist': 'end'})
+		
+		lfe.memory(LIFE[dialog['listener']], 'no jobs',
+			target=dialog['speaker'])
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
