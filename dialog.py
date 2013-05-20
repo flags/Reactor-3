@@ -19,8 +19,6 @@ def create_dialog_with(life, target, info):
 	#we'll get responses for now
 	_messages = []
 	
-	print life['name'],'creating conversation with',LIFE[target]['name']
-	
 	if 'gist' in info:
 		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])					
 	else:
@@ -33,6 +31,8 @@ def create_dialog_with(life, target, info):
 	
 	if not _topics:
 		return False
+	
+	print life['name'],'creating conversation with',LIFE[target]['name']
 	
 	_dialog = {'enabled': True,
 		'title': '',
