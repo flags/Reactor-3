@@ -2,6 +2,7 @@ from globals import *
 from alife import *
 
 import graphics as gfx
+import damage as dam
 import pathfinding
 import language
 import contexts
@@ -10,7 +11,6 @@ import logging
 import weapons
 import numbers
 import effects
-import damage as dam
 import random
 import alife
 import items
@@ -57,8 +57,32 @@ def calculate_base_stats(life):
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 	
+	life['life_flags'] = life['flags']
+	
 	stats['base_speed'] = LIFE_MAX_SPEED-(len(stats['legs']))
 	stats['speed_max'] = stats['base_speed']
+	
+	for var in life['vars'].split('|'):
+		key,val = var.split('=')
+		logging.debug('%s = %s' % (key, val))
+		
+		try:
+			life[key] = int(val)
+			continue
+		except:
+			pass
+		
+		try:
+			life[key] = life[val]
+			continue
+		except:
+			pass
+		
+		try:
+			life[key] = val
+			continue
+		except:
+			pass
 	
 	return stats
 
@@ -1150,27 +1174,15 @@ def perform_action(life):
 	return True
 
 def kill(life, injury):
-	#if how == 'bleedout':
-	#	if 'player' in life:
-	#		gfx.message('You die from blood loss.',style='death')
-	#	else:
-	#		say(life,'@n dies from blood loss.',action=True)
-	#		logging.debug('%s dies from blood loss.' % life['name'][0])
-	#elif how == 'injury':
-	#	if 'player' in life:
-	#		gfx.message('You die.',style='death')
-	#	else:
-	#		say(life,'@n dies.',action=True)
-	#
 	if isinstance(injury, str):
 		life['cause_of_death'] = injury
-		logging.debug('%s dies: %s' % (life['name'][0], injury))
+		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		say(life, '@n dies from %s' % life['cause_of_death'], action=True)
 		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
-	for ai in [LIFE[i] for i in LIFE]:
+	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if can_see(ai, life['pos']):
 			memory(ai, 'death', target=life['id'])
 	
@@ -1188,6 +1200,24 @@ def can_die_via_critical_injury(life):
 	
 	return False	
 
+def hunger(life):
+	if life['hunger']:
+		life['hunger'] -= 1
+	else:
+		kill(life, 'starvation')
+		return False
+
+	return True
+
+def thirst(life):
+	if life['thirst']:
+		life['thirst'] -= 1
+	else:
+		kill(life, 'dehydration')
+		return False
+	
+	return True
+
 def tick(life, source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 
@@ -1198,6 +1228,14 @@ def tick(life, source_map):
 		kill(life,'bleedout')
 				
 		return False
+	
+	if 'HUNGER' in life['life_flags']:
+		if not hunger(life):
+			return False
+	
+	if 'THIRST' in life['life_flags']:
+		if not thirst(life):
+			return False
 	
 	natural_healing(life)
 	

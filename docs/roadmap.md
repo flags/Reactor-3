@@ -271,11 +271,22 @@ With all the systems in place, we must now generate content to build up the game
 
 Roadmap
 -------
+When the player enters the world there should be some kind of conflict between the starter camp and the bandits. We want there to be some kind of established "safe zone" so the player feels like they have to be somewhat careful about where they are going.
+
+Take note that the player won't be aligned to a faction unless:
+
+1) They are wearing a faction-specific item
+2) There are known to be in that faction
+
+Both things will be false for new players regardless of how the first job goes. However, it should be noted that Bandits are automatically aligned against non-bandits, so you will encounter combat if you run into them anyway.
+
 The following should be playable:
 
-	The player spawns in the northwest. He is instructed to follow the road until they sees the nearest camp. The player should then be able to enter the camp, find out who the operator is, and get assigned their first job: Get the documents off the body of a deceased soldier.
+	The player spawns in the northwest and is instructed to follow the road until they see the nearest camp. The player should then be able to enter the camp, find out who the operator is, and get assigned their first job: Get the documents off the body of a deceased soldier.
 	
 	Upon arrival it is apparent that the target is not dead, but just has a bad leg injury preventing them from running. You will encounter this person and go through a dialog determining whether you are on good terms or not. If not, you will enter combat.
+	
+	After resolving the conflict you will take the documents back to camp. You will then be told to talk to those hanging around the camp to find what to do next, but the decision is ultimately up to you whether or not you actually do that.
 
 Problem 1: The UI
 ----------------
@@ -325,3 +336,49 @@ The obvious first thing to check will be looking at camp founders. The immediate
 I guess the real question is how to make the ALife discover lies without forcing it on them during dialog; i.e., it should occur naturally and through the `memory.detect_lies()` routine.
 
 First order of business will be having the ALife walk around and get to know everyone.
+
+Routines
+---------
+Each ALife has a selection of wants and needs. Needs include eating, sleeping, and general survival gear. Wants include non-essential items like radios (almost a need, but not quite) and high-end weapon attachments that aren't otherwise crucial.
+
+Needs establish the base behavior for all ALife, while wants define their unique logic.
+
+Hunger
+------
+Operates on a simple timer that decreases each tick. Eating adds a variable amount to this timer. When this timer is half of its maximum a person is considered hungry. At a fourth they are starving.
+
+Food can be found scattered about the Zone, usually in cans.
+
+Thirst works on a similar timer but is a lot shorter, so you'll need to drink more frequently.
+
+Squads Before Camps
+------------------
+Squads form when it is more convenient to fulfill these kinds of needs together, so ALife that need food might find themselves scavenging the same area, resulting in a confrontation that leads to a working relationship.
+
+These groups will grow larger and larger as similar people are encountered while out adventuring.
+
+Conflicts
+----------
+A difficult part of this is getting the ALife to disagree and begin conflicts. While it is easy to simulate what happens after a conflict starts, developing one that feels natural is many times harder. We simply cannot have "they're from a different squad" as a valid reason for starting fights. Whatever it is, it must be natural and make some amount of sense.
+
+	* I would like to avoid "they're armed, so they must be dangerous."
+		This isn't always true. After all, we'd have to ask them what their stance is, which involves coming up with a reason for being friendly or hostile.
+			This is easy for the player to do because their reasoning is up to them.
+
+Developing Friction
+------------------
+I want to avoid "good" and "bad" factions. I'll focus on camps right now since they will eventually develop into factions as relationships grow:
+
+	Camps are most concerned with land ownership, i.e, they want to be in control of certain spots on the map.
+		We will call these areas landmarks and they will have some kind of strategic importance or resource.
+	
+		Camps have certain needs. A need for weapons will result in a raid of an ammo depo.
+	
+Advanced Life Flags
+------------------
+I'll start using flags in the race .XML to help better tweak how ALife behave. Examples include:
+	
+	CAN_COMMUNICATE: ALife can speak and understand what is trying to be conveyed
+	HUNGER/THIRSTY: Has requirement for food/water
+	CAN_GROUP: Ability to develop squads/work in groups
+	
