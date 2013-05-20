@@ -53,3 +53,4 @@ ALife cases:
 	
 	Misc:
 		[ ] ID vs. dictionary reference mismatch
+		[ ] Proper `get_camp_founder` function for determining who the founder is believed to be

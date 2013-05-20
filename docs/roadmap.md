@@ -269,6 +269,14 @@ Goal
 ----
 With all the systems in place, we must now generate content to build up the game's depth. The UI will also be reworked and extended to give the player a better understanding of the world. We'll also start creating personalities for ALife and extending their logic.
 
+Roadmap
+-------
+The following should be playable:
+
+	The player spawns in the northwest. He is instructed to follow the road until they sees the nearest camp. The player should then be able to enter the camp, find out who the operator is, and get assigned their first job: Get the documents off the body of a deceased soldier.
+	
+	Upon arrival it is apparent that the target is not dead, but just has a bad leg injury preventing them from running. You will encounter this person and go through a dialog determining whether you are on good terms or not. If not, you will enter combat.
+
 Problem 1: The UI
 ----------------
 We'll attempt to give the player a better understanding of the world and the people inhabiting it with these changes.
@@ -307,3 +315,13 @@ Now there is a need for ALife to ask about certain topics. This could be done in
 Example case: An ALife joins a camp but is unaware of who the founder is. After running out of people to ask, the ALife simply idles in the camp until someone can help them (during this time they are always broadcasting the request for founder info.) I won't say it's easier, but I'd like to get this behavior into the dialog tree instead, giving me an opportunity to implement dialogs started with the player by the ALife.
 
 I think the main idea here is just attaching the ALife to the dialog tree and hoping they are able to figure it out. After all, it should solve the issue of having multiple conversations active (but not running) at once, in addition to giving me some amount of context to deal with instead of just having a random phrase in an array I have to parse to find its origin (and even then I can't be sure what the context is.)
+
+Lies
+----
+In an effort to move the ALife's intelligence into the next level of complexity, it's time to start processing memories to find out what makes sense and what doesn't.
+
+The obvious first thing to check will be looking at camp founders. The immediate issue is the fact that the ALife does nothing but reference the camp founder when doing some tasks; how could we possible interject this information into a phrase to get a response out of someone? In the case of the camp founder, should we just out-right ask everyone who the founder is?
+
+I guess the real question is how to make the ALife discover lies without forcing it on them during dialog; i.e., it should occur naturally and through the `memory.detect_lies()` routine.
+
+First order of business will be having the ALife walk around and get to know everyone.
