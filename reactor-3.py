@@ -101,6 +101,8 @@ items.initiate_item('22_rifle')
 items.initiate_item('9x19mm_mag')
 items.initiate_item('9x19mm_round')
 items.initiate_item('radio')
+items.initiate_item('can_of_corn')
+items.initiate_item('soda')
 
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])

@@ -469,6 +469,32 @@ def handle_input():
 		
 		create_pick_up_item_menu(_items)
 	
+	if INPUT['a']:
+		if menus.get_menu_by_name('Eat')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Eat'))
+			return False
+		
+		_food = []
+		for _item in life.get_all_inventory_items(SETTINGS['controlling'], matches=[{'type': 'food'}, {'type': 'drink'}]):
+			_food.append(menus.create_item('single',
+				items.get_name(_item),
+				None,
+				icon=_item['icon'],
+				id=_item['id']))
+		
+		if not _food:
+			gfx.message('You have nothing to eat.')
+			return False
+		
+		_i = menus.create_menu(title='Eat',
+			menu=_food,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k',
+			on_select=inventory_eat)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['b']:
 		#print SETTINGS['following']['actions']
 		#print life.create_recent_history(SETTINGS['following'])
@@ -621,6 +647,18 @@ def inventory_drop(entry):
 	
 	gfx.message('You start to drop %s.' % _name)
 	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_eat(entry):
+	key = entry['key']
+	item = entry['id']
+	
+	life.add_action(SETTINGS['controlling'],{'action': 'eatitem',
+		'item': item},
+		200,
+		delay=life.get_item_access_time(SETTINGS['controlling'],item))
+	
+	gfx.message('You start to eat %s.' % items.get_name(life.get_inventory_item(SETTINGS['controlling'], item)))
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_throw(entry):

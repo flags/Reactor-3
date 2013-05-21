@@ -56,6 +56,9 @@ def calculate_base_stats(life):
 		
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
+		
+		elif flag == 'HUNGER':
+			life['eaten'] = []
 	
 	life['life_flags'] = life['flags']
 	
@@ -1034,6 +1037,11 @@ def perform_action(life):
 		set_animation(life, [';', 'p'], speed=6)
 		delete_action(life,action)
 	
+	elif _action['action'] == 'eatitem':
+		eat_item(life, _action['item'])
+		set_animation(life, [';', 'e'], speed=6)
+		delete_action(life, action)
+	
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
 			if life.has_key('player'):
@@ -1201,7 +1209,7 @@ def can_die_via_critical_injury(life):
 	return False	
 
 def hunger(life):
-	if life['hunger']:
+	if life['hunger']>0:
 		life['hunger'] -= 1
 	else:
 		kill(life, 'starvation')
@@ -1210,7 +1218,7 @@ def hunger(life):
 	return True
 
 def thirst(life):
-	if life['thirst']:
+	if life['thirst']>0:
 		life['thirst'] -= 1
 	else:
 		kill(life, 'dehydration')
@@ -1232,7 +1240,9 @@ def tick(life, source_map):
 	if 'HUNGER' in life['life_flags']:
 		if not hunger(life):
 			return False
-	
+		
+		calculate_hunger(life)
+		
 	if 'THIRST' in life['life_flags']:
 		if not thirst(life):
 			return False
@@ -1657,6 +1667,24 @@ def remove_item_from_inventory(life,id):
 	create_and_update_self_snapshot(life)
 	
 	return item
+
+def can_consume(life, item_id):
+	item = get_inventory_item(life, item_id)
+	
+	if item['type'] in ['food', 'drink']:
+		return True
+	
+	return False
+
+def eat_item(life, item_id):
+	item = get_inventory_item(life, item_id)
+	
+	if not can_consume(life, item_id):
+		return False
+	
+	life['eaten'].append(item)
+	remove_item_from_inventory(life, item_id)
+	logging.info('%s ate a %s.' % (' '.join(life['name']), items.get_name(item)))
 
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
@@ -2210,32 +2238,59 @@ def get_total_pain(life):
 	
 	return _pain
 
-def get_hunger(life):
-	if 'HUNGER' in life['life_flags']:
-		_hunger = life['hunger']/float(life['hunger_max'])
-		
-		if _hunger>.5:
-			#TODO: Spelling?
-			return 'Satiated'
-		elif 0.3>=_hunger<=.5:
-			return 'Hungry'
+def calculate_hunger(life):
+	_remove = []
+	for _food in life['eaten']:
+		if _food['sustenance']:
+			_food['sustenance'] -= 1
+			
+			if _food['type'] == 'food':
+				life['hunger'] += _food['value']
+			elif _food['type'] == 'drink':
+				life['thirst'] += _food['value']
+			else:
+				logging.error('Item \'%(name)s\' of type \'%(type)s\' was eaten.' % _food)
+				logging.debug('What in the world did you eat?')
+			
+			if 'modifiers' in _food:
+				for _mod in _food['modifiers']:
+					if not _mod in life:
+						logging.error('Invalid modifier \'%s\' in \'%s\'.' % (_mod, _food['name']))
+						continue
+					
+					life[_mod] += _food['modifiers'][_mod]
+			
 		else:
-			return 'Starving'
+			_remove.append(_food)
 	
-	return 'Not hungry'
+	for _item in _remove:
+		life['eaten'].remove(_item)	
+
+def get_hunger(life):
+	if not 'HUNGER' in life['life_flags']:
+		return 'Not hungry'
+	
+	_hunger = life['hunger']/float(life['hunger_max'])
+	
+	if _hunger>.5:
+		return 'Satiated'
+	elif _hunger>=.3:
+		return 'Hungry'
+	else:
+		return 'Starving'
 
 def get_thirst(life):
-	if 'THIRST' in life['life_flags']:
-		_thirst = life['thirst']/float(life['thirst_max'])
-		
-		if _thirst>.5:
-			return 'Satiated'
-		elif 0.3>=_thirst<=.5:
-			return 'Thirsty'
-		else:
-			return 'Dehydrated'
+	if not 'THIRST' in life['life_flags']:
+		return 'Not thirsty'
 	
-	return 'Not thirsty'
+	_thirst = life['thirst']/float(life['thirst_max'])
+	
+	if _thirst>.5:
+		return 'Hydrated'
+	elif 0.3>=_thirst<=.5:
+		return 'Thirsty'
+	else:
+		return 'Dehydrated'
 
 def calculate_blood(life):
 	_blood = 0
