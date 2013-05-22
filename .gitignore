@@ -1,6 +1,7 @@
 *.pyc
 *.c
 *.so
+*.sh
 *.xcf
 *.swp
 *.patch
@@ -8,7 +9,6 @@
 
 build/*
 tests/*
-tools/*
 docs/devjournal.md
 
 profile.dat
