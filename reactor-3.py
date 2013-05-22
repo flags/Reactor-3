@@ -9,6 +9,7 @@ from tiles import *
 import render_fast_los
 
 import graphics as gfx
+import cProfile
 import maputils
 import worldgen
 import mainmenu
@@ -118,11 +119,13 @@ while SETTINGS['running']==1:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=16, simulate_ticks=50, save=False, thread=True)
+	worldgen.generate_world(WORLD_INFO['map'], life=8, simulate_ticks=10, save=False, thread=True)
 
 CURRENT_UPS = UPS
 
-while SETTINGS['running']==2:
+def main():
+	global CURRENT_UPS
+	
 	get_input()
 	handle_input()
 	_played_moved = False
@@ -200,3 +203,13 @@ while SETTINGS['running']==2:
 	gfx.start_of_frame()
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
+
+def tick():
+	while SETTINGS['running']==2:
+		main()
+
+if '--profile' in sys.argv:
+	logging.info('Profiling. Exit when completed.')
+	cProfile.run('tick()','profile.dat')
+else:
+	tick()

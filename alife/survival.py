@@ -56,6 +56,9 @@ def loot(life):
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
 			return True
 
+def can_meet_needs(life, item_type):
+	return sight.find_known_items(life, matches=[{'type': item_type}])
+
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 		_equip_action = {'action': 'equipitem',

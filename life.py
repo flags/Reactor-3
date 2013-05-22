@@ -263,6 +263,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
+	_life['hunger'] = 1000
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -2269,7 +2270,17 @@ def calculate_hunger(life):
 			_remove.append(_food)
 	
 	for _item in _remove:
-		life['eaten'].remove(_item)	
+		life['eaten'].remove(_item)
+	
+	if get_hunger(life) == 'Satiated':
+		brain.unflag(life, 'hungry')
+	else:
+		brain.flag(life, 'hungry')
+	
+	if get_thirst(life) == 'Hydrated':
+		brain.unflag(life, 'thirsty')
+	else:
+		brain.flag(life, 'thirsty')
 
 def get_hunger(life):
 	if not 'HUNGER' in life['life_flags']:
