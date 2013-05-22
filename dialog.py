@@ -413,7 +413,10 @@ def get_responses_about_self(life):
 			'camp': camp['id']})
 	
 	if not _responses:
-		_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
+		if life['job']:
+			_responses.append({'text': life['job']['description'], 'gist': 'nothing'})
+		else:
+			_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
 	return _responses
 
