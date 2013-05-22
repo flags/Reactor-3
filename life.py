@@ -1686,6 +1686,11 @@ def eat_item(life, item_id):
 	remove_item_from_inventory(life, item_id)
 	logging.info('%s ate a %s.' % (' '.join(life['name']), items.get_name(item)))
 
+	if item['type'] == 'food':
+		gfx.message('You finsh eating.')
+	else:
+		gfx.message('You finsh drinking.')
+
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
 	item = get_inventory_item(life,id)

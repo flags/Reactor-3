@@ -651,14 +651,17 @@ def inventory_drop(entry):
 
 def inventory_eat(entry):
 	key = entry['key']
-	item = entry['id']
+	item = life.get_inventory_item(SETTINGS['controlling'], entry['id'])
 	
 	life.add_action(SETTINGS['controlling'],{'action': 'eatitem',
-		'item': item},
+		'item': item['id']},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'],item))
+		delay=life.get_item_access_time(SETTINGS['controlling'],item['id']))
 	
-	gfx.message('You start to eat %s.' % items.get_name(life.get_inventory_item(SETTINGS['controlling'], item)))
+	if item['type'] == 'food':
+		gfx.message('You start to eat %s.' % items.get_name(item))
+	else:
+		gfx.message('You start to drink %s.' % items.get_name(item))
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_throw(entry):
