@@ -54,3 +54,4 @@ ALife cases:
 	Misc:
 		[ ] ID vs. dictionary reference mismatch
 		[ ] Proper `get_camp_founder` function for determining who the founder is believed to be
+		[ ] When choosing to not answer a question, chances are that person will never ask you again.

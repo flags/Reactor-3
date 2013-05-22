@@ -35,6 +35,9 @@ def load_strings():
 		NAMES_FOR_PLACES.extend([line.strip() for line in e.readlines()])
 
 def generate_place_name():
+	if not NAMES_FOR_PLACES:
+		return 'Zoolandia'
+	
 	return NAMES_FOR_PLACES.pop(random.randint(0, len(NAMES_FOR_PLACES)-1))
 
 def format_injury(injury):
