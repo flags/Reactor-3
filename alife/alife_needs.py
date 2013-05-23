@@ -47,20 +47,21 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_has_items = False
+	if lfe.is_consuming(life):
+		return True
+	
 	if brain.get_flag(life, 'hungry'):
 		_food = brain.retrieve_from_memory(life, 'has_food')
 		
 		if _food:
-			_has_items = True
 			lfe.consume(life, _food[0]['id'])
+			return True
 		
 	if brain.get_flag(life, 'thirsty'):
 		_drinks = brain.retrieve_from_memory(life, 'has_drink')
 		
 		if _drinks:
-			_has_items = True
 			lfe.consume(life, _drinks[0]['id'])
+			return True
 	
-	if not _has_items:
-		survival.manage_needs(life)
+	survival.manage_needs(life)

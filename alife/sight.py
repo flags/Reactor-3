@@ -203,6 +203,9 @@ def find_known_items(life, matches=[], visible=True):
 		if 'demand_drop' in item['flags']:
 			continue
 		
+		if item['item']['lock']:
+			continue
+		
 		_break = False
 		for match in matches:
 			for key in match:

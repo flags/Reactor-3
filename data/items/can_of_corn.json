@@ -4,8 +4,8 @@
 "icon": "%",
 "description": "A can of corn.",
 "flags": "",
-"sustenance": 300,
-"value": 2,
+"sustenance": 25,
+"value": 400,
 "modifiers": {},
 "size": "1x1",
 "material": "metal"}

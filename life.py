@@ -2339,7 +2339,7 @@ def get_thirst(life):
 	
 	if _thirst>.5:
 		return 'Hydrated'
-	elif 0.3>=_thirst<=.5:
+	elif _thirst>=.3:
 		return 'Thirsty'
 	else:
 		return 'Dehydrated'

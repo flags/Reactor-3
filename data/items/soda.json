@@ -5,7 +5,7 @@
 "description": "A can of sugary soda. Contains caffeine.",
 "flags": "",
 "sustenance": 20,
-"value": 50,
+"value": 175,
 "modifiers": {"hunger": -10},
 "size": "1x1",
 "material": "metal"}

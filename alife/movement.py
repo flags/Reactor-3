@@ -158,7 +158,6 @@ def handle_hide_and_decide(life,target,source_map):
 def collect_nearby_wanted_items(life, visible=True, matches=[{'type': 'gun'}]):
 	_highest = {'item': None,'score': -100}
 	_nearby = sight.find_known_items(life, matches=matches, visible=visible)
-	print _nearby
 	
 	for item in _nearby:
 		_score = item['score']
@@ -190,6 +189,7 @@ def collect_nearby_wanted_items(life, visible=True, matches=[{'type': 'gun'}]):
 			'hand': random.choice(_empty_hand)},
 			200,
 			delay=40)
+		lfe.lock_item(life, _highest['item'])
 	else:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)

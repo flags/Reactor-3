@@ -73,7 +73,6 @@ def manage_needs(life):
 	
 	_need = _needs[max(_needs.keys())][0]
 	movement.collect_nearby_wanted_items(life, visible=False, matches=[_need['item']])
-	lfe.focus_on(life)
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:

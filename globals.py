@@ -151,6 +151,7 @@ BULLETS = []
 EFFECTS = []
 SPLATTERS = []
 JOBS = {}
+WORKER_THREADS = []
 
 #Consoles
 MAP_WINDOW = None
