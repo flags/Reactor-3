@@ -59,6 +59,22 @@ def loot(life):
 def can_meet_needs(life, item_type):
 	return sight.find_known_items(life, matches=[{'type': item_type}])
 
+def manage_needs(life):
+	#TODO: Score best
+	_needs = {}
+	_food = brain.retrieve_from_memory(life, 'possible_food')
+	_drink = brain.retrieve_from_memory(life, 'possible_drink')
+	
+	if _food:
+		_needs[lfe.get_hunger_percentage] = _food
+	
+	if _drink:
+		_needs[lfe.get_thirst_percentage] = _drink
+	
+	_need = _needs[max(_needs.keys())][0]
+	movement.collect_nearby_wanted_items(life, visible=False, matches=[_need['item']])
+	lfe.focus_on(life)
+
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 		_equip_action = {'action': 'equipitem',

@@ -22,17 +22,23 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
 		return False
 	
+	_has_food = lfe.get_all_inventory_items(life, matches=[{'type': 'food'}])
+	_has_drink = lfe.get_all_inventory_items(life, matches=[{'type': 'drink'}])
+	brain.store_in_memory(life, 'has_food', _has_food)
+	brain.store_in_memory(life, 'has_drink', _has_drink)
+	
 	_food = []
 	_drink = []
 	if brain.get_flag(life, 'hungry'):
-		_food = survival.can_meet_needs(life, 'food')		
+		_food = survival.can_meet_needs(life, 'food')
 		brain.store_in_memory(life, 'possible_food', _food)
 	
 	if brain.get_flag(life, 'thirsty'):
-		_drink = survival.can_meet_needs(life, 'drink')		
+		_drink = survival.can_meet_needs(life, 'drink')
 		brain.store_in_memory(life, 'possible_drink', _drink)
 	
-	if not _food and not _drink:
+	#TODO: LOL
+	if not _food and not _drink and not _has_food and not _has_drink:
 		return False
 	
 	if not life['state'] == STATE:
@@ -41,6 +47,20 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	survival.loot(life)
+	_has_items = False
+	if brain.get_flag(life, 'hungry'):
+		_food = brain.retrieve_from_memory(life, 'has_food')
+		
+		if _food:
+			_has_items = True
+			lfe.consume(life, _food[0]['id'])
+		
+	if brain.get_flag(life, 'thirsty'):
+		_drinks = brain.retrieve_from_memory(life, 'has_drink')
+		
+		if _drinks:
+			_has_items = True
+			lfe.consume(life, _drinks[0]['id'])
 	
-	print 'YEAH'
+	if not _has_items:
+		survival.manage_needs(life)

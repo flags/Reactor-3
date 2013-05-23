@@ -264,6 +264,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
 	_life['hunger'] = 1000
+	_life['thirst'] = 1000
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -302,6 +303,9 @@ def ticker(life, name, time):
 	else:
 		life['tickers'][name] = time
 		return False
+
+def focus_on(life):
+	SETTINGS['following'] = life
 
 def sanitize_heard(life):
 	del life['heard']
@@ -1038,7 +1042,7 @@ def perform_action(life):
 		set_animation(life, [';', 'p'], speed=6)
 		delete_action(life,action)
 	
-	elif _action['action'] == 'eatitem':
+	elif _action['action'] == 'consumeitem':
 		eat_item(life, _action['item'])
 		set_animation(life, [';', 'e'], speed=6)
 		delete_action(life, action)
@@ -1669,6 +1673,21 @@ def remove_item_from_inventory(life,id):
 	
 	return item
 
+def is_consuming(life):
+	return find_action(life, matches=[{'action': 'consumeitem'}])
+
+def consume(life, item_id):
+	if is_consuming(life):
+		logging.warning('%s is already eating.' % ' '.join(life['name']))
+		return False
+	
+	add_action(life, {'action': 'consumeitem',
+		'item': item_id},
+		200,
+		delay=get_item_access_time(life, item_id))
+	
+	return True
+
 def can_consume(life, item_id):
 	item = get_inventory_item(life, item_id)
 	
@@ -1687,10 +1706,11 @@ def eat_item(life, item_id):
 	remove_item_from_inventory(life, item_id)
 	logging.info('%s ate a %s.' % (' '.join(life['name']), items.get_name(item)))
 
-	if item['type'] == 'food':
-		gfx.message('You finsh eating.')
-	else:
-		gfx.message('You finsh drinking.')
+	if 'player' in life:
+		if item['type'] == 'food':
+			gfx.message('You finsh eating.')
+		else:
+			gfx.message('You finsh drinking.')
 
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
@@ -2282,11 +2302,17 @@ def calculate_hunger(life):
 	else:
 		brain.flag(life, 'thirsty')
 
+def get_hunger_percentage(life):
+	return life['hunger']/float(life['hunger_max'])
+
+def get_thirst_percentage(life):
+	return life['thirst']/float(life['thirst_max'])
+
 def get_hunger(life):
 	if not 'HUNGER' in life['life_flags']:
 		return 'Not hungry'
 	
-	_hunger = life['hunger']/float(life['hunger_max'])
+	_hunger = get_hunger_percentage(life)
 	
 	if _hunger>.5:
 		return 'Satiated'
@@ -2299,7 +2325,7 @@ def get_thirst(life):
 	if not 'THIRST' in life['life_flags']:
 		return 'Not thirsty'
 	
-	_thirst = life['thirst']/float(life['thirst_max'])
+	_thirst = get_thirst_percentage(life)
 	
 	if _thirst>.5:
 		return 'Hydrated'

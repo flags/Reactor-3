@@ -1,7 +1,7 @@
 {"name": "soda",
 "prefix": "a can of",
 "type": "drink",
-"icon": "%",
+"icon": "8",
 "description": "A can of sugary soda. Contains caffeine.",
 "flags": "",
 "sustenance": 20,

@@ -155,15 +155,16 @@ def handle_hide_and_decide(life,target,source_map):
 				brain.flag(life, 'scared')
 				lfe.say(life,'@n panics!',action=True)
 
-def collect_nearby_wanted_items(life, matches=[{'type': 'gun'}]):
+def collect_nearby_wanted_items(life, visible=True, matches=[{'type': 'gun'}]):
 	_highest = {'item': None,'score': -100}
-	_nearby = sight.find_known_items(life, matches=matches, visible=True)
+	_nearby = sight.find_known_items(life, matches=matches, visible=visible)
+	print _nearby
 	
 	for item in _nearby:
 		_score = item['score']
 		_score -= numbers.distance(life['pos'], item['item']['pos'])
 		
-		if _score > _highest['score']:
+		if not _highest['item'] or _score > _highest['score']:
 			_highest['score'] = _score
 			_highest['item'] = item['item']
 	

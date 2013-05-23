@@ -653,7 +653,7 @@ def inventory_eat(entry):
 	key = entry['key']
 	item = life.get_inventory_item(SETTINGS['controlling'], entry['id'])
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'eatitem',
+	life.add_action(SETTINGS['controlling'],{'action': 'consumeitem',
 		'item': item['id']},
 		200,
 		delay=life.get_item_access_time(SETTINGS['controlling'],item['id']))
