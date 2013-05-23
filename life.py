@@ -1568,13 +1568,14 @@ def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
 	return numbers.clip(_get_item_access_time(life, item),1,999)
 
-def direct_add_item_to_inventory(life,item,container=None):
+def direct_add_item_to_inventory(life, item, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
+	unlock_item(life, item)
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
@@ -1601,6 +1602,7 @@ def direct_add_item_to_inventory(life,item,container=None):
 
 def add_item_to_inventory(life, item):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
+	unlock_item(life, item)
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
@@ -1801,6 +1803,12 @@ def drop_all_items(life):
 	
 	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
 		drop_item(life, item)
+
+def lock_item(life, item):
+	item['lock'] = life
+
+def unlock_item(life, item):
+	item['lock'] = None
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""

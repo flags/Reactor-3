@@ -102,6 +102,7 @@ def create_item(name,position=[0,0,2]):
 	item['velocity'] = [0,0,0]
 	item['friction'] = 0
 	item['gravity'] = SETTINGS['world gravity']
+	item['lock'] = None
 	
 	if 'speed' in item:
 		item['max_speed'] = item['speed']
