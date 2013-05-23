@@ -1043,8 +1043,10 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'consumeitem':
+		_item = get_inventory_item(life, _action['item'])
 		eat_item(life, _action['item'])
 		set_animation(life, [';', 'e'], speed=6)
+		items.delete_item(_item)
 		delete_action(life, action)
 	
 	elif _action['action'] == 'pickupequipitem':
