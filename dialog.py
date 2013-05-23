@@ -320,6 +320,22 @@ def get_questions_to_ask(life, chosen):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
 		
+		_escape = False
+		if alife.brain.get_flag(life, 'hungry') and not alife.survival.can_meet_needs(life, 'food'):
+			_topics.append({'text': 'Do you have anything to eat?',
+				'gist': 'request_item',
+				'item': {'type': 'food'}})
+			_escape = True
+		
+		if alife.brain.get_flag(life, 'thirsty') and not alife.survival.can_meet_needs(life, 'drink'):
+			_topics.append({'text': 'Do you have anything to drink?',
+				'gist': 'request_item',
+				'item': {'type': 'drink'}})
+			_escape = True
+		
+		if _escape:
+			return _topics
+		
 		if memory['text'] == 'wants_founder_info':			
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
@@ -418,6 +434,18 @@ def get_responses_about_self(life):
 		else:
 			_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
+	return _responses
+
+def get_items_to_give(life, target, matches={}):
+	_responses = []
+	for item in lfe.get_all_inventory_items(life, matches=[matches]):
+		print item['name']
+	
+	if not _responses:
+		#TODO: Potential conflict here
+		_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
+	
+	lfe.focus_on(life)
 	return _responses
 
 def get_matching_likes(life, target, gist):
@@ -587,6 +615,8 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target']})
 		else:
 			_responses.append({'text': 'Not telling you!', 'gist': 'saw_target_at'})
+	elif chosen['gist'] == 'request_item':
+		_responses.extend(get_items_to_give(life, target, matches=chosen['item']))
 	else:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	

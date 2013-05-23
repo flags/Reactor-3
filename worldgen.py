@@ -13,7 +13,8 @@ import random
 import time
 import json
 
-RECRUIT_ITEMS = ['sneakers', 'blue jeans', 'leather backpack', 'glock', '9x19mm magazine', 'radio', '.22 rifle', 'corn', 'soda']
+BASE_ITEMS = ['sneakers', 'blue jeans', 'leather backpack']
+RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'radio', '.22 rifle', 'corn', 'soda']
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
@@ -117,7 +118,13 @@ def generate_life(source_map, amount=1):
 		
 		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(alife, items.create_item(item))
+		
 		for item in RECRUIT_ITEMS:
+			if random.randint(0, 1):
+				continue
+			
 			life.add_item_to_inventory(alife, items.create_item(item))
 		
 		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
@@ -134,6 +141,9 @@ def create_player(source_map):
 		map=source_map,
 		position=[10,80,2])
 	PLAYER['player'] = True
+	
+	for item in BASE_ITEMS:
+		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
 	for item in RECRUIT_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))

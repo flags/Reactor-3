@@ -55,24 +55,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if jobs.alife_is_factor_of_any_job(ai['life']):
 			break
-		
-		#if brain.get_alife_flag(life, ai['life'], 'enemy'):
-		#	break
-		
-		#if not life['camp'] == target['life']['camp']:
-		
-		#TODO: Way too scripted. ALife shouldn't really talk until provoked.
-		#if speech.has_received(life, ai['life'], 'greeting'):
-		#	if speech.has_received(life, ai['life'], 'get_chunk_info'):
-		#		pass
-		#	else:
-		#		if not speech.discussed(life, ai['life'], 'get_chunk_info'):
-		#			speech.communicate(life,
-		#				'get_chunk_info',
-		#				msg='Do you know of any interesting places?',
-		#				matches=[{'id': ai['life']['id']}])
-		#			speech.send(life, ai['life'], 'get_chunk_info')
-		#else:
+
 		_knows = brain.knows_alife(life, ai['life'])
 		
 		if _knows['score']<0:
@@ -83,6 +66,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not speech.discussed(life, ai['life'], 'greeting'):
 				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'greeting')
+	
 	_potential_talking_targets = []
 	for ai in [life['know'][i] for i in life['know']]:
 		if life['state'] == 'combat':
@@ -100,6 +84,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		_potential_talking_targets.append(ai['life'])
 	
+	#TODO: Score these
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:

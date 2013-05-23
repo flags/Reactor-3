@@ -1044,7 +1044,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'consumeitem':
 		_item = get_inventory_item(life, _action['item'])
-		eat_item(life, _action['item'])
+		consume_item(life, _action['item'])
 		set_animation(life, [';', 'e'], speed=6)
 		items.delete_item(_item)
 		delete_action(life, action)
@@ -1700,7 +1700,7 @@ def can_consume(life, item_id):
 	
 	return False
 
-def eat_item(life, item_id):
+def consume_item(life, item_id):
 	item = get_inventory_item(life, item_id)
 	
 	if not can_consume(life, item_id):
@@ -1708,7 +1708,7 @@ def eat_item(life, item_id):
 	
 	life['eaten'].append(item)
 	remove_item_from_inventory(life, item_id)
-	logging.info('%s ate a %s.' % (' '.join(life['name']), items.get_name(item)))
+	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
 
 	if 'player' in life:
 		if item['type'] == 'food':
