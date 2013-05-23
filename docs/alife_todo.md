@@ -57,3 +57,15 @@ ALife cases:
 		[ ] Proper `get_camp_founder` function for determining who the founder is believed to be
 		[ ] When choosing to not answer a question, chances are that person will never ask you again.
 		[ ] Items need `is_being_picked_up`
+		[ ] ALife fight for food/will attack others for food if starving
+				Could randomize hunger on zone entry to create friction at worldgen
+	
+	Cycles:
+		[/] Food:
+				Has food?
+					[x] eat it
+				else:
+					remember food location OR can see food
+						[x] gather it
+					else:
+						[ ] search for food
