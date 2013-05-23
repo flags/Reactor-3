@@ -10,6 +10,7 @@
 build/*
 tests/*
 docs/devjournal.md
+docs/talks/*
 
 profile.dat
 terminal.png
