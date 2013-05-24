@@ -51,14 +51,20 @@ ALife cases:
 	
 	Combat:
 		[ ] Add `can_engage` function
+		[ ] ALife fight for food/will attack others for food if starving
+				Could randomize hunger on zone entry to create friction at worldgen
 	
 	Misc:
 		[ ] ID vs. dictionary reference mismatch
 		[ ] Proper `get_camp_founder` function for determining who the founder is believed to be
 		[ ] When choosing to not answer a question, chances are that person will never ask you again.
-		[ ] Items need `is_being_picked_up`
-		[ ] ALife fight for food/will attack others for food if starving
-				Could randomize hunger on zone entry to create friction at worldgen
+		[x] Items need `is_being_picked_up`
+		[ ] `set_hunger_to_percentage` (also for thirst)
+		[ ] General dictionary match function
+	
+	Worldgen:
+		[ ] Randomize hunger/thirst on entry
+		[ ] Spawn ALife in various locations around the outside of the map
 	
 	Cycles:
 		[/] Food:
