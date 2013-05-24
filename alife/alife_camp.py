@@ -94,6 +94,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not brain.knows_alife_by_id(life, _info['founder']):
 				if not lfe.get_memory(life, matches={'text': 'where is target', 'target': _info['founder']}):
 					lfe.memory(life, 'where is target', target=_info['founder'], question=True)
+					lfe.create_question(life,
+						'where_is_target',
+						{'target': _info['founder']},
+						lfe.get_memory,
+						{'text': 'location_of_target', 'target': _info['founder'], 'location': '*'})
 				
 			elif not life['job']:
 				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):

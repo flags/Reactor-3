@@ -5,7 +5,9 @@ import life as lfe
 import logging
 
 def process_questions(life):
-	for question in lfe.get_questions(life):		
+	for question in lfe.get_questions(life):
+		_answered = False
+		
 		if question['answer_callback'](life, question['answer_match']):
 			question['answered'].append(memory['id'])
 			_answered = True

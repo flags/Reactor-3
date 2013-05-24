@@ -470,7 +470,7 @@ def get_items_to_give(life, target, matches={}):
 		return _responses
 	
 	if not _responses:
-		#TODO: Potential conflict here
+		#TODO: Potential conflict 
 		_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
 	
 	return _responses
@@ -638,11 +638,17 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'last_seen_target_at', 'target': chosen['target']})
 	elif chosen['gist'] == 'last_seen_target_at':
 		if lfe.can_see(life, LIFE[chosen['target']]['pos']):
-			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target']})
+			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': LIFE[chosen['target']]['pos'][:]})
 		elif _impact>=0:
-			_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target']})
+			_knows = alife.brain.knows_alife_by_id(life, chosen['target'])
+			_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': _knows['last_seen_at'][:]})
 		else:
+			#TODO: Potential conflict 
 			_responses.append({'text': 'Not telling you!', 'gist': 'saw_target_at'})
+	elif chosen['gist'] == 'saw_target_at':
+		lfe.memory(LIFE[dialog['listener']], 'location_of_target',
+			target=chosen['target'],
+			location=chosen['location'])
 	elif chosen['gist'] == 'request_item':
 		_responses.extend(get_items_to_give(life, target, matches=chosen['item']))
 	else:
