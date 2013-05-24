@@ -642,7 +642,6 @@ def has_dialog(life):
 
 def can_ask(life, chosen, memory):
 	if 'target' in chosen and chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
-		print WORLD_INFO['ticks']-memory['asked'][chosen['target']]
 		return False
 	
 	return True
