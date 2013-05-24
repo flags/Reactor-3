@@ -108,8 +108,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			pass
 			
 	else:		
-		if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
-			lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
+		#if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
+		#	lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
+		lfe.create_question(life,
+			'wants_founder_info',
+			{'camp': _camp['id']},
+			lfe.get_memory,
+			{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
 	
 	#if _info['estimated_population']<2:
 		

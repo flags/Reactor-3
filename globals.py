@@ -119,7 +119,8 @@ GIST_MAP = {'how_are_you': 0,
 	'irritated_neutral': 0,
 	'irritated_negative': -1}
 
-QUESTIONS_ANSWERS = {'wants_founder_info': ['camp', 'founder']}
+QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
+	'wants item': {'type': '*'}}
 
 POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 	'how_are_you': [1.0, 0.7]}

@@ -312,29 +312,29 @@ def give_camp_founder(life, chosen):
 def get_questions_to_ask(life, chosen):
 	_topics = []
 	_target = None
+	_escape = False
 	
 	if 'target' in chosen:
 		_target = chosen['target']
 	
+	#if alife.brain.get_flag(life, 'hungry') and not alife.survival.can_meet_needs(life, 'food'):
+	#	_topics.append({'text': 'Do you have anything to eat?',
+	#		'gist': 'request_item',
+	#		'item': {'type': 'food'}})
+	#	_escape = True
+	
+	#if alife.brain.get_flag(life, 'thirsty') and not alife.survival.can_meet_needs(life, 'drink'):
+	#	_topics.append({'text': 'Do you have anything to drink?',
+	#		'gist': 'request_item',
+	#		'item': {'type': 'drink'}})
+	#	_escape = True
+	
+	#if _escape:
+	#	return _topics
+	
 	for memory in lfe.get_questions(life, target=_target):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
-		
-		_escape = False
-		if alife.brain.get_flag(life, 'hungry') and not alife.survival.can_meet_needs(life, 'food'):
-			_topics.append({'text': 'Do you have anything to eat?',
-				'gist': 'request_item',
-				'item': {'type': 'food'}})
-			_escape = True
-		
-		if alife.brain.get_flag(life, 'thirsty') and not alife.survival.can_meet_needs(life, 'drink'):
-			_topics.append({'text': 'Do you have anything to drink?',
-				'gist': 'request_item',
-				'item': {'type': 'drink'}})
-			_escape = True
-		
-		if _escape:
-			return _topics
 		
 		if memory['text'] == 'wants_founder_info':			
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
@@ -368,6 +368,14 @@ def get_questions_to_ask(life, chosen):
 				'gist': 'last_seen_target_at',
 				'target': memory['target'],
 				'memory': memory})
+			
+			if 'target' in chosen:
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+		elif memory['text'] == 'wants item':
+			#TODO: Better description
+			_topics.append({'text': 'Do you have anything like this?',
+				'gist': 'request_item',
+				'item': memory['item']})
 			
 			if 'target' in chosen:
 				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
@@ -438,14 +446,33 @@ def get_responses_about_self(life):
 
 def get_items_to_give(life, target, matches={}):
 	_responses = []
-	for item in lfe.get_all_inventory_items(life, matches=[matches]):
+	print 'HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEERE'
+	_matching = lfe.get_all_inventory_items(life, matches=[matches])
+	
+	for item in _matching:
+		#TODO: Find minimum amount for survival
+		if len(_matching) == 1:
+			break
+		
+		if lfe.find_action(life, matches=[{'action': 'dropitem'}]):
+			break
 		print item['name']
+		lfe.focus_on(life)
+		
+		#TODO: Write lfe.drop_item_for()
+		print life['actions']
+		lfe.add_action(life, {'action': 'dropitem',
+			'item': item['id']},
+			200,
+			delay=lfe.get_item_access_time(life, item))
+		
+		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'nothing'})
+		return _responses
 	
 	if not _responses:
 		#TODO: Potential conflict here
 		_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
 	
-	lfe.focus_on(life)
 	return _responses
 
 def get_matching_likes(life, target, gist):
@@ -551,12 +578,13 @@ def process_response(life, target, dialog, chosen):
 			else:
 				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp'})
 	elif chosen['gist'].count('inform_of_camp'):
-		alife.camps.discover_camp(life, CAMPS[chosen['camp']])
-		
-		lfe.memory(LIFE[dialog['listener']], 'heard about camp',
-			camp=chosen['camp'],
-			target=chosen['sender'],
-			founder=chosen['founder'])
+		if chosen['camp']:
+			alife.camps.discover_camp(life, CAMPS[chosen['camp']])
+			
+			lfe.memory(LIFE[dialog['listener']], 'heard about camp',
+				camp=chosen['camp'],
+				target=chosen['sender'],
+				founder=chosen['founder'])
 	elif chosen['gist'] == 'who_founded_camp':
 		_responses.extend(give_camp_founder(life, chosen))
 	elif chosen['gist'].count('tell_about_camp_founder'):

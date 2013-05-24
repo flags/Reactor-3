@@ -610,12 +610,16 @@ def say(life, text, action=False, volume=30, context=False):
 			
 			gfx.message(text, style=_style)
 
-def memory(life, gist, **kvargs):
+def memory(life, gist, *args, **kvargs):
 	_entry = {'text': gist, 'id': len(life['memory'])}
 	_entry['time_created'] = WORLD_INFO['ticks']
+	
+	for arg in args:
+		_entry.update(arg)
+	
 	_entry.update(kvargs)
 	
-	if 'question' in kvargs:
+	if 'question' in _entry:
 		_entry['answered'] = []
 		_entry['asked'] = {}
 		_entry['ignore'] = []
@@ -670,15 +674,30 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
+def create_question(life, gist, question, callback, answer_match):
+	question['question'] = True
+	question['answer_callback'] = callback
+	question['answer_match'] = answer_match
+	_match = {'text': gist}
+	_match.update(question)
+	
+	if get_memory(life, matches=_match):
+		print 'already had one'
+		return False
+	
+	memory(life, gist, question)
+	
+	logging.debug('Creating question...')
+
 def get_questions(life, target=None, no_filter=False):
 	_questions = []
 	
 	for question in get_memory(life, matches={'question': True}):
-		if not no_filter:
-			if target and target in question['ignore']:
-				continue
-			
-			_questions.append(question)
+		#TODO: no_filter kills the loop entirely?
+		if not no_filter and target and target in question['ignore']:
+			continue
+		
+		_questions.append(question)
 	
 	return _questions
 
@@ -1531,6 +1550,18 @@ def get_all_unequipped_items(life, check_hands=True, matches=[]):
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
+
+def get_all_known_camps(life, matches={}):
+	_camps = []
+	
+	for camp in life['known_camps'].values():
+		for key in matches:
+			if not key in camp or not camp[key] == matches[key]:
+				break
+			
+			_camps.append(camp)
+	
+	return _camps
 
 def _get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""

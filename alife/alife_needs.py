@@ -56,6 +56,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if _food:
 			lfe.consume(life, _food[0]['id'])
 			return True
+		else:
+			lfe.create_question(life,
+				'wants item',
+				{'item': {'type': 'food'}},
+				lfe.get_all_inventory_items,
+				{'type': 'food'})
 		
 	if brain.get_flag(life, 'thirsty'):
 		_drinks = brain.retrieve_from_memory(life, 'has_drink')
@@ -63,5 +69,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if _drinks:
 			lfe.consume(life, _drinks[0]['id'])
 			return True
+		else:
+			lfe.create_question(life,
+				'wants item',
+				{'item': {'type': 'drink'}},
+				lfe.get_all_inventory_items,
+				{'type': 'drink'})
 	
 	survival.manage_needs(life)
