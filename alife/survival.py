@@ -7,6 +7,7 @@ import movement
 import chunks
 import speech
 
+import logging
 import numbers
 import random
 import combat
@@ -56,8 +57,65 @@ def loot(life):
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
 			return True
 
+def create_need(life, need, need_callback, min_matches=1):
+	life['needs'].append({'need': need,
+		'need_callback': need_callback,
+		'min_matches': min_matches,
+		'matches': [],
+		'num_met': False})
+
 def can_meet_needs(life, item_type):
 	return sight.find_known_items(life, matches=[{'type': item_type}])
+
+def is_in_need_matches(life, match):
+	_matches = []
+	
+	for root_need in life['needs']:
+		for item in root_need['matches']:
+			_break = False
+
+			for key in match:
+				if not key in item or not item[key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				continue
+			
+			_matches.append(root_need)
+	
+	return _matches
+
+def get_matched_needs(life, match):
+	_matches = []
+	
+	for root_need in life['needs']:
+		_break = False
+		for need in root_need:
+			for key in match:
+				if not key in need or not need[key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				break
+			
+			_matches.append(root_need)
+	
+	return _matches
+
+def check_needs(life):
+	for need in life['needs']:
+		_res = need['need_callback'](life, matches=need['need'])
+		
+		need['matches'] = _res
+		
+		if len(_res)>=need['min_matches']:
+			need['num_met'] = (len(_res)-need['min_matches'])+1
+			continue
+		
+		#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
+		need['num_met'] = 0
 
 def manage_needs(life):
 	#TODO: Score best

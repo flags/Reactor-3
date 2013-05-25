@@ -317,21 +317,6 @@ def get_questions_to_ask(life, chosen):
 	if 'target' in chosen:
 		_target = chosen['target']
 	
-	#if alife.brain.get_flag(life, 'hungry') and not alife.survival.can_meet_needs(life, 'food'):
-	#	_topics.append({'text': 'Do you have anything to eat?',
-	#		'gist': 'request_item',
-	#		'item': {'type': 'food'}})
-	#	_escape = True
-	
-	#if alife.brain.get_flag(life, 'thirsty') and not alife.survival.can_meet_needs(life, 'drink'):
-	#	_topics.append({'text': 'Do you have anything to drink?',
-	#		'gist': 'request_item',
-	#		'item': {'type': 'drink'}})
-	#	_escape = True
-	
-	#if _escape:
-	#	return _topics
-	
 	for memory in lfe.get_questions(life, target=_target):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
@@ -446,16 +431,35 @@ def get_responses_about_self(life):
 
 def get_items_to_give(life, target, matches={}):
 	_responses = []
-	print 'HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEERE'
 	_matching = lfe.get_all_inventory_items(life, matches=[matches])
 	
 	for item in _matching:
-		#TODO: Find minimum amount for survival
-		if len(_matching) == 1:
-			break
-		
+		#TODO: Don't break out of the loop just because we're dropping an item
 		if lfe.find_action(life, matches=[{'action': 'dropitem'}]):
 			break
+		
+		if lfe.find_action(life, matches=[{'item': item['id']}]):
+			print 'IN USE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+			continue
+		
+		#if alife.survival.needs_item(life, item['id']):
+		#	continue
+		
+		#for need in survival.get_matched_needs(life, 
+		_matches = alife.survival.is_in_need_matches(life, item)
+		#print 'yo',_match
+		_break = False
+		for _match in _matches:
+			if _match['num_met']<=_match['min_matches']:
+				_break = True
+				break
+		
+		if _break:
+			continue
+		
+		#if len(_matching) == 1:
+		#	break
+		
 		print item['name']
 		lfe.focus_on(life)
 		

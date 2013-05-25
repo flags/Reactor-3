@@ -283,6 +283,17 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['task'] = ''
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
+	_life['needs'] = []
+	
+	alife.survival.create_need(_life,
+		[{'type': 'food'}],
+		get_all_inventory_items,
+		min_matches=1)
+	
+	alife.survival.create_need(_life,
+		[{'type': 'drink'}],
+		get_all_inventory_items,
+		min_matches=1)
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
@@ -880,7 +891,7 @@ def find_action(life,matches=[{}]):
 		
 		for match in matches:
 			for key in match:
-				if not key in action['action'] and not action[key] == match[key]:
+				if not key in action['action'] or not action[key] == match[key]:
 					_break = True
 					break
 			
@@ -1273,6 +1284,7 @@ def tick(life, source_map):
 			return False
 	
 	natural_healing(life)
+	alife.survival.check_needs(life)
 	
 	if get_bleeding_limbs(life):
 		if random.randint(0,50)<9:

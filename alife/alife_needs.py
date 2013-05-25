@@ -37,7 +37,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		_drink = survival.can_meet_needs(life, 'drink')
 		brain.store_in_memory(life, 'possible_drink', _drink)
 	
-	#TODO: LOL
 	if not _food and not _drink and not _has_food and not _has_drink:
 		return False
 	

@@ -215,6 +215,8 @@ def remember_known_item(life, item_uid):
 	return False
 
 def generate_needs(life):
+	#TODO: We don't generate all of our needs here, so this is a bit misleading
+	#Needs can be created anywhere in the ALife loop just so long as you do it early/before brain.think()
 	if combat.has_weapon(life):
 		unflag(life, 'no_weapon')
 	else:
