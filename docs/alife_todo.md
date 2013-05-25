@@ -60,6 +60,10 @@ Misc:
 	[ ] `set_hunger_to_percentage` (also for thirst)
 	[ ] General dictionary match function
 
+Survival:
+	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.
+		Can we get rid of the old needs that use flags?
+
 Worldgen:
 	[ ] Randomize hunger/thirst on entry
 	[ ] Spawn ALife in various locations around the outside of the map
