@@ -891,7 +891,7 @@ def find_action(life,matches=[{}]):
 		
 		for match in matches:
 			for key in match:
-				if not key in action['action'] or not action[key] == match[key]:
+				if not key in action or not action[key] == match[key]:
 					_break = True
 					break
 			
@@ -1538,6 +1538,9 @@ def get_all_inventory_items(life,matches=None):
 	
 	for item in life['inventory']:
 		_item = life['inventory'][item]
+		
+		if find_action(life, matches=[{'item': _item['id']}]):
+			continue
 		
 		if matches:
 			if not perform_match(_item,matches):
