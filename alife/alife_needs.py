@@ -27,17 +27,17 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	brain.store_in_memory(life, 'has_food', _has_food)
 	brain.store_in_memory(life, 'has_drink', _has_drink)
 	
-	_food = []
-	_drink = []
+	_possible_food = []
+	_possible_drink = []
 	if brain.get_flag(life, 'hungry'):
-		_food = survival.can_meet_needs(life, 'food')
-		brain.store_in_memory(life, 'possible_food', _food)
+		_possible_food = survival.can_meet_needs(life, 'food')
+		brain.store_in_memory(life, 'possible_food', _possible_food)
 	
 	if brain.get_flag(life, 'thirsty'):
-		_drink = survival.can_meet_needs(life, 'drink')
-		brain.store_in_memory(life, 'possible_drink', _drink)
+		_possible_drink = survival.can_meet_needs(life, 'drink')
+		brain.store_in_memory(life, 'possible_drink', _possible_drink)
 	
-	if not _food and not _drink and not _has_food and not _has_drink:
+	if not _possible_food and not _possible_drink and not _has_food and not _has_drink:
 		return False
 	
 	if not life['state'] == STATE:
