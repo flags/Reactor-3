@@ -438,41 +438,29 @@ def get_items_to_give(life, target, matches={}):
 		if lfe.find_action(life, matches=[{'action': 'dropitem'}]):
 			break
 		
-		if lfe.find_action(life, matches=[{'item': item['id']}]):
-			print 'IN USE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-			continue
-		
-		#if alife.survival.needs_item(life, item['id']):
-		#	continue
-		
-		#for need in survival.get_matched_needs(life, 
 		_matches = alife.survival.is_in_need_matches(life, item)
-		#print 'yo',_match
 		_break = False
-		for _match in _matches:
-			if _match['num_met']<=_match['min_matches']:
-				_break = True
-				break
+		if not 'player' in life:
+			for _match in _matches:
+				if _match['num_met']<=_match['min_matches']:
+					_break = True
+					break
 		
 		if _break:
 			continue
 		
-		#if len(_matching) == 1:
-		#	break
-		
-		print item['name']
 		lfe.focus_on(life)
 		
 		#TODO: Write lfe.drop_item_for()
-		print life['actions']
 		lfe.add_action(life, {'action': 'dropitem',
 			'item': item['id']},
 			200,
 			delay=lfe.get_item_access_time(life, item))
 		
-		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'nothing'})
+		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'nothing', 'like': 1})
 		return _responses
 	
+	#TODO: This should be an option.
 	if not _responses:
 		#TODO: Potential conflict 
 		_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
@@ -580,7 +568,8 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'You\'re in it right now!', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
 				_responses.append({'text': 'Well, this is it.', 'gist': 'inform_of_camp', 'sender': life['id'], 'camp': chosen['camp'], 'founder': life['id']})
 			else:
-				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp'})
+				#TODO: This right?
+				_responses.append({'text': 'Come visit sometime!', 'gist': 'inform_of_camp', 'camp': chosen['camp'],  'founder': life['id']})
 	elif chosen['gist'].count('inform_of_camp'):
 		if chosen['camp']:
 			alife.camps.discover_camp(life, CAMPS[chosen['camp']])

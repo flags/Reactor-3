@@ -64,7 +64,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.send(life, ai['life'], 'looks_hostile')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
-				speech.communicate(life, 'greeting', msg='Hello!', matches=[{'id': ai['life']['id']}])
+				speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'greeting')
 	
 	_potential_talking_targets = []
