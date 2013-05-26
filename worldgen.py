@@ -118,6 +118,10 @@ def generate_life(source_map, amount=1):
 		
 		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
+		if random.randint(0,1):
+			alife['hunger'] = 1000
+			alife['thirst'] = 1000
+		
 		for item in BASE_ITEMS:
 			life.add_item_to_inventory(alife, items.create_item(item))
 		

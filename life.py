@@ -263,8 +263,6 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
-	_life['hunger'] = 1000
-	_life['thirst'] = 1000
 	
 	#Various icons...
 	# expl = #chr(15)

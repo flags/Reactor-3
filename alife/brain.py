@@ -248,9 +248,11 @@ def understand(life,source_map):
 		
 		if snapshots.process_snapshot(life, target['life']):
 			_score = judgement.judge(life, target)
+			_old_score = target['score']
 			target['score'] = _score
 			
-			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+			if not _old_score == _score:
+				logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
 		_alife_seen.append({'who': target,'score': _score})
 		
