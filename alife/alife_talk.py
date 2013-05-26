@@ -91,6 +91,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['dialogs']:
 			break
 		
+		if life['state'] in ['combat', 'hiding', 'hidden']:
+			break
+		
 		if not 'player' in target and not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}):
 			start_dialog(life, target['id'], 'introduction')
 		elif lfe.get_questions(life, target=target['id']):

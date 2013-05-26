@@ -91,7 +91,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				jobs.process_job(_j)
 		
 		if not life['id'] == _info['founder']:
-			if not brain.knows_alife_by_id(life, _info['founder']):
+			_knows = brain.knows_alife_by_id(life, _info['founder'])
+			
+			if not _knows:
 				if not lfe.get_memory(life, matches={'text': 'where is target', 'target': _info['founder']}):
 					lfe.create_question(life,
 						'where_is_target',
@@ -99,7 +101,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						lfe.get_memory,
 						{'text': 'location_of_target', 'target': _info['founder'], 'location': '*'})
 				
-			elif not life['job']:
+			elif not life['job'] and _knows['trust']>=0:
 				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):
 					_j = jobs.create_job(life, 'get camp job')
 					jobs.add_detail_to_job(_j, 'target', _info['founder'])

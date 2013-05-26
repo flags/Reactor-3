@@ -60,7 +60,10 @@ def complete_task(life):
 	life['job']['tasks'].remove(life['task'])
 	
 	if not life['job']['tasks']:
-		del JOBS[life['job']['id']]
+		if not life['job']['id'] in JOBS:
+			logging.error('Job was #%s was deleted already.' % life['job']['id'])
+		else:
+			del JOBS[life['job']['id']]
 		
 		logging.debug('Job completed: %s' % life['job']['gist'])
 		life['job']['workers'].remove(life['id'])

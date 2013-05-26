@@ -635,7 +635,7 @@ def memory(life, gist, *args, **kvargs):
 		#_entry['last_asked'] = -1000
 	
 	life['memory'].append(_entry)
-	logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
+	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
@@ -690,7 +690,6 @@ def create_question(life, gist, question, callback, answer_match):
 	_match.update(question)
 	
 	if get_memory(life, matches=_match):
-		print 'already had one'
 		return False
 	
 	memory(life, gist, question)
@@ -1611,7 +1610,7 @@ def _get_item_access_time(life, item):
 
 def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
-	return numbers.clip(_get_item_access_time(life, item),1,999)
+	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
 def direct_add_item_to_inventory(life, item, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.

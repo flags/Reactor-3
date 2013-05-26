@@ -136,6 +136,7 @@ def guard_camp(life):
 			'to': random.choice(_chunk['ground'])},
 			200,
 			delay=_delay)
+	
 	return False
 
 def get_camp_jobs(camp_id):

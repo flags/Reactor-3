@@ -14,6 +14,7 @@ damage.py
 	
 judgement.py
 	[ ] Placeholder: ALife now view someone positively just by saying hello to them (no response needed)
+	[ ] Finish `alife.brain.can_trust`
 
 Conversations:
 	[/] Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
@@ -62,10 +63,10 @@ Misc:
 
 Survival:
 	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.
-		Can we get rid of the old needs that use flags?
+		[ ] Can we get rid of the old needs that use flags?
 
 Worldgen:
-	[ ] Randomize hunger/thirst on entry
+	[/] Randomize hunger/thirst on entry
 	[ ] Spawn ALife in various locations around the outside of the map
 
 Cycles:

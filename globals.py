@@ -117,7 +117,18 @@ GIST_MAP = {'how_are_you': 0,
 	'status_response_neutral': 0,
 	'status_response_neutral_question': 0,
 	'irritated_neutral': 0,
-	'irritated_negative': -1}
+	'irritated_negative': -1,
+	'heard_of_camp': 0,
+	'inquire_about_camp_founder': 0,
+	'inquire_about_camp_population': 0,
+	'talk_about_camp': 0,
+	'never_heard_of_camp': 0,
+	'tell_about_camp_founder': 0,
+	'ignore_question': 0,
+	'ignore_question_negative': -1,
+	'inform_of_camp': 0,
+	'end': 0,
+	'nothing': 0}
 
 QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
 	'wants item': {'type': '*'}}

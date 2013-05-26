@@ -90,9 +90,11 @@ def judge(life, target):
 			_dislike += 2
 		
 		elif memory['text'] == 'traitor':
+			_is_hostile = True
 			_dislike += 2
 		
 		elif memory['text'] == 'shot by':
+			_is_hostile = True
 			_dislike += 2
 		
 		elif memory['text'] == 'compliant':
@@ -114,13 +116,16 @@ def judge(life, target):
 		_score = target['impressions'][impression]['score']
 		
 		if _score < 0:
-			#print '-',impression
 			_dislike += abs(_score)
 		else:
-			#print '+',impression
 			_like += _score
 	
+	#TODO: What?
 	_like *= brain.get_trust(life, target['life']['id'])
+	
+	if target['trust']<0 and not brain.can_trust(life, target['life']['id']):
+		print 'DECLARING HOSTILE!!!'
+		_is_hostile = True
 	
 	if _is_hostile:
 		if _surrendered:
@@ -131,6 +136,9 @@ def judge(life, target):
 			brain.flag_alife(life, target['life'], 'combat_score', value=_life_combat_score-_target_combat_score)
 			
 			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
+			
+			if _target_combat_score>0:
+				return -_target_combat_score
 	
 	return _like-_dislike
 

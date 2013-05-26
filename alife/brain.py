@@ -161,6 +161,18 @@ def get_trust(life, target):
 	logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
 	return 0
 
+def can_trust(life, target):
+	_knows = knows_alife_by_id(life, target)
+	
+	#TODO: Is this ever the case considering where this function is being called?
+	if not _knows:
+		return False
+	
+	if _knows['trust']>0:
+		return True
+	
+	return False
+
 def meet_alife(life, target):
 	life['know'][target['id']] = {'life': target,
 		'score': 0,
@@ -177,7 +189,7 @@ def meet_alife(life, target):
 		'impressions': {},
 		'flags': {}}
 	
-	logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
+	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 
 def has_met_in_person(life, target):
 	if get_remembered_alife(life, target)['met_at_time'] == -1:
@@ -235,9 +247,6 @@ def understand(life,source_map):
 	_targets_not_seen_pre = life['know'].keys()
 	_targets_not_seen = []
 	
-	if get_flag(life, 'surrendered'):
-		return False
-	
 	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
 		speech.announce(life, 'call_for_help')
 	
@@ -273,12 +282,6 @@ def understand(life,source_map):
 			continue
 		
 		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
-	
-	#print life['name']
-	#for t in _targets_seen:
-	#	print '\t',t['who']['life']['id']
-	#for t in _targets_not_seen:
-	#	print '\t',t['who']['life']['id']
 	
 	generate_needs(life)
 	

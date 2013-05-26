@@ -32,7 +32,11 @@ def create_dialog_with(life, target, info):
 	if not _topics:
 		return False
 	
-	print life['name'],'creating conversation with',LIFE[target]['name']
+	if not alife.brain.knows_alife_by_id(life, target):
+		alife.brain.meet_alife(life, target)
+	
+	if not alife.brain.knows_alife(LIFE[target], life):
+		alife.brain.meet_alife(LIFE[target], life)
 	
 	_dialog = {'enabled': True,
 		'title': '',
@@ -63,7 +67,26 @@ def add_message(life, dialog, chosen):
 	
 	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
 	dialog['messages'].append(_message)
-	print '%s: %s' % (' '.join(life['name']), _text)
+	#print '%s: %s' % (' '.join(life['name']), _text)
+
+def calculate_impacts(life, target, topics):
+	#TODO: Unused arguments
+	#_score = judgement.judge(life, brain.knows_alife_by_id(life, target))
+	
+	for topic in topics:
+		if 'subtopic' in topic:
+			continue
+		
+		if not topic['gist'] in GIST_MAP:
+			if 'lie' in topic and topic['lie']:
+				topic['impact'] = -1
+				continue
+			
+			logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
+			topic['impact'] = 0
+			continue
+		
+		topic['impact'] = GIST_MAP[topic['gist']]
 
 def reset_dialog(dialog):
 	_ret = False
@@ -110,6 +133,9 @@ def alife_response(life, dialog):
 	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
 		dialog['question'] = _chosen['memory']
 	
+	if _chosen['gist'] == 'ignore_question':
+		dialog['question']['ignore'].append(life['id'])
+	
 	#TODO: Too tired :-)
 	if 'subtopics' in _chosen:
 		dialog['previous_topics'].append(dialog['topics'])
@@ -119,8 +145,8 @@ def alife_response(life, dialog):
 	else:
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
-		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
-		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
+		#modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
+		#modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 
 def tick(life, dialog):
 	if not dialog['speaker'] == life['id']:
@@ -155,6 +181,7 @@ def get_all_relevant_target_topics(life, target):
 	_memories = []
 	
 	_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
+	_topics.append({'text': 'Start conflict', 'gist': 'ignore_question_negative', 'dislike': 1})
 	_topics.append({'text': 'How are you?', 'gist': 'how_are_you', 'like': 1})
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
@@ -196,25 +223,6 @@ def get_all_responses_to(life, **kwargs):
 	print 'Search:',kwargs
 	for memory in lfe.get_memory(life, matches=kwargs):
 		print memory
-
-def calculate_impacts(life, target, topics):
-	#TODO: Unused arguments
-	#_score = judgement.judge(life, brain.knows_alife_by_id(life, target))
-	
-	for topic in topics:
-		if 'subtopic' in topic:
-			continue
-		
-		if not topic['gist'] in GIST_MAP:
-			if 'lie' in topic and topic['lie']:
-				topic['impact'] = -1
-				continue
-			
-			#logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
-			topic['impact'] = 0
-			continue
-		
-		topic['impact'] = GIST_MAP[topic['gist']]
 
 def format_responses(life, target, responses):
 	for entry in responses:
@@ -271,6 +279,7 @@ def give_camp_founder(life, chosen):
 		_lie = False
 	
 	_topics.append({'text': 'I don\'t know.', 'gist': 'ignore_question'})
+	#_topics.append({'text': 'You think I\'d tell you that?', 'gist': 'ignore_question_negative'})
 	
 	_topics.append({'text': 'I am.',
 		'gist': 'tell_about_camp_founder',
@@ -471,6 +480,10 @@ def get_matching_likes(life, target, gist):
 	_knows = alife.brain.knows_alife_by_id(life, target)
 	_matching = []
 	
+	if not _knows:
+		logging.error('%s does not know target.' % ' '.join(life['name']))
+		return []
+	
 	for key in _knows['likes']:
 		if key.count('*') and gist.count(key[:len(key)-1]):
 			_matching.append(key)
@@ -499,7 +512,7 @@ def modify_trust(life, target, _chosen):
 		
 		_knows['trust'] += _like
 	elif 'dislike' in _chosen:
-		_dislike = _chosen['like']
+		#_dislike = _chosen['dislike']
 		_knows['trust'] -= _chosen['dislike']
 
 def alife_choose_response(life, target, dialog, responses):
@@ -523,8 +536,6 @@ def alife_choose_response(life, target, dialog, responses):
 			dialog['question']['ignore'].append(life['id'])
 		
 		process_response(target, life, dialog, _chosen)
-		modify_trust(life, target['id'], _chosen)
-		modify_trust(target, life['id'], _chosen)
 	else:
 		reset_dialog(dialog)
 		logging.error('Dialog didn\'t return anything.')
@@ -644,7 +655,18 @@ def process_response(life, target, dialog, chosen):
 			location=chosen['location'])
 	elif chosen['gist'] == 'request_item':
 		_responses.extend(get_items_to_give(life, target, matches=chosen['item']))
-	else:
+	elif chosen['gist'] == 'ignore_question_negative':
+		_knows = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['speaker'])
+		print 'LOOK HERE!!!!!!!!!!!!!!!!'
+		print LIFE[dialog['listener']]['name'], _knows['trust']
+		
+		#TODO: Start dialog that can lead to more distrust
+		#if _knows['trust']<=0:
+		#	lfe.memory(LIFE[dialog['listener']], 'location_of_target',
+		#		target=chosen['target'],
+		#		location=chosen['location'])
+		
+	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	
 	if not 'player' in life and not _responses:
@@ -652,6 +674,11 @@ def process_response(life, target, dialog, chosen):
 	
 	calculate_impacts(life, target, _responses)
 	format_responses(life, target, _responses)
+	
+	modify_trust(LIFE[dialog['speaker']], dialog['listener'], chosen)
+	modify_trust(LIFE[dialog['listener']], dialog['speaker'], chosen)
+	lfe.create_and_update_self_snapshot(LIFE[dialog['speaker']])
+	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
 	_speaker = dialog['speaker']
 	_listener = dialog['listener']
