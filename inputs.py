@@ -1,14 +1,15 @@
 from cStringIO import StringIO
-from libtcodpy import *
 from globals import *
+
 import graphics as gfx
+import libtcodpy as tcod
 
 def reset_input():
 	for key in INPUT:
 		INPUT[key] = False
 
 def get_input():
-	sys_check_for_event(EVENT_ANY,KEY,MOUSE)
+	tcod.sys_check_for_event(tcod.EVENT_ANY, KEY, MOUSE)
 	reset_input()
 	get_keyboard_input()
 	get_mouse_input()
@@ -23,19 +24,19 @@ def get_keyboard_input():
 		_key = chr(KEY.c)
 	else:
 		if KEY.pressed:
-			if KEY.vk == KEY_RIGHT:
+			if KEY.vk == tcod.KEY_RIGHT:
 				INPUT['right'] = True
-			elif KEY.vk == KEY_LEFT:
+			elif KEY.vk == tcod.KEY_LEFT:
 				INPUT['left'] = True
-			elif KEY.vk == KEY_DOWN:
+			elif KEY.vk == tcod.KEY_DOWN:
 				INPUT['down'] = True
-			elif KEY.vk == KEY_UP:
+			elif KEY.vk == tcod.KEY_UP:
 				INPUT['up'] = True
 		
 		return True
 	
 	if SETTINGS['draw console']:
-		if KEY.vk == KEY_ENTER and len(KEYBOARD_STRING[0]):
+		if KEY.vk == tcod.KEY_ENTER and len(KEYBOARD_STRING[0]):
 			#Taken from: http://stackoverflow.com/a/3906309
 			old_stdout = sys.stdout
 			redirected_output = sys.stdout = StringIO()

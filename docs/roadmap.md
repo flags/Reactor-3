@@ -382,3 +382,31 @@ I'll start using flags in the race .XML to help better tweak how ALife behave. E
 	HUNGER/THIRSTY: Has requirement for food/water
 	CAN_GROUP: Ability to develop squads/work in groups
 	
+New Judgement and Combat Scoring
+------------------------------
+One of the oldest parts of the codebase is `judgement.py`. It is a relic from a previous time in development where scoring was looked at from a very different point of view. It was intended to be all-encompassing, but as the game grew it remained the same.
+
+Currently, the actual `judge` function returns a numerical value that indicates how much an ALife likes a target. Any value at or above zero indicates that the target is neutral. Anything less than that is considered hostile.
+
+New system ideas:
+
+	1) Like/dislike scoring can stay since it appears to be working so far.
+	2) Trust needs to play a clearer role in judgement (it also needs to be defined)
+		Adding it on to `like` is incorrect since trust does not represent how much someone likes another
+	3) Scoring must change once a target is identified as hostile
+		Furthermore, this must be mutual if either ALife has made its hostile intentions clear
+
+State Overrides
+---------------
+Each ALife module has rules for modules it will not take over for (i.g., 'camping' will not take over for 'combat' if it is in effect.) While this works, each module has to explictly list what modules it will ignore. This provides the following disadvantages:
+
+	1) Adding new modules involves finding what modules will not be overridden and listing them.
+		In addition, we must also modify modules if the new module needs to be ignored by any of them
+	2) Won't work from a modders point of view since it involves modifying code outside of the modders' scope
+		(Mods are designed to work alongside the codebase- not override it.)
+
+We now need a general structure to handle this.
+
+Alternative 1: Priority Levels
+	
+	

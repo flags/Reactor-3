@@ -1,4 +1,4 @@
-from libtcodpy import *
+import libtcodpy as tcod
 import os
 
 WINDOW_TITLE = 'Reactor 3 - Milestone 5'
@@ -42,7 +42,7 @@ FPS = 30
 FPS_TERRAFORM = 100
 UPS = 1
 FONT = 'terminal12x12_gs_ro.png'
-FONT_LAYOUT = FONT_LAYOUT_ASCII_INCOL
+FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]
 LIGHT_BUFFER = [[]]
@@ -68,7 +68,7 @@ CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
 MESSAGE_LOG_MAX_LINES = 8
 PLACING_TILE = None
-RENDERER = RENDERER_GLSL
+RENDERER = tcod.RENDERER_GLSL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
@@ -84,7 +84,7 @@ MAP_RENDER_VERSION = 4
 #Graphics tweaks
 FADE_TO_WHITE = [0]
 BLEEDING_STRING_MAX_LENGTH = 25
-BORDER_COLOR = Color(128,128,128)
+BORDER_COLOR = tcod.Color(128,128,128)
 MAX_MESSAGES_IN_DIALOG = 9
 
 #Strings
@@ -176,8 +176,8 @@ ACTIVE_MENU = {'menu': -1}
 MENU_PADDING = (1,1)
 
 #Controls
-KEY = Key()
-MOUSE = Mouse()
+KEY = tcod.Key()
+MOUSE = tcod.Mouse()
 INPUT = {'up':False,
 		'down':False,
 		'left':False,
@@ -234,15 +234,15 @@ INPUT = {'up':False,
 		'0':False}
 		
 #Colors
-GREEN_ALT = Color(0,130,0)
-GRASS_GREEN = Color(0, 150, 0)
-GRASS_GREEN_DARK = Color(0, 140, 0)
-SAND = Color(239,221,111)
-SAND_LIGHT = Color(245, 222, 179)
-BROWN_DARK = Color(123,74,18)
-BROWN_DARK_ALT = Color(123, 63, 0)
-BROWN_DARK_ALT_2 = Color(139,71,38)
-CLAY = Color(228,145,53)
+GREEN_ALT = tcod.Color(0,130,0)
+GRASS_GREEN = tcod.Color(0, 150, 0)
+GRASS_GREEN_DARK = tcod.Color(0, 140, 0)
+SAND = tcod.Color(239,221,111)
+SAND_LIGHT = tcod.Color(245, 222, 179)
+BROWN_DARK = tcod.Color(123,74,18)
+BROWN_DARK_ALT = tcod.Color(123, 63, 0)
+BROWN_DARK_ALT_2 = tcod.Color(139,71,38)
+CLAY = tcod.Color(228,145,53)
 
 #Message bank
 MESSAGE_BANK = {'cancelpickupequipitem': 'You stop picking up the item.',

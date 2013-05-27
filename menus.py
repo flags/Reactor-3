@@ -1,5 +1,7 @@
 from globals import *
 
+import libtcodpy as tcod
+
 def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,dim=True):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
@@ -24,7 +26,7 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 				_size[0] = len(_line)
 	
 	_menu['settings']['size'] = (_size[0]+(_menu['settings']['padding'][0]*2),_size[1])
-	_menu['settings']['console'] = console_new(_menu['settings']['size'][0],_menu['settings']['size'][1])
+	_menu['settings']['console'] = tcod.console_new(_menu['settings']['size'][0],_menu['settings']['size'][1])
 	
 	MENUS.append(_menu)
 	
@@ -72,8 +74,8 @@ def draw_menus():
 	for menu in MENUS:
 		_y_offset = menu['settings']['padding'][1]
 		
-		console_set_default_foreground(menu['settings']['console'],white)
-		console_print(menu['settings']['console'],
+		tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
+		tcod.console_print(menu['settings']['console'],
 			menu['settings']['padding'][0],
 			_y_offset,
 			menu['settings']['title'])
@@ -82,23 +84,23 @@ def draw_menus():
 		
 		for item in menu['menu']:
 			if item['type'] == 'title':
-				console_set_default_foreground(menu['settings']['console'],white)
+				tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				_line = format_entry('- $k',item)
 			elif item['type'] == 'spacer':
-				console_set_default_foreground(menu['settings']['console'],white)
+				tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				_line = item['key']*(menu['settings']['size'][0]-menu['settings']['padding'][0])
 			else:
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors
-					console_set_default_foreground(menu['settings']['console'],white)
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				elif not item['enabled']:
-					console_set_default_foreground(menu['settings']['console'],darker_grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.darker_grey)
 				elif menu['settings']['dim']:
-					console_set_default_foreground(menu['settings']['console'],grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
 			
 				_line = format_entry(menu['settings']['format'],item)
 			
-			console_print(menu['settings']['console'],
+			tcod.console_print(menu['settings']['console'],
 				menu['settings']['padding'][0],
 				_y_offset,
 				_line)

@@ -1,6 +1,7 @@
 from globals import *
 
 import life as lfe
+import libtcodpy as tcod
 
 import language
 import alife
@@ -66,7 +67,7 @@ def draw_encounter(life, encounter):
 		return False
 	
 	if not 'console' in encounter:
-		encounter['console'] = console_new(40, 40)
+		encounter['console'] = tcod.console_new(40, 40)
 	
 	_y = 1
 	for line in encounter['text']:
@@ -85,7 +86,7 @@ def draw_encounter(life, encounter):
 			
 			_i = 0
 			for txt in _lines:
-				console_print(encounter['console'],
+				tcod.console_print(encounter['console'],
 					_x+_i,
 					_y,
 					txt)

@@ -1930,8 +1930,6 @@ def get_held_items(life,matches=None):
 			if matches:
 				if not perform_match(_item,matches):
 					continue
-					continue
-					continue
 							
 			_holding.append(_limb['holding'][0])
 	
@@ -1978,7 +1976,7 @@ def show_life_info(life):
 	return True
 	
 def draw_life_icon(life):
-	_icon = [tick_animation(life), white]
+	_icon = [tick_animation(life), tcod.white]
 	
 	if life['id'] in [context['from']['id'] for context in SETTINGS['following']['contexts']]:
 		if time.time()%1>=0.5:
@@ -1987,7 +1985,7 @@ def draw_life_icon(life):
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
 		if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-			_icon[1] = light_red
+			_icon[1] = tcod.light_red
 	
 	if life['dead']:
 		_icon[0] = 'X'
@@ -2138,14 +2136,14 @@ def draw_life_info():
 	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
 	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
-	console_set_default_background(0, black)
-	console_set_background_flag(0, BKGND_SET)
+	tcod.console_set_default_background(0, tcod.black)
+	tcod.console_set_background_flag(0, tcod.BKGND_SET)
 	
-	console_set_default_foreground(0,BORDER_COLOR)
-	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
+	tcod.console_set_default_foreground(0, BORDER_COLOR)
+	tcod.console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
 	
-	console_set_default_foreground(0,white)
-	console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
+	tcod.console_set_default_foreground(0, tcod.white)
+	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
 	
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
@@ -2153,7 +2151,7 @@ def draw_life_info():
 		_info.append({'text': 'Holding %s' % _held_string, 'color': white})
 	else:
 		_info.append({'text': 'You aren\'t holding anything.',
-			'color': Color(125,125,125)})
+			'color': tcod.Color(125,125,125)})
 	
 	if _bleeding:
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
@@ -2163,24 +2161,24 @@ def draw_life_info():
 		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Broken: %s' % _broken_string,
-			'color': red})
+			'color': tcod.red})
 	
 	if _cut:
 		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Cut: %s' % _cut_string,
-			'color': red})
+			'color': tcod.red})
 	
 	if _bruised:
 		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Buised: %s' % _bruised_string,
-			'color': red})
+			'color': tcod.red})
 	
 	_i = 1
 	for entry in _info:
-		console_set_default_foreground(0,entry['color'])
-		console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
+		tcod.console_set_default_foreground(0,entry['color'])
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
 		
 		_i += 1
 	
@@ -2189,11 +2187,11 @@ def draw_life_info():
 	_blood_str = 'Blood: %s' % int(life['blood'])
 	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
 	_hunger_str = get_thirst(life)
-	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
-	console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
-	console_set_default_foreground(0, light_grey)
-	console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
+	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
+	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
+	tcod.console_set_default_foreground(0, tcod.light_grey)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
 	
 	_xmod = 8
 	_i = 5
@@ -2205,26 +2203,26 @@ def draw_life_info():
 			continue
 		
 		_icon = draw_life_icon(alife)
-		console_set_default_foreground(0, _icon[1])
-		console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
+		tcod.console_set_default_foreground(0, _icon[1])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 		
 		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
 		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-			console_set_default_foreground(0, red)
-			console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
+			tcod.console_set_default_foreground(0, red)
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
-			console_set_default_foreground(0, white)
+			tcod.console_set_default_foreground(0, tcod.white)
 		
 		if alife in [context['from'] for context in SETTINGS['controlling']['contexts']]:
 			if time.time()%1>=0.5:
-				console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
+				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
 		if alife['dead']:
-			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (Identified)' % ' '.join(alife['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (Identified)' % ' '.join(alife['name']))
 		elif alife['asleep']:
-			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
 		else:
-			console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(alife['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(alife['name']))
 		_i += 1
 	
 	#Drawing the action queue
@@ -2236,8 +2234,8 @@ def draw_life_info():
 	else:
 		_queued_actions = 'Queued Actions'
 	
-	console_set_default_foreground(0, white)
-	console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
+	tcod.console_set_default_foreground(0, tcod.white)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
 	
 	for action in life['actions'][:SETTINGS['action queue size']]:
 		if not action['delay']:
@@ -2248,19 +2246,19 @@ def draw_life_info():
 		
 		for i in range(SETTINGS['progress bar max value']):
 			if i <= _bar_size:
-				console_set_default_foreground(0,white)
+				tcod.console_set_default_foreground(0, tcod.white)
 			else:
-				console_set_default_foreground(0,gray)
+				tcod.console_set_default_foreground(0, tcod.gray)
 			
 			if 1 <= i <= len(_name):
-				console_set_default_foreground(0,green)
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
+				tcod.console_set_default_foreground(0, tcod.green)
+				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
 			else:
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
+				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
 		
-		console_set_default_foreground(0,white)
-		console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
-		console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
+		tcod.console_set_default_foreground(0,white)
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
 			
 		_y_mod += 1
 

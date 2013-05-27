@@ -7,6 +7,7 @@
 from globals import *
 
 import life as lfe
+import libtcodpy as tcod
 
 import numbers
 import alife
@@ -705,34 +706,34 @@ def draw_dialog():
 	_receiver = LIFE[dialog['receiver']]
 	
 	if not 'console' in dialog:
-		dialog['console'] = console_new(WINDOW_SIZE[0], 40)
+		dialog['console'] = tcod.console_new(WINDOW_SIZE[0], 40)
 	else:
-		console_rect(dialog['console'],0,0,WINDOW_SIZE[0],40,True,flag=BKGND_DEFAULT)
+		tcod.console_rect(dialog['console'], 0, 0, WINDOW_SIZE[0], 40, True, flag=tcod.BKGND_DEFAULT)
 
 	#TODO: Too tired to do this... :-)
 	_index = -1
 	_y = 2
 	
 	if dialog['title']:
-		console_print(dialog['console'],
+		tcod.console_print(dialog['console'],
 			1,
 			1,
 			dialog['title'])
 	
-	console_set_default_background(dialog['console'], black)
+	tcod.console_set_default_background(dialog['console'], tcod.black)
 	for d in dialog['topics']:
 		line = d['text']
 		_index += 1
 		_x = 1
 		
 		if not 'impact' in d:
-			console_set_default_foreground(dialog['console'], white)
+			tcod.console_set_default_foreground(dialog['console'], tcod.white)
 		elif d['impact'] == 1:
-			console_set_default_foreground(dialog['console'], green)
+			tcod.console_set_default_foreground(dialog['console'], tcod.green)
 		elif not d['impact']:
-			console_set_default_foreground(dialog['console'], white)
+			tcod.console_set_default_foreground(dialog['console'], tcod.white)
 		else:
-			console_set_default_foreground(dialog['console'], red)
+			tcod.console_set_default_foreground(dialog['console'], tcod.red)
 		
 		if _index == dialog['index']:
 			line = '> %s' % line
@@ -750,7 +751,7 @@ def draw_dialog():
 			
 			_i = 0
 			for txt in _lines:
-				console_print(dialog['console'],
+				tcod.console_print(dialog['console'],
 					_x+_i,
 					_y,
 					txt)
@@ -771,17 +772,17 @@ def draw_dialog():
 		_impact = m['impact']
 		for line in part:			
 			if _impact == 1:
-				console_set_default_foreground(dialog['console'], black)
-				console_set_default_background(dialog['console'], green)
-				console_set_background_flag(dialog['console'], BKGND_SET)
+				tcod.console_set_default_foreground(dialog['console'], tcod.black)
+				tcod.console_set_default_background(dialog['console'], tcod.green)
+				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
 			elif not _impact:
-				console_set_default_foreground(dialog['console'], white)
-				console_set_default_background(dialog['console'], black)
-				console_set_background_flag(dialog['console'], BKGND_SET)
+				tcod.console_set_default_foreground(dialog['console'], tcod.white)
+				tcod.console_set_default_background(dialog['console'], tcod.black)
+				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
 			else:
-				console_set_default_foreground(dialog['console'], black)
-				console_set_default_background(dialog['console'], red)
-				console_set_background_flag(dialog['console'], BKGND_SET)
+				tcod.console_set_default_foreground(dialog['console'], tcod.black)
+				tcod.console_set_default_background(dialog['console'], tcod.red)
+				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
 			
 			_impact = False
 			
@@ -798,7 +799,7 @@ def draw_dialog():
 				
 				_i = 0
 				for txt in _lines:
-					console_print(dialog['console'],
+					tcod.console_print(dialog['console'],
 						_x+_i,
 						_y,
 						txt)
@@ -811,5 +812,5 @@ def draw_dialog():
 				
 				break
 	
-	console_set_background_flag(dialog['console'], BKGND_NONE)
+	tcod.console_set_background_flag(dialog['console'], tcod.BKGND_NONE)
 

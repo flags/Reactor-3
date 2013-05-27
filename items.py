@@ -183,7 +183,7 @@ def draw_items():
 			gfx.blit_char(_x,
 				_y,
 				item['icon'],
-				white,
+				tcod.white,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
