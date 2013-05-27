@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import judgement
 import language
 
 import logging
@@ -59,7 +60,7 @@ def announce(life, gist, public=False, **kvargs):
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
 	else:
-		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_dangerous(life, i)]
 	
 	for target in _announce_to:
 		if not public and has_sent(life, target, gist):

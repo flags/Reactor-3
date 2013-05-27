@@ -15,7 +15,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_seen:
-		_score += entry['score']
+		_score += entry['danger']
 	
 	return _score
 
@@ -31,15 +31,15 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
 		return False
 	
-	_top_invite = {'score': 0, 'leader': None}
+	_top_invite = {'fondness': 0, 'leader': None}
 	for memory in lfe.get_memory(life, matches={'text': 'was invited to group'}):
 		_known = brain.knows_alife_by_id(life, memory['target'])
 		
-		if not _known or (_known and _known['score']<1):
+		if not _known or (_known and _known['fondness']<1):
 			continue
 		
-		if not _top_invite['leader'] or _known['score']>_top_invite['score']:
-			_top_invite['score'] = _known['score']
+		if not _top_invite['leader'] or _known['fondness']>_top_invite['fondness']:
+			_top_invite['fondness'] = _known['fondness']
 			_top_invite['leader'] = _known['life']
 	
 	brain.store_in_memory(life, 'following', _top_invite['leader'])

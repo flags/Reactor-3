@@ -402,7 +402,7 @@ Variables:
 		Definition: Decides how well someone is liked based on neutral actions.
 		Based on: friendly/unfriendly memories (first and second-hand)
 	
-	Danger (-inf, +inf):
+	Danger (0, +inf):
 		Definition: Represents how much of a threat someone poses.
 		Based on: visible weapons WITH hostile memories (first and second-hand) to prove it.
 			(invalid otherwise)
@@ -412,9 +412,6 @@ Variables:
 		Based on: Dialog.
 		Affects:
 			This value comes into play during `determine_truth`, a memory seach function that simply picks the most "trusted" memory from the list.
-
-Calc:
-	return FONDNESS
 
 State Overrides
 ---------------

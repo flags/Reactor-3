@@ -16,7 +16,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_not_seen:
-		_score += entry['score']
+		_score += entry['danger']
 	
 	return _score
 
