@@ -39,7 +39,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		_all_targets.append(target)
 	
 	for target in targets_not_seen:
-		if not target in _all_targets:
+		if not target['who']['life']['id'] in [t['who']['life']['id'] for t in _all_targets]:
 			_all_targets.append(target)
 	
 	for _target in _all_targets[:]:

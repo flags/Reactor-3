@@ -343,7 +343,7 @@ Each ALife has a selection of wants and needs. Needs include eating, sleeping, a
 
 Needs establish the base behavior for all ALife, while wants define their unique logic.
 
-Hunger
+[x] Hunger
 ------
 Operates on a simple timer that decreases each tick. Eating adds a variable amount to this timer. When this timer is half of its maximum a person is considered hungry. At a fourth they are starving.
 
@@ -374,7 +374,7 @@ I want to avoid "good" and "bad" factions. I'll focus on camps right now since t
 	
 		Camps have certain needs. A need for weapons will result in a raid of an ammo depo.
 	
-Advanced Life Flags
+[x] Advanced Life Flags
 ------------------
 I'll start using flags in the race .XML to help better tweak how ALife behave. Examples include:
 	
@@ -391,10 +391,30 @@ Currently, the actual `judge` function returns a numerical value that indicates 
 New system ideas:
 
 	1) Like/dislike scoring can stay since it appears to be working so far.
+		However, it should *not* be the deciding factor in whether combat is started
 	2) Trust needs to play a clearer role in judgement (it also needs to be defined)
 		Adding it on to `like` is incorrect since trust does not represent how much someone likes another
 	3) Scoring must change once a target is identified as hostile
 		Furthermore, this must be mutual if either ALife has made its hostile intentions clear
+
+Variables:
+	Fondness (-inf, +inf)
+		Definition: Decides how well someone is liked based on neutral actions.
+		Based on: friendly/unfriendly memories (first and second-hand)
+	
+	Danger (-inf, +inf):
+		Definition: Represents how much of a threat someone poses.
+		Based on: visible weapons WITH hostile memories (first and second-hand) to prove it.
+			(invalid otherwise)
+	
+	Trust (-inf, +inf):
+		Definition: Value used to define how believable someone's word is
+		Based on: Dialog.
+		Affects:
+			This value comes into play during `determine_truth`, a memory seach function that simply picks the most "trusted" memory from the list.
+
+Calc:
+	return FONDNESS
 
 State Overrides
 ---------------
@@ -403,7 +423,7 @@ Each ALife module has rules for modules it will not take over for (i.g., 'campin
 	1) Adding new modules involves finding what modules will not be overridden and listing them.
 		In addition, we must also modify modules if the new module needs to be ignored by any of them
 	2) Won't work from a modders point of view since it involves modifying code outside of the modders' scope
-		(Mods are designed to work alongside the codebase- not override it.)
+		(Mods are designed to work alongside the codebase- not over it.)
 
 We now need a general structure to handle this.
 

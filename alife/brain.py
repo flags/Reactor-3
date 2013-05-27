@@ -168,7 +168,7 @@ def can_trust(life, target):
 	if not _knows:
 		return False
 	
-	if _knows['trust']>0:
+	if _knows['trust']>=0:
 		return True
 	
 	return False

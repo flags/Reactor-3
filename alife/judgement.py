@@ -119,7 +119,7 @@ def judge(life, target):
 			_like += _score
 	
 	#TODO: What?
-	_like *= brain.get_trust(life, target['life']['id'])
+	#_like += brain.get_trust(life, target['life']['id'])
 	
 	if target['trust']<0 and not brain.can_trust(life, target['life']['id']):
 		print 'DECLARING HOSTILE!!!'
@@ -138,7 +138,10 @@ def judge(life, target):
 			#if _target_combat_score>0:
 			#	return -_target_combat_score
 	
-	return _like-_dislike#target['trust']
+	if brain.can_trust(life, target['life']['id']):
+		return _like-_dislike
+	else:
+		return -1
 
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
@@ -307,6 +310,7 @@ def judge_raid(life, raiders, camp):
 			_score -= 2
 			continue
 		
+		#TODO: Find a better way to do this
 		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
 			judge(life, _knows)
 		

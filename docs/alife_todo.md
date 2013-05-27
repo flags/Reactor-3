@@ -60,8 +60,8 @@ Misc:
 	[x] Items need `is_being_picked_up`
 	[ ] `set_hunger_to_percentage` (also for thirst)
 	[ ] General dictionary match function
-	[ ] Have `aim_at` refer to ID instead of raw entity
-	[ ] Fix crash on menu left/right
+	[x] Have `aim_at` refer to ID instead of raw entity
+	[x] Fix crash on menu left/right
 
 Survival:
 	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.
