@@ -109,7 +109,6 @@ def listen(life):
 				camps.discover_camp(life, event['from']['known_camps'][event['from']['camp']])
 			
 			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.communicate(life, 'compliment', matches=[{'id': event['from']['id']}])
 				speech.send(life, event['from'], 'friendly')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):

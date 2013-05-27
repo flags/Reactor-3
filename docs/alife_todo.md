@@ -39,9 +39,10 @@ Factions
 	[ ] Chunk ownership
 
 Camps:
-	[ ] Founder should give out jobs (patrol, etc)
+	[x] Founder should give out jobs (patrol, etc)
 	[ ] Founder can hire people to work under him
-	[ ] Claim to be Founder
+	[/] Claim to be Founder
+		Done for player
 
 Jobs:
 	[ ] Consider moving logic (like finding targets, etc) to own file
@@ -52,6 +53,12 @@ Combat:
 	[ ] Add `can_engage` function
 	[ ] ALife fight for food/will attack others for food if starving
 			Could randomize hunger on zone entry to create friction at worldgen
+
+Judgement:
+	[ ] Remove all references to `judgement.judge`, `score` or any other variation
+		[ ] Replace with calls to get_fondness(), is_dangerous(), and can_trust().
+	[ ] Rewrite `brain.understand()` to support new scoring variables
+	[ ] ENTRY_SCORE for all ALife modules are now invalid
 
 Misc:
 	[ ] ID vs. dictionary reference mismatch

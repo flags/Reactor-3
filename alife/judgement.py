@@ -64,7 +64,90 @@ def get_combat_rating(life):
 	
 	return _score
 
-def judge(life, target):
+def get_trust(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	
+	if _knows:
+		return int(round(_knows['trust']))
+	
+	logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
+	return 0
+
+def can_trust(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	
+	#TODO: Is this ever the case considering where this function is being called?
+	if not _knows:
+		raise Exception('%s does not know life with id \'%s\'.' % (' '.join(life['name']), target_id))
+	
+	if _knows['trust']>=0:
+		return True
+	
+	return False
+
+def is_dangerous(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	if target['danger']:
+		if can_trust(life, target_id):
+			return False
+		
+		return True
+	
+	return False
+
+def get_fondness(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	return target['fondness']
+
+def _get_impressions(life, target):
+	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):
+		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
+			brain.add_impression(life, target['life']['id'], 'had_weapon', {'danger': 2})
+
+def _calculate_impressions(life, target):
+	for impression in target['impressions']:
+		for key in target['impressions'][impression]['modifiers']:
+			if not key in target:
+				raise Exception('Key \'%s\' not in target.' % ' '.join(target['life']['name']))
+			
+			target[key] += target['impressions'][impression]['modifiers'][key]
+
+def _calculate_fondness(life, target):
+	_fondness = 0
+	
+	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
+		if memory['text'] == 'friendly':
+			_fondness += 1
+	
+	return _fondness
+
+def _calculate_danger(life, target):
+	if target['life']['asleep']:
+		return 0
+	
+	return 0
+
+def judge(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	_old_fondness = target['fondness']
+	_old_danger = target['danger']
+	
+	_get_impressions(life, target)
+	target['fondness'] = _calculate_fondness(life, target)
+	target['danger'] = _calculate_danger(life, target)
+	
+	_calculate_impressions(life, target)
+	
+	if not _old_fondness == target['fondness']:
+		print '%s fondness in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_fondness, target['fondness'])
+
+	if not _old_danger == target['danger']:
+		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
+
+def judge_old(life, target):
 	_like = 0
 	_dislike = 0
 	_is_hostile = False
@@ -104,7 +187,7 @@ def judge(life, target):
 	#First impressions go here
 	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life'], 'had_weapon'):
 		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life'], 'had_weapon', -3)
+			brain.add_impression(life, target['life'], 'had_weapon', {'danger': 2})
 	
 	if brain.get_impression(life, target['life'], 'had_weapon'):
 		if not lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
@@ -227,7 +310,7 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 			if not _knows:
 				continue
 				
-			_score += _knows['score']
+			_score += get_fondness(life, ai)
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:

@@ -127,16 +127,16 @@ def remember_item_secondhand(life, target, item_memory):
 
 	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
-def add_impression(life, target, gist, score):
-	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
+def add_impression(life, target_id, gist, modifiers):
+	life['know'][target_id]['impressions'][gist] = {'modifiers': modifiers, 'happened_at': WORLD_INFO['ticks']}
 	
-	lfe.create_and_update_self_snapshot(target)
+	lfe.create_and_update_self_snapshot(LIFE[target_id])
 	
-	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
+	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), gist, modifiers))
 
-def get_impression(life, target, gist):
-	if gist in life['know'][target['id']]['impressions']:
-		return life['know'][target['id']]['impressions'][gist]
+def get_impression(life, target_id, gist):
+	if gist in life['know'][target_id]['impressions']:
+		return life['know'][target_id]['impressions'][gist]
 	
 	return None
 
@@ -152,30 +152,10 @@ def knows_alife_by_id(life, alife_id):
 	
 	return False
 
-def get_trust(life, target):
-	_knows = knows_alife_by_id(life, target)
-	
-	if _knows:
-		return int(round(_knows['trust']))
-	
-	logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
-	return 0
-
-def can_trust(life, target):
-	_knows = knows_alife_by_id(life, target)
-	
-	#TODO: Is this ever the case considering where this function is being called?
-	if not _knows:
-		return False
-	
-	if _knows['trust']>=0:
-		return True
-	
-	return False
-
 def meet_alife(life, target):
 	life['know'][target['id']] = {'life': target,
-		'score': 0,
+		'fondness': 0,
+	    'danger': 0,
 		'trust': 0,
 		'likes': copy.deepcopy(target['likes']),
 		'last_seen_time': 0,
@@ -253,35 +233,29 @@ def understand(life,source_map):
 	for entry in life['seen']:
 		_targets_not_seen_pre.remove(entry)
 		target = life['know'][entry]
-		_score = target['score']
 		
 		if snapshots.process_snapshot(life, target['life']):
-			_score = judgement.judge(life, target)
-			_old_score = target['score']
-			target['score'] = _score
-			
-			if not _old_score == _score:
-				logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+			judgement.judge(life, target['life']['id'])
 		
-		_alife_seen.append({'who': target,'score': _score})
+		_alife_seen.append({'who': target, 'danger': target['danger']})
 		
-		if _score < 0:
-			_targets_seen.append({'who': target,'score': _score})
+		if judgement.is_dangerous(life, entry):
+			_targets_seen.append({'who': target, 'danger': target['danger']})
 	
 	for _not_seen in _targets_not_seen_pre:
 		target = life['know'][_not_seen]
 		
 		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
-			_score = judgement.judge(life, life['know'][_not_seen])
+			_score = judgement.judge(life, _not_seen)
 			life['know'][_not_seen]['score'] = _score
 			
 			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
-		if life['know'][_not_seen]['score'] >= 0:
-			_alife_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
+		if judgement.is_dangerous(life, _not_seen):
+			_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 			continue
 		
-		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
+		_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 	
 	generate_needs(life)
 	
