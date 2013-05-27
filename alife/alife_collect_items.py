@@ -10,11 +10,6 @@ import logging
 #all states from a certain level
 
 STATE = 'looting'
-INITIAL_STATES = ['idle', 'talking']
-CHECK_STATES = INITIAL_STATES[:]
-CHECK_STATES.append(STATE)
-EXIT_SCORE = -75
-ENTRY_SCORE = 0
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -28,16 +23,12 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in INITIAL_STATES:
-		if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-			return False
-		
-		RETURN_VALUE = STATE_CHANGE
-	elif not life['state'] in CHECK_STATES:
-		return False		
-	
-	if len(targets_seen):
+	#if life['state'] in INITIAL_STATES:
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False
+	
+	if not life['state'] == STATE:
+		RETURN_VALUE = STATE_CHANGE	
 	
 	_score = 0
 	if not [item['score'] for item in sight.find_visible_items(life) if item['score']]:

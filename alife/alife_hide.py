@@ -11,8 +11,6 @@ STATE = 'hiding'
 INITIAL_STATES = ['idle', 'hidden']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)
-EXIT_SCORE = -75
-ENTRY_SCORE = -1
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -33,7 +31,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'working']:
 		return False
 	
-	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
+	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False
 	
 	if not len(targets_seen):

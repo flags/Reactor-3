@@ -8,7 +8,6 @@ import survival
 import logging
 
 STATE = 'managing'
-ENTRY_SCORE = 0
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -32,7 +31,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen)<0:
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False
 	
 	#if not lfe.get_all_unequipped_items(life):

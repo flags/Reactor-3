@@ -18,7 +18,6 @@ STATE = 'camping'
 INITIAL_STATES = ['idle', 'hidden']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)
-ENTRY_SCORE = 0
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -26,18 +25,16 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	for entry in targets_seen:
 		if judgement.is_dangerous(life, entry['who']['life']['id']):
 			_score += entry['danger']
-		
-		print ' DANGER!'
 	
 	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-		return False	
-	
 	if life['state'] in ['hiding', 'hidden', 'working', 'needs']:
+		return False
+	
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False
 	
 	if not life['state'] == STATE:
@@ -97,7 +94,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			_knows = brain.knows_alife_by_id(life, _info['founder'])
 			
 			if not _knows:
-				if not lfe.get_memory(life, matches={'text': 'where is target', 'target': _info['founder']}):
+				if not lfe.get_memory(life, matches={'text': 'where_is_target', 'target': _info['founder']}):
 					lfe.create_question(life,
 						'where_is_target',
 						{'target': _info['founder']},

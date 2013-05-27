@@ -8,9 +8,6 @@ import brain
 import logging
 
 STATE = 'in group'
-#CHECK_STATES = INITIAL_STATES[:]
-#CHECK_STATES.append(STATE)
-ENTRY_SCORE = -1
 
 def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	_score = 0
@@ -30,7 +27,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'working']:
 		return False
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False
 	
 	_top_invite = {'fondness': 0, 'leader': None}
