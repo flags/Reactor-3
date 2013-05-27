@@ -197,4 +197,7 @@ def item_changed(menu,index):
 	_entry = get_selected_item(menu,index)
 	menu = get_menu(menu)
 	
-	return menu['on_change'](_entry)
+	if menu['on_change']:
+		return menu['on_change'](_entry)
+	else:
+		return False
