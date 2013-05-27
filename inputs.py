@@ -4,6 +4,8 @@ from globals import *
 import graphics as gfx
 import libtcodpy as tcod
 
+import sys
+
 def reset_input():
 	for key in INPUT:
 		INPUT[key] = False
@@ -48,7 +50,7 @@ def get_keyboard_input():
 			
 			KEYBOARD_STRING[0] = ''
 			
-		elif KEY.vk == KEY_BACKSPACE:
+		elif KEY.vk == tcod.KEY_BACKSPACE:
 			KEYBOARD_STRING[0] = KEYBOARD_STRING[0][:len(KEYBOARD_STRING[0])-1]
 	
 	if not INPUT.has_key(_key):

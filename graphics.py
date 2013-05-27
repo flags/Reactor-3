@@ -284,16 +284,16 @@ def draw_console():
 	if not SETTINGS['draw console']:
 		return False
 	
-	tcod.console_rect(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	tcod.console_rect(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
 	
 	_i = 0
 	for line in CONSOLE_HISTORY[len(CONSOLE_HISTORY)-CONSOLE_HISTORY_MAX_LINES:]:
 		_xoffset = 0
 		
 		if CONSOLE_HISTORY.index(line) % 2:
-			tcod.console_set_default_foreground(CONSOLE_WINDOW,Color(185,185,185))
+			tcod.console_set_default_foreground(CONSOLE_WINDOW, tcod.Color(185,185,185))
 		else:
-			tcod.console_set_default_foreground(CONSOLE_WINDOW,white)
+			tcod.console_set_default_foreground(CONSOLE_WINDOW, tcod.white)
 		
 		while len(line):
 			tcod.console_print(CONSOLE_WINDOW,_xoffset,_i,line[:CONSOLE_WINDOW_SIZE[0]])

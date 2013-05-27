@@ -1,5 +1,8 @@
 from globals import *
+
+import libtcodpy as tcod
 import graphics as gfx
+
 import render_los
 import logging
 import numbers
@@ -28,7 +31,7 @@ def create_splatter(what,position,velocity=0):
 	_splatter = has_splatter(tuple(position),what=what)
 	
 	if not _splatter:
-		_splatter = {'pos': list(position[:]),'what': what,'color': Color(0,0,0),'coef': 0}
+		_splatter = {'pos': list(position[:]),'what': what,'color': tcod.Color(0,0,0),'coef': 0}
 		_splatter['pos'][0] += random.randint(-velocity,velocity)
 		_splatter['pos'][1] += random.randint(-velocity,velocity)
 	

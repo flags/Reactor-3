@@ -2148,14 +2148,14 @@ def draw_life_info():
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
 		_held_string = language.prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Holding %s' % _held_string, 'color': white})
+		_info.append({'text': 'Holding %s' % _held_string, 'color': tcod.white})
 	else:
 		_info.append({'text': 'You aren\'t holding anything.',
 			'color': tcod.Color(125,125,125)})
 	
 	if _bleeding:
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
+		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': tcod.red})
 	
 	if _broken:
 		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
@@ -2208,7 +2208,7 @@ def draw_life_info():
 		
 		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
 		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-			tcod.console_set_default_foreground(0, red)
+			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
 			tcod.console_set_default_foreground(0, tcod.white)
@@ -2256,7 +2256,7 @@ def draw_life_info():
 			else:
 				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
 		
-		tcod.console_set_default_foreground(0,white)
+		tcod.console_set_default_foreground(0, tcod.white)
 		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
 		tcod.console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
 			
