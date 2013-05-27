@@ -76,8 +76,6 @@ def judge(life, target):
 	if 'greeting' in target['received']:
 		_like += 1
 	
-	_like += target['trust']
-	
 	#if 'greeting' in target['sent']:
 	#	_like += 1
 	
@@ -140,7 +138,7 @@ def judge(life, target):
 			#if _target_combat_score>0:
 			#	return -_target_combat_score
 	
-	return target['trust']
+	return _like-_dislike#target['trust']
 
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]

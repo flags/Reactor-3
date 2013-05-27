@@ -716,7 +716,7 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
+	SETTINGS['controlling']['targeting'] = LIFE[SETTINGS['controlling']['aim_at']]['pos'][:]
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

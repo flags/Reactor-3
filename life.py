@@ -259,7 +259,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
-	_life['aim_at'] = _life
+	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
@@ -329,7 +329,7 @@ def sanitize_know(life):
 	#del life['know']
 
 def prepare_for_save(life):
-	_delete_keys = ['aim_at']
+	_delete_keys = []
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -806,7 +806,7 @@ def walk_path(life):
 		
 		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
 			life['facing'] = (_nfx,_nfy)
-			life['aim_at'] = life
+			life['aim_at'] = life['id']
 		
 		if _pos[2] and abs(_pos[2])-1:
 			if _pos[2]>0:

@@ -129,8 +129,8 @@ def lighten_tile(x,y,amt):
 	LIGHT_BUFFER[0][y,x] = amt
 
 def tint_tile(x,y,color,coef):
-	_o_color = Color(int(MAP_RGB_BACK_BUFFER[0][y,x]),int(MAP_RGB_BACK_BUFFER[1][y,x]),int(MAP_RGB_BACK_BUFFER[2][y,x]))
-	_n_color = color_lerp(_o_color,color,coef)
+	_o_color = tcod.Color(int(MAP_RGB_BACK_BUFFER[0][y,x]),int(MAP_RGB_BACK_BUFFER[1][y,x]),int(MAP_RGB_BACK_BUFFER[2][y,x]))
+	_n_color = tcod.color_lerp(_o_color,color,coef)
 	
 	MAP_RGB_BACK_BUFFER[0][y,x] = _n_color.r
 	MAP_RGB_BACK_BUFFER[1][y,x] = _n_color.g

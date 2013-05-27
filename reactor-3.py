@@ -195,7 +195,7 @@ def main():
 	menus.draw_menus()
 	logic.draw_encounter()
 	dialog.draw_dialog()
-	#gfx.draw_effects()
+	gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()
 	gfx.draw_console()
