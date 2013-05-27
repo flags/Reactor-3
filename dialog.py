@@ -331,7 +331,7 @@ def get_questions_to_ask(life, chosen):
 		if not lfe.can_ask(life, chosen, memory):
 			continue
 		
-		if memory['text'] == 'wants_founder_info':			
+		if memory['text'] == 'wants_founder_info':
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
@@ -358,7 +358,7 @@ def get_questions_to_ask(life, chosen):
 			
 			if 'target' in chosen:
 				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
-		elif memory['text'] == 'where is target':
+		elif memory['text'] == 'where_is_target':
 			_topics.append({'text': 'Do you know where %s is?' % ' '.join(LIFE[memory['target']]['name']),
 				'gist': 'last_seen_target_at',
 				'target': memory['target'],
