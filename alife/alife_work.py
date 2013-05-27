@@ -18,6 +18,9 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 
+	if life['state'] in ['combat', 'hiding', 'hidden']:
+		return False
+
 	if not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	

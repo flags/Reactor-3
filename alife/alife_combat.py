@@ -35,6 +35,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	_all_targets = []
 	
 	for target in targets_seen:
+		print 'target',target['who'].keys()
 		_all_targets.append(target)
 	
 	for target in targets_not_seen:
@@ -58,8 +59,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
 
-	if life['state'] == 'working':
-		return False
+	#if life['state'] == 'working':
+	#	return False
 	
 	if not brain.retrieve_from_memory(life, 'combat_targets') and not brain.retrieve_from_memory(life, 'neutral_combat_targets'):
 		return False

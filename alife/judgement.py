@@ -137,10 +137,10 @@ def judge(life, target):
 			
 			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
 			
-			if _target_combat_score>0:
-				return -_target_combat_score
+			#if _target_combat_score>0:
+			#	return -_target_combat_score
 	
-	return _like-_dislike
+	return target['trust']
 
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
