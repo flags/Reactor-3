@@ -239,7 +239,7 @@ def understand(life,source_map):
 		
 		_alife_seen.append({'who': target, 'danger': target['danger']})
 		
-		if target['danger'] < 0:
+		if judgement.is_dangerous(life, entry):
 			_targets_seen.append({'who': target, 'danger': target['danger']})
 	
 	for _not_seen in _targets_not_seen_pre:
@@ -251,11 +251,11 @@ def understand(life,source_map):
 			
 			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
 		
-		if life['know'][_not_seen]['danger'] >= 0:
+		if judgement.is_dangerous(life, _not_seen):
 			_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 			continue
 		
-		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
+		_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 	
 	generate_needs(life)
 	

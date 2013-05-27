@@ -24,7 +24,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_seen:
-		if judgement.is_dangerous(life, entry['who']['id']):
+		if judgement.is_dangerous(life, entry['who']['life']['id']):
 			_score += entry['danger']
 		
 		print ' DANGER!'
@@ -34,7 +34,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
+	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 		return False	
 	
 	if life['state'] in ['hiding', 'hidden', 'working', 'needs']:

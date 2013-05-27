@@ -522,7 +522,7 @@ def alife_choose_response(life, target, dialog, responses):
 	
 	_knows = alife.brain.knows_alife(life, target)
 	_score = alife.judgement.judge(life, _knows['life']['id'])
-	_choices = [r for r in responses if numbers.clip(_score, -1, 1) >= r['impact']]
+	_choices = [r for r in responses]# if numbers.clip(_score, -1, 1) >= r['impact']]
 	
 	for _choice in _choices[:]:
 		if 'lie' in _choice:

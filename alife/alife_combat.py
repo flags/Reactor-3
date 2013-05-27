@@ -18,7 +18,8 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_seen:
-		_score += entry['danger']
+		if judgement.is_dangerous(life, entry['who']['life']['id']):
+			_score += entry['danger']
 	
 	return _score
 
@@ -28,8 +29,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
-		return False
+	#TODO: When are we not safe?
+	#if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
+	#	return False
 	
 	_neutral_targets = []
 	_all_targets = []

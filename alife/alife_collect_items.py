@@ -1,5 +1,6 @@
 from globals import *
 
+import judgement
 import survival
 import sight
 
@@ -19,7 +20,8 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in alife_seen:
-		_score += entry['danger']
+		if judgement.is_dangerous(life, entry['who']['life']['id']):
+			_score += entry['danger']
 	
 	return _score
 
@@ -27,7 +29,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	RETURN_VALUE = STATE_UNCHANGED
 	
 	if life['state'] in INITIAL_STATES:
-		if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) >= ENTRY_SCORE:
+		if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 			return False
 		
 		RETURN_VALUE = STATE_CHANGE

@@ -78,7 +78,7 @@ def can_trust(life, target_id):
 	
 	#TODO: Is this ever the case considering where this function is being called?
 	if not _knows:
-		return False
+		raise Exception('%s does not know life with id \'%s\'.' % (' '.join(life['name']), target_id))
 	
 	if _knows['trust']>=0:
 		return True
