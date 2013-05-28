@@ -428,6 +428,14 @@ Operation:
 	If we arrive at the end of the chunk path and can see the target, then stop.
 	Otherwise use A* to find the destination.
 
+Tech:
+	The map is scanned and the following taken into account:
+		1) Areas we can walk (can be unconnected.)
+		2) Z-levels we can travel to
+	
+	
+		
+
 State Overrides
 ---------------
 Each ALife module has rules for modules it will not take over for (i.g., 'camping' will not take over for 'combat' if it is in effect.) While this works, each module has to explictly list what modules it will ignore. This provides the following disadvantages:
