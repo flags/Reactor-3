@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import judgement
 import survival
 import brain
 

@@ -7,10 +7,12 @@ import logging
 def process_questions(life):
 	for question in lfe.get_questions(life):
 		_answered = False
+		#_matches = {requirement: '*' for requirement in QUESTIONS_ANSWERS[question['text']]}
 		
-		if question['answer_callback'](life, question['answer_match']):
-			question['answered'].append(memory['id'])
-			_answered = True
+		for memory in lfe.get_memory(life, matches=question['answer_match']):
+			if question['answer_callback'](life, question['answer_match']):
+				question['answered'].append(memory['id'])
+				_answered = True
 		
 		if _answered:
 			if len(question['answered']) == 1:
@@ -21,8 +23,9 @@ def process_questions(life):
 def detect_lies(life):
 	#for memory in life['memories']:
 	for question in lfe.get_questions(life, no_filter=True):		
-		for answer in [get_memory_via_id(life, a) for a in question['answered']]:
-			print answer.keys()
+		for answer in [lfe.get_memory_via_id(life, a) for a in question['answered']]:
+			pass
+			#print answer.keys()
 		
 def process(life):
 	process_questions(life)

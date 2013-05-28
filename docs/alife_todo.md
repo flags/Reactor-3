@@ -55,10 +55,13 @@ Combat:
 			Could randomize hunger on zone entry to create friction at worldgen
 
 Judgement:
-	[ ] Remove all references to `judgement.judge`, `score` or any other variation
-		[ ] Replace with calls to get_fondness(), is_dangerous(), and can_trust().
+	[/] Remove all references to `judgement.judge`, `score` or any other variation
+		[/] Replace with calls to get_fondness(), is_dangerous(), and can_trust().
 	[ ] Rewrite `brain.understand()` to support new scoring variables
 	[ ] ENTRY_SCORE for all ALife modules are now invalid
+	[ ] When calculating anything, we can just do a memory search for `danger` and `fondness`
+		Differentiate between first-hand and second-hand. Let trust play a factor.
+	[ ] `Start conflict` doesn't add to danger, so no conflict is started
 
 Misc:
 	[ ] ID vs. dictionary reference mismatch
@@ -69,6 +72,7 @@ Misc:
 	[ ] General dictionary match function
 	[x] Have `aim_at` refer to ID instead of raw entity
 	[x] Fix crash on menu left/right
+	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
 
 Survival:
 	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.

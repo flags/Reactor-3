@@ -658,6 +658,9 @@ def process_response(life, target, dialog, chosen):
 		_responses.extend(get_items_to_give(life, target, matches=chosen['item']))
 	elif chosen['gist'] == 'ignore_question_negative':
 		_knows = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['speaker'])
+		lfe.memory(LIFE[dialog['listener']], 'bad answer',
+			target=dialog['speaker'],
+		    danger=3)
 		print 'LOOK HERE!!!!!!!!!!!!!!!!'
 		print LIFE[dialog['listener']]['name'], _knows['trust']
 		

@@ -639,13 +639,11 @@ def memory(life, gist, *args, **kvargs):
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
-	else:
-		print 'NO TARGET?', gist, life['name']
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:
 		if dialog['speaker'] == life['id']:
-			 return True
+			return True
 	
 	return False
 

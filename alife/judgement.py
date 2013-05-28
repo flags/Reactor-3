@@ -127,7 +127,12 @@ def _calculate_danger(life, target):
 	if target['life']['asleep']:
 		return 0
 	
-	return 0
+	_danger = 0	
+	
+	for memory in lfe.get_memory(life, matches={'target': target['life']['id'], 'danger': '*'}):
+		_danger += memory['danger']
+	
+	return _danger
 
 def judge(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)

@@ -37,7 +37,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	_all_targets = []
 	
 	for target in targets_seen:
-		print 'target',target['who'].keys()
 		_all_targets.append(target)
 	
 	for target in targets_not_seen:
