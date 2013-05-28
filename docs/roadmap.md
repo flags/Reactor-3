@@ -413,6 +413,21 @@ Variables:
 		Affects:
 			This value comes into play during `determine_truth`, a memory seach function that simply picks the most "trusted" memory from the list.
 
+New Pathing
+------------
+Structure: dict
+Keys:
+	Start		...
+	End			...
+	path_type	['
+
+Operation:
+	First a "chunk path" is generated. The chunk map sees if it can path to the destination chunk.
+		If it cannot, it gets as close as it can
+	The ALife then follows that path chunk to chunk
+	If we arrive at the end of the chunk path and can see the target, then stop.
+	Otherwise use A* to find the destination.
+
 State Overrides
 ---------------
 Each ALife module has rules for modules it will not take over for (i.g., 'camping' will not take over for 'combat' if it is in effect.) While this works, each module has to explictly list what modules it will ignore. This provides the following disadvantages:
