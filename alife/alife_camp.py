@@ -1,4 +1,5 @@
 from globals import *
+from types import *
 
 import life as lfe
 
@@ -59,6 +60,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			_chunk = maps.get_chunk(_closest_key)
 			
 			lfe.clear_actions(life)
+			assert type(_chunk['ground']) is ListType, 'No ground: %r' % _chunk
 			lfe.add_action(life,{'action': 'move',
 				'to': random.choice(_chunk['ground'])},
 				200)

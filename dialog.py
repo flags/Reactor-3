@@ -89,20 +89,21 @@ def calculate_impacts(life, target, topics):
 		
 		topic['impact'] = GIST_MAP[topic['gist']]
 
-def reset_dialog(dialog):
+def reset_dialog(dialog, end=True):
 	_ret = False
 	if dialog['previous_topics']:
 		dialog['topics'] = dialog['previous_topics'].pop(0)
 		dialog['previous_topics'] = []
 		_ret = True
 	else:
-		if not 'player' in LIFE[dialog['sender']]:
+		if 'player' in LIFE[dialog['sender']] and dialog['starting_topics']:
+			dialog['topics'] = dialog['starting_topics']
+			dialog['speaker'] = dialog['sender']
+		elif end:
 			LIFE[dialog['sender']]['dialogs'].remove(dialog)
 			
 			if dialog in LIFE[dialog['receiver']]['dialogs']:
 				LIFE[dialog['receiver']]['dialogs'].remove(dialog)
-		else:
-			dialog['topics'] = dialog['starting_topics']
 	
 	dialog['title'] = ''
 	dialog['index'] = 0
@@ -123,8 +124,6 @@ def give_menu_response(life, dialog):
 	else:
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
-		modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
-		modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 
 def alife_response(life, dialog):
 	#List of topics should be fairly relevant if the ALife created the dialog properly.
@@ -542,8 +541,8 @@ def alife_choose_response(life, target, dialog, responses):
 		logging.error('Dialog didn\'t return anything.')
 
 def process_response(life, target, dialog, chosen):
-	if chosen['gist'] == 'end':
-		reset_dialog(dialog)
+	if chosen['gist'] in ['end', 'nothing']:
+		reset_dialog(dialog, end=True)
 		return True
 	
 	_responses = []
@@ -646,7 +645,11 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': LIFE[chosen['target']]['pos'][:]})
 		elif _impact>=0:
 			_knows = alife.brain.knows_alife_by_id(life, chosen['target'])
-			_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': _knows['last_seen_at'][:]})
+			
+			if _knows:
+				_responses.append({'text': 'Last place I saw him was...', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': _knows['last_seen_at'][:]})
+			else:
+				_responses.append({'text': 'I don\'t know.', 'gist': 'nothing'})
 		else:
 			#TODO: Potential conflict 
 			_responses.append({'text': 'Not telling you!', 'gist': 'saw_target_at'})
@@ -690,7 +693,7 @@ def process_response(life, target, dialog, chosen):
 	dialog['listener'] = _speaker
 	
 	if 'player' in  life:
-		if _responses and not _responses[0]['gist'] == 'end':
+		if _responses and not _responses[0]['gist'] in ['nothing', 'end']:
 			dialog['topics'] = _responses
 			dialog['index'] = 0
 		else:
