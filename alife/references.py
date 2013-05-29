@@ -63,6 +63,9 @@ def find_nearest_key_in_reference(life, reference, unknown=False):
 		if unknown and _key in life['known_chunks']:
 			continue
 		
+		if not maps.get_chunk(_key)['ground']:
+			continue
+		
 		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
 		_distance = numbers.distance(life['pos'], _center)
 		
