@@ -96,7 +96,9 @@ def listen(life):
 		
 		elif event['gist'] == 'camp_raid':
 			print 'RAID IN EFFECT!!!!!!!!!!'
-			if brain.knows_alife(life, event['from'])['score']>0:
+			_knows = brain.knows_alife(life, event['from'])
+			
+			if _knows and judgement.is_target_dangerous(life, _knows['life']['id']):
 				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
 				_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
 				speech.announce(life, 'raid_score', raid_score=_raid_score)
