@@ -433,7 +433,10 @@ Tech:
 		1) Areas we can walk (can be unconnected.)
 		2) Z-levels we can travel to
 	
-	
+Combat Fix #1
+--------------
+First in a series of fixes.
+All of the logic that decides when combat is entered needs to be scrapped.
 		
 
 State Overrides

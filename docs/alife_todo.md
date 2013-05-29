@@ -74,6 +74,10 @@ Misc:
 	[x] Fix crash on menu left/right
 	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
 
+Pathing:
+	[ ] Account for Z-levels
+	[ ] Chunks need to have a listing of what Z-levels they contain for the chunk pathing
+
 Survival:
 	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.
 		[ ] Can we get rid of the old needs that use flags?
