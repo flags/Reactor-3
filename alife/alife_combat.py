@@ -18,8 +18,13 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_seen:
-		if judgement.is_dangerous(life, entry['who']['life']['id']):
+		if judgement.is_target_dangerous(life, entry['who']['life']['id']):
 			_score += entry['danger']
+	
+	#TODO: Don't we need this?
+	#for entry in targets_seen:
+	#	if judgement.is_target_dangerous(life, entry['who']['life']['id']):
+	#		_score += entry['danger']
 	
 	return _score
 
@@ -49,6 +54,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			print 'see the dead'
 			continue
 		
+		#TODO: Maybe the job calls for us to engage this target?
 		if jobs.alife_is_factor_of_any_job(_target['who']['life']):
 			if life['job']:
 				_neutral_targets.append(_target)
@@ -57,7 +63,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		if brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):
 			_all_targets.remove(_target)
 	
-	brain.store_in_memory(life, 'combat_targets', _all_targets)
+	if _all_targets:
+		brain.store_in_memory(life, 'combat_targets', _all_targets)
+	
 	brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
 
 	#if life['state'] == 'working':
@@ -67,6 +75,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		return False
 		
 	if not combat.weapon_equipped_and_ready(life):
+		print 'Not ready to engage'
 		return False
 	
 	return RETURN_VALUE

@@ -16,7 +16,7 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 	_score = 0
 	
 	for entry in targets_seen:
-		if judgement.is_dangerous(life, entry['who']['life']['id']):
+		if judgement.is_target_dangerous(life, entry['who']['life']['id']):
 			_score += entry['danger']
 	
 	#_score += judgement.judge_self(life)

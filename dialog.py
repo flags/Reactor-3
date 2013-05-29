@@ -664,8 +664,6 @@ def process_response(life, target, dialog, chosen):
 		lfe.memory(LIFE[dialog['listener']], 'bad answer',
 			target=dialog['speaker'],
 		    danger=3)
-		print 'LOOK HERE!!!!!!!!!!!!!!!!'
-		print LIFE[dialog['listener']]['name'], _knows['trust']
 		
 		#TODO: Start dialog that can lead to more distrust
 		#if _knows['trust']<=0:

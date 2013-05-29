@@ -56,7 +56,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if jobs.alife_is_factor_of_any_job(ai['life']):
 			break
 		
-		if judgement.is_dangerous(life, ai['life']['id']):
+		if judgement.is_target_dangerous(life, ai['life']['id']):
 			if not speech.discussed(life, ai['life'], 'looks_hostile'):
 				speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'looks_hostile')
@@ -70,7 +70,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['state'] == 'combat':
 			break
 		
-		if judgement.is_dangerous(life, ai['life']['id']):
+		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
 		
 		if not lfe.can_see(life, ai['life']['pos']):

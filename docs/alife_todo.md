@@ -25,6 +25,7 @@ Conversations:
 	[ ] Spotting lies (lying about being the camp founder, giving wrong info, etc)
 	[ ] Dialogs are still controlled by one entity. Check to make sure the other involved entity is even awake/existing in dialog.tick()
 	[ ] Multiple ALife hearing a response. Only general topics, like introductions, etc.
+	[ ] Red text on responses indicating lying is no longer working
 
 Likes/Dislikes:
 	[x] Each ALife will have a set of likes/dislikes based on gists. These are measured in a float from 0.0 to 1.0.
@@ -56,7 +57,7 @@ Combat:
 
 Judgement:
 	[/] Remove all references to `judgement.judge`, `score` or any other variation
-		[/] Replace with calls to get_fondness(), is_dangerous(), and can_trust().
+		[/] Replace with calls to get_fondness(), is_target_dangerous(), and can_trust().
 	[ ] Rewrite `brain.understand()` to support new scoring variables
 	[ ] ENTRY_SCORE for all ALife modules are now invalid
 	[ ] When calculating anything, we can just do a memory search for `danger` and `fondness`
@@ -85,6 +86,12 @@ Survival:
 Worldgen:
 	[/] Randomize hunger/thirst on entry
 	[ ] Spawn ALife in various locations around the outside of the map
+
+Combat:
+	[ ] `calculate_safety()` in all ALife modules needs to refer to an outside function.
+		`targets_not_seen` is not taken into account. Some targets might still be relevant
+		Consider that `alife_combat` stores identified targets into memory as `combat_targets`
+			We are never truly safe until this is cleared.
 
 Cycles:
 	[/] Food:

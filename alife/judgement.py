@@ -85,7 +85,7 @@ def can_trust(life, target_id):
 	
 	return False
 
-def is_dangerous(life, target_id):
+def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
 	if target['danger']:

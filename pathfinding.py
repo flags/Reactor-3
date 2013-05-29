@@ -172,7 +172,7 @@ def walk_path(life, path):
 
 class Astar:
 	def __init__(self, start=None, end=None, omap=None, dist=None):
-		create_path({}, start, end, omap=omap, dist=dist)
+		#create_path({}, start, end, omap=omap, dist=dist)
 		self.map = []
 		self.omap = omap
 
