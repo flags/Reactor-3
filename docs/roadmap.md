@@ -438,10 +438,16 @@ Combat Fix #1
 First in a series of fixes.
 All of the logic that decides when combat is entered needs to be scrapped.
 
-Proposing: is_safe()
+Proposing: `is_safe()`
 	This function checks a variety of ALife memories and values to determine if they are safe.
 	It would replace the majority (all?) of the calls to individual calculate_safety() functions.
 	In addition, we can have this run once at the start of the tick.
+
+Proposing: `calculate_safety()`
+	Runs before ALife modules.
+	Inspects all variables checked by `is_safe()` for changes.
+		For example, when `combat_targets` become invalid.
+	
 		
 
 State Overrides
