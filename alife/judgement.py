@@ -96,6 +96,22 @@ def is_target_dangerous(life, target_id):
 	
 	return False
 
+def is_safe(life):
+	if brain.retrieve_from_memory(life, 'combat_targets'):
+		return False
+	
+	return True
+
+def get_nearest_threat(life):
+	_target = {'target': None, 'score': 9999}
+	for target in [t['who'] for t in brain.retrieve_from_memory(life, 'combat_targets')]:
+		_score = numbers.distance(life['pos'], target['last_seen_at'], old=False)
+		if not _target['target'] or _score<_target['score']:
+			_target['target'] = target['life']['id']
+			_target['score'] = _score
+	
+	return _target['target']
+
 def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	

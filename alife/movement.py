@@ -81,16 +81,17 @@ def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions
 	pass
 
-def escape(life,target,source_map):
-	_escape = sight.generate_los(life,target,target['life']['pos'],source_map,score_escape)
+def escape(life, target, source_map):
+	#TODO: Remove the need for {'life': ...}
+	_escape = sight.generate_los(life, {'life': target}, target['pos'], source_map, score_escape)
 	
 	if _escape:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
 		return False
 	else:
-		if brain.get_flag(life, 'scared') and not speech.has_considered(life, target['life'], 'surrendered_to'):
-			speech.communicate(life, 'surrender', target=target['life'])
+		if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
+			speech.communicate(life, 'surrender', target=target)
 			brain.flag(life, 'surrendered')
 			#print 'surrender'
 	

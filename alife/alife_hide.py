@@ -19,25 +19,25 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 		if judgement.is_target_dangerous(life, entry['who']['life']['id']):
 			_score += entry['danger']
 	
-	#_score += judgement.judge_self(life)
 	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
+	if judgement.is_safe(life):
+		return False
+	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if life['state'] in ['combat', 'working']:
-		return False
-	
-	#if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
+	#if life['state'] in ['combat', 'working']:
 	#	return False
 	
-	if not len(targets_seen):
-		return False
+	#if not len(targets_seen):
+	#	return False
 	
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	movement.escape(life, targets_seen[0]['who'], source_map)
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_threat = judgement.get_nearest_threat(life)
+	movement.escape(life, LIFE[_threat], source_map)
