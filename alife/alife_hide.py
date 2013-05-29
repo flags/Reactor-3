@@ -33,8 +33,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#if life['state'] in ['combat', 'working']:
 	#	return False
 	
-	#if not len(targets_seen):
-	#	return False
+	if not len(targets_seen):
+		return False
 	
 	return RETURN_VALUE
 

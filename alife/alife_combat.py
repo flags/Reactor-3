@@ -75,11 +75,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		return False
 		
 	if not combat.weapon_equipped_and_ready(life):
-		print 'Not ready to engage'
+		print life['name'],'Not ready to engage'
 		return False
 	
 	return RETURN_VALUE
 
+#TODO: Use judgement.get_nearest_threat()
 def get_closest_target(life, targets):
 	_closest = {'dist': -1, 'life': None}
 	for target in targets:
@@ -94,12 +95,6 @@ def get_closest_target(life, targets):
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	_all_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	_neutral_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
-
-	if _all_targets and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
-		speech.announce(life,
-			'camp_raid',
-			camp=camps.get_nearest_known_camp(life),
-			raiders=[t['who']['life']['id'] for t in _all_targets])
 	
 	if combat.has_weapon(life) and _all_targets:
 		if not combat.weapon_equipped_and_ready(life):

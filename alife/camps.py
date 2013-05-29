@@ -55,6 +55,12 @@ def get_nearest_known_camp(life):
 def get_distance_to_nearest_known_camp(life):
 	return _get_nearest_known_camp(life)['score']
 
+def get_camp(camp_id):
+	if not camp_id in CAMPS:
+		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)
+	
+	return CAMPS[camp_id]
+
 def found_camp(life, reference, announce=False):
 	_camp = {'id': len(CAMPS)+1,
 		'name': language.generate_place_name(),
@@ -62,7 +68,8 @@ def found_camp(life, reference, announce=False):
 		'founder': life['id'],
 		'time_founded': WORLD_INFO['ticks'],
 		'info': {'population': 0},
-		'stats': {}}
+		'stats': {},
+	     'raid': {}}
 	
 	if not life['known_camps']:
 		life['camp'] = _camp['id']

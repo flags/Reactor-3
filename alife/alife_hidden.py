@@ -36,8 +36,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	#	return False
 	
-	#if len(targets_seen):
-	#	return False
+	if len(targets_seen):
+		return False
 	
 	return RETURN_VALUE
 

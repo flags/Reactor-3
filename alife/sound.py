@@ -95,16 +95,19 @@ def listen(life):
 			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
 		
 		elif event['gist'] == 'camp_raid':
+			print '*' * 10
 			print 'RAID IN EFFECT!!!!!!!!!!'
+			print '*' * 10
 			_knows = brain.knows_alife(life, event['from'])
 			
-			if _knows and judgement.is_target_dangerous(life, _knows['life']['id']):
+			if _knows and not judgement.is_target_dangerous(life, _knows['life']['id']):
 				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
+				print event['raiders']
 				_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
 				speech.announce(life, 'raid_score', raid_score=_raid_score)
 		
 		elif event['gist'] == 'raid_score':
-			print 'Got friendly raid score:', event['raid_score'] 
+			print life['name'],'Got friendly raid score:', event['raid_score'] 
 		
 		elif event['gist'] == 'greeting':
 			if event['from']['camp'] and not camps.has_discovered_camp(life, event['from']['camp']):

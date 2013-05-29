@@ -415,8 +415,9 @@ def judge_raid(life, raiders, camp):
 			continue
 		
 		#TODO: Find a better way to do this
+		#TODO: This has to be broken: _knows['life']
 		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
-			judge(life, _knows)
+			judge(life, raider)
 		
 		if brain.get_alife_flag(life, _knows['life'], 'combat_score'):
 			_score += _knows['flags']['combat_score']

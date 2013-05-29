@@ -5,6 +5,7 @@ import judgement
 import movement
 import dialog
 import speech
+import raids
 import brain
 import camps
 import jobs
@@ -101,6 +102,17 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
 		dialog.tick(life, _dialog)
+	
+	if not judgement.is_safe(life) and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
+		_nearest_camp = camps.get_nearest_known_camp(life)
+		_raiders = [t['who']['life']['id'] for t in brain.retrieve_from_memory(life, 'combat_targets')]
+		raids.create_raid(_nearest_camp['id'], raiders=_raiders)
+		
+		#TODO: Remove memory call
+		speech.announce(life,
+			'camp_raid',
+			camp=_nearest_camp,
+			raiders=_raiders)
 
 	#_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
 	#for ai in [life['know'][i] for i in life['know']]:

@@ -147,6 +147,10 @@ def knows_alife(life, alife):
 	return False
 
 def knows_alife_by_id(life, alife_id):
+	if not isinstance(alife_id, int):
+		print alife_id.keys()
+		raise Exception('Not a valid ID.')
+	
 	if alife_id in life['know']:
 		return life['know'][alife_id]
 	
