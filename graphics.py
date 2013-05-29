@@ -149,16 +149,16 @@ def fade_to_white(amt):
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	if time.time()%1>=0.5:
-		tcod.blit_char(cursor[0]-camera[0],
+		blit_char(cursor[0]-camera[0],
 			cursor[1]-camera[1],
 			'X',
-			white,
-			black,
+			tcod.white,
+			tcod.black,
 			char_buffer=char_buffer,
 			rgb_fore_buffer=rgb_fore_buffer,
 			rgb_back_buffer=rgb_back_buffer)
 	else:
-		tcod.blit_tile(cursor[0]-camera[0],
+		blit_tile(cursor[0]-camera[0],
 			cursor[1]-camera[1],
 			tile,
 			char_buffer=char_buffer,
@@ -168,15 +168,15 @@ def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=M
 def draw_bottom_ui_terraform():
 	"""Controls the drawing of the UI under the map."""
 	
-	_string = '%s fps ' % str(sys_get_fps())
+	_string = '%s fps ' % str(tcod.sys_get_fps())
 	_string += 'X: %s Y: %s Z: %s' % (MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2])
 	
-	tcod.blit_string(MAP_WINDOW_SIZE[0]-len(_string),
+	blit_string(MAP_WINDOW_SIZE[0]-len(_string),
 		MAP_WINDOW_SIZE[1]-1,
 		_string,
 		console=MAP_WINDOW,
-		fore_color=Color(255,255,255),
-		back_color=Color(0,0,0),
+		fore_color=tcod.Color(255,255,255),
+		back_color=tcod.Color(0,0,0),
 		flicker=0)
 
 def draw_message_box():	
@@ -337,9 +337,9 @@ def end_of_frame_terraform(editing_prefab=False):
 		22)
 	
 	if editing_prefab:
-		tcod.console_set_default_foreground(0,white)
+		tcod.console_set_default_foreground(0, tcod.white)
 	else:
-		tcod.console_set_default_foreground(0,Color(185,185,185))
+		tcod.console_set_default_foreground(0, tcod.Color(185,185,185))
 	
 	#TODO: Figure these out using math
 	tcod.console_print(0,PREFAB_WINDOW_OFFSET[0],0,'Prefab Editor')
