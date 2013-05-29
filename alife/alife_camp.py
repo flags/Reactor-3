@@ -40,7 +40,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not judgement.is_safe(life):
 		return False	
 	
-	if life['state'] in ['hiding', 'hidden', 'working', 'needs']:
+	if life['state'] in ['hiding', 'hidden', 'working', 'needs', 'looting']:
 		return False
 	
 	#if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
