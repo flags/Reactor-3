@@ -102,7 +102,6 @@ def listen(life):
 			
 			if _knows and not judgement.is_target_dangerous(life, _knows['life']['id']):
 				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])
-				print event['raiders']
 				_raid_score = judgement.judge_raid(life, event['raiders'], event['camp']['id'])
 				speech.announce(life, 'raid_score', raid_score=_raid_score)
 		
