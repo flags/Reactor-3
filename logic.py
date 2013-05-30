@@ -1,7 +1,9 @@
 from globals import *
 
-import encounters
 import alife as alfe
+import libtcodpy as tcod
+
+import encounters
 import menus
 import items
 import life
@@ -63,7 +65,10 @@ def tick_all_objects(source_map):
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:
-					WORLD_INFO['pause_ticks'] = 3
+					if tcod.sys_get_fps()<=LOW_FPS:
+						WORLD_INFO['pause_ticks'] = 1
+					else:
+						WORLD_INFO['pause_ticks'] = 2
 			
 			WORLD_INFO['in_combat'] = _in_combat
 	

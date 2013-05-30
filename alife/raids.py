@@ -12,7 +12,7 @@ def camp_has_raid(camp_id):
 	
 	return False
 
-def create_raid(camp_id, raiders=[]):
+def create_raid(camp_id, raiders=[], join=None):
 	_camp = camps.get_camp(camp_id)
 	
 	if not camp_has_raid(camp_id):
@@ -21,6 +21,12 @@ def create_raid(camp_id, raiders=[]):
 		                 'defenders': [],
 		                 'score': 0}
 		logging.debug('Created raid: %s' % _camp['name'])
+	
+	if join:
+		defend_camp(camp_id, join)
+
+def add_raiders(camp_id, raiders):
+	_camp = camps.get_camp(camp_id)
 	
 	for raider in [r for r in raiders if not r in _camp['raid']['raiders']]:
 		_camp['raid']['raiders'].append(raider)
@@ -32,3 +38,9 @@ def defend_camp(camp_id, life_id):
 	if not life_id in _camp['raid']['defenders']:
 		_camp['raid']['defenders'].append(life_id)
 		logging.debug('%s is now defending camp %s' % (' '.join(LIFE[life_id]['name']), _camp['name']))
+
+def get_raiders(camp_id):
+	return camps.get_camp(camp_id)['raid']['raiders']
+
+def get_defenders(camp_id):
+	return camps.get_camp(camp_id)['raid']['defenders']

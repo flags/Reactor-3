@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import alife_manage_targets
 import alife_collect_items
 import alife_manage_items
 import alife_manage_camp
@@ -37,11 +38,12 @@ MODULES = [alife_hide,
 	alife_talk,
 	alife_explore,
 	alife_discover,
-	alife_manage_items,
 	alife_find_camp,
 	alife_visit_camp,
 	alife_camp,
+    alife_manage_items,
 	alife_manage_camp,
+    alife_manage_targets,
 	alife_combat,
 	alife_work,
 	alife_follow,

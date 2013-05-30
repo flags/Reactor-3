@@ -6,6 +6,7 @@ import weapons
 import chunks
 import combat
 import brain
+import raids
 
 import logging
 import numbers
@@ -66,19 +67,20 @@ def get_combat_rating(life):
 
 def get_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)
+	_trust = 0
+	
+	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
+		_trust += memory['trust']	
 	
 	if _knows:
-		return int(round(_knows['trust']))
+		return int(round(_knows['trust']))+_trust
 	
-	logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
-	return 0
+	#logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
+	return _trust
 
 def can_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)
-	
-	#TODO: Is this ever the case considering where this function is being called?
-	if not _knows:
-		raise Exception('%s does not know life with id \'%s\'.' % (' '.join(life['name']), target_id))
+	_trust = get_trust(life, target_id)
 	
 	if _knows['trust']>=0:
 		return True
@@ -102,9 +104,18 @@ def is_safe(life):
 	
 	return True
 
+def get_targets(life):
+	_targets = []
+	
+	if life['camp'] and raids.camp_has_raid(life['camp']):
+		_targets.extend(raids.get_raiders(life['camp']))
+	
+	return _targets
+
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
 	for target in [t['who'] for t in brain.retrieve_from_memory(life, 'combat_targets')]:
+		print target.keys()
 		_score = numbers.distance(life['pos'], target['last_seen_at'], old=False)
 		if not _target['target'] or _score<_target['score']:
 			_target['target'] = target['life']['id']

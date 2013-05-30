@@ -106,7 +106,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if not judgement.is_safe(life) and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
 		_nearest_camp = camps.get_nearest_known_camp(life)
 		_raiders = [t['who']['life']['id'] for t in brain.retrieve_from_memory(life, 'combat_targets')]
-		raids.create_raid(_nearest_camp['id'], raiders=_raiders)
+		raids.create_raid(_nearest_camp['id'], join=life['id'])
+		raids.add_raiders(_nearest_camp['id'], _raiders)
 		
 		#TODO: Remove memory call
 		speech.announce(life,

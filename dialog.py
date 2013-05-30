@@ -525,7 +525,7 @@ def alife_choose_response(life, target, dialog, responses):
 	
 	for _choice in _choices[:]:
 		if 'lie' in _choice:
-			if _choice['lie'] and numbers.clip(_knows['trust'], -1, 1)>=0:
+			if _choice['lie'] and numbers.clip(alife.judgement.get_trust(life, target['id']), -1, 1)>=0:
 				_choices.remove(_choice)
 	
 	if _choices:

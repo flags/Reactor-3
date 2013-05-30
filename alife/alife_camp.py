@@ -110,7 +110,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						lfe.get_memory,
 						{'text': 'location_of_target', 'target': _info['founder'], 'location': '*'})
 				
-			elif not life['job'] and _knows['trust']>=0:
+			elif not life['job'] and judgement.can_trust(life, _info['founder']):
 				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):
 					_j = jobs.create_job(life, 'get camp job')
 					jobs.add_detail_to_job(_j, 'target', _info['founder'])

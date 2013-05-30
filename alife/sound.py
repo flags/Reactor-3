@@ -3,6 +3,7 @@ import life as lfe
 import judgement
 import speech
 import combat
+import raids
 import brain
 import camps
 import maps
@@ -99,6 +100,7 @@ def listen(life):
 			print 'RAID IN EFFECT!!!!!!!!!!'
 			print '*' * 10
 			_knows = brain.knows_alife(life, event['from'])
+			_raid = raids.defend_camp(event['camp']['id'], life['id'])
 			
 			if _knows and not judgement.is_target_dangerous(life, _knows['life']['id']):
 				lfe.memory(life, 'heard about a camp raid', camp=event['camp']['id'])

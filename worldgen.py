@@ -145,7 +145,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[10,80,2])
+		position=[50,80,2])
 	PLAYER['player'] = True
 	
 	for item in BASE_ITEMS:

@@ -184,8 +184,8 @@ def main():
 			MAP_WINDOW_SIZE[1]/2,
 			_string,
 			console=MAP_WINDOW,
-			fore_color=Color(255,_col,_col),
-			back_color=Color(255-_col,255-_col,255-_col),
+			fore_color=tcod.Color(255,_col,_col),
+			back_color=tcod.Color(255-_col,255-_col,255-_col),
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	

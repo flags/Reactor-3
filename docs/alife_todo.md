@@ -44,6 +44,7 @@ Camps:
 	[ ] Founder can hire people to work under him
 	[/] Claim to be Founder
 		Done for player
+	[ ] `has_camp()` or `get_preferred_camp()`
 
 Jobs:
 	[ ] Consider moving logic (like finding targets, etc) to own file
@@ -63,6 +64,7 @@ Judgement:
 	[ ] When calculating anything, we can just do a memory search for `danger` and `fondness`
 		Differentiate between first-hand and second-hand. Let trust play a factor.
 	[ ] `Start conflict` doesn't add to danger, so no conflict is started
+	[ ] Identifying targets via memories. Not knowing people until you had enough info on them
 
 Misc:
 	[ ] ID vs. dictionary reference mismatch
@@ -76,6 +78,10 @@ Misc:
 	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
 	[ ] Calls to `numbers.distance()` still use default for `old` keyword (True)
 		In doing this, diagonal movement costs 2
+
+Optimization:
+	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
+		Can we base this off average FPS?
 
 Pathing:
 	[ ] Account for Z-levels
