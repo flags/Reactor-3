@@ -30,8 +30,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	#if life['state'] in ['combat', 'working']:
-	#	return False
+	if life['state'] in ['combat']:
+		return False
 	
 	#if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
 	#	return False
