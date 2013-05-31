@@ -50,7 +50,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			continue
 		
 		_all_targets.append({'who': brain.knows_alife_by_id(life, target)})
-		print 'ADDED JUDGED TARGETS!!!'
 	
 	for target in targets_not_seen:
 		if not target['who']['life']['id'] in [t['who']['life']['id'] for t in _all_targets]:

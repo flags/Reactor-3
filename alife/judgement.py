@@ -99,7 +99,7 @@ def is_target_dangerous(life, target_id):
 	return False
 
 def is_safe(life):
-	if brain.retrieve_from_memory(life, 'combat_targets'):
+	if get_targets(life):
 		return False
 	
 	return True
@@ -110,18 +110,36 @@ def get_targets(life):
 	if life['camp'] and raids.camp_has_raid(life['camp']):
 		_targets.extend(raids.get_raiders(life['camp']))
 	
+	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	if _combat_targets:
+		_targets.extend([t['who']['life']['id'] for t in _combat_targets if not t['who']['life']['id'] in _targets])
+	
 	return _targets
 
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
-	for target in [t['who'] for t in brain.retrieve_from_memory(life, 'combat_targets')]:
-		print target.keys()
+
+	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	if not _combat_targets:
+		return False
+	
+	for target in [t['who'] for t in _combat_targets]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'], old=False)
+		
 		if not _target['target'] or _score<_target['score']:
 			_target['target'] = target['life']['id']
 			_target['score'] = _score
 	
 	return _target['target']
+
+def get_visible_threats(life):
+	_targets = []
+	
+	for target in [LIFE[t] for t in get_targets(life)]:
+		if lfe.can_see(life, target['pos']):
+			_targets.append(target['id'])
+	
+	return _targets
 
 def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)

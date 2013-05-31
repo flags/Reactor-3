@@ -142,7 +142,7 @@ def get_best_weapon(life):
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
 	#TODO: See issue #64
-	_best_wep = {'weapon': None,'rounds': 0}
+	_best_wep = {'weapon': None, 'feed': None, 'rounds': 0}
 	for _wep in _weapons:
 		
 		_feeds = lfe.get_all_inventory_items(life,
@@ -177,7 +177,7 @@ def get_best_weapon(life):
 		else:
 			_best_wep['feed'] = _best_feed['feed']
 	
-	if not _best_wep['weapon']:
+	if not _best_wep['weapon'] or not _best_wep['feed']:
 		return False
 	
 	return _best_wep

@@ -2,6 +2,8 @@
 #system works.
 from globals import *
 
+import life as lfe
+
 import judgement
 import movement
 import combat
@@ -23,27 +25,25 @@ def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
-	
+
 	if judgement.is_safe(life):
 		return False
+	
+	if judgement.get_visible_threats(life):
+		return False
+	
+	if life['state'] in ['combat']:
+		return False	
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if life['state'] in ['combat']:
-		return False
-	
-	#if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	#	return False
-	
-	if len(targets_seen):
-		return False
-	
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_weapon = combat.get_best_weapon(life)
+	
 	if combat.has_weapon(life):
 		if not combat.weapon_equipped_and_ready(life):
-			if not 'equipping' in life:
-				if combat._equip_weapon(life):
-					life['equipping'] = True
+			if _weapon and not lfe.find_action(life, matches=[{'action': 'equipitem', 'item': _weapon['weapon']['id']}]):
+				combat._equip_weapon(life)

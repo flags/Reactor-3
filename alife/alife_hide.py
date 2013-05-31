@@ -27,14 +27,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if judgement.is_safe(life):
 		return False
 	
+	if not judgement.get_visible_threats(life):
+		return False
+	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
-	
-	#if life['state'] in ['combat', 'working']:
-	#	return False
-	
-	if not len(targets_seen):
-		return False
 	
 	return RETURN_VALUE
 
