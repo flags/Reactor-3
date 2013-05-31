@@ -79,6 +79,7 @@ Misc:
 	[ ] Calls to `numbers.distance()` still use default for `old` keyword (True)
 		In doing this, diagonal movement costs 2
 	[ ] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
+	[ ] Mod docs
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
