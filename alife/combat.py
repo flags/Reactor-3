@@ -80,35 +80,20 @@ def _refill_feed(life,feed):
 		
 		_rounds += 1
 
-def _equip_weapon(life):
-	_best_wep = get_best_weapon(life)
-	
-	if not _best_wep:
-		return False
-	
-	_weapon = _best_wep['weapon']
-	
+def _equip_weapon(life, weapon, feed):
 	#TODO: Need to refill ammo?
-	if not weapons.get_feed(_weapon):
-		_feed = _best_wep['feed']
-		
-		if _feed:
-			#TODO: How much time should we spend loading rounds if we're in danger?
-			if _refill_feed(life,_feed):
-				lfe.add_action(life,{'action': 'reload',
-					'weapon': _weapon,
-					'ammo': _feed},
-					200,
-					delay=0)
-		else:
-			print 'No feed!'
-			
-			return False
-		
-		return False
+	if not weapons.get_feed(weapon):
+		#TODO: How much time should we spend loading rounds if we're in danger?
+		if _refill_feed(life, feed):
+			lfe.add_action(life,{'action': 'reload',
+		          'weapon': weapon,
+		          'ammo': feed},
+		          200,
+		          delay=0)
 	else:
+		print 'should be equippan?'
 		lfe.add_action(life,{'action': 'equipitem',
-			'item': _weapon['id']},
+			'item': weapon['id']},
 			300,
 			delay=0)
 		
@@ -141,41 +126,49 @@ def has_usable_weapon(life):
 def get_best_weapon(life):
 	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 	
-	#TODO: See issue #64
 	_best_wep = {'weapon': None, 'feed': None, 'rounds': 0}
 	for _wep in _weapons:
-		
+		_feed_rounds = 0
+		_free_rounds = 0
 		_feeds = lfe.get_all_inventory_items(life,
 			matches=[{'type': _wep['feed'],'ammotype': _wep['ammotype']}])
 		
-		#TODO: Not *really* the best weapon, just already loaded
-		if weapons.get_feed(_wep):
-			_best_wep['weapon'] = _wep
-			break
-
-		#print _feeds
-		_best_feed = {'feed': None, 'rounds': -1}
-		for _feed in _feeds:
-			
-			#TODO: Check to make sure this isn't picking up the rounds already in the mag/clip
-			_rounds = len(lfe.get_all_inventory_items(life,
-				matches=[{'type': 'bullet', 'ammotype': _wep['ammotype']}]))
-			_rounds += len(_feed['rounds'])
-			
-			if len(_feed['rounds']) > _best_feed['rounds']:
-				_best_feed['rounds'] = len(_feed['rounds'])
-				_best_feed['feed'] = _feed
-
-			if _rounds > _best_wep['rounds']:
+		_loaded_feed = weapons.get_feed(_wep)
+		if _loaded_feed:
+			if len(_loaded_feed['rounds'])>_best_wep['rounds']:
 				_best_wep['weapon'] = _wep
-				_best_wep['rounds'] = _rounds
+				_best_wep['feed'] = _loaded_feed
+				_best_wep['rounds'] = len(_loaded_feed['rounds'])
+				continue
 
-		if not _best_feed['feed']:
-			_best_wep['weapon'] = None
-			#print 'No feed for weapon.',life['name']
-			return False
-		else:
-			_best_wep['feed'] = _best_feed['feed']
+		for _feed in _feeds:
+			_feed_rounds = len(_feed['rounds'])
+			_free_rounds = len(lfe.get_all_inventory_items(life,
+				matches=[{'type': 'bullet', 'ammotype': _wep['ammotype']}]))
+			
+			if _feed_rounds+_free_rounds > _best_wep['rounds']:
+				_best_wep['weapon'] = _wep
+				_best_wep['feed'] = _feed
+				_best_wep['rounds'] = _feed_rounds+_free_rounds
+			#TODO: Check to make sure this isn't picking up the rounds already in the mag/clip
+			#_rounds = len(lfe.get_all_inventory_items(life,
+			#	matches=[{'type': 'bullet', 'ammotype': _wep['ammotype']}]))
+			#_rounds += len(_feed['rounds'])
+			#
+			#if len(_feed['rounds']) > _best_feed['rounds']:
+			#	_best_feed['rounds'] = len(_feed['rounds'])
+			#	_best_feed['feed'] = _feed
+
+			#if _rounds > _best_wep['rounds']:
+			#	_best_wep['weapon'] = _wep
+			#	_best_wep['rounds'] = _rounds
+
+		#if not _best_feed['feed']:
+		#	_best_wep['weapon'] = None
+		#	#print 'No feed for weapon.',life['name']
+		#	return False
+		#else:
+		#	_best_wep['feed'] = _best_feed['feed']
 	
 	if not _best_wep['weapon'] or not _best_wep['feed']:
 		return False

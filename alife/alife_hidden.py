@@ -43,7 +43,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_weapon = combat.get_best_weapon(life)
 	
-	if combat.has_weapon(life):
+	if _weapon:
 		if not combat.weapon_equipped_and_ready(life):
-			if _weapon and not lfe.find_action(life, matches=[{'action': 'equipitem', 'item': _weapon['weapon']['id']}]):
-				combat._equip_weapon(life)
+			if _weapon:
+				combat._equip_weapon(life, _weapon['weapon'], _weapon['feed'])
