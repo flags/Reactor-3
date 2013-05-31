@@ -150,25 +150,6 @@ def get_best_weapon(life):
 				_best_wep['weapon'] = _wep
 				_best_wep['feed'] = _feed
 				_best_wep['rounds'] = _feed_rounds+_free_rounds
-			#TODO: Check to make sure this isn't picking up the rounds already in the mag/clip
-			#_rounds = len(lfe.get_all_inventory_items(life,
-			#	matches=[{'type': 'bullet', 'ammotype': _wep['ammotype']}]))
-			#_rounds += len(_feed['rounds'])
-			#
-			#if len(_feed['rounds']) > _best_feed['rounds']:
-			#	_best_feed['rounds'] = len(_feed['rounds'])
-			#	_best_feed['feed'] = _feed
-
-			#if _rounds > _best_wep['rounds']:
-			#	_best_wep['weapon'] = _wep
-			#	_best_wep['rounds'] = _rounds
-
-		#if not _best_feed['feed']:
-		#	_best_wep['weapon'] = None
-		#	#print 'No feed for weapon.',life['name']
-		#	return False
-		#else:
-		#	_best_wep['feed'] = _best_feed['feed']
 	
 	if not _best_wep['weapon'] or not _best_wep['feed']:
 		return False
