@@ -90,6 +90,7 @@ Misc:
 	[ ] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
 	[ ] Mod docs
 	[ ] Do we still need `alife_seen, alife_not_seen, targets_seen, targets_not_seen` arguments in the modules?
+	[ ] Implement all life/item flags
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
@@ -116,6 +117,10 @@ Combat:
 			We are never truly safe until this is cleared.
 	[ ] When leaving cover, do we know the interval of the targets gunshots?
 	[ ] When ALife are looking for lost targets, have ALifes who find one annouce to the others
+	[ ] "Groups"
+
+Crafting:
+	[ ] Use `CANDISMANTLE` flag to tear apart items to make new ones
 
 Complexity:
 	[ ] `judgement.can_trust` minimum value for when function returns true
