@@ -112,11 +112,14 @@ Combat:
 		Consider that `alife_combat` stores identified targets into memory as `combat_targets`
 			We are never truly safe until this is cleared.
 	[ ] When leaving cover, do we know the interval of the targets gunshots?
+	[ ] When ALife are looking for lost targets, have ALifes who find one annouce to the others
 
 Complexity:
 	[ ] `judgement.can_trust` minimum value for when function returns true
 
 Cycles:
+	[ ] First mission
+
 	[/] Food:
 			Has food?
 				[x] eat it
