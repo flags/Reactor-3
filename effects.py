@@ -12,14 +12,15 @@ import time
 import maps
 import sys
 
-def register_effect(effect,callback):
+def register_effect(effect, callback):
 	effect['callback'] = callback
 	
 	EFFECTS.append(effect)
 	
 	logging.debug('Effect registered: %s' % effect['what'])
 
-def has_splatter(position,what=None):
+def has_splatter(position, what=None):
+	#TODO: Make this into a dict so we can convert the position to a string and search that
 	for splat in SPLATTERS:
 		if splat['pos'] == position:
 			if what and not what == splat['what']:
@@ -27,11 +28,11 @@ def has_splatter(position,what=None):
 			
 			return splat
 
-def create_splatter(what,position,velocity=0):
+def create_splatter(what, position, velocity=0):
 	_splatter = has_splatter(tuple(position),what=what)
 	
 	if not _splatter:
-		_splatter = {'pos': list(position[:]),'what': what,'color': tcod.Color(0,0,0),'coef': 0}
+		_splatter = {'pos': list(position[:]),'what': what,'color': tcod.Color(0,0,0),'coef': numbers.clip(random.random(), 0, 0.3)}
 		_splatter['pos'][0] += random.randint(-velocity,velocity)
 		_splatter['pos'][1] += random.randint(-velocity,velocity)
 	
@@ -46,7 +47,7 @@ def create_splatter(what,position,velocity=0):
 	_splatter['pos'] = tuple(_splatter['pos'])
 	SPLATTERS.append(_splatter)
 
-def create_gas(where,what,amount,source_map):
+def create_gas(where, what, amount, source_map):
 	effect = {'what': what, 'where': tuple(where),'amount': amount,'map': source_map,'height_map': 'Reset'}
 	
 	_x = numbers.clip(where[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
@@ -67,7 +68,7 @@ def simulate_gas(effect):
 	
 	return True
 
-def draw_splatter(position,render_at):
+def draw_splatter(position, render_at):
 	_has_splatter = has_splatter(position)
 	
 	if not _has_splatter:
