@@ -125,7 +125,7 @@ def get_nearest_threat(life):
 		return False
 	
 	for target in [t['who'] for t in _combat_targets]:
-		_score = numbers.distance(life['pos'], target['last_seen_at'], old=False)
+		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
 			_target['target'] = target['life']['id']

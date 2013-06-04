@@ -234,7 +234,7 @@ def disarm(life):
 	jobs.add_detail_to_job(life['job'], 'target', target['id'])
 	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
 	
-	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=10:
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=10:
 		lfe.clear_actions(life)
 		
 		if not speech.has_sent(life, target, 'demand_drop_item'):
@@ -259,7 +259,7 @@ def guard(life):
 	
 	target = _targets[0]['who']['life']
 	
-	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'], old=False)<=5:
+	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=5:
 		lfe.clear_actions(life)
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
@@ -269,7 +269,7 @@ def guard(life):
 	if _dropped and not 'id' in ITEMS[_dropped]:
 		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
 		
-		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'], old=False)>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
+		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'])>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
 			return True
 	
 	if _dropped and 'id' in ITEMS[_dropped] and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
