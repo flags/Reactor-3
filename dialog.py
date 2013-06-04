@@ -691,6 +691,16 @@ def process_response(life, target, dialog, chosen):
 	dialog['listener'] = _speaker
 	
 	if 'player' in  life:
+		_single_responses = {}
+		for _response in _responses:
+			if not _response['text'] in _single_responses:
+				_single_responses[_response['text']] = _response
+				continue
+			
+			if random.randint(0, 1):
+				_single_responses[_response['text']] = _response
+			
+		_responses = _single_responses.values()
 		if _responses and not _responses[0]['gist'] in ['nothing', 'end']:
 			dialog['topics'] = _responses
 			dialog['index'] = 0
