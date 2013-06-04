@@ -1,7 +1,14 @@
+KEY:
+
+(blank)	:	Incomplete
+x		:	Complete
+/		:	Partially complete
+?		:	Potentially a non-issue
+U		:	Unclear (for entries written too early in the morning)
+
 alife_camp.py
 	[ ] Do we even want to help other ALife find the founder?
-	[ ] Who do we think the founder is?
-	[ ] Watch over camp
+	[x] Watch over camp
 
 alife_talk.py
 	[ ] Score _potential_talking_targets
@@ -13,18 +20,19 @@ damage.py
 	[ ] Melee (?)
 	
 judgement.py
-	[ ] Placeholder: ALife now view someone positively just by saying hello to them (no response needed)
-	[ ] Finish `alife.brain.can_trust`
+	[x] Placeholder: ALife now view someone positively just by saying hello to them (no response needed)
+	[x] Finish `alife.brain.can_trust`
 
 Conversations:
 	[/] Nothing is conveyed to the ALife/Player. Needs: trust, friendly/hostile actions
-	[ ] When letting the player answer, only pick one response to show from multiple ones of the same gist.
+	[x] When letting the player answer, only pick one response to show from multiple ones of the same gist.
 	[ ] When told about a location, add to map
 	[x] Could ALife use new conversation system to talk?
 			How would the whole "find founder" situation be done in the new system? Just through topics?
-	[ ] Spotting lies (lying about being the camp founder, giving wrong info, etc)
+	[x] Spotting lies (lying about being the camp founder, giving wrong info, etc)
 	[ ] Dialogs are still controlled by one entity. Check to make sure the other involved entity is even awake/existing in dialog.tick()
-	[ ] Multiple ALife hearing a response. Only general topics, like introductions, etc.
+	[?] Multiple ALife hearing a response. Only general topics, like introductions, etc.
+		Accomplished by sounds
 	[ ] Red text on responses indicating lying is no longer working
 
 Likes/Dislikes:
@@ -45,6 +53,7 @@ Camps:
 	[/] Claim to be Founder
 		Done for player
 	[ ] `has_camp()` or `get_preferred_camp()`
+	[ ] Proper `get_camp_founder` function for determining who the founder is believed to be
 
 Jobs:
 	[ ] Consider moving logic (like finding targets, etc) to own file
@@ -59,24 +68,24 @@ Combat:
 Judgement:
 	[/] Remove all references to `judgement.judge`, `score` or any other variation
 		[/] Replace with calls to get_fondness(), is_target_dangerous(), and can_trust().
-	[ ] Rewrite `brain.understand()` to support new scoring variables
-	[ ] ENTRY_SCORE for all ALife modules are now invalid
-	[ ] When calculating anything, we can just do a memory search for `danger` and `fondness`
+	[x] Rewrite `brain.understand()` to support new scoring variables
+	[x] ENTRY_SCORE for all ALife modules are now invalid
+	[x] When calculating anything, we can just do a memory search for `danger` and `fondness`
 		Differentiate between first-hand and second-hand. Let trust play a factor.
-	[ ] `Start conflict` doesn't add to danger, so no conflict is started
-	[ ] Identifying targets via memories. Not knowing people until you had enough info on them
+	[x] `Start conflict` doesn't add to danger, so no conflict is started
+	[U] Identifying targets via memories. Not knowing people until you had enough info on them
 
 Misc:
-	[ ] ID vs. dictionary reference mismatch
-	[ ] Proper `get_camp_founder` function for determining who the founder is believed to be
-	[ ] When choosing to not answer a question, chances are that person will never ask you again.
+	[ ] ID vs. dictionary reference mismatch in function arguments
+	[?] When choosing to not answer a question, chances are that person will never ask you again.
+		Fixed?
 	[x] Items need `is_being_picked_up`
-	[ ] `set_hunger_to_percentage` (also for thirst)
+	[U] `set_hunger_to_percentage` (also for thirst)
 	[ ] General dictionary match function
 	[x] Have `aim_at` refer to ID instead of raw entity
 	[x] Fix crash on menu left/right
 	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
-	[ ] Calls to `numbers.distance()` still use default for `old` keyword (True)
+	[x] Calls to `numbers.distance()` still use default for `old` keyword (True)
 		In doing this, diagonal movement costs 2
 	[ ] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
 	[ ] Mod docs
@@ -98,11 +107,14 @@ Worldgen:
 	[ ] Spawn ALife in various locations around the outside of the map
 
 Combat:
-	[ ] `calculate_safety()` in all ALife modules needs to refer to an outside function.
+	[x] `calculate_safety()` in all ALife modules needs to refer to an outside function.
 		`targets_not_seen` is not taken into account. Some targets might still be relevant
 		Consider that `alife_combat` stores identified targets into memory as `combat_targets`
 			We are never truly safe until this is cleared.
 	[ ] When leaving cover, do we know the interval of the targets gunshots?
+
+Complexity:
+	[ ] `judgement.can_trust` minimum value for when function returns true
 
 Cycles:
 	[/] Food:
