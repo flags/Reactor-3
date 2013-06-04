@@ -28,11 +28,11 @@ def initiate_item(name):
 	_marked_for_reint = {}
 	
 	if not 'prefix' in item:
-		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_PREFIX))
+		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_PREFIX))
 		item['prefix'] = DEFAULT_ITEM_PREFIX
 	
 	if not 'icon' in item:
-		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_ICON))
+		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_ICON))
 		item['tile'] = DEFAULT_ITEM_ICON
 	
 	if not 'flags' in item:
@@ -49,7 +49,7 @@ def initiate_item(name):
 		item['storing'] = []
 	
 	if not 'size' in item:
-		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_SIZE))
+		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_SIZE))
 		item['size'] = DEFAULT_ITEM_SIZE
 	
 	if item['type'] == 'gun':
@@ -58,11 +58,24 @@ def initiate_item(name):
 	#item['flags'] = []
 	_flags = {}
 	for flag in item['flags'].split('|'):
-		_flag_split = flag.split('=')
-		_flags[_flag_split[0]] = None
-		
-		if len(_flag_split)==2:
-			_flags[_flag_split[0]] = _flag_split[1]
+		if '=' in flag:
+			_flag_split = flag.split('=')
+			_flags[_flag_split[0]] = None
+			
+			if len(_flag_split)==2:
+				_flags[_flag_split[0]] = _flag_split[1]
+		elif '[' in flag:
+			_ocount = flag.count('[')
+			_ccount = flag.count(']')
+			
+			if _ocount > _ccount:
+				logging.error('Brace mismatch in item \'%s\': Expected \']\'' % name)
+				continue
+			elif _ocount < _ccount:
+				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
+				continue
+			
+			
 	
 	item['flags'] = _flags
 	item['size'] = 	[int(c) for c in item['size'].split('x')]

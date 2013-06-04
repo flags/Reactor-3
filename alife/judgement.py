@@ -75,10 +75,10 @@ def get_trust(life, target_id):
 	return _trust
 
 def can_trust(life, target_id):
-	_trust = _knows['trust']
+	_knows = brain.knows_alife_by_id(life, target_id)
 	
 	#TODO: What is our minimum score for trust?
-	if _trust>=0:
+	if _knows['trust']>=0:
 		return True
 	
 	return False

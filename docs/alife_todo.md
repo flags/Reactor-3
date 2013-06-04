@@ -105,7 +105,10 @@ Pathing:
 
 Survival:
 	[x] A system for creating needs and tracking them. Similar to questions so we can easily find what meets a need.
-		[ ] Can we get rid of the old needs that use flags?
+		[ ] Can we get rid of the old needs that use flags (like backpacks, etc)?
+	[ ] Injuries
+		[ ] Viewing
+		[ ] Treating
 
 Worldgen:
 	[/] Randomize hunger/thirst on entry
