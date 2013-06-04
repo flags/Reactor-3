@@ -89,10 +89,13 @@ Misc:
 		In doing this, diagonal movement costs 2
 	[ ] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
 	[ ] Mod docs
+	[ ] Do we still need `alife_seen, alife_not_seen, targets_seen, targets_not_seen` arguments in the modules?
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
 		Can we base this off average FPS?
+	[ ] Only run `judgement.is_safe` and related functions once per tick
+		We do it in every module currently.
 
 Pathing:
 	[ ] Account for Z-levels
