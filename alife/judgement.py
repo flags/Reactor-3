@@ -70,20 +70,15 @@ def get_trust(life, target_id):
 	_trust = 0
 	
 	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
-		_trust += memory['trust']	
+		_trust += memory['trust']
 	
-	if _knows:
-		return int(round(_knows['trust']))+_trust
-	
-	#logging.warning('%s does not know %s. Can\'t return trust.' % (' '.join(life['name']), ' '.join(_knows['life']['name'])))
 	return _trust
 
 def can_trust(life, target_id):
-	_knows = brain.knows_alife_by_id(life, target_id)
-	_trust = get_trust(life, target_id)
+	_trust = _knows['trust']
 	
 	#TODO: What is our minimum score for trust?
-	if _knows['trust']>=0:
+	if _trust>=0:
 		return True
 	
 	return False
@@ -185,10 +180,12 @@ def judge(life, target_id):
 	
 	_old_fondness = target['fondness']
 	_old_danger = target['danger']
+	_old_trust = target['trust']
 	
 	_get_impressions(life, target)
 	target['fondness'] = _calculate_fondness(life, target)
 	target['danger'] = _calculate_danger(life, target)
+	target['trust'] = get_trust(life, target_id)
 	
 	_calculate_impressions(life, target)
 	
@@ -197,6 +194,9 @@ def judge(life, target_id):
 
 	if not _old_danger == target['danger']:
 		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
+	
+	if not _old_trust == target['trust']:
+		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
 
 def judge_old(life, target):
 	_like = 0
@@ -455,12 +455,6 @@ def judge_raid(life, raiders, camp):
 	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))
 	
 	return _score
-
-#TODO: Should be in brain.py?
-def get_trust(life, target_id):
-	_knows = brain.knows_alife_by_id(life, target_id)
-	
-	return WORLD_INFO['ticks']-_knows['met_at_time']
 
 def believe_which_alife(life, alife):
 	_scores = {}

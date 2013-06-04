@@ -97,6 +97,7 @@ Optimization:
 		Can we base this off average FPS?
 	[ ] Only run `judgement.is_safe` and related functions once per tick
 		We do it in every module currently.
+	[ ] Optimize `has_splatter` search
 
 Pathing:
 	[ ] Account for Z-levels

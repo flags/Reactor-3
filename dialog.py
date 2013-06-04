@@ -500,20 +500,22 @@ def get_freshness_of_gist(life, target, gist):
 		_freshness += _knows['likes'][key][0]
 	return _freshness
 
-def modify_trust(life, target, _chosen):
+def modify_trust(life, target, chosen):
 	_knows = alife.brain.knows_alife_by_id(life, target)
 	
-	if 'like' in _chosen:
-		_like = _chosen['like']
+	if 'like' in chosen:
+		_like = chosen['like']
 		
-		for key in get_matching_likes(life, target, _chosen['gist']):
+		for key in get_matching_likes(life, target, chosen['gist']):
 			_like *= _knows['likes'][key][0]
 			_knows['likes'][key][0] *= _knows['likes'][key][1]
 		
-		_knows['trust'] += _like
-	elif 'dislike' in _chosen:
-		#_dislike = _chosen['dislike']
-		_knows['trust'] -= _chosen['dislike']
+		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
+			lfe.memory(life, chosen['gist'], trust=chosen['like'], target=target)
+		#_knows['trust'] += _like
+	elif 'dislike' in chosen:
+		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
+			lfe.memory(life, chosen['gist'], trust=-chosen['dislike'], target=target)
 
 def alife_choose_response(life, target, dialog, responses):
 	if not alife.brain.knows_alife(life, target):
@@ -679,6 +681,12 @@ def process_response(life, target, dialog, chosen):
 	
 	calculate_impacts(life, target, _responses)
 	format_responses(life, target, _responses)
+	
+	#if 'like' in chosen and not lfe.find_action(LIFE[dialog['speaker']], matches=[{'text': chosen['gist'], 'target': dialog['listener']}]):
+	#	lfe.memory(LIFE[dialog['speaker']], chosen['gist'], trust=chosen['like'], target=dialog['listener'])
+	
+	#if 'like' in chosen and not lfe.find_action(LIFE[dialog['listener']], matches=[{'text': chosen['gist'], 'target': dialog['speaker']}]):
+	#	lfe.memory(LIFE[dialog['listener']], chosen['gist'], trust=chosen['like'], target=dialog['speaker'])
 	
 	modify_trust(LIFE[dialog['speaker']], dialog['listener'], chosen)
 	modify_trust(LIFE[dialog['listener']], dialog['speaker'], chosen)

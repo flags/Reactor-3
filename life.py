@@ -1283,7 +1283,7 @@ def tick(life, source_map):
 	
 	if get_bleeding_limbs(life):
 		if random.randint(0,50)<9:
-			effects.create_splatter('blood',life['pos'])
+			effects.create_splatter('blood', life['pos'])
 	
 	if life['asleep']:
 		life['asleep'] -= 1
@@ -2597,8 +2597,9 @@ def damage_from_item(life,item,damage):
 	_shot_by_alife = LIFE[item['owner']]
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot by', target=item['owner'])
-	memory(life, 'hostile', target=item['owner'])
+	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
+	#memory(life, 'hostile', target=item['owner'])
+	create_and_update_self_snapshot(LIFE[item['owner']])
 	
 	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
 		memory(life, 'traitor',
