@@ -93,6 +93,7 @@ SETTINGS['draw z-levels above'] = True
 life.initiate_life('Human')
 
 items.initiate_item('white_shirt')
+items.initiate_item('white_cloth')
 items.initiate_item('sneakers')
 items.initiate_item('leather_backpack')
 items.initiate_item('blue_jeans')

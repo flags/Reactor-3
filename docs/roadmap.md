@@ -448,7 +448,9 @@ Proposing: `calculate_safety()`
 	Inspects all variables checked by `is_safe()` for changes.
 		For example, when `combat_targets` become invalid.
 	
-		
+Crafting
+---------
+Used for dismantling in this milestone.
 
 State Overrides
 ---------------

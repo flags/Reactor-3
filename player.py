@@ -2,6 +2,7 @@ from globals import *
 from alife import *
 
 import graphics as gfx
+import crafting
 import weapons
 import dialog
 import menus
@@ -525,7 +526,7 @@ def handle_input():
 		SUN_BRIGHTNESS[0] += 4
 	
 	if INPUT['k']:
-		SUN_BRIGHTNESS[0] -= 4
+		create_crafting_menu()
 
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
@@ -1012,3 +1013,36 @@ def create_radio_menu():
 		on_select=radio_menu)
 	
 	menus.activate_menu(_menu)
+
+def craft_menu_response(entry):
+	key = entry['key']
+	
+	if entry['action'] == 'dismantle':
+		crafting.dismantle_item(SETTINGS['controlling'], entry['item'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_crafting_menu():
+	_items = []
+	for item in crafting.get_items_for_dismantle(SETTINGS['controlling']):
+		_items.append(menus.create_item('single',
+			item['name'],
+			None,
+			item=item['id'],
+		    action='dismantle'))
+	
+	if _items:
+		_items.insert(0, menus.create_item('title', 'Dismantle', None, enabled=False))
+	else:
+		gfx.message('You have no items to modify!')
+		return False
+	
+	_menu = menus.create_menu(title='Crafting',
+		menu=_items,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k',
+		on_select=craft_menu_response)
+	
+	menus.activate_menu(_menu)
+	

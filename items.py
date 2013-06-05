@@ -1,6 +1,7 @@
 from globals import *
 
 import graphics as gfx
+import scripting
 import drawing
 import logging
 import numbers
@@ -74,10 +75,10 @@ def initiate_item(name):
 			elif _ocount < _ccount:
 				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
 				continue
+			
+			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)
 		else:
 			_flags[flag] = None
-			
-			
 	
 	item['flags'] = _flags
 	item['size'] = 	[int(c) for c in item['size'].split('x')]
