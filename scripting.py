@@ -11,20 +11,18 @@ import re
 def execute(script, **kvargs):
 	for function in script:
 		_args = parse_arguments(script[function], **kvargs)
-		print function
+		
 		if function == 'CREATE_AND_OWN_ITEM':
 			_i = items.create_item(_args[0], position=_args[1])
-			life.add_item_to_inventory(owner, _i)
-			print 'yah'
+			life.add_item_to_inventory(kvargs['owner'], _i)
 		elif function == 'DELETE':
-			#_i = life.remove_item_from_inventory(kvargs['item'])
-			pass
+			_i = life.remove_item_from_inventory(kvargs['owner'], kvargs['item'])
+			items.delete_item(_i)
 		else:
 			logging.error('Script: \'%s\' is not a valid function.' % function)
 
 def initiate(owner, text):
 	_functions = get_functions(owner, text)
-	print get_functions(owner, text)
 	
 	return _functions
 
@@ -50,10 +48,11 @@ def parse_argument(owner, argument):
 def get_functions(owner, text):
 	_functions = {}
 
-	for func in text.split(','):
+	for func in text.split(':'):
+		print text
 		for function in re.findall('[a-zA-Z_]*\(.*\)', func):
 			_name,_args = function.split('(')
-			
+			_functions[_name] = _args#parse_arguments(owner, _args)
 
 	return _functions
 
