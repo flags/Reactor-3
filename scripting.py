@@ -37,4 +37,5 @@ def get_functions(owner, text):
 
 	return _functions
 
-#print parse({'pos': (5,10)},'CANDISMANTLE[CREATE_ITEM(white cloth, self.pos)]')
+#if __name__ == "__main__":
+#	print parse({'pos': (5,10)},'CANDISMANTLE[CREATE_ITEM(white cloth, self.pos)]')
