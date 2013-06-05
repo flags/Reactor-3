@@ -74,6 +74,8 @@ def initiate_item(name):
 			elif _ocount < _ccount:
 				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
 				continue
+		else:
+			_flags[flag] = None
 			
 			
 	
