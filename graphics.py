@@ -188,6 +188,11 @@ def draw_message_box():
 	_y_mod = 1
 	_lower = numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
 	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
+		if msg['count']:
+			_text = '%s (x%s)' % (msg['msg'], msg['count']+1)
+		else:		
+			_text = msg['msg']
+		
 		if msg['style'] == 'damage':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.red)
 		elif msg['style'] == 'speech':
@@ -199,7 +204,7 @@ def draw_message_box():
 		else:
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
 		
-		tcod.console_print(MESSAGE_WINDOW,1,_y_mod,msg['msg'])
+		tcod.console_print(MESSAGE_WINDOW, 1, _y_mod, _text)
 		_y_mod += 1
 
 def draw_status_line():
@@ -306,8 +311,12 @@ def draw_console():
 def log(text):
 	CONSOLE_HISTORY.append(text)
 
-def message(text,style=None):
-	MESSAGE_LOG.append({'msg': text,'style': style})
+def message(text, style=None):
+	if MESSAGE_LOG and MESSAGE_LOG[len(MESSAGE_LOG)-1]['msg'] == text:
+		MESSAGE_LOG[len(MESSAGE_LOG)-1]['count'] += 1
+		return None
+	
+	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def end_of_frame_terraform(editing_prefab=False):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
