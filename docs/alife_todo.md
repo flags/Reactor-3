@@ -124,7 +124,9 @@ Combat:
 	[ ] "Groups"
 
 Crafting:
-	[ ] Use `CANDISMANTLE` flag to tear apart items to make new ones
+	[x] Use `CANDISMANTLE` flag to tear apart items to make new ones
+	[ ] Crafted items are dropped instead of held
+	[ ] Make sure hands are free before crafting
 
 Complexity:
 	[ ] `judgement.can_trust` minimum value for when function returns true

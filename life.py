@@ -181,7 +181,7 @@ def initiate_limbs(body):
 		#Note: `Condition` is calculated automatically
 		body[limb]['condition'] = 100
 		body[limb]['cut'] = False
-		body[limb]['bleeding'] = False
+		body[limb]['bleeding'] = 0
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
 		body[limb]['artery_ruptured'] = False
@@ -200,7 +200,7 @@ def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
 
 def get_limb(body,limb):
-	"""Helper function. Finds ands returns a limb."""
+	"""Helper function. Finds and returns a limb."""
 	return body[limb]
 
 def get_all_limbs(body):
@@ -1280,9 +1280,12 @@ def tick(life, source_map):
 	
 	natural_healing(life)
 	alife.survival.check_needs(life)
-	
-	if get_bleeding_limbs(life):
-		if random.randint(0,50)<9:
+	_bleeding_limbs = get_bleeding_limbs(life)
+	if _bleeding_limbs:
+		print _bleeding_limbs,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+		_bleed_score = sum([get_limb(life['body'], l)['bleeding'] for l in _bleeding_limbs])*3
+		print _bleed_score
+		if random.randint(0,50)<numbers.clip(_bleed_score, 0, 50):
 			effects.create_splatter('blood', life['pos'])
 	
 	if life['asleep']:
@@ -2462,7 +2465,7 @@ def cut_limb(life,limb,amount=2):
 	#_limb['bleeding'] += amount
 	_limb['cut'] = True
 	
-	effects.create_splatter('blood',life['pos'],velocity=1)
+	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
 	
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb,style='damage')
@@ -2493,11 +2496,12 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	
 	if cut:
 		cut_limb(life, limb)
+		print 'WHAT IS THIS VALUE?',cut,cut*float(_limb['bleed_mod'])
 		_limb['bleeding'] += cut*float(_limb['bleed_mod'])
 		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
 	
 	if artery_ruptured:
-		_limb['bleeding'] += 3
+		_limb['bleeding'] += 7
 		rupture_artery(life, limb)
 		
 		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
@@ -2622,14 +2626,16 @@ def damage_from_item(life,item,damage):
 	create_and_update_self_snapshot(life)
 
 def natural_healing(life):
+	return 0
 	if life['asleep']:
-		_heal_rate = 0.05
+		_heal_rate = 0.0002
 	else:
-		_heal_rate = 0.03
+		_heal_rate = 0.0004
 	
 	for _limb in [life['body'][limb] for limb in life['body']]:
 		if _limb['bleeding'] > 0:
-			_limb['bleeding'] -= 0.001
+			_limb['bleeding'] -= _heal_rate
+			print _limb['bleeding']
 		elif _limb['bleeding'] < 0:
 			_limb['bleeding'] = 0
 
