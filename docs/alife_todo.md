@@ -18,6 +18,7 @@ damage.py
 	[ ] Blunt weapons
 	[ ] Explosives
 	[ ] Melee (?)
+	[ ] Blood splatter in direction of bullet
 	
 judgement.py
 	[x] Placeholder: ALife now view someone positively just by saying hello to them (no response needed)
