@@ -231,7 +231,8 @@ class Astar:
 
 				#But we can climb to this position if there is something to climb on
 				if self.omap[_map_x_pos][_map_y_pos][self.start[2]+1]:
-					self.map[_y,_x] = 2
+					#TODO: Change this back to 2 :+)
+					self.map[_y,_x] = 0#2
 
 					#Not if there's a tile above the position we'd be climing to!
 					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
