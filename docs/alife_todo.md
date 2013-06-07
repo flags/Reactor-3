@@ -62,6 +62,7 @@ Jobs:
 	[ ] "Repeat" flag so ALife can switch between tasks in a job without deleting them
 
 Combat:
+	[/] Autotarget
 	[ ] Add `can_engage` function
 	[ ] ALife fight for food/will attack others for food if starving
 			Could randomize hunger on zone entry to create friction at worldgen

@@ -164,6 +164,7 @@ BULLETS = []
 EFFECTS = []
 SPLATTERS = []
 JOBS = {}
+SELECTED_TARGET = []
 WORKER_THREADS = []
 
 #Consoles

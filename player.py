@@ -52,7 +52,7 @@ def handle_input():
 
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
 		elif life.has_dialog(SETTINGS['controlling']):
@@ -66,7 +66,7 @@ def handle_input():
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
 		elif life.has_dialog(SETTINGS['controlling']):
@@ -702,10 +702,16 @@ def inventory_throw(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def target_view(entry):
+	SETTINGS['following'] = LIFE[entry['target']]
+	SETTINGS['controlling']['targeting'] = LIFE[entry['target']]['pos'][:]
+
 def inventory_fire(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	SETTINGS['controlling']['firing'] = item
 	
@@ -717,9 +723,22 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	SETTINGS['controlling']['targeting'] = LIFE[SETTINGS['controlling']['aim_at']]['pos'][:]
+	_menu_items = []
+	for target in [l for l in LIFE.values() if life.can_see(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+		if not _menu_items:
+			SETTINGS['following'] = target
+		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
 	
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	if _menu_items:
+		_i = menus.create_menu(title='Aim at...',
+			menu=_menu_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k',
+			on_select=inventory_shoot,
+			on_move=target_view)
+	
+		menus.activate_menu(_i)	
 
 def inventory_fire_select_limb(entry, no_delete=False):	
 	key = entry['key']
@@ -751,6 +770,7 @@ def inventory_fire_action(entry):
 	
 	weapons.fire(SETTINGS['controlling'], entry['target']['pos'], limb=entry['limb'])
 	SETTINGS['controlling']['targeting'] = None
+	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])

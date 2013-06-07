@@ -2,10 +2,11 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,dim=True):
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
+	    'on_move': on_move,
 		'on_close': on_close,
 		'index': 0,
 		'values':{}}
@@ -51,7 +52,6 @@ def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 	return _item
 
 def remove_item_from_menus(matching):
-	#print matching['item']['id']
 	for menu in MENUS:
 		for item in menu['menu'][:]:
 			_match = True
@@ -167,11 +167,19 @@ def find_item_after(menu,index=-1):
 	
 	return find_item_after(menu)
 
-def move_up(menu,index):
-	menu['index'] = find_previous_item(menu,index)
+def move_up(menu, index):
+	menu['index'] = find_item_before(menu, index=index)
+	
+	if menu['on_move']:
+		_entry = get_selected_item(MENUS.index(menu), menu['index'])
+		return menu['on_move'](_entry)
 
-def move_down(menu,index):
-	menu['index'] = find_next_item(menu,index)
+def move_down(menu, index):
+	menu['index'] = find_item_after(menu, index=index)
+	
+	if menu['on_move']:
+		_entry = get_selected_item(MENUS.index(menu), menu['index'])
+		return menu['on_move'](_entry)
 
 def previous_item(menu,index):
 	if menu['menu'][index]['value']:
