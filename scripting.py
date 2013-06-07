@@ -2,11 +2,16 @@
 # CREATE_ITEM(<item name>, <pos>)
 # DELETE()
 
+from globals import *
+
 import items
 import life
 
 import logging
 import re
+
+def parse_console(text):
+	return text.replace('pc', 'SETTINGS[\'controlling\']')
 
 def execute(script, **kvargs):
 	for function in script:

@@ -1,8 +1,12 @@
 from cStringIO import StringIO
 from globals import *
 
-import graphics as gfx
+from debug import *
+
 import libtcodpy as tcod
+import graphics as gfx
+
+import scripting
 
 import sys
 
@@ -42,7 +46,7 @@ def get_keyboard_input():
 			#Taken from: http://stackoverflow.com/a/3906309
 			old_stdout = sys.stdout
 			redirected_output = sys.stdout = StringIO()
-			exec(KEYBOARD_STRING[0].rstrip())
+			exec(scripting.parse_console(KEYBOARD_STRING[0].rstrip()))
 			sys.stdout = old_stdout
 			
 			gfx.log('>'+KEYBOARD_STRING[0].rstrip())
