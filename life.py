@@ -1282,9 +1282,9 @@ def tick(life, source_map):
 	alife.survival.check_needs(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
-		print _bleeding_limbs,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+		#print _bleeding_limbs,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 		_bleed_score = sum([get_limb(life['body'], l)['bleeding'] for l in _bleeding_limbs])*3
-		print _bleed_score
+		#print _bleed_score
 		if random.randint(0,50)<numbers.clip(_bleed_score, 0, 50):
 			effects.create_splatter('blood', life['pos'])
 	
@@ -2635,7 +2635,6 @@ def natural_healing(life):
 	for _limb in [life['body'][limb] for limb in life['body']]:
 		if _limb['bleeding'] > 0:
 			_limb['bleeding'] -= _heal_rate
-			print _limb['bleeding']
 		elif _limb['bleeding'] < 0:
 			_limb['bleeding'] = 0
 

@@ -535,7 +535,8 @@ def alife_choose_response(life, target, dialog, responses):
 		add_message(life, dialog, _chosen)
 		
 		if _chosen['gist'] == 'ignore_question':
-			dialog['question']['ignore'].append(life['id'])
+			if 'question' in dialog:
+				dialog['question']['ignore'].append(life['id'])
 		
 		process_response(target, life, dialog, _chosen)
 	else:
@@ -637,6 +638,8 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
 	elif chosen['gist'] == 'inquire_about_nearby_locations':
 		_responses.extend(get_known_locations(life, chosen))
+	elif chosen['gist'] == 'inquire_about_camp_founder':
+		_responses.extend(give_camp_founder(life, chosen))
 	elif chosen['gist'].count('inquire_response'):
 		#TODO: How about something similar to get_known_life()?
 		#TODO: Or just a way to trigger a submenu response from a gist?

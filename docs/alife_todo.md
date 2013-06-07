@@ -92,6 +92,7 @@ Misc:
 	[ ] Mod docs
 	[ ] Do we still need `alife_seen, alife_not_seen, targets_seen, targets_not_seen` arguments in the modules?
 	[ ] Implement all life/item flags
+	[ ] Show reason why item won't fit over another
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
