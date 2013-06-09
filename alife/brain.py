@@ -189,6 +189,14 @@ def get_remembered_alife(life, target):
 def get_remembered_item(life, item):
 	return life['know_items'][item['uid']]
 
+def get_matching_remembered_items(life, matches):
+	_matched_items = []
+	for item in [i['item'] for i in life['know_items'].values()]:
+		if logic.matches(item, matches):
+			_matched_items.append(item['uid'])
+	
+	return _matched_items
+
 def has_remembered_item(life, item):
 	if item['uid'] in life['know_items']:
 		return True
@@ -204,7 +212,7 @@ def has_shared_item_with(life, target, item):
 def share_item_with(life, target, item):
 	life['know_items'][item['uid']]['shared_with'].append(target['id'])
 
-	#logging.debug('%s shared item #%s with %s.' % (' '.join(life['name']), item['uid'], ' '.join(target['name'])))
+	logging.debug('%s shared item #%s (%s) with %s.' % (' '.join(life['name']), item['uid'], item['name'], ' '.join(target['name'])))
 
 def remember_known_item(life, item_uid):
 	if item_uid in life['know_items']:

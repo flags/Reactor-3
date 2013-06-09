@@ -10,6 +10,7 @@ import life as lfe
 import libtcodpy as tcod
 
 import numbers
+import logic
 import alife
 
 import logging
@@ -462,6 +463,30 @@ def get_items_to_give(life, target, matches={}):
 	
 	#TODO: Potential conflict 
 	_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
+	
+	#TODO: More recent memories should be weighed higher
+	for heard_about_item in lfe.get_memory(life, matches={'text': 'heard about an item'}):		
+		if heard_about_item['target'] == target:
+			continue
+		
+		#TODO: Even though the item doesn't exist, we still can't confirm if the item is gone or not
+		if not heard_about_item['item'] in ITEMS:
+			continue
+		
+		_item = ITEMS[heard_about_item['item']]
+		#_break = False
+		#for key in matches:
+		#	if not key in _item or not _item[key] == matches[key]:
+		#		_break = True
+		#		break
+		#
+		#if _break:
+		#	continue
+		if not logic.matches(_item, matches):
+			continue
+		
+		_ask_alife = LIFE[heard_about_item['target']]
+		_responses.append({'text': 'Try asking %s.' % ' '.join(_ask_alife['name']), 'gist': 'ask_alife', 'target': _ask_alife['id'], 'like': 1})
 	
 	return _responses
 

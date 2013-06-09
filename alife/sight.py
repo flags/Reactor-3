@@ -194,6 +194,9 @@ def find_known_items(life, matches=[], visible=True):
 	_match = []
 	
 	for item in [life['know_items'][item] for item in life['know_items']]:
+		if not item['item']['uid'] in ITEMS:
+			continue
+		
 		if visible and not lfe.can_see(life,item['item']['pos']):
 			continue
 		
