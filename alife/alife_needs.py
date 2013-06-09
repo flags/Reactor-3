@@ -25,21 +25,16 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 	_has_food = []
 	_has_drink = []
-	_possible_food = []
 	_possible_drink = []
 	if brain.get_flag(life, 'hungry'):
-		_possible_food = survival.can_meet_needs(life, 'food')
 		_has_food = lfe.get_all_inventory_items(life, matches=[{'type': 'food'}])
-		brain.store_in_memory(life, 'possible_food', _possible_food)
 		brain.store_in_memory(life, 'has_food', _has_food)
 	
 	if brain.get_flag(life, 'thirsty'):
-		_possible_drink = survival.can_meet_needs(life, 'drink')
 		_has_drink = lfe.get_all_inventory_items(life, matches=[{'type': 'drink'}])
-		brain.store_in_memory(life, 'possible_drink', _possible_drink)
 		brain.store_in_memory(life, 'has_drink', _has_drink)
 	
-	if (not _possible_food and not _possible_drink) and (not _has_food and not _has_drink):
+	if not _has_food and not _has_drink:
 		return False
 	
 	if not life['state'] == STATE:
@@ -76,6 +71,3 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				{'item': {'type': 'drink'}},
 				lfe.get_all_inventory_items,
 				{'type': 'drink'})
-	
-	if brain.retrieve_from_memory(life, 'possible_food') or brain.retrieve_from_memory(life, 'possible_drink'):
-		survival.manage_needs(life)

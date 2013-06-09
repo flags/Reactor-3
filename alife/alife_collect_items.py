@@ -24,13 +24,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	RETURN_VALUE = STATE_UNCHANGED
 	
 	#if life['state'] in INITIAL_STATES:
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
+	if not judgement.is_safe(life):
 		return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE	
 	
-	_score = 0
 	if not [item['score'] for item in sight.find_visible_items(life) if item['score']]:
 		return False
 	

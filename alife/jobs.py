@@ -221,8 +221,6 @@ def process_job(job):
 def ask_for_job(life):
 	_target = get_job_detail(life['job'], 'target')
 	
-	print life['name'],'is asking for job.'
-	
 	_dialog = {'type': 'dialog',
 		'from': life,
 		'enabled': True,

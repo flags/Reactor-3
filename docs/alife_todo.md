@@ -134,7 +134,7 @@ Complexity:
 
 Cycles:
 	[ ] First mission
-
+	[ ] Bounty Hunters
 	[/] Food:
 			Has food?
 				[x] eat it

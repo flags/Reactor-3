@@ -658,7 +658,7 @@ def process_response(life, target, dialog, chosen):
 		lfe.add_action(life, {'action': 'dropitem',
 			'item': chosen['item']},
 			200,
-			delay=lfe.get_item_access_time(life, item))
+			delay=lfe.get_item_access_time(life, chosen['item']))
 	elif chosen['gist'] == 'ignore_question_negative':
 		_knows = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['speaker'])
 		lfe.memory(LIFE[dialog['listener']], 'bad answer',

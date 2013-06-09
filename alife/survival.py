@@ -57,6 +57,20 @@ def loot(life):
 		if _nearby_backpacks:
 			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
 			return True
+	
+	if brain.get_flag(life, 'hungry'):
+		_food = sight.find_known_items(life, matches=[{'type': 'food'}])
+		
+		if _food:
+			movement.collect_nearby_wanted_items(life, matches=[{'type': 'food'}])
+			return True
+	
+	if brain.get_flag(life, 'thirsty'):
+		_drinks = sight.find_known_items(life, matches=[{'type': 'drink'}])
+		
+		if _drinks:
+			movement.collect_nearby_wanted_items(life, matches=[{'type': 'drink'}])
+			return True
 
 def create_need(life, need, need_callback, min_matches=1):
 	life['needs'].append({'need': need,
@@ -186,7 +200,7 @@ def explore_known_chunks(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.	
-	_chunk_key = chunks.find_best_known_chunk(life)	
+	_chunk_key = chunks.find_best_known_chunk(life)
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
@@ -196,6 +210,9 @@ def explore_known_chunks(life):
 	_pos_in_chunk = random.choice(_chunk['ground'])
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+
+def _job_explore_unknown_chunks(life):
+	explore_unknown_chunks(life)
 
 def explore_unknown_chunks(life):
 	if life['path']:

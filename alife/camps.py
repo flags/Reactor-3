@@ -5,6 +5,7 @@ import life as lfe
 import references
 import judgement
 import language
+import survival
 import numbers
 import speech
 import chunks
@@ -154,6 +155,11 @@ def get_camp_jobs(camp_id):
 	jobs.add_detail_to_job(_j, 'camp', camp_id)
 	jobs.add_detail_to_job(_j, 'pause', 90)
 	jobs.add_job_task(_j, 'guard', callback=guard_camp, required=True)
-	
 	_jobs.append(_j)
+	
+	#_j = jobs.create_job(LIFE[camp['founder']], 'scout', description='Scout the area.')
+	#jobs.add_detail_to_job(_j, 'camp', camp_id)
+	#jobs.add_job_task(_j, 'explore', callback=survival._job_explore_unknown_chunks, required=True)
+	#_jobs.append(_j)
+	
 	return _jobs
