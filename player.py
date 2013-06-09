@@ -256,6 +256,12 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['f']:
+		if menus.get_menu_by_name('Select Limb')>-1:
+			return False
+		
+		if menus.get_menu_by_name('Aim at...')>-1:
+			return False
+			
 		if menus.get_menu_by_name('Fire')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Fire'))
 			return False

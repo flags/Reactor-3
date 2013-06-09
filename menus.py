@@ -146,6 +146,10 @@ def get_menu_by_name(name):
 def activate_menu(id):
 	ACTIVE_MENU['menu'] = id
 	MENUS[id]['index'] = find_item_after(MENUS[id])
+	
+	if MENUS[id]['on_move']:
+		_entry = get_selected_item(id, MENUS[id]['index'])
+		return MENUS[id]['on_move'](_entry)
 
 def activate_menu_by_name(name):
 	ACTIVE_MENU['menu'] = get_menu_by_name(name)
