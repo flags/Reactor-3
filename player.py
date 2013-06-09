@@ -735,7 +735,7 @@ def inventory_fire(entry):
 			padding=(1,1),
 			position=(1,1),
 			format_str='$k',
-			on_select=inventory_shoot,
+			on_select=inventory_fire_select_limb,
 			on_move=target_view)
 	
 		menus.activate_menu(_i)	
@@ -748,11 +748,11 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	_limbs = []
-	for limb in entry['target']['body']:
+	for limb in LIFE[entry['target']]['body']:
 		_limbs.append(menus.create_item('single',
 			limb,
 			None,
-			target=entry['target'],
+			target=LIFE[entry['target']],
 			limb=limb))
 		
 	_i = menus.create_menu(title='Select Limb',

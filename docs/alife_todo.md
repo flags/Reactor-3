@@ -61,12 +61,6 @@ Jobs:
 	[ ] Jobs ("quests") dialog
 	[ ] "Repeat" flag so ALife can switch between tasks in a job without deleting them
 
-Combat:
-	[/] Autotarget
-	[ ] Add `can_engage` function
-	[ ] ALife fight for food/will attack others for food if starving
-			Could randomize hunger on zone entry to create friction at worldgen
-
 Judgement:
 	[/] Remove all references to `judgement.judge`, `score` or any other variation
 		[/] Replace with calls to get_fondness(), is_target_dangerous(), and can_trust().
@@ -125,6 +119,10 @@ Combat:
 	[ ] When leaving cover, do we know the interval of the targets gunshots?
 	[ ] When ALife are looking for lost targets, have ALifes who find one annouce to the others
 	[ ] "Groups"
+	[/] Autotarget
+	[ ] Add `can_engage` function
+	[ ] ALife fight for food/will attack others for food if starving
+			Could randomize hunger on zone entry to create friction at worldgen
 
 Crafting:
 	[x] Use `CANDISMANTLE` flag to tear apart items to make new ones

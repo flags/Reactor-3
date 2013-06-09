@@ -166,7 +166,7 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item,direction,speed,friction=0.05,_velocity=0):
+def move(item,direction,speed,friction=0.05,_velocity=1):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction,speed)
 	velocity[2] = _velocity
@@ -176,7 +176,8 @@ def move(item,direction,speed,friction=0.05,_velocity=0):
 	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
 	
-	logging.debug('%s flies off in an arc!' % get_name(item))
+	logging.debug('%s flies off in an arc! (%s)' % (get_name(item), item['velocity']))
+	print item['realpos'], item['pos'], item['uid']
 
 def draw_items():
 	for _item in ITEMS:
@@ -208,17 +209,17 @@ def draw_items():
 def tick_all_items(MAP):
 	_remove = []
 	
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
+	for item in ITEMS.values():
 		if item['velocity'] == [0,0,0]:
 			continue
+		
+		print 'item moving',item['velocity']
 		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
 		_break = False
 		
-		for pos in drawing.diag_line(item['pos'],(int(item['realpos'][0]),int(item['realpos'][1]))):
+		for pos in drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1])))):
 			if not item['type'] == 'bullet':
 				item['realpos'][2] += item['velocity'][2]
 				item['velocity'][2] -= item['gravity']
@@ -249,7 +250,7 @@ def tick_all_items(MAP):
 				item['velocity'][1] = 0
 				item['velocity'][2] = 0
 				item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-				#print 'LANDED',item['pos']				
+				#print 'LANDED',item['pos']	
 				_break = True
 				break
 		
@@ -257,7 +258,6 @@ def tick_all_items(MAP):
 			item['pos'][0] = int(pos[0])
 			item['pos'][1] = int(pos[1])
 			item['pos'][2] = int(round(item['realpos'][2]))
-			print int(round(item['realpos'][2]))
 		else:
 			item['pos'][0] = int(round(item['realpos'][0]))
 			item['pos'][1] = int(round(item['realpos'][1]))
@@ -277,6 +277,7 @@ def tick_all_items(MAP):
 		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])
 	
 	for _id in _remove:
+		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])
 		delete_item(ITEMS[_id])
 
 def tick_all_items_old(MAP):
