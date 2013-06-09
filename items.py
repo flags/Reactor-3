@@ -112,7 +112,7 @@ def create_item(name,position=[0,0,2]):
 	
 	del item['marked_for_reint']
 
-	item['uid'] = len(ITEMS)
+	item['uid'] = SETTINGS['itemid']
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0,0,0]
@@ -127,6 +127,7 @@ def create_item(name,position=[0,0,2]):
 	
 	ITEMS[item['uid']] = item
 	
+	SETTINGS['itemid'] += 1
 	return item
 
 def delete_item(item):
