@@ -129,7 +129,7 @@ def delete_menu(id, abort=False):
 	
 	MENUS.pop(id)
 
-def delete_active_menu(abort=False):
+def delete_active_menu(abort=True):
 	if MENUS:
 		delete_menu(ACTIVE_MENU['menu'], abort=abort)
 

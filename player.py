@@ -736,6 +736,7 @@ def inventory_fire(entry):
 			position=(1,1),
 			format_str='$k',
 			on_select=inventory_fire_select_limb,
+		    on_close=exit_target,
 			on_move=target_view)
 	
 		menus.activate_menu(_i)	
@@ -760,6 +761,7 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		padding=(1,1),
 		position=(1,1),
 		on_select=inventory_fire_action,
+	    on_close=exit_target,
 		format_str='$k')
 	
 	menus.activate_menu(_i)
@@ -774,6 +776,11 @@ def inventory_fire_action(entry):
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def exit_target(entr):
+	life.focus_on(SETTINGS['controlling'])
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
 
 def inventory_reload(entry):
 	key = entry['key']
