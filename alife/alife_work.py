@@ -22,7 +22,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not judgement.is_safe(life):
 		return False
 
-	if life['state'] in ['combat', 'hiding', 'hidden', 'needs']:
+	if life['state'] in ['combat', 'hiding', 'hidden', 'needs', 'looting']:
 		return False
 
 	if not life['job'] and not jobs.alife_is_factor_of_any_job(life):

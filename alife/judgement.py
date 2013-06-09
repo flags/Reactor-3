@@ -20,10 +20,6 @@ def judge_item(life, item):
 		_score += 30
 	elif brain.get_flag(life, 'no_backpack') and item['type'] == 'backpack':
 		_score += 30
-	elif brain.get_flag(life, 'hungry') and item['type'] == 'food':
-		_score += 30
-	elif brain.get_flag(life, 'thirsty') and item['type'] == 'drink':
-		_score += 30
 	
 	return _score
 
