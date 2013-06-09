@@ -458,21 +458,10 @@ def get_items_to_give(life, target, matches={}):
 		if _break:
 			continue
 		
-		lfe.focus_on(life)
-		
-		#TODO: Write lfe.drop_item_for()
-		lfe.add_action(life, {'action': 'dropitem',
-			'item': item['id']},
-			200,
-			delay=lfe.get_item_access_time(life, item))
-		
-		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'nothing', 'like': 1})
-		return _responses
+		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'give_item_to', 'target': target, 'item': item['id'], 'like': 1})
 	
-	#TODO: This should be an option.
-	if not _responses:
-		#TODO: Potential conflict 
-		_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
+	#TODO: Potential conflict 
+	_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})
 	
 	return _responses
 
@@ -663,7 +652,13 @@ def process_response(life, target, dialog, chosen):
 			target=chosen['target'],
 			location=chosen['location'])
 	elif chosen['gist'] == 'request_item':
-		_responses.extend(get_items_to_give(life, target, matches=chosen['item']))
+		_responses.extend(get_items_to_give(LIFE[dialog['listener']], dialog['speaker'], matches=chosen['item']))
+	elif chosen['gist'] == 'give_item_to':
+		#TODO: Write lfe.drop_item_for()
+		lfe.add_action(life, {'action': 'dropitem',
+			'item': chosen['item']},
+			200,
+			delay=lfe.get_item_access_time(life, item))
 	elif chosen['gist'] == 'ignore_question_negative':
 		_knows = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['speaker'])
 		lfe.memory(LIFE[dialog['listener']], 'bad answer',
