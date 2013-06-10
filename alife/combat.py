@@ -167,7 +167,7 @@ def combat(life, target):
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
 	
 	if not lfe.can_see(life,target['life']['pos']):
-		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at']):
+		if not movement.travel_to_target(life,target,target['last_seen_at']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
 			speech.communicate(life,

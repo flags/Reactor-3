@@ -118,10 +118,18 @@ def get_targets(life):
 	
 	if life['camp'] and raids.camp_has_raid(life['camp']):
 		_targets.extend(raids.get_raiders(life['camp']))
+		
+	for alife in life['know'].values():
+		if alife['life']['id'] in _targets:
+			continue
+		
+		#TODO: Secrecy
+		if is_target_dangerous(life, alife['life']['id']):
+			_targets.append(alife['life']['id'])
 	
-	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	if _combat_targets:
-		_targets.extend([t['who']['life']['id'] for t in _combat_targets if not t['who']['life']['id'] in _targets])
+	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	#if _combat_targets:
+	#	_targets.extend([t['who']['life']['id'] for t in _combat_targets if not t['who']['life']['id'] in _targets])
 	
 	return _targets
 

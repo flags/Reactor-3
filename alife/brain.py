@@ -238,7 +238,7 @@ def understand(life,source_map):
 	_alife_not_seen = []
 	_targets_seen = []
 	_neutral_targets = []
-	_targets_not_seen_pre = life['know'].keys()
+	_targets_not_seen_pre = life['know'].keys() #Use judgement calls
 	_targets_not_seen = []
 	
 	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
@@ -281,6 +281,12 @@ def understand(life,source_map):
 		_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 	
 	generate_needs(life)
+	
+	for module in MODULES:	
+		try:		
+			module.setup(life)
+		except:
+			continue
 	
 	_modules_run = False
 	_times = []
