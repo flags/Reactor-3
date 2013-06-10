@@ -233,52 +233,44 @@ def generate_needs(life):
 	else:
 		flag(life, 'no_backpack')
 
-def understand(life,source_map):
-	_alife_seen = []
-	_alife_not_seen = []
-	_targets_seen = []
-	_neutral_targets = []
-	_targets_not_seen_pre = life['know'].keys() #Use judgement calls
-	_targets_not_seen = []
+def understand(life, source_map):	
+	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
+	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
+	_visible_threats = judgement.get_visible_threats(life)
+	_non_visible_threats = judgement.get_invisible_threats(life)
 	
-	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
-		speech.announce(life, 'call_for_help')
-	
-	for entry in life['seen']:
-		_targets_not_seen_pre.remove(entry)
-		target = life['know'][entry]
-		
+	for entry in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
 			judgement.judge(life, target['life']['id'])
-		
-		_alife_seen.append({'who': target, 'danger': target['danger']})
-		
-		if judgement.is_target_dangerous(life, entry):
-			_knows = knows_alife_by_id(life, entry)
-			
-			if _knows['escaped']:
-				continue
-			
-			_targets_seen.append({'who': target, 'danger': target['danger']})
+	#	
+	#	_alife_seen.append({'who': target, 'danger': target['danger']})
+	#	
+	#	if judgement.is_target_dangerous(life, entry):
+	#		_knows = knows_alife_by_id(life, entry)
+	#		
+	#		if _knows['escaped']:
+	#			continue
+	#		
+	#		_targets_seen.append({'who': target, 'danger': target['danger']})
 	
-	for _not_seen in _targets_not_seen_pre:
-		target = life['know'][_not_seen]
-		
-		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
-			judgement.judge(life, _not_seen)
-			
-			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
-		_knows = knows_alife_by_id(life, _not_seen)
-		if _knows['escaped']:
-			continue		
-		
-		if judgement.is_target_dangerous(life, _not_seen):
-			if _knows['escaped']:
-				continue
-			_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
-			continue
-		
-		_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
+	#for _not_seen in _targets_not_seen_pre:
+	#	target = life['know'][_not_seen]
+	#	
+	#	if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
+	#		judgement.judge(life, _not_seen)
+	#		
+	#		#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+	#	_knows = knows_alife_by_id(life, _not_seen)
+	#	if _knows['escaped']:
+	#		continue		
+	#	
+	#	if judgement.is_target_dangerous(life, _not_seen):
+	#		if _knows['escaped']:
+	#			continue
+	#		_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
+	#		continue
+	#	
+	#	_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 	
 	generate_needs(life)
 	

@@ -14,20 +14,20 @@ import time
 def look(life):
 	life['seen'] = []
 	
-	for ai in [LIFE[i] for i in LIFE]:
-		if ai['id'] == life['id']:
-			continue
-		
-		if numbers.distance(life['pos'],ai['pos']) > 30:
-			#TODO: "see" via other means?
+	if not 'CAN_SEE' in life['life_flags']:
+		return False
+	
+	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+		if not can_see_target(life, ai['id']):
 			continue
 		
 		if not lfe.can_see(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
 				
-				if life['know'][ai['id']]['last_seen_time'] >= 300:
-					life['know'][ai['id']]['escaped'] = True
+				#TODO: havent_seen_in_a_while?
+				#if life['know'][ai['id']]['last_seen_time'] >= 300:
+				#	life['know'][ai['id']]['escaped'] = True
 			continue
 		
 		life['seen'].append(ai['id'])
@@ -38,7 +38,6 @@ def look(life):
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
-			#if not _chunk_id in life['known_chunks']:
 			judgement.judge_chunk(life, _chunk_id)
 			
 			continue
@@ -62,6 +61,22 @@ def look(life):
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
 		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
+
+def get_vision(life):
+	if not 'CAN_SEE' in life['life_flags']:
+		return 0
+	
+	#TODO: Fog? Smoke? Light?
+	return life['vision_max']
+
+def can_see_target(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	_dist = numbers.distance(life['pos'], _knows['life']['pos'])
+	
+	if _dist >= get_vision(life):
+		return False
+	
+	return True
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()

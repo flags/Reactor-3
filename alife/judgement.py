@@ -7,6 +7,7 @@ import chunks
 import combat
 import brain
 import raids
+import sight
 
 import logging
 import numbers
@@ -149,11 +150,14 @@ def get_nearest_threat(life):
 	
 	return _target['target']
 
-def get_visible_threats(life):
+def get_invisible_threats(life):
+	return get_visible_threats(life, _inverse=True)
+
+def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
 	for target in [LIFE[t] for t in get_targets(life)]:
-		if lfe.can_see(life, target['pos']):
+		if not sight.can_see_target(life, target['id']) == _inverse:
 			_targets.append(target['id'])
 	
 	return _targets

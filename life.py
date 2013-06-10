@@ -2626,7 +2626,9 @@ def damage_from_item(life,item,damage):
 	create_and_update_self_snapshot(life)
 
 def natural_healing(life):
+	#TODO: Fix this.
 	return 0
+
 	if life['asleep']:
 		_heal_rate = 0.0002
 	else:
