@@ -49,10 +49,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		if target in [t['who']['life']['id'] for t in _all_targets]:
 			continue
 		
-		_all_targets.append({'who': brain.knows_alife_by_id(life, target)})
+		_knows = brain.knows_alife_by_id(life, target)
+		
+		_all_targets.append({'who': _knows})
 	
 	for target in targets_not_seen:
-		if not target['who']['life']['id'] in [t['who']['life']['id'] for t in _all_targets]:
+		if not target['who']['life']['id'] in [t['who']['life']['id'] for t in _all_targets]:			
 			_all_targets.append(target)
 	
 	for _target in _all_targets[:]:
@@ -70,14 +72,15 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		if brain.get_alife_flag(life, _target['who']['life'], 'not_handling_surrender'):
 			_all_targets.remove(_target)
 	
-	if _all_targets:
-		brain.store_in_memory(life, 'combat_targets', _all_targets)
+	_all_targets = [t for t in _all_targets if not t['who']['escaped']]
 	
-	brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
+	brain.store_in_memory(life, 'combat_targets', _all_targets)
+	
+	#brain.store_in_memory(life, 'neutral_combat_targets', _neutral_targets)
 
 	#if life['state'] == 'working':
 	#	return False
-	
+	print life['name'],len(_all_targets)
 	if not brain.retrieve_from_memory(life, 'combat_targets') and not brain.retrieve_from_memory(life, 'neutral_combat_targets'):
 		return False
 		
@@ -111,6 +114,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 		if _all_targets:
 			_closest_target = get_closest_target(life, _all_targets)
+			print life['name'],_closest_target['who']['escaped'],'??????????/'
 			combat.combat(life, _closest_target['who'])
 	elif _neutral_targets:
 		for _ntarget in [_target['who']['life'] for _target in _neutral_targets]:

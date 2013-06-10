@@ -2219,7 +2219,7 @@ def draw_life_info():
 				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
 		if alife['dead']:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (Identified)' % ' '.join(alife['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(alife['name']), alife['cause_of_death']))
 		elif alife['asleep']:
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
 		else:

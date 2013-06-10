@@ -74,14 +74,17 @@ def get_trust(life, target_id):
 	
 	return _trust
 
-def can_trust(life, target_id):
+def can_trust(life, target_id, low=0):
 	_knows = brain.knows_alife_by_id(life, target_id)
 	
-	#TODO: What is our minimum score for trust?
-	if _knows['trust']>=0:
+	if _knows['trust']>=low:
 		return True
 	
 	return False
+
+def should_trust(life, target_id):
+	#TODO: What is our minimum score for trust?
+	return can_trust(life, target_id, low=1)
 
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
@@ -99,6 +102,16 @@ def is_safe(life):
 		return False
 	
 	return True
+
+def get_talkable(life, secrecy=0):
+	_talkable = []
+	
+	for alife in life['know'].values():
+		#TODO: Secrecy
+		if can_trust(life, alife['life']['id']):
+			_talkable.append(alife['life']['id'])
+	
+	return _talkable
 
 def get_targets(life):
 	_targets = []

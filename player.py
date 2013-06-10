@@ -731,8 +731,12 @@ def inventory_fire(entry):
 	
 	_menu_items = []
 	for target in [l for l in LIFE.values() if life.can_see(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+		if target['dead']:
+			continue
+		
 		if not _menu_items:
 			SETTINGS['following'] = target
+		
 		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
 	
 	if _menu_items:

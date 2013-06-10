@@ -83,7 +83,7 @@ Misc:
 	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
 	[x] Calls to `numbers.distance()` still use default for `old` keyword (True)
 		In doing this, diagonal movement costs 2
-	[ ] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
+	[x] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`
 	[ ] Mod docs
 	[ ] Do we still need `alife_seen, alife_not_seen, targets_seen, targets_not_seen` arguments in the modules?
 	[ ] Implement all life/item flags
@@ -91,7 +91,7 @@ Misc:
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase
-		Can we base this off average FPS?
+		[x] Can we base this off average FPS?
 	[ ] Only run `judgement.is_safe` and related functions once per tick
 		We do it in every module currently.
 	[ ] Optimize `has_splatter` search
@@ -120,6 +120,7 @@ Combat:
 	[ ] When ALife are looking for lost targets, have ALifes who find one annouce to the others
 	[ ] "Groups"
 	[/] Autotarget
+		[ ] Remember last target
 	[ ] Add `can_engage` function
 	[ ] ALife fight for food/will attack others for food if starving
 			Could randomize hunger on zone entry to create friction at worldgen

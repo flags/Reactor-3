@@ -26,8 +26,8 @@ def look(life):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
 				
-				if life['know'][ai['id']]['last_seen_time']>=300:
-					life['know'][ai['id']]['escaped'] = False
+				if life['know'][ai['id']]['last_seen_time'] >= 300:
+					life['know'][ai['id']]['escaped'] = True
 			continue
 		
 		life['seen'].append(ai['id'])
@@ -36,7 +36,6 @@ def look(life):
 		if ai['id'] in life['know']:
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
-			life['know'][ai['id']]['escaped'] = False
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
 			#if not _chunk_id in life['known_chunks']:

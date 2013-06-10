@@ -28,9 +28,6 @@ def score_escape(life,target,pos):
 	
 	return _score
 
-def score_find_target(life,target,pos):
-	return -numbers.distance(life['pos'],pos)
-
 def score_hide(life,target,pos):
 	_score = numbers.distance(life['pos'],pos)
 	#_score += (30-numbers.distance(target['pos'],pos))
@@ -60,17 +57,22 @@ def position_for_combat(life,target,position,source_map):
 	return True
 
 def travel_to_target(life, target, pos):
-	if not tuple(life['pos']) == tuple(pos):
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
-		return True
+	if lfe.can_see(life, pos):
+		return False
 	
-	return False
+	lfe.clear_actions(life)
+	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+	return True
+	#if not tuple(life['pos']) == tuple(pos):
+	#	lfe.clear_actions(life)
+	#	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 
 def search_for_target(life, target, source_map):
-	_cover = sight.generate_los(life,target,target['last_seen_at'],source_map,score_search,ignore_starting=True)
+	if lfe.can_see(life, target['last_seen_at']):
+		print 'We can see where we last saw him.'
 	
 	if _cover:
+		print 'FIND TARGET',_cover['pos']
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
 		return False

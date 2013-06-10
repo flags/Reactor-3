@@ -4,12 +4,14 @@
 *.sh
 *.xcf
 *.swp
+*.wpr
 *.patch
 *.idea_wall
 
 build/*
 tests/*
 docs/devjournal.md
+docs/shortlist.md
 docs/talks/*
 
 profile.dat

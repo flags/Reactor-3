@@ -254,18 +254,27 @@ def understand(life,source_map):
 		_alife_seen.append({'who': target, 'danger': target['danger']})
 		
 		if judgement.is_target_dangerous(life, entry):
+			_knows = knows_alife_by_id(life, entry)
+			
+			if _knows['escaped']:
+				continue
+			
 			_targets_seen.append({'who': target, 'danger': target['danger']})
 	
 	for _not_seen in _targets_not_seen_pre:
 		target = life['know'][_not_seen]
 		
 		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
-			_score = judgement.judge(life, _not_seen)
-			life['know'][_not_seen]['score'] = _score
+			judgement.judge(life, _not_seen)
 			
 			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
+		_knows = knows_alife_by_id(life, _not_seen)
+		if _knows['escaped']:
+			continue		
 		
 		if judgement.is_target_dangerous(life, _not_seen):
+			if _knows['escaped']:
+				continue
 			_alife_not_seen.append({'who': target, 'danger': life['know'][_not_seen]['danger']})
 			continue
 		

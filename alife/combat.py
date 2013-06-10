@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import judgement
 import movement
 import weapons
 import speech
@@ -168,9 +169,15 @@ def combat(life, target):
 	if not lfe.can_see(life,target['life']['pos']):
 		if not target['escaped'] and not movement.travel_to_target(life,target,target['last_seen_at']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
+			
+			speech.communicate(life,
+				'target_missing',
+				target=target['life']['id'],
+				matches=[{'id': judgement.get_talkable(life)}])
+			
 			target['escaped'] = True
 		elif target['escaped']:
-			movement.search_for_target(life, target, WORLD_INFO['map'])
+			print 'ESCAPED?'
 		
 		return False
 	
