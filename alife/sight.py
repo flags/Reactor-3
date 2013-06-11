@@ -36,6 +36,7 @@ def look(life):
 		if ai['id'] in life['know']:
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
+			life['know'][ai['id']]['escaped'] = False
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
 			judgement.judge_chunk(life, _chunk_id)
@@ -69,11 +70,30 @@ def get_vision(life):
 	#TODO: Fog? Smoke? Light?
 	return life['vision_max']
 
+def can_see_position(life, pos):
+	"""Returns `true` if the life can see a certain position."""
+	_line = render_los.draw_line(life['pos'][0],
+		life['pos'][1],
+		pos[0],
+		pos[1])
+		
+	if not _line:
+		_line = []
+	
+	for pos in _line:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+			return False
+	
+	return True
+
 def can_see_target(life, target_id):
-	_knows = brain.knows_alife_by_id(life, target_id)
-	_dist = numbers.distance(life['pos'], _knows['life']['pos'])
+	_knows = LIFE[target_id]
+	_dist = numbers.distance(life['pos'], _knows['pos'])
 	
 	if _dist >= get_vision(life):
+		return False
+	
+	if not can_see_position(life, _knows['pos']):
 		return False
 	
 	return True

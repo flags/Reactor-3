@@ -1391,9 +1391,6 @@ def can_see(life, pos):
 	else:
 		_line = drawing.diag_line(life['pos'],pos)
 
-	if len(_line)>15:
-		return False
-
 	for pos in _line:
 		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False

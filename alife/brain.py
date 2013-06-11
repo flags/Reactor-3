@@ -236,10 +236,10 @@ def generate_needs(life):
 def understand(life, source_map):	
 	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
 	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
-	_visible_threats = judgement.get_visible_threats(life)
-	_non_visible_threats = judgement.get_invisible_threats(life)
+	_visible_threats = [knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]
+	_non_visible_threats = [knows_alife_by_id(life, t) for t in judgement.get_invisible_threats(life)]
 	
-	for entry in _visible_alife:		
+	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
 			judgement.judge(life, target['life']['id'])
 	#	
@@ -284,13 +284,13 @@ def understand(life, source_map):
 	_times = []
 	for module in MODULES:
 		_stime = time.time()
-		_return = module.conditions(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+		_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 		
 		if _return == STATE_CHANGE:
 			lfe.change_state(life, module.STATE)
 		
 		if _return:
-			module.tick(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+			module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == RETURN_SKIP:
 				continue

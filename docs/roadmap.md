@@ -447,7 +447,17 @@ Proposing: `calculate_safety()`
 	Runs before ALife modules.
 	Inspects all variables checked by `is_safe()` for changes.
 		For example, when `combat_targets` become invalid.
-	
+
+Combat Fix #2
+--------------
+We need a way to determine who our targets are. Proposing the following categories:
+
+Visible: In the ALife's LOS.
+Non-visible: Inverse of previous.
+Visible threats: In the ALife's LOS. Possibly dangerous.
+Non-visible threats: Not in the ALife's LOS. Possibly Dangerous.
+
+
 Crafting
 ---------
 Used for dismantling in this milestone.
