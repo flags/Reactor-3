@@ -67,14 +67,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.send(life, ai['life'], 'greeting')
 	
 	_potential_talking_targets = []
-	for ai in [life['know'][i] for i in life['know']]:
+	for ai in alife_seen:
 		if life['state'] == 'combat':
 			break
 		
 		if judgement.is_target_dangerous(life, ai['life']['id']):
-			continue
-		
-		if not lfe.can_see(life, ai['life']['pos']):
 			continue
 		
 		#TODO: Not always true.
@@ -149,10 +146,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				#'share_chunk_info',
 				#chunk_key=_item_chunk_key,
 				#matches=[{'id': ai['life']['id']}])
-			#speech.send(life, ai['life'], 'share_chunk_info')
-		
-		#if not lfe.can_see(life, ai['life']['pos']):
-			#continue
+			#speech.send(life, ai['life'], 'share_chunk_info')e
 		
 		#_nearest_camp = camps.get_nearest_known_camp(life)
 		

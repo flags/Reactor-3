@@ -2,6 +2,7 @@ from globals import *
 import life as lfe
 
 import references
+import sight
 import maps
 
 import numbers
@@ -82,7 +83,7 @@ def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:
-		if lfe.can_see(life, pos):
+		if sight.can_see_position(life, pos):
 			return True
 	
 	return False
@@ -95,7 +96,7 @@ def get_visible_walkable_areas(life, chunk_id):
 	_walkable = []
 	
 	for pos in chunk['ground']:
-		if lfe.can_see(life, pos):
+		if sight.can_see_position(life, pos):
 			_walkable.append(pos)
 	
 	return _walkable

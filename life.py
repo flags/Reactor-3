@@ -464,7 +464,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if ai['id'] == life['id']:
 			continue
 		
-		if not can_see(ai, life['pos']):
+		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 				continue
 		
@@ -1222,7 +1222,7 @@ def kill(life, injury):
 		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-		if can_see(ai, life['pos']):
+		if alife.sight.can_see_position(ai, life['pos']):
 			memory(ai, 'death', target=life['id'])
 	
 	drop_all_items(life)
@@ -1377,25 +1377,6 @@ def get_all_visible_items(life):
 	[_ret.extend(limb['holding']) for limb in [life['body'][limb] for limb in life['body']] if limb['holding']]
 	
 	return _ret
-
-def can_see(life, pos):
-	"""Returns `true` if the life can see a certain position."""
-	if CYTHON_RENDER_LOS:
-		_line = render_los.draw_line(life['pos'][0],
-			life['pos'][1],
-			pos[0],
-			pos[1])
-		
-		if not _line:
-			_line = []
-	else:
-		_line = drawing.diag_line(life['pos'],pos)
-
-	for pos in _line:
-		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
-			return False
-	
-	return True
 
 def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
@@ -2193,34 +2174,34 @@ def draw_life_info():
 	
 	_xmod = 8
 	_i = 5
-	for alife in [LIFE[i] for i in LIFE]:
-		if life['id'] == alife['id']:
+	for ai in [LIFE[i] for i in LIFE]:
+		if life['id'] == ai['id']:
 			continue
 		
-		if not can_see(SETTINGS['controlling'], alife['pos']):
+		if not alife.sight.can_see_position(SETTINGS['controlling'], ai['pos']):
 			continue
 		
-		_icon = draw_life_icon(alife)
+		_icon = draw_life_icon(ai)
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 		
-		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
+		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
 		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
 			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
 			tcod.console_set_default_foreground(0, tcod.white)
 		
-		if alife in [context['from'] for context in SETTINGS['controlling']['contexts']]:
+		if ai in [context['from'] for context in SETTINGS['controlling']['contexts']]:
 			if time.time()%1>=0.5:
 				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
-		if alife['dead']:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(alife['name']), alife['cause_of_death']))
-		elif alife['asleep']:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(alife['name']))
+		if ai['dead']:
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(ai['name']), ai['cause_of_death']))
+		elif ai['asleep']:
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(ai['name']))
 		else:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(alife['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
 		_i += 1
 	
 	#Drawing the action queue
@@ -2263,16 +2244,16 @@ def draw_life_info():
 def is_target_of(life):
 	_targets = []
 	
-	for alife in [LIFE[i] for i in LIFE]:
-		if life['id'] == alife['id']:
+	for ai in [LIFE[i] for i in LIFE]:
+		if life['id'] == ai['id']:
 			continue
 		
-		if not can_see(life, alife['pos']):
+		if not alife.sight.can_see_position(life, ai['pos']):
 			continue
 		
-		_targets = brain.retrieve_from_memory(alife, 'combat_targets')
+		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
 		if _targets and life['id'] in [l for l in _targets]:
-			_targets.append(alife)
+			_targets.append(ai)
 			break
 	
 	return _targets

@@ -21,7 +21,7 @@ def look(life):
 		if not can_see_target(life, ai['id']):
 			continue
 		
-		if not lfe.can_see(life, ai['pos']):
+		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
 				
@@ -49,7 +49,7 @@ def look(life):
 		if item.has_key('id') or item.has_key('parent'):
 			continue
 		
-		_can_see = lfe.can_see(life,item['pos'])
+		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
 			_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
 				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
@@ -79,6 +79,9 @@ def can_see_position(life, pos):
 		
 	if not _line:
 		_line = []
+	
+	if len(_line) >= get_vision(life):
+		return False	
 	
 	for pos in _line:
 		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
@@ -231,7 +234,7 @@ def find_known_items(life, matches=[], visible=True):
 		if not item['item']['uid'] in ITEMS:
 			continue
 		
-		if visible and not lfe.can_see(life,item['item']['pos']):
+		if visible and not can_see_position(life, item['item']['pos']):
 			continue
 		
 		if 'parent' in item['item'] or 'id' in item['item']:

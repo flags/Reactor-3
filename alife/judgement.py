@@ -379,7 +379,7 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 			if ai == life['id']:
 				continue
 			
-			if not lfe.can_see(life, LIFE[ai]['pos']):
+			if not sight.can_see_target(life, ai):
 				continue
 			
 			_knows = brain.knows_alife(life, LIFE[ai])

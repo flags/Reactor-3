@@ -730,7 +730,7 @@ def inventory_fire(entry):
 			return False
 	
 	_menu_items = []
-	for target in [l for l in LIFE.values() if life.can_see(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+	for target in [l for l in LIFE.values() if sight.can_see_position(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
 		if target['dead']:
 			continue
 		

@@ -20,10 +20,10 @@ def score_escape(life,target,pos):
 	_score = numbers.distance(life['pos'],pos)
 	_score += (30-numbers.distance(target['pos'],pos))
 	
-	if not lfe.can_see(target,pos):
+	if not sight.can_see_position(target, pos):
 		_score -= numbers.distance(target['pos'],pos)
 	
-	if not lfe.can_see(life,pos):
+	if not sight.can_see_position(life, pos):
 		_score = 90000
 	
 	return _score
@@ -38,10 +38,8 @@ def score_hide(life,target,pos):
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
 	
-	#print 'Finding position for combat'
-	
 	#TODO: Eventually this should be written into the pathfinding logic
-	if lfe.can_see(life,target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
+	if sight.can_see_position(life,target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
 		lfe.clear_actions(life)
 		return True
 	
@@ -57,7 +55,7 @@ def position_for_combat(life,target,position,source_map):
 	return True
 
 def travel_to_target(life, target, pos):
-	if lfe.can_see(life, pos):
+	if sight.can_see_position(life, pos):
 		return False
 	
 	lfe.clear_actions(life)
@@ -68,7 +66,7 @@ def travel_to_target(life, target, pos):
 	#	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 
 def search_for_target(life, target, source_map):
-	if lfe.can_see(life, target['last_seen_at']):
+	if sight.can_see_position(life, target['last_seen_at']):
 		print 'We can see where we last saw him.'
 	
 	if _cover:
@@ -208,7 +206,7 @@ def _find_alife(life, target):
 	lfe.clear_actions(life)
 	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
 	
-	if lfe.can_see(life, _target['life']['pos']):
+	if sight.can_see_position(life, _target['life']['pos']):
 		return True
 	
 	return False

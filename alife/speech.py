@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import language
+import sight
 
 import logging
 import random
@@ -67,7 +68,7 @@ def announce(life, gist, public=False, **kvargs):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
 			continue
 		
-		if not lfe.can_see(life, target['pos']):
+		if not sight.can_see_position(life, target['pos']):
 			#print life['name'],'cant see',target['id']
 			continue
 	

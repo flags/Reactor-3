@@ -660,7 +660,7 @@ def process_response(life, target, dialog, chosen):
 		if chosen['gist'].count('knows'):
 			_responses.append({'text': 'Where was the last place you saw him?', 'gist': 'last_seen_target_at', 'target': chosen['target']})
 	elif chosen['gist'] == 'last_seen_target_at':
-		if lfe.can_see(life, LIFE[chosen['target']]['pos']):
+		if alife.sight.can_see_target(life, chosen['target']):
 			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': LIFE[chosen['target']]['pos'][:]})
 		elif _impact>=0:
 			_knows = alife.brain.knows_alife_by_id(life, chosen['target'])

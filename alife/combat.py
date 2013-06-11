@@ -6,6 +6,7 @@ import judgement
 import movement
 import weapons
 import speech
+import sight
 import brain
 import jobs
 
@@ -166,7 +167,7 @@ def combat(life, target):
 	elif _pos_for_combat:
 		lfe.clear_actions(life,matches=[{'action': 'move'}])
 	
-	if not lfe.can_see(life,target['life']['pos']):
+	if not sight.can_see_position(life,target['life']['pos']):
 		if not movement.travel_to_target(life,target,target['last_seen_at']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
@@ -190,7 +191,7 @@ def combat(life, target):
 
 def handle_potential_combat_encounter(life,target,source_map):
 	if not speech.has_considered(life,target['life'],'resist'):
-		if not is_weapon_equipped(target['life']) and lfe.can_see(life,target['life']['pos']):
+		if not is_weapon_equipped(target['life']) and sight.can_see_position(life,target['life']['pos']):
 			speech.communicate(life,'comply',target=target['life']) #HOSTILE
 			lfe.clear_actions(life)
 			
@@ -241,7 +242,7 @@ def disarm(life):
 	jobs.add_detail_to_job(life['job'], 'target', target['id'])
 	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
 	
-	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=10:
+	if sight.can_see_position(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=10:
 		lfe.clear_actions(life)
 		
 		if not speech.has_sent(life, target, 'demand_drop_item'):
@@ -266,7 +267,7 @@ def guard(life):
 	
 	target = _targets[0]['who']['life']
 	
-	if lfe.can_see(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=5:
+	if sight.can_see_position(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=5:
 		lfe.clear_actions(life)
 	else:
 		_target_pos = (target['pos'][0], target['pos'][1])
