@@ -211,7 +211,22 @@ def handle_input():
 			return False
 		
 		if not SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['pos'][:]
+			_menu_items = create_target_list()
+	
+			if not _menu_items:
+				gfx.message('There\'s nobody to talk to.')
+				return False
+		
+			_i = menus.create_menu(title='Talk to...',
+				menu=_menu_items,
+				padding=(1,1),
+				position=(1,1),
+				format_str='$k',
+				on_select=create_dialog,
+				on_close=exit_target,
+				on_move=target_view)
+		
+			menus.activate_menu(_i)
 			return True
 		else:
 			_target = None
@@ -223,14 +238,6 @@ def handle_input():
 			if not _target:
 				gfx.message('There\'s nobody standing here!')
 				return False
-		
-		SETTINGS['controlling']['targeting'] = None
-		SELECTED_TILES[0] = []
-		
-		_dialog = {'type': 'dialog',
-			'from': SETTINGS['controlling']['id'],
-			'enabled': True}
-		SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target['id'], _dialog))
 	
 	if INPUT['V']:
 		if SETTINGS['controlling']['dialogs']:
@@ -729,27 +736,22 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	_menu_items = []
-	for target in [l for l in LIFE.values() if sight.can_see_position(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
-		if target['dead']:
-			continue
-		
-		if not _menu_items:
-			SETTINGS['following'] = target
-		
-		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
+	_menu_items = create_target_list()
 	
-	if _menu_items:
-		_i = menus.create_menu(title='Aim at...',
-			menu=_menu_items,
-			padding=(1,1),
-			position=(1,1),
-			format_str='$k',
-			on_select=inventory_fire_select_limb,
-		    on_close=exit_target,
-			on_move=target_view)
-	
-		menus.activate_menu(_i)	
+	if not _menu_items:
+		gfx.message('You have nothing to aim at!')
+		return False
+
+	_i = menus.create_menu(title='Aim at...',
+          menu=_menu_items,
+          padding=(1,1),
+          position=(1,1),
+          format_str='$k',
+          on_select=inventory_fire_select_limb,
+          on_close=exit_target,
+          on_move=target_view)
+
+	menus.activate_menu(_i)
 
 def inventory_fire_select_limb(entry, no_delete=False):	
 	key = entry['key']
@@ -786,6 +788,30 @@ def inventory_fire_action(entry):
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_target_list():
+	_menu_items = []
+	for target in [l for l in LIFE.values() if sight.can_see_position(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+		if target['dead']:
+			continue
+		
+		if not _menu_items:
+			SETTINGS['following'] = target
+		
+		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
+	
+	return _menu_items
+
+def create_dialog(entry):
+	_target = entry['target']
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
+	
+	_dialog = {'type': 'dialog',
+          'from': SETTINGS['controlling']['id'],
+          'enabled': True}
+	SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target, _dialog))
+	menus.delete_active_menu()
 
 def exit_target(entr):
 	life.focus_on(SETTINGS['controlling'])

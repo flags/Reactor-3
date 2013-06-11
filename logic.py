@@ -32,7 +32,9 @@ def tick_all_objects(source_map):
 		if SETTINGS['controlling']['encounters']:
 			return False
 		
-		if menus.get_menu_by_name('Aim at...') > -1:
+		#if menus.get_menu_by_name('Aim at...') > -1:
+		#	return False
+		if SETTINGS['controlling']['targeting']:
 			return False
 		
 		if life.has_dialog(SETTINGS['controlling']):

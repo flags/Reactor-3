@@ -2245,7 +2245,7 @@ def is_target_of(life):
 	_targets = []
 	
 	for ai in [LIFE[i] for i in LIFE]:
-		if life['id'] == ai['id']:
+		if life['id'] == ai['id'] or ai['dead']:
 			continue
 		
 		if not alife.sight.can_see_position(life, ai['pos']):

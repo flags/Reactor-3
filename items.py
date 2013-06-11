@@ -232,8 +232,8 @@ def tick_all_items(MAP):
 			
 			if item['type'] == 'bullet':
 				for _life in [LIFE[i] for i in LIFE]:
-					if _life['id'] == item['owner']:
-						continue
+					if _life['id'] == item['owner'] or _life['dead']:
+						continue					
 					
 					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
 						item['pos'] = [pos[0],pos[1],_life['pos'][2]]
@@ -280,67 +280,3 @@ def tick_all_items(MAP):
 	for _id in _remove:
 		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])
 		delete_item(ITEMS[_id])
-
-def tick_all_items_old(MAP):
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
-		if not item['velocity'].count(0)==3:
-			#if item['velocity'][0]:
-			item['realpos'][0]+=item['velocity'][0]
-			item['realpos'][1]+=item['velocity'][1]
-			item['realpos'][2]+=item['velocity'][2]
-			
-			item['velocity'][2] -= item['gravity']
-			
-			_nx = int(round(item['realpos'][0]))
-			_ny = int(round(item['realpos'][1]))
-			_nz = int(round(item['realpos'][2]))
-			
-			item['velocity'][2] -= item['gravity']
-
-			#Collisions
-			if MAP[_nx][item['pos'][1]][_nz]:
-				item['velocity'][0] = -(item['velocity'][0]/float(2))
-				_nx = item['pos'][0]
-				
-			if MAP[item['pos'][0]][_ny][_nz]:
-				item['velocity'][1] = -(item['velocity'][1]/float(2))
-				_ny = item['pos'][1]
-			
-			if MAP[item['pos'][0]][item['pos'][1]][_nz]:
-				#If we're touching the ceiling...
-				if _nz > item['pos'][2]:
-					item['velocity'][2] = -(item['velocity'][2]/float(2))
-					_nz = item['pos'][2]
-					print 'DEBUG: Touching ceiling'
-				else:
-					item['velocity'][2] = 0
-					item['gravity'] = 0
-					print 'DEBUG: Touching floor'
-				
-					#TODO: We can handle bouncing here
-					item['velocity'][0] = item['velocity'][0]/float(2)
-					item['velocity'][1] = item['velocity'][1]/float(2)
-			else:
-				item['gravity'] = 0.1
-				
-			item['pos'] = [_nx,_ny,_nz]
-			
-			if not item['velocity'][2]:
-				for i in range(0,2):
-					if item['velocity'][i]>0:
-						item['velocity'][i]-=item['friction']
-						
-						if item['velocity'][i]<0:
-							item['velocity'][i]=0
-						
-					elif item['velocity'][i]<0:
-						item['velocity'][i]+=item['friction']
-						
-						if item['velocity'][i]>0:
-							item['velocity'][i]=0
-			
-			if item['velocity'].count(0)==3:
-				logging.debug('%s comes to a rest at %s,%s,%s.' %
-					(get_name(item),item['pos'][0],item['pos'][1],item['pos'][2]))
