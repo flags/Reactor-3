@@ -148,6 +148,11 @@ def create_player(source_map):
 		position=[50,80,2])
 	PLAYER['player'] = True
 	
+	life.create_life('Dog',
+		name=['Wild', 'Dog'],
+		map=source_map,
+		position=[50,80,2])	
+	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	

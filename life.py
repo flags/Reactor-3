@@ -58,12 +58,17 @@ def calculate_base_stats(life):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
 		elif flag == 'HUNGER':
-			life['eaten'] = []
+			life['eaten'] = []	
+	
+	if not 'hands' in life:
+		life['hands'] = []
 	
 	life['life_flags'] = life['flags']
 	
-	stats['base_speed'] = LIFE_MAX_SPEED-(len(stats['legs']))
+	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
+	
+	print race_type,stats['speed_max']
 	
 	for var in life['vars'].split('|'):
 		key,val = var.split('=')
@@ -113,30 +118,32 @@ def get_limb_condition(life,limb):
 
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
-	_speed_mod = 0
-	_penalty = 0
+	return life['speed_max']
 	
-	for limb in life['body']:
-		for item in life['body'][limb]['holding']:
-			_i = get_inventory_item(life,item)
-			
-			if _i.has_key('speed_mod'):
-				_speed_mod += _i['speed_mod']
-		
-		if limb in life['legs']:
-			_pain = life['body'][limb]['pain']
-			
-			if not _pain:
-				_pain = 1
-			
-			_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)*_pain
-	
-	_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
-	
-	if _MAX_SPEED > LIFE_MAX_SPEED:
-		return LIFE_MAX_SPEED
-	
-	return _MAX_SPEED
+	#_speed_mod = 0
+	#_penalty = 0
+	#
+	#for limb in life['body']:
+	#	for item in life['body'][limb]['holding']:
+	#		_i = get_inventory_item(life,item)
+	#		
+	#		if _i.has_key('speed_mod'):
+	#			_speed_mod += _i['speed_mod']
+	#	
+	#	if limb in life['legs']:
+	#		_pain = life['body'][limb]['pain']
+	#		
+	#		if not _pain:
+	#			_pain = 1
+	#		
+	#		_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)*_pain
+	#
+	#_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
+	#
+	#if _MAX_SPEED > LIFE_MAX_SPEED:
+	#	return LIFE_MAX_SPEED
+	#
+	#return _MAX_SPEED
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -154,7 +161,7 @@ def initiate_life(name):
 	
 	for key in life:
 		if isinstance(life[key],unicode):
-			life[key] = str(life[key])
+			life[key] = str(life[key])	
 	
 	life.update(calculate_base_stats(life))
 	

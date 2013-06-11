@@ -15,6 +15,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['looting']:
 		return False
 	
+	if not 'INTELLIGENT' in life['life_flags']:
+		return False
+	
 	if not judgement.is_safe(life):
 		return False
 	
@@ -23,7 +26,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	#if not lfe.get_all_unequipped_items(life):
 	#	return False
-	if lfe.get_open_hands(life):
+	if not life['hands'] or lfe.get_open_hands(life):
 		return False
 	
 	return RETURN_VALUE

@@ -1,0 +1,85 @@
+{
+  "body": {
+    "hip": {
+      "damage_mod": "1", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "stomach"
+    }, 
+    "frleg": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "chest"
+    }, 
+    "head": {
+      "damage_mod": "1.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
+    }, 
+    "stomach": {
+      "damage_mod": "1.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "chest"
+    }, 
+    "neck": {
+      "damage_mod": "2", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "head"
+    }, 
+    "frpaw": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "frleg"
+    }, 
+    "flpaw": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "flleg"
+    }, 
+    "chest": {
+      "damage_mod": "1.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "parent": "neck"
+    }, 
+    "blpaw": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "blleg"
+    }, 
+    "flleg": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "chest"
+    }, 
+    "blleg": {
+      "damage_mod": "1.3", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "hip"
+    }, 
+    "brleg": {
+      "damage_mod": "1.3", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "hip"
+    }, 
+    "brpaw": {
+      "damage_mod": "0.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|MUSCLE|BONE", 
+      "parent": "brleg"
+    }
+  }, 
+  "race": "Dog", 
+  "flags": "ANIMAL|LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]", 
+  "vars": "vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
+  "icon": "D"
+}

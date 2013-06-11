@@ -23,9 +23,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	#The main focus is to provide effective output rather than a lot of it, so the less
 	#conversations we spawn the better.
 	
-	#if life['state'] in ['hiding', 'hidden']:
-	#	return False
-	
 	return RETURN_SKIP
 
 def start_dialog(life, target, gist):
@@ -45,6 +42,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
 	#	return False
+	if not 'CAN_TALK' in life['life_flags']:
+		return False	
 	
 	for ai in alife_seen:
 		#What's our relationship with them?
