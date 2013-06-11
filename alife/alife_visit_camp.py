@@ -6,27 +6,15 @@ import camps
 import logging
 
 STATE = 'visiting camp'
-INITIAL_STATES = ['idle', 'hidden']
-CHECK_STATES = INITIAL_STATES[:]
-CHECK_STATES.append(STATE)
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_seen:
-		if judgement.is_target_dangerous(life, entry['who']['life']['id']):
-			_score += entry['danger']
-	
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
+	if not judgement.is_safe(life):
+		return False	
+	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
-	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-		return False
 	
 	#Founding didn't work out...
 	if life['known_camps'] and not life['camp']:

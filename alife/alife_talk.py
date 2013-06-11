@@ -46,7 +46,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#if not alife_seen:
 	#	return False
 	
-	for ai in [alife['who'] for alife in alife_seen]:
+	for ai in alife_seen:
 		#What's our relationship with them?
 		#if ai['life']['state'] in ['hiding', 'hidden']:
 		#	break
