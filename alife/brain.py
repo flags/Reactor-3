@@ -233,7 +233,13 @@ def generate_needs(life):
 	else:
 		flag(life, 'no_backpack')
 
-def understand(life, source_map):	
+def understand(life, source_map):
+	if life['think_rate']:
+		life['think_rate'] -= 1
+		return False
+	
+	life['think_rate'] = life['think_rate_max']
+	
 	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
 	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
 	_visible_threats = [knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]

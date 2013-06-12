@@ -139,7 +139,7 @@
     }
   }, 
   "race": "Human", 
-  "flags": "HUMANOID|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP|CAN_SEE|CAN_COMMUNICATE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
+  "flags": "HUMANOID|INTELLIGENT|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP|CAN_SEE|CAN_TALK|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
   "vars": "vision_max=21|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
   "icon": "@"
 }

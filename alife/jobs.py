@@ -6,6 +6,7 @@ import life as lfe
 import judgement
 import dialog
 import speech
+import brain
 
 import logging
 
@@ -220,15 +221,25 @@ def process_job(job):
 
 def ask_for_job(life):
 	_target = get_job_detail(life['job'], 'target')
+	if not brain.retrieve_from_memory(life, 'current_job'):
+		brain.store_in_memory(life, 'current_job', life['job']['gist'])
+	else:
+		_old_job = brain.retrieve_from_memory(life, 'current_job')
+		if not _old_job == life['job']['gist']:
+			brain.store_in_memory(life, 'current_job', None)
+			return True
+		
+		return False
 	
+	print life['id'],_target
 	_dialog = {'type': 'dialog',
 		'from': life,
 		'enabled': True,
 		'gist': 'jobs'}
 	_dialog = dialog.create_dialog_with(life, _target, _dialog)
-	
+	print _dialog.keys()
 	if _dialog:
 		life['dialogs'].append(_dialog)
-		return True
+		print 'ADDED'
 	
 	return False

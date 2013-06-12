@@ -411,7 +411,7 @@ def tell_about_alife_memories(life, chosen):
 
 def get_jobs(life, chosen):
 	_topics = []
-	
+	print 'JOBS'
 	if life['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
 		for job in alife.camps.get_camp_jobs(life['camp']):			
 			_topics.append({'text': job['description'],
@@ -619,6 +619,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'offering_help':
 		_responses.extend(get_questions_to_ask(life, chosen))
 	elif chosen['gist'] == 'ask_for_jobs':
+		print 'ASKING FOR JOBS'
 		_responses.extend(get_jobs(life, chosen))
 	elif chosen['gist'] == 'offer_job':
 		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['listener']])

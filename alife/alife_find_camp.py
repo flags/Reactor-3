@@ -10,6 +10,9 @@ STATE = 'finding camp'
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
+	if not 'INTELLIGENT' in life['life_flags']:
+		return False
+	
 	if not judgement.is_safe(life):
 		return False	
 	

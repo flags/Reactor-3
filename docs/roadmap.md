@@ -378,7 +378,7 @@ I want to avoid "good" and "bad" factions. I'll focus on camps right now since t
 ------------------
 I'll start using flags in the race .XML to help better tweak how ALife behave. Examples include:
 	
-	CAN_COMMUNICATE: ALife can speak and understand what is trying to be conveyed
+	CAN_TALK: ALife can speak and understand what is trying to be conveyed
 	HUNGER/THIRSTY: Has requirement for food/water
 	CAN_GROUP: Ability to develop squads/work in groups
 	
