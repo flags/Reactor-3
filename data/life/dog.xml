@@ -1,12 +1,12 @@
 <race>Dog</race>
 
-<flags>ANIMAL|HANDS[jaw]|LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]</flags>
+<flags>ANIMAL|LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]</flags>
 <vars>vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
 <icon>D</icon>
 
 <body>
 	<jaw>
-		<flags>SKIN|BONE|CRUCIAL</flags>
+		<flags>SKIN|BONE|CRUCIAL|CAN_HOLD</flags>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
 	</jaw>

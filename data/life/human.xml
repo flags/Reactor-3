@@ -82,14 +82,14 @@
 	</rforearm>
 	
 	<lhand>
-		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
 		<parent>lforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
 	</lhand>
 	
 	<rhand>
-		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
 		<parent>rforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>

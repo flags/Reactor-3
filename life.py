@@ -51,8 +51,8 @@ def calculate_base_stats(life):
 		elif flag.count('ARMS'):
 			stats['arms'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
-		elif flag.count('HANDS'):
-			stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
+			#elif flag.count('HANDS'):
+			#stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
@@ -169,8 +169,10 @@ def initiate_life(name):
 	
 	return life
 
-def initiate_limbs(body):
+def initiate_limbs(life):
 	"""Creates skeleton of a character and all related variables. Returns nothing."""
+	body = life['body']
+	
 	for limb in body:
 		#Unicode fix:
 		_val = body[limb].copy()
@@ -180,8 +182,11 @@ def initiate_limbs(body):
 		
 		_flags = body[limb]['flags'].split('|')
 		
-		if 'CANSTORE' in _flags:
+		if 'CAN_STORE' in _flags:
 			body[limb]['storing'] = []
+		
+		if 'CAN_HOLD' in _flags:
+			life['hands'].append(limb)
 		
 		body[limb]['holding'] = []
 		
@@ -305,7 +310,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
 	
-	initiate_limbs(_life['body'])
+	initiate_limbs(_life)
 	SETTINGS['lifeid'] += 1
 	LIFE[_life['id']] = _life
 	

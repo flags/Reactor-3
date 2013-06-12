@@ -27,7 +27,7 @@
     "rhand": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
+      "flags": "SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD", 
       "parent": "rforearm"
     }, 
     "rupperarm": {
@@ -39,7 +39,7 @@
     "lhand": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE|CANSTORE", 
+      "flags": "SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD", 
       "parent": "lforearm"
     }, 
     "rthigh": {

@@ -231,15 +231,13 @@ def ask_for_job(life):
 		
 		return False
 	
-	print life['id'],_target
 	_dialog = {'type': 'dialog',
 		'from': life,
 		'enabled': True,
 		'gist': 'jobs'}
 	_dialog = dialog.create_dialog_with(life, _target, _dialog)
-	print _dialog.keys()
+	
 	if _dialog:
 		life['dialogs'].append(_dialog)
-		print 'ADDED'
 	
 	return False
