@@ -15,7 +15,8 @@
     "head": {
       "damage_mod": "1.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
+      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]", 
+      "parent": "jaw"
     }, 
     "stomach": {
       "damage_mod": "1.5", 
@@ -34,6 +35,11 @@
       "bleed_mod": 0, 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "frleg"
+    }, 
+    "jaw": {
+      "damage_mod": "1.5", 
+      "bleed_mod": 0, 
+      "flags": "SKIN|BONE|CRUCIAL"
     }, 
     "flpaw": {
       "damage_mod": "0.5", 
@@ -79,7 +85,7 @@
     }
   }, 
   "race": "Dog", 
-  "flags": "ANIMAL|LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]", 
+  "flags": "ANIMAL|HANDS[jaw]|LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]", 
   "vars": "vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
   "icon": "D"
 }
