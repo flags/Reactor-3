@@ -121,7 +121,7 @@ if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=25, save=False, thread=True)
 
 LIGHTS.append({'pos': (43, 78, 2), 'color': (255, 0, 255), 'brightness': 2})
-LIGHTS.append({'pos': (34, 87, 2), 'color': (0, 255, 255), 'brightness': 2})
+LIGHTS.append({'pos': (45, 83, 2), 'color': (0, 255, 255), 'brightness': 2})
 
 CURRENT_UPS = UPS
 

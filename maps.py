@@ -105,7 +105,7 @@ def render_lights(source_map):
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
 
-	for light in LIGHTS:
+	for light in LIGHTS:		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
 		_x = numbers.clip(light['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
@@ -113,7 +113,10 @@ def render_lights(source_map):
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
-		los = cython_render_los.render_los(source_map,(light['pos'][0],light['pos'][1]),top_left=_top_left)
+		if not 'los' in light:
+			light['los'] = cython_render_los.render_los(source_map,(light['pos'][0],light['pos'][1]),top_left=_top_left)
+		
+		los = light['los'].copy()
 		
 		_x_scroll = _x-CAMERA_POS[0]
 		_x_scroll_over = 0
@@ -122,13 +125,11 @@ def render_lights(source_map):
 		
 		if _x_scroll<0:
 			_x_scroll_over = _x_scroll
-			_x_scroll = los.shape[1]
+			_x_scroll = los.shape[1]+_x_scroll
 		
 		if _y_scroll<0:
 			_y_scroll_over = _y_scroll
-			_y_scroll = los.shape[0]
-		
-		print _x_scroll,_y_scroll,_x_scroll_over,_y_scroll_over,los.shape
+			_y_scroll = los.shape[0]+_y_scroll
 		
 		los = numpy.roll(los, _y_scroll, axis=0)
 		los = numpy.roll(los, _x_scroll, axis=1)
