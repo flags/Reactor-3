@@ -457,6 +457,11 @@ Non-visible: Inverse of previous.
 Visible threats: In the ALife's LOS. Possibly dangerous.
 Non-visible threats: Not in the ALife's LOS. Possibly Dangerous.
 
+Dialog Functions
+------------------
+The problem is that the dialog system is a little too good at working entirely by itself, leaving us with no idea of what the outcome was or even being able to extract basic data like what dialog is even running.
+
+What is being proposed is a series of changes that expose the inner-workings of the dialog system.
 
 Crafting
 ---------
