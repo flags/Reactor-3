@@ -4,9 +4,9 @@ import os
 WINDOW_TITLE = 'Reactor 3 - Milestone 5'
 
 #Constants
-WINDOW_SIZE = (100,50)
+WINDOW_SIZE = (100,60)
 MAP_SIZE = [500,500,5]
-MAP_WINDOW_SIZE = (40,40)
+MAP_WINDOW_SIZE = (50, 50)
 ITEM_WINDOW_SIZE = (40,1)
 CONSOLE_WINDOW_SIZE = (40,30)
 MESSAGE_WINDOW_SIZE = (100,10)
@@ -37,7 +37,7 @@ RETURN_SKIP = 4
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
-SUN_BRIGHTNESS = [50]
+SUN_BRIGHTNESS = [100]
 FPS = 30
 FPS_TERRAFORM = 100
 LOW_FPS = 15
@@ -140,6 +140,7 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 #Non-constants
 SETTINGS = {'running': True,
 			'draw lights': True,
+               'diffuse light': False,
 			'draw console': False,
 			'draw z-levels above': True,
 			'draw z-levels below': False,

@@ -136,16 +136,43 @@ def render_lights(source_map):
 		los[_y_scroll_over:_y_scroll,] = 1
 		los[:,_x_scroll_over:_x_scroll] = 1
 		
+		if SETTINGS['diffuse light']:
+			_y, _x = diffuse_light((y, x))
+			(x, y) = numpy.meshgrid(_x, _y)
+		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
 		brightness = light['brightness'] / sqr_distance
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		
-		SUN = (255, 165, 0)
+		SUN = (255, 165, 0)#(255, 165, 0)
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+
+def diffuse_light(source_light):
+	light = source_light[0]+source_light[1]
+	
+	for i in range(1):
+		_light = light.copy()
+		
+		for x in range(1, light.shape[1]-1):
+			for y in range(1, light.shape[0]-1):
+				#if light[y, x]:
+				#	continue
+				
+				#print light[y, x]
+				_brightness = 0
+				for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
+					_brightness += light[y+pos[1], x+pos[0]]
+				
+				_light[y, x] = _brightness/8.0
+				#print light[y, x],_brightness/5.0
+		
+		light = _light
+	
+	return (light.ravel(1), light.ravel(0))
 
 def _render_los(map,pos,cython=False):
 	if cython:
