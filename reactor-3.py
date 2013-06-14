@@ -85,8 +85,6 @@ def draw_targeting():
 		for pos in drawing.diag_line(SETTINGS['controlling']['pos'],SETTINGS['controlling']['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],SETTINGS['controlling']['pos'][2]))
 
-LIGHTS.append({'x': 12,'y': 20,'z': 2,'brightness': 50.0})
-
 SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
@@ -121,6 +119,9 @@ while SETTINGS['running']==1:
 
 if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=25, save=False, thread=True)
+
+LIGHTS.append({'pos': (43, 78, 2), 'color': (255, 0, 255), 'brightness': 2})
+LIGHTS.append({'pos': (45, 83, 2), 'color': (0, 255, 255), 'brightness': 2})
 
 CURRENT_UPS = UPS
 
@@ -158,7 +159,7 @@ def main():
 	else:
 		maps.render_map(MAP)
 	
-	#maps.render_lights(MAP)
+	maps.render_lights(MAP)
 	items.draw_items()
 	bullets.draw_bullets()
 	
