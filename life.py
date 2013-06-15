@@ -4,6 +4,7 @@ from alife import *
 import graphics as gfx
 import damage as dam
 import pathfinding
+import scripting
 import language
 import contexts
 import drawing
@@ -1616,6 +1617,7 @@ def direct_add_item_to_inventory(life, item, container=None):
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
+	item['parent_id'] = life['id']
 	life['inventory'][str(_id)] = item
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
@@ -1643,6 +1645,7 @@ def add_item_to_inventory(life, item):
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
+	item['parent_id'] = life['id']
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
@@ -1707,6 +1710,7 @@ def remove_item_from_inventory(life,id):
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
+	del item['parent_id']
 	
 	create_and_update_self_snapshot(life)
 	
@@ -1776,41 +1780,43 @@ def _equip_clothing(life,id):
 	
 	return True
 
-def _equip_weapon(life,id):
+def _equip_item(life, item_id):
 	"""Private function. Equips weapon. See life.equip_item()."""
 	_limbs = get_all_limbs(life['body'])
 	_hand = can_hold_item(life)
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
 	if not _hand:
 		if 'player' in life:
 			gfx.message('You don\'t have a free hand!')
 		return False
 	
-	remove_item_in_storage(life,id)
-	_hand['holding'].append(id)
+	remove_item_in_storage(life, item_id)
+	_hand['holding'].append(item_id)
 	
 	logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
 	
 	return True
 
-def equip_item(life,id):
+def equip_item(life, item_id):
 	"""Helper function. Equips item."""	
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
 	if 'CANWEAR' in item['flags']:
-		if not _equip_clothing(life,id):
+		if not _equip_clothing(life, item_id):
 			return False
 		
-		_held = is_holding(life, id)
+		_held = is_holding(life, item_id)
 		if _held:			
 			#TODO: Don't breathe this!
-			_held['holding'].remove(id)
+			_held['holding'].remove(item_id)
 		
-	elif item['type'] == 'gun':
-		_equip_weapon(life,id)
+	elif 'CANNOT_HOLD' in item['flags']:
+		logging.error('Cannot hold item type: %s' % item['type'])
+	
 	else:
-		logging.error('Invalid item type: %s' % item['type'])
+		_equip_item(life, item_id)
+		scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item['uid'])
 	
 	life['speed_max'] = get_max_speed(life)
 	

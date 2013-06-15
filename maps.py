@@ -13,6 +13,7 @@ import numbers
 import drawing
 import random
 import numpy
+import items
 import copy
 import time
 import json
@@ -105,7 +106,15 @@ def render_lights(source_map):
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
 
-	for light in LIGHTS:		
+	for light in LIGHTS:
+		if not 'old_pos' in light:
+			light['old_pos'] = (0, 0, -2)
+		else:
+			light['old_pos'] = light['pos'][:]
+		
+		if 'follow_item' in light:
+			light['pos'] = items.get_pos(light['follow_item'])
+		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
 		_x = numbers.clip(light['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
@@ -113,7 +122,7 @@ def render_lights(source_map):
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
-		if not 'los' in light:
+		if not tuple(light['pos']) == tuple(light['old_pos']):
 			light['los'] = cython_render_los.render_los(source_map,(light['pos'][0],light['pos'][1]),top_left=_top_left)
 		
 		los = light['los'].copy()
@@ -142,7 +151,7 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = light['brightness'] / sqr_distance
+		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0, 255) / sqr_distance
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		

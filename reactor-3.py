@@ -103,6 +103,7 @@ items.initiate_item('9x19mm_round')
 items.initiate_item('radio')
 items.initiate_item('can_of_corn')
 items.initiate_item('soda')
+items.initiate_item('electric_lantern')
 
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
@@ -120,10 +121,10 @@ while SETTINGS['running']==1:
 if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=25, save=False, thread=True)
 
-LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2})
-LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7})
-LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 5})
-LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5})
+LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.4})
+LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.4})
+LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 1, 'shake': 0.4})
+LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5, 'shake': 0.4})
 
 CURRENT_UPS = UPS
 

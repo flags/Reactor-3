@@ -23,6 +23,11 @@ def execute(script, **kvargs):
 		elif function == 'DELETE':
 			_i = life.remove_item_from_inventory(kvargs['owner'], kvargs['item'])
 			items.delete_item(_i)
+		elif function == 'LIGHT_FOLLOW':
+			LIGHTS.append({'pos': kvargs['owner']['pos'],
+			               'follow_item': kvargs['item_uid'],
+			               'color': (255, 0, 255), 'brightness': 2,
+			               'shake': 0.4})
 		else:
 			logging.error('Script: \'%s\' is not a valid function.' % function)
 

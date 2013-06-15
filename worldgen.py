@@ -15,7 +15,7 @@ import random
 import time
 import json
 
-BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack','glock', '9x19mm magazine']
+BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack','glock', '9x19mm magazine', 'electric lantern']
 RECRUIT_ITEMS = [ 'radio', '.22 rifle', 'corn', 'soda']
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')

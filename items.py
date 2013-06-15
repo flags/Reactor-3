@@ -34,7 +34,9 @@ def initiate_item(name):
 	
 	if not 'icon' in item:
 		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_ICON))
-		item['tile'] = DEFAULT_ITEM_ICON
+		item['icon'] = DEFAULT_ITEM_ICON
+	elif isinstance(item['icon'], int):
+		item['icon'] = chr(item['icon'])
 	
 	if not 'flags' in item:
 		logging.error('No flags set for item type \'%s\'. Errors may occur.' % name)
@@ -102,6 +104,14 @@ def initiate_item(name):
 	ITEM_TYPES[item['name']] = item
 	
 	return item
+
+def get_pos(item_uid):
+	item = ITEMS[item_uid]
+	
+	if 'parent_id' in item:
+		return LIFE[item['parent_id']]['pos']
+	
+	return item['pos']
 
 def create_item(name,position=[0,0,2]):
 	"""Initiates and returns a copy of an item type."""
