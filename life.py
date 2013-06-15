@@ -1816,7 +1816,9 @@ def equip_item(life, item_id):
 	
 	else:
 		_equip_item(life, item_id)
-		scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item['uid'])
+		
+		if 'ON_EQUIP' in item['flags']:
+			scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item['uid'])
 	
 	life['speed_max'] = get_max_speed(life)
 	

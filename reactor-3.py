@@ -121,10 +121,10 @@ while SETTINGS['running']==1:
 if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=25, save=False, thread=True)
 
-LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.4})
-LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.4})
-LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 1, 'shake': 0.4})
-LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5, 'shake': 0.4})
+LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.1})
+LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.1})
+LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 1, 'shake': 0.1})
+LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5, 'shake': 0.1})
 
 CURRENT_UPS = UPS
 
@@ -162,12 +162,11 @@ def main():
 	else:
 		maps.render_map(MAP)
 	
-	maps.render_lights(MAP)
+	move_camera(SETTINGS['following']['pos'])
 	items.draw_items()
 	bullets.draw_bullets()
-	
-	move_camera(SETTINGS['following']['pos'])
 	life.draw_life()
+	maps.render_lights(MAP)
 	
 	a = time.time()
 	if SETTINGS['controlling']['encounters']:
@@ -195,7 +194,6 @@ def main():
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
-	logic.tick_world()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()

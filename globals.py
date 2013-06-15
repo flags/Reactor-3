@@ -22,6 +22,11 @@ ENCOUNTER_ANIMATION_TIME = 30
 #Map stuff
 CHUNK_MAP = {}
 WORLD_INFO = {'map': [],
+    'time': 0,
+    'time_of_day': 1000,
+    'time_scale': 2,
+    'length_of_day': 6000,
+    'day': 0,
 	'ticks': 0,
 	'pause_ticks': 0,
 	'in_combat': False}

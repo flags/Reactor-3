@@ -89,6 +89,7 @@ Misc:
 	[ ] Implement all life/item flags
 	[ ] Show reason why item won't fit over another
 	[x] Refactor: `life.can_see()` to `sight.can_see_position()`
+	[ ] Lighting system can be used for LOS
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase

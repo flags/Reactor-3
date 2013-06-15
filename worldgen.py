@@ -139,7 +139,6 @@ def generate_life(source_map, amount=1):
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):
 		logic.tick_all_objects(source_map)
-		logic.tick_world()
 
 def create_player(source_map):
 	PLAYER = life.create_life('Human',

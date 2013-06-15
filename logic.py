@@ -9,6 +9,8 @@ import items
 import life
 
 def tick_all_objects(source_map):
+	tick_world()
+	
 	if WORLD_INFO['in_combat'] and SETTINGS['controlling']['actions']:
 		WORLD_INFO['pause_ticks'] = 0
 	
@@ -84,6 +86,15 @@ def tick_all_objects(source_map):
 
 def tick_world():
 	WORLD_INFO['ticks'] += 1
+	
+	if WORLD_INFO['time_of_day'] < WORLD_INFO['length_of_day']:
+		WORLD_INFO['time_of_day'] += WORLD_INFO['time_scale']
+	else:
+		WORLD_INFO['time_of_day'] = 0
+		WORLD_INFO['day'] += 1
+	
+def get_time_of_day():
+	return WORLD_INFO['ticks']
 
 def draw_encounter():
 	if not SETTINGS['controlling']['encounters']:
