@@ -26,7 +26,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not 'INTELLIGENT' in life['life_flags']:
 		return False	
 	
-	#if life['state'] in INITIAL_STATES:
 	if not judgement.is_safe(life):
 		return False
 	

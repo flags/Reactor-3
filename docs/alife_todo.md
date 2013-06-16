@@ -90,6 +90,9 @@ Misc:
 	[ ] Show reason why item won't fit over another
 	[x] Refactor: `life.can_see()` to `sight.can_see_position()`
 	[ ] Lighting system can be used for LOS
+	[ ] Show friendly life on map, regardless of LOS
+	[ ] Can we get `generate_needs` to read from the data files?
+	[ ] ***** ALIFE WILL NOT SAVE BECAUSE OF NEEDS (THEY REFERENCE FUNCTIONS) *****
 
 Optimization:
 	[x] `WORLD_INFO['pause_ticks'] = 2` in logic.py can be decreased to 1 or 0 to speed up combat phase

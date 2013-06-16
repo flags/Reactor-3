@@ -23,30 +23,47 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not judgement.is_safe(life):
 		return False
 
-	_has_food = []
-	_has_drink = []
-	_possible_food = []
-	_possible_drink = []
-	if brain.get_flag(life, 'hungry'):
-		_possible_food = survival.can_meet_needs(life, 'food')
-		_has_food = lfe.get_all_inventory_items(life, matches=[{'type': 'food'}])
-		brain.store_in_memory(life, 'possible_food', _possible_food)
-		brain.store_in_memory(life, 'has_food', _has_food)
-	else:
-		brain.store_in_memory(life, 'possible_food', [])
-		brain.store_in_memory(life, 'has_food', [])
+	_needs_to_meet = []
+	for need in life['needs']:
+		if not survival.is_need_active(life, need):
+			print life['name'], 'Need not active:', need['need']
+			continue
+			
+		if survival.need_is_met(life, need):
+			continue
+		
+		if not survival.can_meet_need(life, need):
+			print life['name'],'Need not being met:', need['need']
+			continue
+		
+		_needs_to_meet.append(need)
+	
+	#_has_food = []
+	#_has_drink = []
+	#_possible_food = []
+	#_possible_drink = []
+	#if brain.get_flag(life, 'hungry'):
+		#_possible_food = survival.can_meet_needs(life, 'food')
+		#_has_food = lfe.get_all_inventory_items(life, matches=[{'type': 'food'}])
+		#brain.store_in_memory(life, 'possible_food', _possible_food)
+		#brain.store_in_memory(life, 'has_food', _has_food)
+	#else:
+		#brain.store_in_memory(life, 'possible_food', [])
+		#brain.store_in_memory(life, 'has_food', [])
 
-	if brain.get_flag(life, 'thirsty'):
-		_possible_drink = survival.can_meet_needs(life, 'drink')
-		_has_drink = lfe.get_all_inventory_items(life, matches=[{'type': 'drink'}])
-		brain.store_in_memory(life, 'possible_drink', _possible_drink)
-		brain.store_in_memory(life, 'has_drink', _has_drink)
-	else:
-		brain.store_in_memory(life, 'possible_drink', [])
-		brain.store_in_memory(life, 'has_drink', [])
+	#if brain.get_flag(life, 'thirsty'):
+		#_possible_drink = survival.can_meet_needs(life, 'drink')
+		#_has_drink = lfe.get_all_inventory_items(life, matches=[{'type': 'drink'}])
+		#brain.store_in_memory(life, 'possible_drink', _possible_drink)
+		#brain.store_in_memory(life, 'has_drink', _has_drink)
+	#else:
+		#brain.store_in_memory(life, 'possible_drink', [])
+		#brain.store_in_memory(life, 'has_drink', [])
 
-	if (not _possible_food and not _possible_drink) and (not _has_food and not _has_drink):
+	if not _needs_to_meet:
 		return False
+	
+	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
 
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
@@ -56,6 +73,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	if lfe.is_consuming(life):
 		return True
+
+	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
+	
+	for need in _needs_to_meet:
+		print len(need['matches']),len(need['can_meet_with'])
 
 	if brain.get_flag(life, 'hungry'):
 		_food = brain.retrieve_from_memory(life, 'has_food')

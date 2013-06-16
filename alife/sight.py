@@ -227,7 +227,7 @@ def handle_lost_los(life):
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'id' in item['item']]
 
-def find_known_items(life, matches=[], visible=True):
+def find_known_items(life, matches={}, visible=True):
 	_match = []
 	
 	for item in [life['know_items'][item] for item in life['know_items']]:
@@ -247,13 +247,8 @@ def find_known_items(life, matches=[], visible=True):
 			continue
 		
 		_break = False
-		for match in matches:
-			for key in match:
-				if not item['item'].has_key(key) or not item['item'][key] == match[key]:
-					_break = True
-					break
-			
-			if _break:
+		for key in matches:
+			if not item['item'].has_key(key) or not item['item'][key] == matches[key]:
 				break
 		
 		if _break:

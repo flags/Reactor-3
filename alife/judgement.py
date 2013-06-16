@@ -19,8 +19,6 @@ def judge_item(life, item):
 	
 	if brain.get_flag(life, 'no_weapon') and item['type'] == 'gun':
 		_score += 30
-	elif brain.get_flag(life, 'no_backpack') and item['type'] == 'backpack':
-		_score += 30
 	
 	return _score
 

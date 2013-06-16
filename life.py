@@ -299,14 +299,24 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['needs'] = []
 	
 	alife.survival.create_need(_life,
-		[{'type': 'food'}],
-		get_all_inventory_items,
-		min_matches=1)
+		{'type': 'food'},
+		[alife.survival._has_inventory_item],
+	    [alife.sight.find_known_items],
+	    min_matches=1,
+	    cancel_if_flag=('hungry', False))
+	
+	#alife.survival.create_need(_life,
+	#	{'type': 'backpack'},
+	#	[alife.survival._has_inventory_item],
+	#   [alife.sight.find_known_items],
+	#	min_matches=1)
 	
 	alife.survival.create_need(_life,
-		[{'type': 'drink'}],
-		get_all_inventory_items,
-		min_matches=1)
+		{'type': 'drink'},
+		[alife.survival._has_inventory_item],
+	    [alife.sight.find_known_items],
+		min_matches=1,
+	    cancel_if_flag=('thirsty', False))
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
@@ -477,6 +487,9 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		#TODO: Handle radio
 		#TODO: can_hear
 		if ai['id'] == life['id']:
+			continue
+		
+		if not 'INTELLIGENT' in ai['life_flags']:
 			continue
 		
 		if not alife.sight.can_see_position(ai, life['pos']):
@@ -1293,8 +1306,9 @@ def tick(life, source_map):
 		if not thirst(life):
 			return False
 	
+	alife.survival.manage_hands(life)
 	natural_healing(life)
-	alife.survival.check_needs(life)
+	alife.survival.check_all_needs(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
 		#print _bleeding_limbs,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -1900,7 +1914,7 @@ def is_holding(life,id):
 	
 	return False
 
-def perform_match(item,matches):
+def perform_match(item, matches):
 	for match in matches:
 		_fail = False
 		
@@ -2005,7 +2019,7 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['controlling']['know']:
+			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
 			gfx.blit_char(_x,

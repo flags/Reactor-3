@@ -125,7 +125,7 @@ def handle_hide(life,target,source_map):
 	
 	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
 		return escape(life,target,source_map)
-	elif not _weapon and sight.find_known_items(life,matches=[{'type': 'weapon'}],visible=True):
+	elif not _weapon and sight.find_known_items(life,matches={'type': 'weapon'},visible=True):
 		return collect_nearby_wanted_items(life)
 	else:
 		return escape(life,target,source_map)
@@ -156,7 +156,7 @@ def handle_hide_and_decide(life,target,source_map):
 				brain.flag(life, 'scared')
 				lfe.say(life,'@n panics!',action=True)
 
-def collect_nearby_wanted_items(life, visible=True, matches=[{'type': 'gun'}]):
+def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
 	_nearby = sight.find_known_items(life, matches=matches, visible=visible)
 	

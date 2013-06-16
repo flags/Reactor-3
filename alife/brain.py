@@ -3,7 +3,6 @@ from globals import *
 import life as lfe
 
 import alife_manage_targets
-import alife_collect_items
 import alife_manage_items
 import alife_manage_camp
 import alife_visit_camp
@@ -34,7 +33,6 @@ import copy
 
 MODULES = [alife_hide,
 	alife_hidden,
-	alife_collect_items,
 	alife_talk,
 	alife_explore,
 	alife_discover,
@@ -223,15 +221,12 @@ def remember_known_item(life, item_uid):
 def generate_needs(life):
 	#TODO: We don't generate all of our needs here, so this is a bit misleading
 	#Needs can be created anywhere in the ALife loop just so long as you do it early/before brain.think()
-	if combat.has_weapon(life):
-		unflag(life, 'no_weapon')
-	else:
-		flag(life, 'no_weapon')
 	
-	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
-		unflag(life, 'no_backpack')
-	else:
-		flag(life, 'no_backpack')
+	if 'USES_FIREARMS' in life:
+		if combat.has_weapon(life):
+			unflag(life, 'no_weapon')
+		else:
+			flag(life, 'no_weapon')
 
 def understand(life, source_map):
 	if life['think_rate']:

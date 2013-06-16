@@ -17,56 +17,35 @@ import sight
 import maps
 import time
 
-def loot(life):
-	#What do we need to do?
-	#	- Get items?
-	#	- Find shelter?
-	
-	manage_hands(life)
-	
-	if brain.get_flag(life, 'no_weapon'):
-		_nearby_weapons = sight.find_known_items(life, matches=[{'type': 'gun'}])
-		
-		if _nearby_weapons:
-			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
-			
-			#TODO: What does this do?
-			#for ai in [life['know'][i] for i in life['know']]:
-			#	if ai['score']<=0:
-			#		continue
-				
-			return True
-	
-	elif not brain.get_flag(life, 'no_weapon'):
-		_ammo_matches = []
-		_feed_matches = []
-		for weapon in combat.has_weapon(life):
-			_ammo_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
-			_feed_matches.append({'type': weapon['feed'],'ammotype': weapon['ammotype']})
-		
-		if sight.find_known_items(life, matches=_ammo_matches):
-			movement.collect_nearby_wanted_items(life, matches=_ammo_matches)
-			return True
-		elif sight.find_known_items(life, matches=_feed_matches):
-			movement.collect_nearby_wanted_items(life, matches=_feed_matches)
-			return True
-	
-	if brain.get_flag(life, 'no_backpack'):
-		_nearby_backpacks = sight.find_known_items(life, matches=[{'type': 'backpack'}])
-		
-		if _nearby_backpacks:
-			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
-			return True
-
-def create_need(life, need, need_callback, min_matches=1):
+def create_need(life, need, need_callback, can_meet_callback, min_matches=1, cancel_if_flag=None):
 	life['needs'].append({'need': need,
 		'need_callback': need_callback,
+	    'can_meet_callback': can_meet_callback,
 		'min_matches': min_matches,
 		'matches': [],
-		'num_met': False})
+	    'can_meet_with': [],
+	    'memory_location': None,
+		'num_met': False,
+	    'cancel_if_flag': cancel_if_flag})
 
-def can_meet_needs(life, item_type):
-	return sight.find_known_items(life, matches=[{'type': item_type}])
+def can_meet_need(life, need):
+	_matches = []
+	
+	for meet_callback in need['can_meet_callback']:
+		_matches.extend(meet_callback(life, matches=need['need']))
+	
+	need['can_meet_with'] = _matches
+	
+	return _matches
+
+def is_need_active(life, need):
+	if not need['cancel_if_flag']:
+		return True
+	
+	if brain.get_flag(life, need['cancel_if_flag'][0]) == need['cancel_if_flag'][1]:
+		return True
+	
+	return False
 
 def is_in_need_matches(life, match):
 	_matches = []
@@ -105,18 +84,28 @@ def get_matched_needs(life, match):
 	
 	return _matches
 
-def check_needs(life):
+def _has_inventory_item(life, matches={}):
+	return lfe.get_all_inventory_items(life, matches=[matches])
+
+def check_all_needs(life):
 	for need in life['needs']:
-		_res = need['need_callback'](life, matches=need['need'])
-		
-		need['matches'] = _res
-		
-		if len(_res)>=need['min_matches']:
-			need['num_met'] = (len(_res)-need['min_matches'])+1
-			continue
-		
-		#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
-		need['num_met'] = 0
+		need_is_met(life, need)
+
+def need_is_met(life, need):
+	_res = []
+	
+	for meet_callback in need['need_callback']:
+		_res.extend(meet_callback(life, matches=need['need']))
+	
+	need['matches'] = _res
+	
+	if len(_res)>=need['min_matches']:
+		need['num_met'] = (len(_res)-need['min_matches'])+1
+		return True
+	
+	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
+	need['num_met'] = 0
+	return False
 
 def manage_needs(life):
 	#TODO: Score best
@@ -131,7 +120,7 @@ def manage_needs(life):
 		_needs[lfe.get_thirst_percentage] = _drink
 	
 	_need = _needs[max(_needs.keys())][0]
-	movement.collect_nearby_wanted_items(life, visible=False, matches=[_need['item']])
+	movement.collect_nearby_wanted_items(life, visible=False, matches=_need['item'])
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
