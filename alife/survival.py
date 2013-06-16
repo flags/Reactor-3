@@ -17,10 +17,11 @@ import sight
 import maps
 import time
 
-def create_need(life, need, need_callback, can_meet_callback, min_matches=1, cancel_if_flag=None):
+def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
 	life['needs'].append({'need': need,
 		'need_callback': need_callback,
 	    'can_meet_callback': can_meet_callback,
+	    'satisfy_callback': satisfy_callback,
 		'min_matches': min_matches,
 		'matches': [],
 	    'can_meet_with': [],

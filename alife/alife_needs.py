@@ -56,10 +56,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	
 	for need in _needs_to_meet:
-		print len(need['matches']),len(need['can_meet_with'])
-	
 		if survival.need_is_met(life, need):
-			lfe.consume(life, need['matches'][0]['id'])
+			need['satisfy_callback'](life, need['matches'][0]['id'])
 			return True
 		
 		if need['can_meet_with']:

@@ -302,6 +302,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 		{'type': 'food'},
 		[alife.survival._has_inventory_item],
 	    [alife.sight.find_known_items],
+	    consume,
 	    min_matches=1,
 	    cancel_if_flag=('hungry', False))
 	
@@ -315,6 +316,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 		{'type': 'drink'},
 		[alife.survival._has_inventory_item],
 	    [alife.sight.find_known_items],
+	    consume,
 		min_matches=1,
 	    cancel_if_flag=('thirsty', False))
 	
