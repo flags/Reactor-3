@@ -2,6 +2,8 @@ from globals import *
 
 import life as lfe
 
+import brain
+
 import logging
 
 def process_questions(life):
@@ -20,6 +22,14 @@ def process_questions(life):
 			else:
 				logging.debug('%s added more detail to question: %s' % (' '.join(life['name']), memory['text']))
 
+def rescore_history(life):
+	for memory in life['memory']:
+		if brain.get_flag(life, 'hungry') and memory['text'] == 'consume_item':
+			if not 'trust' in memory:
+				memory['trust'] = -2
+				memory['danger'] = 3
+				print 'HATE!'
+
 def detect_lies(life):
 	#for memory in life['memories']:
 	for question in lfe.get_questions(life, no_filter=True):		
@@ -30,3 +40,4 @@ def detect_lies(life):
 def process(life):
 	process_questions(life)
 	detect_lies(life)
+	rescore_history(life)

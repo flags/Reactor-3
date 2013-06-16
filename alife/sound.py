@@ -284,6 +284,9 @@ def listen(life):
 			#TODO: Trust should play a factor here (and also when we ask for the location too)
 			_target['last_seen_at'] = event['location']
 		
+		elif event['gist'] == 'consume_item':
+			lfe.memory(life, 'consume_item', target=event['from']['id'])
+		
 		elif event['gist'] == 'target_needs_disarmed':
 			if not brain.knows_alife(life, event['alife']):
 				brain.meet_alife(life, event['alife'])

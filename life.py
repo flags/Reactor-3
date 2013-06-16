@@ -1763,6 +1763,7 @@ def consume_item(life, item_id):
 	
 	life['eaten'].append(item)
 	remove_item_from_inventory(life, item_id)
+	alife.speech.announce(life, 'consume_item', public=True)
 	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
 
 	if 'player' in life:
