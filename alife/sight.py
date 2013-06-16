@@ -249,6 +249,7 @@ def find_known_items(life, matches={}, visible=True):
 		_break = False
 		for key in matches:
 			if not item['item'].has_key(key) or not item['item'][key] == matches[key]:
+				_break = True
 				break
 		
 		if _break:

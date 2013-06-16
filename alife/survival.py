@@ -43,9 +43,9 @@ def is_need_active(life, need):
 		return True
 	
 	if brain.get_flag(life, need['cancel_if_flag'][0]) == need['cancel_if_flag'][1]:
-		return True
+		return False
 	
-	return False
+	return True
 
 def is_in_need_matches(life, match):
 	_matches = []
@@ -106,21 +106,6 @@ def need_is_met(life, need):
 	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
 	need['num_met'] = 0
 	return False
-
-def manage_needs(life):
-	#TODO: Score best
-	_needs = {}
-	_food = brain.retrieve_from_memory(life, 'possible_food')
-	_drink = brain.retrieve_from_memory(life, 'possible_drink')
-	
-	if _food:
-		_needs[lfe.get_hunger_percentage] = _food
-	
-	if _drink:
-		_needs[lfe.get_thirst_percentage] = _drink
-	
-	_need = _needs[max(_needs.keys())][0]
-	movement.collect_nearby_wanted_items(life, visible=False, matches=_need['item'])
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
