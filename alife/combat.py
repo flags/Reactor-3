@@ -189,19 +189,6 @@ def combat(life, target):
 			5000,
 			delay=3)
 
-def handle_potential_combat_encounter(life,target,source_map):
-	if not speech.has_considered(life,target['life'],'resist'):
-		if not is_weapon_equipped(target['life']) and sight.can_see_position(life,target['life']['pos']):
-			speech.communicate(life,'comply',target=target['life']) #HOSTILE
-			lfe.clear_actions(life)
-			
-			return True
-	
-	if is_any_weapon_equipped(life):
-		combat(life,target,source_map)
-	else:
-		handle_hide_and_decide(life,target,source_map)
-
 def wont_disarm(life):
 	jobs.cancel_job(life['job'])
 

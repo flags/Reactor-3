@@ -31,6 +31,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_threat = judgement.get_nearest_threat(life)
+	
+	if not movement.hide(life, _threat):
+		print 'Hiding'
+		return True
+	
 	_weapon = combat.get_best_weapon(life)
 	
 	if _weapon:

@@ -1,3 +1,5 @@
+from globals import WORLD_INFO
+
 import life as lfe
 
 import weapons
@@ -32,7 +34,6 @@ def score_escape(life,target,pos):
 def score_hide(life,target,pos):
 	_score = numbers.distance(life['pos'],pos)
 	#_score += (30-numbers.distance(target['pos'],pos))
-	print 'hide'
 	
 	return _score
 
@@ -106,13 +107,16 @@ def escape(life, target, source_map):
 	
 	return True
 
-def hide(life,target,source_map):
-	_cover = generate_los(life,target,target['life']['pos'],source_map,score_hide)
+def hide(life, target_id):
+	_target = brain.knows_alife_by_id(life, target_id)
+	_cover = sight.generate_los(life, _target, _target['last_seen_at'], WORLD_INFO['map'], score_hide)
 	
 	if _cover:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)		
 		return False
+	
+	print 'YAH'
 	
 	return True
 
@@ -135,32 +139,6 @@ def handle_hide(life,target,source_map):
 		return collect_nearby_wanted_items(life)
 	else:
 		return escape(life,target,source_map)
-
-def handle_hide_and_decide(life,target,source_map):
-	if handle_hide(life,target,source_map):
-		#TODO: Just need a general function to make sure we have a weapon
-		if combat.has_weapon(life):
-			if speech.consider(life,target['life'],'shouted_at'):
-				if 'shown_scared' in target['consider']:
-					lfe.say(life,'I\'m coming for you!')
-					speech.communicate(life,'confidence',target=target['life'])
-					target['consider'].remove('shown_scared')
-				else:
-					lfe.say(life,'I\'m coming for you!')
-					speech.communicate(life,'intimidate',target=target['life'])
-			
-			#If we're not ready, prepare for combat
-			if not combat._weapon_equipped_and_ready(life):
-				if not 'equipping' in life:
-					if combat._equip_weapon(life):
-						life['equipping'] = True
-			else:
-				#TODO: ALife is hiding now...'
-				pass
-		else:
-			if speech.consider(life,target['life'],'shown_scared'):
-				brain.flag(life, 'scared')
-				lfe.say(life,'@n panics!',action=True)
 
 def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
