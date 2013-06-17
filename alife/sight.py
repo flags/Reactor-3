@@ -70,7 +70,7 @@ def get_vision(life):
 	#TODO: Fog? Smoke? Light?
 	return life['vision_max']
 
-def can_see_position(life, pos):
+def can_see_position(life, pos, distance=True):
 	"""Returns `true` if the life can see a certain position."""
 	_line = render_los.draw_line(life['pos'][0],
 		life['pos'][1],
@@ -80,7 +80,7 @@ def can_see_position(life, pos):
 	if not _line:
 		_line = []
 	
-	if len(_line) >= get_vision(life):
+	if len(_line) >= get_vision(life) and distance:
 		return False	
 	
 	for pos in _line:

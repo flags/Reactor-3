@@ -17,14 +17,15 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def score_escape(life,target,pos):
+	_target_distance_to_pos = numbers.distance(target['pos'], pos)
 	_score = numbers.distance(life['pos'],pos)
-	_score += (30-numbers.distance(target['pos'],pos))
+	_score += 30-_target_distance_to_pos
 	
-	if not sight.can_see_position(target, pos):
-		_score -= numbers.distance(target['pos'],pos)
+	if not sight.can_see_position(target, pos, distance=False):
+		_score -= _target_distance_to_pos
 	
-	if not sight.can_see_position(life, pos):
-		_score = 90000
+	if not sight.can_see_position(life, pos, distance=False):
+		_score += _target_distance_to_pos/2
 	
 	return _score
 
@@ -82,8 +83,13 @@ def explore(life,source_map):
 	pass
 
 def escape(life, target, source_map):
+	#With this function we're trying to get away from the target.
+	#You'll see in `score_escape` that we're not trying to find full cover, but instead
+	#just finding a way to get behind *something*.
+	#
 	#TODO: Remove the need for {'life': ...}
 	_escape = sight.generate_los(life, {'life': target}, target['pos'], source_map, score_escape)
+	print 'escaping', _escape
 	
 	if _escape:
 		lfe.clear_actions(life)

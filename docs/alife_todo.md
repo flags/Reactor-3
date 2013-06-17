@@ -80,7 +80,7 @@ Misc:
 	[ ] General dictionary match function
 	[x] Have `aim_at` refer to ID instead of raw entity
 	[x] Fix crash on menu left/right
-	[ ] `alife_collect_items.py` refers to item scores (line 34), which are outdated
+	[x] `alife_collect_items.py` refers to item scores (line 34), which are outdated
 	[x] Calls to `numbers.distance()` still use default for `old` keyword (True)
 		In doing this, diagonal movement costs 2
 	[x] In the target list show `Dead (<cause of death>)` instead of `Dead (Indentified)`

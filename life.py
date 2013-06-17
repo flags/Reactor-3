@@ -1308,9 +1308,7 @@ def tick(life, source_map):
 		if not thirst(life):
 			return False
 	
-	alife.survival.manage_hands(life)
 	natural_healing(life)
-	alife.survival.check_all_needs(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
 		#print _bleeding_limbs,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -1365,6 +1363,7 @@ def tick(life, source_map):
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
+		alife.survival.check_all_needs(life)
 		brain.think(life, source_map)
 	else:
 		brain.sight.look(life)
