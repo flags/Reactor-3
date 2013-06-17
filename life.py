@@ -301,10 +301,10 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	alife.survival.create_need(_life,
 		{'type': 'food'},
 		[alife.survival._has_inventory_item],
-	    [alife.sight.find_known_items],
-	    consume,
-	    min_matches=1,
-	    cancel_if_flag=('hungry', False))
+		[alife.sight.find_known_items],
+		consume,
+		min_matches=1,
+		cancel_if_flag=('hungry', False))
 	
 	#alife.survival.create_need(_life,
 	#	{'type': 'backpack'},
@@ -315,10 +315,10 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	alife.survival.create_need(_life,
 		{'type': 'drink'},
 		[alife.survival._has_inventory_item],
-	    [alife.sight.find_known_items],
-	    consume,
+		[alife.sight.find_known_items],
+		consume,
 		min_matches=1,
-	    cancel_if_flag=('thirsty', False))
+		cancel_if_flag=('thirsty', False))
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
