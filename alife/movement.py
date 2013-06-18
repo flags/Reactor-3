@@ -38,6 +38,10 @@ def score_hide(life,target,pos):
 	_chunk_id = '%s,%s' % ((pos[0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (pos[1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
 	_chunk = maps.get_chunk(_chunk_id)
 	_life_dist = numbers.distance(life['pos'], pos)
+	_target_dist = numbers.distance(target['last_seen_at'], pos)
+	
+	if sight.can_see_position(life, pos, distance=False):
+		return 20-_target_dist
 	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
 		print 'TARGET IS HERE!'
@@ -48,12 +52,12 @@ def score_hide(life,target,pos):
 		return numbers.clip(200-_life_dist, 100, 200)
 	
 	if _chunk['type'] == 'building':
-		if not sight._can_see_position(target['last_seen_at'], pos):
+		if not sight._can_see_position(life['pos'], pos):
 			print 'CLOSE!'
-			return 49-numbers.distance(life['pos'], pos)
+			return numbers.clip(49-_life_dist, 21, 49)
 		
 		print 'building'
-		return 89-numbers.distance(life['pos'], pos)
+		return 89-_life_dist
 	
 	return 301
 
