@@ -256,6 +256,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['inventory'] = {}
 	_life['flags'] = {}
 	_life['state'] = 'idle'
+	_life['state_flags'] = []
 	_life['states'] = []
 	_life['gravity'] = 0
 	_life['targeting'] = None
@@ -408,6 +409,7 @@ def change_state(life, state):
 	
 	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
 	life['state'] = state
+	life['state_flags'] = []
 	
 	life['states'].append(state)
 	if len(life['states'])>SETTINGS['state history size']:

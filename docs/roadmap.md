@@ -433,7 +433,7 @@ Tech:
 		1) Areas we can walk (can be unconnected.)
 		2) Z-levels we can travel to
 	
-Combat Fix #1
+Combat Fix #1 (Complete)
 --------------
 First in a series of fixes.
 All of the logic that decides when combat is entered needs to be scrapped.
@@ -448,7 +448,7 @@ Proposing: `calculate_safety()`
 	Inspects all variables checked by `is_safe()` for changes.
 		For example, when `combat_targets` become invalid.
 
-Combat Fix #2
+Combat Fix #2 (Complete)
 --------------
 We need a way to determine who our targets are. Proposing the following categories:
 
@@ -456,6 +456,22 @@ Visible: In the ALife's LOS.
 Non-visible: Inverse of previous.
 Visible threats: In the ALife's LOS. Possibly dangerous.
 Non-visible threats: Not in the ALife's LOS. Possibly Dangerous.
+
+Combat Fix #3
+--------------
+Escaping is a huge issue. We are just instructing the ALife to run away, which is fine, but what about after that?
+
+Proposing: Intelligent Hide. The ALife, once in the `hidden` state, generates a LOS from the last known position
+of the target(s). The ALife then passes this to the pathing algor. as dangerous territory. We then choose a
+destination, which can be a nearby camp or hiding spot (The ALife should also call for backup at this time to see
+who is nearby.)
+
+We only need to generate this once unless the target changes position
+
+Combat Fix #4
+--------------
+When ALife are in trouble, they call for backup. If enough arrive and the situation is not dire (person who called
+for help is in ok condition,) a surrender may be proposed.
 
 Dialog Functions
 ------------------

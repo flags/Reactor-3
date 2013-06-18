@@ -37,20 +37,20 @@ def find_best_known_chunk(life):
 	
 	return _best_chunk['chunk_key']
 
-def find_best_unknown_chunk(life, chunks):
-	_nearest = {'distance': -1, 'key': None}
-	for chunk_key in references.find_nearest_road(life):
-		if chunk_key in life['known_chunks']:
-			continue
-		
-		chunk_center = [int(val)+(SETTINGS['chunk size']/2) for val in chunk_key.split(',')]
-		_distance = numbers.distance(life['pos'], chunk_center)
-		
-		if not _nearest['key'] or _distance<_nearest['distance']:
-			_nearest['distance'] = _distance
-			_nearest['key'] = chunk_key
-	
-	return _nearest['key']
+#def find_best_unknown_chunk(life, chunks):
+#	_nearest = {'distance': -1, 'key': None}
+#	for chunk_key in references.find_nearest_road(life):
+#		if chunk_key in life['known_chunks']:
+#			continue
+#		
+#		chunk_center = [int(val)+(SETTINGS['chunk size']/2) for val in chunk_key.split(',')]
+#		_distance = numbers.distance(life['pos'], chunk_center)
+#		
+#		if not _nearest['key'] or _distance<_nearest['distance']:
+#			_nearest['distance'] = _distance
+#			_nearest['key'] = chunk_key
+#	
+#	return _nearest['key']
 
 def find_surrounding_unknown_chunks(life):
 	_unknown_chunks = []

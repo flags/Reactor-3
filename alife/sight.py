@@ -70,6 +70,21 @@ def get_vision(life):
 	#TODO: Fog? Smoke? Light?
 	return life['vision_max']
 
+def _can_see_position(pos1, pos2):
+	_line = render_los.draw_line(pos1[0],
+		pos1[1],
+		pos2[0],
+		pos2[1])
+		
+	if not _line:
+		_line = []
+	
+	for pos in _line:
+		if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+			return False
+	
+	return True
+
 def can_see_position(life, pos, distance=True):
 	"""Returns `true` if the life can see a certain position."""
 	_line = render_los.draw_line(life['pos'][0],
@@ -135,7 +150,7 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 		
 		if target_los[y,x] == invert:
 			#TODO: Additional scores, like distance from target
-			_score = score_callback(life,target['life'],pos)
+			_score = score_callback(life, target, pos)
 			
 			if _score<_cover['score']:
 				_cover['score'] = _score

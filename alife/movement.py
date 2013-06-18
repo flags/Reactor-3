@@ -1,13 +1,16 @@
-from globals import WORLD_INFO
+from globals import WORLD_INFO, SETTINGS
 
 import life as lfe
 
+import references
 import weapons
 import numbers
 import combat
 import speech
+import chunks
 import sight
 import brain
+import maps
 import jobs
 
 import random
@@ -19,23 +22,40 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def score_escape(life,target,pos):
-	_target_distance_to_pos = numbers.distance(target['pos'], pos)
+	_target_distance_to_pos = numbers.distance(target['last_seen_at'], pos)
 	_score = numbers.distance(life['pos'],pos)
 	_score += 30-_target_distance_to_pos
 	
-	if not sight.can_see_position(target, pos, distance=False):
+	if not sight.can_see_position(target['life'], pos, distance=False):
 		_score -= _target_distance_to_pos
 	
-	if not sight.can_see_position(life, pos, distance=False):
+	if not sight.can_see_position(target['life'], pos, distance=False):
 		_score += _target_distance_to_pos/2
 	
 	return _score
 
 def score_hide(life,target,pos):
-	_score = numbers.distance(life['pos'],pos)
-	#_score += (30-numbers.distance(target['pos'],pos))
+	_chunk_id = '%s,%s' % ((pos[0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (pos[1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	_chunk = maps.get_chunk(_chunk_id)
+	_life_dist = numbers.distance(life['pos'], pos)
 	
-	return _score
+	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
+		print 'TARGET IS HERE!'
+		return numbers.clip(300-_life_dist, 200, 300)
+	
+	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
+		print 'in reference'
+		return numbers.clip(200-_life_dist, 100, 200)
+	
+	if _chunk['type'] == 'building':
+		if not sight._can_see_position(target['last_seen_at'], pos):
+			print 'CLOSE!'
+			return 49-numbers.distance(life['pos'], pos)
+		
+		print 'building'
+		return 89-numbers.distance(life['pos'], pos)
+	
+	return 301
 
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
@@ -89,7 +109,8 @@ def escape(life, target, source_map):
 	#just finding a way to get behind *something*.
 	#
 	#TODO: Remove the need for {'life': ...}
-	_escape = sight.generate_los(life, {'life': target}, target['pos'], source_map, score_escape)
+	print target.keys()
+	_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
 	print 'escaping', _escape
 	
 	if _escape:
@@ -109,14 +130,12 @@ def escape(life, target, source_map):
 
 def hide(life, target_id):
 	_target = brain.knows_alife_by_id(life, target_id)
-	_cover = sight.generate_los(life, _target, _target['last_seen_at'], WORLD_INFO['map'], score_hide)
+	_cover = sight.generate_los(life, _target, _target['last_seen_at'], WORLD_INFO['map'], score_hide, ignore_starting=True)
 	
 	if _cover:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)		
 		return False
-	
-	print 'YAH'
 	
 	return True
 

@@ -117,7 +117,11 @@ def get_targets(life):
 	
 	if life['camp'] and raids.camp_has_raid(life['camp']):
 		_targets.extend(raids.get_raiders(life['camp']))
-		
+
+	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	if _combat_targets:
+		_targets.extend([c['who']['life']['id'] for c in _combat_targets])
+	
 	for alife in life['know'].values():
 		if alife['life']['id'] in _targets:
 			continue
@@ -135,11 +139,11 @@ def get_targets(life):
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
 
-	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	if not _combat_targets:
-		return False
+	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	#if not _combat_targets:
+	#	return False
 	
-	for target in [t['who'] for t in _combat_targets]:
+	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life)]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:

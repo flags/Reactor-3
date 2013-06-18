@@ -507,6 +507,7 @@ def update_chunk_map(source_map):
 				'items': [],
 				'control': {},
 				'neighbors': [],
+			    'reference': None,
 				'digest': None}
 			
 			_tiles = {}
@@ -625,10 +626,12 @@ def generate_reference_maps():
 				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['roads'])
 				if _ret:
 					REFERENCE_MAP['roads'].append(_ret)
+					_current_chunk['reference'] = _ret
 			elif _current_chunk['type'] == 'building':
 				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['buildings'])
 				if _ret:
 					REFERENCE_MAP['buildings'].append(_ret)
+					_current_chunk['reference'] = _ret
 	
 	logging.info('Reference map created in %.2f seconds.' % (time.time()-_stime))
 	logging.info('\tRoads:\t\t %s' % (len(REFERENCE_MAP['roads'])))
