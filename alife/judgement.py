@@ -112,7 +112,7 @@ def get_talkable(life, secrecy=0):
 	
 	return _talkable
 
-def get_targets(life):
+def get_targets(life, must_be_known=False):
 	_targets = []
 	
 	if life['camp'] and raids.camp_has_raid(life['camp']):
@@ -130,6 +130,11 @@ def get_targets(life):
 		if is_target_dangerous(life, alife['life']['id']):
 			_targets.append(alife['life']['id'])
 	
+	if must_be_known:
+		for _target in _targets[:]:
+			if not brain.knows_alife_by_id(life, _target):
+				_targets.remove(_target)
+	
 	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	#if _combat_targets:
 	#	_targets.extend([t['who']['life']['id'] for t in _combat_targets if not t['who']['life']['id'] in _targets])
@@ -143,7 +148,7 @@ def get_nearest_threat(life):
 	#if not _combat_targets:
 	#	return False
 	
-	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life)]:
+	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life, must_be_known=True)]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
