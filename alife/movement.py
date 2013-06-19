@@ -40,8 +40,8 @@ def score_hide(life,target,pos):
 	_life_dist = numbers.distance(life['pos'], pos)
 	_target_dist = numbers.distance(target['last_seen_at'], pos)
 	
-	if sight.can_see_position(life, pos, distance=False):
-		return 20-_target_dist
+	#if sight.can_see_position(life, pos, distance=False):
+	#	return 20-_target_dist
 	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
 		print 'TARGET IS HERE!'
@@ -51,15 +51,17 @@ def score_hide(life,target,pos):
 		print 'in reference'
 		return numbers.clip(200-_life_dist, 100, 200)
 	
-	if _chunk['type'] == 'building':
-		if not sight._can_see_position(life['pos'], pos):
-			print 'CLOSE!'
-			return numbers.clip(49-_life_dist, 21, 49)
-		
-		print 'building'
-		return 89-_life_dist
+	#if _chunk['type'] == 'building':
+	#	if not sight._can_see_position(life['pos'], pos):
+	#		print 'CLOSE!'
+	#		return numbers.clip(49-_life_dist, 21, 49)
+	#	
+	#	print 'building'
+	#	return 89-_life_dist
+	if not sight._can_see_position(life['pos'], pos):
+		return 99-_target_dist
 	
-	return 301
+	return 200
 
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
