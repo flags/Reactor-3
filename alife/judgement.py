@@ -163,7 +163,7 @@ def get_invisible_threats(life):
 def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
-	for target in [LIFE[t] for t in get_targets(life)]:
+	for target in [LIFE[t] for t in get_targets(life, must_be_known=True)]:
 		if not sight.can_see_target(life, target['id']) == _inverse:
 			_targets.append(target['id'])
 	
