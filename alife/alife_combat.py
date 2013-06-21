@@ -42,8 +42,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	
-	if not combat.has_usable_weapon(life):
-		return False	
+	#if not combat.has_usable_weapon(life):
+	#	return False	
 	
 	if not brain.retrieve_from_memory(life, 'combat_targets'):
 		return False

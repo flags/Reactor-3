@@ -9,6 +9,7 @@ import movement
 import speech
 import brain
 import camps
+import stats
 import jobs
 import maps
 
@@ -93,7 +94,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						lfe.get_memory,
 						{'text': 'location_of_target', 'target': _info['founder'], 'location': '*'})
 				
-			elif not life['job'] and judgement.can_trust(life, _info['founder']):
+			elif judgement.can_trust(life, _info['founder']) and stats.desires_job(life):
 				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):
 					_j = jobs.create_job(life, 'get camp job')
 					jobs.add_detail_to_job(_j, 'target', _info['founder'])
@@ -106,8 +107,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			pass
 			
 	else:		
-		#if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
-		#	lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
 		lfe.create_question(life,
 			'wants_founder_info',
 			{'camp': _camp['id']},

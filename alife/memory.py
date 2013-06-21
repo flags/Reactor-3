@@ -36,8 +36,12 @@ def detect_lies(life):
 		for answer in [lfe.get_memory_via_id(life, a) for a in question['answered']]:
 			pass
 			#print answer.keys()
-		
+
+def reflect(life):
+	pass
+
 def process(life):
 	process_questions(life)
 	detect_lies(life)
 	rescore_history(life)
+	reflect(life)

@@ -62,8 +62,8 @@ def retrieve_from_memory(life, key):
 	
 	return None
 
-def flag(life, flag):
-	life['flags'][flag] = True
+def flag(life, flag, value=True):
+	life['flags'][flag] = value
 
 def unflag(life, flag):
 	life['flags'][flag] = False

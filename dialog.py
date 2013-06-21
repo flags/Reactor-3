@@ -92,6 +92,13 @@ def calculate_impacts(life, target, topics):
 
 def reset_dialog(dialog, end=True):
 	_ret = False
+
+	if end:
+		LIFE[dialog['sender']]['dialogs'].remove(dialog)
+		
+		if dialog in LIFE[dialog['receiver']]['dialogs']:
+			LIFE[dialog['receiver']]['dialogs'].remove(dialog)	
+	
 	if dialog['previous_topics']:
 		dialog['topics'] = dialog['previous_topics'].pop(0)
 		dialog['previous_topics'] = []
@@ -100,11 +107,6 @@ def reset_dialog(dialog, end=True):
 		if 'player' in LIFE[dialog['sender']] and dialog['starting_topics']:
 			dialog['topics'] = dialog['starting_topics']
 			dialog['speaker'] = dialog['sender']
-		elif end:
-			LIFE[dialog['sender']]['dialogs'].remove(dialog)
-			
-			if dialog in LIFE[dialog['receiver']]['dialogs']:
-				LIFE[dialog['receiver']]['dialogs'].remove(dialog)
 	
 	dialog['title'] = ''
 	dialog['index'] = 0
@@ -199,6 +201,7 @@ def get_all_irrelevant_target_topics(life, target):
 	#TODO: This spawns a menu for the player to choose the desired ALife
 	_topics.append({'text': 'Do you know...', 'gist': 'inquire_about', 'subtopics': get_known_alife})
 	_topics.append({'text': 'Ask about...', 'gist': 'inquire_about_self', 'target': target, 'subtopics': get_possible_alife_questions})
+	_topics.append({'text': 'Request...', 'gist': 'request', 'target': target, 'subtopics': get_requests})
 	
 	for ai in life['know']:
 		if lfe.get_memory(life, matches={'target': ai}):
@@ -217,6 +220,14 @@ def get_possible_alife_questions(life, chosen):
 		'subtopics': get_known_camps})
 	_topics.append({'text': 'What\'s nearby?',
 		'gist': 'inquire_about_nearby_locations'})
+	
+	return _topics
+
+def get_requests(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Do you have any food?', 'gist': 'request_item', 'item': {'type': 'food'}})
+	_topics.append({'text': 'Do you have anything to drink?', 'gist': 'request_item', 'item': {'type': 'drink'}})
 	
 	return _topics
 
@@ -459,6 +470,7 @@ def get_items_to_give(life, target, matches={}):
 		if _break:
 			continue
 		
+		print 'ITEM!!!!'
 		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'give_item_to', 'target': target, 'item': item['id'], 'like': 1})
 	
 	#TODO: Potential conflict 
@@ -559,6 +571,7 @@ def alife_choose_response(life, target, dialog, responses):
 
 def process_response(life, target, dialog, chosen):
 	if chosen['gist'] in ['end', 'nothing']:
+		print life['name'],'END?'
 		reset_dialog(dialog, end=True)
 		return True
 	
@@ -681,10 +694,10 @@ def process_response(life, target, dialog, chosen):
 		_responses.extend(get_items_to_give(LIFE[dialog['listener']], dialog['speaker'], matches=chosen['item']))
 	elif chosen['gist'] == 'give_item_to':
 		#TODO: Write lfe.drop_item_for()
-		lfe.add_action(life, {'action': 'dropitem',
+		lfe.add_action(LIFE[dialog['speaker']], {'action': 'dropitem',
 			'item': chosen['item']},
 			200,
-			delay=lfe.get_item_access_time(life, chosen['item']))
+			delay=lfe.get_item_access_time(LIFE[dialog['speaker']], chosen['item']))
 	elif chosen['gist'] == 'ignore_question_negative':
 		_knows = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['speaker'])
 		lfe.memory(LIFE[dialog['listener']], 'bad answer',

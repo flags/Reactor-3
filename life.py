@@ -13,6 +13,7 @@ import weapons
 import numbers
 import effects
 import random
+import stats
 import alife
 import items
 import menus
@@ -298,6 +299,8 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
 	_life['needs'] = []
+	
+	stats.init(_life)
 	
 	alife.survival.create_need(_life,
 		{'type': 'food'},
