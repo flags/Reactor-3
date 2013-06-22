@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import references
 import weapons
 import chunks
 import combat
@@ -318,29 +319,27 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
 	
+	_antisocial_mod = stats.get_antisocial_percentage(life)
 	_group_size_max = stats.desires_group_threshold(life)
 	_trusted = 0
-	for _life in [LIFE[i] for i in LIFE]:
-		if _life['id'] == life['id']:
-			continue
+	for _target in [brain.knows_alife_by_id(life, t) for t in life['know']]:
+		_is_here = False
 		
-		_target = brain.knows_alife(life, _life)
-		
-		if not _target:
-			continue
-		
-		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id):
+		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
+			_is_here = True
+		elif not _target['last_seen_time'] and _target['life']['path'] and chunks.position_is_in_chunk(lfe.path_dest(_target['life']), chunk_id):
+			_is_here = True
+			
+		if _is_here:
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
 			elif can_trust(life, _target['life']['id']):
-				_trusted += 1
-				#_score += 2
+				_trusted += _target['trust']*_antisocial_mod
 			else:
 				_score -= 1
 	
 	if _trusted>_group_size_max:
-		_score -= int(round(_trusted*stats.get_antisocial_percentage(life)))
-		print life['name'],'Uncomfortable'
+		_score += _trusted*_antisocial_mod
 	else:
 		_score += _trusted
 	#_score += numbers.clip(_trusted, 0, _group_size_max)
@@ -440,7 +439,6 @@ def judge_camp(life, camp):
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
 	
-	_bonus = 0
 	_known_chunks_of_camp = []
 	for _chunk_key in camp:
 		if not _chunk_key in life['known_chunks']:
@@ -448,20 +446,32 @@ def judge_camp(life, camp):
 		
 		_known_chunks_of_camp.append(_chunk_key)
 	
-	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
+	_current_population = 0
+	_current_trust = 0
+	for _target in [brain.knows_alife_by_id(life, t) for t in life['know']]:
+		if not references.is_in_reference(_target['last_seen_at'], camp):
+			continue
+		
+		_current_population += 1
+		
+		if can_trust(life, _target['life']['id']):
+			_current_trust += _target['trust']
+		else:
+			_current_trust -= _target['danger']
 	
+	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	_known_camps = [c['reference'] for c in life['known_camps'].values()]
-	#print _known_camps
-	if camp in _known_camps:
-		print 'ssssssssssssssssss'
-	#print _known_camps
-	#if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': camp}):
-	#	_bonus += 2
-	#	print 'bonus!!!!!!!!!'
+	
+	if _current_population > stats.desires_group_threshold(life):
+		_score = _current_trust*stats.get_antisocial_percentage(life)
+		print life['name'],'2CROWDED'
+	else:
+		_score = _current_trust
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
-	return (len(camp)*_percent_known)+_bonus
+	#print 'camp score:',(len(camp)*_percent_known),_score,(len(camp)*_percent_known)*_score
+	return (len(camp)*_percent_known)*_score
 
 def judge_job(life, job):
 	_score = 0

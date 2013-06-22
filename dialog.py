@@ -172,7 +172,9 @@ def get_all_relevant_gist_responses(life, target, gist):
 	elif gist == 'jobs':
 		_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	elif gist == 'introduction':
-		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
+		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self', 'like': 1})
+	elif gist == 'introduction-negative':
+		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'ignore', 'dislike': 1})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -453,11 +455,7 @@ def get_items_to_give(life, target, matches={}):
 	_responses = []
 	_matching = lfe.get_all_inventory_items(life, matches=[matches])
 	
-	for item in _matching:
-		#TODO: Don't break out of the loop just because we're dropping an item
-		if lfe.find_action(life, matches=[{'action': 'dropitem'}]):
-			break
-		
+	for item in _matching:		
 		_matches = alife.survival.is_in_need_matches(life, item)
 		_break = False
 		if not 'player' in life:
