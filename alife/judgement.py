@@ -5,6 +5,7 @@ import life as lfe
 import weapons
 import chunks
 import combat
+import stats
 import brain
 import raids
 import sight
@@ -311,28 +312,38 @@ def judge_old(life, target):
 
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
+	_score = 0
 	
-	if long:
-		_max_score = SETTINGS['chunk size']*6
-		_distance = (numbers.distance(life['pos'], chunk['pos'])/float(SETTINGS['chunk size']))
-	else:
-		_max_score = SETTINGS['chunk size']*4
-		_distance = 0
-	
-	_initial = False
 	if not chunk_id in life['known_chunks']:
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
-		_initial = True
 	
-	_score = numbers.clip(_max_score-_distance, 0, _max_score)
+	_group_size_max = stats.desires_group_threshold(life)
+	_trusted = 0
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['id'] == life['id']:
 			continue
 		
-		#if chunks.is_in_chunk(_life, chunk_id):
-		#	if _life['id'] in life['know']:
-		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		_target = brain.knows_alife(life, _life)
+		
+		if not _target:
+			continue
+		
+		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id):
+			if is_target_dangerous(life, _target['life']['id']):
+				_score -= 10
+			elif can_trust(life, _target['life']['id']):
+				_trusted += 1
+				#_score += 2
+			else:
+				_score -= 1
+	
+	if _trusted>_group_size_max:
+		_score -= int(round(_trusted*stats.get_antisocial_percentage(life)))
+		print life['name'],'Uncomfortable'
+	else:
+		_score += _trusted
+	#_score += numbers.clip(_trusted, 0, _group_size_max)
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']

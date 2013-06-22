@@ -1,3 +1,5 @@
+#TODO: THIS CAN BE IDLE BEHAVIOR
+
 from globals import *
 
 import life as lfe
@@ -6,6 +8,7 @@ import judgement
 import survival
 import chunks
 import sight
+import brain
 
 import logging
 
@@ -23,11 +26,13 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if not chunks.find_best_known_chunk(life):
+	_explore_chunk = chunks.find_best_known_chunk(life, ignore_starting=True)
+	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
+	
+	if not _explore_chunk:
 		return False
 	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	survival.explore_known_chunks(life)
-	

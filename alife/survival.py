@@ -161,7 +161,7 @@ def explore_known_chunks(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.	
-	_chunk_key = chunks.find_best_known_chunk(life)
+	_chunk_key = brain.retrieve_from_memory(life, 'explore_chunk')
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):

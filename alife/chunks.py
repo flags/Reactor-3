@@ -9,7 +9,7 @@ import numbers
 import random
 import time
 
-def find_best_known_chunk(life):
+def find_best_known_chunk(life, ignore_starting=False):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
@@ -19,7 +19,7 @@ def find_best_known_chunk(life):
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	_current_known_chunk = lfe.get_current_known_chunk(life)
-	if _current_known_chunk:
+	if _current_known_chunk and not ignore_starting:
 		_initial_score = _current_known_chunk['score']
 	else:
 		_initial_score = 0

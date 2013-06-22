@@ -4,10 +4,14 @@ import brain
 
 import random
 
+MAX_INTROVERSION = 10
+MAX_SOCIABILITY = 25
+MAX_INTERACTION = 25
+
 def init(life):
-	#Will - t
-	life['stats'] = {}
 	life['stats']['will'] = 25
+	life['stats']['sociability'] = random.randint(1, MAX_SOCIABILITY)
+	life['stats']['introversion'] = random.randint(1, MAX_INTROVERSION)
 
 def desires_job(life):
 	_wont = brain.get_flag(life, 'wont_work')
@@ -22,6 +26,16 @@ def desires_job(life):
 	
 	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
 	return False
+
+def desires_interaction(life):
+	return MAX_INTERACTION-life['stats']['sociability']
+
+def get_antisocial_percentage(life):
+	#print 'anti', life['stats']['introversion'], MAX_INTROVERSION, life['stats']['introversion']/float(MAX_INTROVERSION)
+	return life['stats']['introversion']/float(MAX_INTROVERSION)
+
+def desires_group_threshold(life):
+	return int(round(life['stats']['sociability']*get_antisocial_percentage(life)))
 
 def get_employability(life):
 	return 50
