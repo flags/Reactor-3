@@ -524,9 +524,9 @@ def judge_group(life, group_id):
 			continue
 		
 		if can_trust(life, member):
-			_score += member['trust']
+			_score += _knows['trust']
 		else:
-			_score -= member['danger']
+			_score -= _knows['danger']
 	
 	return _score
 

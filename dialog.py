@@ -175,6 +175,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self', 'like': 1})
 	elif gist == 'introduction_negative':
 		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'introduction_negative', 'dislike': 2})
+	elif gist == 'invite_to_group':
+		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -706,6 +708,15 @@ def process_response(life, target, dialog, chosen):
 		#	lfe.memory(LIFE[dialog['listener']], 'location_of_target',
 		#		target=chosen['target'],
 		#		location=chosen['location'])
+	elif chosen['gist'] == 'invite_to_group':
+		if alife.stats.desires_group(LIFE[dialog['listener']]):
+			if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
+				_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'like': 1})
+				alife.groups.add_member(chosen['group'], dialog['listener'])
+			else:
+				_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
+		else:
+			_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
 		
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])

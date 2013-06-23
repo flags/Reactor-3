@@ -38,4 +38,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if survival.explore_known_chunks(life):
 		return True
 	
-	print 'DONE?????????/'
+	print 'DONE?????????'

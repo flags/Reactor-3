@@ -46,4 +46,7 @@ def remove_member(group_id, life_id):
 	
 def delete_group(group_id):
 	for member in get_group(group_id)['members']:
-		pass
+		remove_member(group_id, member)
+		LIFE[member]['group'] = None
+	
+	del GROUPS[group_id]
