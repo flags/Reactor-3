@@ -4,65 +4,33 @@ from flask import Flask, render_template, request
 
 import threading
 import socket
+import json
 
 app = Flask(__name__)
-net_lock = threading.Lock()
-net_lock.acquire()
 
-class DebugClient(threading.Thread):
-	def __init__(self, lock):
-		self.lock = lock
-		
-		self.running = True
-		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socket.settimeout(2)
-		
-		threading.Thread.__init__(self)
-		
-	def run(self):
-		while self.running:
-			self.lock.acquire()
-			
-			try:
-				self.socket.connect(('', 3333))
-			except:
-				continue
-			
-			self.socket.sendall('Hello, world')
-			data = self.socket.recv(1024)
-			self.lock.release()
-			print 'CONNECTED OK'
-		
-		self.socket.close()
+def request(request):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.settimeout(5)
+	sock.connect(('', 3333))
+	sock.sendall(json.dumps({'type': 'get', 'what': request}))
+	data = json.loads(sock.recv(1024))
+	sock.close()
+	
+	return data
 
-
-debug_client = DebugClient(net_lock)
-debug_client.start()
-
-def shutdown_server():
-	func = request.environ.get('werkzeug.server.shutdown')
-	if func is None:
-		raise RuntimeError('Not running with the Werkzeug Server')
-
-	func()
-
-def request():
-	net_lock.release()
-	debug_client.command = 'derp'
-	net_lock.acquire()
+@app.route('/group/<group_id>')
+def group(group_id):
+	groups = request('groups')
+	group = groups[group_id]
+	
+	return render_template('group.html', group_id=group_id, group=group)
 
 @app.route('/')
 def index():
-	request()
+	groups = request('groups')
+	groups = groups.keys()
 	
-	return render_template('index.html', life=life)
-
-@app.route('/shutdown')
-def shutdown():
-	shutdown_server()
-	return 'Server shutting down...'
+	return render_template('index.html', groups=groups)
 
 if __name__ == '__main__':
-	app.run(debug=True, port=3335)
-
-debug_client.running = False
+	app.run(debug=True, port=3336)

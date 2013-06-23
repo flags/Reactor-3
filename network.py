@@ -13,7 +13,8 @@ def parse_packet(packet):
 		return json.dumps({'type': 'text', 'text': 'Invalid packet from this client.'})
 	
 	if _packet['type'] == 'get':
-		pass
+		if _packet['what'] == 'groups':
+			return json.dumps(GROUPS)
 
 
 class DebugHost(threading.Thread):
@@ -27,6 +28,11 @@ class DebugHost(threading.Thread):
 		threading.Thread.__init__(self)
 	
 	def quit(self):
+		try:
+			self.conn.close()
+		except:
+			pass
+		
 		self.socket.close()
 		self.socket.shutdown(socket.SHUT_RDWR)
 		logging.error('Debug: Quit.')
@@ -43,5 +49,5 @@ class DebugHost(threading.Thread):
 				continue
 				
 			data = self.conn.recv(1024)
-			self.conn.sendall(data)
+			self.conn.sendall(parse_packet(data))
 			self.conn.close()
