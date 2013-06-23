@@ -1,0 +1,12 @@
+<html>
+<head>
+    <title>ReactorWatch - Debug</title>
+</head>
+<body>
+    <ul id="life">
+    {% for member in life %}
+        <li><a href="{{ member.id }}">{{ member.name }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
