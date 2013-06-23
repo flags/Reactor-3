@@ -13,6 +13,7 @@ import maputils
 import worldgen
 import mainmenu
 import language
+import network
 import drawing
 import logging
 import weapons
@@ -168,13 +169,10 @@ def main():
 	life.draw_life()
 	maps.render_lights(MAP)
 	
-	a = time.time()
 	if SETTINGS['controlling']['encounters']:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
 	else:
 		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
-	
-	#print 'old', time.time()-a
 	
 	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
@@ -209,7 +207,14 @@ def main():
 
 def tick():
 	while SETTINGS['running']==2:
-		main()
+		try:
+			main()
+		except Exception, e:
+			print e.message
+			SETTINGS['running'] = False
+
+if '--debug' in sys.argv:
+	network.DebugHost().start()
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')
