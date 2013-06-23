@@ -6,6 +6,7 @@ import references
 import weapons
 import chunks
 import combat
+import groups
 import stats
 import brain
 import raids
@@ -104,15 +105,20 @@ def is_safe(life):
 	
 	return True
 
-def get_talkable(life, secrecy=0):
-	_talkable = []
+def get_trusted(life, visible=True, invert=False):
+	_trusted = []
 	
-	for alife in life['know'].values():
-		#TODO: Secrecy
-		if can_trust(life, alife['life']['id']):
-			_talkable.append(alife['life']['id'])
+	for target in life['know'].values():
+		if not can_trust(life, target['life']['id']) == invert:
+			if visible and sight.can_see_target(life, target['life']['id']):
+				continue
+			
+			_trusted.append(target['life']['id'])
 	
-	return _talkable
+	return _trusted
+
+def get_untrusted(life, visible=True):
+	return get_trusted(life, visible=visible, invert=True)
 
 #def get_best_leader(life, only_visible=True, include_self=True):
 #	for alife in life['know'].values():
@@ -323,7 +329,7 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 			'digest': chunk['digest']}
 	
 	_antisocial_mod = stats.get_antisocial_percentage(life)
-	_group_size_max = stats.desires_group_threshold(life)
+	_group_size_max = stats.get_max_group_size(life)
 	_trusted = 0
 	for _target in life['know'].values():
 		_is_here = False
@@ -463,7 +469,7 @@ def judge_camp(life, camp):
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	_known_camps = [c['reference'] for c in life['known_camps'].values()]
 	
-	if _current_population > stats.desires_group_threshold(life):
+	if _current_population > stats.get_max_group_size(life):
 		_score = _current_trust*stats.get_antisocial_percentage(life)
 		print life['name'],'2CROWDED'
 	else:
@@ -507,6 +513,20 @@ def judge_raid(life, raiders, camp):
 			_score += _knows['flags']['combat_score']
 	
 	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))
+	
+	return _score
+
+def judge_group(life, group_id):
+	_score = 0
+	for member in groups.get_group(group_id)['members']:
+		_knows = brain.knows_alife_by_id(life, member)
+		if not _knows:
+			continue
+		
+		if can_trust(life, member):
+			_score += member['trust']
+		else:
+			_score -= member['danger']
 	
 	return _score
 

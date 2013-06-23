@@ -295,6 +295,7 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['camp'] = None
 	_life['tempstor2'] = {}
 	_life['job'] = {}
+	_life['group'] = None
 	_life['task'] = ''
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}

@@ -171,10 +171,11 @@ def combat(life, target):
 		if not movement.travel_to_target(life,target,target['last_seen_at']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
-			speech.communicate(life,
-				'target_missing',
-				target=target['life']['id'],
-				matches=[{'id': judgement.get_talkable(life)}])
+			for send_to in judgement.get_trusted(life):
+				speech.communicate(life,
+					'target_missing',
+					target=target['life']['id'],
+					matches=[{'id': send_to}])
 			
 			target['escaped'] = True
 		elif target['escaped']:

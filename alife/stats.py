@@ -1,7 +1,10 @@
 from globals import *
 
+import judgement
+import groups
 import brain
 
+import logging
 import random
 
 MAX_INTROVERSION = 10
@@ -29,13 +32,6 @@ def desires_job(life):
 	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
 	return False
 
-def desires_group(life):
-	if life['group']:
-		return False
-	
-	
-	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
-
 def desires_life(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
 	
@@ -47,12 +43,50 @@ def desires_life(life, life_id):
 def desires_interaction(life):
 	return MAX_INTERACTION-life['stats']['sociability']
 
+def desires_conversation_with(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	if not _knows:
+		logging.error('FIXME: Improperly Used Function: Doesn\'t know talking target.')
+		return False
+	
+	if not judgement.can_trust(life, life_id):
+		return False
+	
+	return True
+
+def desires_group(life):
+	if life['group'] and judgement.judge_group(life, life['group'])>=get_minimum_group_score(life):
+		return False
+	
+	_trusted = sum([brain.knows_alife_by_id(life, t)['trust'] for t in judgement.get_trusted(life, visible=True)])
+	_not_trusted = sum([brain.knows_alife_by_id(life, t)['trust'] for t in judgement.get_untrusted(life, visible=True)])
+	
+	if _trusted < _not_trusted:
+		return False
+	
+	return True
+
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
 
-def desires_group_threshold(life):
+def get_minimum_group_score(life):
+	#TODO: Placeholder
+	return 0
+
+def get_max_group_size(life):
 	return int(round(life['stats']['sociability']*get_antisocial_percentage(life)))
 
 def get_employability(life):
 	return 50
+
+def wants_group_members(life):
+	if not life['group']:
+		return False
+	
+	_group = groups.get_group(life['group'])
+	if len(_group)<get_max_group_size(life):
+		return True
+	
+	return False
 	

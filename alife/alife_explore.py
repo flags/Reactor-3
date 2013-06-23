@@ -35,4 +35,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	survival.explore_known_chunks(life)
+	if survival.explore_known_chunks(life):
+		return True
+	
+	print 'DONE?????????/'

@@ -5,6 +5,7 @@ import judgement
 import movement
 import dialog
 import speech
+import groups
 import stats
 import raids
 import brain
@@ -74,6 +75,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
 		
+		if not stats.desires_conversation_with(life, ai['life']['id']):
+			continue
+		
 		#TODO: Not always true.
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
@@ -99,6 +103,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
 				start_dialog(life, target['id'], 'questions')
+		elif stats.desires_group(life):
+			groups.create_group(life)
+		elif stats.wants_group_members(life):
+			
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]

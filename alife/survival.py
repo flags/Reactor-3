@@ -171,6 +171,7 @@ def explore_known_chunks(life):
 	_pos_in_chunk = random.choice(_chunk['ground'])
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	return True
 
 def _job_explore_unknown_chunks(life):
 	explore_unknown_chunks(life)
