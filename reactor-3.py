@@ -120,7 +120,7 @@ while SETTINGS['running']==1:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=10, simulate_ticks=25, save=False, thread=True)
+	worldgen.generate_world(WORLD_INFO['map'], life=3, simulate_ticks=25, save=False, thread=True)
 
 LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.1})
 LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.1})
@@ -212,12 +212,20 @@ def tick():
 		except Exception, e:
 			print e.message
 			SETTINGS['running'] = False
+			
+			if 'debug' in WORLD_INFO:
+				WORLD_INFO['debug'].quit()
 
 if '--debug' in sys.argv:
-	network.DebugHost().start()
+	_debug_host = network.DebugHost()
+	_debug_host.start()
+	WORLD_INFO['debug'] = _debug_host
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')
 	cProfile.run('tick()','profile.dat')
 else:
 	tick()
+
+if 'debug' in WORLD_INFO:
+	WORLD_INFO['debug'].quit()

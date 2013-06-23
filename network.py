@@ -19,11 +19,17 @@ def parse_packet(packet):
 class DebugHost(threading.Thread):
 	def __init__(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind((SETTINGS['debug host'], SETTINGS['debug port']))
 		self.socket.listen(1)
 		self.socket.settimeout(3)
 		
 		threading.Thread.__init__(self)
+	
+	def quit(self):
+		self.socket.close()
+		self.socket.shutdown(socket.SHUT_RDWR)
+		logging.error('Debug: Quit.')
 	
 	def run(self):
 		logging.debug('DebugHost up.')
@@ -34,7 +40,7 @@ class DebugHost(threading.Thread):
 				logging.error('Debug: Connected.')
 			except socket.timeout:
 				logging.error('Debug: Timeout.')
-				break
+				continue
 				
 			data = self.conn.recv(1024)
 			self.conn.sendall(data)
