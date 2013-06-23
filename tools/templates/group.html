@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>ReactorWatch - Group {{ group_id }}</title>
+</head>
+<body>
+    <h2>Group {{ group_id }}</h2>
+    <ul id="group">
+    <li><b>Leader: </b> {{ group.leader }}</li>
+    <li><b>Members: </b>
+        {% for member in group.members %}
+            <a href="/life/{{ member }}">{{ member }}</a>
+        {% endfor %}
+        </li>
+    </ul>
+</body>
+</html>
