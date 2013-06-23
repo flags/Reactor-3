@@ -5,7 +5,7 @@ import brain
 import random
 
 MAX_INTROVERSION = 10
-MAX_SOCIABILITY = 30
+MAX_SOCIABILITY = 25
 MAX_INTERACTION = 25
 MAX_CHARISMA = 20
 
@@ -29,10 +29,15 @@ def desires_job(life):
 	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
 	return False
 
+def desires_group(life):
+	if life['group']:
+		return False
+	
+	
+	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
+
 def desires_life(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
-	
-	#print _diff,life['stats']['sociability']
 	
 	if _diff < life['stats']['sociability']:
 		return True
@@ -50,3 +55,4 @@ def desires_group_threshold(life):
 
 def get_employability(life):
 	return 50
+	

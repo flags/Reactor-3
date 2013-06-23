@@ -90,13 +90,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['state'] in ['combat', 'hiding', 'hidden']:
 			break
 		
-		if not 'player' in target and not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_life(life, target['id']):
-			start_dialog(life, target['id'], 'introduction')
-		elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target, 'not_friend'):
-			start_dialog(life, target['id'], 'introduction-negative')
-			print '2neg'
-			brain.flag_alife(life, target, 'not_friend')
-				
+		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}):
+			if not 'player' in target and stats.desires_life(life, target['id']):
+				start_dialog(life, target['id'], 'introduction')
+			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target, 'not_friend'):
+				start_dialog(life, target['id'], 'introduction_negative')
+				brain.flag_alife(life, target, 'not_friend')
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
 				start_dialog(life, target['id'], 'questions')

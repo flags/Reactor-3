@@ -173,8 +173,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	elif gist == 'introduction':
 		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self', 'like': 1})
-	elif gist == 'introduction-negative':
-		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'ignore', 'dislike': 1})
+	elif gist == 'introduction_negative':
+		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'introduction_negative', 'dislike': 2})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -589,6 +589,8 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
+		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
+	elif chosen['gist'] == 'introduction_negative':
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
 		_responses.extend(get_responses_about_self(life))

@@ -114,6 +114,9 @@ def get_talkable(life, secrecy=0):
 	
 	return _talkable
 
+#def get_best_leader(life, only_visible=True, include_self=True):
+#	for alife in life['know'].values():
+
 def get_targets(life, must_be_known=False):
 	_targets = []
 	
@@ -322,7 +325,7 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 	_antisocial_mod = stats.get_antisocial_percentage(life)
 	_group_size_max = stats.desires_group_threshold(life)
 	_trusted = 0
-	for _target in [brain.knows_alife_by_id(life, t) for t in life['know']]:
+	for _target in life['know'].values():
 		_is_here = False
 		
 		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
@@ -333,10 +336,8 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 		if _is_here:
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
-			elif can_trust(life, _target['life']['id']):
-				_trusted += _target['trust']*_antisocial_mod
 			else:
-				_score -= 1
+				_trusted += _target['trust']*_antisocial_mod
 	
 	if _trusted>_group_size_max:
 		_score += _trusted*_antisocial_mod
@@ -448,7 +449,7 @@ def judge_camp(life, camp):
 	
 	_current_population = 0
 	_current_trust = 0
-	for _target in [brain.knows_alife_by_id(life, t) for t in life['know']]:
+	for _target in life['know'].values():
 		if not references.is_in_reference(_target['last_seen_at'], camp):
 			continue
 		

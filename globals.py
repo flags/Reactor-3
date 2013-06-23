@@ -155,6 +155,7 @@ SETTINGS = {'running': True,
 			'los': 40,
 			'lifeid': 0,
             'itemid': 0,
+            'groupid': 0,
 			'heatmap': None,
 			'controlling': None,
 			'following': None,
@@ -172,7 +173,7 @@ EFFECTS = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
-WORKER_THREADS = []
+GROUPS = {}
 
 #Consoles
 MAP_WINDOW = None
