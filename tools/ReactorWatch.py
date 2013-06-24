@@ -27,9 +27,9 @@ def memory(life_id):
 @app.route('/life/<life_id>')
 def life(life_id):
 	life = request('life', value=int(life_id))
-	life['know'] = life['know'].values()
+	knows = life['know'].values()
 	
-	return render_template('life.html', life=life)
+	return render_template('life.html', life=life, knows=knows)
 
 @app.route('/group/<group_id>')
 def group(group_id):
