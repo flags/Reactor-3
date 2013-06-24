@@ -210,11 +210,13 @@ def tick():
 		try:
 			main()
 		except Exception, e:
-			print e.message
+			print sys.exc_info()[0]
 			SETTINGS['running'] = False
 			
 			if 'debug' in WORLD_INFO:
 				WORLD_INFO['debug'].quit()
+			
+			raise
 
 if '--debug' in sys.argv:
 	_debug_host = network.DebugHost()

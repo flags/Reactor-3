@@ -98,6 +98,12 @@ def handle_input():
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]-1,SETTINGS['controlling']['pos'][1])},200)
 	
+	if INPUT['P']:
+		if SETTINGS['paused']:
+			SETTINGS['paused'] = False
+		else:
+			SETTINGS['paused'] = True
+	
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))

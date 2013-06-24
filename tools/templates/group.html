@@ -5,7 +5,8 @@
 <body>
     <h2>Group {{ group_id }}</h2>
     <ul id="group">
-    <li><b>Leader: </b> {{ group.leader }}</li>
+    <li><b>Leader: </b> <a href="/life/{{ group.leader }}">{{ group.leader }}</a></li>
+    <li><b>Creator: </b> <a href="/life/{{ group.creator }}">{{ group.creator }}</a></li>
     <li><b>Members: </b>
         {% for member in group.members %}
             <a href="/life/{{ member }}">{{ member }}</a>

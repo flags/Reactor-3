@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import threading
 import logging
 import socket
@@ -15,6 +17,27 @@ def parse_packet(packet):
 	if _packet['type'] == 'get':
 		if _packet['what'] == 'groups':
 			return json.dumps(GROUPS)
+		elif _packet['what'] == 'life':
+			_life = LIFE[_packet['value']]
+			
+			_knows = {}
+			for entry in _life['know'].values():
+				_knows[entry['life']['id']] = {}
+				for key in entry:
+					if key == 'heard':
+						continue
+					
+					if key == 'life':
+						print entry.keys()
+						_knows[entry['life']['id']][key] = entry['life']['id']
+						continue
+					
+					_knows[entry['life']['id']][key] = _life['know'][entry['life']['id']][key]
+			
+			_sent_life = {'name': _life['name'],
+				'know': _knows}
+			
+			return json.dumps(_sent_life)
 
 
 class DebugHost(threading.Thread):
@@ -45,7 +68,6 @@ class DebugHost(threading.Thread):
 				self.conn, self.addr = self.socket.accept()
 				logging.error('Debug: Connected.')
 			except socket.timeout:
-				logging.error('Debug: Timeout.')
 				continue
 				
 			data = self.conn.recv(1024)

@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title>ReactorWatch - Life {{ life.id }}</title>
+</head>
+<body>
+    <h2>Life {{ life.name }}</h2>
+    <ul id="group">
+    <li><b>Name: </b>{{ life.name }}</li>
+    <li><b>Knows: </b></br>
+        {% for target in life.know %}
+            <a href="/life/{{ target.life }}">{{ target.life }}</a>
+            <ul><li><b>Trust</b>: {{ target.trust }}</li>
+            <li><b>Danger<b>: {{ target.danger }}</li>
+            <li><b>Flags<b>: {{ target.flags }}</li>
+            </ul>
+        {% endfor %}
+        </li>
+    </ul>
+</body>
+</html>

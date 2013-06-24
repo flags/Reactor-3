@@ -9,7 +9,8 @@ import items
 import life
 
 def tick_all_objects(source_map):
-	tick_world()
+	if SETTINGS['paused']:
+		return False
 	
 	if WORLD_INFO['in_combat'] and SETTINGS['controlling']['actions']:
 		WORLD_INFO['pause_ticks'] = 0
@@ -79,6 +80,7 @@ def tick_all_objects(source_map):
 			
 			WORLD_INFO['in_combat'] = _in_combat
 	
+	tick_world()
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
 	
