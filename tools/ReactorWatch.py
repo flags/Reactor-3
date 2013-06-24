@@ -47,7 +47,9 @@ def index():
 	life = request('life_list')
 	life.sort()
 	
-	return render_template('index.html', life=life, groups=groups)
+	stats = request('stats')
+	
+	return render_template('index.html', stats=stats, life=life, groups=groups)
 
 if __name__ == '__main__':
 	app.run(debug=True, port=3336)

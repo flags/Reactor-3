@@ -15,7 +15,11 @@ def parse_packet(packet):
 		return json.dumps({'type': 'text', 'text': 'Invalid packet from this client.'})
 	
 	if _packet['type'] == 'get':
-		if _packet['what'] == 'groups':
+		if _packet['what'] == 'stats':
+			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()])}
+			
+			return json.dumps(_stats)
+		elif _packet['what'] == 'groups':
 			return json.dumps(GROUPS)
 		elif _packet['what'] == 'life':
 			_life = LIFE[_packet['value']]
