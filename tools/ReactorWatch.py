@@ -18,6 +18,12 @@ def request(request, value=None):
 	
 	return data
 
+@app.route('/memory/<life_id>')
+def memory(life_id):
+	memories = request('memory', value=int(life_id))
+	
+	return render_template('memory.html', life_id=life_id, memories=memories)
+
 @app.route('/life/<life_id>')
 def life(life_id):
 	life = request('life', value=int(life_id))
@@ -38,7 +44,10 @@ def index():
 	groups = groups.keys()
 	groups.sort()
 	
-	return render_template('index.html', groups=groups)
+	life = request('life_list')
+	life.sort()
+	
+	return render_template('index.html', life=life, groups=groups)
 
 if __name__ == '__main__':
 	app.run(debug=True, port=3336)

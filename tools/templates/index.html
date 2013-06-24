@@ -3,8 +3,13 @@
     <title>ReactorWatch - Debug</title>
 </head>
 <body>
-    <h2>Groups</h2>
-    <ul id="life">
+    <h2>Life</h2>
+    <ul>
+    {% for id in life %}
+        <li><a href="life/{{ id }}">{{ id }}</a></li>
+    {% endfor %}
+    </ul>
+    <ul>
     {% for group in groups %}
         <li><a href="group/{{ group }}">{{ group }}</a></li>
     {% endfor %}

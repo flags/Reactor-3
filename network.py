@@ -38,6 +38,10 @@ def parse_packet(packet):
 				'know': _knows}
 			
 			return json.dumps(_sent_life)
+		elif _packet['what'] == 'memory':
+			return json.dumps(LIFE[_packet['value']]['memory'])
+		elif _packet['what'] == 'life_list':
+			return json.dumps(LIFE.keys())
 
 
 class DebugHost(threading.Thread):
