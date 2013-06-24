@@ -28,7 +28,6 @@ def parse_packet(packet):
 						continue
 					
 					if key == 'life':
-						print entry.keys()
 						_knows[entry['life']['id']][key] = entry['life']['id']
 						continue
 					
