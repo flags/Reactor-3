@@ -11,7 +11,7 @@ app = Flask(__name__)
 def request(request, value=None):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.settimeout(5)
-	sock.connect(('', 3333))
+	sock.connect(('127.0.0.1', 3333))
 	sock.sendall(json.dumps({'type': 'get', 'what': request, 'value': value}))
 	data = json.loads(sock.recv(9048))
 	sock.close()
