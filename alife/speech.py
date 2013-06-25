@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import language
+import dialog
 import sight
 
 import logging
@@ -92,6 +93,19 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
+
+def start_dialog(life, target, gist):
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': gist}
+	_dialog = dialog.create_dialog_with(life, target, _dialog)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
+		return True
+	
+	return False
 
 def determine_interesting_event(life, target):
 	_valid_phrases = []

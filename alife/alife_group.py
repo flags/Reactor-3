@@ -13,8 +13,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	if life['group'] and life['id'] == groups.get_group(life['group'])['leader']:
-		if stats.desires_camp(life) and groups.is_ready_to_camp(life['group']):
-			_j = jobs.create_job(life, 'give information')
+		if stats.desires_to_create_camp(life) and groups.is_ready_to_camp(life['group']):
+			_j = jobs.create_job(life, 'follow to camp')
 			jobs.add_detail_to_job(_j, 'target', life['id'])
 			
 			for i in range(len(groups.get_group(life['group'])['members'])):
@@ -22,5 +22,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			groups.assign_job(life, life['group'], _j)
 			jobs.process_job(_j)
+		
+		if life['camp']:
+			print 'WE HAVE A CAMP!!!!!!!!!!!!!'
 	
 	#groups.distribute(life, 'follow', who=life['id'])

@@ -78,11 +78,15 @@ def desires_group(life):
 	
 	return True
 
-def desires_camp(life):
-	if life['group'] and groups.is_leader(life['group'], life['id']):
-		if not groups.get_camp(life['group']):
+def desires_to_create_camp(life):
+	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life['group'], life['id']):
+		if len(groups.get_group(life['group'])['members'])>1:
 			return True
 	
+	return False
+
+def desires_camp(life):
+	print 'Dead code'
 	return False
 
 def get_antisocial_percentage(life):

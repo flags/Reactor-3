@@ -76,6 +76,7 @@ def found_camp(life, reference, announce=False):
 		life['camp'] = _camp['id']
 	
 	CAMPS[_camp['id']] = _camp 
+	lfe.memory(life, 'founded camp', camp=_camp['id'])
 	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
 	discover_camp(life, _camp)
 	speech.announce(life, 'share_camp_info', camp=_camp, founder=life['id'], public=False)

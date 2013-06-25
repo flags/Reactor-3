@@ -27,19 +27,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	return RETURN_SKIP
 
-def start_dialog(life, target, gist):
-	_dialog = {'type': 'dialog',
-		'from': life,
-		'enabled': True,
-		'gist': gist}
-	_dialog = dialog.create_dialog_with(life, target, _dialog)
-	
-	if _dialog:
-		life['dialogs'].append(_dialog)
-		return True
-	
-	return False	
-
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
@@ -96,18 +83,18 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}):
 			if not 'player' in target and stats.desires_life(life, target['id']):
-				start_dialog(life, target['id'], 'introduction')
+				speech.start_dialog(life, target['id'], 'introduction')
 			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target, 'not_friend'):
-				start_dialog(life, target['id'], 'introduction_negative')
+				speech.start_dialog(life, target['id'], 'introduction_negative')
 				brain.flag_alife(life, target, 'not_friend')
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
-				start_dialog(life, target['id'], 'questions')
+				speech.start_dialog(life, target['id'], 'questions')
 		elif stats.desires_group(life) and stats.desires_to_create_group(life):
 			groups.create_group(life)
 		elif stats.wants_group_members(life) and not brain.get_alife_flag(life, target, 'invited_to_group') and not groups.is_member(life['group'], target['id']):
 			brain.flag_alife(life, target, 'invited_to_group')
-			start_dialog(life, target['id'], 'invite_to_group')
+			speech.start_dialog(life, target['id'], 'invite_to_group')
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
