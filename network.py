@@ -38,6 +38,7 @@ def parse_packet(packet):
 					_knows[entry['life']['id']][key] = _life['know'][entry['life']['id']][key]
 			
 			_sent_life = {'name': _life['name'],
+				'id': _life['id'],
 				'know': _knows}
 			
 			return json.dumps(_sent_life)
@@ -65,7 +66,7 @@ class DebugHost(threading.Thread):
 		
 		self.socket.close()
 		self.socket.shutdown(socket.SHUT_RDWR)
-		logging.error('Debug: Quit.')
+		logging.debug('Debug: Quit.')
 	
 	def run(self):
 		logging.debug('DebugHost up.')
@@ -73,7 +74,7 @@ class DebugHost(threading.Thread):
 		while SETTINGS['running']:
 			try:
 				self.conn, self.addr = self.socket.accept()
-				logging.error('Debug: Connected.')
+				logging.debug('Debug: Connected.')
 			except socket.timeout:
 				continue
 				
