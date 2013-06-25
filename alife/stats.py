@@ -102,6 +102,12 @@ def get_max_group_size(life):
 def get_employability(life):
 	return 50
 
+def get_minimum_camp_score(life):
+	if life['group'] and groups.is_leader(life['group'], life['id']):
+		return len(groups.get_group(life['group'])['members'])
+	
+	return 3
+
 def wants_group_members(life):
 	if not life['group']:
 		return False

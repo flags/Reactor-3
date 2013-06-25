@@ -1,6 +1,7 @@
 from globals import *
 
 import judgement
+import brain
 import camps
 import stats
 
@@ -20,17 +21,23 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	#if not life['camp'] and not life['known_camps'] and camps.find_best_unfounded_camp(life):
 	if stats.desires_to_create_camp(life):
-		if camps.find_best_unfounded_camp(life):
+		_unfounded_camp = camps.find_best_unfounded_camp(life)
+		
+		if _unfounded_camp['score'] >= stats.get_minimum_camp_score(life):
+			print 'YO!!!! LETS CAMP, DUDE!'
 			return RETURN_VALUE
 		else:
-			print 'no unfounded camps', life['group']
+			brain.store_in_memory(life, 'explore_camp', _unfounded_camp['camp'])
+			print 'only interested'
+		
+		#else:
+		#	print 'no unfounded camps', life['group']
 	
 	return False
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	_best_camp = camps.find_best_unfounded_camp(life)
+	_best_camp = camps.find_best_unfounded_camp(life)['camp']
 	print 'lets camp ;)'
 	
 	if not _best_camp:

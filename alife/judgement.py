@@ -477,6 +477,7 @@ def judge_camp(life, camp):
 	
 	if stats.desires_to_create_camp(life):
 		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)
+		print 'desires',(len(camp)*_percent_known)*_score,life['group']
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))

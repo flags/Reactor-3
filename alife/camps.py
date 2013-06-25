@@ -9,6 +9,7 @@ import survival
 import numbers
 import speech
 import chunks
+import stats
 import jobs
 
 import logging
@@ -23,7 +24,7 @@ def find_nearest_unfounded_camp(life):
 def find_best_unfounded_camp(life):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
 	
-	_best_camp = {'camp': None, 'score': 4}
+	_best_camp = {'camp': None, 'score': 0}
 	for camp in REFERENCE_MAP['buildings']:
 		if camp in _founded_camps:
 			continue
@@ -33,7 +34,7 @@ def find_best_unfounded_camp(life):
 			_best_camp['camp'] = camp
 			_best_camp['score'] = _score
 	
-	return _best_camp['camp']
+	return _best_camp
 
 def _get_nearest_known_camp(life):
 	_nearest_camp = {'score': -1, 'camp': None}

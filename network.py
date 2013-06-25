@@ -39,6 +39,8 @@ def parse_packet(packet):
 			
 			_sent_life = {'name': _life['name'],
 				'id': _life['id'],
+				'flags': _life['flags'],
+				'tempstor': _life['tempstor2'],
 				'know': _knows}
 			
 			return json.dumps(_sent_life)

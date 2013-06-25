@@ -29,11 +29,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_camp = camps.get_nearest_known_camp(life)
 	
 	life['camp'] = _camp['id']
-	#if not life['known_camps'][life['camp']]:
-	#	_best_camp = camps.find_best_unfounded_camp(life)
-	#	
-	#	if not _best_camp:
-	#		return False
-	#	
-	#	camps.found_camp(life, _best_camp, announce=True)
 	print 'lookan'
