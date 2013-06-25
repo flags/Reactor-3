@@ -17,7 +17,7 @@
     <h2>Groups</h2>
     <ul>
     {% for group in groups %}
-        <li><a href="group/{{ group }}">{{ group }}</a></li>
+        <li><a href="group/{{ group }}">{{ group }} ({{ groups[group]['members']|count }})</a></li>
     {% endfor %}
     </ul>
 </body>

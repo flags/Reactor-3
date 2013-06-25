@@ -41,8 +41,6 @@ def group(group_id):
 @app.route('/')
 def index():
 	groups = request('groups')
-	groups = groups.keys()
-	groups.sort()
 	
 	life = request('life_list')
 	life.sort()
