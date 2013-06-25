@@ -530,6 +530,24 @@ def judge_group(life, group_id):
 	
 	return _score
 
+def group_judge_group(group_id, target_group_id):
+	_group1 = groups.get_group(group_id)
+	_group2 = groups.get_group(target_group_id)
+	
+	_group1_combat = groups.get_combat_score(group_id)
+	_group2_combat = groups.get_combat_score(target_group_id)
+	
+	if _group1_combat > _group2_combat:
+		pass
+
+def is_group_hostile(life, group_id):
+	_group = groups.get_group(group_id)
+	
+	if judge_group(life, group_id)>=0:
+		return False
+	
+	return True
+
 def believe_which_alife(life, alife):
 	_scores = {}
 	for ai in alife:

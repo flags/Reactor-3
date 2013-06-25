@@ -1,11 +1,14 @@
 from globals import *
 
+import combat
+
 import logging
 
 def create_group(life, add_creator=True):
 	_group = {'creator': life['id'],
 	    'leader': None,
-	    'members': []}
+	    'members': [],
+	    'camp': None}
 	
 	SETTINGS['groupid'] += 1
 	GROUPS[SETTINGS['groupid']] = _group
@@ -14,6 +17,7 @@ def create_group(life, add_creator=True):
 	
 	if add_creator:
 		add_member(SETTINGS['groupid'], life['id'])
+		_group['leader'] = life['id']
 
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
@@ -30,10 +34,40 @@ def get_group(group_id):
 	
 	return GROUPS[group_id]
 
+def get_camp(group_id):
+	return get_group(group_id)['camp']
+
+def set_camp(group_id, camp_id):
+	get_group(group_id)['camp'] = camp_id
+
+def get_combat_score(group_id, potential=False):
+	_group = get_group(group_id)
+	_score = 0
+	
+	for member in [LIFE[l] for l in _group['members']]:
+		if combat.get_best_weapon(member):
+			if not potential and not combat.weapon_equipped_and_ready(member):
+				continue
+			
+			_score += 1
+	
+	return _score
+
+def get_potential_combat_score(group_id):
+	return get_combat_score(group_id, potential=True)
+
 def is_member(group_id, life_id):
 	_group = get_group(group_id)
 	
 	if life_id in _group['members']:
+		return True
+	
+	return False
+
+def is_leader(group_id, life_id):
+	_group = get_group(group_id)
+	
+	if life_id == _group['leader']:
 		return True
 	
 	return False

@@ -67,6 +67,13 @@ def desires_group(life):
 	
 	return True
 
+def desires_camp(life):
+	if life['group'] and groups.is_leader(life['group'], life['id']):
+		if not groups.get_camp(life['group']):
+			return True
+	
+	return False
+
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
 

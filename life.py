@@ -2194,7 +2194,7 @@ def draw_life_info():
 	if _bruised:
 		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
-		_info.append({'text': 'Buised: %s' % _bruised_string,
+		_info.append({'text': 'Bruised: %s' % _bruised_string,
 			'color': tcod.red})
 	
 	_i = 1
