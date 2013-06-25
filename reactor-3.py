@@ -8,6 +8,7 @@ from tiles import *
 import render_fast_los
 
 import graphics as gfx
+import traceback
 import cProfile
 import maputils
 import worldgen
@@ -210,13 +211,13 @@ def tick():
 		try:
 			main()
 		except Exception, e:
-			print sys.exc_info()[0]
+			traceback.print_exc(file=sys.stdout)
 			SETTINGS['running'] = False
 			
 			if 'debug' in WORLD_INFO:
 				WORLD_INFO['debug'].quit()
 			
-			raise
+			raise e
 
 if '--debug' in sys.argv:
 	_debug_host = network.DebugHost()

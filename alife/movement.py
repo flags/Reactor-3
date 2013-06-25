@@ -206,7 +206,7 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	
 	return False
 
-def _find_alife(life, target):
+def _find_alife(life, target, distance=-1):
 	#Almost a 100% chance we know who this person is...
 	_target = brain.knows_alife_by_id(life, target)
 	
@@ -216,12 +216,20 @@ def _find_alife(life, target):
 	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
 	
 	if sight.can_see_position(life, _target['life']['pos']):
-		return True
+		if distance == -1 or numbers.distance(life['pos'], _target['last_seen_at'])<=distance:
+			return True
 	
 	return False
 
 def find_alife(life):
 	if _find_alife(life, jobs.get_job_detail(life['job'], 'target')):
+		lfe.stop(life)
+		return True
+	
+	return False
+
+def follow_alife(life):
+	if _find_alife(life, jobs.get_job_detail(life['job'], 'target'), distance=7):
 		lfe.stop(life)
 		return True
 	

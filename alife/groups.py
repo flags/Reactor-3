@@ -1,6 +1,12 @@
 from globals import *
 
+import life as lfe
+
+import judgement
 import combat
+import speech
+import brain
+import jobs
 
 import logging
 
@@ -8,7 +14,9 @@ def create_group(life, add_creator=True):
 	_group = {'creator': life['id'],
 	    'leader': None,
 	    'members': [],
-	    'camp': None}
+	    'camp': None,
+	    'time_created': WORLD_INFO['ticks'],
+	    'last_updated': WORLD_INFO['ticks']}
 	
 	SETTINGS['groupid'] += 1
 	GROUPS[SETTINGS['groupid']] = _group
@@ -19,6 +27,12 @@ def create_group(life, add_creator=True):
 		add_member(SETTINGS['groupid'], life['id'])
 		_group['leader'] = life['id']
 
+def get_group(group_id):
+	if not group_id in GROUPS:
+		raise Exception('Group does not exist: %s' % group_id)
+	
+	return GROUPS[group_id]
+
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
@@ -28,11 +42,17 @@ def add_member(group_id, life_id):
 	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), SETTINGS['groupid']-1))
 
-def get_group(group_id):
-	if not group_id in GROUPS:
-		raise Exception('Group does not exist: %s' % group_id)
+def assign_job(life, group_id, job):
+	_group = get_group(life['group'])
 	
-	return GROUPS[group_id]
+	for member in _group['members']:
+		jobs.add_job_candidate(job, LIFE[member])
+
+def distribute(life, message, **kvargs):
+	_group = get_group(life['group'])
+	
+	for member in _group['members']:
+		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
 
 def get_camp(group_id):
 	return get_group(group_id)['camp']
@@ -55,6 +75,43 @@ def get_combat_score(group_id, potential=False):
 
 def get_potential_combat_score(group_id):
 	return get_combat_score(group_id, potential=True)
+
+def get_status(group_id):
+	_group = get_group(group_id)
+	
+	_total_trust = 0
+	_total_danger = 0
+	for member1 in _group['members']:
+		for member2 in _group['members']:
+			if member1 == member2:
+				continue
+			
+			if not brain.knows_alife_by_id(LIFE[member1], member2):
+				continue
+			
+			if judgement.can_trust(LIFE[member1], member2):
+				_total_trust += judgement.get_trust(LIFE[member1], member2)
+			else:
+				_total_danger += LIFE[member1]['know'][member2]['danger']
+	
+	return _total_trust,_total_danger
+
+def get_total_trust(group_id):
+	return get_status(group_id)[0]
+
+def get_total_danger(group_id):
+	return get_status(group_id)[1]
+
+def is_ready_to_camp(group_id):
+	_group = get_group(group_id)
+	
+	if get_total_trust(group_id) < 4:
+		return False
+		
+	if WORLD_INFO['ticks']-_group['last_updated'] >= len(_group['members'])*11:
+		return True
+	
+	return False
 
 def is_member(group_id, life_id):
 	_group = get_group(group_id)

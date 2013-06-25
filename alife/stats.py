@@ -7,13 +7,14 @@ import brain
 import logging
 import random
 
+MAX_WILLPOWER = 25
 MAX_INTROVERSION = 10
 MAX_SOCIABILITY = 25
 MAX_INTERACTION = 25
 MAX_CHARISMA = 20
 
 def init(life):
-	life['stats']['will'] = 25
+	life['stats']['will'] = random.randint(1, MAX_WILLPOWER)
 	life['stats']['sociability'] = random.randint(1, MAX_SOCIABILITY)
 	life['stats']['introversion'] = random.randint(1, MAX_INTROVERSION)
 	life['stats']['charisma'] = random.randint(1, MAX_CHARISMA)
@@ -55,8 +56,18 @@ def desires_conversation_with(life, life_id):
 	
 	return True
 
+def desires_to_create_group(life):
+	if life['group']:
+		return False
+	
+	if life['stats']['will'] >= MAX_WILLPOWER*.5:
+		return True
+	
+	return False
+
 def desires_group(life):
-	if life['group'] and judgement.judge_group(life, life['group'])>=get_minimum_group_score(life):
+	#judgement.judge_group(life, life['group'])>get_minimum_group_score(life):
+	if life['group'] and len(groups.get_group(life['group'])['members'])==1:
 		return False
 	
 	_trusted = sum([brain.knows_alife_by_id(life, t)['trust'] for t in judgement.get_trusted(life, visible=True)])

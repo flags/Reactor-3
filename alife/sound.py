@@ -295,13 +295,6 @@ def listen(life):
 			#_target = brain.knows_alife(life, event['alife'])['score']
 			logging.warning('target_needs_disarmed: Needs handling code.')
 		
-		elif event['gist'] == 'invite_to_group':
-			if life['state'] == 'working':
-				lfe.say(life, 'Sorry, I\'m busy.')
-			
-			lfe.memory(life, 'was invited to group',
-				target=event['from']['id'])
-		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		
