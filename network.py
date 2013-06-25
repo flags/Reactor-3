@@ -39,7 +39,9 @@ def parse_packet(packet):
 			
 			_sent_life = {'name': _life['name'],
 				'id': _life['id'],
+				'state': _life['state'],
 				'flags': _life['flags'],
+				'job': _life['job'],
 				'tempstor': _life['tempstor2'],
 				'know': _knows}
 			

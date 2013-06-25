@@ -10,7 +10,6 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_hidden
-import alife_follow
 import alife_combat
 import alife_group
 import alife_needs
@@ -45,7 +44,6 @@ MODULES = [alife_hide,
 	alife_manage_targets,
 	alife_combat,
 	alife_work,
-	alife_follow,
 	alife_needs,
 	alife_group]
 

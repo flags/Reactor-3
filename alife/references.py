@@ -75,12 +75,15 @@ def _find_best_unknown_reference(life, ref_type):
 	
 	return _best_reference
 
-def find_nearest_key_in_reference(life, reference, unknown=False):
-	_lowest = {'chunk_key': None, 'distance': 100}
+def find_nearest_key_in_reference(life, reference, unknown=False, ignore_current=False):
+	_lowest = {'chunk_key': None, 'distance': 9000}
 
 	for _key in reference:
 		if unknown and _key in life['known_chunks']:
 			continue
+		
+		if ignore_current and lfe.get_current_chunk_id(life) == _key:
+			print 'ignoring current'
 		
 		if not maps.get_chunk(_key)['ground']:
 			continue
