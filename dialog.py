@@ -348,6 +348,7 @@ def get_questions_to_ask(life, chosen):
 		
 		if memory['text'] == 'wants_founder_info':
 			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
+				print memory['camp']
 				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
 					'gist': 'who_founded_camp',
 					'camp': memory['camp'],
@@ -386,6 +387,14 @@ def get_questions_to_ask(life, chosen):
 			_topics.append({'text': 'Do you have anything like this?',
 				'gist': 'request_item',
 				'item': memory['item']})
+			
+			if 'target' in chosen:
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+		elif memory['text'] == 'ask_to_join_camp':
+			_topics.append({'text': 'Is it okay if I join this camp?',
+				'gist': 'ask_to_join_camp',
+				'camp': memory['camp'],
+				'memory': memory})
 			
 			if 'target' in chosen:
 				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
@@ -711,13 +720,33 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'invite_to_group':
 		if alife.stats.desires_group(LIFE[dialog['listener']]):
 			if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
-				_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'like': 1})
-				alife.groups.add_member(chosen['group'], dialog['listener'])
+				_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
 			else:
 				_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
 		else:
 			_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
+	
+	elif chosen['gist'] == 'join_group':
+		alife.groups.add_member(chosen['group'], dialog['speaker'])
+
+	elif chosen['gist'] == 'join_camp':
+		LIFE[dialog['speaker']]['camp'] = chosen['camp']
+	
+	elif chosen['gist'] == 'denied_from_camp':
+		lfe.memory(LIFE[dialog['listener']], 'denied from camp',
+		    camp=chosen['camp'],
+		    danger=3)
+	
+	elif chosen['gist'] == 'ask_to_join_camp':
+		#TODO: Implement: denied from camp
 		
+		if alife.judgement.can_trust(LIFE[dialog['listener']], dialog['speaker']):
+			_responses.append({'text': 'Sure.', 'gist': 'join_camp', 'camp': chosen['camp'], 'like': 1})
+		else:
+			_responses.append({'text': 'I\'ve only heard bad things about you.', 'gist': 'deny_from_camp', 'camp': chosen['camp'], 'dislike': 1})
+		
+		print 'YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO'
+	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	

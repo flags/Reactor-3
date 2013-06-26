@@ -216,8 +216,6 @@ def tick():
 			
 			if 'debug' in WORLD_INFO:
 				WORLD_INFO['debug'].quit()
-			
-			raise e
 
 if '--debug' in sys.argv:
 	_debug_host = network.DebugHost()

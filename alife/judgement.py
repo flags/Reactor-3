@@ -11,6 +11,7 @@ import stats
 import brain
 import raids
 import sight
+import camp
 
 import logging
 import numbers
@@ -474,6 +475,11 @@ def judge_camp(life, camp):
 		print life['name'],'2CROWDED'
 	else:
 		_score = _current_trust
+	
+	camp.get_controlling_group(camp_id)
+	if life['group'] and groups.get_group(life['group'])['camp']:
+		if CAMPS[groups.get_group(life['group'])['camp']] == CAMPS[life['camp']]['reference'] == camp:
+			_score += judge_group(life, life['group'])
 	
 	if stats.desires_to_create_camp(life):
 		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)

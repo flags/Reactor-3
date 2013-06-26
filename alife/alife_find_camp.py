@@ -4,6 +4,7 @@ import life as lfe
 
 import references
 import judgement
+import groups
 import brain
 import camps
 import stats
@@ -30,21 +31,24 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		_unfounded_camp = camps.find_best_unfounded_camp(life)
 		
 		if _unfounded_camp['score'] >= stats.get_minimum_camp_score(life):
-			#brain.store_in_memory(life, 'explore_camp', _unfounded_camp['camp'])
-			print 'YO!!!! LETS CAMP, DUDE!'
+			brain.store_in_memory(life, 'explore_camp', None)
+			print life['name'],'YO!!!! LETS CAMP, DUDE!'
 			return RETURN_VALUE
 		elif _unfounded_camp['camp']:
 			brain.store_in_memory(life, 'explore_camp', _unfounded_camp['camp'])
 			print 'only interested'
 			return RETURN_VALUE
+	else:
+		if life['camp']:
+			return False
 	
 	return False
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_to_explore = brain.retrieve_from_memory(life, 'explore_camp')
 	if _to_explore:
-		print 'LOOKING AT CAMP'
-		_closest_key =  references.find_nearest_key_in_reference(life, _to_explore, ignore_current=True)
+		print life['name'],'LOOKING AT CAMP'
+		_closest_key =  references.find_nearest_key_in_reference(life, _to_explore, unknown=True)
 		_chunk = maps.get_chunk(_closest_key)
 		
 		lfe.clear_actions(life)
@@ -58,4 +62,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if not _best_camp:
 		return False
 	
-	camps.found_camp(life, _best_camp, announce=True)
+	camps.found_camp(life, _best_camp, announce=False)
+	if life['group'] and groups.is_leader(life['group'], life['id']):
+		groups.set_camp(life['group'], camps.is_in_any_camp(life['pos']))

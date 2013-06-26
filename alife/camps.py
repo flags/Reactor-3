@@ -37,9 +37,12 @@ def find_best_unfounded_camp(life):
 	return _best_camp
 
 def _get_nearest_known_camp(life):
-	_nearest_camp = {'score': -1, 'camp': None}
+	_nearest_camp = {'camp': None, 'score': -1}
 	
 	for camp in [life['known_camps'][i] for i in life['known_camps']]:
+		if lfe.get_memory(life, matches={'camp': camp, 'text': 'denied from camp'}):
+			continue
+		
 		_key = references.find_nearest_key_in_reference(life, camp['reference'])
 		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
 		
@@ -71,7 +74,7 @@ def found_camp(life, reference, announce=False):
 		'time_founded': WORLD_INFO['ticks'],
 		'info': {'population': 0},
 		'stats': {},
-	     'raid': {}}
+		'raid': {}}
 	
 	if not life['known_camps']:
 		life['camp'] = _camp['id']
@@ -85,10 +88,27 @@ def found_camp(life, reference, announce=False):
 def unfound_camp(life, camp):
 	pass
 
-def get_all_alife_in_camp(life, camp):
-	#TODO: We should write a function to do this for references, then filter the results here
-	#TODO: Can we just add a is_member funtion?
-	pass
+def get_controlling_groups(camp_id):
+	_groups = {}
+	
+	for life in [LIFE[l] for l in get_all_alife_in_camp(camp_id)]:
+		if not life['group']:
+			continue
+		
+		if life['group'] in _groups:
+			_groups['group']['score'] += 1
+		else:
+			_groups['group'] = {'score': 1, 'id': life['group']}
+	
+	return _groups
+
+def get_controlling_group(camp_id):
+	_groups = get_controlling_groups(camp_id)
+	
+	return [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+
+def get_all_alife_in_camp(camp_id):
+	return [life['id'] for life in LIFE.values() if is_in_camp(life, CAMPS[camp_id])]
 
 def has_discovered_camp(life, camp):
 	if camp in life['known_camps']:
@@ -107,6 +127,13 @@ def discover_camp(life, camp):
 
 def is_in_camp(life, camp):
 	return references.life_is_in_reference(life, camp['reference'])
+
+def is_in_any_camp(position):
+	for camp in CAMPS.values():
+		if references.is_in_reference(position, camp['reference']):
+			return camp['id']
+	
+	return False		
 
 def position_is_in_camp(position, camp):
 	return references.is_in_reference(position, camp['reference'])

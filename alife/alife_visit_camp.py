@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import judgement
 import camps
 
@@ -20,13 +22,30 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		RETURN_VALUE = STATE_CHANGE
 	
 	#Founding didn't work out...
-	if life['known_camps'] and not life['camp']:
-		return RETURN_VALUE
+	if not life['known_camps'] or life['camp']:
+		return False
 	
-	return False	
+	
+	
+	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	_camp = camps.get_nearest_known_camp(life)
 	
-	life['camp'] = _camp['id']
+	if camps.is_in_camp(life, _camp):
+		lfe.create_question(life,
+			'wants_founder_info',
+			{'camp': _camp['id']},
+			lfe.get_memory,
+			{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
+		
+		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'}):
+			lfe.create_question(life,
+			    'ask_to_join_camp',
+			    {'camp': _camp['id']},
+			    lfe.get_memory,
+			    {'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
+			
+	
+	#life['camp'] = _camp['id']
 	print 'lookan'

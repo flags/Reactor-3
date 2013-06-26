@@ -7,6 +7,7 @@
     <ul id="group">
     <li><b>Leader: </b> <a href="/life/{{ group.leader }}">{{ group.leader }}</a></li>
     <li><b>Creator: </b> <a href="/life/{{ group.creator }}">{{ group.creator }}</a></li>
+    <li><b>Camp: </b> <a href="/camp/{{ group.camp }}">{{ group.camp }}</a></li>
     <li><b>Members: </b>
         {% for member in group.members %}
             <a href="/life/{{ member }}">{{ member }}</a>

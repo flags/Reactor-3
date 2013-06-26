@@ -37,11 +37,17 @@ def parse_packet(packet):
 					
 					_knows[entry['life']['id']][key] = _life['know'][entry['life']['id']][key]
 			
+			if _life['job']:
+				_job = _life['job']['gist']
+			else:
+				_job = None
+			
 			_sent_life = {'name': _life['name'],
 				'id': _life['id'],
 				'state': _life['state'],
 				'flags': _life['flags'],
-				'job': _life['job'],
+				'job': _job,
+				'group': _life['group'],
 				'tempstor': _life['tempstor2'],
 				'know': _knows}
 			
