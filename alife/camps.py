@@ -60,6 +60,13 @@ def get_nearest_known_camp(life):
 def get_distance_to_nearest_known_camp(life):
 	return _get_nearest_known_camp(life)['score']
 
+def get_camp_via_reference(reference):
+	for camp in CAMPS.values():
+		if camp['reference'] == reference:
+			return camp['id']
+	
+	return None
+
 def get_camp(camp_id):
 	if not camp_id in CAMPS:
 		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)

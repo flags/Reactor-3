@@ -64,4 +64,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	camps.found_camp(life, _best_camp, announce=False)
 	if life['group'] and groups.is_leader(life['group'], life['id']):
-		groups.set_camp(life['group'], camps.is_in_any_camp(life['pos']))
+		groups.set_camp(life['group'], camps.get_camp_via_reference(_best_camp))

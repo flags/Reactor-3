@@ -11,7 +11,7 @@ import stats
 import brain
 import raids
 import sight
-import camp
+import camps
 
 import logging
 import numbers
@@ -476,14 +476,12 @@ def judge_camp(life, camp):
 	else:
 		_score = _current_trust
 	
-	camp.get_controlling_group(camp_id)
-	if life['group'] and groups.get_group(life['group'])['camp']:
-		if CAMPS[groups.get_group(life['group'])['camp']] == CAMPS[life['camp']]['reference'] == camp:
-			_score += judge_group(life, life['group'])
+	_camp = camps.get_camp_via_reference(camp)
+	if _camp:
+		_score += judge_group(life, camps.get_controlling_group(_camp))
 	
 	if stats.desires_to_create_camp(life):
 		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)
-		print 'desires',(len(camp)*_percent_known)*_score,life['group']
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))

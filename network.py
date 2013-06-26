@@ -37,6 +37,16 @@ def parse_packet(packet):
 					
 					_knows[entry['life']['id']][key] = _life['know'][entry['life']['id']][key]
 			
+			_memory = []
+			for entry in _life['memory']:
+				if 'question' in entry and entry['question']:
+					_q = entry.copy()
+					del _q['answer_callback']
+					_memory.append(_q)
+					continue
+				
+				_memory.append(entry)
+			
 			if _life['job']:
 				_job = _life['job']['gist']
 			else:
