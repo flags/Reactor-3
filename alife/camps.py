@@ -21,12 +21,16 @@ def find_nearest_unfounded_camp(life):
 	
 	return _nearest_building['reference']
 
-def find_best_unfounded_camp(life):
+def find_best_unfounded_camp(life, ignore_fully_explored=False):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
 	
 	_best_camp = {'camp': None, 'score': 0}
 	for camp in REFERENCE_MAP['buildings']:
 		if camp in _founded_camps:
+			continue
+		
+		if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
+			print 'ALREADY EXPLORED THIS' * 50
 			continue
 	
 		_score = judgement.judge_camp(life, camp)

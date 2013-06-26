@@ -27,7 +27,7 @@ def desires_job(life):
 			
 		return False
 	
-	if life['stats']['will']>random.randint(0, 100-(life['stats']['will']/2)):
+	if life['stats']['will']>random.randint(0, MAX_WILLPOWER-(life['stats']['will']/2)):
 		return True
 	
 	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
@@ -117,4 +117,14 @@ def wants_group_members(life):
 		return True
 	
 	return False
+
+def will_obey(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
 	
+	if not _know:
+		return False
+	
+	if judgement.can_trust(life, life_id):
+		return True
+	
+	return False

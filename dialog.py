@@ -728,9 +728,11 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'join_group':
 		alife.groups.add_member(chosen['group'], dialog['speaker'])
+		lfe.memory(LIFE[dialog['speaker']], 'join_group', group=chosen['group'])
 
 	elif chosen['gist'] == 'join_camp':
 		LIFE[dialog['speaker']]['camp'] = chosen['camp']
+		lfe.memory(LIFE[dialog['speaker']], 'join_camp', camp=chosen['camp'])
 	
 	elif chosen['gist'] == 'denied_from_camp':
 		lfe.memory(LIFE[dialog['listener']], 'denied from camp',

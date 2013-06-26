@@ -28,7 +28,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		RETURN_VALUE = STATE_CHANGE
 	
 	if stats.desires_to_create_camp(life):
-		_unfounded_camp = camps.find_best_unfounded_camp(life)
+		_unfounded_camp = camps.find_best_unfounded_camp(life, ignore_fully_explored=True)
 		
 		if _unfounded_camp['score'] >= stats.get_minimum_camp_score(life):
 			brain.store_in_memory(life, 'explore_camp', None)
@@ -49,6 +49,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if _to_explore:
 		print life['name'],'LOOKING AT CAMP'
 		_closest_key =  references.find_nearest_key_in_reference(life, _to_explore, unknown=True)
+		
 		_chunk = maps.get_chunk(_closest_key)
 		
 		lfe.clear_actions(life)

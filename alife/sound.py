@@ -6,6 +6,7 @@ import combat
 import raids
 import brain
 import camps
+import stats
 import maps
 import jobs
 
@@ -30,6 +31,11 @@ def listen(life):
 				print 'Got job:', event['job']['gist']
 				jobs.add_job_candidate(event['job'], life)
 				jobs.process_job(event['job'])
+		
+		elif event['gist'] == 'follow':
+			if stats.will_obey(life, event['from']['id']):
+				brain.flag_alife(life, event['from'], 'follow')
+				print 'FLAGGING FOR FOLLOW'
 		
 		elif event['gist'] == 'surrender':
 			_found_related_job = False

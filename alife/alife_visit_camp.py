@@ -25,8 +25,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['known_camps'] or life['camp']:
 		return False
 	
-	
-	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
@@ -41,10 +39,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'}):
 			lfe.create_question(life,
-			    'ask_to_join_camp',
-			    {'camp': _camp['id']},
-			    lfe.get_memory,
-			    {'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
+				'ask_to_join_camp',
+				{'camp': _camp['id']},
+				lfe.get_memory,
+				[{'text': 'join_camp', 'camp': _camp['id'], 'founder': '*'},
+				{'text': 'deny_from_camp', 'camp': _camp['id'], 'founder': '*'}],
+				match_gist_only=True,
+				answer_all=True)
 			
 	
 	#life['camp'] = _camp['id']

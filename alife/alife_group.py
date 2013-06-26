@@ -16,7 +16,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if life['group'] and life['id'] == groups.get_group(life['group'])['leader']:
 		if stats.desires_to_create_camp(life) and groups.is_ready_to_camp(life['group']):
 			speech.announce(life, 'follow', group=life['group'])
-			print '*' * 10
+			print '*' * 10, life['group']
 			#_j = jobs.create_job(life, 'follow to camp')
 			#jobs.add_detail_to_job(_j, 'target', life['id'])
 			#

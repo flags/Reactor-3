@@ -715,16 +715,22 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def create_question(life, gist, question, callback, answer_match):
+def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False):
 	question['question'] = True
 	question['answer_callback'] = callback
+	if not isinstance(answer_match, list):
+		answer_match = [answer_match]
+	
 	question['answer_match'] = answer_match
 	_match = {'text': gist}
-	_match.update(question)
+	
+	if not match_gist_only:
+		_match.update(question)
 	
 	if get_memory(life, matches=_match):
 		return False
 	
+	question['answer_all'] = answer_all
 	memory(life, gist, question)
 	
 	logging.debug('Creating question...')
@@ -733,6 +739,9 @@ def get_questions(life, target=None, no_filter=False):
 	_questions = []
 	
 	for question in get_memory(life, matches={'question': True}):
+		if question['answered']:
+			continue
+		
 		#TODO: no_filter kills the loop entirely?
 		if not no_filter and target and target in question['ignore']:
 			continue

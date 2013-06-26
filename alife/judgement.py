@@ -447,12 +447,7 @@ def judge_camp(life, camp):
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
 	
-	_known_chunks_of_camp = []
-	for _chunk_key in camp:
-		if not _chunk_key in life['known_chunks']:
-			continue
-		
-		_known_chunks_of_camp.append(_chunk_key)
+	_known_chunks_of_camp = references.get_known_chunks_in_reference(life, camp)
 	
 	_current_population = 0
 	_current_trust = 0

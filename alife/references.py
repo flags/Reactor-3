@@ -237,6 +237,16 @@ def is_in_any_reference(position):
 def life_is_in_reference(life, reference):
 	return is_in_reference(life['pos'], reference)
 
+def get_known_chunks_in_reference(life, reference):
+	_known_chunks = []
+	for _chunk_key in reference:
+		if not _chunk_key in life['known_chunks']:
+			continue
+		
+		_known_chunks.append(_chunk_key)
+	
+	return _known_chunks
+
 def find_nearest_road(position, skip_unknown=True, ignore_array=[]):
 	
 	return _find_nearest_reference_exact(position, 'roads')

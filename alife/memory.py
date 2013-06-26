@@ -11,16 +11,24 @@ def process_questions(life):
 		_answered = False
 		#_matches = {requirement: '*' for requirement in QUESTIONS_ANSWERS[question['text']]}
 		
-		for memory in lfe.get_memory(life, matches=question['answer_match']):
-			if question['answer_callback'](life, question['answer_match']):
-				question['answered'].append(memory['id'])
-				_answered = True
+		for match in question['answer_match']:
+			for memory in lfe.get_memory(life, matches=match):
+				if question['answer_callback'](life, match):
+					question['answered'].append(memory['id'])
+					_answered = True
 		
 		if _answered:
 			if len(question['answered']) == 1:
 				logging.debug('%s answered question: %s' % (' '.join(life['name']), memory['text']))
 			else:
 				logging.debug('%s added more detail to question: %s' % (' '.join(life['name']), memory['text']))
+			
+			if question['answer_all']:
+				for _question in lfe.get_questions(life):
+					if not question['gist'] == _question['gist']:
+						continue
+					
+					_question['answered'].extend(question['answered'])
 
 def rescore_history(life):
 	for memory in life['memory']:
