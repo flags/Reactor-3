@@ -37,8 +37,12 @@ def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
+	_group = get_group(group_id)
+	for member in _group['members']:
+		brain.meet_alife(LIFE[member], LIFE[life_id])
+	
 	LIFE[life_id]['group'] = group_id
-	get_group(group_id)['members'].append(life_id)
+	_group['members'].append(life_id)
 	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), SETTINGS['groupid']-1))
 

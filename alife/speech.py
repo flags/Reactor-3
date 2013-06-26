@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import language
 import dialog
+import groups
 import sight
 
 import logging
@@ -57,10 +58,12 @@ def receive(life, target, gist):
 		
 	return True
 
-def announce(life, gist, public=False, **kvargs):
+def announce(life, gist, public=False, group=None, **kvargs):
 	"""Sends `gist` to any known ALife. If `public`, then send to everyone."""
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
+	elif group:
+		_announce_to = [LIFE[i] for i in groups.get_group(group)['members'] if not i == life['id']]
 	else:
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_target_dangerous(life, i)]
 	
@@ -72,7 +75,7 @@ def announce(life, gist, public=False, **kvargs):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
 			continue
 		
-		if not sight.can_see_position(life, target['pos']):
+		if not sight.can_see_position(life, target['pos']) and not lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 			#print life['name'],'cant see',target['id']
 			continue
 	

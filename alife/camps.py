@@ -103,9 +103,9 @@ def get_controlling_groups(camp_id):
 			continue
 		
 		if life['group'] in _groups:
-			_groups['group']['score'] += 1
+			_groups[life['group']]['score'] += 1
 		else:
-			_groups['group'] = {'score': 1, 'id': life['group']}
+			_groups[life['group']] = {'score': 1, 'id': life['group']}
 	
 	return _groups
 

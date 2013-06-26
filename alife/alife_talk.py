@@ -100,7 +100,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_dialog = life['dialogs'][0]
 		dialog.tick(life, _dialog)
 	
-	if not judgement.is_safe(life) and life['known_camps'] and camps.get_distance_to_nearest_known_camp(life)<30:
+	if not judgement.is_safe(life) and life['camp'] and camps.is_in_camp(life, life['camp']):
 		_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 		
 		if _combat_targets:
@@ -131,9 +131,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if brain.has_shared_item_with(life, ai['life'], item['item']):
 				continue
 
-			#_item_chunk_key = '%s,%s' % ((item['item']['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
-			#	(item['item']['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
-
 			if not item['item']['uid'] in ITEMS:
 				continue
 
@@ -142,28 +139,3 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				'share_item_info',
 				item=brain.get_remembered_item(life, item['item']),
 				matches=[{'id': ai['life']['id']}])
-			#speech.communicate(life,
-				#'share_chunk_info',
-				#chunk_key=_item_chunk_key,
-				#matches=[{'id': ai['life']['id']}])
-			#speech.send(life, ai['life'], 'share_chunk_info')e
-		
-		#_nearest_camp = camps.get_nearest_known_camp(life)
-		
-		#if _nearest_camp and camps.is_in_camp(life, _nearest_camp):
-			#if not speech.has_sent(life, ai['life'], 'welcome_to_camp') and _nearest_camp['founder'] == life['id']:
-				#if WORLD_INFO['ticks']-_nearest_camp['time_discovered']<=1000:
-					#msg = 'Welcome to camp, new guy!'
-				#else:
-					#msg = 'Welcome back to camp.'
-
-				#speech.communicate(life,
-						#'welcome_to_camp',
-						#msg=msg,
-						#matches=[{'id': ai['life']['id']}])
-				#speech.send(life, ai['life'], 'welcome_to_camp')
-
-	#_all_targets = targets_seen
-	#_all_targets.extend(targets_not_seen)
-	#for ai in _all_targets:
-		#speech.announce(life, 'under_attack', attacker=ai['who']['life'])

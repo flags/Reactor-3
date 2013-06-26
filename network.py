@@ -2,6 +2,8 @@ from globals import *
 
 import life as lfe
 
+import alife
+
 import threading
 import logging
 import socket
@@ -66,6 +68,15 @@ def parse_packet(packet):
 			return json.dumps(LIFE[_packet['value']]['memory'])
 		elif _packet['what'] == 'life_list':
 			return json.dumps(LIFE.keys())
+		elif _packet['what'] == 'camp':
+			if not _packet['value'] in CAMPS:
+				return json.dumps({})
+			
+			_camp = CAMPS[_packet['value']]
+			_send_camp = _camp.copy()
+			_send_camp['groups'] = alife.camps.get_controlling_groups(_camp['id'])
+			
+			return json.dumps(_send_camp)
 
 
 class DebugHost(threading.Thread):

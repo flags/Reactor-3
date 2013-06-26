@@ -31,6 +31,12 @@ def life(life_id):
 	
 	return render_template('life.html', life=life, knows=knows)
 
+@app.route('/camp/<camp_id>')
+def camp(camp_id):
+	camp = request('camp', value=int(camp_id))
+	
+	return render_template('camp.html', camp=camp)
+
 @app.route('/group/<group_id>')
 def group(group_id):
 	groups = request('groups')

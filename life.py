@@ -492,7 +492,6 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 	
 	for ai in [LIFE[i] for i in LIFE]:
 		#TODO: Do we really need to support more than one match?
-		#TODO: Handle radio
 		#TODO: can_hear
 		if ai['id'] == life['id']:
 			continue

@@ -15,7 +15,7 @@ MAX_CHARISMA = 20
 
 def init(life):
 	life['stats']['will'] = random.randint(1, MAX_WILLPOWER)
-	life['stats']['sociability'] = random.randint(1, MAX_SOCIABILITY)
+	life['stats']['sociability'] = random.randint(15, MAX_SOCIABILITY)
 	life['stats']['introversion'] = random.randint(1, MAX_INTROVERSION)
 	life['stats']['charisma'] = random.randint(1, MAX_CHARISMA)
 
