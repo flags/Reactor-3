@@ -65,15 +65,21 @@ def desires_to_create_group(life):
 	
 	return False
 
+def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
+	if with_new_group_in_mind:
+		if judgement.judge_group(life, with_new_group_in_mind)>get_minimum_group_score(life):
+			return True
+	
+	return False
+
 def desires_group(life, group_id):
-	#judgement.judge_group(life, life['group'])>get_minimum_group_score(life):
-	if life['group'] and len(groups.get_group(life['group'])['members'])==1:
-		return False
+	if life['group']:
+		return wants_to_abandon_group(life, life['group'], with_new_group_in_mind=group_id)
 	
 	if judgement.judge_group(life, group_id)>get_minimum_group_score(life):
 		return True
 	
-	return True
+	return False
 
 def desires_to_create_camp(life):
 	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life['group'], life['id']):
@@ -90,7 +96,9 @@ def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
 
 def get_minimum_group_score(life):
-	#TODO: Placeholder
+	if life['group']:
+		return judgement.judge_group(life, life['group'])
+	
 	return 0
 
 def get_max_group_size(life):

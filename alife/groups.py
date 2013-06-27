@@ -18,7 +18,6 @@ def create_group(life, add_creator=True):
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
-	SETTINGS['groupid'] += 1
 	GROUPS[SETTINGS['groupid']] = _group
 	
 	lfe.memory(life, 'created group', group=SETTINGS['groupid'])
@@ -26,7 +25,9 @@ def create_group(life, add_creator=True):
 	
 	if add_creator:
 		add_member(SETTINGS['groupid'], life['id'])
-		_group['leader'] = life['id']
+		set_leader(SETTINGS['groupid'], life['id'])
+	
+	SETTINGS['groupid'] += 1
 
 def get_group(group_id):
 	if not group_id in GROUPS:
@@ -55,6 +56,51 @@ def remove_member(group_id, life_id):
 	
 	if not is_member(group_id, life_id):
 		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
+	
+	_group['members'].remove(life_id)
+	
+	reconfigure_group(group_id)
+
+def reconfigure_group(group_id):
+	_group = get_group(group_id)
+	
+	if not _group['members']:
+		delete_group(group_id)
+		return False
+	
+	if not is_member(group_id, _group['leader']):
+		logging.debug('Leader \'%s\' is leaving group #%s' % (' '.join(LIFE[_group['leader']]['name']), group_id))
+	
+	_successor = find_successor(group_id, assign=True)
+	
+	if _successor:
+		logging.debug('\'%s\' is now leader of group #%s' % (' '.join(LIFE[_successor['name']]), group_id))
+	else:
+		logging.error('No successor could be found for group #%s (THIS SHOULD NOT HAPPEN)' % group_id)
+
+def find_successor(group_id, assign=False):
+	_group = get_group(group_id)
+	_members = {l: 0 for l in _group['members']}
+	
+	for member1 in _group['members']:
+		for member2 in _group['members']:
+			if member1 == member2:
+				continue
+			
+			_members[member2] += judgement.get_trust(LIFE[member1], member2)
+	
+	_highest = {'score': 0, 'id': None}
+	for entry in _members:
+		if not _highest['id'] or _members[entry] > _highest['score']:
+			_highest['id'] = entry
+			_highest['score'] = _members[entry]
+	
+	if _highest['id'] and assign:
+		set_leader(group_id, _highest['id'])
+	elif assign:
+		raise Exception('No successor found, but `assign` is True. Stopping.')
+	
+	return _highest['id']
 
 def assign_job(life, group_id, job):
 	_group = get_group(life['group'])
@@ -73,6 +119,12 @@ def get_camp(group_id):
 
 def set_camp(group_id, camp_id):
 	get_group(group_id)['camp'] = camp_id
+
+def set_leader(group_id, life_id):
+	get_group(group_id)['leader'] = life_id
+	
+	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
+	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
 
 def get_combat_score(group_id, potential=False):
 	_group = get_group(group_id)
@@ -147,5 +199,6 @@ def delete_group(group_id):
 	for member in get_group(group_id)['members']:
 		remove_member(group_id, member)
 		LIFE[member]['group'] = None
+		logging.warning('Forcing removal of member \'%s\' from non-empty group #%s.' % (' '.join(LIFE[member]['name']), group_id)) 
 	
 	del GROUPS[group_id]
