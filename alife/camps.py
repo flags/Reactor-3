@@ -30,7 +30,6 @@ def find_best_unfounded_camp(life, ignore_fully_explored=False):
 			continue
 		
 		if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
-			print 'ALREADY EXPLORED THIS' * 50
 			continue
 	
 		_score = judgement.judge_camp(life, camp)

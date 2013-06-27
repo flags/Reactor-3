@@ -735,11 +735,11 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 	
 	logging.debug('Creating question...')
 
-def get_questions(life, target=None, no_filter=False):
+def get_questions(life, target=None, no_filter=False, skip_answered=True):
 	_questions = []
 	
 	for question in get_memory(life, matches={'question': True}):
-		if question['answered']:
+		if skip_answered and question['answered']:
 			continue
 		
 		#TODO: no_filter kills the loop entirely?

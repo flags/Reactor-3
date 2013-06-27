@@ -83,7 +83,7 @@ def _can_see_position(pos1, pos2):
 		if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
 			return False
 	
-	return True
+	return _line
 
 def can_see_position(life, pos, distance=True):
 	"""Returns `true` if the life can see a certain position."""
@@ -102,7 +102,7 @@ def can_see_position(life, pos, distance=True):
 		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
 			return False
 	
-	return True
+	return _line
 
 def can_see_target(life, target_id):
 	_knows = LIFE[target_id]

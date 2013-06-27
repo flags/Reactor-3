@@ -19,8 +19,10 @@ def process_questions(life):
 		
 		if _answered:
 			if len(question['answered']) == 1:
+				lfe.memory(life, 'answered question', question=question['text'])
 				logging.debug('%s answered question: %s' % (' '.join(life['name']), memory['text']))
 			else:
+				lfe.memory(life, 'added detail to answered question', question=question['text'])
 				logging.debug('%s added more detail to question: %s' % (' '.join(life['name']), memory['text']))
 			
 			if question['answer_all']:

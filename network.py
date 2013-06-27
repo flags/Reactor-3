@@ -39,16 +39,6 @@ def parse_packet(packet):
 					
 					_knows[entry['life']['id']][key] = _life['know'][entry['life']['id']][key]
 			
-			_memory = []
-			for entry in _life['memory']:
-				if 'question' in entry and entry['question']:
-					_q = entry.copy()
-					del _q['answer_callback']
-					_memory.append(_q)
-					continue
-				
-				_memory.append(entry)
-			
 			if _life['job']:
 				_job = _life['job']['gist']
 			else:
@@ -65,9 +55,21 @@ def parse_packet(packet):
 			
 			return json.dumps(_sent_life)
 		elif _packet['what'] == 'memory':
-			return json.dumps(LIFE[_packet['value']]['memory'])
+			_memory = []
+			for entry in LIFE[_packet['value']]['memory']:
+				if 'question' in entry and entry['question']:
+					_q = entry.copy()
+					del _q['answer_callback']
+					_memory.append(_q)
+					continue
+				
+				_memory.append(entry)
+			
+			return json.dumps(_memory)
 		elif _packet['what'] == 'life_list':
 			return json.dumps(LIFE.keys())
+		elif _packet['what'] == 'camp_list':
+			return json.dumps(CAMPS.keys())
 		elif _packet['what'] == 'camp':
 			if not _packet['value'] in CAMPS:
 				return json.dumps({})

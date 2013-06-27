@@ -3,6 +3,7 @@ from globals import *
 
 import numbers
 import logging
+import alife
 import numpy
 import tiles
 import time
@@ -173,84 +174,91 @@ def walk_path(life, path):
 class Astar:
 	def __init__(self, start=None, end=None, omap=None, dist=None):
 		#create_path({}, start, end, omap=omap, dist=dist)
-		self.map = []
-		self.omap = omap
-
-		self.start = tuple(start)
-		self.end = tuple(end)
-		self.olist = [self.start]
-		self.goals = []
-
-		self.clist = []
-
-		_s = time.time()
-
-		if not dist:
-			dist = numbers.distance(start,end)+1
-
-		if dist<75:
-			dist=75
-
-		_x_min = 0#numbers.clip(start[0]-dist,0,MAP_SIZE[0])
-		_x_max = numbers.clip(start[0]+dist, 0, MAP_SIZE[0])
-		_y_min = 0#numbers.clip(start[1]-dist,0,MAP_SIZE[1])
-		_y_max = numbers.clip(start[1]+dist, 0, MAP_SIZE[1])
-
-		self.size = (_x_max,_y_max)
-
-		#Let's make a few of these
-		self.fmap = numpy.zeros((self.size[1],self.size[0]))
-		self.gmap = numpy.zeros((self.size[1],self.size[0]))
-		self.hmap = numpy.zeros((self.size[1],self.size[0]))
-		self.pmap = []
-		self.tmap = numpy.zeros((MAP_SIZE[1],MAP_SIZE[0]))
-		for x in range(self.size[0]):
-			self.pmap.append([0] * self.size[1])
-
-		#Create our map
-		self.map = numpy.ones((self.size[1],self.size[0]))
-
-		for _x in xrange(self.size[0]):
-			_map_x_pos = _x+_x_min
-			for _y in xrange(self.size[1]):
-				_map_y_pos = _y+_y_min
-
-				if _map_x_pos >= MAP_SIZE[0] or _map_y_pos >= MAP_SIZE[1]:
-					continue
-
-				#Can't walk if there's no ground beneath this position
-				if not self.omap[_map_x_pos][_map_y_pos][self.start[2]]:
-					self.map[_y,_x] = -2
-
-					#TODO: Will probably need this at some point (for falling risk?)
-					#for i in xrange(1,self.start[2]+1):
-					#	if not self.omap[x][y][self.start[2]-1-i]:
-					#		self.map[y,x] = -1-i
-					#		
-					#		break
-
-				#But we can climb to this position if there is something to climb on
-				if self.omap[_map_x_pos][_map_y_pos][self.start[2]+1]:
-					#TODO: Change this back to 2 :+)
-					self.map[_y,_x] = 0#2
-
-					#Not if there's a tile above the position we'd be climing to!
-					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
-						self.map[_y,_x] = 0
-
-		start = (start[0]-_x_min,start[1]-_y_min)
-
-		#Calculate our starting node
-		self.hmap[start[1],start[0]] = (abs(self.start[0]-end[0])+abs(self.start[1]-end[1]))*10
-
-		self.fmap[self.start[1],self.start[0]] = self.hmap[self.start[1],self.start[0]]
-
-		#init time 0.00857901573181
-		#print 'init time',time.time()-_s
-
+		_line = alife.sight._can_see_position(start, end)
 		self.path = []
-
-		self.calculate()
+		
+		if _line:
+			for pos in _line:
+				self.path.append((pos[0], pos[1], 0))
+		else:
+			self.map = []
+			self.omap = omap
+	
+			self.start = tuple(start)
+			self.end = tuple(end)
+			self.olist = [self.start]
+			self.goals = []
+	
+			self.clist = []
+	
+			_s = time.time()
+	
+			if not dist:
+				dist = numbers.distance(start,end)+1
+	
+			if dist<75:
+				dist=75
+	
+			_x_min = 0#numbers.clip(start[0]-dist,0,MAP_SIZE[0])
+			_x_max = numbers.clip(start[0]+dist, 0, MAP_SIZE[0])
+			_y_min = 0#numbers.clip(start[1]-dist,0,MAP_SIZE[1])
+			_y_max = numbers.clip(start[1]+dist, 0, MAP_SIZE[1])
+	
+			self.size = (_x_max,_y_max)
+	
+			#Let's make a few of these
+			self.fmap = numpy.zeros((self.size[1],self.size[0]))
+			self.gmap = numpy.zeros((self.size[1],self.size[0]))
+			self.hmap = numpy.zeros((self.size[1],self.size[0]))
+			self.pmap = []
+			self.tmap = numpy.zeros((MAP_SIZE[1],MAP_SIZE[0]))
+			for x in range(self.size[0]):
+				self.pmap.append([0] * self.size[1])
+	
+			#Create our map
+			self.map = numpy.ones((self.size[1],self.size[0]))
+	
+			for _x in xrange(self.size[0]):
+				_map_x_pos = _x+_x_min
+				for _y in xrange(self.size[1]):
+					_map_y_pos = _y+_y_min
+	
+					if _map_x_pos >= MAP_SIZE[0] or _map_y_pos >= MAP_SIZE[1]:
+						continue
+	
+					#Can't walk if there's no ground beneath this position
+					if not self.omap[_map_x_pos][_map_y_pos][self.start[2]]:
+						self.map[_y,_x] = -2
+	
+						#TODO: Will probably need this at some point (for falling risk?)
+						#for i in xrange(1,self.start[2]+1):
+						#	if not self.omap[x][y][self.start[2]-1-i]:
+						#		self.map[y,x] = -1-i
+						#		
+						#		break
+	
+					#But we can climb to this position if there is something to climb on
+					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+1]:
+						#TODO: Change this back to 2 :+)
+						self.map[_y,_x] = 0#2
+	
+						#Not if there's a tile above the position we'd be climing to!
+						if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
+							self.map[_y,_x] = 0
+	
+			start = (start[0]-_x_min,start[1]-_y_min)
+	
+			#Calculate our starting node
+			self.hmap[start[1],start[0]] = (abs(self.start[0]-end[0])+abs(self.start[1]-end[1]))*10
+	
+			self.fmap[self.start[1],self.start[0]] = self.hmap[self.start[1],self.start[0]]
+	
+			#init time 0.00857901573181
+			#print 'init time',time.time()-_s
+	
+			self.path = []
+	
+			self.calculate()
 
 	def calculate(self):
 		if self.map[self.end[1],self.end[0]] == 0:

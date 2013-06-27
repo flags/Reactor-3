@@ -65,16 +65,13 @@ def desires_to_create_group(life):
 	
 	return False
 
-def desires_group(life):
+def desires_group(life, group_id):
 	#judgement.judge_group(life, life['group'])>get_minimum_group_score(life):
 	if life['group'] and len(groups.get_group(life['group'])['members'])==1:
 		return False
 	
-	_trusted = sum([brain.knows_alife_by_id(life, t)['trust'] for t in judgement.get_trusted(life, visible=True)])
-	_not_trusted = sum([brain.knows_alife_by_id(life, t)['trust'] for t in judgement.get_untrusted(life, visible=True)])
-	
-	if _trusted < _not_trusted:
-		return False
+	if judgement.judge_group(life, group_id)>get_minimum_group_score(life):
+		return True
 	
 	return True
 
@@ -110,6 +107,9 @@ def get_minimum_camp_score(life):
 
 def wants_group_members(life):
 	if not life['group']:
+		return False
+	
+	if not groups.is_leader(life['group'], life['id']):
 		return False
 	
 	_group = groups.get_group(life['group'])

@@ -21,6 +21,7 @@ def create_group(life, add_creator=True):
 	SETTINGS['groupid'] += 1
 	GROUPS[SETTINGS['groupid']] = _group
 	
+	lfe.memory(life, 'created group', group=SETTINGS['groupid'])
 	logging.debug('%s created group: %s' % (' '.join(life['name']), SETTINGS['groupid']))
 	
 	if add_creator:
@@ -37,6 +38,9 @@ def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
+	if LIFE[life_id]['group']:
+		remove_member(LIFE[life_id]['group'], life_id)
+	
 	_group = get_group(group_id)
 	for member in _group['members']:
 		brain.meet_alife(LIFE[member], LIFE[life_id])
@@ -45,6 +49,12 @@ def add_member(group_id, life_id):
 	_group['members'].append(life_id)
 	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), SETTINGS['groupid']-1))
+
+def remove_member(group_id, life_id):
+	_group = get_group(group_id)
+	
+	if not is_member(group_id, life_id):
+		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 
 def assign_job(life, group_id, job):
 	_group = get_group(life['group'])
@@ -132,12 +142,6 @@ def is_leader(group_id, life_id):
 		return True
 	
 	return False
-
-def remove_member(group_id, life_id):
-	_group = get_group(group_id)
-	
-	if not is_member(group_id, life_id):
-		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]), group_id))
 	
 def delete_group(group_id):
 	for member in get_group(group_id)['members']:

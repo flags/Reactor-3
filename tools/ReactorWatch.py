@@ -51,9 +51,12 @@ def index():
 	life = request('life_list')
 	life.sort()
 	
+	camps = request('camp_list')
+	camps.sort()
+	
 	stats = request('stats')
 	
-	return render_template('index.html', stats=stats, life=life, groups=groups)
+	return render_template('index.html', stats=stats, life=life, groups=groups, camps=camps)
 
 if __name__ == '__main__':
 	app.run(debug=True, port=3336)
