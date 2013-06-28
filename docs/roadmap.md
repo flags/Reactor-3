@@ -432,6 +432,13 @@ Tech:
 	The map is scanned and the following taken into account:
 		1) Areas we can walk (can be unconnected.)
 		2) Z-levels we can travel to
+
+Other Concepts:
+	Buildings, and other difficult terrain
+	Zones
+		Can references be Zones?
+	Dead Zones
+		Zones of the map not accessible from the current Zone
 	
 Combat Fix #1 (Complete)
 --------------

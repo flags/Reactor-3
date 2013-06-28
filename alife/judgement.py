@@ -191,13 +191,15 @@ def _get_impressions(life, target):
 		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
 			brain.add_impression(life, target['life']['id'], 'had_weapon', {'danger': 2})
 
-def _calculate_impressions(life, target):
-	for impression in target['impressions']:
-		for key in target['impressions'][impression]['modifiers']:
-			if not key in target:
-				raise Exception('Key \'%s\' not in target.' % ' '.join(target['life']['name']))
+def _calculate_impressions(life, target_id):
+	_target = brain.knows_alife_by_id(life, target_id)
+	
+	for impression in _target['impressions']:
+		for key in _target['impressions'][impression]['modifiers']:
+			if not key in _target:
+				raise Exception('Key \'%s\' not in target.' % key)
 			
-			target[key] += target['impressions'][impression]['modifiers'][key]
+			_target[key] += _target['impressions'][impression]['modifiers'][key]
 
 def _calculate_fondness(life, target):
 	_fondness = 0
@@ -231,7 +233,7 @@ def judge(life, target_id):
 	target['danger'] = _calculate_danger(life, target)
 	target['trust'] = get_trust(life, target_id)
 	
-	_calculate_impressions(life, target)
+	_calculate_impressions(life, target_id)
 	
 	if not _old_fondness == target['fondness']:
 		print '%s fondness in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_fondness, target['fondness'])
@@ -345,12 +347,13 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 				_score -= 10
 			else:
 				_trusted += _target['trust']*_antisocial_mod
+			
+			_score += _target['influence']
 	
 	if _trusted>_group_size_max:
 		_score += _trusted*_antisocial_mod
 	else:
 		_score += _trusted
-	#_score += numbers.clip(_trusted, 0, _group_size_max)
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']

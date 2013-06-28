@@ -1,5 +1,6 @@
 from globals import *
 
+import alife
 import life
 
 def suicide():
@@ -16,6 +17,11 @@ def make_thirsty(life_id):
 
 def simple_lights():
 	SETTINGS['draw light'] = False
+
+def love_me():
+	for target in SETTINGS['controlling']['know']:
+		print target
+		alife.brain.add_impression(LIFE[target], SETTINGS['controlling']['id'], 'debug', {'influence': 100})
 
 def time(time):
 	WORLD_INFO['time_of_day'] = time

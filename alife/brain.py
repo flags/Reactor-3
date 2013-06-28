@@ -161,6 +161,7 @@ def meet_alife(life, target):
 		'fondness': 0,
 	    'danger': 0,
 		'trust': 0,
+		'influence': 0,
 		'likes': copy.deepcopy(target['likes']),
 		'last_seen_time': 0,
 		'met_at_time': WORLD_INFO['ticks'],

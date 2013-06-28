@@ -34,7 +34,8 @@ def listen(life):
 		
 		elif event['gist'] == 'follow':
 			if stats.will_obey(life, event['from']['id']):
-				brain.flag_alife(life, event['from'], 'follow')
+				#brain.flag_alife(life, event['from'], 'follow')
+				brain.add_impression(life, event['from']['id'], 'follow', {'influence': stats.get_influence_from(life, event['from']['id'])})
 				print 'FLAGGING FOR FOLLOW'
 		
 		elif event['gist'] == 'surrender':

@@ -288,7 +288,6 @@ def retrieve_weapon(life):
 				'hand': lfe.get_open_hands(life)[0]},
 			 200)
 		
-		brain.add_impression(life, _target, 'disarmed', 3)
 		lfe.memory(life, 'compliant', target=_target['id'])
 		lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
 		jobs.cancel_job(life['job'], completed=True)
