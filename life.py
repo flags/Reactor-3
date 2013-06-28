@@ -501,6 +501,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		
 		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
+				print 'NO RADIO'
 				continue
 		
 		_does_match = True

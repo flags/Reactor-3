@@ -4,9 +4,11 @@ import judgement
 import groups
 import brain
 
+import numbers
 import logging
 import random
 
+MAX_INFLUENCE_FROM = 75
 MAX_WILLPOWER = 25
 MAX_INTROVERSION = 10
 MAX_SOCIABILITY = 25
@@ -14,7 +16,7 @@ MAX_INTERACTION = 25
 MAX_CHARISMA = 20
 
 def init(life):
-	life['stats']['will'] = random.randint(1, MAX_WILLPOWER)
+	life['stats']['willpower'] = random.randint(1, MAX_WILLPOWER)
 	life['stats']['sociability'] = random.randint(15, MAX_SOCIABILITY)
 	life['stats']['introversion'] = random.randint(1, MAX_INTROVERSION)
 	life['stats']['charisma'] = random.randint(1, MAX_CHARISMA)
@@ -27,10 +29,10 @@ def desires_job(life):
 			
 		return False
 	
-	if life['stats']['will']>random.randint(0, MAX_WILLPOWER-(life['stats']['will']/2)):
+	if life['stats']['willpower']>random.randint(0, MAX_WILLPOWER-(life['stats']['willpower']/2)):
 		return True
 	
-	brain.flag(life, 'wont_work', value=1000-(life['stats']['will']*15))
+	brain.flag(life, 'wont_work', value=1000-(life['stats']['willpower']*15))
 	return False
 
 def desires_life(life, life_id):
@@ -60,7 +62,7 @@ def desires_to_create_group(life):
 	if life['group']:
 		return False
 	
-	if life['stats']['will'] >= MAX_WILLPOWER*.5:
+	if life['stats']['willpower'] >= MAX_WILLPOWER*.5:
 		return True
 	
 	return False
@@ -105,7 +107,29 @@ def get_max_group_size(life):
 	return int(round(life['stats']['sociability']*get_antisocial_percentage(life)))
 
 def get_employability(life):
+	#TODO: Placeholder
 	return 50
+
+def get_influence_from(life, life_id):
+	judgement._calculate_impressions(life, life_id)
+	_target = LIFE[life_id]
+	_know = brain.knows_alife_by_id(life, life_id)
+	_score = 0
+	
+	if life['group'] == _target['group']:
+		_group = groups.get_group(life['group'])
+		
+		if _group['leader'] == _target['id']:
+			_power = _know['trust']+_know['danger']
+			
+			if judgement.can_trust(life, life_id):
+				_score += _power
+			else:
+				_score -= _power
+	
+	_score += _target['stats']['charisma']
+	
+	return numbers.clip(_score*2, 0, MAX_INFLUENCE_FROM-(MAX_WILLPOWER-_target['stats']['willpower']))
 
 def get_minimum_camp_score(life):
 	if life['group'] and groups.is_leader(life['group'], life['id']):

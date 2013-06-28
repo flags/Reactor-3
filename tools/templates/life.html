@@ -26,8 +26,10 @@
         {% for target in knows %}
             <a href="/life/{{ target.life }}">{{ target.life }}</a>
             <ul><li><b>Trust</b>: {{ target.trust }}</li>
-            <li><b>Danger</b>: {{ target[danger] }}</li>
+            <li><b>Danger</b>: {{ target.danger }}</li>
+            <li><b>Influence</b>: {{ target.influence }}</li>
             <li><b>Flags</b>: {{ target.flags }}</li>
+            <li><b>Impressions</b>: {{ target.impressions }}</li>
             <li><b><a href="/memory/{{ target.life }}">Memory</a></b></li>
             </ul>
         {% endfor %}

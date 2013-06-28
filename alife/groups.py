@@ -74,7 +74,7 @@ def reconfigure_group(group_id):
 	_successor = find_successor(group_id, assign=True)
 	
 	if _successor:
-		logging.debug('\'%s\' is now leader of group #%s' % (' '.join(LIFE[_successor['name']]), group_id))
+		logging.debug('\'%s\' is now leader of group #%s' % (' '.join(LIFE[_successor]['name']), group_id))
 	else:
 		logging.error('No successor could be found for group #%s (THIS SHOULD NOT HAPPEN)' % group_id)
 

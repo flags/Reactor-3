@@ -15,8 +15,8 @@ import random
 import time
 import json
 
-BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack','glock', '9x19mm magazine', 'electric lantern', 'soda']
-RECRUIT_ITEMS = [ 'radio', '.22 rifle', 'corn', 'soda']
+BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack', 'radio', 'glock', '9x19mm magazine', 'electric lantern', 'soda']
+RECRUIT_ITEMS = [ '.22 rifle', 'corn', 'soda']
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
@@ -118,7 +118,7 @@ def generate_life(source_map, amount=1):
 		else:
 			_spawn = (30, 70)
 		
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		alife = life.create_life('Human',name=['test', str(i+1)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000
