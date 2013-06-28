@@ -323,6 +323,15 @@ def judge_old(life, target):
 	else:
 		return -1
 
+def get_influence(life, target_id, gist):
+	_impression = brain.get_impression(life, target_id, gist)
+	
+	if _impression:
+		if 'influence' in _impression['modifiers']:
+			return _impression['modifiers']['influence']
+	
+	return 0
+
 def judge_chunk(life, chunk_id, long=False, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
@@ -348,7 +357,7 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 			else:
 				_trusted += _target['trust']*_antisocial_mod
 			
-			_score += _target['influence']
+			_score += get_influence(life, _target['life']['id'], 'follow')
 	
 	if _trusted>_group_size_max:
 		_score += _trusted*_antisocial_mod

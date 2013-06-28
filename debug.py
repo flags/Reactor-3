@@ -20,8 +20,7 @@ def simple_lights():
 
 def love_me():
 	for target in SETTINGS['controlling']['know']:
-		print target
-		alife.brain.add_impression(LIFE[target], SETTINGS['controlling']['id'], 'debug', {'influence': 100})
+		alife.brain.add_impression(LIFE[target], SETTINGS['controlling']['id'], 'follow', {'influence': 100})
 
 def time(time):
 	WORLD_INFO['time_of_day'] = time
