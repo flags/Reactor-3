@@ -30,25 +30,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not _combat_targets:
 		return False
 	
-	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if target['escaped'] or target['last_seen_time']>=300:
-			continue
-		
-		#TODO: Maybe the job calls for us to engage this target?
-		if jobs.alife_is_factor_of_any_job(target['life']):
-			continue
-		
-		print target['life']['id']
-		_all_targets.append(target['life']['id'])
-	
-	#for t in _all_targets:
-	#	print 'ALL:',type(t)
-	
-	brain.store_in_memory(life, 'combat_targets', _all_targets)
-	
-	#if not combat.has_usable_weapon(life):
-	#	return False	
-	
 	if not brain.retrieve_from_memory(life, 'combat_targets'):
 		return False
 	

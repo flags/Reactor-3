@@ -252,6 +252,9 @@ def listen(life):
 			
 			_target = brain.knows_alife_by_id(life, event['attacker'])
 			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']])
+			
+			print '*'*20
+			print life['name'],'HEY DUDE!!!!!',LIFE[event['attacker']]['name']
 
 			#SITUATION 1: We believe it
 			if _believes == event['from']['id']:

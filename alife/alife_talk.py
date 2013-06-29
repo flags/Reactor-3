@@ -115,15 +115,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					camp=_nearest_camp,
 					raiders=_combat_targets)
 			
-			#if life['group']:
-			#	for target in _combat_targets:
-			#		_last_seen_at = None
-			#		_know = brain.knows_alife_by_id(life, target)
-			#		
-			#		if _know:
-			#			_last_seen_at = _know['last_seen_at']
-			#			
-			#		groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
+			if life['group']:
+				for target in _combat_targets:
+					_last_seen_at = None
+					_know = brain.knows_alife_by_id(life, target)
+					
+					if _know:
+						_last_seen_at = _know['last_seen_at']
+						
+					groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
 	for ai in [life['know'][i] for i in life['know']]:

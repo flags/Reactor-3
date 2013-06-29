@@ -12,6 +12,7 @@ import brain
 import raids
 import sight
 import camps
+import jobs
 
 import logging
 import numbers
@@ -120,13 +121,14 @@ def get_untrusted(life, visible=True):
 
 def get_targets(life, must_be_known=False):
 	_targets = []
+	_combat_targets = []
 	
 	if life['camp'] and raids.camp_has_raid(life['camp']):
 		_targets.extend(raids.get_raiders(life['camp']))
 
-	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	if _combat_targets:
-		_targets.extend(_combat_targets)
+	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	#if _combat_targets:
+	#	_targets.extend(_combat_targets)
 	
 	for alife in life['know'].values():
 		if alife['life']['id'] in _targets:
@@ -134,10 +136,27 @@ def get_targets(life, must_be_known=False):
 		
 		#TODO: Secrecy
 		if is_target_dangerous(life, alife['life']['id']):
-			_targets.append(alife['life']['id'])
+			_combat_targets.append(alife['life']['id'])
 	
-	for target in _targets:
-		print 'TARGET:',type(target),len(_targets)
+	_passed_combat_targets = []
+	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
+		if target['escaped'] or target['last_seen_time']>=300:
+			continue
+		
+		#TODO: Maybe the job calls for us to engage this target?
+		if jobs.alife_is_factor_of_any_job(target['life']):
+			continue
+		
+		_passed_combat_targets.append(target['life']['id'])
+	
+	#for t in _all_targets:
+	#	print 'ALL:',type(t)
+	
+	brain.store_in_memory(life, 'combat_targets', _passed_combat_targets)
+	_targets.extend(_passed_combat_targets)
+	
+	#for target in _targets:
+	#	print 'TARGET:',type(target),len(_targets)
 	
 	if must_be_known:
 		for _target in _targets[:]:

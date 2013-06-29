@@ -141,13 +141,20 @@ def get_impression(life, target_id, gist):
 	return None
 
 def knows_alife(life, alife):
+	if life['id'] == alife['id']:
+		raise Exception('Life asking about itself (via dict). Stopping.')
+	
 	if alife['id'] in life['know']:
 		return life['know'][alife['id']]
 	
 	return False
 
 def knows_alife_by_id(life, alife_id):
-	if not isinstance(alife_id, int):
+	if isinstance(alife_id, dict):
+		if life['id'] == alife_id['id']:
+			raise Exception('Life asking about itself (via ID). Stopping.')
+		
+		print alife_id['name']
 		print alife_id.keys()
 		raise Exception('Not a valid ID.')
 	
@@ -157,6 +164,9 @@ def knows_alife_by_id(life, alife_id):
 	return False
 
 def meet_alife(life, target):
+	if life['id'] == target['id']:
+		raise Exception('Life learned about itself. Stopping.')
+	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,
 	    'danger': 0,
