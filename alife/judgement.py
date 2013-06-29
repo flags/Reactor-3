@@ -15,6 +15,7 @@ import camps
 
 import logging
 import numbers
+import random
 import maps
 import time
 
@@ -84,10 +85,6 @@ def can_trust(life, target_id, low=0):
 		return True
 	
 	return False
-
-def should_trust(life, target_id):
-	#TODO: What is our minimum score for trust?
-	return can_trust(life, target_id, low=1)
 
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
@@ -358,6 +355,7 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 				_trusted += _target['trust']*_antisocial_mod
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
+			_score += get_influence(life, _target['life']['id'], 'talk')
 	
 	if _trusted>_group_size_max:
 		_score += _trusted*_antisocial_mod
@@ -566,8 +564,28 @@ def is_group_hostile(life, group_id):
 def believe_which_alife(life, alife):
 	_scores = {}
 	for ai in alife:
-		_score = get_trust(life, ai)
-		_scores[_score] = ai
+		if can_trust(life, ai):
+			_score = get_trust(life, ai)
+		
+		if _score in _scores:
+			_scores[_score].append(ai)
+		else:
+			_scores[_score] = [ai]
 	
-	return _scores[max(_scores)]
+	_winners = _scores[max(_scores)][:]
+	
+	if len(_winners)>1:
+		_scores = {}
+		for winner in _winners:
+			_know = brain.knows_alife_by_id(life, winner)
+			_score = _know['danger']
+			
+			if _score in _scores:
+				_scores[_score].append(winner)
+			else:
+				_scores[_score] = [winner]
+		
+		return random.choice(_scores[max(_scores)])
+	else:
+		return _winners[0]
 		

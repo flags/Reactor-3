@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import camps
+import brain
 
 import logging
 
@@ -31,6 +32,10 @@ def add_raiders(camp_id, raiders):
 	for raider in [r for r in raiders if not r in _camp['raid']['raiders']]:
 		_camp['raid']['raiders'].append(raider)
 		logging.debug('%s added to raid of camp %s' % (' '.join(LIFE[raider]['name']), _camp['name']))
+		
+		for defender in get_defenders(camp_id):
+			if not brain.knows_alife_by_id(LIFE[defender], raider):
+				brain.meet_alife(LIFE[defender], LIFE[raider])
 
 def defend_camp(camp_id, life_id):
 	_camp = camps.get_camp(camp_id)
@@ -38,6 +43,10 @@ def defend_camp(camp_id, life_id):
 	if not life_id in _camp['raid']['defenders']:
 		_camp['raid']['defenders'].append(life_id)
 		logging.debug('%s is now defending camp %s' % (' '.join(LIFE[life_id]['name']), _camp['name']))
+	
+	for raider in get_raiders(camp_id):
+		if not brain.knows_alife_by_id(LIFE[life_id], raider):
+			brain.meet_alife(LIFE[life_id], LIFE[raider])
 
 def get_raiders(camp_id):
 	return camps.get_camp(camp_id)['raid']['raiders']

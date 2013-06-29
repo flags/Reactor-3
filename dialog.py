@@ -398,6 +398,14 @@ def get_questions_to_ask(life, chosen):
 			
 			if 'target' in chosen:
 				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
+		elif memory['text'] == 'opinion_of_target':
+			_topics.append({'text': 'What is your relationship with %s?' % ' '.join(LIFE[memory['who']]['name']),
+				'gist': 'opinion_of_target',
+				'who': memory['who'],
+				'memory': memory})
+			
+			if 'target' in chosen:
+				memory['asked'][chosen['target']] = WORLD_INFO['ticks']
 	
 	if not _topics:
 		_topics.append({'text': 'Not really.', 'gist': 'end'})
@@ -751,6 +759,21 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'ve only heard bad things about you.', 'gist': 'deny_from_camp', 'camp': chosen['camp'], 'dislike': 1})
 		
 		print 'YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO'
+	
+	elif chosen['gist'] == 'opinion_of_target':
+		_know = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['who'])
+		if alife.judgement.can_trust(LIFE[dialog['listener']], dialog['who']):
+			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
+		else:
+			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
+	
+	elif chosen['gist'] == 'talk_about_trust':		
+		lfe.memory(LIFE[dialog['listener']], 'target_trusts_target',
+			target=dialog['speaker'],
+			who=chosen['who'],
+			value=chosen['who'])
+		
+		print 'TALKING ABOUT TRUST'
 	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])

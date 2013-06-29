@@ -788,7 +788,12 @@ def inventory_fire_action(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	weapons.fire(SETTINGS['controlling'], entry['target']['pos'], limb=entry['limb'])
+	life.add_action(SETTINGS['controlling'],{'action': 'shoot',
+	    'target': entry['target']['pos'][:],
+	    'limb': entry['limb']},
+		5000,
+		delay=3)
+	
 	SETTINGS['controlling']['targeting'] = None
 	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []

@@ -449,6 +449,9 @@ def tick_animation(life):
 		
 	return life['animation']['images'][life['animation']['index']]
 
+def get_current_camp(life):
+	return life['known_camps'][life['camp']]
+
 def get_current_known_chunk(life):
 	_chunk_id = get_current_chunk_id(life)
 	
@@ -716,7 +719,7 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False):
+def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False, interest=0):
 	question['question'] = True
 	question['answer_callback'] = callback
 	if not isinstance(answer_match, list):
@@ -731,10 +734,17 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 	if get_memory(life, matches=_match):
 		return False
 	
+	if interest:
+		if not 'target' in question:
+			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
+		
+		brain.add_impression(life, question['target'], 'talk', {'influence': interest})
+	
 	question['answer_all'] = answer_all
 	memory(life, gist, question)
 	
 	logging.debug('Creating question...')
+	return True
 
 def get_questions(life, target=None, no_filter=False, skip_answered=True):
 	_questions = []

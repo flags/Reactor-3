@@ -9,13 +9,13 @@ import numbers
 import random
 import time
 
-def find_best_known_chunk(life, ignore_starting=False):
+def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
 		_chunk = life['known_chunks'][chunk_key]
 		
-		if _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	if not ignore_starting:

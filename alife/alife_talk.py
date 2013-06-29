@@ -98,22 +98,34 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
-		dialog.tick(life, _dialog)
+		dialog.tick(life, _dialog)	
 	
-	if not judgement.is_safe(life) and life['camp'] and camps.is_in_camp(life, life['camp']):
+	if not judgement.is_safe(life):
 		_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 		
 		if _combat_targets:
-			_nearest_camp = camps.get_nearest_known_camp(life)
-			_raiders = [t['who']['life']['id'] for t in _combat_targets]
-			raids.create_raid(_nearest_camp['id'], join=life['id'])
-			raids.add_raiders(_nearest_camp['id'], _raiders)
+			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):
+				_nearest_camp = camps.get_nearest_known_camp(life)
+				_raiders = [t['who']['life']['id'] for t in _combat_targets]
+				raids.create_raid(_nearest_camp['id'], join=life['id'])
+				raids.add_raiders(_nearest_camp['id'], _raiders)
+				
+				#TODO: Remove memory call
+				speech.announce(life,
+					'camp_raid',
+					camp=_nearest_camp,
+					raiders=_raiders)
 			
-			#TODO: Remove memory call
-			speech.announce(life,
-				'camp_raid',
-				camp=_nearest_camp,
-				raiders=_raiders)
+			if life['group']:
+				for target in _combat_targets:
+					_last_seen_at = None
+					print target.keys()
+					_know = brain.knows_alife_by_id(life, target['life']['id'])
+					
+					if _know:
+						_last_seen_at = _know['last_seen_at']
+						
+					groups.distribute(life, 'under_attack', attacker=target['life']['id'], last_seen_at=_last_seen_at)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
 	for ai in [life['know'][i] for i in life['know']]:

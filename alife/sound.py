@@ -243,38 +243,68 @@ def listen(life):
 				target=event['from']['id'])
 		
 		elif event['gist'] == 'under_attack':
-			if not brain.knows_alife(life, event['attacker']):
-				brain.meet_alife(life, event['attacker'])
+			_knows_attacker = True
+			if not brain.knows_alife_by_id(life, event['attacker']):
+				brain.meet_alife(life, LIFE[event['attacker']])
+				_knows_attacker = False
 			
-			_target = brain.knows_alife(life, event['attacker'])
-			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']['id']])
-			
+			_target = brain.knows_alife_by_id(life, event['attacker'])
+			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']])
+
+			#SITUATION 1: We believe it
 			if _believes == event['from']['id']:
-				if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
-					lfe.memory(life, 'traitor',
-						target=event['attacker']['id'])
-					lfe.say(life, 'You no-good traitor!')
-			
-				lfe.memory(life, 'hostile',
-					target=event['attacker']['id'])
-			else:
-				if lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'friendly'}):
-					lfe.memory(life, 'traitor',
-						target=event['from']['id'])
-					lfe.say(life, 'You no-good traitor!')
-				
-				lfe.memory(life, 'hostile',
+				lfe.memory(life, 'heard about attack',
+					attacker=event['attacker'],
 					target=event['from']['id'])
+				lfe.memory(life, 'attacked victim',
+					target=event['attacker'],
+					victim=event['from']['id'],
+					trust=-brain.knows_alife_by_id(life, event['from']['id'])['trust'],
+					danger=5)
+				
+				if event['last_seen_at']:
+					_target['last_seen_at'] = event['last_seen_at'][:]
+				else:
+					_target['last_seen_at'] = event['from']['pos'][:]
+			else:
+				lfe.memory(life, 'reject under_attack: attacker is trusted',
+					attacker=event['attacker'],
+					target=event['from']['id'])
+					
+				lfe.create_question(life,
+					'opinion_of_target',
+					{'target': event['attacker']},
+					lfe.get_memory,
+					{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
+					answer_all=True)
+					
 			
+			#if _believes == event['from']['id']:
+			#	if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
+			#		lfe.memory(life, 'traitor',
+			#			target=event['attacker']['id'])
+			#		lfe.say(life, 'You no-good traitor!')
+			#
+			#	lfe.memory(life, 'hostile',
+			#		target=event['attacker']['id'])
+			#else:
+			#	if lfe.get_memory(life, matches={'target': event['from']['id'], 'text': 'friendly'}):
+			#		lfe.memory(life, 'traitor',
+			#			target=event['from']['id'])
+			#		lfe.say(life, 'You no-good traitor!')
+			#	
+			#	lfe.memory(life, 'hostile',
+			#		target=event['from']['id'])
+			#
 			#TODO: Radio back and ask where the target is (randomly have the sending ALife leave this info out so we have to ask)
-			if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):
-				speech.communicate(life,
-					'get_alife_location',
-					alife=event['attacker'],
-					matches=[{'id': event['from']['id']}])
-				lfe.say(life, 'Where is he?')
-			elif 'location' in event:
-				_target['last_seen_at'] = event['attacker']['pos'][:]
+			#if not 'location' in event and not speech.has_sent(life, event['from'], 'get_alife_location'):
+			#	speech.communicate(life,
+			#		'get_alife_location',
+			#		alife=event['attacker'],
+			#		matches=[{'id': event['from']['id']}])
+			#	lfe.say(life, 'Where is he?')
+			#elif 'location' in event:
+			#	_target['last_seen_at'] = event['attacker']['pos'][:]
 		
 		elif event['gist'] == 'get_alife_location':
 			_target = brain.knows_alife(life, event['alife'])
