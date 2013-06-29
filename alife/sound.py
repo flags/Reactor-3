@@ -1,3 +1,5 @@
+from globals import *
+
 import life as lfe
 
 import judgement
@@ -273,7 +275,7 @@ def listen(life):
 					
 				lfe.create_question(life,
 					'opinion_of_target',
-					{'target': event['attacker']},
+					{'target': event['from']['id'], 'who': event['attacker']},
 					lfe.get_memory,
 					{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
 					answer_all=True)

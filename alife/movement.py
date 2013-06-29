@@ -114,10 +114,7 @@ def escape(life, target, source_map):
 	#You'll see in `score_escape` that we're not trying to find full cover, but instead
 	#just finding a way to get behind *something*.
 	#
-	#TODO: Remove the need for {'life': ...}
-	print target.keys()
 	_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
-	print 'escaping', _escape
 	
 	if _escape:
 		lfe.clear_actions(life)

@@ -159,7 +159,7 @@ def get_best_weapon(life):
 	return _best_wep
 
 def combat(life, target):
-	target = brain.knows_alife(life, target['life'])
+	target = brain.knows_alife_by_id(life, target)
 	_pos_for_combat = movement.position_for_combat(life, target, target['last_seen_at'], WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:

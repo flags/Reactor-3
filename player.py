@@ -1,12 +1,14 @@
 from globals import *
 from alife import *
 
+import libtcodpy as tcod
 import graphics as gfx
 import crafting
 import weapons
 import dialog
 import menus
 import items
+import time
 import life
 
 import logging
@@ -97,6 +99,10 @@ def handle_input():
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]-1,SETTINGS['controlling']['pos'][1])},200)
+	
+	if INPUT['?']:
+		pix = tcod.image_from_console(0)
+		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())
 	
 	if INPUT['P']:
 		if SETTINGS['paused']:
@@ -526,7 +532,7 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+2]
 
 	if INPUT['u']:
-		if LIFE.keys().index(SETTINGS['following']['id'])>1:
+		if LIFE.keys().index(SETTINGS['following']['id'])>=1:
 			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])]
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
 	

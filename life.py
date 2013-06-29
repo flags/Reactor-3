@@ -2248,7 +2248,7 @@ def draw_life_info():
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 		
 		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
-		if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+		if _targets and SETTINGS['controlling']['id'] in _targets:
 			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:

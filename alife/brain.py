@@ -177,13 +177,10 @@ def meet_alife(life, target):
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 
 def has_met_in_person(life, target):
-	if get_remembered_alife(life, target)['met_at_time'] == -1:
+	if knows_alife(life, target)['met_at_time'] == -1:
 		return False
 	
 	return True
-
-def get_remembered_alife(life, target):
-	return life['know'][target['id']]
 
 def get_remembered_item(life, item):
 	return life['know_items'][item['uid']]
@@ -238,8 +235,8 @@ def understand(life, source_map):
 	
 	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
 	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
-	_visible_threats = [knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]
-	_non_visible_threats = [knows_alife_by_id(life, t) for t in judgement.get_invisible_threats(life)]
+	_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]
+	_non_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_invisible_threats(life)]
 	
 	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):

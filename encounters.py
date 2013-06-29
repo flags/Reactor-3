@@ -22,8 +22,8 @@ def create_encounter(life, target, context=None):
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
 	_encounter['target'] = target
 	
-	_remembered_alife = alife.brain.get_remembered_alife(target, life)
-	_stance = alife.stances.get_stance_towards(target, life)
+	_remembered_alife = alife.brain.knows_alife(target, life)
+	_stance = alife.stances.get_stance_towards(target, life['id'])
 	_time_since_met = WORLD_INFO['ticks'] - _remembered_alife['met_at_time']
 	
 	_text = []

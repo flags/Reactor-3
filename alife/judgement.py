@@ -118,9 +118,6 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-#def get_best_leader(life, only_visible=True, include_self=True):
-#	for alife in life['know'].values():
-
 def get_targets(life, must_be_known=False):
 	_targets = []
 	
@@ -138,6 +135,9 @@ def get_targets(life, must_be_known=False):
 		#TODO: Secrecy
 		if is_target_dangerous(life, alife['life']['id']):
 			_targets.append(alife['life']['id'])
+	
+	for target in _targets:
+		print 'TARGET:',type(target),len(_targets)
 	
 	if must_be_known:
 		for _target in _targets[:]:
@@ -236,85 +236,6 @@ def judge(life, target_id):
 	
 	if not _old_trust == target['trust']:
 		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
-
-def judge_old(life, target):
-	_like = 0
-	_dislike = 0
-	_is_hostile = False
-	_surrendered = False
-	
-	if target['life']['asleep']:
-		return 0
-
-	if 'greeting' in target['received']:
-		_like += 1
-	
-	#if 'greeting' in target['sent']:
-	#	_like += 1
-	
-	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
-		if memory['text'] == 'friendly':
-			_like += 2
-		
-		elif memory['text'] == 'hostile':
-			_is_hostile = True
-			_dislike += 2
-		
-		elif memory['text'] == 'traitor':
-			_is_hostile = True
-			_dislike += 2
-		
-		elif memory['text'] == 'shot by':
-			_is_hostile = True
-			_dislike += 2
-		
-		elif memory['text'] == 'compliant':
-			_like += 2
-		
-		elif memory['text'] == 'surrendered':
-			_surrendered = True
-
-	#First impressions go here
-	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life'], 'had_weapon'):
-		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life'], 'had_weapon', {'danger': 2})
-	
-	if brain.get_impression(life, target['life'], 'had_weapon'):
-		if not lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			_like += abs(target['impressions']['had_weapon']['score'])
-	
-	for impression in target['impressions']:
-		_score = target['impressions'][impression]['score']
-		
-		if _score < 0:
-			_dislike += abs(_score)
-		else:
-			_like += _score
-	
-	#TODO: What?
-	#_like += brain.get_trust(life, target['life']['id'])
-	
-	if target['trust']<0 and not brain.can_trust(life, target['life']['id']):
-		print 'DECLARING HOSTILE!!!'
-		_is_hostile = True
-	
-	if _is_hostile:
-		if _surrendered:
-			target['flags']['surrendered'] = True
-		else:
-			_life_combat_score = get_combat_rating(life)
-			_target_combat_score = get_combat_rating(target['life'])
-			brain.flag_alife(life, target['life'], 'combat_score', value=_life_combat_score-_target_combat_score)
-			
-			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
-			
-			#if _target_combat_score>0:
-			#	return -_target_combat_score
-	
-	if brain.can_trust(life, target['life']['id']):
-		return _like-_dislike
-	else:
-		return -1
 
 def get_influence(life, target_id, gist):
 	_impression = brain.get_impression(life, target_id, gist)
@@ -560,6 +481,8 @@ def is_group_hostile(life, group_id):
 def believe_which_alife(life, alife):
 	_scores = {}
 	for ai in alife:
+		_score = 0
+		
 		if can_trust(life, ai):
 			_score = get_trust(life, ai)
 		

@@ -25,7 +25,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		RETURN_VALUE = STATE_CHANGE
 	
 	_all_targets = []
-	_combat_targets = brain.retrieve_from_memory(life, 'targets')
+	_combat_targets = judgement.get_targets(life)
 	
 	if not _combat_targets:
 		return False
@@ -38,7 +38,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		if jobs.alife_is_factor_of_any_job(target['life']):
 			continue
 		
+		print target['life']['id']
 		_all_targets.append(target['life']['id'])
+	
+	#for t in _all_targets:
+	#	print 'ALL:',type(t)
 	
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	
@@ -79,4 +83,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 		if _all_targets:
 			_closest_target = get_closest_target(life, _all_targets)
-			combat.combat(life, LIFE[_closest_target])
+			combat.combat(life, _closest_target)
