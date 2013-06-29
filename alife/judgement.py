@@ -123,13 +123,9 @@ def get_targets(life, must_be_known=False):
 	_targets = []
 	_combat_targets = []
 	
-	if life['camp'] and raids.camp_has_raid(life['camp']):
-		_targets.extend(raids.get_raiders(life['camp']))
+	#if life['camp'] and raids.camp_has_raid(life['camp']):
+	#	_targets.extend(raids.get_raiders(life['camp']))
 
-	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	#if _combat_targets:
-	#	_targets.extend(_combat_targets)
-	
 	for alife in life['know'].values():
 		if alife['life']['id'] in _targets:
 			continue

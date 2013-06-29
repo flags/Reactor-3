@@ -116,6 +116,23 @@ def can_see_target(life, target_id):
 	
 	return True
 
+def view_blocked_by_life(life, position, allow=[]):
+	allow.append(life['id'])
+	
+	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
+	print 'AVOID',_avoid_positions
+	
+	_can_see = can_see_position(life, position)
+	
+	if not _can_see:
+		return True
+	
+	for pos in _can_see:
+		if pos in _avoid_positions:
+			return True
+	
+	return False
+
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()
 	_cover = {'pos': None,'score': 9000}

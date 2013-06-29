@@ -261,7 +261,7 @@ def listen(life):
 				lfe.memory(life, 'heard about attack',
 					attacker=event['attacker'],
 					target=event['from']['id'])
-				lfe.memory(life, 'attacked victim',
+				lfe.memory(life, 'target attacked victim',
 					target=event['attacker'],
 					victim=event['from']['id'],
 					trust=-brain.knows_alife_by_id(life, event['from']['id'])['trust'],

@@ -19,6 +19,9 @@ def score_search(life,target,pos):
 	return -numbers.distance(life['pos'],pos)
 
 def score_shootcover(life,target,pos):
+	if sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
+		return 9999
+	
 	return numbers.distance(life['pos'],pos)
 
 def score_escape(life,target,pos):
@@ -67,9 +70,10 @@ def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Eventually this should be written into the pathfinding logic
-	if sight.can_see_position(life,target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
-		lfe.clear_actions(life)
-		return True
+	if sight.can_see_position(life, target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
+		if not sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
+			lfe.clear_actions(life)
+			return True
 	
 	#What can the target see?
 	#TODO: Unchecked Cython flag

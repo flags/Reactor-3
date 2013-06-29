@@ -35,6 +35,10 @@ def add_raiders(camp_id, raiders):
 		
 		for defender in get_defenders(camp_id):
 			if not brain.knows_alife_by_id(LIFE[defender], raider):
+				if defender == raider:
+					logging.warning('FIXME: Raider is member of camp.')
+					continue
+				
 				brain.meet_alife(LIFE[defender], LIFE[raider])
 
 def defend_camp(camp_id, life_id):
