@@ -129,7 +129,7 @@ def get_targets(life, must_be_known=False):
 
 	_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _combat_targets:
-		_targets.extend([c['who']['life']['id'] for c in _combat_targets])
+		_targets.extend(_combat_targets)
 	
 	for alife in life['know'].values():
 		if alife['life']['id'] in _targets:
@@ -143,10 +143,6 @@ def get_targets(life, must_be_known=False):
 		for _target in _targets[:]:
 			if not brain.knows_alife_by_id(life, _target):
 				_targets.remove(_target)
-	
-	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	#if _combat_targets:
-	#	_targets.extend([t['who']['life']['id'] for t in _combat_targets if not t['who']['life']['id'] in _targets])
 	
 	return _targets
 

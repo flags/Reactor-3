@@ -69,7 +69,7 @@ def tick_all_objects(source_map):
 				continue
 			
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
-			if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+			if _targets and SETTINGS['controlling']['id'] in _targets:
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:

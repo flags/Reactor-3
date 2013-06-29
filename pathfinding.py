@@ -262,7 +262,7 @@ class Astar:
 
 	def calculate(self):
 		if self.map[self.end[1],self.end[0]] == 0:
-			logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
+			#logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
 			return False
 
 		node = self.olist[0]

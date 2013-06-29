@@ -38,7 +38,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		if jobs.alife_is_factor_of_any_job(target['life']):
 			continue
 		
-		_all_targets.append({'who': target})
+		_all_targets.append(target['life']['id'])
 	
 	brain.store_in_memory(life, 'combat_targets', _all_targets)
 	
@@ -57,8 +57,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 #TODO: Use judgement.get_nearest_threat()
 def get_closest_target(life, targets):
 	_closest = {'dist': -1, 'life': None}
+	
 	for target in targets:
-		_dist = numbers.distance(life['pos'], target['who']['life']['pos'])
+		_know = brain.knows_alife_by_id(life, target)
+		_dist = numbers.distance(life['pos'], _know['last_seen_at'])
 		
 		if _dist<_closest['dist'] or not _closest['life']:
 			_closest['life'] = target
@@ -77,4 +79,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 		if _all_targets:
 			_closest_target = get_closest_target(life, _all_targets)
-			combat.combat(life, _closest_target['who'])
+			combat.combat(life, LIFE[_closest_target])

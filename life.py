@@ -2025,7 +2025,7 @@ def draw_life_icon(life):
 	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
-		if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+		if SETTINGS['controlling']['id'] in _targets:
 			_icon[1] = tcod.light_red
 	
 	if life['dead']:
