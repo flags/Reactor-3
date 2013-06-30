@@ -16,26 +16,27 @@ I would wager that a large amount of the people reading this only have a passing
 Features
 --------
 
+# ALife
 * Dialog with ALife is now possible
 * ALife maintain a list of needs
 	They will ask you and other ALife for food/drinks if none are around.
+	ALife will invite you to join squads (this is mostly untested)
 * ALife will explore the map somewhat intelligently (following roads, checking buildings, etc)
-* ALife understand the concepts of:
-	Trust
-	Danger
-	Willpower
-	Extroversion/Introversion
-	Leadership/influence/Charisma
-	Believing one person over another
+* ALife understand the concepts of: Trust, Danger, Willpower, Extroversion/Introversion, Leadership/influence/Charisma, Believing one person over another
+	
 	...in addition to several functions which involve combining the above to achieve more complex results
 * ALife are capable of forming groups
 * Groups have and understand leaders, in addition to succession when the leader is lost
+* ALife understand the world without needing specially designed levels (they react dynamically.)
+
+# General
+* Terraform - Level editor.
+* ReactorWatch - Web-based debugger.
 * Fully working "realistic" inventory system
 	You must wear a backpack/other clothing item in order to carry more than two items.
 		Pants have pockets, for example
 * Weapons must be loaded as they would normally
 	Obtain ammo -> fill magazine/clip -> Load mag/clip into weapon
-* ALife understand the world without needing specially designed levels (they react dynamically.)
 
 Tips
 ----
@@ -45,5 +46,5 @@ Issues
 ------
 * Throwing does not work
 * Freezes sometimes occur when group leaders begin searching for open camp sites
-* 
-	
+* Pathfinding is very unstable.
+	It's the oldest part of the game and is being revised in the next milestone to make use of reference maps and chunks.

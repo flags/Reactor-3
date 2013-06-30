@@ -734,16 +734,23 @@ def process_response(life, target, dialog, chosen):
 		#		target=chosen['target'],
 		#		location=chosen['location'])
 	elif chosen['gist'] == 'invite_to_group':
-		if alife.stats.desires_group(LIFE[dialog['listener']], chosen['group']):
-			if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
-				_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
-				lfe.memory(LIFE[dialog['listener']], 'accept invite to group', group=chosen['group'])
-			else:
-				_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
-				lfe.memory(LIFE[dialog['listener']], 'decline invite to group (judgement)', group=chosen['group'])
+		if 'player' in LIFE[dialog['listener']]:
+			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
+			
+			if LIFE[dialog['listener']]['group']:
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
 		else:
-			_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
-			lfe.memory(LIFE[dialog['listener']], 'decline invite to group (no desire)', group=chosen['group'])
+			if alife.stats.desires_group(LIFE[dialog['listener']], chosen['group']):
+				if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
+					_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+					lfe.memory(LIFE[dialog['listener']], 'accept invite to group', group=chosen['group'])
+				else:
+					_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
+					lfe.memory(LIFE[dialog['listener']], 'decline invite to group (judgement)', group=chosen['group'])
+			else:
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
+				lfe.memory(LIFE[dialog['listener']], 'decline invite to group (no desire)', group=chosen['group'])
 	
 	elif chosen['gist'] == 'join_group':
 		alife.groups.add_member(chosen['group'], dialog['speaker'])
