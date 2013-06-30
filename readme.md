@@ -38,6 +38,23 @@ While these applications are stable, they are not as well-developed as Reactor 3
 * Terraform - Level editor.
 * ReactorWatch - Web-based debugger.
 
+Controls
+========
+* `Arrow keys` - Move (no 8-key movement yet)/Navigate menus
+* `Enter` - Select
+* `e` - Equip/hold item
+* `E (Shift-e)` - Unequip item
+* `,` - Pick up item
+* `d` - Drop item
+* `r` - Reload / fill mag or clip
+* `f` - Enter targeting mode (shoot)
+* `v` - Enter targeting mode (talk)
+* `C (Shift-c)` - Stand up
+* `c` - Crouch
+* `Z (Shift-z)` - Prone
+* `P (Shift-P)` - Pause'
+* `-` - Debug console
+
 Tips
 ====
 You can build relationships by asking people how they're doing. This will improve trust.

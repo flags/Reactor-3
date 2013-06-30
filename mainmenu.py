@@ -33,6 +33,7 @@ def draw_intro():
 		
 		_mod = int(round(255*numbers.clip(time.time()-_stime, 0, 1)))
 		
+		console_set_default_foreground(0, Color(_mod, _mod, _mod))
 		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, WINDOW_SIZE[1]/2, _text)
 		console_flush()
 	
