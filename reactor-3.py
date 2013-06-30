@@ -3,7 +3,6 @@
 from globals import *
 from inputs import *
 from player import *
-from tiles import *
 
 import libtcodpy as tcod
 import render_fast_los
@@ -24,6 +23,7 @@ import numbers
 import bullets
 import dialog
 import random
+import tiles
 import menus
 import logic
 import items
@@ -67,14 +67,12 @@ except IOError:
 	maps.save_map(MAP)
 
 WORLD_INFO['map'] = MAP
-create_all_tiles()
+tiles.create_all_tiles()
 maps.update_chunk_map(MAP)
 maps.smooth_chunk_map()
 maps.generate_reference_maps()
 language.load_strings()
 gfx.init_libtcod()
-
-PLACING_TILE = WALL_TILE
 
 def move_camera(pos,scroll=False):
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
@@ -111,9 +109,12 @@ items.initiate_item('electric_lantern')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-SETTINGS['running'] = 2
+SETTINGS['running'] = -1
 
-while SETTINGS['running']==1:
+while SETTINGS['running'] in [-1, 1]:
+	if SETTINGS['running'] == -1:
+		mainmenu.draw_intro()
+	
 	if not MENUS:
 		mainmenu.switch_to_main_menu()
 	

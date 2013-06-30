@@ -537,7 +537,7 @@ def handle_input():
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
 	
 	if INPUT['\r']:
-		if life.has_dialog(SETTINGS['controlling']):
+		if SETTINGS['controlling'] and life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
 			return False
