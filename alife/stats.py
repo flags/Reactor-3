@@ -1,5 +1,7 @@
 from globals import *
 
+import life as lfe
+
 import judgement
 import groups
 import brain
@@ -44,7 +46,10 @@ def desires_life(life, life_id):
 	return False
 
 def desires_interaction(life):
-	return MAX_INTERACTION-life['stats']['sociability']
+	if judgement.is_safe(life):
+		return True
+	
+	return False
 
 def desires_conversation_with(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
@@ -70,6 +75,28 @@ def desires_to_create_group(life):
 def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 	if with_new_group_in_mind:
 		if judgement.judge_group(life, with_new_group_in_mind)>get_minimum_group_score(life):
+			return True
+	
+	_group = groups.get_group(group_id)
+	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['willpower']+life['stats']['sociability']:
+		return False
+	
+	_top_group = {'id': -1, 'score': 0}
+	for memory in lfe.get_memory(life, matches={'group': '*'}):
+		_score = 0
+		
+		if 'trust' in memory:
+			_score += memory['trust']
+		
+		if 'danger' in memory:
+			_score += memory['danger']
+	
+		if _score > _top_group['score'] or _top_group['id'] == -1:
+			_top_group['id'] = memory['group']
+			_top_group['score'] = _score
+		
+	if _top_group:
+		if judgement.judge_group(life, _top_group['id'])>get_minimum_group_score(life):
 			return True
 	
 	return False

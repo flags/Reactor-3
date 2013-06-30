@@ -738,7 +738,7 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 		if not 'target' in question:
 			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
 		
-		brain.add_impression(life, question['target'], 'talk', {'influence': interest})
+		brain.add_impression(life, question['target'], 'talk', {'influence': stats.get_influence_from(life, question['target'])})
 	
 	question['answer_all'] = answer_all
 	memory(life, gist, question)

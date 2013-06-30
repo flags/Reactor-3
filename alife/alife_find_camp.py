@@ -4,6 +4,7 @@ import life as lfe
 
 import references
 import judgement
+import chunks
 import groups
 import brain
 import camps
@@ -49,12 +50,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if _to_explore:
 		print life['name'],'LOOKING AT CAMP'
 		_closest_key =  references.find_nearest_key_in_reference(life, _to_explore, unknown=True)
-		
 		_chunk = maps.get_chunk(_closest_key)
+		_dest = lfe.path_dest(life)
 		
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move',
-	     	'to': random.choice(_chunk['ground'])}, 200)
+		if not _dest or not chunks.position_is_in_chunk(_dest, _closest_key):
+			lfe.clear_actions(life)
+			lfe.add_action(life,{'action': 'move',
+				'to': random.choice(_chunk['ground'])}, 200)
 		return True
 	
 	_best_camp = camps.find_best_unfounded_camp(life)['camp']

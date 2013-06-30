@@ -36,9 +36,7 @@ def listen(life):
 		
 		elif event['gist'] == 'follow':
 			if stats.will_obey(life, event['from']['id']):
-				#brain.flag_alife(life, event['from'], 'follow')
 				brain.add_impression(life, event['from']['id'], 'follow', {'influence': stats.get_influence_from(life, event['from']['id'])})
-				print 'FLAGGING FOR FOLLOW'
 		
 		elif event['gist'] == 'surrender':
 			_found_related_job = False
@@ -281,7 +279,8 @@ def listen(life):
 					{'target': event['from']['id'], 'who': event['attacker']},
 					lfe.get_memory,
 					{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
-					answer_all=True)
+					answer_all=True,
+					interest=10)
 					
 			
 			#if _believes == event['from']['id']:

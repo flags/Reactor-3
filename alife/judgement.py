@@ -289,10 +289,11 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
 	
-	if _trusted>_group_size_max:
-		_score += _trusted*_antisocial_mod
-	else:
-		_score += _trusted
+	if stats.desires_interaction(life):
+		if _trusted>_group_size_max:
+			_score += _trusted*_antisocial_mod
+		else:
+			_score += _trusted
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
