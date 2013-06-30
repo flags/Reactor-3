@@ -41,7 +41,7 @@ def create_dialog_with(life, target, info):
 		alife.brain.meet_alife(LIFE[target], life)
 	
 	_dialog = {'enabled': True,
-		'title': '',
+		'title': 'Talk',
 		'sender': life['id'],
 		'receiver': target,
 		'speaker': life['id'],
@@ -94,6 +94,13 @@ def reset_dialog(dialog, end=True):
 	_ret = False
 
 	if end:
+		if 'player' in LIFE[dialog['sender']] and dialog['starting_topics'] and not dialog['title'] == 'Talk':
+			dialog['topics'] = dialog['starting_topics']
+			dialog['speaker'] = dialog['sender']
+			dialog['title'] = 'Talk'
+			dialog['index'] = 0
+			return True
+			
 		LIFE[dialog['sender']]['dialogs'].remove(dialog)
 		
 		if dialog in LIFE[dialog['receiver']]['dialogs']:
@@ -125,6 +132,7 @@ def give_menu_response(life, dialog):
 		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
+		dialog['title'] = 'Answer'
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 
