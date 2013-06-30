@@ -2,23 +2,24 @@ from globals import *
 import life as lfe
 
 import references
+import sight
 import maps
 
 import numbers
 import random
 import time
 
-def find_best_known_chunk(life):
+def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
 		_chunk = life['known_chunks'][chunk_key]
 		
-		if _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
-	_current_known_chunk = lfe.get_current_known_chunk(life)
-	if _current_known_chunk:
+	if not ignore_starting:
+		_current_known_chunk = lfe.get_current_known_chunk(life)
 		_initial_score = _current_known_chunk['score']
 	else:
 		_initial_score = 0
@@ -36,20 +37,20 @@ def find_best_known_chunk(life):
 	
 	return _best_chunk['chunk_key']
 
-def find_best_unknown_chunk(life, chunks):
-	_nearest = {'distance': -1, 'key': None}
-	for chunk_key in references.find_nearest_road(life):
-		if chunk_key in life['known_chunks']:
-			continue
-		
-		chunk_center = [int(val)+(SETTINGS['chunk size']/2) for val in chunk_key.split(',')]
-		_distance = numbers.distance(life['pos'], chunk_center)
-		
-		if not _nearest['key'] or _distance<_nearest['distance']:
-			_nearest['distance'] = _distance
-			_nearest['key'] = chunk_key
-	
-	return _nearest['key']
+#def find_best_unknown_chunk(life, chunks):
+#	_nearest = {'distance': -1, 'key': None}
+#	for chunk_key in references.find_nearest_road(life):
+#		if chunk_key in life['known_chunks']:
+#			continue
+#		
+#		chunk_center = [int(val)+(SETTINGS['chunk size']/2) for val in chunk_key.split(',')]
+#		_distance = numbers.distance(life['pos'], chunk_center)
+#		
+#		if not _nearest['key'] or _distance<_nearest['distance']:
+#			_nearest['distance'] = _distance
+#			_nearest['key'] = chunk_key
+#	
+#	return _nearest['key']
 
 def find_surrounding_unknown_chunks(life):
 	_unknown_chunks = []
@@ -69,11 +70,20 @@ def is_in_chunk(life, chunk_id):
 	
 	return False
 
+def position_is_in_chunk(position, chunk_id):
+	_chunk = maps.get_chunk(chunk_id)
+	
+	if position[0] >= _chunk['pos'][0] and position[0] <= _chunk['pos'][0]+SETTINGS['chunk size']\
+		and position[1] >= _chunk['pos'][1] and position[1] <= _chunk['pos'][1]+SETTINGS['chunk size']:
+			return True
+	
+	return False
+
 def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:
-		if lfe.can_see(life, pos):
+		if sight.can_see_position(life, pos):
 			return True
 	
 	return False
@@ -86,7 +96,7 @@ def get_visible_walkable_areas(life, chunk_id):
 	_walkable = []
 	
 	for pos in chunk['ground']:
-		if lfe.can_see(life, pos):
+		if sight.can_see_position(life, pos):
 			_walkable.append(pos)
 	
 	return _walkable

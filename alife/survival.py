@@ -7,6 +7,7 @@ import movement
 import chunks
 import speech
 
+import logging
 import numbers
 import random
 import combat
@@ -16,45 +17,96 @@ import sight
 import maps
 import time
 
-def loot(life):
-	#What do we need to do?
-	#	- Get items?
-	#	- Find shelter?
+def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
+	life['needs'].append({'need': need,
+		'need_callback': need_callback,
+	    'can_meet_callback': can_meet_callback,
+	    'satisfy_callback': satisfy_callback,
+		'min_matches': min_matches,
+		'matches': [],
+	    'can_meet_with': [],
+	    'memory_location': None,
+		'num_met': False,
+	    'cancel_if_flag': cancel_if_flag})
+
+def can_meet_need(life, need):
+	_matches = []
 	
-	manage_hands(life)
+	for meet_callback in need['can_meet_callback']:
+		_matches.extend(meet_callback(life, matches=need['need']))
 	
-	if brain.get_flag(life, 'no_weapon'):
-		_nearby_weapons = sight.find_known_items(life, matches=[{'type': 'gun'}])
-		
-		if _nearby_weapons:
-			movement.collect_nearby_wanted_items(life, matches=[{'type': 'gun'}])
+	need['can_meet_with'] = _matches
+	
+	return _matches
+
+def is_need_active(life, need):
+	if not need['cancel_if_flag']:
+		return True
+	
+	if brain.get_flag(life, need['cancel_if_flag'][0]) == need['cancel_if_flag'][1]:
+		return False
+	
+	return True
+
+def is_in_need_matches(life, match):
+	_matches = []
+	
+	for root_need in life['needs']:
+		for item in root_need['matches']:
+			_break = False
+
+			for key in match:
+				if not key in item or not item[key] == match[key]:
+					_break = True
+					break
 			
-			for ai in [life['know'][i] for i in life['know']]:
-				if ai['score']<=0:
-					continue
-				
-			return True
+			if _break:
+				continue
+			
+			_matches.append(root_need)
 	
-	elif not brain.get_flag(life, 'no_weapon'):
-		_ammo_matches = []
-		_feed_matches = []
-		for weapon in combat.has_weapon(life):
-			_ammo_matches.append({'type': 'bullet','ammotype': weapon['ammotype']})
-			_feed_matches.append({'type': weapon['feed'],'ammotype': weapon['ammotype']})
-		
-		if sight.find_known_items(life, matches=_ammo_matches):
-			movement.collect_nearby_wanted_items(life, matches=_ammo_matches)
-			return True
-		elif sight.find_known_items(life, matches=_feed_matches):
-			movement.collect_nearby_wanted_items(life, matches=_feed_matches)
-			return True
+	return _matches
+
+def get_matched_needs(life, match):
+	_matches = []
 	
-	if brain.get_flag(life, 'no_backpack'):
-		_nearby_backpacks = sight.find_known_items(life, matches=[{'type': 'backpack'}])
-		
-		if _nearby_backpacks:
-			movement.collect_nearby_wanted_items(life, matches=[{'type': 'backpack'}])
-			return True
+	for root_need in life['needs']:
+		_break = False
+		for need in root_need:
+			for key in match:
+				if not key in need or not need[key] == match[key]:
+					_break = True
+					break
+			
+			if _break:
+				break
+			
+			_matches.append(root_need)
+	
+	return _matches
+
+def _has_inventory_item(life, matches={}):
+	return lfe.get_all_inventory_items(life, matches=[matches])
+
+def check_all_needs(life):
+	for need in life['needs']:
+		need_is_met(life, need)
+
+def need_is_met(life, need):
+	_res = []
+	
+	for meet_callback in need['need_callback']:
+		_res.extend(meet_callback(life, matches=need['need']))
+	
+	need['matches'] = _res
+	
+	if len(_res)>=need['min_matches']:
+		need['num_met'] = (len(_res)-need['min_matches'])+1
+		return True
+	
+	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
+	need['num_met'] = 0
+	return False
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
@@ -109,7 +161,7 @@ def explore_known_chunks(life):
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
 	#the module itself.	
-	_chunk_key = chunks.find_best_known_chunk(life)	
+	_chunk_key = brain.retrieve_from_memory(life, 'explore_chunk')
 	_chunk = maps.get_chunk(_chunk_key)
 	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
@@ -119,6 +171,10 @@ def explore_known_chunks(life):
 	_pos_in_chunk = random.choice(_chunk['ground'])
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	return True
+
+def _job_explore_unknown_chunks(life):
+	explore_unknown_chunks(life)
 
 def explore_unknown_chunks(life):
 	if life['path']:
@@ -142,7 +198,7 @@ def explore_unknown_chunks(life):
 	
 	_closest_pos = {'pos': None, 'distance': -1}
 	for pos in _walkable_area:
-		_distance = numbers.distance(life['pos'], pos, old=False)
+		_distance = numbers.distance(life['pos'], pos)
 				
 		if _distance <= 1:
 			_closest_pos['pos'] = pos

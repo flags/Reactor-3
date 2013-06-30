@@ -1,25 +1,26 @@
-from libtcodpy import *
 from globals import *
+
+import libtcodpy as tcod
 
 BLANK_TILE = {'id':'blank_tile',
 				'icon': '.',
-				'color':(darker_gray,black)}
+				'color':(tcod.darker_gray, tcod.black)}
 
 SHORT_GRASS_TILE = {'id':'short_grass',
 					'icon':'.',
-					'color':(GRASS_GREEN_DARK,GRASS_GREEN),
+					'color':(GRASS_GREEN_DARK, tcod.desaturated_green),
 					'burnable':True,
 					'cost':1}
 
 GRASS_TILE = {'id':'grass',
 			  'icon':';',
-			  'color':(GRASS_GREEN,GRASS_GREEN_DARK),
+			  'color':(GRASS_GREEN, tcod.desaturated_sea),
 			  'burnable':True,
 			  'cost':1}
 
 TALL_GRASS_TILE = {'id':'tall_grass',
 				   'icon':'\\',
-				   'color':(GRASS_GREEN,GREEN_ALT),
+				   'color':(GRASS_GREEN, tcod.desaturated_chartreuse),
 				   'burnable':True,
 				   'cost':1}
 
@@ -65,73 +66,73 @@ DIRT_TILE_3 = {'id':'dirt_3',
 
 WALL_TILE = {'id':'wall',
 			 'icon':'#',
-			 'color':(black,dark_gray),
+			 'color':(tcod.black, tcod.dark_gray),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 CONCRETE_TILE_1 = {'id':'concrete_1',
 			 'icon':'.',
-			 'color':(Color(130,130,130),Color(70,70,70)),
+			 'color':(tcod.Color(130,130,130), tcod.Color(70,70,70)),
 			 'burnable':False,
 			 'type': 'road',
 			 'cost':2}
 
 CONCRETE_TILE_2 = {'id':'concrete_2',
 			 'icon':'.',
-			 'color':(Color(95,95,95),Color(62,62,62)),
+			 'color':(tcod.Color(95,95,95), tcod.Color(62,62,62)),
 			 'burnable':False,
 			 'type': 'road',
 			 'cost':2}
 
 CONCRETE_FLOOR_1 = {'id':'concrete_floor_1',
 			 'icon':'.',
-			 'color':(Color(115,115,115),Color(100,100,100)),
+			 'color':(tcod.Color(115,115,115), tcod.Color(100,100,100)),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':2}
 
 CONCRETE_FLOOR_2 = {'id':'concrete_floor_2',
 			 'icon':'.',
-			 'color':(Color(125,125,125),Color(110,110,110)),
+			 'color':(tcod.Color(125,125,125), tcod.Color(110,110,110)),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':2}
 
 ROAD_STRIPE_1 = {'id':'road_stripe_1',
 			 'icon':'.',
-			 'color':(yellow,yellow),
+			 'color':(tcod.yellow, tcod.yellow),
 			 'burnable':False,
 			 'cost':2}
 
 ROAD_STRIPE_2 = {'id':'road_stripe_2',
 			 'icon':'.',
-			 'color':(white,darker_gray),
+			 'color':(tcod.white, tcod.darker_gray),
 			 'burnable':False,
 			 'cost':2}
 
 RED_BRICK_1 = {'id':'red_brick_1',
 			 'icon':'#',
-			 'color':(gray,dark_red),
+			 'color':(tcod.gray, tcod.dark_red),
 			 'burnable':False,
 			 'cost':-1}
 
 RED_BRICK_2 = {'id':'red_brick_2',
 			 'icon':'#',
-			 'color':(light_gray,dark_red),
+			 'color':(tcod.light_gray, tcod.dark_red),
 			 'burnable':False,
 			 'cost':-1}
 
 WHITE_TILE_1 = {'id':'white_tile_1',
 			 'icon':',',
-			 'color':(lightest_gray,lighter_gray),
+			 'color':(tcod.lightest_gray, tcod.lighter_gray),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 WHITE_TILE_2 = {'id':'white_tile_2',
 			 'icon':'.',
-			 'color':(white,lightest_gray),
+			 'color':(tcod.white, tcod.lightest_gray),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}

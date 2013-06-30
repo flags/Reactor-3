@@ -2,7 +2,9 @@ from globals import *
 from alife import *
 
 import graphics as gfx
+import damage as dam
 import pathfinding
+import scripting
 import language
 import contexts
 import drawing
@@ -50,14 +52,46 @@ def calculate_base_stats(life):
 		elif flag.count('ARMS'):
 			stats['arms'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
-		elif flag.count('HANDS'):
-			stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
+			#elif flag.count('HANDS'):
+			#stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
 		
 		elif flag.count('MELEE'):
 			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
+		
+		elif flag == 'HUNGER':
+			life['eaten'] = []	
 	
-	stats['base_speed'] = LIFE_MAX_SPEED-(len(stats['legs']))
+	if not 'hands' in life:
+		life['hands'] = []
+	
+	life['life_flags'] = life['flags']
+	
+	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
+	
+	print race_type,stats['speed_max']
+	
+	for var in life['vars'].split('|'):
+		key,val = var.split('=')
+		logging.debug('%s = %s' % (key, val))
+		
+		try:
+			life[key] = int(val)
+			continue
+		except:
+			pass
+		
+		try:
+			life[key] = life[val]
+			continue
+		except:
+			pass
+		
+		try:
+			life[key] = val
+			continue
+		except:
+			pass
 	
 	return stats
 
@@ -85,30 +119,32 @@ def get_limb_condition(life,limb):
 
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
-	_speed_mod = 0
-	_penalty = 0
+	return life['speed_max']
 	
-	for limb in life['body']:
-		for item in life['body'][limb]['holding']:
-			_i = get_inventory_item(life,item)
-			
-			if _i.has_key('speed_mod'):
-				_speed_mod += _i['speed_mod']
-		
-		if limb in life['legs']:
-			_pain = life['body'][limb]['pain']
-			
-			if not _pain:
-				_pain = 1
-			
-			_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)*_pain
-	
-	_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
-	
-	if _MAX_SPEED > LIFE_MAX_SPEED:
-		return LIFE_MAX_SPEED
-	
-	return _MAX_SPEED
+	#_speed_mod = 0
+	#_penalty = 0
+	#
+	#for limb in life['body']:
+	#	for item in life['body'][limb]['holding']:
+	#		_i = get_inventory_item(life,item)
+	#		
+	#		if _i.has_key('speed_mod'):
+	#			_speed_mod += _i['speed_mod']
+	#	
+	#	if limb in life['legs']:
+	#		_pain = life['body'][limb]['pain']
+	#		
+	#		if not _pain:
+	#			_pain = 1
+	#		
+	#		_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)*_pain
+	#
+	#_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
+	#
+	#if _MAX_SPEED > LIFE_MAX_SPEED:
+	#	return LIFE_MAX_SPEED
+	#
+	#return _MAX_SPEED
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -126,7 +162,7 @@ def initiate_life(name):
 	
 	for key in life:
 		if isinstance(life[key],unicode):
-			life[key] = str(life[key])
+			life[key] = str(life[key])	
 	
 	life.update(calculate_base_stats(life))
 	
@@ -134,8 +170,10 @@ def initiate_life(name):
 	
 	return life
 
-def initiate_limbs(body):
+def initiate_limbs(life):
 	"""Creates skeleton of a character and all related variables. Returns nothing."""
+	body = life['body']
+	
 	for limb in body:
 		#Unicode fix:
 		_val = body[limb].copy()
@@ -145,18 +183,23 @@ def initiate_limbs(body):
 		
 		_flags = body[limb]['flags'].split('|')
 		
-		if 'CANSTORE' in _flags:
+		if 'CAN_STORE' in _flags:
 			body[limb]['storing'] = []
+		
+		if 'CAN_HOLD' in _flags:
+			life['hands'].append(limb)
 		
 		body[limb]['holding'] = []
 		
 		#Note: `Condition` is calculated automatically
 		body[limb]['condition'] = 100
 		body[limb]['cut'] = False
-		body[limb]['bleeding'] = False
+		body[limb]['bleeding'] = 0
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
+		body[limb]['artery_ruptured'] = False
 		body[limb]['pain'] = 0
+		body[limb]['wounds'] = []
 		
 		if not 'parent' in body[limb]:
 			continue
@@ -166,8 +209,11 @@ def initiate_limbs(body):
 		else:
 			body[body[limb]['parent']]['children'].append(limb)
 
+def generate_likes(life):
+	return copy.deepcopy(POSSIBLE_LIKES)
+
 def get_limb(body,limb):
-	"""Helper function. Finds ands returns a limb."""
+	"""Helper function. Finds and returns a limb."""
 	return body[limb]
 
 def get_all_limbs(body):
@@ -198,18 +244,19 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	
 	#TODO: We only need this for pathing, so maybe we should move this to
 	#the `walk` function?
-	_life['map'] = map
 	_life['animation'] = {}
 	_life['path'] = []
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
+	_life['dialogs'] = []
 	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
 	_life['inventory'] = {}
 	_life['flags'] = {}
 	_life['state'] = 'idle'
+	_life['state_flags'] = []
 	_life['states'] = []
 	_life['gravity'] = 0
 	_life['targeting'] = None
@@ -226,9 +273,12 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
-	_life['aim_at'] = _life
+	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
+	_life['tickers'] = {}
+	_life['think_rate_max'] = random.randint(0, 1)
+	_life['think_rate'] = _life['think_rate_max']
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -244,11 +294,105 @@ def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
 	_life['camp'] = None
 	_life['tempstor2'] = {}
 	_life['job'] = {}
+	_life['group'] = None
 	_life['task'] = ''
+	_life['likes'] = generate_likes(_life)
+	_life['dislikes'] = {}
+	_life['needs'] = []
 	
-	initiate_limbs(_life['body'])
+	_life['stats'] = {}
+	alife.stats.init(_life)
+	
+	alife.survival.create_need(_life,
+		{'type': 'food'},
+		[alife.survival._has_inventory_item],
+		[alife.sight.find_known_items],
+		consume,
+		min_matches=1,
+		cancel_if_flag=('hungry', False))
+	
+	#alife.survival.create_need(_life,
+	#	{'type': 'backpack'},
+	#	[alife.survival._has_inventory_item],
+	#   [alife.sight.find_known_items],
+	#	min_matches=1)
+	
+	alife.survival.create_need(_life,
+		{'type': 'drink'},
+		[alife.survival._has_inventory_item],
+		[alife.sight.find_known_items],
+		consume,
+		min_matches=1,
+		cancel_if_flag=('thirsty', False))
+	
+	#Stats
+	_life['engage_distance'] = 15+random.randint(-5, 5)
+	
+	initiate_limbs(_life)
 	SETTINGS['lifeid'] += 1
 	LIFE[_life['id']] = _life
+	
+	return _life
+
+def ticker(life, name, time):
+	if name in life['tickers']:
+		if life['tickers'][name]:
+			life['tickers'][name] -= 1
+			return False
+		else:
+			return True
+	else:
+		life['tickers'][name] = time
+		return False
+
+def focus_on(life):
+	SETTINGS['following'] = life
+
+def sanitize_heard(life):
+	del life['heard']
+
+def sanitize_know(life):
+	if life['know']:
+		print life['know'][life['know'].keys()[0]].keys()
+	
+	for entry in life['know'].values():
+		entry['life'] = entry['life']['id']
+	
+	#del life['know']
+
+def prepare_for_save(life):
+	_delete_keys = []
+	_sanitize_keys = {'heard': sanitize_heard,
+		'know': sanitize_know}
+	
+	for key in life.keys():#_delete_keys:
+		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'race', u'flags', 'known_chunks']:
+		#	continue
+		if key in _sanitize_keys:
+			_sanitize_keys[key](life)
+		elif key in _delete_keys:
+			del life[key]
+	
+	#print life.keys()
+	#_save_string = json.dumps(life)
+
+def post_save(life):
+	'''This is for getting the entity back in working order after a save.'''
+	#TODO: Don't needs this any more...
+	life['heard'] = []
+	
+	for entry in life['know'].values():
+		entry['life'] = LIFE[entry['life']]
+
+def save_all_life():
+	for life in [LIFE[i] for i in LIFE]:
+		#_life.append(get_save_string(life))
+		prepare_for_save(life)
+	
+	_life = json.dumps(LIFE)
+	
+	for life in [LIFE[i] for i in LIFE]:
+		post_save(life)
 	
 	return _life
 
@@ -260,12 +404,16 @@ def show_debug_info(life):
 	for memory in life['memory']:
 		print memory['target'], memory['text']
 
+def get_engage_distance(life):
+	return 0
+
 def change_state(life, state):
 	if life['state'] == state:
 		return False
 	
 	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
 	life['state'] = state
+	life['state_flags'] = []
 	
 	life['states'].append(state)
 	if len(life['states'])>SETTINGS['state history size']:
@@ -300,6 +448,9 @@ def tick_animation(life):
 				return life['icon']
 		
 	return life['animation']['images'][life['animation']['index']]
+
+def get_current_camp(life):
+	return life['known_camps'][life['camp']]
 
 def get_current_known_chunk(life):
 	_chunk_id = get_current_chunk_id(life)
@@ -344,13 +495,16 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 	
 	for ai in [LIFE[i] for i in LIFE]:
 		#TODO: Do we really need to support more than one match?
-		#TODO: Handle radio
 		#TODO: can_hear
 		if ai['id'] == life['id']:
 			continue
 		
-		if not can_see(ai, life['pos']):
+		if not 'INTELLIGENT' in ai['life_flags']:
+			continue
+		
+		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
+				print 'NO RADIO'
 				continue
 		
 		_does_match = True
@@ -411,7 +565,6 @@ def hear(life, what):
 		_menu = []
 		_context = contexts.create_context(life, what, timeout_callback=what['timeout_callback'])
 		
-		_context['reactions']
 		for reaction in _context['reactions']:
 			if reaction['type'] == 'say':
 				_menu.append(menus.create_item('single',
@@ -440,6 +593,8 @@ def hear(life, what):
 						score=reaction['score'],
 						delay=reaction['delay'],
 						life=life))
+			elif reaction['type'] == 'dialog':
+				life['dialogs'].append(reaction)
 		
 		if _menu:
 			_context['items'] = _menu
@@ -503,18 +658,39 @@ def say(life, text, action=False, volume=30, context=False):
 			
 			gfx.message(text, style=_style)
 
-def memory(life, gist, **kvargs):
-	_entry = {'text': gist}
+def memory(life, gist, *args, **kvargs):
+	_entry = {'text': gist, 'id': len(life['memory'])}
 	_entry['time_created'] = WORLD_INFO['ticks']
+	
+	for arg in args:
+		_entry.update(arg)
+	
 	_entry.update(kvargs)
+	
+	if 'question' in _entry:
+		_entry['answered'] = []
+		_entry['asked'] = {}
+		_entry['ignore'] = []
+		#_entry['last_asked'] = -1000
 	
 	life['memory'].append(_entry)
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
-	else:
-		print 'NO TARGET?', gist, life['name']
+
+def has_dialog(life):
+	for dialog in [d for d in life['dialogs'] if d['enabled']]:
+		if dialog['speaker'] == life['id']:
+			return True
+	
+	return False
+
+def can_ask(life, chosen, memory):
+	if 'target' in chosen and chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
+		return False
+	
+	return True
 
 def get_memory(life, matches={}):
 	_memories = []
@@ -522,7 +698,7 @@ def get_memory(life, matches={}):
 	for memory in life['memory']:
 		_break = False
 		for key in matches:
-			if not key in memory or not memory[key] == matches[key]:
+			if not key in memory or not (matches[key] == '*' or memory[key] == matches[key]):
 				_break = True
 				break
 		
@@ -531,10 +707,59 @@ def get_memory(life, matches={}):
 			
 	return _memories
 
+def get_memory_via_id(life, memory_id):
+	for memory in life['memory']:
+		if memory['id'] == memory_id:
+			return memory
+	
+	raise Exception('Invalid memory passed to get_memory_via_id(): %s' % memory_id)
+
 def delete_memory(life, matches={}):
 	for _memory in get_memory(life, matches=matches):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
+
+def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False, interest=0):
+	question['question'] = True
+	question['answer_callback'] = callback
+	if not isinstance(answer_match, list):
+		answer_match = [answer_match]
+	
+	question['answer_match'] = answer_match
+	_match = {'text': gist}
+	
+	if not match_gist_only:
+		_match.update(question)
+	
+	if get_memory(life, matches=_match):
+		return False
+	
+	if interest:
+		if not 'target' in question:
+			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
+		
+		brain.add_impression(life, question['target'], 'talk', {'influence': stats.get_influence_from(life, question['target'])})
+	
+	question['answer_all'] = answer_all
+	memory(life, gist, question)
+	
+	logging.debug('Creating question...')
+	return True
+
+def get_questions(life, target=None, no_filter=False, skip_answered=True):
+	_questions = []
+	
+	for question in get_memory(life, matches={'question': True}):
+		if skip_answered and question['answered']:
+			continue
+		
+		#TODO: no_filter kills the loop entirely?
+		if not no_filter and target and target in question['ignore']:
+			continue
+		
+		_questions.append(question)
+	
+	return _questions
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]
@@ -587,6 +812,10 @@ def crawl(life):
 		200,
 		delay=_delay)
 
+def stop(life):
+	clear_actions(life)
+	life['path'] = []
+
 def path_dest(life):
 	"""Returns the end of the current path."""
 	if not life['path']:
@@ -594,7 +823,7 @@ def path_dest(life):
 	
 	return tuple(life['path'][len(life['path'])-1])
 
-def walk(life,to):
+def walk(life, to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']>0:
 		if life['stance'] == 'standing':
@@ -613,7 +842,7 @@ def walk(life,to):
 	
 	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
 		_stime = time.time()
-		life['path'] = pathfinding.create_path(life['pos'],to,source_map=life['map'])
+		life['path'] = pathfinding.create_path_old(life['pos'], to, source_map=WORLD_INFO['map'])
 		#print '\ttotal',time.time()-_stime
 	
 	return walk_path(life)
@@ -630,7 +859,7 @@ def walk_path(life):
 		
 		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
 			life['facing'] = (_nfx,_nfy)
-			life['aim_at'] = life
+			life['aim_at'] = life['id']
 		
 		if _pos[2] and abs(_pos[2])-1:
 			if _pos[2]>0:
@@ -650,8 +879,8 @@ def walk_path(life):
 
 def perform_collisions(life):
 	"""Performs gravity. Returns True if falling."""
-	if not life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
-		if life['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
+	if not WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]]:
+		if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]-1]:
 			life['pos'][2] -= 1
 			
 			return True
@@ -712,7 +941,7 @@ def find_action(life,matches=[{}]):
 		
 		for match in matches:
 			for key in match:
-				if not key in action['action'] and not action[key] == match[key]:
+				if not key in action or not action[key] == match[key]:
 					_break = True
 					break
 			
@@ -892,6 +1121,13 @@ def perform_action(life):
 		set_animation(life, [';', 'p'], speed=6)
 		delete_action(life,action)
 	
+	elif _action['action'] == 'consumeitem':
+		_item = get_inventory_item(life, _action['item'])
+		consume_item(life, _action['item'])
+		set_animation(life, [';', 'e'], speed=6)
+		items.delete_item(_item)
+		delete_action(life, action)
+	
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
 			if life.has_key('player'):
@@ -1007,7 +1243,12 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'shoot':
-		weapons.fire(life,_action['target'])
+		weapons.fire(life, _action['target'], limb=_action['limb'])
+		
+		add_action(life,
+			{'action': 'recoil'},
+			899,
+			delay=weapons.get_recoil(life))
 		
 		delete_action(life,action)
 	
@@ -1018,27 +1259,25 @@ def perform_action(life):
 		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
+	elif _action['action'] == 'recoil':
+		delete_action(life, action)
+
 	else:
 		logging.warning('Unhandled action: %s' % _action['action'])
 	
 	return True
 
-def kill(life, how):
-	if how == 'bleedout':
-		if 'player' in life:
-			gfx.message('You die from blood loss.',style='death')
-		else:
-			say(life,'@n dies from blood loss.',action=True)
-			logging.debug('%s dies from blood loss.' % life['name'][0])
-	elif how == 'pain':
-		if 'player' in life:
-			gfx.message('You die.',style='death')
-		else:
-			say(life,'@n dies.',action=True)
-			logging.debug('%s dies.' % life['name'][0])
-	
-	for ai in [LIFE[i] for i in LIFE]:
-		if can_see(ai, life['pos']):
+def kill(life, injury):
+	if isinstance(injury, str):
+		life['cause_of_death'] = injury
+		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
+	else:
+		life['cause_of_death'] = language.format_injury(injury)
+		say(life, '@n dies from %s' % life['cause_of_death'], action=True)
+		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
+		
+	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+		if alife.sight.can_see_position(ai, life['pos']):
 			memory(ai, 'death', target=life['id'])
 	
 	drop_all_items(life)
@@ -1050,10 +1289,28 @@ def can_die_via_critical_injury(life):
 			continue
 		
 		#TODO: Max pain per limb
-		if limb['pain']>=20:
-			return True
+		if limb['pain']>=4:
+			return limb
 	
 	return False	
+
+def hunger(life):
+	if life['hunger']>0:
+		life['hunger'] -= 1
+	else:
+		kill(life, 'starvation')
+		return False
+
+	return True
+
+def thirst(life):
+	if life['thirst']>0:
+		life['thirst'] -= 1
+	else:
+		kill(life, 'dehydration')
+		return False
+	
+	return True
 
 def tick(life, source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
@@ -1066,11 +1323,23 @@ def tick(life, source_map):
 				
 		return False
 	
-	natural_healing(life)
+	if 'HUNGER' in life['life_flags']:
+		if not hunger(life):
+			return False
+		
+		calculate_hunger(life)
+		
+	if 'THIRST' in life['life_flags']:
+		if not thirst(life):
+			return False
 	
-	if get_bleeding_limbs(life):
-		if random.randint(0,50)<7:
-			effects.create_splatter('blood',life['pos'])
+	natural_healing(life)
+	_bleeding_limbs = get_bleeding_limbs(life)
+	if _bleeding_limbs:
+		_bleed_score = sum([get_limb(life['body'], l)['bleeding'] for l in _bleeding_limbs])*3
+		
+		if random.randint(0,50)<numbers.clip(_bleed_score, 0, 50):
+			effects.create_splatter('blood', life['pos'])
 	
 	if life['asleep']:
 		life['asleep'] -= 1
@@ -1087,8 +1356,9 @@ def tick(life, source_map):
 		
 		return False
 	
-	if can_die_via_critical_injury(life):
-		kill(life,'pain')
+	_crit_injury = can_die_via_critical_injury(life)
+	if _crit_injury:
+		kill(life ,_crit_injury['wounds'].pop())
 		
 		return False
 	
@@ -1117,8 +1387,11 @@ def tick(life, source_map):
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
-		brain.think(life,source_map)
+		alife.survival.check_all_needs(life)
+		brain.think(life, source_map)
 	else:
+		brain.sight.look(life)
+		
 		for context in life['contexts'][:]:
 			context['time'] -= 1
 			
@@ -1158,28 +1431,6 @@ def get_all_visible_items(life):
 	[_ret.extend(limb['holding']) for limb in [life['body'][limb] for limb in life['body']] if limb['holding']]
 	
 	return _ret
-
-def can_see(life, pos):
-	"""Returns `true` if the life can see a certain position."""
-	if CYTHON_RENDER_LOS:
-		_line = render_los.draw_line(life['pos'][0],
-			life['pos'][1],
-			pos[0],
-			pos[1])
-		
-		if not _line:
-			_line = []
-	else:
-		_line = drawing.diag_line(life['pos'],pos)
-
-	if len(_line)>15:
-		return False
-
-	for pos in _line:
-		if life['map'][pos[0]][pos[1]][life['pos'][2]+1]:
-			return False
-	
-	return True
 
 def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
@@ -1318,6 +1569,9 @@ def get_all_inventory_items(life,matches=None):
 	for item in life['inventory']:
 		_item = life['inventory'][item]
 		
+		if find_action(life, matches=[{'item': _item['id']}]):
+			continue
+		
 		if matches:
 			if not perform_match(_item,matches):
 				continue
@@ -1340,6 +1594,18 @@ def get_all_unequipped_items(life, check_hands=True, matches=[]):
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
+
+def get_all_known_camps(life, matches={}):
+	_camps = []
+	
+	for camp in life['known_camps'].values():
+		for key in matches:
+			if not key in camp or not camp[key] == matches[key]:
+				break
+			
+			_camps.append(camp)
+	
+	return _camps
 
 def _get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""
@@ -1377,18 +1643,20 @@ def _get_item_access_time(life, item):
 
 def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
-	return numbers.clip(_get_item_access_time(life, item),1,999)
+	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
-def direct_add_item_to_inventory(life,item,container=None):
+def direct_add_item_to_inventory(life, item, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
+	unlock_item(life, item)
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
+	item['parent_id'] = life['id']
 	life['inventory'][str(_id)] = item
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
@@ -1412,9 +1680,11 @@ def direct_add_item_to_inventory(life,item,container=None):
 
 def add_item_to_inventory(life, item):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
+	unlock_item(life, item)
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
+	item['parent_id'] = life['id']
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
@@ -1479,10 +1749,51 @@ def remove_item_from_inventory(life,id):
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
+	del item['parent_id']
 	
 	create_and_update_self_snapshot(life)
 	
 	return item
+
+def is_consuming(life):
+	return find_action(life, matches=[{'action': 'consumeitem'}])
+
+def consume(life, item_id):
+	if is_consuming(life):
+		logging.warning('%s is already eating.' % ' '.join(life['name']))
+		return False
+	
+	add_action(life, {'action': 'consumeitem',
+		'item': item_id},
+		200,
+		delay=get_item_access_time(life, item_id))
+	
+	return True
+
+def can_consume(life, item_id):
+	item = get_inventory_item(life, item_id)
+	
+	if item['type'] in ['food', 'drink']:
+		return True
+	
+	return False
+
+def consume_item(life, item_id):
+	item = get_inventory_item(life, item_id)
+	
+	if not can_consume(life, item_id):
+		return False
+	
+	life['eaten'].append(item)
+	remove_item_from_inventory(life, item_id)
+	alife.speech.announce(life, 'consume_item', public=True)
+	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
+
+	if 'player' in life:
+		if item['type'] == 'food':
+			gfx.message('You finsh eating.')
+		else:
+			gfx.message('You finsh drinking.')
 
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
@@ -1509,41 +1820,45 @@ def _equip_clothing(life,id):
 	
 	return True
 
-def _equip_weapon(life,id):
+def _equip_item(life, item_id):
 	"""Private function. Equips weapon. See life.equip_item()."""
 	_limbs = get_all_limbs(life['body'])
 	_hand = can_hold_item(life)
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
 	if not _hand:
 		if 'player' in life:
 			gfx.message('You don\'t have a free hand!')
 		return False
 	
-	remove_item_in_storage(life,id)
-	_hand['holding'].append(id)
+	remove_item_in_storage(life, item_id)
+	_hand['holding'].append(item_id)
 	
 	logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
 	
 	return True
 
-def equip_item(life,id):
+def equip_item(life, item_id):
 	"""Helper function. Equips item."""	
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
 	if 'CANWEAR' in item['flags']:
-		if not _equip_clothing(life,id):
+		if not _equip_clothing(life, item_id):
 			return False
 		
-		_held = is_holding(life, id)
+		_held = is_holding(life, item_id)
 		if _held:			
 			#TODO: Don't breathe this!
-			_held['holding'].remove(id)
+			_held['holding'].remove(item_id)
 		
-	elif item['type'] == 'gun':
-		_equip_weapon(life,id)
+	elif 'CANNOT_HOLD' in item['flags']:
+		logging.error('Cannot hold item type: %s' % item['type'])
+	
 	else:
-		logging.error('Invalid item type: %s' % item['type'])
+		_equip_item(life, item_id)
+		
+		if 'ON_EQUIP' in item['flags']:
+			scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item['uid'])
 	
 	life['speed_max'] = get_max_speed(life)
 	
@@ -1573,6 +1888,12 @@ def drop_all_items(life):
 	
 	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
 		drop_item(life, item)
+
+def lock_item(life, item):
+	item['lock'] = life
+
+def unlock_item(life, item):
+	item['lock'] = None
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""
@@ -1619,7 +1940,7 @@ def is_holding(life,id):
 	
 	return False
 
-def perform_match(item,matches):
+def perform_match(item, matches):
 	for match in matches:
 		_fail = False
 		
@@ -1650,12 +1971,15 @@ def get_held_items(life,matches=None):
 			if matches:
 				if not perform_match(_item,matches):
 					continue
-					continue
-					continue
 							
 			_holding.append(_limb['holding'][0])
 	
 	return _holding
+
+def get_items_attached_to_limb(life, limb):
+	_limb = life['body'][limb]
+	
+	return _limb['holding']	
 
 def item_is_equipped(life,id,check_hands=False):
 	"""Returns limb where item is equipped. Returns False othewise.
@@ -1672,6 +1996,17 @@ def item_is_equipped(life,id,check_hands=False):
 	
 	return False
 
+def get_all_life_at_position(life, position):
+	_life = []
+	
+	for alife in [LIFE[i] for i in LIFE]:
+		if not tuple(alife['pos'][:2]) == tuple(position[:2]):
+			continue
+		
+		_life.append(alife['id'])
+	
+	return _life
+
 def show_life_info(life):
 	for key in life:
 		if key == 'body':
@@ -1680,33 +2015,37 @@ def show_life_info(life):
 		logging.debug('%s: %s' % (key,life[key]))
 	
 	return True
+	
+def draw_life_icon(life):
+	_icon = [tick_animation(life), tcod.white]
+	
+	if life['id'] in [context['from']['id'] for context in SETTINGS['following']['contexts']]:
+		if time.time()%1>=0.5:
+			_icon[0] = '?'
+	
+	_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	if _targets:
+		if SETTINGS['controlling']['id'] in _targets:
+			_icon[1] = tcod.light_red
+	
+	if life['dead']:
+		_icon[0] = 'X'
+	elif life['asleep']:
+		if time.time()%1>=0.5:
+			_icon[0] = 'S'
+	
+	return _icon
 
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
-		_icon = tick_animation(life)
-		_color = white
-		
-		if life in [context['from'] for context in SETTINGS['following']['contexts']]:
-			if time.time()%1>=0.5:
-				_icon = '?'
-		
-		_targets = brain.retrieve_from_memory(life, 'combat_targets')
-		if _targets:
-			if SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
-				_color = light_red
-		
-		if life['dead']:
-			_icon = 'X'
-		elif life['asleep']:
-			if time.time()%1>=0.5:
-				_icon = 'S'
+		_icon,_color = draw_life_icon(life)
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x] and not life['id'] in SETTINGS['controlling']['know']:
+			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
 			gfx.blit_char(_x,
@@ -1838,66 +2177,94 @@ def draw_life_info():
 	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
 	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
-	console_set_default_foreground(0,BORDER_COLOR)
-	console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
+	tcod.console_set_default_background(0, tcod.black)
+	tcod.console_set_background_flag(0, tcod.BKGND_SET)
 	
-	console_set_default_foreground(0,white)
-	console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
+	tcod.console_set_default_foreground(0, BORDER_COLOR)
+	tcod.console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
+	
+	tcod.console_set_default_foreground(0, tcod.white)
+	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
 	
 	if _holding:
 		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
 		_held_string = language.prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Holding %s' % _held_string, 'color': white})
+		_info.append({'text': 'Holding %s' % _held_string, 'color': tcod.white})
 	else:
 		_info.append({'text': 'You aren\'t holding anything.',
-			'color': Color(125,125,125)})
+			'color': tcod.Color(125,125,125)})
 	
 	if _bleeding:
 		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': red})
+		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': tcod.red})
 	
 	if _broken:
 		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Broken: %s' % _broken_string,
-			'color': red})
+			'color': tcod.red})
 	
 	if _cut:
 		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
 		_info.append({'text': 'Cut: %s' % _cut_string,
-			'color': red})
+			'color': tcod.red})
 	
 	if _bruised:
 		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
 		
-		_info.append({'text': 'Buised: %s' % _bruised_string,
-			'color': red})
+		_info.append({'text': 'Bruised: %s' % _bruised_string,
+			'color': tcod.red})
 	
 	_i = 1
 	for entry in _info:
-		console_set_default_foreground(0,entry['color'])
-		console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
+		tcod.console_set_default_foreground(0,entry['color'])
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
 		
 		_i += 1
 	
 	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
-	console_set_default_foreground(0,Color(_blood_r,_blood_g,0))
-	console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1,'Blood: %s' % int(life['blood']))
+	_blood_str = 'Blood: %s' % int(life['blood'])
+	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
+	_hunger_str = get_thirst(life)
+	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
+	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
+	tcod.console_set_default_foreground(0, tcod.light_grey)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
 	
-	#Drawing contexts (player only)
-	#if 'player' in life and life['contexts']:
-	#	console_set_default_foreground(0,white)
-	#	console_print(0,MAP_WINDOW_SIZE[0]+1,19,'React')
-	#	
-	#	_y_mod = 0
-	#	for context in life['contexts']:
-	#		console_print(0,MAP_WINDOW_SIZE[0]+2,20+_y_mod,'%s: %s' % (context['action'],context['text']))
-	#		
-	#		_y_mod += 1
-	#	
-	#	return True
+	_xmod = 8
+	_i = 5
+	for ai in [LIFE[i] for i in LIFE]:
+		if life['id'] == ai['id']:
+			continue
+		
+		if not alife.sight.can_see_position(SETTINGS['controlling'], ai['pos']):
+			continue
+		
+		_icon = draw_life_icon(ai)
+		tcod.console_set_default_foreground(0, _icon[1])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
+		
+		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
+		if _targets and SETTINGS['controlling']['id'] in _targets:
+			tcod.console_set_default_foreground(0, tcod.red)
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
+		else:
+			tcod.console_set_default_foreground(0, tcod.white)
+		
+		if ai in [context['from'] for context in SETTINGS['controlling']['contexts']]:
+			if time.time()%1>=0.5:
+				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
+		
+		if ai['dead']:
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(ai['name']), ai['cause_of_death']))
+		elif ai['asleep']:
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(ai['name']))
+		else:
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
+		_i += 1
 	
 	#Drawing the action queue
 	_y_mod = 1
@@ -1908,8 +2275,8 @@ def draw_life_info():
 	else:
 		_queued_actions = 'Queued Actions'
 	
-	console_set_default_foreground(0, white)
-	console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
+	tcod.console_set_default_foreground(0, tcod.white)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
 	
 	for action in life['actions'][:SETTINGS['action queue size']]:
 		if not action['delay']:
@@ -1917,25 +2284,41 @@ def draw_life_info():
 				
 		_name = action['action']['action']
 		_bar_size = (action['delay']/float(action['delay_max']))*SETTINGS['progress bar max value']
-		console_set_default_background(0,white)
 		
 		for i in range(SETTINGS['progress bar max value']):
 			if i <= _bar_size:
-				console_set_default_foreground(0,white)
+				tcod.console_set_default_foreground(0, tcod.white)
 			else:
-				console_set_default_foreground(0,gray)
+				tcod.console_set_default_foreground(0, tcod.gray)
 			
 			if 1 <= i <= len(_name):
-				console_set_default_foreground(0,green)
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
+				tcod.console_set_default_foreground(0, tcod.green)
+				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
 			else:
-				console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
+				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
 		
-		console_set_default_foreground(0,white)
-		console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
-		console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
+		tcod.console_set_default_foreground(0, tcod.white)
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
+		tcod.console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
 			
 		_y_mod += 1
+
+def is_target_of(life):
+	_targets = []
+	
+	for ai in [LIFE[i] for i in LIFE]:
+		if life['id'] == ai['id'] or ai['dead']:
+			continue
+		
+		if not alife.sight.can_see_position(life, ai['pos']):
+			continue
+		
+		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
+		if _targets and life['id'] in [l for l in _targets]:
+			_targets.append(ai)
+			break
+	
+	return _targets
 
 def can_knock_over(life, damage, limb):
 	if limb in life['legs']:
@@ -1971,6 +2354,76 @@ def get_total_pain(life):
 		_pain += limb['pain']
 	
 	return _pain
+
+def calculate_hunger(life):
+	_remove = []
+	for _food in life['eaten']:
+		if _food['sustenance']:
+			_food['sustenance'] -= 1
+			
+			if _food['type'] == 'food':
+				life['hunger'] += _food['value']
+			elif _food['type'] == 'drink':
+				life['thirst'] += _food['value']
+			else:
+				logging.error('Item \'%(name)s\' of type \'%(type)s\' was eaten.' % _food)
+				logging.debug('What in the world did you eat?')
+			
+			if 'modifiers' in _food:
+				for _mod in _food['modifiers']:
+					if not _mod in life:
+						logging.error('Invalid modifier \'%s\' in \'%s\'.' % (_mod, _food['name']))
+						continue
+					
+					life[_mod] += _food['modifiers'][_mod]
+			
+		else:
+			_remove.append(_food)
+	
+	for _item in _remove:
+		life['eaten'].remove(_item)
+	
+	if get_hunger(life) == 'Satiated':
+		brain.unflag(life, 'hungry')
+	else:
+		brain.flag(life, 'hungry')
+	
+	if get_thirst(life) == 'Hydrated':
+		brain.unflag(life, 'thirsty')
+	else:
+		brain.flag(life, 'thirsty')
+
+def get_hunger_percentage(life):
+	return life['hunger']/float(life['hunger_max'])
+
+def get_thirst_percentage(life):
+	return life['thirst']/float(life['thirst_max'])
+
+def get_hunger(life):
+	if not 'HUNGER' in life['life_flags']:
+		return 'Not hungry'
+	
+	_hunger = get_hunger_percentage(life)
+	
+	if _hunger>.5:
+		return 'Satiated'
+	elif _hunger>=.3:
+		return 'Hungry'
+	else:
+		return 'Starving'
+
+def get_thirst(life):
+	if not 'THIRST' in life['life_flags']:
+		return 'Not thirsty'
+	
+	_thirst = get_thirst_percentage(life)
+	
+	if _thirst>.5:
+		return 'Hydrated'
+	elif _thirst>=.3:
+		return 'Thirsty'
+	else:
+		return 'Dehydrated'
 
 def calculate_blood(life):
 	_blood = 0
@@ -2036,13 +2489,23 @@ def limb_is_cut(life,limb):
 	
 	return _limb['cut']
 
+def limb_is_broken(life,limb):
+	_limb = life['body'][limb]
+	
+	return _limb['broken']
+
+def artery_is_ruptured(life, limb):
+	_limb = life['body'][limb]
+	
+	return _limb['artery_ruptured']
+
 def cut_limb(life,limb,amount=2):
 	_limb = life['body'][limb]
 	
-	_limb['bleeding'] += amount
+	#_limb['bleeding'] += amount
 	_limb['cut'] = True
 	
-	effects.create_splatter('blood',life['pos'],velocity=1)
+	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
 	
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb,style='damage')
@@ -2051,17 +2514,50 @@ def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
-	_limb['bleeding'] += 3
+	#_limb['bleeding'] += 3
 
 def bruise_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['bruised'] = True
 
+def rupture_artery(life, limb):
+	_limb = life['body'][limb]
+	
+	_limb['artery_ruptured'] = True
+
 def add_pain_to_limb(life,limb,amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount
+
+def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
+	_limb = life['body'][limb]
+	
+	if cut:
+		cut_limb(life, limb)
+		print 'WHAT IS THIS VALUE?',cut,cut*float(_limb['bleed_mod'])
+		_limb['bleeding'] += cut*float(_limb['bleed_mod'])
+		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
+	
+	if artery_ruptured:
+		_limb['bleeding'] += 7
+		rupture_artery(life, limb)
+		
+		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
+	
+	if lodged_item:
+		if 'sharp' in lodged_item['damage']:
+			add_pain_to_limb(life, limb, amount=lodged_item['damage']['sharp']*2)
+		else:
+			add_pain_to_limb(life, limb, amount=2)
+	
+	_injury = {'limb': limb,
+		'cut': cut,
+		'artery_ruptured': artery_ruptured,
+		'lodged_item': lodged_item}
+	
+	_limb['wounds'].append(_injury)
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -2135,76 +2631,54 @@ def damage_from_item(life,item,damage):
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	_rand_limb = random.choice(life['body'].keys())
-	_poss_limbs = [_rand_limb]
+	
+	if item['aim_at_limb'] and random.randint(0, 10-item['accuracy'])>=item['accuracy']:
+		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
+	else:
+		_rand_limb = [random.choice(life['body'].keys())]
+	
+	_poss_limbs = _rand_limb
 	_shot_by_alife = LIFE[item['owner']]
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot by', target=item['owner'])
-	memory(life, 'hostile', target=item['owner'])
+	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
+	#memory(life, 'hostile', target=item['owner'])
+	create_and_update_self_snapshot(LIFE[item['owner']])
 	
 	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
 		memory(life, 'traitor',
 			target=item['owner'])
 	
-	if 'parent' in life['body'][_rand_limb]:
-		_poss_limbs.append(life['body'][_rand_limb]['parent'])
+	if 'parent' in life['body'][_rand_limb[0]]:
+		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])
 	
-	if 'children' in life['body'][_rand_limb]:
-		_poss_limbs.append(life['body'][_rand_limb]['children'][0])
+	if 'children' in life['body'][_rand_limb[0]]:
+		_poss_limbs.append(life['body'][_rand_limb[0]]['children'][0])
 
 	_hit_limb = random.choice(_poss_limbs)
-
-	if item['sharp']:
-		if not limb_is_cut(life,_hit_limb):
-			if life.has_key('player'):
-				gfx.message('Your %s is sliced open by %s' % (_hit_limb,items.get_name(item)))
-			else:
-				say(life,'%s slices open %s\'s %s.' % (items.get_name(item),' '.join(life['name']),_hit_limb),action=True)
-		else:
-			if life.has_key('player'):
-				gfx.message('%s lodged itself in your %s' % (items.get_name(item),_hit_limb))
-			else:
-				say(life,'%s lodges itself in @n\'s %s.' % (items.get_name(item),_hit_limb),action=True)
-
-		_bleed_amt = get_limb(life['body'],_hit_limb)['damage_mod']
-
-		cut_limb(life,_hit_limb,amount=4)
-		add_pain_to_limb(life,_hit_limb,amount=12)
-	else:
-		bruise_limb(life,_hit_limb)
-		add_pain_to_limb(life,_hit_limb,amount=8)
+	_dam_message = dam.bullet_hit(life, item, _hit_limb)
+	print _dam_message
+	gfx.message(_dam_message)
 	
 	if can_knock_over(life, damage, _hit_limb):
 		collapse(life)
 	
-	item['damage'] = damage
-	_damage = item['damage']#TODO: armor here
-	damage_limb(life,_hit_limb,damage)
-	
 	create_and_update_self_snapshot(life)
 
 def natural_healing(life):
+	#TODO: Fix this.
+	return 0
+
 	if life['asleep']:
-		_heal_rate = 0.05
+		_heal_rate = 0.0002
 	else:
-		_heal_rate = 0.03
+		_heal_rate = 0.0004
 	
-	for _limb in life['body']:
-		limb = life['body'][_limb]
-		
-		if limb['pain'] > 4:
-			limb['pain'] -= 0.05
-		
-		if limb['cut']:
-			if limb['bleeding']>0:
-				limb['bleeding'] -= 0.0005
-			
-			if limb['bleeding']<0:
-				limb['bleeding'] = 0
-				
-				if 'player' in life:
-					gfx.message('Your %s stops bleeding.' % _limb)
+	for _limb in [life['body'][limb] for limb in life['body']]:
+		if _limb['bleeding'] > 0:
+			_limb['bleeding'] -= _heal_rate
+		elif _limb['bleeding'] < 0:
+			_limb['bleeding'] = 0
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

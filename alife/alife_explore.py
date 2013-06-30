@@ -1,44 +1,39 @@
+#TODO: THIS CAN BE IDLE BEHAVIOR
+
 from globals import *
 
 import life as lfe
 
+import judgement
 import survival
 import chunks
 import sight
+import brain
 
 import logging
 
 STATE = 'exploring'
-ENTRY_SCORE = 0
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_seen:
-		_score += entry['score']
-	
-	for entry in targets_not_seen:
-		_score += entry['score']
-	
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in ['looting', 'finding camp', 'camping']:
+	if life['state'] in ['looting', 'finding camp', 'camping', 'needs', 'working']:
+		return False
+	
+	if not judgement.is_safe(life):
 		return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen)<0:
-		return False
+	_explore_chunk = chunks.find_best_known_chunk(life, ignore_starting=True, ignore_time=True)
+	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
 	
-	if not chunks.find_best_known_chunk(life):
+	if not _explore_chunk:
 		return False
 	
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	survival.explore_known_chunks(life)
-	
+	if survival.explore_known_chunks(life):
+		return True

@@ -1,6 +1,7 @@
 from globals import *
 
 import life as lfe
+import libtcodpy as tcod
 
 import language
 import alife
@@ -21,8 +22,8 @@ def create_encounter(life, target, context=None):
 	target['know'][life['id']]['last_encounter_time'] = WORLD_INFO['ticks']
 	_encounter['target'] = target
 	
-	_remembered_alife = alife.brain.get_remembered_alife(target, life)
-	_stance = alife.stances.get_stance_towards(target, life)
+	_remembered_alife = alife.brain.knows_alife(target, life)
+	_stance = alife.stances.get_stance_towards(target, life['id'])
 	_time_since_met = WORLD_INFO['ticks'] - _remembered_alife['met_at_time']
 	
 	_text = []
@@ -36,7 +37,7 @@ def create_encounter(life, target, context=None):
 		if alife.camps.is_in_camp(target, _founded_camp):
 			_text.append('%s claims to be the founder of this camp.' % target['name'][0])
 			
-			if lfe.get_memory(life, matches={'target': target['id'], 'text': 'heard about camp'}):
+			if lfe.get_memory(life, matches={'camp': _founded_camp['id'],'target': target['id'], 'text': 'heard about camp', 'founder': True}):
 				_text.append('You heard this announced on the radio earlier.')
 	
 	_text.append('He appears to be %s towards you.' % _stance)
@@ -52,7 +53,7 @@ def create_encounter(life, target, context=None):
 	
 	SETTINGS['following'] = target
 	life['encounters'].append(_encounter)
-	logging.debug('%s created encounter.' % ' '.join(life['name']))
+	logging.debug('%s created encounter.' % ' '.join(target['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME
 	
 	return _encounter
@@ -66,7 +67,7 @@ def draw_encounter(life, encounter):
 		return False
 	
 	if not 'console' in encounter:
-		encounter['console'] = console_new(40, 40)
+		encounter['console'] = tcod.console_new(40, 40)
 	
 	_y = 1
 	for line in encounter['text']:
@@ -85,7 +86,7 @@ def draw_encounter(life, encounter):
 			
 			_i = 0
 			for txt in _lines:
-				console_print(encounter['console'],
+				tcod.console_print(encounter['console'],
 					_x+_i,
 					_y,
 					txt)

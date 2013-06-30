@@ -261,3 +261,246 @@ So we can create one entity (result  of `create_conversation`) and  pass it arou
 We must also consider that if someone says "Hello!" to a group of people not everyone responds. Usually if one person responds the rest of the group is considered to have had that same response also.
 
 Timing: Some questions need to be asked more than once, like requesting chunk info. There should be a delay or a way for topics to decay and leave the list eventually. This can *probably* be done in `alife.talk`, but there will need to be definite changes in `sound.listen()` for handling this behavior.
+
+Milestone 6 - Growing Content
+=============================
+
+Goal
+----
+With all the systems in place, we must now generate content to build up the game's depth. The UI will also be reworked and extended to give the player a better understanding of the world. We'll also start creating personalities for ALife and extending their logic.
+
+Roadmap
+-------
+When the player enters the world there should be some kind of conflict between the starter camp and the bandits. We want there to be some kind of established "safe zone" so the player feels like they have to be somewhat careful about where they are going.
+
+Take note that the player won't be aligned to a faction unless:
+
+1) They are wearing a faction-specific item
+2) There are known to be in that faction
+
+Both things will be false for new players regardless of how the first job goes. However, it should be noted that Bandits are automatically aligned against non-bandits, so you will encounter combat if you run into them anyway.
+
+The following should be playable:
+
+	The player spawns in the northwest and is instructed to follow the road until they see the nearest camp. The player should then be able to enter the camp, find out who the operator is, and get assigned their first job: Get the documents off the body of a deceased soldier.
+	
+	Upon arrival it is apparent that the target is not dead, but just has a bad leg injury preventing them from running. You will encounter this person and go through a dialog determining whether you are on good terms or not. If not, you will enter combat.
+	
+	After resolving the conflict you will take the documents back to camp. You will then be told to talk to those hanging around the camp to find what to do next, but the decision is ultimately up to you whether or not you actually do that.
+
+Problem 1: The UI
+----------------
+We'll attempt to give the player a better understanding of the world and the people inhabiting it with these changes.
+
+Acknowledging the following issues:
+	* The player's lack of situational awareness
+		* Information not CLEARLY displayed on the map needs to be re-represented on the right
+			* EX: Target name - (Status)
+
+Problem 2: The Combat
+---------------------
+The damage model makes no sense in a lot of applications. While damage is handled, the appropriate reaction is not, so the ALife is only affected in the long-lasting negative effects and not the reaction (stumbling, twirling, etc)
+
+Problem 3: Group Tasks
+----------------------
+Like deciding how to flank a target, etc. Engage them.
+
+Problem 4: Misc Stuff
+---------------------
+Message boxes on map screen for conversations.
+
+New(er) Conversations
+-------------------
+Conversations have been revamped and the old system has been axed (for the most part.) While there are still bits and pieces of it scattered about, I don't think there is a use for it anymore. As a result, all the features of the old system need to be ported to the new one.
+
+However, I am still unsure if these features can be recreated properly in the new code. The only real advantage of the old structure was that there wasn't any real structure at all- just a way for ALife to "hear" things and react accordingly. I'm hoping that what I have now can emulate that, because otherwise a lot of code is now obsolete (for the greater good.) To test, I've written the proper dialog for learning about camps and asking camp-related questions. This is still in its infancy, but it's interesting to see that it works rather well, so I'm inclined to believe that the old code should work too.
+
+To explain, this new system is very centralized, so about 90% of all dialog-related code is contained in a single file. I guess that isn't much different than the previous code, but I think the big difference here is that the back-and-forth nature of certain conversations is a lot more organized and open to expansion than before. I really did feel like getting ALife to talk before was probably my least favorite thing to do, but if I am able to apply this to ALife vs. ALife situations instead of just Player vs. ALife, I think I might be on to something.
+
+Another advantage is that I'll no longer need to write separate dialog menus for the player since this code generates these for us. I made a somewhat risky decision and wrote a new, less-complicated menu structure to use instead. There isn't anything wrong with the menus I use across the rest of the game, but I wanted to do some very specific things and knew I would just be bloating up a working system if decided to extend existing code to satisfy one case.
+
+Questions
+---------
+Now there is a need for ALife to ask about certain topics. This could be done in one fell swoop when beginning dialog, but we specifically want the ALife to know they have questions to ask beforehand so they can pursue dialogs by themselves.
+
+Example case: An ALife joins a camp but is unaware of who the founder is. After running out of people to ask, the ALife simply idles in the camp until someone can help them (during this time they are always broadcasting the request for founder info.) I won't say it's easier, but I'd like to get this behavior into the dialog tree instead, giving me an opportunity to implement dialogs started with the player by the ALife.
+
+I think the main idea here is just attaching the ALife to the dialog tree and hoping they are able to figure it out. After all, it should solve the issue of having multiple conversations active (but not running) at once, in addition to giving me some amount of context to deal with instead of just having a random phrase in an array I have to parse to find its origin (and even then I can't be sure what the context is.)
+
+Lies
+----
+In an effort to move the ALife's intelligence into the next level of complexity, it's time to start processing memories to find out what makes sense and what doesn't.
+
+The obvious first thing to check will be looking at camp founders. The immediate issue is the fact that the ALife does nothing but reference the camp founder when doing some tasks; how could we possible interject this information into a phrase to get a response out of someone? In the case of the camp founder, should we just out-right ask everyone who the founder is?
+
+I guess the real question is how to make the ALife discover lies without forcing it on them during dialog; i.e., it should occur naturally and through the `memory.detect_lies()` routine.
+
+First order of business will be having the ALife walk around and get to know everyone.
+
+Routines
+---------
+Each ALife has a selection of wants and needs. Needs include eating, sleeping, and general survival gear. Wants include non-essential items like radios (almost a need, but not quite) and high-end weapon attachments that aren't otherwise crucial.
+
+Needs establish the base behavior for all ALife, while wants define their unique logic.
+
+[x] Hunger
+------
+Operates on a simple timer that decreases each tick. Eating adds a variable amount to this timer. When this timer is half of its maximum a person is considered hungry. At a fourth they are starving.
+
+Food can be found scattered about the Zone, usually in cans.
+
+Thirst works on a similar timer but is a lot shorter, so you'll need to drink more frequently.
+
+Squads Before Camps
+------------------
+Squads form when it is more convenient to fulfill these kinds of needs together, so ALife that need food might find themselves scavenging the same area, resulting in a confrontation that leads to a working relationship.
+
+These groups will grow larger and larger as similar people are encountered while out adventuring.
+
+Conflicts
+----------
+A difficult part of this is getting the ALife to disagree and begin conflicts. While it is easy to simulate what happens after a conflict starts, developing one that feels natural is many times harder. We simply cannot have "they're from a different squad" as a valid reason for starting fights. Whatever it is, it must be natural and make some amount of sense.
+
+	* I would like to avoid "they're armed, so they must be dangerous."
+		This isn't always true. After all, we'd have to ask them what their stance is, which involves coming up with a reason for being friendly or hostile.
+			This is easy for the player to do because their reasoning is up to them.
+
+Developing Friction
+------------------
+I want to avoid "good" and "bad" factions. I'll focus on camps right now since they will eventually develop into factions as relationships grow:
+
+	Camps are most concerned with land ownership, i.e, they want to be in control of certain spots on the map.
+		We will call these areas landmarks and they will have some kind of strategic importance or resource.
+	
+		Camps have certain needs. A need for weapons will result in a raid of an ammo depo.
+	
+[x] Advanced Life Flags
+------------------
+I'll start using flags in the race .XML to help better tweak how ALife behave. Examples include:
+	
+	CAN_TALK: ALife can speak and understand what is trying to be conveyed
+	HUNGER/THIRSTY: Has requirement for food/water
+	CAN_GROUP: Ability to develop squads/work in groups
+	
+New Judgement and Combat Scoring
+------------------------------
+One of the oldest parts of the codebase is `judgement.py`. It is a relic from a previous time in development where scoring was looked at from a very different point of view. It was intended to be all-encompassing, but as the game grew it remained the same.
+
+Currently, the actual `judge` function returns a numerical value that indicates how much an ALife likes a target. Any value at or above zero indicates that the target is neutral. Anything less than that is considered hostile.
+
+New system ideas:
+
+	1) Like/dislike scoring can stay since it appears to be working so far.
+		However, it should *not* be the deciding factor in whether combat is started
+	2) Trust needs to play a clearer role in judgement (it also needs to be defined)
+		Adding it on to `like` is incorrect since trust does not represent how much someone likes another
+	3) Scoring must change once a target is identified as hostile
+		Furthermore, this must be mutual if either ALife has made its hostile intentions clear
+
+Variables:
+	Fondness (-inf, +inf)
+		Definition: Decides how well someone is liked based on neutral actions.
+		Based on: friendly/unfriendly memories (first and second-hand)
+	
+	Danger (0, +inf):
+		Definition: Represents how much of a threat someone poses.
+		Based on: visible weapons WITH hostile memories (first and second-hand) to prove it.
+			(invalid otherwise)
+	
+	Trust (-inf, +inf):
+		Definition: Value used to define how believable someone's word is
+		Based on: Dialog.
+		Affects:
+			This value comes into play during `determine_truth`, a memory seach function that simply picks the most "trusted" memory from the list.
+
+New Pathing
+------------
+Structure: dict
+Keys:
+	Start		...
+	End			...
+	path_type	['
+
+Operation:
+	First a "chunk path" is generated. The chunk map sees if it can path to the destination chunk.
+		If it cannot, it gets as close as it can
+	The ALife then follows that path chunk to chunk
+	If we arrive at the end of the chunk path and can see the target, then stop.
+	Otherwise use A* to find the destination.
+
+Tech:
+	The map is scanned and the following taken into account:
+		1) Areas we can walk (can be unconnected.)
+		2) Z-levels we can travel to
+
+Other Concepts:
+	Buildings, and other difficult terrain
+	Zones
+		Can references be Zones?
+	Dead Zones
+		Zones of the map not accessible from the current Zone
+	
+Combat Fix #1 (Complete)
+--------------
+First in a series of fixes.
+All of the logic that decides when combat is entered needs to be scrapped.
+
+Proposing: `is_safe()`
+	This function checks a variety of ALife memories and values to determine if they are safe.
+	It would replace the majority (all?) of the calls to individual calculate_safety() functions.
+	In addition, we can have this run once at the start of the tick.
+
+Proposing: `calculate_safety()`
+	Runs before ALife modules.
+	Inspects all variables checked by `is_safe()` for changes.
+		For example, when `combat_targets` become invalid.
+
+Combat Fix #2 (Complete)
+--------------
+We need a way to determine who our targets are. Proposing the following categories:
+
+Visible: In the ALife's LOS.
+Non-visible: Inverse of previous.
+Visible threats: In the ALife's LOS. Possibly dangerous.
+Non-visible threats: Not in the ALife's LOS. Possibly Dangerous.
+
+Combat Fix #3
+--------------
+Escaping is a huge issue. We are just instructing the ALife to run away, which is fine, but what about after that?
+
+Proposing: Intelligent Hide. The ALife, once in the `hidden` state, generates a LOS from the last known position
+of the target(s). The ALife then passes this to the pathing algor. as dangerous territory. We then choose a
+destination, which can be a nearby camp or hiding spot (The ALife should also call for backup at this time to see
+who is nearby.)
+
+We only need to generate this once unless the target changes position
+
+Combat Fix #4
+--------------
+When ALife are in trouble, they call for backup. If enough arrive and the situation is not dire (person who called
+for help is in ok condition,) a surrender may be proposed.
+
+Dialog Functions
+------------------
+The problem is that the dialog system is a little too good at working entirely by itself, leaving us with no idea of what the outcome was or even being able to extract basic data like what dialog is even running.
+
+What is being proposed is a series of changes that expose the inner-workings of the dialog system.
+
+Crafting
+---------
+Used for dismantling in this milestone.
+
+State Overrides
+---------------
+Each ALife module has rules for modules it will not take over for (i.g., 'camping' will not take over for 'combat' if it is in effect.) While this works, each module has to explictly list what modules it will ignore. This provides the following disadvantages:
+
+	1) Adding new modules involves finding what modules will not be overridden and listing them.
+		In addition, we must also modify modules if the new module needs to be ignored by any of them
+	2) Won't work from a modders point of view since it involves modifying code outside of the modders' scope
+		(Mods are designed to work alongside the codebase- not over it.)
+
+We now need a general structure to handle this.
+
+Alternative 1: Priority Levels
+	
+	

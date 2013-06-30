@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title>ReactorWatch - Memory {{ life_id }}</title>
+</head>
+<body>
+    <h2>Life #{{ life_id }}</h2>
+    <ul id="group">
+    <li><b>Memories ({{ memories|count }}): </b></br>
+        {% for entry in memories %}
+            {{ entry.text }}</br>
+            <ul>
+            {% for key in entry %}
+                <li><b>{{ key }}</b>: {{ entry[key] }}</li>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+        </li>
+    </ul>
+</body>
+</html>

@@ -1,6 +1,7 @@
 from globals import *
 
 import graphics as gfx
+import scripting
 import drawing
 import logging
 import numbers
@@ -28,12 +29,14 @@ def initiate_item(name):
 	_marked_for_reint = {}
 	
 	if not 'prefix' in item:
-		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_PREFIX))
+		logging.warning('No prefix set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_PREFIX))
 		item['prefix'] = DEFAULT_ITEM_PREFIX
 	
 	if not 'icon' in item:
-		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_ICON))
-		item['tile'] = DEFAULT_ITEM_ICON
+		logging.warning('No icon set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_ICON))
+		item['icon'] = DEFAULT_ITEM_ICON
+	elif isinstance(item['icon'], int):
+		item['icon'] = chr(item['icon'])
 	
 	if not 'flags' in item:
 		logging.error('No flags set for item type \'%s\'. Errors may occur.' % name)
@@ -49,14 +52,37 @@ def initiate_item(name):
 		item['storing'] = []
 	
 	if not 'size' in item:
-		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name,DEFAULT_ITEM_SIZE))
+		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_SIZE))
 		item['size'] = DEFAULT_ITEM_SIZE
 	
 	if item['type'] == 'gun':
 		item[item['feed']] = None
 	
-	item['flags'] = item['flags'].split('|')
+	#item['flags'] = []
+	_flags = {}
+	for flag in item['flags'].split('|'):
+		if '=' in flag:
+			_flag_split = flag.split('=')
+			_flags[_flag_split[0]] = None
+			
+			if len(_flag_split)==2:
+				_flags[_flag_split[0]] = _flag_split[1]
+		elif '[' in flag:
+			_ocount = flag.count('[')
+			_ccount = flag.count(']')
+			
+			if _ocount > _ccount:
+				logging.error('Brace mismatch in item \'%s\': Expected \']\'' % name)
+				continue
+			elif _ocount < _ccount:
+				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
+				continue
+			
+			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)
+		else:
+			_flags[flag] = None
 	
+	item['flags'] = _flags
 	item['size'] = 	[int(c) for c in item['size'].split('x')]
 	item['size'] = item['size'][0]*item['size'][1]
 	
@@ -79,6 +105,14 @@ def initiate_item(name):
 	
 	return item
 
+def get_pos(item_uid):
+	item = ITEMS[item_uid]
+	
+	if 'parent_id' in item:
+		return LIFE[item['parent_id']]['pos']
+	
+	return item['pos']
+
 def create_item(name,position=[0,0,2]):
 	"""Initiates and returns a copy of an item type."""
 	item = ITEM_TYPES[name].copy()
@@ -88,15 +122,22 @@ def create_item(name,position=[0,0,2]):
 	
 	del item['marked_for_reint']
 
-	item['uid'] = len(ITEMS)
+	item['uid'] = SETTINGS['itemid']
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0,0,0]
 	item['friction'] = 0
 	item['gravity'] = SETTINGS['world gravity']
+	item['lock'] = None
+	
+	if 'speed' in item:
+		item['max_speed'] = item['speed']
+	else:
+		item['max_speed'] = 2
 	
 	ITEMS[item['uid']] = item
 	
+	SETTINGS['itemid'] += 1
 	return item
 
 def delete_item(item):
@@ -136,7 +177,7 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item,direction,speed,friction=0.05,_velocity=0):
+def move(item,direction,speed,friction=0.05,_velocity=1):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction,speed)
 	velocity[2] = _velocity
@@ -146,7 +187,8 @@ def move(item,direction,speed,friction=0.05,_velocity=0):
 	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
 	
-	logging.debug('%s flies off in an arc!' % get_name(item))
+	logging.debug('%s flies off in an arc! (%s)' % (get_name(item), item['velocity']))
+	print item['realpos'], item['pos'], item['uid']
 
 def draw_items():
 	for _item in ITEMS:
@@ -169,7 +211,7 @@ def draw_items():
 			gfx.blit_char(_x,
 				_y,
 				item['icon'],
-				white,
+				tcod.white,
 				None,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
@@ -178,17 +220,17 @@ def draw_items():
 def tick_all_items(MAP):
 	_remove = []
 	
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
+	for item in ITEMS.values():
 		if item['velocity'] == [0,0,0]:
 			continue
+		
+		print 'item moving',item['velocity']
 		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
 		_break = False
 		
-		for pos in drawing.diag_line(item['pos'],(int(item['realpos'][0]),int(item['realpos'][1]))):
+		for pos in drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1])))):
 			if not item['type'] == 'bullet':
 				item['realpos'][2] += item['velocity'][2]
 				item['velocity'][2] -= item['gravity']
@@ -200,8 +242,8 @@ def tick_all_items(MAP):
 			
 			if item['type'] == 'bullet':
 				for _life in [LIFE[i] for i in LIFE]:
-					if _life['id'] == item['owner']:
-						continue
+					if _life['id'] == item['owner'] or _life['dead']:
+						continue					
 					
 					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
 						item['pos'] = [pos[0],pos[1],_life['pos'][2]]
@@ -219,13 +261,18 @@ def tick_all_items(MAP):
 				item['velocity'][1] = 0
 				item['velocity'][2] = 0
 				item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-				#print 'LANDED',item['pos']				
+				#print 'LANDED',item['pos']	
 				_break = True
 				break
 		
-		item['pos'][0] = int(round(item['realpos'][0]))
-		item['pos'][1] = int(round(item['realpos'][1]))
-		item['pos'][2] = int(round(item['realpos'][2]))
+		if _break:
+			item['pos'][0] = int(pos[0])
+			item['pos'][1] = int(pos[1])
+			item['pos'][2] = int(round(item['realpos'][2]))
+		else:
+			item['pos'][0] = int(round(item['realpos'][0]))
+			item['pos'][1] = int(round(item['realpos'][1]))
+			item['pos'][2] = int(round(item['realpos'][2]))
 
 		if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
 			or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
@@ -241,68 +288,5 @@ def tick_all_items(MAP):
 		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])
 	
 	for _id in _remove:
+		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])
 		delete_item(ITEMS[_id])
-
-def tick_all_items_old(MAP):
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
-		if not item['velocity'].count(0)==3:
-			#if item['velocity'][0]:
-			item['realpos'][0]+=item['velocity'][0]
-			item['realpos'][1]+=item['velocity'][1]
-			item['realpos'][2]+=item['velocity'][2]
-			
-			item['velocity'][2] -= item['gravity']
-			
-			_nx = int(round(item['realpos'][0]))
-			_ny = int(round(item['realpos'][1]))
-			_nz = int(round(item['realpos'][2]))
-			
-			item['velocity'][2] -= item['gravity']
-
-			#Collisions
-			if MAP[_nx][item['pos'][1]][_nz]:
-				item['velocity'][0] = -(item['velocity'][0]/float(2))
-				_nx = item['pos'][0]
-				
-			if MAP[item['pos'][0]][_ny][_nz]:
-				item['velocity'][1] = -(item['velocity'][1]/float(2))
-				_ny = item['pos'][1]
-			
-			if MAP[item['pos'][0]][item['pos'][1]][_nz]:
-				#If we're touching the ceiling...
-				if _nz > item['pos'][2]:
-					item['velocity'][2] = -(item['velocity'][2]/float(2))
-					_nz = item['pos'][2]
-					print 'DEBUG: Touching ceiling'
-				else:
-					item['velocity'][2] = 0
-					item['gravity'] = 0
-					print 'DEBUG: Touching floor'
-				
-					#TODO: We can handle bouncing here
-					item['velocity'][0] = item['velocity'][0]/float(2)
-					item['velocity'][1] = item['velocity'][1]/float(2)
-			else:
-				item['gravity'] = 0.1
-				
-			item['pos'] = [_nx,_ny,_nz]
-			
-			if not item['velocity'][2]:
-				for i in range(0,2):
-					if item['velocity'][i]>0:
-						item['velocity'][i]-=item['friction']
-						
-						if item['velocity'][i]<0:
-							item['velocity'][i]=0
-						
-					elif item['velocity'][i]<0:
-						item['velocity'][i]+=item['friction']
-						
-						if item['velocity'][i]>0:
-							item['velocity'][i]=0
-			
-			if item['velocity'].count(0)==3:
-				logging.debug('%s comes to a rest at %s,%s,%s.' %
-					(get_name(item),item['pos'][0],item['pos'][1],item['pos'][2]))

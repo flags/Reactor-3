@@ -25,9 +25,11 @@ def _create_context_from_phrase(life, phrase):
 			'communicate': 'dropped_demanded_item'})
 	
 	elif phrase['gist'] == 'greeting':
-		_reactions.append({'type': 'say','text': 'Hello!',
-			'score': 900,
-			'communicate': 'appear_friendly'})
+		#_reactions.append({'type': 'dialog',
+		#	'from': phrase['from']['id'],
+		#	'enabled': False})
+		#	#'gist': 'greeting'})
+		pass
 	
 	elif phrase['gist'] == 'looks_hostile':
 		encounters.create_encounter(life, phrase['from'])

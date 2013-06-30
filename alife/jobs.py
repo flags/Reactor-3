@@ -4,13 +4,16 @@ from globals import *
 import life as lfe
 
 import judgement
+import dialog
 import speech
+import brain
 
 import logging
 
-def create_job(creator, gist):
+def create_job(creator, gist, description='Job description needed.'):
 	_job = {'creator': creator}
 	_job['gist'] = gist
+	_job['description'] = description
 	_job['score'] = 0
 	_job['completed_callback'] = None
 	_job['leave_job_callback'] = None
@@ -58,7 +61,10 @@ def complete_task(life):
 	life['job']['tasks'].remove(life['task'])
 	
 	if not life['job']['tasks']:
-		del JOBS[life['job']['id']]
+		if not life['job']['id'] in JOBS:
+			logging.error('Job was #%s was deleted already.' % life['job']['id'])
+		else:
+			del JOBS[life['job']['id']]
 		
 		logging.debug('Job completed: %s' % life['job']['gist'])
 		life['job']['workers'].remove(life['id'])
@@ -210,3 +216,28 @@ def process_job(job):
 	_task = find_open_task(LIFE[_scores[_scores.keys()[0]]], job)
 	if _task:
 		take_job(LIFE[_scores[_scores.keys()[0]]], job, _task)
+	else:
+		logging.warning('No open tasks for job: %s' % job['gist'])
+
+def ask_for_job(life):
+	_target = get_job_detail(life['job'], 'target')
+	if not brain.retrieve_from_memory(life, 'current_job'):
+		brain.store_in_memory(life, 'current_job', life['job']['gist'])
+	else:
+		_old_job = brain.retrieve_from_memory(life, 'current_job')
+		if not _old_job == life['job']['gist']:
+			brain.store_in_memory(life, 'current_job', None)
+			return True
+		
+		return False
+	
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': 'jobs'}
+	_dialog = dialog.create_dialog_with(life, _target, _dialog)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
+	
+	return False

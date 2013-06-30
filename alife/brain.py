@@ -2,14 +2,18 @@ from globals import *
 
 import life as lfe
 
-import alife_collect_items
+import alife_manage_targets
 import alife_manage_items
+import alife_manage_camp
 import alife_visit_camp
 import alife_find_camp
 import alife_discover
 import alife_explore
+import alife_impulse
 import alife_hidden
 import alife_combat
+import alife_group
+import alife_needs
 import alife_camp
 import alife_talk
 import alife_work
@@ -18,6 +22,7 @@ import snapshots
 import judgement
 import survival
 import movement
+import memory
 import speech
 import combat
 import sight
@@ -25,23 +30,29 @@ import sound
 
 import logging
 import time
+import copy
 
 MODULES = [alife_hide,
 	alife_hidden,
-	alife_collect_items,
 	alife_talk,
 	alife_explore,
 	alife_discover,
-	alife_manage_items,
 	alife_find_camp,
 	alife_visit_camp,
 	alife_camp,
+	alife_manage_items,
+	alife_manage_camp,
+	alife_manage_targets,
 	alife_combat,
-	alife_work]
+	alife_work,
+	alife_needs,
+	alife_group,
+	alife_impulse]
 
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
+	memory.process(life)
 	understand(life, source_map)
 
 def store_in_memory(life, key, value):
@@ -53,8 +64,8 @@ def retrieve_from_memory(life, key):
 	
 	return None
 
-def flag(life, flag):
-	life['flags'][flag] = True
+def flag(life, flag, value=True):
+	life['flags'][flag] = value
 
 def unflag(life, flag):
 	life['flags'][flag] = False
@@ -118,34 +129,52 @@ def remember_item_secondhand(life, target, item_memory):
 
 	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
-def add_impression(life, target, gist, score):
-	life['know'][target['id']]['impressions'][gist] = {'score': score, 'happened_at': WORLD_INFO['ticks']}
+def add_impression(life, target_id, gist, modifiers):
+	life['know'][target_id]['impressions'][gist] = {'modifiers': modifiers, 'happened_at': WORLD_INFO['ticks']}
 	
-	lfe.create_and_update_self_snapshot(target)
+	lfe.create_and_update_self_snapshot(LIFE[target_id])
 	
-	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(target['name']), gist, score))
+	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), gist, modifiers))
 
-def get_impression(life, target, gist):
-	if gist in life['know'][target['id']]['impressions']:
-		return life['know'][target['id']]['impressions'][gist]
+def get_impression(life, target_id, gist):
+	if gist in life['know'][target_id]['impressions']:
+		return life['know'][target_id]['impressions'][gist]
 	
 	return None
 
 def knows_alife(life, alife):
+	if life['id'] == alife['id']:
+		raise Exception('Life asking about itself (via dict). Stopping.')
+	
 	if alife['id'] in life['know']:
 		return life['know'][alife['id']]
 	
 	return False
 
 def knows_alife_by_id(life, alife_id):
+	if isinstance(alife_id, dict):
+		if life['id'] == alife_id['id']:
+			raise Exception('Life asking about itself (via ID). Stopping.')
+		
+		print alife_id['name']
+		print alife_id.keys()
+		raise Exception('Not a valid ID.')
+	
 	if alife_id in life['know']:
 		return life['know'][alife_id]
 	
 	return False
 
 def meet_alife(life, target):
+	if life['id'] == target['id']:
+		raise Exception('Life learned about itself. Stopping.')
+	
 	life['know'][target['id']] = {'life': target,
-		'score': 0,
+		'fondness': 0,
+	    'danger': 0,
+		'trust': 0,
+		'influence': 0,
+		'likes': copy.deepcopy(target['likes']),
 		'last_seen_time': 0,
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': target['pos'][:],
@@ -157,19 +186,24 @@ def meet_alife(life, target):
 		'impressions': {},
 		'flags': {}}
 	
-	logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
+	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 
 def has_met_in_person(life, target):
-	if get_remembered_alife(life, target)['met_at_time'] == -1:
+	if knows_alife(life, target)['met_at_time'] == -1:
 		return False
 	
 	return True
 
-def get_remembered_alife(life, target):
-	return life['know'][target['id']]
-
 def get_remembered_item(life, item):
 	return life['know_items'][item['uid']]
+
+def get_matching_remembered_items(life, matches):
+	_matched_items = []
+	for item in [i['item'] for i in life['know_items'].values()]:
+		if logic.matches(item, matches):
+			_matched_items.append(item['uid'])
+	
+	return _matched_items
 
 def has_remembered_item(life, item):
 	if item['uid'] in life['know_items']:
@@ -186,7 +220,7 @@ def has_shared_item_with(life, target, item):
 def share_item_with(life, target, item):
 	life['know_items'][item['uid']]['shared_with'].append(target['id'])
 
-	#logging.debug('%s shared item #%s with %s.' % (' '.join(life['name']), item['uid'], ' '.join(target['name'])))
+	logging.debug('%s shared item #%s (%s) with %s.' % (' '.join(life['name']), item['uid'], item['name'], ' '.join(target['name'])))
 
 def remember_known_item(life, item_uid):
 	if item_uid in life['know_items']:
@@ -195,80 +229,50 @@ def remember_known_item(life, item_uid):
 	return False
 
 def generate_needs(life):
-	if combat.has_weapon(life):
-		unflag(life, 'no_weapon')
-	else:
-		flag(life, 'no_weapon')
+	#TODO: We don't generate all of our needs here, so this is a bit misleading
+	#Needs can be created anywhere in the ALife loop just so long as you do it early/before brain.think()
 	
-	if lfe.get_all_inventory_items(life, matches=[{'type': 'backpack'}]):
-		unflag(life, 'no_backpack')
-	else:
-		flag(life, 'no_backpack')
+	if 'USES_FIREARMS' in life:
+		if combat.has_weapon(life):
+			unflag(life, 'no_weapon')
+		else:
+			flag(life, 'no_weapon')
 
-def understand(life,source_map):
-	_alife_seen = []
-	_alife_not_seen = []
-	_targets_seen = []
-	_neutral_targets = []
-	_targets_not_seen_pre = life['know'].keys()
-	_targets_not_seen = []
-	
-	if get_flag(life, 'surrendered'):
+def understand(life, source_map):
+	if life['think_rate']:
+		life['think_rate'] -= 1
 		return False
 	
-	if lfe.get_total_pain(life) > life['pain_tolerance']/2:
-		speech.announce(life, 'call_for_help')
+	life['think_rate'] = life['think_rate_max']
 	
-	for entry in life['seen']:
-		_targets_not_seen_pre.remove(entry)
-		target = life['know'][entry]
-		_score = target['score']
-		
+	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
+	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
+	_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]
+	_non_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_invisible_threats(life)]
+	
+	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
-			_score = judgement.judge(life, target)
-			target['score'] = _score
-			
-			logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
-		
-		_alife_seen.append({'who': target,'score': _score})
-		
-		if _score < 0:
-			_targets_seen.append({'who': target,'score': _score})
-	
-	for _not_seen in _targets_not_seen_pre:
-		target = life['know'][_not_seen]
-		
-		if snapshots.process_snapshot(life, life['know'][_not_seen]['life']):
-			_score = judgement.judge(life, life['know'][_not_seen])
-			life['know'][_not_seen]['score'] = _score
-			
-			#logging.info('%s judged %s with score %s.' % (' '.join(life['name']),' '.join(target['life']['name']),_score))
-		
-		if life['know'][_not_seen]['score'] >= 0:
-			_alife_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
-			continue
-		
-		_targets_not_seen.append({'who': target,'score': life['know'][_not_seen]['score']})
-	
-	#print life['name']
-	#for t in _targets_seen:
-	#	print '\t',t['who']['life']['id']
-	#for t in _targets_not_seen:
-	#	print '\t',t['who']['life']['id']
+			judgement.judge(life, target['life']['id'])
 	
 	generate_needs(life)
+	
+	for module in MODULES:	
+		try:		
+			module.setup(life)
+		except:
+			continue
 	
 	_modules_run = False
 	_times = []
 	for module in MODULES:
 		_stime = time.time()
-		_return = module.conditions(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+		_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 		
 		if _return == STATE_CHANGE:
 			lfe.change_state(life, module.STATE)
 		
 		if _return:
-			module.tick(life, _alife_seen, _alife_not_seen, _targets_seen, _targets_not_seen, source_map)
+			module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == RETURN_SKIP:
 				continue

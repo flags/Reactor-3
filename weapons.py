@@ -15,7 +15,32 @@ def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
 
-def fire(life,target):
+def get_recoil(life):
+	weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+	_recoil = weapon['recoil']
+	
+	if life['stance'] == 'standing':
+		_recoil *= 1
+	elif life['stance'] == 'crouching':
+		_recoil *= .75
+	elif life['stance'] == 'crawling':
+		_recoil *= .50
+	
+	return _recoil
+
+def get_accuracy(life, weapon):
+	_accuracy = weapon['accuracy']
+	
+	if life['stance'] == 'standing':
+		_accuracy *= 1.5
+	elif life['stance'] == 'crouching':
+		_accuracy *= 1.2
+	elif life['stance'] == 'crawling':
+		_accuracy *= 1
+	
+	return _accuracy
+
+def fire(life, target, limb=None):
 	#TODO: Don't breathe this!
 	if 'player' in life:
 		weapon = life['firing']
@@ -40,23 +65,17 @@ def fire(life,target):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)
-		stance_mod = 0
-		
-		if life['stance'] == 'standing':
-			stance_mod = 3
-		elif life['stance'] == 'crouching':
-			stance_mod = 2
-		elif life['stance'] == 'crawling':
-			stance_mod = 1
-		
-		direction += random.randint(-stance_mod,stance_mod+1)
+		_accuracy = int(round(get_accuracy(life, weapon)))
+		direction += random.randint(-_accuracy,_accuracy+1)
 		
 		#TODO: Clean this up...
 		_bullet = _feed['rounds'].pop()
 		_bullet['pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
+		_bullet['aim_at_limb'] = limb
+		_bullet['accuracy'] = _accuracy
 		del _bullet['parent']
-		items.move(_bullet,direction,15)
+		items.move(_bullet, direction, _bullet['max_speed'])
 	
 	if _ooa:
 		if 'player' in life:
@@ -67,7 +86,7 @@ def fire(life,target):
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
-			life['aim_at'] = _life
+			life['aim_at'] = _life['id']
 			break
 	
 	life['facing'] = (_fx,_fy)

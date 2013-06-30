@@ -1,47 +1,52 @@
 from globals import *
 
+import life as lfe
+
+import judgement
 import camps
 
 import logging
 
 STATE = 'visiting camp'
-INITIAL_STATES = ['idle', 'hidden']
-CHECK_STATES = INITIAL_STATES[:]
-CHECK_STATES.append(STATE)
-ENTRY_SCORE = 0
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_seen:
-		_score += entry['score']
-	
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
+
+	if not 'INTELLIGENT' in life['life_flags']:
+		return False	
+	
+	if not judgement.is_safe(life):
+		return False	
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
+	#Founding didn't work out...
+	if not life['known_camps'] or life['camp']:
 		return False
 	
-	#Founding didn't work out...
-	if life['known_camps'] and not life['camp']:
-		return RETURN_VALUE
-	
-	return False	
+	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	_camp = camps.get_nearest_known_camp(life)
 	
-	life['camp'] = _camp['id']
-	#if not life['known_camps'][life['camp']]:
-	#	_best_camp = camps.find_best_unfounded_camp(life)
-	#	
-	#	if not _best_camp:
-	#		return False
-	#	
-	#	camps.found_camp(life, _best_camp, announce=True)
+	if camps.is_in_camp(life, _camp):
+		lfe.create_question(life,
+			'wants_founder_info',
+			{'camp': _camp['id']},
+			lfe.get_memory,
+			{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
+		
+		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'}):
+			lfe.create_question(life,
+				'ask_to_join_camp',
+				{'camp': _camp['id']},
+				lfe.get_memory,
+				[{'text': 'join_camp', 'camp': _camp['id'], 'founder': '*'},
+				{'text': 'deny_from_camp', 'camp': _camp['id'], 'founder': '*'}],
+				match_gist_only=True,
+				answer_all=True)
+			
+	
+	#life['camp'] = _camp['id']
 	print 'lookan'

@@ -36,6 +36,25 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 	
 	return _lowest
 
+def _find_nearest_reference_exact(position, ref_type=None):
+	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
+	
+	for _r_type in REFERENCE_MAP:
+		if ref_type and not _r_type == ref_type:
+			continue
+		
+		for reference in REFERENCE_MAP[_r_type]:
+			_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
+			_distance = numbers.distance(position, _center)
+			_nearest_key = find_nearest_key_in_reference_exact(position, reference)
+			
+			if not _lowest['chunk_key'] or _distance<_lowest['distance']:
+				_lowest['distance'] = _distance
+				_lowest['chunk_key'] = _nearest_key
+				_lowest['reference'] = reference
+	
+	return _lowest
+
 def _find_best_unknown_reference(life, ref_type):
 	_best_reference = {'reference': None, 'score': -1}
 	
@@ -56,11 +75,17 @@ def _find_best_unknown_reference(life, ref_type):
 	
 	return _best_reference
 
-def find_nearest_key_in_reference(life, reference, unknown=False):
-	_lowest = {'chunk_key': None, 'distance': -1}
+def find_nearest_key_in_reference(life, reference, unknown=False, ignore_current=False):
+	_lowest = {'chunk_key': None, 'distance': 9000}
 
 	for _key in reference:
 		if unknown and _key in life['known_chunks']:
+			continue
+		
+		if ignore_current and lfe.get_current_chunk_id(life) == _key:
+			print 'ignoring current'
+		
+		if not maps.get_chunk(_key)['ground']:
 			continue
 		
 		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
@@ -69,6 +94,68 @@ def find_nearest_key_in_reference(life, reference, unknown=False):
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
 			_lowest['chunk_key'] = _key
+	
+	return _lowest['chunk_key']
+
+def find_nearest_key_in_reference_exact(position, reference):
+	_lowest = {'chunk_key': None, 'distance': 100}
+
+	for _key in reference:		
+		if not maps.get_chunk(_key)['ground']:
+			continue
+		
+		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
+		_distance = numbers.distance(position, _center)
+		
+		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
+			_lowest['distance'] = _distance
+			_lowest['chunk_key'] = _key
+	
+	return _lowest['chunk_key']
+
+def find_least_populated_key_in_reference(life, reference):
+	_lowest = {'chunk_key': None, 'score': 0}
+	
+	for _key in reference:
+		_chunk = maps.get_chunk(_key)
+		_score = len(_chunk['life'])
+		
+		if chunks.is_in_chunk(life, _key) and _score == 1:
+			_score = -1
+		
+		if not _lowest['chunk_key'] or _score<_lowest['score']:
+			_lowest['chunk_key'] = _key
+			_lowest['score'] = _score
+		
+		if _score == -1:
+			break
+	
+	return _lowest['chunk_key']
+
+def find_least_controlled_key_in_reference(life, reference):
+	_lowest = {'chunk_key': None, 'score': 0}
+	
+	if not life['camp']:
+		logging.warning('Should not be happening!')
+		return None
+	
+	for _key in reference:
+		_chunk = maps.get_chunk(_key)
+		
+		if CAMPS[life['camp']]['name'] in _chunk['control']:
+			_score = _chunk['control'][CAMPS[life['camp']]['name']]
+			
+			if chunks.is_in_chunk(life, _key) and _score == 1:
+				_score = -1
+		else:
+			_score = 0
+		
+		if not _lowest['chunk_key'] or _score<_lowest['score']:
+			_lowest['chunk_key'] = _key
+			_lowest['score'] = _score
+		
+		if _score == -1:
+			break
 	
 	return _lowest['chunk_key']
 
@@ -132,20 +219,37 @@ def path_along_reference(life, ref_type):
 	life['discover_direction'] = _best_dir['dir']
 	return _directions[_best_dir['dir']]['key']
 
-def is_in_reference(life, reference):
+def is_in_reference(position, reference):
 	for chunk_key in reference:
-		if chunks.is_in_chunk(life, chunk_key):
+		if chunks.position_is_in_chunk(position, chunk_key):
 			return True
 	
 	return False
 
-def find_nearest_road(life, skip_unknown=True, ignore_array=[]):
-	_best_reference = _find_best_reference(life, 'roads')['reference']
+def is_in_any_reference(position):
+	for r_type in REFERENCE_MAP:
+		for reference in REFERENCE_MAP[r_type]:
+			if is_in_reference(position, reference):
+				return reference
 	
-	if _best_reference:
-		return _best_reference
+	return False
+
+def life_is_in_reference(life, reference):
+	return is_in_reference(life['pos'], reference)
+
+def get_known_chunks_in_reference(life, reference):
+	_known_chunks = []
+	for _chunk_key in reference:
+		if not _chunk_key in life['known_chunks']:
+			continue
+		
+		_known_chunks.append(_chunk_key)
 	
-	return _find_nearest_reference(life, 'roads')['reference']
+	return _known_chunks
+
+def find_nearest_road(position, skip_unknown=True, ignore_array=[]):
+	
+	return _find_nearest_reference_exact(position, 'roads')
 
 def find_nearest_building(life, skip_unknown=True, ignore_array=[]):
 	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown, ignore_array=ignore_array)

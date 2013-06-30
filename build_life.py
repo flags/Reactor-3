@@ -56,6 +56,7 @@ def get_children_of_tag(taglist):
 	_flags = ''
 	_parent = ''
 	_damage_mod = 0
+	_bleed_mod = 0
 	
 	for tag in taglist:		
 		_key = tag.partition('<')[2].partition('>')[0]
@@ -64,10 +65,12 @@ def get_children_of_tag(taglist):
 			if not _parent:
 				_limbs[_name] = {'flags': _flags}
 				_limbs[_name]['damage_mod'] = _damage_mod
+				_limbs[_name]['bleed_mod'] = _bleed_mod
 			else:
 				_limb = {'flags': _flags}
 				_limb['parent'] = _parent
 				_limb['damage_mod'] = _damage_mod
+				_limb['bleed_mod'] = _bleed_mod
 				_limbs[_name] = _limb
 				
 				#if _parent in _limbs:
@@ -88,10 +91,13 @@ def get_children_of_tag(taglist):
 			if _key == 'flags':
 				_flags = _value
 			
-			if _key == 'parent':
+			elif _key == 'parent':
 				_parent = _value
 			
-			if _key == 'damage_mod':
+			elif _key == 'damage_mod':
+				_damage_mod = _value
+			
+			elif _key == 'bleed_mod':
 				_damage_mod = _value
 	
 	return _limbs
@@ -106,9 +112,10 @@ def build(file):
 		return False
 	
 	life = {}	
-	life['race'] = get_value(_data,'race')
-	life['flags'] = get_value(_data,'flags')
-	life['icon'] = get_value(_data,'icon')
+	life['race'] = get_value(_data, 'race')
+	life['flags'] = get_value(_data, 'flags')
+	life['vars'] = get_value(_data, 'vars')
+	life['icon'] = get_value(_data, 'icon')
 
 	print 'Creating new life: %s' % life['race']
 	print 'Parsing and connecting limbs...',

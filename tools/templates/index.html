@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>ReactorWatch - Debug</title>
+</head>
+<body>
+    <h2>Stats</h2>
+    <ul><li><b>Memories:</b> {{ stats.total_memories }}</li>
+    <li><b>Active life:</b> {{ life|count }}</li>
+    <li><b>Groups:</b> {{ groups|count }}</li>
+    <li><b>Camps:</b> {{ camps|count }}</li>
+    </ul>
+    <h2>Life</h2>
+    <ul>
+    {% for id in life %}
+        <li><a href="life/{{ id }}">{{ id }}</a></li>
+    {% endfor %}
+    </ul>
+    <h2>Groups</h2>
+    <ul>
+    {% for group in groups %}
+        <li><a href="group/{{ group }}">{{ group }} ({{ groups[group]['members']|count }})</a></li>
+    {% endfor %}
+    </ul>
+    <h2>Camps</h2>
+    <ul>
+    {% for camp in camps %}
+        <li><a href="camp/{{ camp }}">{{ camp }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
