@@ -195,7 +195,7 @@ def get_all_relevant_target_topics(life, target):
 	_topics = []
 	_memories = []
 	
-	_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self'})
+	_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self', 'like': 1})
 	_topics.append({'text': 'Start conflict', 'gist': 'ignore_question_negative', 'dislike': 1})
 	_topics.append({'text': 'How are you?', 'gist': 'how_are_you', 'like': 1})
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
