@@ -9,7 +9,21 @@ This game has been in the works for roughly 9 months, but I chose to keep the re
 
 In addition, I am enamored with the idea of a game that generates its own stories and its own content, and much like other games in the genre, I feel like I can accomplish something similar, but it will take time and dedication before I might ever see the payoff from it.
 
-I would wager that a large amount of the people reading this only have a passing interest with the game in its current state. That's entirely fine and I don't expect any of you to play the game at all - after all, a lot of the people I've sent this out to were involved in a game development group I was a part of, and I suppose you lot would just like to see (or hear) about the various inner-workings of this little project that have changed since you've last seen it. With that said...
+I would wager that a large amount of the people reading this only have a passing interest with the game in its current state. That's entirely fine and I don't expect any of you to play the game at all - after all, a lot of the people I've sent this out to were involved in a game development group I was a part of, and I suppose you lot would just like to see (or hear) about the various inner-workings of this little project that have changed since you've last seen it.
+
+Installing
+==========
+Reactor 3 requires Python 2.7, Cython, and libtcod. The following instructions are aimed at Linux users:
+
+    git clone git@github.com:flags/Reactor-3.git
+    cd Reactor-3
+    python compile_cython_modules.py build_ext --inplace
+    
+Next, download the libtcod library and move the `.so` files from the archive to the Reactor 3 directory.
+
+Run `python reactor-3.py` to play.
+
+See the section `flags` below for more info.
 
 Features
 ========
@@ -35,8 +49,8 @@ Tools
 =====
 While these applications are stable, they are not as well-developed as Reactor 3.
 
-* Terraform - Level editor.
-* ReactorWatch - Web-based debugger.
+* Terraform - `terraform.py` - Level editor. Very much in development.
+* ReactorWatch - `tools/ReactorWatch.py` - Web-based debugger. Connects to the currently running instance of Reactor 3 and displays debug information via a web interface. Requires Reactor 3 to be running with the `--debug` argument.
 
 Controls
 ========
@@ -52,12 +66,19 @@ Controls
 * `C (Shift-c)` - Stand up
 * `c` - Crouch
 * `Z (Shift-z)` - Prone
-* `P (Shift-P)` - Pause'
+* `P (Shift-P)` - Pause
 * `-` - Debug console
 
 Tips
 ====
 You can build relationships by asking people how they're doing. This will improve trust.
+
+Flags
+-----
+`reactor-3.py` can be run with a few arguments:
+
+* `--debug` - Allows ReactorWatch (`tools/ReactorWatch.py`) to access debug data across the network while the game is running.
+* `--profile` - Dumps a profile to `profile.dat`. `tools/show_profile.py` can be used to view the profile (use the argument `highest` to show the most time consuming functions)
 
 Issues
 ------
