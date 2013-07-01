@@ -111,6 +111,9 @@ def randomize_item_spawns():
 		_rand_pos = random.choice(_chunk['ground'])
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
+#def generate_wildlife(amount='heavy'):
+	
+
 def generate_life(source_map, amount=1):
 	for i in range(amount):
 		if i % 2:

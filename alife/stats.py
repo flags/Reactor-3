@@ -164,7 +164,7 @@ def get_minimum_camp_score(life):
 	
 	return 3
 
-def wants_group_members(life):
+def wants_group_member(life, life_id):
 	if not life['group']:
 		return False
 	
@@ -172,10 +172,21 @@ def wants_group_members(life):
 		return False
 	
 	_group = groups.get_group(life['group'])
-	if len(_group)<get_max_group_size(life):
-		return True
+	if len(_group['members'])>get_max_group_size(life):
+		return False
 	
-	return False
+	_know = brain.knows_alife_by_id(life, life_id)
+	if not _know:
+		return False
+	
+	if not LIFE[life_id]['race'] in life['can_group_with']:
+		return False
+	
+	#TODO: Second chance?
+	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
+		return False
+	
+	return True
 
 def will_obey(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)

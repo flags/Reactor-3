@@ -109,7 +109,7 @@ items.initiate_item('electric_lantern')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-SETTINGS['running'] = -1
+SETTINGS['running'] = 2
 
 while SETTINGS['running'] in [-1, 1]:
 	if SETTINGS['running'] == -1:

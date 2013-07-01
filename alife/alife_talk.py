@@ -92,7 +92,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.start_dialog(life, target['id'], 'questions')
 		elif stats.desires_to_create_group(life):
 			groups.create_group(life)
-		elif stats.wants_group_members(life) and not brain.get_alife_flag(life, target, 'invited_to_group') and not groups.is_member(life['group'], target['id']):
+		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
 			brain.flag_alife(life, target, 'invited_to_group')
 			speech.start_dialog(life, target['id'], 'invite_to_group')
 	

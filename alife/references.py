@@ -132,33 +132,6 @@ def find_least_populated_key_in_reference(life, reference):
 	
 	return _lowest['chunk_key']
 
-def find_least_controlled_key_in_reference(life, reference):
-	_lowest = {'chunk_key': None, 'score': 0}
-	
-	if not life['camp']:
-		logging.warning('Should not be happening!')
-		return None
-	
-	for _key in reference:
-		_chunk = maps.get_chunk(_key)
-		
-		if CAMPS[life['camp']]['name'] in _chunk['control']:
-			_score = _chunk['control'][CAMPS[life['camp']]['name']]
-			
-			if chunks.is_in_chunk(life, _key) and _score == 1:
-				_score = -1
-		else:
-			_score = 0
-		
-		if not _lowest['chunk_key'] or _score<_lowest['score']:
-			_lowest['chunk_key'] = _key
-			_lowest['score'] = _score
-		
-		if _score == -1:
-			break
-	
-	return _lowest['chunk_key']
-
 def path_along_reference(life, ref_type):
 	_best_reference = _find_best_unknown_reference(life, ref_type)['reference']
 

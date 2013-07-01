@@ -437,20 +437,13 @@ def get_chunk(chunk_id):
 def refresh_chunk(chunk_id):
 	chunk = get_chunk(chunk_id)
 	
+	if chunk['last_updated'] == WORLD_INFO['ticks']:
+		return False
+	
 	_life = []
 	for life in [LIFE[i] for i in LIFE]:
 		if alife.chunks.is_in_chunk(life, chunk_id):
 			_life.append(life['id'])
-	
-	_control = {}
-	for life in [LIFE[i] for i in _life]:
-		if not life['camp']:
-			continue
-			
-		if CAMPS[life['camp']]['name'] in _control:
-			_control[CAMPS[life['camp']]['name']] += 1
-		else:
-			_control[CAMPS[life['camp']]['name']] = 1
 	
 	_items = []
 	for _item in ITEMS:
@@ -464,7 +457,7 @@ def refresh_chunk(chunk_id):
 		
 	chunk['items'] = _items
 	chunk['life'] = _life
-	chunk['control'] = _control
+	chunk['last_updated'] = WORLD_INFO['ticks']
 	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
 	broadcast_chunk_change(chunk_id)
 
@@ -507,7 +500,8 @@ def update_chunk_map(source_map):
 				'items': [],
 				'control': {},
 				'neighbors': [],
-			    'reference': None,
+				'reference': None,
+				'last_updated': None,
 				'digest': None}
 			
 			_tiles = {}

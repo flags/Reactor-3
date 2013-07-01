@@ -44,19 +44,13 @@ def calculate_base_stats(life):
 	
 	for flag in _flags:
 		if _flags.index(flag) == 0:
-			race_type = flag
+			life['race'] = flag
 		
-		elif flag.count('LEGS'):
-			stats['legs'] = flag.partition('[')[2].partition(']')[0].split(',')
-		
-		elif flag.count('ARMS'):
-			stats['arms'] = flag.partition('[')[2].partition(']')[0].split(',')
-		
-			#elif flag.count('HANDS'):
-			#stats['hands'] = flag.partition('[')[2].partition(']')[0].split(',')
-		
-		elif flag.count('MELEE'):
-			stats['melee'] = flag.partition('[')[2].partition(']')[0].split(',')
+		elif flag.count('['):
+			if not flag.count('[') == flag.count(']'):
+				raise Exception('No matching brace in ALife type %s: %s' % (race_type, flag))
+			
+			stats[flag.lower().partition('[')[0]] = flag.partition('[')[2].partition(']')[0].split(',')
 		
 		elif flag == 'HUNGER':
 			life['eaten'] = []	
@@ -68,8 +62,6 @@ def calculate_base_stats(life):
 	
 	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
-	
-	print race_type,stats['speed_max']
 	
 	for var in life['vars'].split('|'):
 		key,val = var.split('=')

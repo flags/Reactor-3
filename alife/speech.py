@@ -98,6 +98,10 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	lfe.create_and_update_self_snapshot(life)
 
 def start_dialog(life, target, gist):
+	#TODO: Talk to different races differently (dogs, etc)
+	if not LIFE[target]['race'] in life['can_group_with']:
+		return False
+	
 	_dialog = {'type': 'dialog',
 		'from': life,
 		'enabled': True,
