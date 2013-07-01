@@ -7,7 +7,7 @@ def create_rawlangscript():
 	return {'section': '', 'sections': {}}
 
 def create_section(script, section):
-	script['sections'][section] = []
+	script['sections'][section] = {}
 	print 'Section: %s' % section
 
 def set_active_section(script, section):
@@ -27,7 +27,7 @@ def create_action(script, identifier, arguments):
 	return {'id': identifier, 'arguments': _args}
 
 def add_action(script, action):
-	script['sections'][script['section']].append(action)
+	script['sections'][script['section']][action['id']] = action['arguments']
 
 def parse(script, line, filename='', linenumber=0):
 	if not line.count('[') == line.count(']'):

@@ -186,8 +186,7 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
-	for function in lfe.get_raw(life, 'groups', 'wants_group_member'):
-		print 'LOVE U'*10
+	for function in lfe.get_raw(life, 'group', 'wants_group_member'):
 		if not function(life, life_id):
 			return False
 	
@@ -219,7 +218,7 @@ def is_family(life, life_id):
 		return False
 	
 	for relation in ['son', 'daughter', 'mother', 'father']:
-		if brain.get_alife_flag(life, _know, 'relation'):
+		if brain.get_alife_flag(life, _know['life'], relation):
 			return True
 	
 	return False

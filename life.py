@@ -210,7 +210,7 @@ def get_raw(life, section, identifier):
 	if not alife.rawparse.raw_has_section(life, section):
 		return []
 	
-	return [alife.rawparse.translate(e) for e in life['raw']['sections'][section]['arguments']]	
+	return [alife.rawparse.translate(e) for e in life['raw']['sections'][section][identifier]]
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
