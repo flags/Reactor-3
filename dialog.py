@@ -17,8 +17,10 @@ import logging
 import random
 
 def create_dialog_with(life, target, info):
-	#If we're getting a gist then the conversation has already been started in some respect...
-	#we'll get responses for now
+	#TODO: Talk to different races differently (dogs, etc)
+	if not LIFE[target]['race'] in life['can_group_with']:
+		return False
+	
 	_messages = []
 	
 	if 'gist' in info:

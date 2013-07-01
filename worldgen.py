@@ -8,6 +8,7 @@ import logging
 import logic
 import items
 import tiles
+import alife
 import life
 import maps
 
@@ -56,6 +57,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	generate_life(source_map, amount=life)
+	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
@@ -111,8 +113,26 @@ def randomize_item_spawns():
 		_rand_pos = random.choice(_chunk['ground'])
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
-#def generate_wildlife(amount='heavy'):
-	
+def generate_wildlife(source_map, amount='heavy'):
+	for i in range(1, 5):
+		_p = life.create_life('Dog',
+			name=['Wild', 'Dog%s' % i],
+			map=source_map,
+			position=[55+(i*5),81,2])
+		
+		if random.randint(0, 3)>=2:
+			_c = life.create_life('Dog',
+				name=['(Young) Wild', 'Dog%s' % i],
+				map=source_map,
+				position=[55+(i*5),82,2])
+			
+			alife.brain.meet_alife(_p, _c)
+			alife.brain.meet_alife(_c, _p)
+			
+			alife.brain.flag_alife(_p, _c, 'son')
+			alife.brain.flag_alife(_c, _p, 'father')
+			
+			alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
@@ -149,11 +169,6 @@ def create_player(source_map):
 		map=source_map,
 		position=[50,80,2])
 	PLAYER['player'] = True
-	
-	life.create_life('Dog',
-		name=['Wild', 'Dog'],
-		map=source_map,
-		position=[50,80,2])	
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))

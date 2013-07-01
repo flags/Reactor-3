@@ -310,8 +310,6 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score
-	#if _initial:
-	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
