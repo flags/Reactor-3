@@ -31,8 +31,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
 	#	return False
-	if not 'CAN_TALK' in life['life_flags']:
-		return False	
 	
 	for ai in alife_seen:
 		#What's our relationship with them?
@@ -44,6 +42,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if jobs.alife_is_factor_of_any_job(ai['life']):
 			break
+		
+		if not stats.can_talk_to(life, ai['life']['id']):
+			continue
 		
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			if not speech.discussed(life, ai['life'], 'looks_hostile'):
@@ -61,6 +62,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
+		
+		if not stats.can_talk_to(life, ai['life']['id']):
+			continue		
 		
 		if not stats.desires_conversation_with(life, ai['life']['id']):
 			continue
@@ -135,6 +139,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
+		
+		if not stats.can_talk_to(life, ai['life']['id']):
+			continue
 
 		for item in _visible_items:
 			#TODO: Check

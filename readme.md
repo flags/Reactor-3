@@ -15,7 +15,7 @@ Installing
 ==========
 Reactor 3 requires Python 2.7, Cython, and [libtcod](http://doryen.eptalys.net/libtcod/download/). The following instructions are aimed at Linux users:
 
-    git clone git@github.com:flags/Reactor-3.git
+    git clone https://github.com/flags/Reactor-3.git
     cd Reactor-3
     python compile_cython_modules.py build_ext --inplace
     

@@ -261,7 +261,7 @@ def get_influence(life, target_id, gist):
 	
 	return 0
 
-def judge_chunk(life, chunk_id, long=False, visited=False):
+def judge_chunk(life, chunk_id, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
 	
@@ -298,13 +298,10 @@ def judge_chunk(life, chunk_id, long=False, visited=False):
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
 	
-	if long:
-		_score += len(chunk['items'])
-	else:
-		for item in chunk['items']:
-			_item = brain.remember_known_item(life, item)
-			if _item:
-				_score += _item['score']
+	for item in chunk['items']:
+		_item = brain.remember_known_item(life, item)
+		if _item:
+			_score += _item['score']
 
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score

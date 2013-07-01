@@ -162,7 +162,6 @@ def path_along_reference(life, ref_type):
 			_new_dir -= 360
 		
 		if _new_dir in _directions:
-			#_score = len(maps.get_chunk(_directions[_new_dir]['key'])['neighbors'])
 			_score = 0
 			
 			if _directions[_new_dir]['key'] in life['known_chunks']:
@@ -174,11 +173,9 @@ def path_along_reference(life, ref_type):
 			if _score>=_best_dir['score']:
 				if _score==_best_dir['score']:
 					_chunk = maps.get_chunk(_directions[_new_dir]['key'])
-					#_score += numbers.distance(life['pos'], _chunk['pos'])
 				
 				_best_dir['dir'] = _new_dir
 				_best_dir['score'] = _score
-				#print 'b'
 
 	if _best_dir['dir'] == -1:
 		return None

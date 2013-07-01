@@ -186,6 +186,11 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
+	for function in lfe.get_raw(life, 'groups', 'wants_group_member'):
+		print 'LOVE U'*10
+		if not function(life, life_id):
+			return False
+	
 	return True
 
 def will_obey(life, life_id):
@@ -196,5 +201,25 @@ def will_obey(life, life_id):
 	
 	if judgement.can_trust(life, life_id):
 		return True
+	
+	return False
+
+def can_talk_to(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
+	
+	if life['race'] == LIFE[life_id]['race']:
+		return True
+	
+	return False
+
+def is_family(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
+	
+	if not _know:
+		return False
+	
+	for relation in ['son', 'daughter', 'mother', 'father']:
+		if brain.get_alife_flag(life, _know, 'relation'):
+			return True
 	
 	return False

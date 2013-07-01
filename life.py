@@ -144,6 +144,11 @@ def initiate_life(name):
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
 	
 	life = load_life(name)
+	life['raw'] = {'sections': {}}
+	try:
+		life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, name+'.dat'))
+	except:
+		print 'FIXME: Exception on no .dat for life'
 	
 	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
@@ -200,6 +205,12 @@ def initiate_limbs(life):
 			body[body[limb]['parent']]['children'] = [limb]
 		else:
 			body[body[limb]['parent']]['children'].append(limb)
+
+def get_raw(life, section, identifier):
+	if not alife.rawparse.raw_has_section(life, section):
+		return []
+	
+	return [alife.rawparse.translate(e) for e in life['raw']['sections'][section]['arguments']]	
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
@@ -496,7 +507,6 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		
 		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
-				print 'NO RADIO'
 				continue
 		
 		_does_match = True

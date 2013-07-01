@@ -1,0 +1,16 @@
+[GROUP]
+WANTS_GROUP_MEMBER:IS_FAMILY
+
+[COMBAT]
+#List of STAT functions to check before entering state
+NEEDS:CAN_BITE,IS_HEALTHY
+
+#What to use for this engagement. LIMB[arg] or WEAPON
+#The bit inside the curly braces defines the type of combat: MELEE or RANGE
+USE:LIMB[JAW]{MELEE}
+
+#What target we engage (CLOSEST, HIGHEST, LOWEST)
+ENGAGE:CLOSEST
+
+#What we do to the target: KILL, MAIME
+TARGET:KILL
