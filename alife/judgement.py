@@ -2,13 +2,21 @@ from globals import *
 
 import life as lfe
 
+import references
 import weapons
 import chunks
 import combat
+import groups
+import stats
 import brain
+import raids
+import sight
+import camps
+import jobs
 
 import logging
 import numbers
+import random
 import maps
 import time
 
@@ -16,8 +24,6 @@ def judge_item(life, item):
 	_score = 0
 	
 	if brain.get_flag(life, 'no_weapon') and item['type'] == 'gun':
-		_score += 30
-	elif brain.get_flag(life, 'no_backpack') and item['type'] == 'backpack':
 		_score += 30
 	
 	return _score
@@ -64,116 +70,247 @@ def get_combat_rating(life):
 	
 	return _score
 
-def judge(life, target):
-	_like = 0
-	_dislike = 0
-	_is_hostile = False
-	_surrendered = False
+def get_trust(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	_trust = 0
 	
-	if target['life']['asleep']:
-		return 0
+	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
+		_trust += memory['trust']
+	
+	return _trust
 
-	if 'greeting' in target['received']:
-		_like += 1
+def can_trust(life, target_id, low=0):
+	_knows = brain.knows_alife_by_id(life, target_id)
 	
-	#if 'greeting' in target['sent']:
-	#	_like += 1
+	if _knows['trust']>=low:
+		return True
+	
+	return False
+
+def parse_raw_judgements(life, target_id):
+	lfe.execute_raw(life, 'judge', 'trust', target_id=target_id)
+
+def is_target_dangerous(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	if target['danger']:
+		if can_trust(life, target_id):
+			return False
+		
+		return True
+	
+	return False
+
+def is_safe(life):
+	if get_targets(life):
+		return False
+	
+	return True
+
+def get_trusted(life, visible=True, invert=False):
+	_trusted = []
+	
+	for target in life['know'].values():
+		if not can_trust(life, target['life']['id']) == invert:
+			if visible and sight.can_see_target(life, target['life']['id']):
+				continue
+			
+			_trusted.append(target['life']['id'])
+	
+	return _trusted
+
+def get_untrusted(life, visible=True):
+	return get_trusted(life, visible=visible, invert=True)
+
+def get_targets(life, must_be_known=False):
+	_targets = []
+	_combat_targets = []
+	
+	#if life['camp'] and raids.camp_has_raid(life['camp']):
+	#	_targets.extend(raids.get_raiders(life['camp']))
+
+	for alife in life['know'].values():
+		if alife['life']['id'] in _targets:
+			continue
+		
+		#TODO: Secrecy
+		if is_target_dangerous(life, alife['life']['id']):
+			_combat_targets.append(alife['life']['id'])
+	
+	_passed_combat_targets = []
+	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
+		if target['escaped'] or target['last_seen_time']>=300:
+			continue
+		
+		#TODO: Maybe the job calls for us to engage this target?
+		if jobs.alife_is_factor_of_any_job(target['life']):
+			continue
+		
+		_passed_combat_targets.append(target['life']['id'])
+	
+	#for t in _all_targets:
+	#	print 'ALL:',type(t)
+	
+	brain.store_in_memory(life, 'combat_targets', _passed_combat_targets)
+	_targets.extend(_passed_combat_targets)
+	
+	#for target in _targets:
+	#	print 'TARGET:',type(target),len(_targets)
+	
+	if must_be_known:
+		for _target in _targets[:]:
+			if not brain.knows_alife_by_id(life, _target):
+				_targets.remove(_target)
+	
+	return _targets
+
+def get_nearest_threat(life):
+	_target = {'target': None, 'score': 9999}
+
+	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+	#if not _combat_targets:
+	#	return False
+	
+	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life, must_be_known=True)]:
+		_score = numbers.distance(life['pos'], target['last_seen_at'])
+		
+		if not _target['target'] or _score<_target['score']:
+			_target['target'] = target['life']['id']
+			_target['score'] = _score
+	
+	return _target['target']
+
+def get_invisible_threats(life):
+	return get_visible_threats(life, _inverse=True)
+
+def get_visible_threats(life, _inverse=False):
+	_targets = []
+	
+	for target in [LIFE[t] for t in get_targets(life, must_be_known=True)]:
+		if not sight.can_see_target(life, target['id']) == _inverse:
+			_targets.append(target['id'])
+	
+	return _targets
+
+def get_fondness(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	return target['fondness']
+
+def _get_impressions(life, target):
+	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):
+		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
+			brain.add_impression(life, target['life']['id'], 'had_weapon', {'danger': 2})
+
+def _calculate_impressions(life, target_id):
+	_target = brain.knows_alife_by_id(life, target_id)
+	
+	for impression in _target['impressions']:
+		for key in _target['impressions'][impression]['modifiers']:
+			if not key in _target:
+				raise Exception('Key \'%s\' not in target.' % key)
+			
+			_target[key] += _target['impressions'][impression]['modifiers'][key]
+
+def _calculate_fondness(life, target):
+	_fondness = 0
 	
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
 		if memory['text'] == 'friendly':
-			_like += 2
-		
-		elif memory['text'] == 'hostile':
-			_is_hostile = True
-			_dislike += 2
-		
-		elif memory['text'] == 'traitor':
-			_dislike += 2
-		
-		elif memory['text'] == 'shot by':
-			_dislike += 2
-		
-		elif memory['text'] == 'compliant':
-			_like += 2
-		
-		elif memory['text'] == 'surrendered':
-			_surrendered = True
+			_fondness += 1
+	
+	return _fondness
 
-	#First impressions go here
-	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life'], 'had_weapon'):
-		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life'], 'had_weapon', -3)
+def _calculate_danger(life, target):
+	if target['life']['asleep']:
+		return 0
 	
-	if brain.get_impression(life, target['life'], 'had_weapon'):
-		if not lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			_like += abs(target['impressions']['had_weapon']['score'])
+	_danger = 0	
 	
-	for impression in target['impressions']:
-		_score = target['impressions'][impression]['score']
-		
-		if _score < 0:
-			#print '-',impression
-			_dislike += abs(_score)
-		else:
-			#print '+',impression
-			_like += _score
+	for memory in lfe.get_memory(life, matches={'target': target['life']['id'], 'danger': '*'}):
+		_danger += memory['danger']
 	
-	_like *= brain.get_trust(life, target['life']['id'])
-	
-	if _is_hostile:
-		if _surrendered:
-			target['flags']['surrendered'] = True
-		else:
-			_life_combat_score = get_combat_rating(life)
-			_target_combat_score = get_combat_rating(target['life'])
-			brain.flag_alife(life, target['life'], 'combat_score', value=_life_combat_score-_target_combat_score)
-			
-			logging.warning('** ALife combat scores for %s vs. %s: %s **' % (' '.join(life['name']), ' '.join(target['life']['name']), _life_combat_score-_target_combat_score))
-	
-	return _like-_dislike
+	return _danger
 
-def judge_chunk(life, chunk_id, long=False, visited=False):
+def judge(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	
+	_old_fondness = target['fondness']
+	_old_danger = target['danger']
+	_old_trust = target['trust']
+	
+	_get_impressions(life, target)
+	target['fondness'] = _calculate_fondness(life, target)
+	target['danger'] = _calculate_danger(life, target)
+	target['trust'] = get_trust(life, target_id)
+	
+	parse_raw_judgements(life, target_id)
+	_calculate_impressions(life, target_id)
+	
+	if not _old_fondness == target['fondness']:
+		print '%s fondness in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_fondness, target['fondness'])
+
+	if not _old_danger == target['danger']:
+		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
+	
+	if not _old_trust == target['trust']:
+		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
+
+def get_influence(life, target_id, gist):
+	_impression = brain.get_impression(life, target_id, gist)
+	
+	if _impression:
+		if 'influence' in _impression['modifiers']:
+			return _impression['modifiers']['influence']
+	
+	return 0
+
+def judge_chunk(life, chunk_id, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
+	_score = 0
 	
-	if long:
-		_max_score = SETTINGS['chunk size']*6
-		_distance = (numbers.distance(life['pos'], chunk['pos'])/float(SETTINGS['chunk size']))
-	else:
-		_max_score = SETTINGS['chunk size']*4
-		_distance = 0
-	
-	_initial = False
 	if not chunk_id in life['known_chunks']:
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
-		_initial = True
 	
-	_score = numbers.clip(_max_score-_distance, 0, _max_score)
-	for _life in [LIFE[i] for i in LIFE]:
-		if _life['id'] == life['id']:
-			continue
+	_antisocial_mod = stats.get_antisocial_percentage(life)
+	_group_size_max = stats.get_max_group_size(life)
+	_trusted = 0
+	for _target in life['know'].values():
+		_is_here = False
 		
-		#if chunks.is_in_chunk(_life, chunk_id):
-		#	if _life['id'] in life['know']:
-		#		_score += lfe.get_known_life(life, _life['id'])['score']*.5
+		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
+			_is_here = True
+		elif not _target['last_seen_time'] and _target['life']['path'] and chunks.position_is_in_chunk(lfe.path_dest(_target['life']), chunk_id):
+			_is_here = True
+			
+		if _is_here:
+			if is_target_dangerous(life, _target['life']['id']):
+				_score -= 10
+			else:
+				_trusted += _target['trust']*_antisocial_mod
+			
+			_score += get_influence(life, _target['life']['id'], 'follow')
+			_score += get_influence(life, _target['life']['id'], 'talk')
+	
+	if stats.desires_interaction(life):
+		if _trusted>_group_size_max:
+			_score += _trusted*_antisocial_mod
+		else:
+			_score += _trusted
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
 	
-	if long:
-		_score += len(chunk['items'])
-	else:
-		for item in chunk['items']:
-			_item = brain.remember_known_item(life, item)
-			if _item:
-				_score += _item['score']
+	for item in chunk['items']:
+		_item = brain.remember_known_item(life, item)
+		if _item:
+			_score += _item['score']
 
 	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score
-	#if _initial:
-	#	logging.debug('%s judged chunk #%s with score %s' % (' '.join(life['name']), chunk_id, _score))
 
 def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
@@ -209,14 +346,14 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 			if ai == life['id']:
 				continue
 			
-			if not lfe.can_see(life, LIFE[ai]['pos']):
+			if not sight.can_see_target(life, ai):
 				continue
 			
 			_knows = brain.knows_alife(life, LIFE[ai])
 			if not _knows:
 				continue
 				
-			_score += _knows['score']
+			_score += get_fondness(life, ai)
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:
@@ -252,18 +389,41 @@ def judge_camp(life, camp):
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
 	
-	_known_chunks_of_camp = []
-	for _chunk_key in camp:
-		if not _chunk_key in life['known_chunks']:
+	_known_chunks_of_camp = references.get_known_chunks_in_reference(life, camp)
+	
+	_current_population = 0
+	_current_trust = 0
+	for _target in life['know'].values():
+		if not references.is_in_reference(_target['last_seen_at'], camp):
 			continue
 		
-		_known_chunks_of_camp.append(_chunk_key)
+		_current_population += 1
+		
+		if can_trust(life, _target['life']['id']):
+			_current_trust += _target['trust']
+		else:
+			_current_trust -= _target['danger']
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
+	_known_camps = [c['reference'] for c in life['known_camps'].values()]
+	
+	if _current_population > stats.get_max_group_size(life):
+		_score = _current_trust*stats.get_antisocial_percentage(life)
+		print life['name'],'2CROWDED'
+	else:
+		_score = _current_trust
+	
+	_camp = camps.get_camp_via_reference(camp)
+	if _camp:
+		_score += judge_group(life, camps.get_controlling_group(_camp))
+	
+	if stats.desires_to_create_camp(life):
+		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
-	return len(camp)*_percent_known
+	#print 'camp score:',(len(camp)*_percent_known),_score,(len(camp)*_percent_known)*_score
+	return (len(camp)*_percent_known)*_score
 
 def judge_job(life, job):
 	_score = 0
@@ -289,8 +449,10 @@ def judge_raid(life, raiders, camp):
 			_score -= 2
 			continue
 		
+		#TODO: Find a better way to do this
+		#TODO: This has to be broken: _knows['life']
 		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
-			judge(life, _knows)
+			judge(life, raider)
 		
 		if brain.get_alife_flag(life, _knows['life'], 'combat_score'):
 			_score += _knows['flags']['combat_score']
@@ -299,17 +461,65 @@ def judge_raid(life, raiders, camp):
 	
 	return _score
 
-#TODO: Should be in brain.py?
-def get_trust(life, target_id):
-	_knows = brain.knows_alife_by_id(life, target_id)
+def judge_group(life, group_id):
+	_score = 0
+	for member in groups.get_group(group_id)['members']:
+		_knows = brain.knows_alife_by_id(life, member)
+		if not _knows:
+			continue
+		
+		if can_trust(life, member):
+			_score += _knows['trust']
+		else:
+			_score -= _knows['danger']
 	
-	return WORLD_INFO['ticks']-_knows['met_at_time']
+	return _score
+
+def group_judge_group(group_id, target_group_id):
+	_group1 = groups.get_group(group_id)
+	_group2 = groups.get_group(target_group_id)
+	
+	_group1_combat = groups.get_combat_score(group_id)
+	_group2_combat = groups.get_combat_score(target_group_id)
+	
+	if _group1_combat > _group2_combat:
+		pass
+
+def is_group_hostile(life, group_id):
+	_group = groups.get_group(group_id)
+	
+	if judge_group(life, group_id)>=0:
+		return False
+	
+	return True
 
 def believe_which_alife(life, alife):
 	_scores = {}
 	for ai in alife:
-		_score = get_trust(life, ai)
-		_scores[_score] = ai
+		_score = 0
+		
+		if can_trust(life, ai):
+			_score = get_trust(life, ai)
+		
+		if _score in _scores:
+			_scores[_score].append(ai)
+		else:
+			_scores[_score] = [ai]
 	
-	return _scores[max(_scores)]
+	_winners = _scores[max(_scores)][:]
+	
+	if len(_winners)>1:
+		_scores = {}
+		for winner in _winners:
+			_know = brain.knows_alife_by_id(life, winner)
+			_score = _know['danger']
+			
+			if _score in _scores:
+				_scores[_score].append(winner)
+			else:
+				_scores[_score] = [winner]
+		
+		return random.choice(_scores[max(_scores)])
+	else:
+		return _winners[0]
 		

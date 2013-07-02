@@ -86,7 +86,7 @@ def fire(life, target, limb=None):
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
-			life['aim_at'] = _life
+			life['aim_at'] = _life['id']
 			break
 	
 	life['facing'] = (_fx,_fy)

@@ -1,6 +1,7 @@
 <race>Human</race>
 
-<flags>HUMANOID|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|GROUP|NONGROUP|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<flags>HUMAN|INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP_WITH[HUMAN]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<vars>vision_max=21|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
 <icon>@</icon>
 
 <body>
@@ -81,14 +82,14 @@
 	</rforearm>
 	
 	<lhand>
-		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
 		<parent>lforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
 	</lhand>
 	
 	<rhand>
-		<flags>SKIN|MUSCLE|BONE|CANSTORE</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
 		<parent>rforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>

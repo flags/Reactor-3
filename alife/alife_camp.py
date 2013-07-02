@@ -1,4 +1,5 @@
 from globals import *
+from types import *
 
 import life as lfe
 
@@ -8,6 +9,7 @@ import movement
 import speech
 import brain
 import camps
+import stats
 import jobs
 import maps
 
@@ -15,30 +17,21 @@ import logging
 import random
 
 STATE = 'camping'
-INITIAL_STATES = ['idle', 'hidden']
-CHECK_STATES = INITIAL_STATES[:]
-CHECK_STATES.append(STATE)
-ENTRY_SCORE = 0
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_seen:
-		_score += entry['score']
-	
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if life['state'] in ['hiding', 'hidden', 'working']:
+	if not 'INTELLIGENT' in life['life_flags']:
+		return False
+	
+	if not judgement.is_safe(life):
+		return False	
+	
+	if life['state'] in ['hiding', 'hidden', 'working', 'needs', 'looting']:
 		return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
-	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) < ENTRY_SCORE:
-		return False
 
 	if not life['camp']:
 		return False
@@ -89,47 +82,36 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				jobs.add_job_task(_j, 'find alife', callback=movement.find_alife_and_say, required=True)
 				jobs.add_job_candidate(_j, life)
 				jobs.process_job(_j)
+		
+		if not life['id'] == _info['founder']:
+			_knows = brain.knows_alife_by_id(life, _info['founder'])
+			
+			if not _knows:
+				if not lfe.get_memory(life, matches={'text': 'where_is_target', 'target': _info['founder']}):
+					lfe.create_question(life,
+						'where_is_target',
+						{'target': _info['founder']},
+						lfe.get_memory,
+						{'text': 'location_of_target', 'target': _info['founder'], 'location': '*'})
+				
+			elif judgement.can_trust(life, _info['founder']) and stats.desires_job(life):
+				if not lfe.get_memory(life, matches={'text': 'no jobs', 'target': _info['founder']}):
+					_j = jobs.create_job(life, 'get camp job')
+					jobs.add_detail_to_job(_j, 'target', _info['founder'])
+					jobs.add_job_task(_j, 'find alife', callback=movement.find_alife, required=True)
+					jobs.add_job_task(_j, 'ask for job', callback=jobs.ask_for_job, required=True)
+					jobs.add_job_candidate(_j, life)
+					jobs.process_job(_j)
+		else:
+			#TODO: Create jobs here?
+			pass
 			
 	else:		
-		#Try to find out who he is...
-		#speech.announce(life, 'who_is_founder', camp=_camp['id'])
-		
-		#_possible_people_to_ask = []
-		#for target in speech.get_announce_list(life):
-		#	#TODO: In this case we'll be approached (maybe) by the ALife if they find the info...
-		#	if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'dont know founder'}):
-		#		continue
-		#	
-		#	if lfe.get_memory(life, matches={'target': target['id'], 'camp': _camp['id'], 'text': 'heard about camp', 'founder': '*'}):
-		#		continue
-		#	
-		#	speech.unsend(life, target, 'who_is_founder')
-		#	_possible_people_to_ask.append(target)
-		#
-		#if _possible_people_to_ask:
-		#	#TODO: Who to see first?
-		#	_found = False
-		#	for target in _possible_people_to_ask:
-		#		_target = brain.knows_alife_by_id(life, target['id'])
-		#	
-		#		if not life['pos'][:2] == _target['last_seen_at'][:2]:
-		#			_found = True
-		#			break					
-		#	
-		#	#TODO: Job needed here
-		#	if _found:
-		#		lfe.clear_actions(life)
-		#		lfe.add_action(life,{'action': 'move',
-		#			'to': _target['last_seen_at'][:2]},
-		#			200)
-		#else:
-		if not lfe.get_memory(life, matches={'text': 'wants_founder_info', 'camp': _camp['id']}):
-			lfe.memory(life, 'wants_founder_info', camp=_camp['id'], question=True)
-
-		#print 'missed announce',speech.who_missed_announce(life, 'who_is_founder')
-		#We don't have a founder still
-		#for target in speech.who_missed_announce(life, 'who_is_founder'):
-		#speech.unsend(life, LIFE[target], 'who_is_founder')		
+		lfe.create_question(life,
+			'wants_founder_info',
+			{'camp': _camp['id']},
+			lfe.get_memory,
+			{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
 	
 	#if _info['estimated_population']<2:
 		

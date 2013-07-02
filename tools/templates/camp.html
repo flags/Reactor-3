@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>ReactorWatch - Camp {{ camp.id }}</title>
+</head>
+<body>
+    <h2>Camp {{ camp.id }}</h2>
+    <ul>
+    <li><b>Name: </b>{{ camp.name }}</li>
+    <li><b>Founder: </b> <a href="/life/{{ camp.founder }}">{{ camp.founder }}</a></li>
+    <li><b>Created at: </b> <a href="/timeline/{{ camp.time_founded }}">{{ camp.time_founded }}</a></li>
+    <li><b>Control: </b><ul>
+        {% for group in camp.groups %}
+            <li><a href="/group/{{ group }}">{{ camp.groups[group]['id'] }} ({{ camp.groups[group]['score'] }})</a></li>
+        {% endfor %}
+    </ul></ul>
+</body>
+</html>

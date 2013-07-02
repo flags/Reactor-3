@@ -1,15 +1,19 @@
 *.pyc
 *.c
 *.so
+*.sh
 *.xcf
 *.swp
+*.wpr
 *.patch
 *.idea_wall
 
+.stats/*
 build/*
 tests/*
-tools/*
 docs/devjournal.md
+docs/shortlist.md
+docs/talks/*
 
 profile.dat
-terminal.png
+profile.txt

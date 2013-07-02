@@ -2,8 +2,11 @@
 #system works.
 from globals import *
 
+import life as lfe
+
 import judgement
 import movement
+import brain
 
 import logging
 
@@ -11,34 +14,25 @@ STATE = 'hiding'
 INITIAL_STATES = ['idle', 'hidden']
 CHECK_STATES = INITIAL_STATES[:]
 CHECK_STATES.append(STATE)
-EXIT_SCORE = -75
-ENTRY_SCORE = -1
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_seen:
-		_score += entry['score']
-	
-	#_score += judgement.judge_self(life)
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
+	if judgement.is_safe(life):
+		return False
+	
+	if not judgement.get_visible_threats(life):
+		if life['state'] == STATE:
+			lfe.clear_actions(life)
+			
+		return False
+	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if life['state'] in ['combat', 'working']:
-		return False
-	
-	if not calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) <= ENTRY_SCORE:
-		return False
-	
-	if not len(targets_seen):
-		return False
-	
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	movement.escape(life, targets_seen[0]['who'], source_map)
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_threat = judgement.get_nearest_threat(life)
+	_knows = brain.knows_alife_by_id(life, _threat)
+	movement.escape(life, _knows, source_map)

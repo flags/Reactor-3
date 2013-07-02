@@ -2,6 +2,9 @@
 #system works.
 from globals import *
 
+import life as lfe
+
+import judgement
 import movement
 import combat
 
@@ -9,37 +12,37 @@ import logging
 
 STATE = 'hidden'
 INITIAL_STATE = 'hiding'
-EXIT_SCORE = -75
-ENTRY_SCORE = -1
-
-def calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen):
-	_score = 0
-	
-	for entry in targets_not_seen:
-		_score += entry['score']
-	
-	return _score
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
+
+	if judgement.is_safe(life):
+		return False
+	
+	if judgement.get_visible_threats(life):
+		return False
+	
+	if life['state'] in ['combat']:
+		return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if life['state'] in ['combat', 'working']:
-		return False
-	
-	if calculate_safety(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen) > ENTRY_SCORE:
-		return False
-	
-	if len(targets_seen):
-		return False
-	
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	if combat.has_weapon(life):
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	_threat = judgement.get_nearest_threat(life)
+	
+	if not 'hiding' in life['state_flags']:
+		movement.hide(life, _threat)
+		life['state_flags'].append('hiding')
+		return True
+	
+	_weapon = combat.get_best_weapon(life)
+	
+	if _weapon:
 		if not combat.weapon_equipped_and_ready(life):
-			if not 'equipping' in life:
-				if combat._equip_weapon(life):
-					life['equipping'] = True
+			combat._equip_weapon(life, _weapon['weapon'], _weapon['feed'])
+		else:
+			print life['name'],'Weapon not ready!'
+			print combat.weapon_equipped_and_ready(life)

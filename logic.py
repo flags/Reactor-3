@@ -1,12 +1,17 @@
 from globals import *
 
-import encounters
 import alife as alfe
+import libtcodpy as tcod
+
+import encounters
 import menus
 import items
 import life
 
 def tick_all_objects(source_map):
+	if SETTINGS['paused']:
+		return False
+	
 	if WORLD_INFO['in_combat'] and SETTINGS['controlling']['actions']:
 		WORLD_INFO['pause_ticks'] = 0
 	
@@ -30,7 +35,12 @@ def tick_all_objects(source_map):
 		if SETTINGS['controlling']['encounters']:
 			return False
 		
-		if [d['enabled'] for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		#if menus.get_menu_by_name('Aim at...') > -1:
+		#	return False
+		if SETTINGS['controlling']['targeting']:
+			return False
+		
+		if life.has_dialog(SETTINGS['controlling']):
 			return False
 	
 		_in_combat = False
@@ -59,14 +69,18 @@ def tick_all_objects(source_map):
 				continue
 			
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
-			if _targets and SETTINGS['controlling']['id'] in [l['who']['life']['id'] for l in _targets]:
+			if _targets and SETTINGS['controlling']['id'] in _targets:
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:
-					WORLD_INFO['pause_ticks'] = 3
+					if tcod.sys_get_fps()<=LOW_FPS:
+						WORLD_INFO['pause_ticks'] = 1
+					else:
+						WORLD_INFO['pause_ticks'] = 2
 			
 			WORLD_INFO['in_combat'] = _in_combat
 	
+	tick_world()
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
 	
@@ -74,6 +88,15 @@ def tick_all_objects(source_map):
 
 def tick_world():
 	WORLD_INFO['ticks'] += 1
+	
+	if WORLD_INFO['time_of_day'] < WORLD_INFO['length_of_day']:
+		WORLD_INFO['time_of_day'] += WORLD_INFO['time_scale']
+	else:
+		WORLD_INFO['time_of_day'] = 0
+		WORLD_INFO['day'] += 1
+	
+def get_time_of_day():
+	return WORLD_INFO['ticks']
 
 def draw_encounter():
 	if not SETTINGS['controlling']['encounters']:
@@ -81,3 +104,11 @@ def draw_encounter():
 	
 	encounters.draw_encounter(SETTINGS['controlling'],
 		SETTINGS['controlling']['encounters'][0])
+
+def matches(dict1, dict2):
+	_break = False
+	for key in dict2:
+		if not key in dict1 or not dict1[key] == dict2[key]:
+			return False
+	
+	return True

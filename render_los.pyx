@@ -1,6 +1,7 @@
 from globals import *
 
 import cython
+import numpy
 import time
 
 VERSION = 1

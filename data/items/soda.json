@@ -1,0 +1,11 @@
+{"name": "soda",
+"prefix": "a can of",
+"type": "drink",
+"icon": "8",
+"description": "A can of sugary soda. Contains caffeine.",
+"flags": "",
+"sustenance": 20,
+"value": 175,
+"modifiers": {"hunger": -10},
+"size": "1x1",
+"material": "metal"}

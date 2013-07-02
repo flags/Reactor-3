@@ -1,0 +1,9 @@
+{"name": "white cloth",
+"prefix": "a",
+"type": "fabric",
+"icon": "W",
+"description": "A white piece of cloth. Good for bandages.",
+"flags": "CANSTACK|CANBURN|CANSOAK",
+"size": "1x1",
+"thickness": 1,
+"material": "cloth"}

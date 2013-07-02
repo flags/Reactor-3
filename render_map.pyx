@@ -1,6 +1,10 @@
 from tiles import *
+
 import graphics as gfx
+import libtcodpy as tcod
+
 import effects
+import numpy
 import time
 
 VERSION = 4
@@ -51,8 +55,8 @@ def render_map(map):
 							gfx.blit_char(_RENDER_X,
 								_RENDER_Y,
 								'X',
-								darker_grey,
-								black,
+								tcod.darker_grey,
+								tcod.black,
 								char_buffer=MAP_CHAR_BUFFER,
 								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
