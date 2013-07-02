@@ -1,7 +1,7 @@
 import stats
 import re
 
-CURLY_BRACE_MATCH = '{[\w+\.,]*}'
+CURLY_BRACE_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_race': stats.is_same_race,
 	'can_bite': None,

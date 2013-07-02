@@ -88,12 +88,7 @@ def can_trust(life, target_id, low=0):
 	return False
 
 def parse_raw_judgements(life, target_id):
-	for rule in lfe.get_raw(life, 'judge', 'likes'):
-		if rule['function'](life, target_id) == rule['true']:
-			for value in rule['values']:
-				brain.knows_alife_by_id(life, target_id)[value['flag']] += value['value']
-		else:
-			return False
+	lfe.execute_raw(life, 'judge', 'trust', target_id=target_id)
 
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
