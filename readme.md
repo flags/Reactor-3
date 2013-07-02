@@ -13,7 +13,7 @@ I would wager that a large amount of the people reading this only have a passing
 
 Installing
 ==========
-Reactor 3 requires Python 2.7, Cython, and [libtcod](http://doryen.eptalys.net/libtcod/download/). The following instructions are aimed at Linux users:
+Reactor 3 requires Python 2.7, Cython, Numpy, and [libtcod](http://doryen.eptalys.net/libtcod/download/). The following instructions are aimed at Linux users:
 
     git clone https://github.com/flags/Reactor-3.git
     cd Reactor-3
