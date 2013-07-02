@@ -4,6 +4,7 @@ import re
 CURLY_BRACE_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_race': stats.is_same_race,
+	'is_compatible_with': stats.is_compatible_with,
 	'can_bite': None,
 	'is_healthy': None,
 	'closest': None,
@@ -40,7 +41,6 @@ def create_action(script, identifier, arguments):
 				for value in _arguments:
 					_arg = {}
 					
-					print identifier, _arguments
 					if value.count('.'):
 						_arg['target'] = value.partition('.')[0]
 						_arg['flag'] = value.partition('.')[2].partition('+')[0].partition('-')[0]

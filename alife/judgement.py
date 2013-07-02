@@ -88,7 +88,7 @@ def can_trust(life, target_id, low=0):
 	return False
 
 def parse_raw_judgements(life, target_id):
-	lfe.execute_raw(life, 'judge', 'trust', target_id=target_id)
+	lfe.execute_raw(life, 'judge', 'trust', required=False, target_id=target_id)
 
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
