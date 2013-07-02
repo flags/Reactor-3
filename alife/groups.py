@@ -87,7 +87,7 @@ def find_successor(group_id, assign=False):
 			if member1 == member2:
 				continue
 			
-			_members[member2] += judgement.get_trust(LIFE[member1], member2)
+			_members[member2] += brain.knows_alife_by_id(LIFE[member1], member2)['trust']
 	
 	_highest = {'score': 0, 'id': None}
 	for entry in _members:

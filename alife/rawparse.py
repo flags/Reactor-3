@@ -1,7 +1,13 @@
 import stats
 import re
 
-FUNCTION_MAP = {'is_family': stats.is_family}
+CURLY_BRACE_MATCH = '{[\w+\.,]*}'
+FUNCTION_MAP = {'is_family': stats.is_family,
+	'is_same_race': stats.is_same_race,
+	'can_bite': None,
+	'is_healthy': None,
+	'closest': None,
+	'kill': None}
 
 def create_rawlangscript():
 	return {'section': '', 'sections': {}}
@@ -20,9 +26,44 @@ def create_action(script, identifier, arguments):
 	for argument in arguments:
 		if argument.count('['):
 			bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
-			_args.extend(bracket_data)
+			curly_brace_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
+			_args.append({'function': argument.split('[')[0]})
 		else:
-			_args.append(argument)
+			curly_brace_data = re.findall(CURLY_BRACE_MATCH, argument)
+			
+			if curly_brace_data:
+				argument = [argument.replace(entry, '') for entry in curly_brace_data][0]
+				curly_brace_data = [data.strip('{').strip('}') for data in curly_brace_data][0].split(',')
+				_arguments = curly_brace_data
+				_values = []
+				
+				for value in _arguments:
+					_arg = {}
+					
+					print identifier, _arguments
+					if value.count('.'):
+						_arg['target'] = value.partition('.')[0]
+						_arg['flag'] = value.partition('.')[2].partition('+')[0].partition('-')[0]
+						
+						if value.count('+'):
+							_arg['value'] = int(value.partition('+')[2])
+						elif value.count('-'):
+							_arg['value'] = -int(value.partition('-')[2])
+					
+					_values.append(_arg)
+				
+			else:
+				argument = argument.split('{')[0]
+				_values = []
+			
+			#print argument, curly_brace_data
+			
+			_true = True
+			if argument.startswith('!'):
+				argument = argument[1:]
+				_true = False
+			
+			_args.append({'function': translate(argument), 'values': _values, 'true': _true})
 		
 	return {'id': identifier, 'arguments': _args}
 
@@ -34,7 +75,6 @@ def parse(script, line, filename='', linenumber=0):
 		raise Exception('Brace mismatch (%s, line %s): %s' % (filename, linenumber, line))
 	
 	bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', line)]
-	curly_brace_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', line)]
 	
 	if line.startswith('['):
 		create_section(script, bracket_data[0])
@@ -43,7 +83,12 @@ def parse(script, line, filename='', linenumber=0):
 	elif script['section'] and line.count(':'):
 		_split = line.split(':')
 		identifier = _split[0]
-		arguments = _split[1].split(',')
+		
+		if _split[1].rpartition('{')[2].rpartition('}')[0].count(','):
+			arguments = [_split[1]]
+		else:
+			arguments = _split[1].split(',')
+		
 		add_action(script, create_action(script, identifier, arguments))
 
 def read(filename):

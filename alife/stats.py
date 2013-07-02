@@ -58,6 +58,10 @@ def desires_conversation_with(life, life_id):
 		logging.error('FIXME: Improperly Used Function: Doesn\'t know talking target.')
 		return False
 	
+	for rule in lfe.get_raw(life, 'talk', 'desires_conversation_with'):
+		if not rule['function'](life, life_id) == rule['true']:
+			return False
+	
 	if not judgement.can_trust(life, life_id):
 		return False
 	
@@ -111,6 +115,9 @@ def desires_group(life, group_id):
 	return False
 
 def desires_to_create_camp(life):
+	if not 'CAN_GROUP' in life['life_flags']:
+		return False
+		
 	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life['group'], life['id']):
 		if len(groups.get_group(life['group'])['members'])>1:
 			return True
@@ -186,8 +193,8 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
-	for function in lfe.get_raw(life, 'group', 'wants_group_member'):
-		if not function(life, life_id):
+	for rule in lfe.get_raw(life, 'group', 'wants_group_member'):
+		if not rule['function'](life, life_id) == rule['true']:
 			return False
 	
 	return True
@@ -206,6 +213,12 @@ def will_obey(life, life_id):
 def can_talk_to(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 	
+	if life['race'] == LIFE[life_id]['race']:
+		return True
+	
+	return False
+
+def is_same_race(life, life_id):
 	if life['race'] == LIFE[life_id]['race']:
 		return True
 	

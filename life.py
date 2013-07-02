@@ -145,10 +145,10 @@ def initiate_life(name):
 	
 	life = load_life(name)
 	life['raw'] = {'sections': {}}
-	try:
-		life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, name+'.dat'))
-	except:
-		print 'FIXME: Exception on no .dat for life'
+	#try:
+	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, name+'.dat'))
+	#except:
+	#	print 'FIXME: Exception on no .dat for life'
 	
 	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
@@ -210,7 +210,7 @@ def get_raw(life, section, identifier):
 	if not alife.rawparse.raw_has_section(life, section):
 		return []
 	
-	return [alife.rawparse.translate(e) for e in life['raw']['sections'][section][identifier]]
+	return life['raw']['sections'][section][identifier]
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)

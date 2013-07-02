@@ -8,6 +8,7 @@
 *.patch
 *.idea_wall
 
+.stats/*
 build/*
 tests/*
 docs/devjournal.md
