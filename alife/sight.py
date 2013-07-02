@@ -120,8 +120,6 @@ def view_blocked_by_life(life, position, allow=[]):
 	allow.append(life['id'])
 	
 	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
-	print 'AVOID',_avoid_positions
-	
 	_can_see = can_see_position(life, position)
 	
 	if not _can_see:
