@@ -94,7 +94,7 @@ BORDER_COLOR = tcod.Color(128,128,128)
 MAX_MESSAGES_IN_DIALOG = 9
 
 #Strings
-NAMES_FOR_PLACES = []
+TEXT_MAP = {}
 
 #Life constants
 LIFE_MAX_SPEED = 2

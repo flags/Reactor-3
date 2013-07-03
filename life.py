@@ -38,17 +38,13 @@ def calculate_base_stats(life):
 		'legs': None,
 		'melee': None,
 		'speed_max': LIFE_MAX_SPEED}
-	race_type = None
 	
 	_flags = life['flags'].split('|')
 	
-	for flag in _flags:
-		if _flags.index(flag) == 0:
-			life['race'] = flag
-		
-		elif flag.count('['):
+	for flag in _flags:		
+		if flag.count('['):
 			if not flag.count('[') == flag.count(']'):
-				raise Exception('No matching brace in ALife type %s: %s' % (race_type, flag))
+				raise Exception('No matching bspecies in ALife type %s: %s' % (species_type, flag))
 			
 			stats[flag.lower().partition('[')[0]] = flag.partition('[')[2].partition(']')[0].split(',')
 		
@@ -180,9 +176,6 @@ def initiate_limbs(life):
 		
 		_flags = body[limb]['flags'].split('|')
 		
-		if 'CAN_STORE' in _flags:
-			body[limb]['storing'] = []
-		
 		if 'CAN_HOLD' in _flags:
 			life['hands'].append(limb)
 		
@@ -223,7 +216,7 @@ def execute_raw(life, section, identifier, break_on_true=False, required=True, *
 		elif required:
 			return False
 	
-	return True
+	return False
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
@@ -244,14 +237,19 @@ def create_and_update_self_snapshot(life):
 	
 	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
-def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
+def create_life(type, position=(0,0,2), name=None, map=None):
 	"""Initiates and returns a deepcopy of a life type."""
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
 	#TODO: Any way to get rid of this call to `copy`?
 	_life = copy.deepcopy(LIFE_TYPES[type])
-	_life['name'] = name
+	
+	if not name and _life['name'] == '$FIRST_AND_LAST_NAME_FROM_SPECIES':
+		_life['name'] = language.generate_first_and_last_name_from_species(_life['species'])
+	elif name:
+		_life['name'] = name
+	
 	_life['id'] = SETTINGS['lifeid']
 	
 	_life['speed'] = _life['speed_max']
@@ -382,7 +380,7 @@ def prepare_for_save(life):
 		'know': sanitize_know}
 	
 	for key in life.keys():#_delete_keys:
-		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'race', u'flags', 'known_chunks']:
+		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'species', u'flags', 'known_chunks']:
 		#	continue
 		if key in _sanitize_keys:
 			_sanitize_keys[key](life)
@@ -515,7 +513,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if ai['id'] == life['id']:
 			continue
 		
-		if not 'INTELLIGENT' in ai['life_flags']:
+		if not alife.stats.can_talk_to(life, ai['id']):
 			continue
 		
 		if not alife.sight.can_see_position(ai, life['pos']):
@@ -753,7 +751,7 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 		if not 'target' in question:
 			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
 		
-		brain.add_impression(life, question['target'], 'talk', {'influence': stats.get_influence_from(life, question['target'])})
+		brain.add_impression(life, question['target'], 'talk', {'influence': alife.stats.get_influence_from(life, question['target'])})
 	
 	question['answer_all'] = answer_all
 	memory(life, gist, question)

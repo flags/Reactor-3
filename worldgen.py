@@ -132,7 +132,7 @@ def generate_wildlife(source_map, amount='heavy'):
 			alife.brain.flag_alife(_p, _c, 'son')
 			alife.brain.flag_alife(_c, _p, 'father')
 			
-			alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
+			#alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
@@ -141,7 +141,7 @@ def generate_life(source_map, amount=1):
 		else:
 			_spawn = (30, 70)
 		
-		alife = life.create_life('Human',name=['test', str(i+1)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		alife = life.create_life('Human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000

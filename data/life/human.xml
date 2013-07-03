@@ -1,12 +1,14 @@
-<race>Human</race>
+<name>$FIRST_AND_LAST_NAME_FROM_SPECIES</name>
+<species>human</name>
+<type>humanoid</type>
 
-<flags>HUMAN|INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP_WITH[HUMAN]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
+<flags>INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]</flags>
 <vars>vision_max=21|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
 <icon>@</icon>
 
 <body>
 	<head>
-		<flags>SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]</flags>
+		<flags>SKIN|BONE|CRUCIAL|AFFECTS[sight,hearing]</flags>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
 	</head>
@@ -82,14 +84,14 @@
 	</rforearm>
 	
 	<lhand>
-		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_HOLD</flags>
 		<parent>lforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
 	</lhand>
 	
 	<rhand>
-		<flags>SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD</flags>
+		<flags>SKIN|MUSCLE|BONE|CAN_HOLD</flags>
 		<parent>rforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
