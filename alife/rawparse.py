@@ -8,7 +8,8 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'can_bite': None,
 	'is_healthy': None,
 	'closest': None,
-	'kill': None}
+	'kill': None,
+	'has_attacked_trusted': stats.has_attacked_trusted}
 
 def create_rawlangscript():
 	return {'section': '', 'sections': {}}

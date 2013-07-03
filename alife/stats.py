@@ -38,7 +38,7 @@ def desires_job(life):
 	return False
 
 def desires_life(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'factors', required=False, return_data=True):
+	if not lfe.execute_raw(life, 'judge', 'factors', required=False, target_id=life_id):
 		return False
 	
 	return False
@@ -56,7 +56,7 @@ def desires_conversation_with(life, life_id):
 		logging.error('FIXME: Improperly Used Function: Doesn\'t know talking target.')
 		return False
 	
-	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with'):
+	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with', target_id=life_id):
 		return False
 	
 	if not judgement.can_trust(life, life_id):
@@ -190,7 +190,7 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
-	if not lfe.execute_raw(life, 'group', 'wants_group_member'):
+	if not lfe.execute_raw(life, 'group', 'wants_group_member', target_id=life_id):
 		return False
 	
 	return True
@@ -209,10 +209,10 @@ def will_obey(life, life_id):
 def can_talk_to(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 	
-	if life['race'] == LIFE[life_id]['race']:
-		return True
+	if not lfe.execute_raw(life, 'talk', 'can_talk_to', target_id=life_id):
+		return False
 	
-	return False
+	return True
 
 def is_same_race(life, life_id):
 	if life['race'] == LIFE[life_id]['race']:
@@ -233,9 +233,12 @@ def is_family(life, life_id):
 	return False
 
 def is_compatible_with(life, life_id):
-	diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
+	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
 	
 	if _diff < life['stats']['sociability']:
 		return True
 	
+	return False
+
+def has_attacked_trusted(life, life_id):
 	return False

@@ -212,12 +212,14 @@ def get_raw(life, section, identifier):
 	
 	return life['raw']['sections'][section][identifier]
 
-def execute_raw(life, section, identifier, required=True, **kwargs):
-	
+def execute_raw(life, section, identifier, break_on_true=False, required=True, **kwargs):
 	for rule in get_raw(life, section, identifier):
 		if rule['function'](life, kwargs['target_id']) == rule['true']:
 			for value in rule['values']:
 				brain.knows_alife_by_id(life, kwargs['target_id'])[value['flag']] += value['value']
+			
+			if break_on_true:
+				return True
 		elif required:
 			return False
 	
