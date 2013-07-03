@@ -183,9 +183,6 @@ def wants_group_member(life, life_id):
 	if not _know:
 		return False
 	
-	if not LIFE[life_id]['species'] in life['can_group_with']:
-		return False
-	
 	#TODO: Second chance?
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False

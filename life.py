@@ -176,9 +176,6 @@ def initiate_limbs(life):
 		
 		_flags = body[limb]['flags'].split('|')
 		
-		if 'CAN_STORE' in _flags:
-			body[limb]['storing'] = []
-		
 		if 'CAN_HOLD' in _flags:
 			life['hands'].append(limb)
 		

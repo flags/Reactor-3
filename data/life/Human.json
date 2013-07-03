@@ -27,7 +27,7 @@
     "rhand": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD", 
+      "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
       "parent": "rforearm"
     }, 
     "rupperarm": {
@@ -39,7 +39,7 @@
     "lhand": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE|CAN_STORE|CAN_HOLD", 
+      "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
       "parent": "lforearm"
     }, 
     "rthigh": {
@@ -87,7 +87,7 @@
     "head": {
       "damage_mod": "1.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]"
+      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,hearing]"
     }, 
     "stomach": {
       "damage_mod": "1.5", 
@@ -140,7 +140,7 @@
   }, 
   "name": "$FIRST_AND_LAST_NAME_FROM_SPECIES", 
   "vars": "vision_max=21|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
-  "flags": "INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP_WITH[HUMAN]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
+  "flags": "INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
   "type": "humanoid", 
   "species": "human", 
   "icon": "@"
