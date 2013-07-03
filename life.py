@@ -38,17 +38,13 @@ def calculate_base_stats(life):
 		'legs': None,
 		'melee': None,
 		'speed_max': LIFE_MAX_SPEED}
-	race_type = None
 	
 	_flags = life['flags'].split('|')
 	
-	for flag in _flags:
-		if _flags.index(flag) == 0:
-			life['race'] = flag
-		
-		elif flag.count('['):
+	for flag in _flags:		
+		if flag.count('['):
 			if not flag.count('[') == flag.count(']'):
-				raise Exception('No matching brace in ALife type %s: %s' % (race_type, flag))
+				raise Exception('No matching bspecies in ALife type %s: %s' % (species_type, flag))
 			
 			stats[flag.lower().partition('[')[0]] = flag.partition('[')[2].partition(']')[0].split(',')
 		
@@ -382,7 +378,7 @@ def prepare_for_save(life):
 		'know': sanitize_know}
 	
 	for key in life.keys():#_delete_keys:
-		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'race', u'flags', 'known_chunks']:
+		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'species', u'flags', 'known_chunks']:
 		#	continue
 		if key in _sanitize_keys:
 			_sanitize_keys[key](life)

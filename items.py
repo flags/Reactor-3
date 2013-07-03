@@ -72,10 +72,10 @@ def initiate_item(name):
 			_ccount = flag.count(']')
 			
 			if _ocount > _ccount:
-				logging.error('Brace mismatch in item \'%s\': Expected \']\'' % name)
+				logging.error('Bspecies mismatch in item \'%s\': Expected \']\'' % name)
 				continue
 			elif _ocount < _ccount:
-				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
+				logging.error('Bspecies mismatch in item \'%s\': Expected \'[\'' % name)
 				continue
 			
 			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)

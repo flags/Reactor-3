@@ -1,9 +1,9 @@
 import stats
 import re
 
-CURLY_BRACE_MATCH = '{[\w+-\.,]*}'
+CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
-	'is_same_race': stats.is_same_race,
+	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
 	'can_bite': None,
 	'is_healthy': None,
@@ -28,15 +28,15 @@ def create_action(script, identifier, arguments):
 	for argument in arguments:
 		if argument.count('['):
 			bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
-			curly_brace_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
+			curly_bspecies_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_Bspecies_MATCH, argument)]
 			_args.append({'function': argument.split('[')[0]})
 		else:
-			curly_brace_data = re.findall(CURLY_BRACE_MATCH, argument)
+			curly_bspecies_data = re.findall(CURLY_Bspecies_MATCH, argument)
 			
-			if curly_brace_data:
-				argument = [argument.replace(entry, '') for entry in curly_brace_data][0]
-				curly_brace_data = [data.strip('{').strip('}') for data in curly_brace_data][0].split(',')
-				_arguments = curly_brace_data
+			if curly_bspecies_data:
+				argument = [argument.replace(entry, '') for entry in curly_bspecies_data][0]
+				curly_bspecies_data = [data.strip('{').strip('}') for data in curly_bspecies_data][0].split(',')
+				_arguments = curly_bspecies_data
 				_values = []
 				
 				for value in _arguments:
@@ -57,7 +57,7 @@ def create_action(script, identifier, arguments):
 				argument = argument.split('{')[0]
 				_values = []
 			
-			#print argument, curly_brace_data
+			#print argument, curly_bspecies_data
 			
 			_true = True
 			if argument.startswith('!'):
@@ -73,7 +73,7 @@ def add_action(script, action):
 
 def parse(script, line, filename='', linenumber=0):
 	if not line.count('[') == line.count(']'):
-		raise Exception('Brace mismatch (%s, line %s): %s' % (filename, linenumber, line))
+		raise Exception('Bspecies mismatch (%s, line %s): %s' % (filename, linenumber, line))
 	
 	bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', line)]
 	
@@ -112,4 +112,7 @@ def raw_has_section(life, section):
 	return False
 
 def translate(function):
+	if not function in FUNCTION_MAP:
+		raise Exception('\'%s\' is not a valid raw script function.' % function)
+	
 	return FUNCTION_MAP[function]

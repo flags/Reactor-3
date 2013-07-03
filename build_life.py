@@ -111,20 +111,22 @@ def build(file):
 		print 'Failed to read file:',e
 		return False
 	
-	life = {}	
-	life['race'] = get_value(_data, 'race')
+	life = {}
+	life['name'] = get_value(_data, 'name')
+	life['species'] = get_value(_data, 'species')
+	life['type'] = get_value(_data, 'type')
 	life['flags'] = get_value(_data, 'flags')
 	life['vars'] = get_value(_data, 'vars')
 	life['icon'] = get_value(_data, 'icon')
 
-	print 'Creating new life: %s' % life['race']
+	print 'Creating new life: %s' % life['species']
 	print 'Parsing and connecting limbs...',
 	
 	life['body'] = get_tag(_data,'body')
 	
 	print 'Done!'
 	print 'Offloading to disk...',
-	save_json_file('%s.json' % life['race'],life)
+	save_json_file('%s.json' % life['species'],life)
 	print 'Done!'
 	
 	return True

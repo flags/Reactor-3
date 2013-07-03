@@ -17,8 +17,8 @@ import logging
 import random
 
 def create_dialog_with(life, target, info):
-	#TODO: Talk to different races differently (dogs, etc)
-	if not LIFE[target]['race'] in life['can_group_with']:
+	#TODO: Talk to different speciess differently (dogs, etc)
+	if not LIFE[target]['species'] in life['can_group_with']:
 		return False
 	
 	_messages = []

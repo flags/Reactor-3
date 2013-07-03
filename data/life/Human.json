@@ -138,8 +138,10 @@
       "parent": "chest"
     }
   }, 
-  "race": "Human", 
-  "flags": "HUMAN|INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP_WITH[HUMAN]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
+  "name": "$NAME_FROM_SPECIES", 
   "vars": "vision_max=21|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
+  "flags": "INTELLIGENT|USES_FIREARMS|LEGS[lthigh,rthigh]|HANDS[lhand,rhand]|ARMS[lshouder,rshoulder]|CAN_GROUP_WITH[HUMAN]|CAN_SEE|HUNGER|THIRST|MELEE[rfoot,lfoot,lhand,rhand]|RANGED[lhand,rhand]", 
+  "type": "humanoid", 
+  "species": "human", 
   "icon": "@"
 }

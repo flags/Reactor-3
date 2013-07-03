@@ -183,7 +183,7 @@ def wants_group_member(life, life_id):
 	if not _know:
 		return False
 	
-	if not LIFE[life_id]['race'] in life['can_group_with']:
+	if not LIFE[life_id]['species'] in life['can_group_with']:
 		return False
 	
 	#TODO: Second chance?
@@ -212,8 +212,8 @@ def can_talk_to(life, life_id):
 	
 	return True
 
-def is_same_race(life, life_id):
-	if life['race'] == LIFE[life_id]['race']:
+def is_same_species(life, life_id):
+	if life['species'] == LIFE[life_id]['species']:
 		return True
 	
 	return False
@@ -234,7 +234,7 @@ def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
 	
 	#I don't trust modders with this
-	if not is_same_race(life, life_id):
+	if not is_same_species(life, life_id):
 		return False
 	
 	if _diff < life['stats']['sociability']:
