@@ -223,7 +223,7 @@ def execute_raw(life, section, identifier, break_on_true=False, required=True, *
 		elif required:
 			return False
 	
-	return True
+	return False
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
@@ -515,7 +515,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if ai['id'] == life['id']:
 			continue
 		
-		if not 'INTELLIGENT' in ai['life_flags']:
+		if not alife.stats.can_talk_to(life, ai['id']):
 			continue
 		
 		if not alife.sight.can_see_position(ai, life['pos']):
@@ -753,7 +753,7 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 		if not 'target' in question:
 			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
 		
-		brain.add_impression(life, question['target'], 'talk', {'influence': stats.get_influence_from(life, question['target'])})
+		brain.add_impression(life, question['target'], 'talk', {'influence': alife.stats.get_influence_from(life, question['target'])})
 	
 	question['answer_all'] = answer_all
 	memory(life, gist, question)

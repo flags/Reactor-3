@@ -34,6 +34,9 @@ def look(life):
 		
 		#TODO: Don't pass entire life, just id
 		if ai['id'] in life['know']:
+			if life['know'][ai['id']]['last_seen_time']:
+				judgement.judge(life, ai['id'])
+			
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			life['know'][ai['id']]['escaped'] = False

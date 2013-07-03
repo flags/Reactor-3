@@ -147,7 +147,7 @@ def get_influence_from(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 	_score = 0
 	
-	if life['group'] == _target['group']:
+	if life['group'] and life['group'] == _target['group']:
 		_group = groups.get_group(life['group'])
 		
 		if _group['leader'] == _target['id']:
@@ -207,8 +207,6 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
-	_know = brain.knows_alife_by_id(life, life_id)
-	
 	if not lfe.execute_raw(life, 'talk', 'can_talk_to', target_id=life_id):
 		return False
 	
@@ -235,10 +233,21 @@ def is_family(life, life_id):
 def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
 	
+	#I don't trust modders with this
+	if not is_same_race(life, life_id):
+		return False
+	
 	if _diff < life['stats']['sociability']:
 		return True
 	
 	return False
 
 def has_attacked_trusted(life, life_id):
+	_trusted = judgement.get_trusted(life)
+	
+	for memory in lfe.get_memory(life, matches={'text': 'heard about attack', 'attacker': life_id}):
+		if memory['target'] in _trusted:
+			print 'HAS ATTACKED TRUSTED' * 10
+			return True
+	
 	return False

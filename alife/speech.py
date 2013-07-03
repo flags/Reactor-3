@@ -68,9 +68,6 @@ def announce(life, gist, public=False, group=None, **kvargs):
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_target_dangerous(life, i)]
 	
 	for target in _announce_to:
-		if not 'INTELLIGENT' in target['life_flags']:
-			continue
-		
 		if not public and has_sent(life, target, gist):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
 			continue
