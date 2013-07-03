@@ -100,6 +100,20 @@ def handle_input():
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]-1,SETTINGS['controlling']['pos'][1])},200)
 	
+	if INPUT['\r']:
+		if SETTINGS['controlling'] and life.has_dialog(SETTINGS['controlling']):
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
+			return False
+		
+		if ACTIVE_MENU['menu'] == -1:
+			return False
+		
+		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+	
+	if not SETTINGS['controlling']:
+		return False
+	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)
 		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())
@@ -535,17 +549,6 @@ def handle_input():
 		if LIFE.keys().index(SETTINGS['following']['id'])>=1:
 			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])]
 			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
-	
-	if INPUT['\r']:
-		if SETTINGS['controlling'] and life.has_dialog(SETTINGS['controlling']):
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
-			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
-			return False
-		
-		if ACTIVE_MENU['menu'] == -1:
-			return False
-		
-		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
