@@ -1,4 +1,4 @@
-<name>$NAME_FROM_SPECIES</name>
+<name>$FIRST_AND_LAST_NAME_FROM_SPECIES</name>
 <species>human</name>
 <type>humanoid</type>
 

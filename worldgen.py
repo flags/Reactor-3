@@ -141,7 +141,7 @@ def generate_life(source_map, amount=1):
 		else:
 			_spawn = (30, 70)
 		
-		alife = life.create_life('Human',name=['test', str(i+1)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		alife = life.create_life('Human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000

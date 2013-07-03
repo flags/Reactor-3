@@ -240,14 +240,19 @@ def create_and_update_self_snapshot(life):
 	
 	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
-def create_life(type,position=(0,0,2),name=('Test','McChuckski'),map=None):
+def create_life(type, position=(0,0,2), name=None, map=None):
 	"""Initiates and returns a deepcopy of a life type."""
 	if not type in LIFE_TYPES:
 		raise Exception('Life type \'%s\' does not exist.' % type)
 	
 	#TODO: Any way to get rid of this call to `copy`?
 	_life = copy.deepcopy(LIFE_TYPES[type])
-	_life['name'] = name
+	
+	if not name and _life['name'] == '$FIRST_AND_LAST_NAME_FROM_SPECIES':
+		_life['name'] = language.generate_first_and_last_name_from_species(_life['species'])
+	elif name:
+		_life['name'] = name
+	
 	_life['id'] = SETTINGS['lifeid']
 	
 	_life['speed'] = _life['speed_max']
