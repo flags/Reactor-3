@@ -1,0 +1,11 @@
+{"name": "corn",
+"prefix": "a can of",
+"type": "food",
+"icon": "%",
+"description": "A can of corn.",
+"flags": "",
+"sustenance": 25,
+"value": 400,
+"modifiers": {},
+"size": "1x1",
+"material": "metal"}

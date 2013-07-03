@@ -1,11 +1,14 @@
 from globals import *
 from alife import *
 
+import libtcodpy as tcod
 import graphics as gfx
+import crafting
 import weapons
 import dialog
 import menus
 import items
+import time
 import life
 
 import logging
@@ -51,10 +54,10 @@ def handle_input():
 
 	if INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]-=1
-		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		elif life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 
 			if _dialog['index']:
@@ -65,10 +68,10 @@ def handle_input():
 
 	if INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
 			SETTINGS['controlling']['targeting'][1]+=1
-		elif [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
+		elif life.has_dialog(SETTINGS['controlling']):
 			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
@@ -96,6 +99,30 @@ def handle_input():
 		else:
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]-1,SETTINGS['controlling']['pos'][1])},200)
+	
+	if INPUT['\r']:
+		if SETTINGS['controlling'] and life.has_dialog(SETTINGS['controlling']):
+			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
+			return False
+		
+		if ACTIVE_MENU['menu'] == -1:
+			return False
+		
+		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+	
+	if not SETTINGS['controlling']:
+		return False
+	
+	if INPUT['?']:
+		pix = tcod.image_from_console(0)
+		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())
+	
+	if INPUT['P']:
+		if SETTINGS['paused']:
+			SETTINGS['paused'] = False
+		else:
+			SETTINGS['paused'] = True
 	
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:
@@ -210,7 +237,22 @@ def handle_input():
 			return False
 		
 		if not SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['pos'][:]
+			_menu_items = create_target_list()
+	
+			if not _menu_items:
+				gfx.message('There\'s nobody to talk to.')
+				return False
+		
+			_i = menus.create_menu(title='Talk to...',
+				menu=_menu_items,
+				padding=(1,1),
+				position=(1,1),
+				format_str='$k',
+				on_select=create_dialog,
+				on_close=exit_target,
+				on_move=target_view)
+		
+			menus.activate_menu(_i)
 			return True
 		else:
 			_target = None
@@ -222,14 +264,6 @@ def handle_input():
 			if not _target:
 				gfx.message('There\'s nobody standing here!')
 				return False
-		
-		SETTINGS['controlling']['targeting'] = None
-		SELECTED_TILES[0] = []
-		
-		_dialog = {'type': 'dialog',
-			'from': SETTINGS['controlling']['id'],
-			'enabled': True}
-		SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target['id'], _dialog))
 	
 	if INPUT['V']:
 		if SETTINGS['controlling']['dialogs']:
@@ -255,6 +289,12 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['f']:
+		if menus.get_menu_by_name('Select Limb')>-1:
+			return False
+		
+		if menus.get_menu_by_name('Aim at...')>-1:
+			return False
+			
 		if menus.get_menu_by_name('Fire')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Fire'))
 			return False
@@ -469,6 +509,32 @@ def handle_input():
 		
 		create_pick_up_item_menu(_items)
 	
+	if INPUT['a']:
+		if menus.get_menu_by_name('Eat')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Eat'))
+			return False
+		
+		_food = []
+		for _item in life.get_all_inventory_items(SETTINGS['controlling'], matches=[{'type': 'food'}, {'type': 'drink'}]):
+			_food.append(menus.create_item('single',
+				items.get_name(_item),
+				None,
+				icon=_item['icon'],
+				id=_item['id']))
+		
+		if not _food:
+			gfx.message('You have nothing to eat.')
+			return False
+		
+		_i = menus.create_menu(title='Eat',
+			menu=_food,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k',
+			on_select=inventory_eat)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['b']:
 		#print SETTINGS['following']['actions']
 		#print life.create_recent_history(SETTINGS['following'])
@@ -476,30 +542,19 @@ def handle_input():
 	
 	if INPUT['y']:
 		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+1]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+1]
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+2]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+2]
 
 	if INPUT['u']:
-		if LIFE.keys().index(SETTINGS['following']['id'])>0:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])-1]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])-1]
-	
-	if INPUT['\r']:
-		if [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]:
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
-			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
-			return False
-		
-		if ACTIVE_MENU['menu'] == -1:
-			return False
-		
-		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+		if LIFE.keys().index(SETTINGS['following']['id'])>=1:
+			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])]
+			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
 	
 	if INPUT['k']:
-		SUN_BRIGHTNESS[0] -= 4
+		create_crafting_menu()
 
 	if INPUT['1']:
 		CAMERA_POS[2] = 1
@@ -623,6 +678,21 @@ def inventory_drop(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def inventory_eat(entry):
+	key = entry['key']
+	item = life.get_inventory_item(SETTINGS['controlling'], entry['id'])
+	
+	life.add_action(SETTINGS['controlling'],{'action': 'consumeitem',
+		'item': item['id']},
+		200,
+		delay=life.get_item_access_time(SETTINGS['controlling'],item['id']))
+	
+	if item['type'] == 'food':
+		gfx.message('You start to eat %s.' % items.get_name(item))
+	else:
+		gfx.message('You start to drink %s.' % items.get_name(item))
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
 def inventory_throw(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
@@ -660,10 +730,16 @@ def inventory_throw(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def target_view(entry):
+	SETTINGS['following'] = LIFE[entry['target']]
+	SETTINGS['controlling']['targeting'] = LIFE[entry['target']]['pos'][:]
+
 def inventory_fire(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	SETTINGS['controlling']['firing'] = item
 	
@@ -675,9 +751,22 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['aim_at']['pos'][:]
+	_menu_items = create_target_list()
 	
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	if not _menu_items:
+		gfx.message('You have nothing to aim at!')
+		return False
+
+	_i = menus.create_menu(title='Aim at...',
+          menu=_menu_items,
+          padding=(1,1),
+          position=(1,1),
+          format_str='$k',
+          on_select=inventory_fire_select_limb,
+          on_close=exit_target,
+          on_move=target_view)
+
+	menus.activate_menu(_i)
 
 def inventory_fire_select_limb(entry, no_delete=False):	
 	key = entry['key']
@@ -687,11 +776,11 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	_limbs = []
-	for limb in entry['target']['body']:
+	for limb in LIFE[entry['target']]['body']:
 		_limbs.append(menus.create_item('single',
 			limb,
 			None,
-			target=entry['target'],
+			target=LIFE[entry['target']],
 			limb=limb))
 		
 	_i = menus.create_menu(title='Select Limb',
@@ -699,6 +788,7 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		padding=(1,1),
 		position=(1,1),
 		on_select=inventory_fire_action,
+	    on_close=exit_target,
 		format_str='$k')
 	
 	menus.activate_menu(_i)
@@ -707,11 +797,46 @@ def inventory_fire_action(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	weapons.fire(SETTINGS['controlling'], entry['target']['pos'], limb=entry['limb'])
+	life.add_action(SETTINGS['controlling'],{'action': 'shoot',
+	    'target': entry['target']['pos'][:],
+	    'limb': entry['limb']},
+		5000,
+		delay=3)
+	
 	SETTINGS['controlling']['targeting'] = None
+	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_target_list():
+	_menu_items = []
+	for target in [l for l in LIFE.values() if sight.can_see_position(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+		if target['dead']:
+			continue
+		
+		if not _menu_items:
+			SETTINGS['following'] = target
+		
+		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
+	
+	return _menu_items
+
+def create_dialog(entry):
+	_target = entry['target']
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
+	
+	_dialog = {'type': 'dialog',
+          'from': SETTINGS['controlling']['id'],
+          'enabled': True}
+	SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target, _dialog))
+	menus.delete_active_menu()
+
+def exit_target(entr):
+	life.focus_on(SETTINGS['controlling'])
+	SETTINGS['controlling']['targeting'] = None
+	SELECTED_TILES[0] = []
 
 def inventory_reload(entry):
 	key = entry['key']
@@ -971,3 +1096,36 @@ def create_radio_menu():
 		on_select=radio_menu)
 	
 	menus.activate_menu(_menu)
+
+def craft_menu_response(entry):
+	key = entry['key']
+	
+	if entry['action'] == 'dismantle':
+		crafting.dismantle_item(SETTINGS['controlling'], entry['item'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_crafting_menu():
+	_items = []
+	for item in crafting.get_items_for_dismantle(SETTINGS['controlling']):
+		_items.append(menus.create_item('single',
+			item['name'],
+			None,
+			item=item['id'],
+		    action='dismantle'))
+	
+	if _items:
+		_items.insert(0, menus.create_item('title', 'Dismantle', None, enabled=False))
+	else:
+		gfx.message('You have no items to modify!')
+		return False
+	
+	_menu = menus.create_menu(title='Crafting',
+		menu=_items,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k',
+		on_select=craft_menu_response)
+	
+	menus.activate_menu(_menu)
+	

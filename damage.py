@@ -36,7 +36,6 @@ def bullet_hit(life, bullet, limb):
 		
 		for entry in _items_to_check:
 			_item = entry['item']
-			print _item['name']
 			_thickness = _item['thickness']
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
 			_cut -= _thickness

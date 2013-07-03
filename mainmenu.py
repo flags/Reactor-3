@@ -4,29 +4,52 @@ from libtcodpy import *
 import graphics
 import worldgen
 import profiles
+import numbers
 import menus
 
-HEADER = ['Reactor 3',
-	'- - -',
-	'Return to Pripyat',
-	'- - -',
-	'']
-HEADER.reverse()
+import random
+import time
 
-MAIN_MENU_TEXT = ['s - World Select  ',
-	'w - World Generation',
-	'o - Options',
-	'q - Quit   ']
+INTRO = 'flagsdev'
+MESSAGE = ['Reactor 3 is still a prototype',
+	'You may experience slow performance and crashes',
+	'',
+	'Send any bug reports to:',
+	'https://github.com/flags/Reactor-3/issues']
 
-WORLD_INFO_TEXT = ['placeholder']
+def draw_intro():
+	_stime = time.time()
+	random.choice
+	
+	while time.time()-_stime<=2.5:
+		_text = INTRO
+		
+		if time.time()-_stime<=1:
+			_text = list(_text)
+			random.shuffle(_text)
+			_text = ''.join(_text)
+		else:
+			_text = INTRO
+		
+		_mod = int(round(255*numbers.clip(time.time()-_stime, 0, 1)))
+		
+		console_set_default_foreground(0, Color(_mod, _mod, _mod))
+		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, WINDOW_SIZE[1]/2, _text)
+		console_flush()
+	
+	SETTINGS['running'] = 1
 
-[MAIN_MENU_TEXT.insert(0, line) for line in HEADER]
-[WORLD_INFO_TEXT.insert(0, line) for line in HEADER]
-
-MENU = [MAIN_MENU_TEXT]
+def draw_message():
+	_y = 10
+	for line in MESSAGE:
+		graphics.blit_string(1, _y, line)
+		_y += 1
+	
+	graphics.start_of_frame()
 
 def draw_main_menu():
 	menus.draw_menus()
+	draw_message()
 	graphics.end_of_frame()
 
 def switch_to_main_menu():
@@ -34,14 +57,14 @@ def switch_to_main_menu():
 	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Start', None))
-	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
-	_menu_items.append(menus.create_item('single', 'World Generation', None))
+	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=False))#profiles.get_worlds()))
+	_menu_items.append(menus.create_item('single', 'World Generation', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
 	
 	_i = menus.create_menu(title='Reactor 3',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0,0),
 		format_str='$k',
 		on_select=main_menu_select,
 		on_change=None)
@@ -60,7 +83,7 @@ def switch_to_start_game():
 	_i = menus.create_menu(title='Scenario',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0,0),
 		format_str='$k',
 		on_select=start_menu_select,
 		on_change=None)
@@ -79,7 +102,7 @@ def switch_to_select_world():
 	_i = menus.create_menu(title='Select World',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0,0),
 		format_str='$k',
 		on_select=world_select_select,
 		on_change=None)
@@ -98,7 +121,7 @@ def switch_to_spawn_point():
 	_i = menus.create_menu(title='Spawn Point',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0,0),
 		format_str='$k',
 		on_select=spawn_menu_select,
 		on_change=None)
@@ -119,7 +142,7 @@ def switch_to_world_gen():
 	_i = menus.create_menu(title='World Generation',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0,0),
 		on_select=worldgen_menu_select,
 		on_change=refresh_screen)
 	
@@ -170,6 +193,7 @@ def main_menu_select(entry):
 		switch_to_world_gen()
 	elif key == 'Quit':
 		SETTINGS['running'] = False
+		sys.exit(0)
 
 def start_menu_select(entry):
 	key = entry['key']

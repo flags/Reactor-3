@@ -1,0 +1,39 @@
+<html>
+<head>
+    <title>ReactorWatch - Life {{ life.id }}</title>
+</head>
+<body>
+    <h2>Life {{ life.name }}</h2>
+    <ul id="group">
+    <li><b>Name: </b>{{ life.name }}</li>
+    <li><b><a href="/memory/{{ life.id }}">Memory</a></b></li>
+    <li><b>State: </b>{{ life.state }}</li>
+    <li><b>Job: </b>{{ life.job }}</li>
+    <li><b>Group: </b><a href="/group/{{ life.group }}">{{ life.group }}</a></li>
+    <li><b>Flags ({{ life.flags|count }}):</b></br>
+        {% for flag in life.flags %}
+            <ul><li><b>{{ flag }}</b>: {{ life.flags[flag] }}</li>
+            </ul>
+        {% endfor %}
+        </li>
+    <li><b>Temp Memory: ({{ life.tempstor|count }}):</b></br>
+        {% for memory in life.tempstor %}
+            <ul><li><b>{{ memory }}</b>: {{ life.tempstor[memory] }}</li>
+            </ul>
+        {% endfor %}
+        </li>
+    <li><b>Knows ({{ life.know|count }}): </b></br>
+        {% for target in knows %}
+            <a href="/life/{{ target.life }}">{{ target.life }}</a>
+            <ul><li><b>Trust</b>: {{ target.trust }}</li>
+            <li><b>Danger</b>: {{ target.danger }}</li>
+            <li><b>Influence</b>: {{ target.influence }}</li>
+            <li><b>Flags</b>: {{ target.flags }}</li>
+            <li><b>Impressions</b>: {{ target.impressions }}</li>
+            <li><b><a href="/memory/{{ target.life }}">Memory</a></b></li>
+            </ul>
+        {% endfor %}
+        </li>
+    </ul>
+</body>
+</html>

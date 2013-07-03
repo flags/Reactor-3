@@ -2,7 +2,11 @@ from globals import *
 
 import life as lfe
 
+import judgement
 import language
+import dialog
+import groups
+import sight
 
 import logging
 import random
@@ -54,19 +58,24 @@ def receive(life, target, gist):
 		
 	return True
 
-def announce(life, gist, public=False, **kvargs):
+def announce(life, gist, public=False, group=None, **kvargs):
 	"""Sends `gist` to any known ALife. If `public`, then send to everyone."""
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
+	elif group:
+		_announce_to = [LIFE[i] for i in groups.get_group(group)['members'] if not i == life['id']]
 	else:
-		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_target_dangerous(life, i)]
 	
 	for target in _announce_to:
+		if not 'INTELLIGENT' in target['life_flags']:
+			continue
+		
 		if not public and has_sent(life, target, gist):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
 			continue
 		
-		if not lfe.can_see(life, target['pos']):
+		if not sight.can_see_position(life, target['pos']) and not lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 			#print life['name'],'cant see',target['id']
 			continue
 	
@@ -87,6 +96,19 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
+
+def start_dialog(life, target, gist):
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': gist}
+	_dialog = dialog.create_dialog_with(life, target, _dialog)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
+		return True
+	
+	return False
 
 def determine_interesting_event(life, target):
 	_valid_phrases = []

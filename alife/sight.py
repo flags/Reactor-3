@@ -14,20 +14,20 @@ import time
 def look(life):
 	life['seen'] = []
 	
-	for ai in [LIFE[i] for i in LIFE]:
-		if ai['id'] == life['id']:
+	if not 'CAN_SEE' in life['life_flags']:
+		return False
+	
+	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+		if not can_see_target(life, ai['id']):
 			continue
 		
-		if numbers.distance(life['pos'],ai['pos']) > 30:
-			#TODO: "see" via other means?
-			continue
-		
-		if not lfe.can_see(life, ai['pos']):
+		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
 				
-				if life['know'][ai['id']]['last_seen_time']>=300:
-					life['know'][ai['id']]['escaped'] = False
+				#TODO: havent_seen_in_a_while?
+				#if life['know'][ai['id']]['last_seen_time'] >= 300:
+				#	life['know'][ai['id']]['escaped'] = True
 			continue
 		
 		life['seen'].append(ai['id'])
@@ -39,7 +39,6 @@ def look(life):
 			life['know'][ai['id']]['escaped'] = False
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
-			#if not _chunk_id in life['known_chunks']:
 			judgement.judge_chunk(life, _chunk_id)
 			
 			continue
@@ -50,7 +49,7 @@ def look(life):
 		if item.has_key('id') or item.has_key('parent'):
 			continue
 		
-		_can_see = lfe.can_see(life,item['pos'])
+		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
 			_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
 				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
@@ -63,6 +62,74 @@ def look(life):
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
 		elif item['uid'] in life['know_items']:
 			life['know_items'][item['uid']]['last_seen_time'] += 1
+
+def get_vision(life):
+	if not 'CAN_SEE' in life['life_flags']:
+		return 0
+	
+	#TODO: Fog? Smoke? Light?
+	return life['vision_max']
+
+def _can_see_position(pos1, pos2):
+	_line = render_los.draw_line(pos1[0],
+		pos1[1],
+		pos2[0],
+		pos2[1])
+		
+	if not _line:
+		_line = []
+	
+	for pos in _line:
+		if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+			return False
+	
+	return _line
+
+def can_see_position(life, pos, distance=True):
+	"""Returns `true` if the life can see a certain position."""
+	_line = render_los.draw_line(life['pos'][0],
+		life['pos'][1],
+		pos[0],
+		pos[1])
+		
+	if not _line:
+		_line = []
+	
+	if len(_line) >= get_vision(life) and distance:
+		return False	
+	
+	for pos in _line:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+			return False
+	
+	return _line
+
+def can_see_target(life, target_id):
+	_knows = LIFE[target_id]
+	_dist = numbers.distance(life['pos'], _knows['pos'])
+	
+	if _dist >= get_vision(life):
+		return False
+	
+	if not can_see_position(life, _knows['pos']):
+		return False
+	
+	return True
+
+def view_blocked_by_life(life, position, allow=[]):
+	allow.append(life['id'])
+	
+	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
+	_can_see = can_see_position(life, position)
+	
+	if not _can_see:
+		return True
+	
+	for pos in _can_see:
+		if pos in _avoid_positions:
+			return True
+	
+	return False
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()
@@ -98,7 +165,7 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 		
 		if target_los[y,x] == invert:
 			#TODO: Additional scores, like distance from target
-			_score = score_callback(life,target['life'],pos)
+			_score = score_callback(life, target, pos)
 			
 			if _score<_cover['score']:
 				_cover['score'] = _score
@@ -190,11 +257,14 @@ def handle_lost_los(life):
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'id' in item['item']]
 
-def find_known_items(life, matches=[], visible=True):
+def find_known_items(life, matches={}, visible=True):
 	_match = []
 	
 	for item in [life['know_items'][item] for item in life['know_items']]:
-		if visible and not lfe.can_see(life,item['item']['pos']):
+		if not item['item']['uid'] in ITEMS:
+			continue
+		
+		if visible and not can_see_position(life, item['item']['pos']):
 			continue
 		
 		if 'parent' in item['item'] or 'id' in item['item']:
@@ -203,14 +273,13 @@ def find_known_items(life, matches=[], visible=True):
 		if 'demand_drop' in item['flags']:
 			continue
 		
+		if item['item']['lock']:
+			continue
+		
 		_break = False
-		for match in matches:
-			for key in match:
-				if not item['item'].has_key(key) or not item['item'][key] == match[key]:
-					_break = True
-					break
-			
-			if _break:
+		for key in matches:
+			if not item['item'].has_key(key) or not item['item'][key] == matches[key]:
+				_break = True
 				break
 		
 		if _break:

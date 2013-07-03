@@ -1,0 +1,10 @@
+{"name": "electric lantern",
+"prefix": "an",
+"type": "light",
+"icon": 15,
+"description": "A small light. Built with metal.",
+"brightness": 2,
+"light_shake": 0.3,
+"flags": "ON_EQUIP[LIGHT_FOLLOW(self, self.brightness, self.light_shake)]",
+"size": "2x2",
+"material": "metal"}

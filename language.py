@@ -1,5 +1,7 @@
 from globals import *
 
+import alife
+
 import random
 
 def prettify_string_array(array, max_length):
@@ -35,6 +37,9 @@ def load_strings():
 		NAMES_FOR_PLACES.extend([line.strip() for line in e.readlines()])
 
 def generate_place_name():
+	if not NAMES_FOR_PLACES:
+		return 'Zoolandia'
+	
 	return NAMES_FOR_PLACES.pop(random.randint(0, len(NAMES_FOR_PLACES)-1))
 
 def format_injury(injury):
@@ -56,3 +61,12 @@ def generate_memory_phrase(memory):
 		return '%s seems like a good guy.' % (' '.join(LIFE[memory['target']]['name']))
 	else:
 		print 'DIDNT HAVE A PHRASE FOR',_topic
+
+def get_description(life):
+	_facts = []
+	
+	_group_threshold = alife.stats.get_max_group_size(life)
+	if _group_threshold >= alife.stats.MAX_SOCIABILITY*.9:
+		_facts.append('{pn} {prefers} large groups.')
+	elif _group_threshold <= alife.stats.MAX_SOCIABILITY*.4:
+		_facts.append('{pn} {avoids} groups.')

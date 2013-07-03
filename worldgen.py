@@ -1,11 +1,14 @@
 from globals import *
 
+import libtcodpy as tcod
+
 import threading
 import profiles
 import logging
 import logic
 import items
 import tiles
+import alife
 import life
 import maps
 
@@ -13,7 +16,8 @@ import random
 import time
 import json
 
-RECRUIT_ITEMS = ['sneakers', 'blue jeans', 'leather backpack', 'glock', '9x19mm magazine', 'radio', '.22 rifle']
+BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack', 'radio', 'glock', '9x19mm magazine', 'electric lantern', 'soda']
+RECRUIT_ITEMS = [ '.22 rifle', 'corn', 'soda']
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
@@ -38,25 +42,26 @@ class Runner(threading.Thread):
 
 
 def draw_world_stats():	
-	console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
-	console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
-	console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
-	console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * int((WORLD_INFO['ticks']/float(WORLD_INFO['start_age']))*10)))
-	console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
-	console_flush()
+	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
+	tcod.console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
+	tcod.console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
+	tcod.console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * int((WORLD_INFO['ticks']/float(WORLD_INFO['start_age']))*10)))
+	tcod.console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
+	tcod.console_flush()
 
 def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=True):
-	console_print(0, 0, 0, 'World Generation')
-	console_flush()
+	tcod.console_print(0, 0, 0, 'World Generation')
+	tcod.console_flush()
 	
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	generate_life(source_map, amount=life)
+	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
-		console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
 		_r = Runner(simulate_life, source_map, amount=simulate_ticks)
 		_r.start()
 
@@ -108,6 +113,27 @@ def randomize_item_spawns():
 		_rand_pos = random.choice(_chunk['ground'])
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
+def generate_wildlife(source_map, amount='heavy'):
+	for i in range(1, 5):
+		_p = life.create_life('Dog',
+			name=['Wild', 'Dog%s' % i],
+			map=source_map,
+			position=[55+(i*5),81,2])
+		
+		if random.randint(0, 3)>=2:
+			_c = life.create_life('Dog',
+				name=['(Young) Wild', 'Dog%s' % i],
+				map=source_map,
+				position=[55+(i*5),82,2])
+			
+			alife.brain.meet_alife(_p, _c)
+			alife.brain.meet_alife(_c, _p)
+			
+			alife.brain.flag_alife(_p, _c, 'son')
+			alife.brain.flag_alife(_c, _p, 'father')
+			
+			alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
+
 def generate_life(source_map, amount=1):
 	for i in range(amount):
 		if i % 2:
@@ -115,9 +141,19 @@ def generate_life(source_map, amount=1):
 		else:
 			_spawn = (30, 70)
 		
-		alife = life.create_life('Human',name=['test', str(i)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		alife = life.create_life('Human',name=['test', str(i+1)],map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		
+		#if random.randint(0,1):
+		#	alife['hunger'] = 1000
+		#	alife['thirst'] = 1000
+		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(alife, items.create_item(item))
 		
 		for item in RECRUIT_ITEMS:
+			if random.randint(0, 1):
+				continue
+			
 			life.add_item_to_inventory(alife, items.create_item(item))
 		
 		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
@@ -126,14 +162,16 @@ def generate_life(source_map, amount=1):
 def simulate_life(source_map, amount=1000):
 	for i in range(amount):
 		logic.tick_all_objects(source_map)
-		logic.tick_world()
 
 def create_player(source_map):
 	PLAYER = life.create_life('Human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[10,80,2])
+		position=[50,80,2])
 	PLAYER['player'] = True
+	
+	for item in BASE_ITEMS:
+		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
 	for item in RECRUIT_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
