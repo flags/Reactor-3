@@ -28,10 +28,7 @@ def prettify_string_array(array, max_length):
 	return _string
 
 def get_name(life):
-	if random.randint(0, 1):
-		return ' '.join(life['name'])
-	else:
-		return 'He'
+	return ' '.join(life['name'])
 
 def _load_strings(a, directory, filenames):
 	for filename in [f for f in filenames if f.count('.txt')]:

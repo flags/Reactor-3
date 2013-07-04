@@ -198,9 +198,13 @@ def draw_message_box():
 		elif msg['style'] == 'speech':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.gray)
 		elif msg['style'] == 'action':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lightest_gray)
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lighter_crimson)
 		elif msg['style'] == 'important':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
+		elif msg['style'] == 'player_combat_good':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
+		elif msg['style'] == 'player_combat_bad':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.crimson)
 		else:
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
 		

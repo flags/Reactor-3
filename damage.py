@@ -1,6 +1,9 @@
+from globals import *
+
 import life as lfe
 
 import language
+import graphics
 import numbers
 import items
 
@@ -15,8 +18,20 @@ def bullet_hit(life, bullet, limb):
 	_bruise = 0
 	_breaking = False
 	_lodged = False
-	_msg = ['The %(name)s' % bullet]
-	_msg.append('hits the %s,' % limb)
+	_owner = LIFE[bullet['owner']]
+	
+	if 'player' in _owner:
+		if bullet['aim_at_limb'] == limb:
+			_msg = ['The round hits']
+		else:
+			_msg = ['The round misses slightly']
+		_detailed = True
+	else:
+		_msg = ['%s shoots' % language.get_name(_owner)]
+		_detailed = False
+	
+	#_msg = ['The %(name)s' % bullet]
+	#_msg.append('hits the %s,' % limb)
 	
 	#Language stuff
 	_limb_in_context = True
@@ -44,53 +59,42 @@ def bullet_hit(life, bullet, limb):
 			
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:
-					_msg.append('completely tearing apart the %s' % _item['name'])
+					#_msg.append('penetrates the %s' % _item['name'])
+					graphics.message('%s\'s %s is destroyed!' % (language.get_name(life), _item['name']))
 				elif _tear<=-3:
-					_msg.append('ripping through the %s' % _item['name'])
+					_msg.append('rips <own> %s' % _item['name'])
 				elif _tear<=-2:
-					_msg.append('tearing the %s' % _item['name'])
+					_msg.append('tears <own> %s' % _item['name'])
 				elif _tear<=-1:
-					_msg.append('slightly tearing the %s' % _item['name'])
+					_msg.append('slightly tears <own> %s' % _item['name'])
 				
 				if _cut <= 0 and _item['thickness']:
-					_msg.append(', finally stopped by the %s' % _item['name'])
+					_msg.append('is stopped by <own> %s' % _item['name'])
 					return ' '.join(_msg)
 			
-			elif _item['material'] == 'metal':
-				if _thickness and not _item['thickness']:
-					_msg.append('puncturing the %s' % _item['name'])
-				elif _tear<=-3:
-					_msg.append('denting the %s' % _item['name'])
-				elif _tear<=-2:
-					_msg.append('lightly denting the %s' % _item['name'])
-				elif _tear<=-1:
-					_msg.append('scraping the %s' % _item['name'])
-				
-				if _cut <= 0 and _item['thickness']:
-					_msg.append(', finally stopped by the %s' % _item['name'])
-					return ' '.join(_msg)
+		#	elif _item['material'] == 'metal':
+		#		if _thickness and not _item['thickness']:
+		#			_msg.append('puncturing the %s' % _item['name'])
+		#		elif _tear<=-3:
+		#			_msg.append('denting the %s' % _item['name'])
+		#		elif _tear<=-2:
+		#			_msg.append('lightly denting the %s' % _item['name'])
+		#		elif _tear<=-1:
+		#			_msg.append('scraping the %s' % _item['name'])
+		#		
+		#		if _cut <= 0 and _item['thickness']:
+		#			_msg.append(', finally stopped by the %s' % _item['name'])
+		#			return ' '.join(_msg)
 	
 		if not lfe.limb_is_cut(life, limb):
 			if _cut==1:
-				if _limb_in_context:
-					_msg.append(', barely cutting it.')
-				else:
-					_msg.append(', barely cutting the %s.' % limb)
+				_msg.append(', cutting <own> %s' % limb)
 			elif _cut==2:
-				if _limb_in_context:
-					_msg.append(', tearing it open')
-				else:
-					_msg.append(', tearing open the %s' % limb)
+				_msg.append(', tearing open <own> %s' % limb)
 			elif _cut==3:
-				if _limb_in_context:
-					_msg.append(', ripping it open')
-				else:
-					_msg.append(', ripping open the %s' % limb)
+				_msg.append(', ripping open <own> %s' % limb)
 			elif _cut==4:
-				if _limb_in_context:
-					_msg.append(', severing it!')
-				else:
-					_msg.append(', severing the %s!' % limb)
+				_msg.append(', severing <own> %s!' % limb)
 				return ' '.join(_msg)
 			else:
 				_bruise = _cut
@@ -104,20 +108,22 @@ def bullet_hit(life, bullet, limb):
 		if not _cut:
 			return ' '.join(_msg)
 		
-		if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
-			if _limb_in_context:
-				_msg.append('rupturing an artery')
-			else:
-				_msg.append('and rupturing an artery,')
-			
-			lfe.add_wound(life, limb, artery_ruptured=True)
+		#if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
+		#	if _limb_in_context:
+		#		_msg.append('rupturing an artery')
+		#	else:
+		#		_msg.append('and rupturing an artery,')
+		#	
+		#	lfe.add_wound(life, limb, artery_ruptured=True)
 		
 		if random.randint(0, 9)>=9-(_cut*2):
-			_msg.append(', lodging itself in the %s' % limb)
+			_msg.append('. It is lodged!')
 			lfe.add_wound(life, limb, lodged_item=bullet)
-			return ' '.join(_msg)
 		else:
-			_msg.append('and exiting through the %s' % limb)
 			lfe.add_wound(life, limb, cut=_cut/2)
 	
-	return ' '.join(_msg)
+	_ret_string = ''
+	for txt in _msg:
+		_ret_string += txt.replace('<own>', '%s\'s' % language.get_name(life))
+	
+	return _ret_string+'.'

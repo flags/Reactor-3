@@ -2333,7 +2333,7 @@ def is_target_of(life):
 	
 	return _targets
 
-def can_knock_over(life, damage, limb):
+def can_knock_over(life, force, limb):
 	if limb in life['legs']:
 		return True
 	
@@ -2552,6 +2552,9 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 		print 'WHAT IS THIS VALUE?',cut,cut*float(_limb['bleed_mod'])
 		_limb['bleeding'] += cut*float(_limb['bleed_mod'])
 		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
+		
+		if can_knock_over(life, cut, limb):
+			collapse(life)
 	
 	if artery_ruptured:
 		_limb['bleeding'] += 7
@@ -2671,10 +2674,12 @@ def damage_from_item(life,item,damage):
 	_hit_limb = random.choice(_poss_limbs)
 	_dam_message = dam.bullet_hit(life, item, _hit_limb)
 	print _dam_message
-	gfx.message(_dam_message)
-	
-	if can_knock_over(life, damage, _hit_limb):
-		collapse(life)
+	if 'player' in _shot_by_alife:
+		gfx.message(_dam_message, style='player_combat_good')
+	elif 'player' in life:
+		gfx.message(_dam_message, style='player_combat_bad')
+	else:
+		gfx.message(_dam_message)
 	
 	create_and_update_self_snapshot(life)
 
