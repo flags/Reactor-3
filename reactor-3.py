@@ -215,7 +215,7 @@ def tick():
 		try:
 			main()
 		except Exception, e:
-			tspeciesback.print_exc(file=sys.stdout)
+			traceback.print_exc(file=sys.stdout)
 			SETTINGS['running'] = False
 			
 			if 'debug' in WORLD_INFO:

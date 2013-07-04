@@ -1,10 +1,13 @@
 from globals import *
+
 import graphics as gfx
+import life as lfe
+
 import numbers
 import bullets
-import random
 import items
-import life as lfe
+
+import random
 
 random.seed()
 

@@ -88,24 +88,34 @@ def _can_see_position(pos1, pos2):
 	
 	return _line
 
-def can_see_position(life, pos, distance=True):
+def can_see_position(life, pos, distance=True, block_check=False):
 	"""Returns `true` if the life can see a certain position."""
-	_line = render_los.draw_line(life['pos'][0],
-		life['pos'][1],
-		pos[0],
-		pos[1])
+	if block_check:
+		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
+	else:
+		_check = [(0, 0)]
+	
+	_ret_line = []
+	for _pos in _check:
+		_line = render_los.draw_line(life['pos'][0]+_pos[0],
+			life['pos'][1]+_pos[1],
+			pos[0],
+			pos[1])
+			
+		if not _line:
+			_line = []
 		
-	if not _line:
-		_line = []
+		if _pos == (0, 0):
+			_ret_line = _line
+		
+		if len(_line) >= get_vision(life) and distance:
+			return False	
+		
+		for pos in _line:
+			if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+				return False
 	
-	if len(_line) >= get_vision(life) and distance:
-		return False	
-	
-	for pos in _line:
-		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
-			return False
-	
-	return _line
+	return _ret_line
 
 def can_see_target(life, target_id):
 	_knows = LIFE[target_id]
@@ -123,7 +133,7 @@ def view_blocked_by_life(life, position, allow=[]):
 	allow.append(life['id'])
 	
 	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
-	_can_see = can_see_position(life, position)
+	_can_see = can_see_position(life, position, block_check=True)
 	
 	if not _can_see:
 		return True
