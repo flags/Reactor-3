@@ -2,13 +2,13 @@
 <species>dog</species>
 <type>animal</animal>
 
-<flags>LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]</flags>
+<flags>LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]</flags>
 <vars>vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
 <icon>D</icon>
 
 <body>
 	<jaw>
-		<flags>SKIN|BONE|CRUCIAL|CAN_HOLD</flags>
+		<flags>SKIN|BONE|CRUCIAL|CAN_HOLD|CAN_BITE</flags>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
 	</jaw>
@@ -49,14 +49,14 @@
 	</frleg>
 	
 	<flpaw>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|SHARP</flags>
 		<parent>flleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
 	</flpaw>
 	
 	<frpaw>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|SHARP</flags>
 		<parent>frleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
@@ -91,14 +91,14 @@
 	</brleg>
 	
 	<blpaw>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|SHARP</flags>
 		<parent>blleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
 	</blpaw>
 	
 	<brpaw>
-		<flags>SKIN|MUSCLE|BONE</flags>
+		<flags>SKIN|MUSCLE|BONE|SHARP</flags>
 		<parent>brleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>

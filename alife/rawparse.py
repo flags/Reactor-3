@@ -1,11 +1,15 @@
+import combat
 import stats
+
 import re
 
 CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
-	'can_bite': None,
+	'can_bite': stats.can_bite,
+	'can_scratch': stats.can_scratch,
+	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
 	'is_healthy': None,
 	'closest': None,
 	'kill': None,

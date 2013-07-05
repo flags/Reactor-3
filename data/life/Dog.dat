@@ -7,12 +7,15 @@ TRUST:IS_SAME_SPECIES{TARGET.TRUST+5},IS_FAMILY{TARGET.TRUST+10},HAS_ATTACKED_TR
 FACTORS:IS_SAME_SPECIES
 BREAK_TRUST:HAS_ATTACKED_TRUSTED{TARGET.DANGER+20}
 
+[DISCOVER]
+#INTELLIGENT: Discover via roads and buildings
+#DISCOVER_TYPE:<INTELLIGENT>
+
 [GROUP]
 WANTS_GROUP_MEMBER:IS_FAMILY
 
 [COMBAT]
-#List of STAT functions to check before entering state
-NEEDS:CAN_BITE,IS_HEALTHY
+CAN_MELEE:CAN_BITE,CAN_SCRATCH
 
 #What to use for this engagement. LIMB[arg] or WEAPON
 #The bit inside the curly braces defines the type of combat: MELEE or RANGE

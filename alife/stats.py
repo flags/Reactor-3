@@ -38,7 +38,7 @@ def desires_job(life):
 	return False
 
 def desires_life(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'factors', required=False, target_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'factors', target_id=life_id):
 		return False
 	
 	return False
@@ -208,6 +208,30 @@ def can_talk_to(life, life_id):
 		return False
 	
 	return True
+
+def can_bite(life, life_id):
+	_melee_limbs = lfe.get_melee_limbs(life)
+	
+	if not _melee_limbs:
+		return False
+	
+	for limb in _melee_limbs:
+		if 'CAN_BITE' in lfe.get_limb(life, limb)['flags']:
+			return limb
+	
+	return None
+
+def can_scratch(life, life_id):
+	_melee_limbs = lfe.get_melee_limbs(life)
+	
+	if not _melee_limbs:
+		return False
+	
+	for limb in _melee_limbs:
+		if 'SHARP' in lfe.get_limb(life, limb)['flags']:
+			return limb
+	
+	return None
 
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:

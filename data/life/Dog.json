@@ -33,18 +33,18 @@
     "frpaw": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN|MUSCLE|BONE|SHARP", 
       "parent": "frleg"
     }, 
     "jaw": {
       "damage_mod": "1.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|BONE|CRUCIAL|CAN_HOLD"
+      "flags": "SKIN|BONE|CRUCIAL|CAN_HOLD|CAN_BITE"
     }, 
     "flpaw": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN|MUSCLE|BONE|SHARP", 
       "parent": "flleg"
     }, 
     "chest": {
@@ -56,7 +56,7 @@
     "blpaw": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN|MUSCLE|BONE|SHARP", 
       "parent": "blleg"
     }, 
     "flleg": {
@@ -80,13 +80,13 @@
     "brpaw": {
       "damage_mod": "0.5", 
       "bleed_mod": 0, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN|MUSCLE|BONE|SHARP", 
       "parent": "brleg"
     }
   }, 
   "name": "Wild Dog", 
   "vars": "vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
-  "flags": "LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[flpaw,frpaw]", 
+  "flags": "LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]", 
   "type": "animal", 
   "species": "dog", 
   "icon": "D"

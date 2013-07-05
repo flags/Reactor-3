@@ -53,8 +53,6 @@ def parse_packet(packet):
 				'tempstor': _life['tempstor2'],
 				'know': _knows}
 			
-			print _sent_life
-			
 			return json.dumps(_sent_life)
 		elif _packet['what'] == 'memory':
 			_memory = []

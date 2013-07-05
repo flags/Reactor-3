@@ -114,7 +114,7 @@ def randomize_item_spawns():
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def generate_wildlife(source_map, amount='heavy'):
-	for i in range(1, 5):
+	for i in range(1, 3):
 		_p = life.create_life('Dog',
 			name=['Wild', 'Dog%s' % i],
 			map=source_map,

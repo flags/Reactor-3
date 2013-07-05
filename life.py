@@ -205,7 +205,14 @@ def get_raw(life, section, identifier):
 	
 	return life['raw']['sections'][section][identifier]
 
-def execute_raw(life, section, identifier, break_on_true=False, required=True, **kwargs):
+def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, **kwargs):
+	""" break_on_false is defaulted to True because the majority of situations in which this
+	function is used involves making sure all the required checks return True.
+	
+	break_on_true doesn't see much usage - it implies that if one statement returns true, then
+	the rest do not need to be checked and True is returned.
+	
+	"""
 	for rule in get_raw(life, section, identifier):
 		if rule['function'](life, kwargs['target_id']) == rule['true']:
 			for value in rule['values']:
@@ -213,10 +220,10 @@ def execute_raw(life, section, identifier, break_on_true=False, required=True, *
 			
 			if break_on_true:
 				return True
-		elif required:
+		elif break_on_false:
 			return False
 	
-	return False
+	return True
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
@@ -1919,6 +1926,12 @@ def pick_up_item_from_ground(life,uid):
 
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
+
+def get_melee_limbs(life):
+	if 'melee' in life:
+		return life['melee']
+	
+	return False
 
 def get_open_hands(life):
 	"""Returns list of open hands."""

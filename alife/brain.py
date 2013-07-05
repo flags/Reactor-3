@@ -167,7 +167,7 @@ def knows_alife_by_id(life, alife_id):
 
 def meet_alife(life, target):
 	if life['id'] == target['id']:
-		raise Exception('Life learned about itself. Stopping.')
+		raise Exception('Life \'%s\' learned about itself. Stopping.' % ' '.join(life['name']))
 	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,

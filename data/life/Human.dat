@@ -7,11 +7,14 @@ TRUST:!IS_SAME_SPECIES{TARGET.TRUST-15},!IS_SAME_SPECIES{TARGET.DANGER+15}
 FACTORS:IS_COMPATIBLE_WITH
 BREAK_TRUST:HAS_ATTACKED_TRUSTED{TARGET.DANGER+5}
 
+[DISCOVER]
+#DISCOVER_TYPE:
+
 [GROUP]
 
 [COMBAT]
 #List of STAT functions to check before entering state
-NEEDS:CAN_BITE,IS_HEALTHY
+COMBAT_NEEDS:WEAPONED_EQUIPPED_AND_READY
 
 #What to use for this engagement. LIMB[arg] or WEAPON
 #The bit inside the curly braces defines the type of combat: MELEE or RANGE
