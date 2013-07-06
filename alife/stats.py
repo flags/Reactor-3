@@ -38,16 +38,16 @@ def desires_job(life):
 	return False
 
 def desires_life(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'factors', target_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'factors', life_id=life_id):
 		return False
 	
 	return False
 
 def desires_interaction(life):
-	if judgement.is_safe(life):
-		return True
+	if not lfe.execute_raw(life, 'talk', 'desires_interaction'):
+		return False
 	
-	return False
+	return True
 
 def desires_conversation_with(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
@@ -56,7 +56,7 @@ def desires_conversation_with(life, life_id):
 		logging.error('FIXME: Improperly Used Function: Doesn\'t know talking target.')
 		return False
 	
-	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with', target_id=life_id):
+	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with', life_id=life_id):
 		return False
 	
 	if not judgement.can_trust(life, life_id):
@@ -187,7 +187,7 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
-	if not lfe.execute_raw(life, 'group', 'wants_group_member', target_id=life_id):
+	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
 		return False
 	
 	return True
@@ -204,7 +204,7 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
-	if not lfe.execute_raw(life, 'talk', 'can_talk_to', target_id=life_id):
+	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):
 		return False
 	
 	return True

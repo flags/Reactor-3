@@ -214,9 +214,11 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	
 	"""
 	for rule in get_raw(life, section, identifier):
-		if rule['function'](life, kwargs['target_id']) == rule['true']:
+		_func = rule['function'](life, **kwargs)
+		
+		if _func == rule['true']:
 			for value in rule['values']:
-				brain.knows_alife_by_id(life, kwargs['target_id'])[value['flag']] += value['value']
+				brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 			
 			if break_on_true:
 				return True

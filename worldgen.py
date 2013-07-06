@@ -125,6 +125,7 @@ def generate_wildlife(source_map, amount='heavy'):
 				name=['(Young) Wild', 'Dog%s' % i],
 				map=source_map,
 				position=[55+(i*5),82,2])
+			_c['icon'] = 'd'
 			
 			alife.brain.meet_alife(_p, _c)
 			alife.brain.meet_alife(_c, _p)

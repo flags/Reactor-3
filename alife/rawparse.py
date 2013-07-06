@@ -1,7 +1,15 @@
+import judgement
+import survival
 import combat
 import stats
 
 import re
+
+def always(life):
+	return True
+
+def never(life):
+	return False
 
 CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
@@ -10,10 +18,14 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'can_bite': stats.can_bite,
 	'can_scratch': stats.can_scratch,
 	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
+	'explore_unknown_chunks': survival.explore_unknown_chunks,
+	'is_safe': judgement.is_safe,
 	'is_healthy': None,
 	'closest': None,
 	'kill': None,
-	'has_attacked_trusted': stats.has_attacked_trusted}
+	'has_attacked_trusted': stats.has_attacked_trusted,
+	'always': always,
+	'never': never}
 
 def create_rawlangscript():
 	return {'section': '', 'sections': {}}

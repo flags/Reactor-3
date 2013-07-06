@@ -26,5 +26,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	survival.explore_unknown_chunks(life)
+	if not lfe.execute_raw(life, 'discover', 'discover_type'):
+		return False
+	#survival.explore_unknown_chunks(life)
 	

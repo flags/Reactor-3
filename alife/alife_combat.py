@@ -37,6 +37,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		print life['name'],'Not ready to engage'
 		return False
 	
+	#if not lfe.execute_raw(life, 'combat', 'ranged_needs', target_id=life_id):
+	#	return False
+	
 	return RETURN_VALUE
 
 #TODO: Use judgement.get_nearest_threat()
