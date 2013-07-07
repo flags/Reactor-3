@@ -120,7 +120,7 @@ def generate_wildlife(source_map, amount='heavy'):
 			map=source_map,
 			position=[55+(i*5),81,2])
 		
-		if random.randint(0, 3)>=2:
+		if random.randint(0, 3)>=1:
 			_c = life.create_life('Dog',
 				name=['(Young) Wild', 'Dog%s' % i],
 				map=source_map,

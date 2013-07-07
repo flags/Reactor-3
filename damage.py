@@ -9,6 +9,22 @@ import items
 
 import random
 
+def own_language(life, message):
+	_mentioned_name = False
+	_ret_string = ''
+	for txt in message:
+		if 'player' in life:
+			_ret_string += txt.replace('<own>', 'your')
+		else:
+			_name = txt.replace('<own>', language.get_name_ownership(life, pronoun=_mentioned_name))
+			
+			if not _name == txt:
+				_mentioned_name = True
+			
+			_ret_string += _name
+	
+	return _ret_string
+
 def bullet_hit(life, bullet, limb):
 	_velos = sum([abs(i) for i in bullet['velocity']])
 	_falloff = numbers.clip(_velos, 0, bullet['max_speed'])/float(bullet['max_speed'])
@@ -90,7 +106,7 @@ def bullet_hit(life, bullet, limb):
 			if _cut==1:
 				_msg.append(', cutting <own> %s' % limb)
 			elif _cut==2:
-				_msg.append(', tearing open <own> %s' % limb)
+				_msg.append(', tearing <own> %s' % limb)
 			elif _cut==3:
 				_msg.append(', ripping open <own> %s' % limb)
 			elif _cut==4:
@@ -122,8 +138,67 @@ def bullet_hit(life, bullet, limb):
 		else:
 			lfe.add_wound(life, limb, cut=_cut/2)
 	
-	_ret_string = ''
-	for txt in _msg:
-		_ret_string += txt.replace('<own>', '%s\'s' % language.get_name(life))
+	_ret_string = own_language(life, _msg)
+	
+	return _ret_string+'.'
+
+def bite(life, target_id, limb):
+	target = LIFE[target_id]
+	_msg = ['%s' % language.get_introduction(life)]
+	
+	_bite_strength = random.randint(1, 3)
+	
+	if numbers.distance(life['pos'], target['pos'])>1:
+		_msg.append('bites the air')
+		return ' '.join(_msg)+'.'
+	
+	_items_to_check = []
+	for _item in [lfe.get_inventory_item(target, i) for i in lfe.get_items_attached_to_limb(target, limb)]:
+		_items_to_check.append({'item': _item, 'visible': True})
+		
+		if 'container' in _item:
+			for _item_in_container in _item['contains']:
+				_items_to_check.append({'item': _item_in_container, 'visible': False, 'inside': _item['name']})
+	
+	for entry in _items_to_check:
+		_item = entry['item']
+		_thickness = _item['thickness']
+		_item['thickness'] = numbers.clip(_item['thickness']-_bite_strength, 0, 100)
+		_bite_strength -= _thickness
+		_tear = _item['thickness']-_thickness
+		_limb_in_context = False
+		
+		if _item['material'] == 'cloth':
+			if _thickness and not _item['thickness']:
+				graphics.message('teeth rip through %s\'s %s!' % (language.get_name(target), _item['name']))
+			elif _tear<=-3:
+				_msg.append('rips <own> %s' % _item['name'])
+			elif _tear<=-2:
+				_msg.append('tears <own> %s' % _item['name'])
+			elif _tear<=-1:
+				_msg.append('slightly tears <own> %s' % _item['name'])
+			
+			if _bite_strength <= 0 and _item['thickness']:
+				_msg.append('is stopped by <own> %s' % _item['name'])
+				return ' '.join(_msg)
+	
+	if not lfe.limb_is_cut(target, limb):
+		if _bite_strength==1:
+			_msg.append(', cutting <own> %s' % limb)
+		elif _bite_strength==2:
+			_msg.append(', tearing <own> %s' % limb)
+		elif _bite_strength==3:
+			_msg.append(', ripping open <own> %s' % limb)
+	
+		if _bite_strength:
+			lfe.add_wound(target, limb, cut=_bite_strength)
+		
+		#TODO: How thick is skin?
+		_bite_strength -= 1
+	
+	#if not _bite_strength:
+	#	return ' '.join(_msg)
+	
+	_ret_string = own_language(target, _msg)
 	
 	return _ret_string+'.'

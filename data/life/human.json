@@ -1,139 +1,139 @@
 {
   "body": {
     "lthigh": {
-      "damage_mod": "1.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "1.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "hip"
     }, 
     "lknee": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lthigh"
     }, 
     "rfoot": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rlowerleg"
     }, 
     "llowerleg": {
-      "damage_mod": "0.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lknee"
     }, 
     "rhand": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
       "parent": "rforearm"
     }, 
     "rupperarm": {
-      "damage_mod": "0.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lshoulder"
     }, 
     "lhand": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
       "parent": "lforearm"
     }, 
     "rthigh": {
-      "damage_mod": "1.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "1.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "hip"
     }, 
     "rknee": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rthigh"
     }, 
     "chest": {
-      "damage_mod": "1.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "2", 
+      "bleed_mod": "1.5", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "neck"
     }, 
     "lelbow": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lupperarm"
     }, 
     "relbow": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rupperarm"
     }, 
     "lupperarm": {
-      "damage_mod": "0.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lshoulder"
     }, 
     "hip": {
-      "damage_mod": "1", 
-      "bleed_mod": 0, 
+      "damage_mod": "2", 
+      "bleed_mod": "1", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "stomach"
     }, 
     "head": {
-      "damage_mod": "1.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "2", 
+      "bleed_mod": "1.5", 
       "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,hearing]"
     }, 
     "stomach": {
-      "damage_mod": "1.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "1.5", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "chest"
     }, 
     "rlowerleg": {
-      "damage_mod": "0.3", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.3", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rknee"
     }, 
     "neck": {
       "damage_mod": "2", 
-      "bleed_mod": 0, 
+      "bleed_mod": "2", 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
       "parent": "head"
     }, 
     "lshoulder": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "chest"
     }, 
     "lforearm": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lelbow"
     }, 
     "lfoot": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "llowerleg"
     }, 
     "rforearm": {
-      "damage_mod": "0.2", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.2", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "relbow"
     }, 
     "rshoulder": {
-      "damage_mod": "0.5", 
-      "bleed_mod": 0, 
+      "damage_mod": "1", 
+      "bleed_mod": "0.5", 
       "flags": "SKIN|MUSCLE|BONE", 
       "parent": "chest"
     }

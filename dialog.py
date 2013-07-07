@@ -774,19 +774,31 @@ def process_response(life, target, dialog, chosen):
 		print 'YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO'
 	
 	elif chosen['gist'] == 'opinion_of_target':
-		_know = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['who'])
-		if alife.judgement.can_trust(LIFE[dialog['listener']], dialog['who']):
+		#TODO: This only works if this is asked as a question, NOT in dialog
+		_know = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['question']['who'])
+		
+		if not alife.brain.knows_alife_by_id(LIFE[dialog['listener']], chosen['who']):
+			_responses.append({'text': 'I don\'t know them.', 'gist': 'talk_about_trust_dont_know', 'who': chosen['who']})
+		elif alife.judgement.can_trust(LIFE[dialog['listener']], chosen['who']):
 			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
 		else:
-			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
+			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
 	
-	elif chosen['gist'] == 'talk_about_trust':		
-		lfe.memory(LIFE[dialog['listener']], 'target_trusts_target',
+	elif chosen['gist'] == 'talk_about_trust':
+		lfe.memory(LIFE[dialog['listener']], 'target trusts target',
 			target=dialog['speaker'],
 			who=chosen['who'],
 			value=chosen['who'])
 		
-		print 'TALKING ABOUT TRUST'
+		print 'TALKING ABOUT TRUST' * 10
+	
+	elif chosen['gist'] == 'talk_about_trust_negative':
+		lfe.memory(LIFE[dialog['listener']], 'target doesn\'t trust target',
+			target=dialog['speaker'],
+			who=chosen['who'],
+			value=chosen['who'])
+		
+		print 'TALKING ABOUT TRUST' * 10
 	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])

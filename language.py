@@ -30,6 +30,25 @@ def prettify_string_array(array, max_length):
 def get_name(life):
 	return ' '.join(life['name'])
 
+def get_name_ownership(life, pronoun=False):
+	if pronoun:
+		if life['type'] == 'humanoid':
+			return 'his'
+		else:
+			return 'its'
+	
+	return '%s\'s' % ' '.join(life['name'])
+
+def get_introduction(life):
+	if 'player' in life:
+		return 'You'
+	
+	if life['type'] == 'humanoid':
+		return get_name(life)
+	else:
+		#TODO: Check limb conditions
+		return 'The %s' % life['species']
+
 def _load_strings(a, directory, filenames):
 	for filename in [f for f in filenames if f.count('.txt')]:
 		_map_name = filename.strip('.txt')
@@ -39,6 +58,7 @@ def _load_strings(a, directory, filenames):
 			TEXT_MAP[_map_name].extend([line.strip() for line in e.readlines()])
 
 def load_strings():
+	#TODO: Use better walk, like one in profiles.py
 	try:
 		os.path.walk(TEXT_DIR, _load_strings, None)
 	except:

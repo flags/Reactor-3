@@ -18,7 +18,9 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'can_bite': stats.can_bite,
 	'can_scratch': stats.can_scratch,
 	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
+	'prepare_for_ranged': combat.prepare_for_ranged,
 	'explore_unknown_chunks': survival.explore_unknown_chunks,
+	'is_nervous': stats.is_nervous,
 	'is_safe': judgement.is_safe,
 	'is_healthy': None,
 	'closest': None,
@@ -79,6 +81,9 @@ def create_action(script, identifier, arguments):
 			if argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
+			elif argument.startswith('*'):
+				argument = argument[1:]
+				_true = '*'
 			
 			_args.append({'function': translate(argument), 'values': _values, 'true': _true})
 		

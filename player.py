@@ -329,7 +329,7 @@ def handle_input():
 		
 		_weapons = []
 		for hand in SETTINGS['controlling']['hands']:
-			_limb = life.get_limb(SETTINGS['controlling']['body'],hand)
+			_limb = life.get_limb(SETTINGS['controlling'],hand)
 			
 			if not _limb['holding']:
 				continue

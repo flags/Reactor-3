@@ -77,6 +77,7 @@ def get_flag(life, flag):
 	return life['flags'][flag]
 
 def flag_alife(life, target, flag, value=True):
+	print life['name'],'FLAGGED',target['name'],flag
 	life['know'][target['id']]['flags'][flag] = value
 
 def unflag_alife(life, target, flag):
@@ -168,6 +169,9 @@ def knows_alife_by_id(life, alife_id):
 def meet_alife(life, target):
 	if life['id'] == target['id']:
 		raise Exception('Life \'%s\' learned about itself. Stopping.' % ' '.join(life['name']))
+	
+	if target['id'] in life['know']:
+		return False
 	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,

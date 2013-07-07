@@ -75,7 +75,7 @@ def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
 			continue
 		
-		if not stats.can_talk_to(life, target):
+		if not stats.can_talk_to(life, target['id']):
 			continue
 		
 		if not sight.can_see_position(life, target['pos']) and not lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):

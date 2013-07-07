@@ -10,6 +10,12 @@
     <li><b>State: </b>{{ life.state }}</li>
     <li><b>Job: </b>{{ life.job }}</li>
     <li><b>Group: </b><a href="/group/{{ life.group }}">{{ life.group }}</a></li>
+    <li><b>Stats:</b></br>
+        {% for stat in life.stats %}
+            <ul><li><b>{{ stat }}</b>: {{ life.stats[stat] }}</li>
+            </ul>
+        {% endfor %}
+        </li>
     <li><b>Flags ({{ life.flags|count }}):</b></br>
         {% for flag in life.flags %}
             <ul><li><b>{{ flag }}</b>: {{ life.flags[flag] }}</li>

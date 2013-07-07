@@ -1,4 +1,5 @@
 from globals import *
+
 import json
 import sys
 import os
@@ -20,7 +21,7 @@ def read_xml_file(file):
 	raise Exception('Could not read file: ' % os.path.join(LIFE_DIR,file))
 
 def save_json_file(file,data):
-	with open(os.path.join(LIFE_DIR,file),'w') as e:
+	with open(os.path.join(LIFE_DIR,file.lower()),'w') as e:
 		e.write(json.dumps(data,indent=2))
 
 def get_value(data,value):
@@ -98,7 +99,7 @@ def get_children_of_tag(taglist):
 				_damage_mod = _value
 			
 			elif _key == 'bleed_mod':
-				_damage_mod = _value
+				_bleed_mod = _value
 	
 	return _limbs
 
@@ -136,7 +137,9 @@ print 'Build Life'
 print '*'*10
 
 if len(sys.argv) == 1:
-	print 'Usage: python build_life.py <files>'
+	for (dirpath, dirname, filenames) in os.walk(LIFE_DIR):
+		for life in [l for l in filenames if l.count('.xml')]:
+			build(life)
 else:
 	for life in sys.argv[1:]:
 		build(life)

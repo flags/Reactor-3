@@ -86,8 +86,8 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life, target, pos):
-	if sight.can_see_position(life, pos):
+def travel_to_target(life, target, pos, stop_on_sight=False):
+	if stop_on_sight and sight.can_see_position(life, pos):
 		return False
 	
 	lfe.clear_actions(life)

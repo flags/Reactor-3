@@ -524,4 +524,3 @@ def believe_which_alife(life, alife):
 		return random.choice(_scores[max(_scores)])
 	else:
 		return _winners[0]
-		

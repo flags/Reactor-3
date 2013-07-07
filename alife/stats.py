@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import groups
+import sight
 import brain
 
 import numbers
@@ -209,7 +210,7 @@ def can_talk_to(life, life_id):
 	
 	return True
 
-def can_bite(life, life_id):
+def can_bite(life):
 	_melee_limbs = lfe.get_melee_limbs(life)
 	
 	if not _melee_limbs:
@@ -221,17 +222,31 @@ def can_bite(life, life_id):
 	
 	return None
 
-def can_scratch(life, life_id):
+def can_scratch(life):
 	_melee_limbs = lfe.get_melee_limbs(life)
 	
 	if not _melee_limbs:
+		print life['name'],'no melee limbs'
 		return False
 	
 	for limb in _melee_limbs:
 		if 'SHARP' in lfe.get_limb(life, limb)['flags']:
 			return limb
 	
+	print life['name'],'cant scratch'
+	
 	return None
+
+def is_nervous(life, life_id):
+	if is_same_species(life, life_id):
+		return False
+	
+	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])
+	
+	if _dist <= sight.get_vision(LIFE[life_id])/2:
+		return True
+	
+	return False
 
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
