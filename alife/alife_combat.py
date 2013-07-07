@@ -33,8 +33,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not brain.retrieve_from_memory(life, 'combat_targets'):
 		return False
 	
-	if not combat.weapon_equipped_and_ready(life):
-		print life['name'],'Not ready to engage'
+	if not lfe.execute_raw(life, 'combat', 'ranged') and not lfe.execute_raw(life, 'combat', 'melee'):
 		return False
 	
 	return RETURN_VALUE
@@ -56,12 +55,10 @@ def get_closest_target(life, targets):
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
 	_all_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	
-	if combat.has_weapon(life) and _all_targets:
-		if not combat.weapon_equipped_and_ready(life):
-			if not 'equipping' in life:
-				if combat._equip_weapon(life):
-					life['equipping'] = True
-			
-		if _all_targets:
-			_closest_target = get_closest_target(life, _all_targets)
-			combat.combat(life, _closest_target)
+	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
+		_closest_target = get_closest_target(life, _all_targets)
+		combat.ranged_combat(life, _closest_target)
+
+	if lfe.execute_raw(life, 'combat', 'melee_ready', break_on_true=True, break_on_false=False):
+		_closest_target = get_closest_target(life, _all_targets)
+		combat.melee_combat(life, _closest_target)

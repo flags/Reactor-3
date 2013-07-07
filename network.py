@@ -51,9 +51,8 @@ def parse_packet(packet):
 				'job': _job,
 				'group': _life['group'],
 				'tempstor': _life['tempstor2'],
-				'know': _knows}
-			
-			print _sent_life
+				'know': _knows,
+				'stats': _life['stats']}
 			
 			return json.dumps(_sent_life)
 		elif _packet['what'] == 'memory':

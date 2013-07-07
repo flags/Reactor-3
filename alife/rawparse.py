@@ -1,15 +1,33 @@
+import judgement
+import survival
+import combat
 import stats
+
 import re
+
+def always(life):
+	return True
+
+def never(life):
+	return False
 
 CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
-	'can_bite': None,
+	'can_bite': stats.can_bite,
+	'can_scratch': stats.can_scratch,
+	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
+	'prepare_for_ranged': combat.prepare_for_ranged,
+	'explore_unknown_chunks': survival.explore_unknown_chunks,
+	'is_nervous': stats.is_nervous,
+	'is_safe': judgement.is_safe,
 	'is_healthy': None,
 	'closest': None,
 	'kill': None,
-	'has_attacked_trusted': stats.has_attacked_trusted}
+	'has_attacked_trusted': stats.has_attacked_trusted,
+	'always': always,
+	'never': never}
 
 def create_rawlangscript():
 	return {'section': '', 'sections': {}}
@@ -63,6 +81,9 @@ def create_action(script, identifier, arguments):
 			if argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
+			elif argument.startswith('*'):
+				argument = argument[1:]
+				_true = '*'
 			
 			_args.append({'function': translate(argument), 'values': _values, 'true': _true})
 		

@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import groups
+import sight
 import brain
 
 import numbers
@@ -38,16 +39,16 @@ def desires_job(life):
 	return False
 
 def desires_life(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'factors', required=False, target_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'factors', life_id=life_id):
 		return False
 	
 	return False
 
 def desires_interaction(life):
-	if judgement.is_safe(life):
-		return True
+	if not lfe.execute_raw(life, 'talk', 'desires_interaction'):
+		return False
 	
-	return False
+	return True
 
 def desires_conversation_with(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
@@ -56,7 +57,7 @@ def desires_conversation_with(life, life_id):
 		logging.error('FIXME: Improperly Used Function: Doesn\'t know talking target.')
 		return False
 	
-	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with', target_id=life_id):
+	if not lfe.execute_raw(life, 'talk', 'desires_conversation_with', life_id=life_id):
 		return False
 	
 	if not judgement.can_trust(life, life_id):
@@ -187,7 +188,7 @@ def wants_group_member(life, life_id):
 	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
 		return False
 	
-	if not lfe.execute_raw(life, 'group', 'wants_group_member', target_id=life_id):
+	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
 		return False
 	
 	return True
@@ -204,10 +205,48 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
-	if not lfe.execute_raw(life, 'talk', 'can_talk_to', target_id=life_id):
+	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):
 		return False
 	
 	return True
+
+def can_bite(life):
+	_melee_limbs = lfe.get_melee_limbs(life)
+	
+	if not _melee_limbs:
+		return False
+	
+	for limb in _melee_limbs:
+		if 'CAN_BITE' in lfe.get_limb(life, limb)['flags']:
+			return limb
+	
+	return None
+
+def can_scratch(life):
+	_melee_limbs = lfe.get_melee_limbs(life)
+	
+	if not _melee_limbs:
+		print life['name'],'no melee limbs'
+		return False
+	
+	for limb in _melee_limbs:
+		if 'SHARP' in lfe.get_limb(life, limb)['flags']:
+			return limb
+	
+	print life['name'],'cant scratch'
+	
+	return None
+
+def is_nervous(life, life_id):
+	if is_same_species(life, life_id):
+		return False
+	
+	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])
+	
+	if _dist <= sight.get_vision(LIFE[life_id])/2:
+		return True
+	
+	return False
 
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:

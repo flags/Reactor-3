@@ -12,6 +12,7 @@ import jobs
 
 import numbers
 import logging
+import random
 
 def weapon_equipped_and_ready(life):
 	if not is_any_weapon_equipped(life):
@@ -112,6 +113,14 @@ def is_any_weapon_equipped(life):
 	
 	return False
 
+def prepare_for_ranged(life):
+	if weapon_equipped_and_ready(life):
+		return True
+	else:
+		if not 'equipping' in life:
+			if combat._equip_weapon(life):
+				life['equipping'] = True
+
 def get_equipped_weapons(life):
 	return [lfe.get_inventory_item(life, _wep) for _wep in lfe.get_held_items(life,matches=[{'type': 'gun'}])]
 
@@ -158,17 +167,31 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def combat(life, target):
+def melee_combat(life, target):
+	_target = brain.knows_alife_by_id(life, target)
+	
+	if numbers.distance(life['pos'], _target['life']['pos']) > 1:
+		movement.travel_to_target(life, target, _target['life']['pos'])
+	else:
+		lfe.clear_actions(life, matches=[{'action': 'move'}])
+		
+		lfe.add_action(life,{'action': 'bite',
+			'target': _target['life']['id'],
+			'limb': random.choice(_target['life']['body'].keys())},
+			5000,
+			delay=0)
+
+def ranged_combat(life, target):
 	target = brain.knows_alife_by_id(life, target)
 	_pos_for_combat = movement.position_for_combat(life, target, target['last_seen_at'], WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:
 		return False
 	elif _pos_for_combat:
-		lfe.clear_actions(life,matches=[{'action': 'move'}])
+		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
-		if not movement.travel_to_target(life,target,target['last_seen_at']):
+		if not movement.travel_to_target(life, target, target['last_seen_at'], stop_on_sight=True):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
 			for send_to in judgement.get_trusted(life):
@@ -183,12 +206,13 @@ def combat(life, target):
 		
 		return False
 	
+	#TODO: Attach skill to delay
 	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
 		lfe.add_action(life,{'action': 'shoot',
 			'target': target['life']['pos'][:],
 			'limb': 'chest'},
 			5000,
-			delay=3)
+			delay=0)
 
 def wont_disarm(life):
 	jobs.cancel_job(life['job'])

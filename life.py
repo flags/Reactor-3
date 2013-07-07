@@ -13,6 +13,7 @@ import weapons
 import numbers
 import effects
 import random
+import damage
 import alife
 import items
 import menus
@@ -174,16 +175,16 @@ def initiate_limbs(life):
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
 		
-		_flags = body[limb]['flags'].split('|')
+		body[limb]['flags'] = body[limb]['flags'].split('|')
 		
-		if 'CAN_HOLD' in _flags:
+		if 'CAN_HOLD' in body[limb]['flags']:
 			life['hands'].append(limb)
 		
 		body[limb]['holding'] = []
 		
 		#Note: `Condition` is calculated automatically
 		body[limb]['condition'] = 100
-		body[limb]['cut'] = False
+		body[limb]['cut'] = 0
 		body[limb]['bleeding'] = 0
 		body[limb]['bruised'] = False
 		body[limb]['broken'] = False
@@ -205,25 +206,37 @@ def get_raw(life, section, identifier):
 	
 	return life['raw']['sections'][section][identifier]
 
-def execute_raw(life, section, identifier, break_on_true=False, required=True, **kwargs):
+def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, **kwargs):
+	""" break_on_false is defaulted to True because the majority of situations in which this
+	function is used involves making sure all the required checks return True.
+	
+	break_on_true doesn't see much usage - it implies that if one statement returns true, then
+	the rest do not need to be checked and True is returned.
+	
+	"""
 	for rule in get_raw(life, section, identifier):
-		if rule['function'](life, kwargs['target_id']) == rule['true']:
+		_func = rule['function'](life, **kwargs)
+		
+		if rule['true'] == '*' or _func == rule['true']:
 			for value in rule['values']:
-				brain.knows_alife_by_id(life, kwargs['target_id'])[value['flag']] += value['value']
+				brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 			
 			if break_on_true:
 				return True
-		elif required:
+		elif break_on_false:
 			return False
 	
-	return False
+	if break_on_true:
+		return False
+	
+	return True
 
 def generate_likes(life):
 	return copy.deepcopy(POSSIBLE_LIKES)
 
-def get_limb(body,limb):
+def get_limb(life, limb):
 	"""Helper function. Finds and returns a limb."""
-	return body[limb]
+	return life['body'][limb]
 
 def get_all_limbs(body):
 	"""Deprecated helper function. Returns all limbs."""
@@ -276,7 +289,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
-	_life['blood'] = 300
+	_life['blood'] = calculate_max_blood(_life)
 	_life['consciousness'] = 100
 	_life['dead'] = False
 	_life['snapshot'] = {}
@@ -1162,7 +1175,7 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupholditem':
-		_hand = get_limb(life['body'],_action['hand'])
+		_hand = get_limb(life, _action['hand'])
 		
 		if _hand['holding']:
 			if life.has_key('player'):
@@ -1260,8 +1273,13 @@ def perform_action(life):
 		
 		add_action(life,
 			{'action': 'recoil'},
-			899,
+			5001,
 			delay=weapons.get_recoil(life))
+		
+		delete_action(life,action)
+	
+	elif _action['action'] == 'bite':
+		damage.bite(life, _action['target'], _action['limb'])
 		
 		delete_action(life,action)
 	
@@ -1281,7 +1299,7 @@ def perform_action(life):
 	return True
 
 def kill(life, injury):
-	if isinstance(injury, str):
+	if isinstance(injury, str) or isinstance(injury, unicode):
 		life['cause_of_death'] = injury
 		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
 	else:
@@ -1349,7 +1367,7 @@ def tick(life, source_map):
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
-		_bleed_score = sum([get_limb(life['body'], l)['bleeding'] for l in _bleeding_limbs])*3
+		_bleed_score = sum([get_limb(life, l)['bleeding'] for l in _bleeding_limbs])*3
 		
 		if random.randint(0,50)<numbers.clip(_bleed_score, 0, 50):
 			effects.create_splatter('blood', life['pos'])
@@ -1537,7 +1555,7 @@ def item_is_worn(life, item):
 		return False
 	
 	for limb in item['attaches_to']:
-		_limb = get_limb(life['body'],limb)
+		_limb = get_limb(life,limb)
 		
 		if item['id'] in _limb['holding']:
 			return True
@@ -1554,7 +1572,7 @@ def can_wear_item(life, item):
 		return False
 	
 	for limb in item['attaches_to']:
-		_limb = get_limb(life['body'],limb)
+		_limb = get_limb(life,limb)
 		
 		for _item in [life['inventory'][str(i)] for i in _limb['holding']]:
 			if not 'CANSTACK' in _item['flags']:
@@ -1889,7 +1907,10 @@ def drop_item(life,id):
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
-		_hand = get_limb(life['body'], hand)
+		if not hand in life['body']:
+			continue
+		
+		_hand = get_limb(life, hand)
 		
 		if str(id) in _hand['holding']:
 			_hand['holding'].remove(str(id))
@@ -1920,12 +1941,18 @@ def pick_up_item_from_ground(life,uid):
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
 
+def get_melee_limbs(life):
+	if 'melee' in life:
+		return life['melee']
+	
+	return False
+
 def get_open_hands(life):
 	"""Returns list of open hands."""
 	_hands = []
 	
 	for hand in life['hands']:
-		_hand = get_limb(life['body'],hand)
+		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
 			_hands.append(hand)
@@ -1936,17 +1963,20 @@ def can_hold_item(life):
 	#TODO: Rename needed.
 	"""Returns limb of empty hand. Returns False if none are empty."""
 	for hand in life['hands']:
-		_hand = get_limb(life['body'],hand)
+		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
 			return _hand
 	
 	return False
 
-def is_holding(life,id):
+def is_holding(life, id):
 	"""Returns the hand holding `item`. Returns False otherwise."""
 	for hand in life['hands']:
-		_limb = get_limb(life['body'],hand)
+		if not hand in life['body']:
+			continue
+		
+		_limb = get_limb(life,hand)
 		
 		if id in _limb['holding']:
 			return _limb
@@ -1971,12 +2001,15 @@ def perform_match(item, matches):
 	
 	return False
 
-def get_held_items(life,matches=None):
+def get_held_items(life, matches=None):
 	"""Returns list of all held items."""
 	_holding = []
 	
 	for hand in life['hands']:
-		_limb = get_limb(life['body'],hand)
+		if not hand in life['body']:
+			continue
+		
+		_limb = get_limb(life,hand)
 		
 		if _limb['holding']:
 			_item = get_inventory_item(life,_limb['holding'][0])
@@ -2004,7 +2037,7 @@ def item_is_equipped(life,id,check_hands=False):
 		if not check_hands and _limb in life['hands']:
 			continue
 		
-		if int(id) in get_limb(life['body'],_limb)['holding']:
+		if int(id) in get_limb(life,_limb)['holding']:
 			return True
 	
 	return False
@@ -2451,6 +2484,9 @@ def calculate_blood(life):
 	
 	return life['blood']
 
+def calculate_max_blood(life):
+	return sum([l['size']*10 for l in life['body'].values()])
+
 def get_limb_damage_penalty(life,limb,amount):
 	"""Returns the penalty of having a pre-existing injury on a limb."""
 	_limb = life['body'][limb]
@@ -2512,11 +2548,55 @@ def artery_is_ruptured(life, limb):
 	
 	return _limb['artery_ruptured']
 
+def remove_limb(life, limb, no_children=False):
+	if not limb in life['body']:
+		return False
+	
+	for item in get_items_attached_to_limb(life, limb):
+		drop_item(life, item)
+	
+	if limb in life['hands']:
+		life['hands'].remove(limb)
+	
+	if limb in life['legs']:
+		life['legs'].remove(limb)
+	
+	if limb in life['melee']:
+		life['melee'].remove(limb)	
+	
+	if 'CRUCIAL' in life['body'][limb]['flags']:
+		kill(life, 'a severed %s.' % limb)
+	
+	if 'children' in life['body'][limb] and not no_children:
+		for _attached_limb in life['body'][limb]['children']:
+			say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), _attached_limb), action=True)
+			#del life['body'][_attached_limb]
+			remove_limb(life, _attached_limb)
+	
+	life['blood'] -= life['body'][limb]['size']*10
+	
+	del life['body'][limb]
+	
+	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
+
+def sever_limb(life, limb):
+	_limb = life['body'][limb]
+	
+	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
+	
+	#del life['body'][limb]
+	remove_limb(life, limb)
+
 def cut_limb(life,limb,amount=2):
 	_limb = life['body'][limb]
 	
 	#_limb['bleeding'] += amount
-	_limb['cut'] = True
+	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
+	_limb['cut'] += amount
+	
+	if _limb['cut'] > _limb['size']:
+		sever_limb(life, limb)
+		return True
 	
 	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
 	
@@ -2548,16 +2628,20 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	_limb = life['body'][limb]
 	
 	if cut:
-		cut_limb(life, limb)
-		print 'WHAT IS THIS VALUE?',cut,cut*float(_limb['bleed_mod'])
-		_limb['bleeding'] += cut*float(_limb['bleed_mod'])
+		cut_limb(life, limb, amount=cut)
+		#print limb
+		#print 'WHAT IS THIS VALUE?',cut,float(_limb['bleed_mod']),cut*float(_limb['bleed_mod'])
+		#_limb['bleeding'] += cut*float(_limb['bleed_mod'])
+		if not limb in life['body']:
+			return False
+		
 		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
 		
 		if can_knock_over(life, cut, limb):
 			collapse(life)
 	
 	if artery_ruptured:
-		_limb['bleeding'] += 7
+		#_limb['bleeding'] += 7
 		rupture_artery(life, limb)
 		
 		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
@@ -2686,17 +2770,6 @@ def damage_from_item(life,item,damage):
 def natural_healing(life):
 	#TODO: Fix this.
 	return 0
-
-	if life['asleep']:
-		_heal_rate = 0.0002
-	else:
-		_heal_rate = 0.0004
-	
-	for _limb in [life['body'][limb] for limb in life['body']]:
-		if _limb['bleeding'] > 0:
-			_limb['bleeding'] -= _heal_rate
-		elif _limb['bleeding'] < 0:
-			_limb['bleeding'] = 0
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']
