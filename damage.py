@@ -39,6 +39,8 @@ def bullet_hit(life, bullet, limb):
 	if 'player' in _owner:
 		if bullet['aim_at_limb'] == limb:
 			_msg = ['The round hits']
+		elif not limb in life['body']:
+			return 'The round misses entirely!'
 		else:
 			_msg = ['The round misses slightly']
 		_detailed = True
@@ -122,7 +124,7 @@ def bullet_hit(life, bullet, limb):
 			_cut -= 1
 		
 		if not _cut or not limb in life['body']:
-			return ' '.join(_msg)
+			return own_language(life, _msg)+'.'
 		
 		#if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
 		#	if _limb_in_context:

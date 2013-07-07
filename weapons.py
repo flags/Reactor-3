@@ -48,7 +48,16 @@ def fire(life, target, limb=None):
 	if 'player' in life:
 		weapon = life['firing']
 	else:
-		weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])[0]
+		
+		if not _item:
+			if 'player' in life:
+				gfx.message('You aren\'t holding a weapon!')
+			life['facing'] = (_fx,_fy)
+			life['firing'] = None
+			return False
+		
+		weapon = lfe.get_inventory_item(life, _item)
 	
 	_mode = get_fire_mode(weapon)
 	if _mode == 'single':
