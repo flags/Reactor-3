@@ -79,7 +79,7 @@ def _refill_feed(life,feed):
 			'ammo': feed,
 			'round': ammo},
 			200,
-			delay=5)
+			delay=3)
 		
 		_rounds += 1
 

@@ -85,6 +85,9 @@ def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 	
 	_top_group = {'id': -1, 'score': 0}
 	for memory in lfe.get_memory(life, matches={'group': '*'}):
+		if not memory['group'] in GROUPS:
+			continue
+		
 		_score = 0
 		
 		if 'trust' in memory:

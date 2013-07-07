@@ -201,4 +201,6 @@ def delete_group(group_id):
 		LIFE[member]['group'] = None
 		logging.warning('Forcing removal of member \'%s\' from non-empty group #%s.' % (' '.join(LIFE[member]['name']), group_id)) 
 	
+	logging.warning('Deleted group: %s' % group_id)
+	
 	del GROUPS[group_id]
