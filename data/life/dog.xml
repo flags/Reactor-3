@@ -11,6 +11,7 @@
 		<flags>SKIN|BONE|CRUCIAL|CAN_HOLD|CAN_BITE</flags>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>2</size>
 	</jaw>
 	
 	<head>
@@ -18,6 +19,7 @@
 		<parent>jaw</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>4</size>
 	</head>
 	
 	<neck>
@@ -25,6 +27,7 @@
 		<parent>head</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>2</bleed_mod>
+		<size>3</size>
 	</neck>
 	
 	<chest>
@@ -32,6 +35,7 @@
 		<parent>neck</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>2</size>
 	</chest>
 	
 	<flleg>
@@ -39,6 +43,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>2</size>
 	</flleg>
 	
 	<frleg>
@@ -46,6 +51,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>2</size>
 	</frleg>
 	
 	<flpaw>
@@ -53,6 +59,7 @@
 		<parent>flleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>1</size>
 	</flpaw>
 	
 	<frpaw>
@@ -60,6 +67,7 @@
 		<parent>frleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>1</size>
 	</frpaw>
 	
 	<stomach>
@@ -67,6 +75,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>4</size>
 	</stomach>
 	
 	<hip>
@@ -74,6 +83,7 @@
 		<parent>stomach</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1</bleed_mod>
+		<size>3</size>
 	</hip>
 	
 	<blleg>
@@ -81,6 +91,7 @@
 		<parent>hip</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.3</bleed_mod>
+		<size>2</size>
 	</blleg>
 	
 	<brleg>
@@ -88,6 +99,7 @@
 		<parent>hip</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.3</bleed_mod>
+		<size>2</size>
 	</brleg>
 	
 	<blpaw>
@@ -95,6 +107,7 @@
 		<parent>blleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>1</size>
 	</blpaw>
 	
 	<brpaw>
@@ -102,5 +115,6 @@
 		<parent>brleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>1</size>
 	</brpaw>
 </body>

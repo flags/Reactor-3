@@ -90,7 +90,7 @@ SETTINGS['draw z-levels below'] = True
 SETTINGS['draw z-levels above'] = True
 
 life.initiate_life('human')
-life.initiate_life('hog')
+life.initiate_life('dog')
 
 items.initiate_item('white_shirt')
 items.initiate_item('white_cloth')

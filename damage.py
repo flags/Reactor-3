@@ -121,7 +121,7 @@ def bullet_hit(life, bullet, limb):
 			#TODO: How thick is skin?
 			_cut -= 1
 		
-		if not _cut:
+		if not _cut or not limb in life['body']:
 			return ' '.join(_msg)
 		
 		#if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
@@ -182,19 +182,19 @@ def bite(life, target_id, limb):
 				_msg.append('is stopped by <own> %s' % _item['name'])
 				return ' '.join(_msg)
 	
-	if not lfe.limb_is_cut(target, limb):
-		if _bite_strength==1:
-			_msg.append(', cutting <own> %s' % limb)
-		elif _bite_strength==2:
-			_msg.append(', tearing <own> %s' % limb)
-		elif _bite_strength==3:
-			_msg.append(', ripping open <own> %s' % limb)
+	#if not lfe.limb_is_cut(target, limb):
+	if _bite_strength==1:
+		_msg.append(', cutting <own> %s' % limb)
+	elif _bite_strength==2:
+		_msg.append(', tearing <own> %s' % limb)
+	elif _bite_strength==3:
+		_msg.append(', ripping open <own> %s' % limb)
+
+	if _bite_strength:
+		lfe.add_wound(target, limb, cut=_bite_strength)
 	
-		if _bite_strength:
-			lfe.add_wound(target, limb, cut=_bite_strength)
-		
-		#TODO: How thick is skin?
-		_bite_strength -= 1
+	#TODO: How thick is skin?
+	_bite_strength -= 1
 	
 	#if not _bite_strength:
 	#	return ' '.join(_msg)

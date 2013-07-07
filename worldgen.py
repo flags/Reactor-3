@@ -114,14 +114,14 @@ def randomize_item_spawns():
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def generate_wildlife(source_map, amount='heavy'):
-	for i in range(1, 3):
-		_p = life.create_life('Dog',
+	for i in range(1, 2):
+		_p = life.create_life('dog',
 			name=['Wild', 'Dog%s' % i],
 			map=source_map,
 			position=[55+(i*5),81,2])
 		
-		if random.randint(0, 3)>=1:
-			_c = life.create_life('Dog',
+		if random.randint(0, 3)>=5:
+			_c = life.create_life('dog',
 				name=['(Young) Wild', 'Dog%s' % i],
 				map=source_map,
 				position=[55+(i*5),82,2])
@@ -142,7 +142,7 @@ def generate_life(source_map, amount=1):
 		else:
 			_spawn = (30, 70)
 		
-		alife = life.create_life('Human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		alife = life.create_life('human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
 		
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000
@@ -165,7 +165,7 @@ def simulate_life(source_map, amount=1000):
 		logic.tick_all_objects(source_map)
 
 def create_player(source_map):
-	PLAYER = life.create_life('Human',
+	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
 		map=source_map,
 		position=[50,80,2])

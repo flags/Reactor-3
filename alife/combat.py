@@ -188,7 +188,7 @@ def ranged_combat(life, target):
 	if not target['escaped'] and not _pos_for_combat:
 		return False
 	elif _pos_for_combat:
-		lfe.clear_actions(life,matches=[{'action': 'move'}])
+		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
 		if not movement.travel_to_target(life, target, target['last_seen_at'], stop_on_sight=True):

@@ -1,87 +1,101 @@
 {
   "body": {
     "hip": {
-      "damage_mod": "2", 
-      "bleed_mod": "1", 
+      "damage_mod": 2.0, 
+      "bleed_mod": 1.0, 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-      "parent": "stomach"
+      "parent": "stomach", 
+      "size": 3
     }, 
     "frleg": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "chest"
+      "parent": "chest", 
+      "size": 2
     }, 
     "head": {
-      "damage_mod": "2", 
-      "bleed_mod": "1.5", 
+      "damage_mod": 2.0, 
+      "bleed_mod": 1.5, 
       "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,smell,hearing]", 
-      "parent": "jaw"
+      "parent": "jaw", 
+      "size": 4
     }, 
     "stomach": {
-      "damage_mod": "1", 
-      "bleed_mod": "1.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 1.5, 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-      "parent": "chest"
+      "parent": "chest", 
+      "size": 4
     }, 
     "neck": {
-      "damage_mod": "2", 
-      "bleed_mod": "2", 
+      "damage_mod": 2.0, 
+      "bleed_mod": 2.0, 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-      "parent": "head"
+      "parent": "head", 
+      "size": 3
     }, 
     "frpaw": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE|SHARP", 
-      "parent": "frleg"
+      "parent": "frleg", 
+      "size": 1
     }, 
     "jaw": {
-      "damage_mod": "1", 
-      "bleed_mod": "1.5", 
-      "flags": "SKIN|BONE|CRUCIAL|CAN_HOLD|CAN_BITE"
+      "damage_mod": 1.0, 
+      "bleed_mod": 1.5, 
+      "flags": "SKIN|BONE|CRUCIAL|CAN_HOLD|CAN_BITE", 
+      "size": 2
     }, 
     "flpaw": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE|SHARP", 
-      "parent": "flleg"
+      "parent": "flleg", 
+      "size": 1
     }, 
     "chest": {
-      "damage_mod": "2", 
-      "bleed_mod": "1.5", 
+      "damage_mod": 2.0, 
+      "bleed_mod": 1.5, 
       "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
-      "parent": "neck"
+      "parent": "neck", 
+      "size": 2
     }, 
     "blpaw": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE|SHARP", 
-      "parent": "blleg"
+      "parent": "blleg", 
+      "size": 1
     }, 
     "flleg": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "chest"
+      "parent": "chest", 
+      "size": 2
     }, 
     "blleg": {
-      "damage_mod": "1", 
-      "bleed_mod": "1.3", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 1.3, 
       "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "hip"
+      "parent": "hip", 
+      "size": 2
     }, 
     "brleg": {
-      "damage_mod": "1", 
-      "bleed_mod": "1.3", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 1.3, 
       "flags": "SKIN|MUSCLE|BONE", 
-      "parent": "hip"
+      "parent": "hip", 
+      "size": 2
     }, 
     "brpaw": {
-      "damage_mod": "1", 
-      "bleed_mod": "0.5", 
+      "damage_mod": 1.0, 
+      "bleed_mod": 0.5, 
       "flags": "SKIN|MUSCLE|BONE|SHARP", 
-      "parent": "brleg"
+      "parent": "brleg", 
+      "size": 1
     }
   }, 
   "name": "Wild Dog", 

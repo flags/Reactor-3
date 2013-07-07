@@ -11,6 +11,7 @@
 		<flags>SKIN|BONE|CRUCIAL|AFFECTS[sight,hearing]</flags>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>4</size>
 	</head>
 	
 	<neck>
@@ -18,6 +19,7 @@
 		<parent>head</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>2</bleed_mod>
+		<size>3</size>
 	</neck>
 	
 	<chest>
@@ -25,6 +27,7 @@
 		<parent>neck</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>7</size>
 	</chest>
 	
 	<lshoulder>
@@ -32,6 +35,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>4</size>
 	</lshoulder>
 	
 	<rshoulder>
@@ -39,6 +43,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>4</size>
 	</rshoulder>
 	
 	<lupperarm>
@@ -46,6 +51,7 @@
 		<parent>lshoulder</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.3</bleed_mod>
+		<size>3</size>
 	</lupperarm>
 	
 	<rupperarm>
@@ -53,6 +59,7 @@
 		<parent>lshoulder</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.3</bleed_mod>
+		<size>3</size>
 	</rupperarm>
 	
 	<lelbow>
@@ -60,6 +67,7 @@
 		<parent>lupperarm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>2</size>
 	</lelbow>
 	
 	<relbow>
@@ -67,6 +75,7 @@
 		<parent>rupperarm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>2</size>
 	</relbow>
 	
 	<lforearm>
@@ -74,6 +83,7 @@
 		<parent>lelbow</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>3</size>
 	</lforearm>
 	
 	<rforearm>
@@ -81,6 +91,7 @@
 		<parent>relbow</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>3</size>
 	</rforearm>
 	
 	<lhand>
@@ -88,6 +99,7 @@
 		<parent>lforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>2</size>
 	</lhand>
 	
 	<rhand>
@@ -95,6 +107,7 @@
 		<parent>rforearm</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>2</size>
 	</rhand>
 	
 	<stomach>
@@ -102,6 +115,7 @@
 		<parent>chest</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.5</bleed_mod>
+		<size>5</size>
 	</stomach>
 	
 	<hip>
@@ -109,6 +123,7 @@
 		<parent>stomach</parent>
 		<damage_mod>2</damage_mod>
 		<bleed_mod>1</bleed_mod>
+		<size>4</size>
 	</hip>
 	
 	<lthigh>
@@ -116,6 +131,7 @@
 		<parent>hip</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.3</bleed_mod>
+		<size>4</size>
 	</lthigh>
 	
 	<rthigh>
@@ -123,6 +139,7 @@
 		<parent>hip</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>1.3</bleed_mod>
+		<size>4</size>
 	</rthigh>
 	
 	<lknee>
@@ -130,6 +147,7 @@
 		<parent>lthigh</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>3</size>
 	</lknee>
 	
 	<rknee>
@@ -137,6 +155,7 @@
 		<parent>rthigh</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.5</bleed_mod>
+		<size>3</size>
 	</rknee>
 	
 	<llowerleg>
@@ -144,6 +163,7 @@
 		<parent>lknee</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.3</bleed_mod>
+		<size>3</size>
 	</llowerleg>
 	
 	<rlowerleg>
@@ -151,6 +171,7 @@
 		<parent>rknee</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.3</bleed_mod>
+		<size>3</size>
 	</rlowerleg>
 	
 	<lfoot>
@@ -158,6 +179,7 @@
 		<parent>llowerleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>2</size>
 	</lfoot>
 	
 	<rfoot>
@@ -165,5 +187,6 @@
 		<parent>rlowerleg</parent>
 		<damage_mod>1</damage_mod>
 		<bleed_mod>0.2</bleed_mod>
+		<size>2</size>
 	</rfoot>
 </body>

@@ -56,6 +56,7 @@ def get_children_of_tag(taglist):
 	_name = ''
 	_flags = ''
 	_parent = ''
+	_size = 0
 	_damage_mod = 0
 	_bleed_mod = 0
 	
@@ -65,13 +66,15 @@ def get_children_of_tag(taglist):
 		if _key.count('/'):
 			if not _parent:
 				_limbs[_name] = {'flags': _flags}
-				_limbs[_name]['damage_mod'] = _damage_mod
-				_limbs[_name]['bleed_mod'] = _bleed_mod
+				_limbs[_name]['damage_mod'] = float(_damage_mod)
+				_limbs[_name]['bleed_mod'] = float(_bleed_mod)
+				_limbs[_name]['size'] = int(_size)
 			else:
 				_limb = {'flags': _flags}
 				_limb['parent'] = _parent
-				_limb['damage_mod'] = _damage_mod
-				_limb['bleed_mod'] = _bleed_mod
+				_limb['damage_mod'] = float(_damage_mod)
+				_limb['bleed_mod'] = float(_bleed_mod)
+				_limb['size'] = int(_size)
 				_limbs[_name] = _limb
 				
 				#if _parent in _limbs:
@@ -100,6 +103,9 @@ def get_children_of_tag(taglist):
 			
 			elif _key == 'bleed_mod':
 				_bleed_mod = _value
+			
+			elif _key == 'size':
+				_size = _value
 	
 	return _limbs
 

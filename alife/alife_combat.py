@@ -60,6 +60,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		combat.ranged_combat(life, _closest_target)
 
 	if lfe.execute_raw(life, 'combat', 'melee_ready', break_on_true=True, break_on_false=False):
-		print 'MELEE'
 		_closest_target = get_closest_target(life, _all_targets)
 		combat.melee_combat(life, _closest_target)
