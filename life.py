@@ -45,7 +45,7 @@ def calculate_base_stats(life):
 	for flag in _flags:		
 		if flag.count('['):
 			if not flag.count('[') == flag.count(']'):
-				raise Exception('No matching bspecies in ALife type %s: %s' % (species_type, flag))
+				raise Exception('No matching brace in ALife type %s: %s' % (species_type, flag))
 			
 			stats[flag.lower().partition('[')[0]] = flag.partition('[')[2].partition(']')[0].split(',')
 		
@@ -59,6 +59,7 @@ def calculate_base_stats(life):
 	
 	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
+	print 'SPEED MAX',life['species'],stats['speed_max']
 	
 	for var in life['vars'].split('|'):
 		key,val = var.split('=')
@@ -196,9 +197,9 @@ def initiate_limbs(life):
 			continue
 		
 		if not 'children' in body[body[limb]['parent']]:
-			body[body[limb]['parent']]['children'] = [limb]
+			body[body[limb]['parent']]['children'] = [str(limb)]
 		else:
-			body[body[limb]['parent']]['children'].append(limb)
+			body[body[limb]['parent']]['children'].append(str(limb))
 
 def get_raw(life, section, identifier):
 	if not alife.rawparse.raw_has_section(life, section):
@@ -2271,7 +2272,7 @@ def draw_life_info():
 	
 	_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	_blood_g = numbers.clip(int(life['blood']),0,255)
-	_blood_str = 'Blood: %s' % int(life['blood'])
+	_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
 	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
 	_hunger_str = get_thirst(life)
 	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
@@ -2365,12 +2366,6 @@ def is_target_of(life):
 			break
 	
 	return _targets
-
-def can_knock_over(life, force, limb):
-	if limb in life['legs']:
-		return True
-	
-	return False
 
 def collapse(life):
 	if life['stance'] in ['standing','crouching']:
@@ -2548,13 +2543,34 @@ def artery_is_ruptured(life, limb):
 	
 	return _limb['artery_ruptured']
 
+def can_knock_over(life, limb):
+	_limb = life['body'][limb]
+	
+	if limb in life['legs']:
+		return True
+	
+	if not 'parent' in _limb:
+		return False
+	
+	return can_knock_over(life, _limb['parent'])
+
 def remove_limb(life, limb, no_children=False):
+	limb = str(limb)
 	if not limb in life['body']:
 		return False
 	
 	for item in get_items_attached_to_limb(life, limb):
 		drop_item(life, item)
 	
+	if can_knock_over(life, limb):
+		if 'player' in life:
+			gfx.message('You fall over.', style='player_combat_bad')
+		else:
+			say(life, '%s falls over!' % language.get_introduction(life), action=True)
+		
+		collapse(life)
+	
+	print repr(limb),repr(life['hands'][0])
 	if limb in life['hands']:
 		life['hands'].remove(limb)
 	
@@ -2584,7 +2600,6 @@ def sever_limb(life, limb):
 	
 	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
 	
-	#del life['body'][limb]
 	remove_limb(life, limb)
 
 def cut_limb(life,limb,amount=2):
@@ -2636,9 +2651,6 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 			return False
 		
 		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
-		
-		if can_knock_over(life, cut, limb):
-			collapse(life)
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7
