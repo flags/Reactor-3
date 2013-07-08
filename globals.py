@@ -28,6 +28,8 @@ WORLD_INFO = {'map': [],
     'length_of_day': 6000,
     'day': 0,
 	'ticks': 0,
+	'tps': 0,
+	'tps_time': 0,
 	'pause_ticks': 0,
 	'in_combat': False}
 REFERENCE_MAP = {'roads': [],
@@ -43,10 +45,11 @@ CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
-FPS = 30
+FPS = 100
 FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
+TPS = 30
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
 HEIGHT_MAP = [[]]

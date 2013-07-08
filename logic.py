@@ -80,6 +80,15 @@ def tick_all_objects(source_map):
 			
 			WORLD_INFO['in_combat'] = _in_combat
 	
+	WORLD_INFO['tps'] += 1
+	
+	if WORLD_INFO['ticks']-WORLD_INFO['tps_time']>=30:
+		WORLD_INFO['tps'] = 0
+		WORLD_INFO['tps_time'] = WORLD_INFO['ticks']
+	
+	if WORLD_INFO['tps'] > TPS:
+		return False
+	
 	tick_world()
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
