@@ -88,9 +88,10 @@ def calculate_base_stats(life):
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
 	_speed = life['base_speed']
+	_legs = get_legs(life)
 	
 	for limb in life['body']:
-		if limb in life['legs']:
+		if limb in _legs:
 			_speed += life['body'][limb]['cut']
 	
 	return _speed
@@ -623,7 +624,7 @@ def react(reaction):
 def say(life, text, action=False, volume=30, context=False):
 	if action:
 		set_animation(life, ['\\', '|', '/', '-'])
-		text = text.replace('@n',' '.join(life['name']))
+		text = text.replace('@n', language.get_introduction(life))
 		_style = 'action'
 	else:
 		set_animation(life, ['!'], speed=8)
@@ -1258,7 +1259,12 @@ def kill(life, injury):
 		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
-		say(life, '@n dies from %s' % life['cause_of_death'], action=True)
+		
+		if 'player' in life:
+			gfx.message('You die from %s.' % life['cause_of_death'])
+		else:
+			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+		
 		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
@@ -1269,12 +1275,11 @@ def kill(life, injury):
 	life['dead'] = True
 
 def can_die_via_critical_injury(life):
-	for limb in [life['body'][limb] for limb in life['body']]:
+	for limb in life['body'].values():
 		if not 'CRUCIAL' in limb['flags']:
 			continue
 		
-		#TODO: Max pain per limb
-		if limb['pain']>=4:
+		if limb['pain']>=limb['size']:
 			return limb
 	
 	return False	
@@ -1356,7 +1361,7 @@ def tick(life, source_map):
 			if 'player' in life:
 				gfx.message('The pain becomes too much.')
 			else:
-				say(life,'@n passes out.',action=True)
+				say(life,'%s passes out.',action=True)
 			
 			pass_out(life)
 			
@@ -1948,6 +1953,14 @@ def perform_match(item, matches):
 	
 	return False
 
+def get_legs(life):
+	_legs = []
+	
+	for leg in life['legs']:
+		_legs.extend(get_all_attached_limbs(life, leg))
+	
+	return _legs
+
 def get_held_items(life, matches=None):
 	"""Returns list of all held items."""
 	_holding = []
@@ -2341,6 +2354,8 @@ def pass_out(life,length=None):
 	
 	if 'player' in life:
 		gfx.message('You pass out!',style='damage')
+	else:
+		say(life, '@n passes out.', action=True)
 	
 	logging.debug('%s passed out.' % life['name'][0])
 
@@ -2499,13 +2514,10 @@ def can_knock_over(life, limb):
 	if life['stance'] == 'crawling':
 		return False
 	
-	if limb in life['legs']:
+	if limb in get_legs(life):
 		return True
 	
-	if not 'parent' in _limb:
-		return False
-	
-	return can_knock_over(life, _limb['parent'])
+	return False
 
 def remove_limb(life, limb, no_children=False):
 	if not limb in life['body']:
@@ -2536,7 +2548,7 @@ def remove_limb(life, limb, no_children=False):
 	
 	if 'children' in life['body'][limb] and not no_children:
 		for _attached_limb in life['body'][limb]['children']:
-			say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), _attached_limb), action=True)
+			#say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), _attached_limb), action=True)
 			remove_limb(life, _attached_limb)
 	
 	life['blood'] -= life['body'][limb]['size']*10
@@ -2551,6 +2563,7 @@ def sever_limb(life, limb):
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
 		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
+		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size'])
 	
 	remove_limb(life, limb)
 
@@ -2589,6 +2602,7 @@ def add_pain_to_limb(life,limb,amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount
+	print 'Pain', _limb['pain']
 
 def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	_limb = life['body'][limb]
@@ -2601,7 +2615,7 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 		if not limb in life['body']:
 			return False
 		
-		add_pain_to_limb(life, limb, amount=(cut/2)*float(_limb['damage_mod']))
+		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7
