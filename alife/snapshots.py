@@ -17,9 +17,6 @@ def create_snapshot(life):
 		'visible_items': [],
 		'generated': time.time()}
 
-	for limb in life['body']:
-		_snapshot['condition'] += lfe.get_limb_condition(life,limb)
-
 	for item in lfe.get_all_visible_items(life):
 		_snapshot['visible_items'].append(str(item))
 	

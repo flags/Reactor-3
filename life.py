@@ -85,28 +85,6 @@ def calculate_base_stats(life):
 	
 	return stats
 
-def calculate_limb_conditions(life):
-	for limb in [life['body'][limb] for limb in life['body']]:
-		_pain_mod = numbers.clip(limb['pain'],1,100)
-		_condition = 100
-		
-		if limb['bleeding']:
-			_condition-=(3*_pain_mod)
-		
-		if limb['cut']:
-			_condition-=(5*_pain_mod)
-		
-		if limb['bruised']:
-			_condition-=(1*_pain_mod)
-		
-		if limb['broken']:
-			_condition-=(7*_pain_mod)
-		
-		limb['condition'] = _condition
-
-def get_limb_condition(life,limb):
-	return life['body'][limb]['condition']
-
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
 	_speed = 0
@@ -158,9 +136,6 @@ def initiate_limbs(life):
 		body[limb] = body[str(limb)]
 		body[limb]['flags'] = body[limb]['flags'].split('|')
 		body[limb]['holding'] = []
-		
-		#Note: `Condition` is calculated automatically
-		body[limb]['condition'] = 100
 		body[limb]['cut'] = 0
 		body[limb]['bleeding'] = 0
 		body[limb]['bruised'] = False
@@ -1387,7 +1362,6 @@ def tick(life, source_map):
 			
 			return False
 	
-	calculate_limb_conditions(life)
 	perform_collisions(life)
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
@@ -2456,12 +2430,6 @@ def calculate_blood(life):
 def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
 
-def get_limb_damage_penalty(life,limb,amount):
-	"""Returns the penalty of having a pre-existing injury on a limb."""
-	_limb = life['body'][limb]
-	
-	return int((100-_limb['condition'])*.25)	
-
 def get_bleeding_limbs(life):
 	"""Returns list of bleeding limbs."""
 	_bleeding = []
@@ -2704,14 +2672,6 @@ def damage_from_fall(life,dist):
 	create_and_update_self_snapshot(life)
 	
 	return True
-
-def damage_limb(life,limb,damage):
-	_limb = life['body'][limb]
-	
-	if damage>30:
-		bruise_limb(life,limb)
-	
-	life['body'][limb]['condition'] -= damage
 
 def damage_from_item(life,item,damage):
 	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
