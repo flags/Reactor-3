@@ -23,6 +23,7 @@ import numbers
 import bullets
 import dialog
 import random
+import numpy
 import tiles
 import menus
 import logic
@@ -75,9 +76,13 @@ language.load_strings()
 gfx.init_libtcod()
 
 def move_camera(pos,scroll=False):
+	_orig_pos = CAMERA_POS[:]
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
 	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]
+	
+	if not _orig_pos == CAMERA_POS:
+		gfx.refresh_window()
 
 def draw_targeting():
 	if SETTINGS['controlling'] and SETTINGS['controlling']['targeting']:
@@ -208,7 +213,7 @@ def main():
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	#print tcod.sys_get_fps()
+	print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:

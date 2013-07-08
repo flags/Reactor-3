@@ -110,33 +110,12 @@ def get_limb_condition(life,limb):
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
 	_speed = 0
-	#_penalty = 0
-	#
+	
 	for limb in life['body']:
 		if limb in life['legs']:
 			_speed += life['body'][limb]['cut']
 	
 	return _speed
-	#	for item in life['body'][limb]['holding']:
-	#		_i = get_inventory_item(life,item)
-	#		
-	#		if _i.has_key('speed_mod'):
-	#			_speed_mod += _i['speed_mod']
-	#	
-	#	if limb in life['legs']:
-	#		_pain = life['body'][limb]['pain']
-	#		
-	#		if not _pain:
-	#			_pain = 1
-	#		
-	#		_penalty += int((100-life['body'][limb]['condition'])*DAMAGE_MOVE_PENALTY_MOD)*_pain
-	#
-	#_MAX_SPEED = (LIFE_MAX_SPEED-_speed_mod)+_penalty
-	#
-	#if _MAX_SPEED > LIFE_MAX_SPEED:
-	#	return LIFE_MAX_SPEED
-	#
-	#return _MAX_SPEED
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -2086,6 +2065,7 @@ def draw_life():
 			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
 				continue
 			
+			MAP_CHAR_BUFFER[1][_y,_x] = 0
 			gfx.blit_char(_x,
 				_y,
 				_icon,

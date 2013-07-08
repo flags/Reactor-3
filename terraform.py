@@ -84,6 +84,8 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 		
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
 			camera[1]-=1
+	
+	gfx.refresh_window()
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
