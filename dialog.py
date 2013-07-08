@@ -789,16 +789,12 @@ def process_response(life, target, dialog, chosen):
 			target=dialog['speaker'],
 			who=chosen['who'],
 			value=chosen['who'])
-		
-		print 'TALKING ABOUT TRUST' * 10
 	
 	elif chosen['gist'] == 'talk_about_trust_negative':
 		lfe.memory(LIFE[dialog['listener']], 'target doesn\'t trust target',
 			target=dialog['speaker'],
 			who=chosen['who'],
 			value=chosen['who'])
-		
-		print 'TALKING ABOUT TRUST' * 10
 	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])

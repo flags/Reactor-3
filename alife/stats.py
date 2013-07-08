@@ -286,7 +286,6 @@ def has_attacked_trusted(life, life_id):
 	
 	for memory in lfe.get_memory(life, matches={'text': 'heard about attack', 'attacker': life_id}):
 		if memory['target'] in _trusted:
-			print 'HAS ATTACKED TRUSTED' * 10
 			return True
 	
 	return False

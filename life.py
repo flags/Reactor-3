@@ -87,7 +87,7 @@ def calculate_base_stats(life):
 
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
-	_speed = 0
+	_speed = life['base_speed']
 	
 	for limb in life['body']:
 		if limb in life['legs']:
@@ -2324,6 +2324,14 @@ def collapse(life):
 	if life['stance'] in ['standing','crouching']:
 		life['stance'] = 'crawling'
 
+def get_damage(life):
+	_damage = 0
+	for limb in life['body'].values():
+		_damage += limb['cut']
+		_damage += limb['bleeding']
+	
+	return _damage		
+
 def pass_out(life,length=None):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
@@ -2500,7 +2508,6 @@ def can_knock_over(life, limb):
 	return can_knock_over(life, _limb['parent'])
 
 def remove_limb(life, limb, no_children=False):
-	limb = str(limb)
 	if not limb in life['body']:
 		return False
 	
@@ -2517,7 +2524,6 @@ def remove_limb(life, limb, no_children=False):
 	
 	if limb in life['hands']:
 		life['hands'].remove(limb)
-		print 'HAND REMOVED',repr(limb),repr(life['hands'])
 	
 	if limb in life['legs']:
 		life['legs'].remove(limb)
@@ -2544,13 +2550,13 @@ def sever_limb(life, limb):
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
+		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
 	
 	remove_limb(life, limb)
 
 def cut_limb(life,limb,amount=2):
 	_limb = life['body'][limb]
 	
-	#_limb['bleeding'] += amount
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
 	
