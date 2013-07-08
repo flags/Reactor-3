@@ -31,7 +31,7 @@
     "rhand": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
+      "flags": "SKIN|MUSCLE|BONE", 
       "parent": "rforearm", 
       "size": 2
     }, 
@@ -45,7 +45,7 @@
     "lhand": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE|CAN_HOLD", 
+      "flags": "SKIN|MUSCLE|BONE", 
       "parent": "lforearm", 
       "size": 2
     }, 

@@ -89,7 +89,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not 'player' in target and stats.desires_life(life, target['id']):
 				speech.start_dialog(life, target['id'], 'introduction')
 			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target, 'not_friend'):
-				print 'YO!!!!!!!!!!',life['name'],target['id'],stats.desires_life(life, target['id'])
 				speech.start_dialog(life, target['id'], 'introduction_negative')
 				brain.flag_alife(life, target, 'not_friend')
 		elif lfe.get_questions(life, target=target['id']):

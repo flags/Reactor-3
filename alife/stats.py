@@ -274,13 +274,11 @@ def is_compatible_with(life, life_id):
 	
 	#I don't trust modders with this
 	if not is_same_species(life, life_id):
-		print 'NO TRUST'
 		return False
 	
 	if _diff < life['stats']['sociability']:
 		return True
 	
-	print _diff,life['stats']['sociability']
 	return False
 
 def has_attacked_trusted(life, life_id):

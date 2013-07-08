@@ -58,7 +58,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	generate_life(source_map, amount=life)
-	#generate_wildlife(source_map)
+	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:

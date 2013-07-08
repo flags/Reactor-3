@@ -109,12 +109,14 @@ def get_limb_condition(life,limb):
 
 def get_max_speed(life):
 	"""Returns max speed based on items worn."""
-	return life['speed_max']
-	
-	#_speed_mod = 0
+	_speed = 0
 	#_penalty = 0
 	#
-	#for limb in life['body']:
+	for limb in life['body']:
+		if limb in life['legs']:
+			_speed += life['body'][limb]['cut']
+	
+	return _speed
 	#	for item in life['body'][limb]['holding']:
 	#		_i = get_inventory_item(life,item)
 	#		
@@ -175,12 +177,7 @@ def initiate_limbs(life):
 		del body[limb]
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
-		
 		body[limb]['flags'] = body[limb]['flags'].split('|')
-		
-		if 'CAN_HOLD' in body[limb]['flags']:
-			life['hands'].append(limb)
-		
 		body[limb]['holding'] = []
 		
 		#Note: `Condition` is calculated automatically
@@ -1908,9 +1905,6 @@ def drop_item(life,id):
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
-		if not hand in life['body']:
-			continue
-		
 		_hand = get_limb(life, hand)
 		
 		if str(id) in _hand['holding']:
@@ -1953,9 +1947,6 @@ def get_open_hands(life):
 	_hands = []
 	
 	for hand in life['hands']:
-		if not hand in life['body']:
-			continue
-		
 		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
@@ -1967,9 +1958,6 @@ def can_hold_item(life):
 	#TODO: Rename needed.
 	"""Returns limb of empty hand. Returns False if none are empty."""
 	for hand in life['hands']:
-		if not hand in life['body']:
-			continue
-		
 		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
@@ -1980,9 +1968,6 @@ def can_hold_item(life):
 def is_holding(life, id):
 	"""Returns the hand holding `item`. Returns False otherwise."""
 	for hand in life['hands']:
-		if not hand in life['body']:
-			continue
-		
 		_limb = get_limb(life,hand)
 		
 		if id in _limb['holding']:
@@ -2013,9 +1998,6 @@ def get_held_items(life, matches=None):
 	_holding = []
 	
 	for hand in life['hands']:
-		if not hand in life['body']:
-			continue
-		
 		_limb = get_limb(life,hand)
 		
 		if _limb['holding']:
@@ -2581,6 +2563,7 @@ def remove_limb(life, limb, no_children=False):
 	
 	if limb in life['hands']:
 		life['hands'].remove(limb)
+		print 'HAND REMOVED',repr(limb),repr(life['hands'])
 	
 	if limb in life['legs']:
 		life['legs'].remove(limb)
@@ -2594,7 +2577,6 @@ def remove_limb(life, limb, no_children=False):
 	if 'children' in life['body'][limb] and not no_children:
 		for _attached_limb in life['body'][limb]['children']:
 			say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), _attached_limb), action=True)
-			#del life['body'][_attached_limb]
 			remove_limb(life, _attached_limb)
 	
 	life['blood'] -= life['body'][limb]['size']*10
@@ -2604,9 +2586,10 @@ def remove_limb(life, limb, no_children=False):
 	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
 
 def sever_limb(life, limb):
-	_limb = life['body'][limb]
-	
 	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
+	
+	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
+		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
 	
 	remove_limb(life, limb)
 
