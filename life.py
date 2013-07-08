@@ -244,6 +244,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
+	_life['prev_pos'] = list(position)
 	_life['realpos'] = list(position)
 	
 	#TODO: We only need this for pathing, so maybe we should move this to
@@ -848,6 +849,7 @@ def walk(life, to):
 		life['path'] = pathfinding.create_path_old(life['pos'], to, source_map=WORLD_INFO['map'])
 		#print '\ttotal',time.time()-_stime
 	
+	life['prev_pos'] = life['pos'][:]
 	return walk_path(life)
 
 def walk_path(life):
@@ -2064,6 +2066,12 @@ def draw_life():
 			
 			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
 				continue
+			
+			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
+			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
+			
+			if not life['pos'] == life['prev_pos']:
+				gfx.refresh_window_position(_p_x, _p_y)
 			
 			MAP_CHAR_BUFFER[1][_y,_x] = 0
 			gfx.blit_char(_x,
