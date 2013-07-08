@@ -50,8 +50,9 @@ try:
 		CYTHON_ENABLED = True
 	else:
 		CYTHON_ENABLED = False
-		logging.warning('[Cython] render_map is out of date!')
-		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+		logging.error('[Cython] render_map is out of date!')
+		logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+		sys.exit(1)
 	
 except ImportError, e:
 	CYTHON_ENABLED = False
