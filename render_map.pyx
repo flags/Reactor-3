@@ -81,4 +81,4 @@ def render_map(map):
 						break
 			
 			if not _drawn:
-				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+				blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)

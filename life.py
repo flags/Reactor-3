@@ -2348,11 +2348,6 @@ def is_target_of(life):
 
 def collapse(life):
 	if life['stance'] in ['standing','crouching']:
-		if 'player' in life:
-			gfx.message('You collapse!',style='damage')
-		else:
-			say(life,'@n collapses.',action=True)
-		
 		life['stance'] = 'crawling'
 
 def pass_out(life,length=None):
@@ -2746,7 +2741,7 @@ def damage_from_item(life,item,damage):
 	if 'parent' in life['body'][_rand_limb[0]]:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])
 	
-	if 'children' in life['body'][_rand_limb[0]]:
+	if 'children' in life['body'][_rand_limb[0]] and life['body'][_rand_limb[0]]['children']:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['children'][0])
 
 	_hit_limb = random.choice(_poss_limbs)
