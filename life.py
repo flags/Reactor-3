@@ -2525,6 +2525,9 @@ def artery_is_ruptured(life, limb):
 def can_knock_over(life, limb):
 	_limb = life['body'][limb]
 	
+	if life['stance'] == 'crawling':
+		return False
+	
 	if limb in life['legs']:
 		return True
 	

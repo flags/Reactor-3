@@ -156,6 +156,8 @@ def main():
 				CURRENT_UPS = 1
 			else:
 				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
+			
+			gfx.refresh_window()
 			break
 	
 	if not _played_moved:
