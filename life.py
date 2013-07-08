@@ -1953,6 +1953,9 @@ def get_open_hands(life):
 	_hands = []
 	
 	for hand in life['hands']:
+		if not hand in life['body']:
+			continue
+		
 		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
@@ -1964,6 +1967,9 @@ def can_hold_item(life):
 	#TODO: Rename needed.
 	"""Returns limb of empty hand. Returns False if none are empty."""
 	for hand in life['hands']:
+		if not hand in life['body']:
+			continue
+		
 		_hand = get_limb(life,hand)
 		
 		if not _hand['holding']:
@@ -2024,6 +2030,9 @@ def get_held_items(life, matches=None):
 	return _holding
 
 def get_items_attached_to_limb(life, limb):
+	if not limb in life['body']:
+		return False
+	
 	_limb = life['body'][limb]
 	
 	return _limb['holding']	
@@ -2570,7 +2579,6 @@ def remove_limb(life, limb, no_children=False):
 		
 		collapse(life)
 	
-	print repr(limb),repr(life['hands'][0])
 	if limb in life['hands']:
 		life['hands'].remove(limb)
 	

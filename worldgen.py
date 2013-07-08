@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
+import historygen
 import threading
 import profiles
 import logging
@@ -57,7 +58,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	generate_life(source_map, amount=life)
-	generate_wildlife(source_map)
+	#generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
@@ -143,7 +144,7 @@ def generate_life(source_map, amount=1):
 			_spawn = (30, 70)
 		
 		alife = life.create_life('human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
-		
+		historygen.create_background(life)
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000
 		#	alife['thirst'] = 1000

@@ -42,7 +42,7 @@ def desires_life(life, life_id):
 	if not lfe.execute_raw(life, 'judge', 'factors', life_id=life_id):
 		return False
 	
-	return False
+	return True
 
 def desires_interaction(life):
 	if not lfe.execute_raw(life, 'talk', 'desires_interaction'):
@@ -274,11 +274,13 @@ def is_compatible_with(life, life_id):
 	
 	#I don't trust modders with this
 	if not is_same_species(life, life_id):
+		print 'NO TRUST'
 		return False
 	
 	if _diff < life['stats']['sociability']:
 		return True
 	
+	print _diff,life['stats']['sociability']
 	return False
 
 def has_attacked_trusted(life, life_id):

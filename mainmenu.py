@@ -115,14 +115,15 @@ def switch_to_spawn_point():
 	
 	#TODO: List of camps
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Zone Entry Point', None))
+	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp'))
+	_menu_items.append(menus.create_item('single', 'Chase', 'You are being trailed!'))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Spawn Point',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		format_str='$k',
+		format_str='$k ($v)',
 		on_select=spawn_menu_select,
 		on_change=None)
 	

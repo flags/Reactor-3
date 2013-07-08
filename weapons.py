@@ -48,7 +48,13 @@ def fire(life, target, limb=None):
 	if 'player' in life:
 		weapon = life['firing']
 	else:
-		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])[0]
+		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+		
+		if _item:
+			print _item
+			_item = _item[0]
+		else:
+			return False
 		
 		if not _item:
 			if 'player' in life:
