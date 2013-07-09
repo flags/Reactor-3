@@ -19,9 +19,14 @@ MESSAGE = ['Reactor 3 is still a prototype',
 
 def draw_intro():
 	_stime = time.time()
-	random.choice
+	_title_time = time.time()
+	_sub_line = 'ASCII Worlds Collective'
+	_sub_mod = 0
+	_sub_time = 0
+	_shadow = 50
+	_burn = 1
 	
-	while time.time()-_stime<=2.5:
+	while time.time()-_stime<=5.5:
 		_text = INTRO
 		
 		if time.time()-_stime<=1:
@@ -29,12 +34,42 @@ def draw_intro():
 			random.shuffle(_text)
 			_text = ''.join(_text)
 		else:
+			if not _sub_time:
+				_sub_time = time.time()
+			elif time.time()-_stime>=3.2:
+				#_shadow *= 1.05
+				#_sub_time += .042
+				_title_time += .044
+			
+			if time.time()-_stime>=2.0:
+				_burn *= 1.03
+			
 			_text = INTRO
 		
-		_mod = int(round(255*numbers.clip(time.time()-_stime, 0, 1)))
+		_mod = int(round(255*numbers.clip(time.time()-_title_time, 0, 1)))
 		
 		console_set_default_foreground(0, Color(_mod, _mod, _mod))
 		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, WINDOW_SIZE[1]/2, _text)
+		
+		_i = 0
+		for c in _sub_line:
+			if _sub_time:
+				_delta = numbers.clip((time.time()-_sub_time)*6.0, 0, len(_sub_line))
+				_upper = numbers.clip(255-(abs(_i-_delta))*_shadow, 0, 255)
+				_sub_mod = int(round(_upper*numbers.clip((time.time()-_sub_time)*2, 0, 1)))
+			
+				if _sub_mod <= 50 and _i-_delta<0:
+					_sub_mod = numbers.clip(_sub_mod, 1, 255)
+					_r = numbers.clip(numbers.clip(int(round(_sub_mod*_burn)), 0, 255)-random.randint(0, 75), 0, 255)
+				else:
+					_r = _sub_mod
+			else:
+				_r = _sub_mod
+			
+			console_set_default_foreground(0, Color(_r, _sub_mod, _sub_mod))
+			console_print(0, ((WINDOW_SIZE[0]/2)-len(_sub_line)/2)+_i, (WINDOW_SIZE[1]/2)+3, c)
+			_i += 1
+		
 		console_flush()
 	
 	SETTINGS['running'] = 1

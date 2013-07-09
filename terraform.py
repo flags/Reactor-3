@@ -248,33 +248,43 @@ def handle_input():
 
 	elif INPUT['1']:
 		CAMERA_POS[2] = 1
+		gfx.refresh_window()
 
 	elif INPUT['2']:
 		CAMERA_POS[2] = 2
+		gfx.refresh_window()
 
 	elif INPUT['3']:
 		CAMERA_POS[2] = 3
+		gfx.refresh_window()
 
 	elif INPUT['4']:
 		CAMERA_POS[2] = 4
+		gfx.refresh_window()
 
 	elif INPUT['5']:
 		CAMERA_POS[2] = 5
+		gfx.refresh_window()
 	
 	elif INPUT['6']:
 		CAMERA_POS[2] = 6
+		gfx.refresh_window()
 	
 	elif INPUT['7']:
 		CAMERA_POS[2] = 7
+		gfx.refresh_window()
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
+		gfx.refresh_window()
 	
 	elif INPUT['9']:
 		CAMERA_POS[2] = 9
+		gfx.refresh_window()
 	
 	elif INPUT['0']:
 		CAMERA_POS[2] = 10
+		gfx.refresh_window()
 
 def menu_item_selected(entry):
 	global RUNNING
