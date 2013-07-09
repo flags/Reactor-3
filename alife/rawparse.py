@@ -34,11 +34,9 @@ def create_rawlangscript():
 
 def create_section(script, section):
 	script['sections'][section] = {}
-	print 'Section: %s' % section
 
 def set_active_section(script, section):
 	script['section'] = section
-	print 'Active: %s' % section
 
 def create_action(script, identifier, arguments):
 	_args = []

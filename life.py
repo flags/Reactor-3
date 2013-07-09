@@ -1275,11 +1275,12 @@ def kill(life, injury):
 	life['dead'] = True
 
 def can_die_via_critical_injury(life):
-	for limb in life['body'].values():
-		if not 'CRUCIAL' in limb['flags']:
+	for limb in life['body']:
+		_limb = life['body'][limb]
+		if not 'CRUCIAL' in _limb['flags']:
 			continue
 		
-		if limb['pain']>=limb['size']:
+		if _limb['pain']>=_limb['size']:
 			return limb
 	
 	return False	
@@ -1348,9 +1349,13 @@ def tick(life, source_map):
 	
 	_crit_injury = can_die_via_critical_injury(life)
 	if _crit_injury:
-		kill(life ,_crit_injury['wounds'].pop())
+		if life['body'][_crit_injury]['wounds']:
+			kill(life, life['body'][_crit_injury]['wounds'].pop())
+			return True
 		
-		return False
+		kill(life, 'acute pain in the %s.' % life['body'][_crit_injury])
+		
+		return True
 	
 	if get_total_pain(life)>life['pain_tolerance']:		
 		life['consciousness'] -= get_total_pain(life)-life['pain_tolerance']

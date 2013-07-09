@@ -294,12 +294,16 @@ def menu_item_changed(entry):
 			SETTINGS['draw z-levels below'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Blit z-level above':
 		if value == 'On':
 			SETTINGS['draw z-levels above'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels above'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Draw lights':
 		if value == 'On':
@@ -307,6 +311,8 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			maps.reset_lights()
 			SETTINGS['draw lights'] = False
+		
+		gfx.refresh_window()
 
 def menu_align():
 	for menu in MENUS:

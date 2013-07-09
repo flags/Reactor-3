@@ -92,7 +92,6 @@ def generate_first_and_last_name_from_species(species):
 	return (_first_name, _last_name)
 
 def format_injury(injury):
-	print injury
 	if injury['lodged_item']:
 		return 'a %s lodged in the %s' % (injury['lodged_item']['name'], injury['limb'])
 	elif injury['artery_ruptured']:

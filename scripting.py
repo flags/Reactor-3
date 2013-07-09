@@ -67,6 +67,3 @@ def get_functions(owner, text):
 			_functions[_name] = _args#parse_arguments(owner, _args)
 
 	return _functions
-
-if __name__ == "__main__":
-	print initiate({'pos': (5,10)},'CANDISMANTLE[CREATE_ITEM(white cloth, self.pos)]')
