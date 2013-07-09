@@ -2570,6 +2570,8 @@ def sever_limb(life, limb):
 		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size'])
 	
+	set_animation(life, ['X', '!'], speed=4)
+	
 	remove_limb(life, limb)
 
 def cut_limb(life,limb,amount=2):
