@@ -47,11 +47,9 @@ def score_hide(life,target,pos):
 	#	return 20-_target_dist
 	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
-		print 'TARGET IS HERE!'
 		return numbers.clip(300-_life_dist, 200, 300)
 	
 	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
-		print 'in reference'
 		return numbers.clip(200-_life_dist, 100, 200)
 	
 	#if _chunk['type'] == 'building':

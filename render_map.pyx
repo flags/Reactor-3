@@ -1,13 +1,14 @@
+from graphics import blit_tile, darken_tile, blit_char, blit_tile
+from globals import MAP_CHAR_BUFFER, DARK_BUFFER
 from tiles import *
 
-import graphics as gfx
 import libtcodpy as tcod
 
 import effects
 import numpy
 import time
 
-VERSION = 4
+VERSION = 5
 
 def render_map(map):
 	cdef int _CAMERA_POS[2]
@@ -30,8 +31,7 @@ def render_map(map):
 	cdef int _RENDER_X = 0
 	cdef int _RENDER_Y = 0
 	
-	DARK_BUFFER[0] = numpy.zeros((_MAP_WINDOW_SIZE[1], _MAP_WINDOW_SIZE[0]))
-	LIGHT_BUFFER[0] = numpy.zeros((_MAP_WINDOW_SIZE[1], _MAP_WINDOW_SIZE[0]))
+	_TEMP_MAP_CHAR_BUFFER = MAP_CHAR_BUFFER[1].copy()
 
 	if _X_MAX>_MAP_SIZE[0]:
 		_X_MAX = _MAP_SIZE[0]
@@ -43,16 +43,22 @@ def render_map(map):
 		_RENDER_X = x-_CAMERA_POS[0]
 		for y in range(_Y_START,_Y_MAX):
 			_RENDER_Y = y-_CAMERA_POS[1]
+			
+			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
+				continue
+			
+			DARK_BUFFER[0][_RENDER_Y, _RENDER_X] = 0
+			
 			_drawn = False
 			for z in range(MAP_SIZE[2]-1,-1,-1):
 				if map[x][y][z]:
 					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
+						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							gfx.blit_char(_RENDER_X,
+							blit_char(_RENDER_X,
 								_RENDER_Y,
 								'X',
 								tcod.darker_grey,
@@ -61,18 +67,18 @@ def render_map(map):
 								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 						else:
-							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+							blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 							
 							if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 								effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
+						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
 						_drawn = True
 				
 					if SETTINGS['draw z-levels above'] and _drawn:
 						break
 			
 			if not _drawn:
-				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+				blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)

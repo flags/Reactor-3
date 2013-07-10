@@ -28,6 +28,8 @@ WORLD_INFO = {'map': [],
     'length_of_day': 6000,
     'day': 0,
 	'ticks': 0,
+	'tps': 0,
+	'tps_time': 0,
 	'pause_ticks': 0,
 	'in_combat': False}
 REFERENCE_MAP = {'roads': [],
@@ -43,10 +45,11 @@ CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
-FPS = 30
+FPS = 100
 FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
+TPS = 30
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
 HEIGHT_MAP = [[]]
@@ -64,10 +67,10 @@ X_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 Y_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 RGB_LIGHT_BUFFER = [[],[],[]]
 LOS_BUFFER = [[]]
-MAP_CHAR_BUFFER = [[]]
-PREFAB_CHAR_BUFFER = [[]]
-X_CUTOUT_CHAR_BUFFER = [[]]
-Y_CUTOUT_CHAR_BUFFER = [[]]
+MAP_CHAR_BUFFER = [[], []]
+PREFAB_CHAR_BUFFER = [[], []]
+X_CUTOUT_CHAR_BUFFER = [[], []]
+Y_CUTOUT_CHAR_BUFFER = [[], []]
 LIGHTS = []
 CONSOLE_HISTORY = []
 CONSOLE_HISTORY_MAX_LINES = 29
@@ -85,7 +88,7 @@ DEFAULT_ITEM_SIZE = '2x2'
 DEFAULT_ITEM_PREFIX = 'a'
 
 #Versions
-MAP_RENDER_VERSION = 4
+MAP_RENDER_VERSION = 5
 
 #Graphics tweaks
 FADE_TO_WHITE = [0]
@@ -97,7 +100,7 @@ MAX_MESSAGES_IN_DIALOG = 9
 TEXT_MAP = {}
 
 #Life constants
-LIFE_MAX_SPEED = 2
+LIFE_MAX_SPEED = 4
 LIFE_BLEED_RATE = .4 #Higher is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10

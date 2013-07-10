@@ -12,13 +12,10 @@ def update_snapshot_of_target(life,target,snapshot):
 	#logging.debug('%s updated their snapshot of %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 
 def create_snapshot(life):
-	_snapshot = {'condition': 0,
+	_snapshot = {'damage': lfe.get_damage(life),
 		'appearance': 0,
 		'visible_items': [],
 		'generated': time.time()}
-
-	for limb in life['body']:
-		_snapshot['condition'] += lfe.get_limb_condition(life,limb)
 
 	for item in lfe.get_all_visible_items(life):
 		_snapshot['visible_items'].append(str(item))

@@ -921,7 +921,7 @@ def inventory_handle_ammo(entry):
 				'ammo': item,
 				'round': ammo},
 				200,
-				delay=20)
+				delay=3)
 			
 			_rounds += 1
 			

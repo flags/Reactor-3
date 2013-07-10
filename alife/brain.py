@@ -78,9 +78,11 @@ def get_flag(life, flag):
 
 def flag_alife(life, target, flag, value=True):
 	print life['name'],'FLAGGED',target['name'],flag
+	logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(target['name']), flag))
 	life['know'][target['id']]['flags'][flag] = value
 
 def unflag_alife(life, target, flag):
+	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(target['name']), flag))
 	del life['know'][target['id']]['flags'][flag] 
 
 def get_alife_flag(life, target, flag):

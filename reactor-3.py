@@ -23,6 +23,7 @@ import numbers
 import bullets
 import dialog
 import random
+import numpy
 import tiles
 import menus
 import logic
@@ -49,8 +50,9 @@ try:
 		CYTHON_ENABLED = True
 	else:
 		CYTHON_ENABLED = False
-		logging.warning('[Cython] render_map is out of date!')
-		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+		logging.error('[Cython] render_map is out of date!')
+		logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+		sys.exit(1)
 	
 except ImportError, e:
 	CYTHON_ENABLED = False
@@ -75,9 +77,13 @@ language.load_strings()
 gfx.init_libtcod()
 
 def move_camera(pos,scroll=False):
+	_orig_pos = CAMERA_POS[:]
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
 	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]
+	
+	if not _orig_pos == CAMERA_POS:
+		gfx.refresh_window()
 
 def draw_targeting():
 	if SETTINGS['controlling'] and SETTINGS['controlling']['targeting']:
@@ -123,7 +129,7 @@ while SETTINGS['running'] in [-1, 1]:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=2, simulate_ticks=5, save=False, thread=True)
+	worldgen.generate_world(WORLD_INFO['map'], life=3, simulate_ticks=5, save=False, thread=True)
 
 LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.1})
 LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.1})
@@ -150,6 +156,8 @@ def main():
 				CURRENT_UPS = 1
 			else:
 				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
+			
+			gfx.refresh_window()
 			break
 	
 	if not _played_moved:

@@ -79,7 +79,7 @@ def _refill_feed(life,feed):
 			'ammo': feed,
 			'round': ammo},
 			200,
-			delay=5)
+			delay=3)
 		
 		_rounds += 1
 
@@ -170,8 +170,8 @@ def get_best_weapon(life):
 def melee_combat(life, target):
 	_target = brain.knows_alife_by_id(life, target)
 	
-	if numbers.distance(life['pos'], _target['life']['pos']) > 1:
-		movement.travel_to_target(life, target, _target['life']['pos'])
+	if numbers.distance(life['pos'], _target['last_seen_at']) > 1:
+		movement.travel_to_target(life, target, _target['last_seen_at'])
 	else:
 		lfe.clear_actions(life, matches=[{'action': 'move'}])
 		

@@ -84,6 +84,8 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 		
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
 			camera[1]-=1
+	
+	gfx.refresh_window()
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
@@ -246,33 +248,43 @@ def handle_input():
 
 	elif INPUT['1']:
 		CAMERA_POS[2] = 1
+		gfx.refresh_window()
 
 	elif INPUT['2']:
 		CAMERA_POS[2] = 2
+		gfx.refresh_window()
 
 	elif INPUT['3']:
 		CAMERA_POS[2] = 3
+		gfx.refresh_window()
 
 	elif INPUT['4']:
 		CAMERA_POS[2] = 4
+		gfx.refresh_window()
 
 	elif INPUT['5']:
 		CAMERA_POS[2] = 5
+		gfx.refresh_window()
 	
 	elif INPUT['6']:
 		CAMERA_POS[2] = 6
+		gfx.refresh_window()
 	
 	elif INPUT['7']:
 		CAMERA_POS[2] = 7
+		gfx.refresh_window()
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
+		gfx.refresh_window()
 	
 	elif INPUT['9']:
 		CAMERA_POS[2] = 9
+		gfx.refresh_window()
 	
 	elif INPUT['0']:
 		CAMERA_POS[2] = 10
+		gfx.refresh_window()
 
 def menu_item_selected(entry):
 	global RUNNING
@@ -292,12 +304,16 @@ def menu_item_changed(entry):
 			SETTINGS['draw z-levels below'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Blit z-level above':
 		if value == 'On':
 			SETTINGS['draw z-levels above'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels above'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Draw lights':
 		if value == 'On':
@@ -305,6 +321,8 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			maps.reset_lights()
 			SETTINGS['draw lights'] = False
+		
+		gfx.refresh_window()
 
 def menu_align():
 	for menu in MENUS:
