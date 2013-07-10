@@ -1,12 +1,17 @@
 from globals import *
 
 import graphics as gfx
+
 import scripting
+import maputils
 import drawing
-import logging
 import numbers
+import effects
 import maps
 import life
+
+import logging
+import random
 
 try:
 	import ujson as json
@@ -113,14 +118,16 @@ def get_pos(item_uid):
 	
 	return item['pos']
 
-def create_item(name,position=[0,0,2]):
+def create_item(name, position=[0,0,2], item=None):
 	"""Initiates and returns a copy of an item type."""
-	item = ITEM_TYPES[name].copy()
+	if not item:
+		item = ITEM_TYPES[name].copy()
 	
-	for key in item['marked_for_reint']:
-		item[key] = item['marked_for_reint'][key][:]
-	
-	del item['marked_for_reint']
+	if 'marked_for_reint' in item:
+		for key in item['marked_for_reint']:
+			item[key] = item['marked_for_reint'][key][:]
+		
+		del item['marked_for_reint']
 
 	item['uid'] = SETTINGS['itemid']
 	item['pos'] = list(position)
@@ -179,7 +186,7 @@ def get_name(item):
 
 def move(item,direction,speed,friction=0.05,_velocity=1):
 	"""Sets new velocity for an item. Returns nothing."""
-	velocity = numbers.velocity(direction,speed)
+	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
 	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
@@ -224,7 +231,15 @@ def tick_all_items(MAP):
 		if item['velocity'] == [0,0,0]:
 			continue
 		
+		if 'BLOODY' in item['flags']:
+			if random.randint(0,50)<20:
+				effects.create_splatter('blood', item['pos'])
+		
 		print 'item moving',item['velocity']
+		_x = item['pos'][0]-CAMERA_POS[0]
+		_y = item['pos'][1]-CAMERA_POS[1]
+		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
+			gfx.refresh_window_position(_x, _y)
 		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
@@ -256,11 +271,13 @@ def tick_all_items(MAP):
 			if _break:
 				break
 			
-			if MAP[pos[0]][pos[1]][int(round(item['realpos'][2]))+1]:
+			_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+			if MAP[pos[0]][pos[1]][_z_max]:
 				item['velocity'][0] = 0
 				item['velocity'][1] = 0
 				item['velocity'][2] = 0
 				item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
+
 				#print 'LANDED',item['pos']	
 				_break = True
 				break
@@ -273,6 +290,11 @@ def tick_all_items(MAP):
 			item['pos'][0] = int(round(item['realpos'][0]))
 			item['pos'][1] = int(round(item['realpos'][1]))
 			item['pos'][2] = int(round(item['realpos'][2]))
+		
+		_x = item['pos'][0]-CAMERA_POS[0]
+		_y = item['pos'][1]-CAMERA_POS[1]
+		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
+			gfx.refresh_window_position(_x, _y)
 
 		if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
 			or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:

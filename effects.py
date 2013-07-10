@@ -4,12 +4,14 @@ import libtcodpy as tcod
 import graphics as gfx
 
 import render_los
-import logging
 import numbers
+import items
+import maps
+
+import logging
 import random
 import numpy
 import time
-import maps
 import sys
 
 def register_effect(effect, callback):
@@ -85,3 +87,19 @@ def tick_effects():
 			EFFECTS.remove(effect)
 	
 	print time.time()-_t
+
+def create_gib(life, icon, size, direction, speed, vert_speed):
+	_gib = {'name': 'gib',
+		'prefix': 'a',
+		'type': 'magazine',
+		'icon': icon,
+		'flags': ['BLOODY'],
+		'description': '%s\'s limb.' % ' '.join(life['name']),
+		'size': '%sx1' % size,
+	    'material': 'flesh',
+		'thickness': size}
+	
+	_i = items.create_item('gib', position=life['pos'][:], item=_gib)
+	items.move(_i, direction, speed, _velocity=vert_speed)
+	
+	logging.debug('Created gib.')

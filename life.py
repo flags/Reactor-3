@@ -2562,7 +2562,7 @@ def remove_limb(life, limb, no_children=False):
 	
 	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
 
-def sever_limb(life, limb):
+def sever_limb(life, limb, impact=0):
 	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
@@ -2571,6 +2571,8 @@ def sever_limb(life, limb):
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size'])
 	
 	set_animation(life, ['X', '!'], speed=4)
+	
+	effects.create_gib(life, '-', life['body'][limb]['size'], random.randint(0, 360), random.randint(1, 2), random.randint(1,2))
 	
 	remove_limb(life, limb)
 
