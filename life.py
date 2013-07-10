@@ -2562,7 +2562,7 @@ def remove_limb(life, limb, no_children=False):
 	
 	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
 
-def sever_limb(life, limb, impact=0):
+def sever_limb(life, limb, impact_velocity):
 	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
@@ -2572,18 +2572,18 @@ def sever_limb(life, limb, impact=0):
 	
 	set_animation(life, ['X', '!'], speed=4)
 	
-	effects.create_gib(life, '-', life['body'][limb]['size'], random.randint(0, 360), random.randint(1, 2), random.randint(1,2))
+	effects.create_gib(life, '-', life['body'][limb]['size'], impact_velocity)
 	
 	remove_limb(life, limb)
 
-def cut_limb(life,limb,amount=2):
+def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
 	
 	if _limb['cut'] > _limb['size']:
-		sever_limb(life, limb)
+		sever_limb(life, limb, impact_velocity)
 		return True
 	
 	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
@@ -2617,10 +2617,13 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
 	_limb = life['body'][limb]
 	
 	if cut:
-		cut_limb(life, limb, amount=cut)
-		#print limb
-		#print 'WHAT IS THIS VALUE?',cut,float(_limb['bleed_mod']),cut*float(_limb['bleed_mod'])
-		#_limb['bleeding'] += cut*float(_limb['bleed_mod'])
+		if lodged_item:
+			_impact_velocity = lodged_item['velocity']
+		else:
+			_impact_velocity = [0, 0, 0]
+		
+		cut_limb(life, limb, amount=cut, impact_velocity=_impact_velocity)
+		
 		if not limb in life['body']:
 			return False
 		

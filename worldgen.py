@@ -57,7 +57,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
-	generate_life(source_map, amount=life)
+	#generate_life(source_map, amount=life)
 	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
@@ -180,3 +180,6 @@ def create_player(source_map):
 
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER
+	
+	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
+	items.move(_i, 180, 3)

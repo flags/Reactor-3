@@ -88,7 +88,7 @@ def tick_effects():
 	
 	print time.time()-_t
 
-def create_gib(life, icon, size, direction, speed, vert_speed):
+def create_gib(life, icon, size, velocity):
 	_gib = {'name': 'gib',
 		'prefix': 'a',
 		'type': 'magazine',
@@ -96,10 +96,11 @@ def create_gib(life, icon, size, direction, speed, vert_speed):
 		'flags': ['BLOODY'],
 		'description': '%s\'s limb.' % ' '.join(life['name']),
 		'size': '%sx1' % size,
-	    'material': 'flesh',
+		'material': 'flesh',
 		'thickness': size}
 	
 	_i = items.create_item('gib', position=life['pos'][:], item=_gib)
-	items.move(_i, direction, speed, _velocity=vert_speed)
+	#items.move(_i, direction, speed, _velocity=vert_speed)
+	_i['velocity'] = velocity[:]
 	
 	logging.debug('Created gib.')
