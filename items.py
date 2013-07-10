@@ -132,10 +132,12 @@ def create_item(name, position=[0,0,2], item=None):
 	item['uid'] = SETTINGS['itemid']
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
-	item['velocity'] = [0,0,0]
+	item['velocity'] = [0.0, 0.0, 0.0]
 	item['friction'] = 0
 	item['gravity'] = SETTINGS['world gravity']
 	item['lock'] = None
+	item['owner'] = None
+	item['aim_at_limb'] = None
 	
 	if 'speed' in item:
 		item['max_speed'] = item['speed']
@@ -184,7 +186,7 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item,direction,speed,friction=0.05,_velocity=1):
+def move(item,direction,speed,friction=0.05,_velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
@@ -224,31 +226,54 @@ def draw_items():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
+def collision_with_solid(item, pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
+		#TODO: Bounce
+		item['velocity'] = [0, 0, 0]
+		item['pos'] = pos
+		
+		return True
+	
+	return False
+
 def tick_all_items(MAP):
 	_remove = []
 	
 	for item in ITEMS.values():
-		if item['velocity'] == [0,0,0]:
+		_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		if item['velocity'][:2] == [0.0, 0.0] and MAP[item['pos'][0]][item['pos'][1]][_z_max]:
 			continue
 		
 		if 'BLOODY' in item['flags']:
 			if random.randint(0,50)<20:
 				effects.create_splatter('blood', item['pos'])
 		
-		print 'item moving',item['velocity']
 		_x = item['pos'][0]-CAMERA_POS[0]
 		_y = item['pos'][1]-CAMERA_POS[1]
 		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
 			gfx.refresh_window_position(_x, _y)
 		
+		print item['pos']
+		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
 		_break = False
+		_line = drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
 		
-		for pos in drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1])))):
-			if not item['type'] == 'bullet':
-				item['realpos'][2] += item['velocity'][2]
-				item['velocity'][2] -= item['gravity']
+		if not _line:
+			item['velocity'][2] -= item['gravity']
+			item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
+			item['pos'][2] = int(round(item['realpos'][2]))
+			print 'no line',item['pos'][2]
+			
+			_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+			if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
+				_break = True
+				break
+		
+		for pos in _line:
+			item['realpos'][2] += item['velocity'][2]
+			item['velocity'][2] -= item['velocity'][2]*item['gravity']
 			
 			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 				logging.warning('Item OOM: %s', item['uid'])
@@ -271,14 +296,19 @@ def tick_all_items(MAP):
 			if _break:
 				break
 			
-			_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-			if MAP[pos[0]][pos[1]][_z_max]:
-				item['velocity'][0] = 0
-				item['velocity'][1] = 0
-				item['velocity'][2] = 0
-				item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-
-				#print 'LANDED',item['pos']	
+			#_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+			#if MAP[pos[0]][pos[1]][_z_max]:
+			#	item['velocity'][0] = 0
+			#	item['velocity'][1] = 0
+			#	item['velocity'][2] = 0
+			#	item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
+			#
+			#	print 'LANDED',item['pos']	
+			#	_break = True
+			#	break
+		
+			_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+			if collision_with_solid(item, [pos[0], pos[1], _z_min]):
 				_break = True
 				break
 		
@@ -305,9 +335,29 @@ def tick_all_items(MAP):
 			maps.refresh_chunk(life.get_current_chunk_id(item))
 			continue
 
-		#TODO: Min/max
-		item['velocity'][0] -= (item['velocity'][0]*item['gravity'])
-		item['velocity'][1] -= (item['velocity'][1]*item['gravity'])
+		if item['velocity'][0]>0:
+			_min_x_vel = 0
+			_max_x_vel = 255
+		else:
+			_min_x_vel = -255
+			_max_x_vel = 0
+		
+		if item['velocity'][1]>0:
+			_min_y_vel = 0
+			_max_y_vel = 255
+		else:
+			_min_y_vel = -255
+			_max_y_vel = 0
+		
+		if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
+			item['velocity'][0] = 0
+		
+		if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
+			item['velocity'][1] = 0
+		
+		#TODO: This isn't gravity...
+		item['velocity'][0] -= numbers.clip(item['velocity'][0]*item['gravity'], _min_x_vel, _max_x_vel)
+		item['velocity'][1] -= numbers.clip(item['velocity'][1]*item['gravity'], _min_y_vel, _max_y_vel)
 	
 	for _id in _remove:
 		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])
