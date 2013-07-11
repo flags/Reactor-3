@@ -86,3 +86,7 @@ Issues
 * Freezes sometimes occur when group leaders begin searching for open camp sites
 * Pathfinding is very unstable.
 	It's the oldest part of the game and is being revised in the next milestone to make use of reference maps and chunks.
+
+Credits
+-------
+Reactor 3 is made possible by the `libtcod` library. All other work was done by flags, a member of the ASCII Worlds Collective.
