@@ -11,20 +11,6 @@ In addition, I am enamored with the idea of a game that generates its own storie
 
 I would wager that a large amount of the people reading this only have a passing interest with the game in its current state. That's entirely fine and I don't expect any of you to play the game at all - after all, a lot of the people I've sent this out to were involved in a game development group I was a part of, and I suppose you lot would just like to see (or hear) about the various inner-workings of this little project that have changed since you've last seen it.
 
-Installing
-==========
-Reactor 3 requires Python 2.7, Cython, Numpy, and [libtcod](http://doryen.eptalys.net/libtcod/download/). The following instructions are aimed at Linux users:
-
-    git clone https://github.com/flags/Reactor-3.git
-    cd Reactor-3
-    python compile_cython_modules.py build_ext --inplace
-    
-Next, download the libtcod library and move the `.so` files from the archive to the Reactor 3 directory.
-
-Run `python reactor-3.py` to play.
-
-See the section `flags` below for more info.
-
 Features
 ========
 
@@ -43,7 +29,22 @@ ALife
 General
 -------
 * Fully working "realistic" inventory system. You must wear a backpack/other clothing item in order to carry more than two items (Pants have pockets, for example.)
+* all Life entities can (and will!) be damaged in realistic ways. Worn and carried items can be torn, dented, pierced, and ripped during combat. Limbs can also be injured or removed entirely.
 * Weapons must be loaded as they would normally (Obtain ammo -> fill magazine/clip -> Load mag/clip into weapon)
+
+Installing
+==========
+Reactor 3 requires Python 2.7, Cython, Numpy, and [libtcod](http://doryen.eptalys.net/libtcod/download/). The following instructions are aimed at Linux users:
+
+    git clone https://github.com/flags/Reactor-3.git
+    cd Reactor-3
+    python compile_cython_modules.py build_ext --inplace
+    
+Next, download the libtcod library and move the `.so` files from the archive to the Reactor 3 directory.
+
+Run `python reactor-3.py` to play.
+
+See the section `flags` below for more info.
 
 Tools
 =====
