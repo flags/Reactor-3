@@ -801,7 +801,7 @@ def inventory_fire_action(entry):
 	    'target': entry['target']['pos'][:],
 	    'limb': entry['limb']},
 		5000,
-		delay=3)
+		delay=0)
 	
 	SETTINGS['controlling']['targeting'] = None
 	SETTINGS['following'] = SETTINGS['controlling']

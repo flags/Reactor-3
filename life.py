@@ -92,9 +92,17 @@ def get_max_speed(life):
 	
 	for limb in life['body']:
 		if limb in _legs:
-			_speed += life['body'][limb]['cut']
+			_limb = life['body'][limb]
+			_speed += _limb['cut']
 	
-	return _speed
+			for item in [get_inventory_item(life, i) for i in get_items_attached_to_limb(life, limb)]:
+				if not 'mods' in item:
+					continue
+				
+				if 'speed' in item['mods']:
+					_speed -= item['mods']['speed']
+	
+	return numbers.clip(_speed, 0, 255)
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -1574,7 +1582,7 @@ def get_all_inventory_items(life,matches=None):
 		
 	return _items
 
-def get_all_unequipped_items(life, check_hands=True, matches=[]):
+def get_all_unequipped_items(life, check_hands=True, matches=[], invert=False):
 	_unequipped_items = []
 	
 	for entry in life['inventory']:
@@ -1584,10 +1592,13 @@ def get_all_unequipped_items(life, check_hands=True, matches=[]):
 			if not perform_match(item, matches):
 				continue					
 		
-		if not item_is_equipped(life,entry,check_hands=check_hands):				
+		if item_is_equipped(life,entry,check_hands=check_hands) == invert:
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
+
+def get_all_equipped_items(life, check_hands=True, matches=[]):
+	return get_all_unequipped_items(life, check_hands=check_hands, matches=matches, invert=True)
 
 def get_all_known_camps(life, matches={}):
 	_camps = []
