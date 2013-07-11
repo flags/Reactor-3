@@ -3,6 +3,7 @@ from math import *
 import pathfinding
 import render_los
 import logging
+import random
 import numpy
 import tiles
 import time
@@ -11,6 +12,9 @@ import maps
 def clip(number,start,end):
 	"""Returns `number`, but makes sure it's in the range of [start..end]"""
 	return max(start, min(number, end))
+
+def roll(dice, sides):
+	return sum([random.choice(range(sides))+1 for d in range(dice)])
 
 def distance(pos1, pos2, old=False):
 	if old:
