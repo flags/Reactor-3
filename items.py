@@ -236,6 +236,18 @@ def collision_with_solid(item, pos):
 	
 	return False
 
+def create_effects(item, pos, real_z_pos, z_min):
+	for _z in range(0, 2):
+		_z_level = numbers.clip(z_min-_z, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		
+		if WORLD_INFO['map'][pos[0]][pos[1]][_z_level]:
+			if int(round(real_z_pos))-_z_level<=2:
+				if 'BLOODY' in item['flags']:
+					if random.randint(0,50)<=30:
+						effects.create_splatter('blood', [pos[0]+random.randint(-2, 2), pos[1]+random.randint(-2, 2), _z_level])
+			
+				break
+
 def tick_all_items(MAP):
 	_remove = []
 	
@@ -244,18 +256,10 @@ def tick_all_items(MAP):
 		if item['velocity'][:2] == [0.0, 0.0] and MAP[item['pos'][0]][item['pos'][1]][_z_max]:
 			continue
 		
-		if 'BLOODY' in item['flags']:
-			if random.randint(0,50)<20:
-				effects.create_splatter('blood', item['pos'])
-			
-			print 'SPLAT'
-		
 		_x = item['pos'][0]-CAMERA_POS[0]
 		_y = item['pos'][1]-CAMERA_POS[1]
 		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
 			gfx.refresh_window_position(_x, _y)
-		
-		print item['pos']
 		
 		item['realpos'][0] += item['velocity'][0]
 		item['realpos'][1] += item['velocity'][1]
@@ -272,6 +276,8 @@ def tick_all_items(MAP):
 			if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
 				_break = True
 				break
+			
+			create_effects(item, pos, item['realpos'][2], _z_min)
 		
 		for pos in _line:
 			item['realpos'][2] += item['velocity'][2]
@@ -313,6 +319,8 @@ def tick_all_items(MAP):
 			if collision_with_solid(item, [pos[0], pos[1], _z_min]):
 				_break = True
 				break
+			
+			create_effects(item, pos, item['realpos'][2], _z_min)
 		
 		if _break:
 			item['pos'][0] = int(pos[0])

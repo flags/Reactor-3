@@ -100,7 +100,6 @@ def create_gib(life, icon, size, velocity):
 		'thickness': size}
 	
 	_i = items.create_item('gib', position=life['pos'][:], item=_gib)
-	#items.move(_i, direction, speed, _velocity=vert_speed)
-	_i['velocity'] = [numbers.clip(velocity[0], -5, 5), numbers.clip(velocity[1], -5, 5), velocity[2]]
+	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]
 	
 	logging.debug('Created gib.')
