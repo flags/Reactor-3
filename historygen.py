@@ -10,6 +10,7 @@ _HISTORY = {'life': {},
 
 def create_background(life):
 	HISTORY = []
+	
 	#This will decide who the person is and what their deal is...
 	#i.e., we already roll their stats, but this is building up some
 	#credibility behind all that (via implanting memories.)
@@ -75,14 +76,14 @@ def create_background(life):
 	print 'Reading:', READING
 	print 'Engineering:', ENGINEERING
 	print 'Firearms:', FIREARMS
-	print 'Melee:', MELEE,FOUGHT_BACK+STREET_SMART
+	print 'Melee:', MELEE
 	print 'Trading:', TRADING
 	
 	if not HAS_BIRTH_PARENTS:
-		HISTORY.append('lost his parents in late childhood')
+		HISTORY.append('Lost his parents in late childhood')
 	
 	if WAS_ADOPTED:
-		HISTORY.append('and was later adopted')
+		HISTORY[len(HISTORY)-1] += ', but was later adopted'
 	
 	if PARENTING_QUALITY>=3:
 		HISTORY.append('Was raised well')
@@ -90,10 +91,16 @@ def create_background(life):
 		HISTORY.append('Was raised poorly')
 	
 	if BULLIED:
-		HISTORY.append('Was bullied')
+		if 'well' in HISTORY[len(HISTORY)-1]:
+			HISTORY[len(HISTORY)-1] += ', but was bullied'
+		elif 'poorly' in HISTORY[len(HISTORY)-1]:
+			HISTORY[len(HISTORY)-1] += ', and was bullied'
+		else:
+			HISTORY.append('He was bullied')
 		
 		if FOUGHT_BACK:
-			HISTORY[len(HISTORY)-1] += ', but he fought back'
+			if ',' in HISTORY[len(HISTORY)-1]:
+				HISTORY[len(HISTORY)-1] += ' (he fought back)'
 	
 	if GRADUATED:
 		HISTORY.append('Graduated')
@@ -123,9 +130,19 @@ def create_background(life):
 	if MELEE>=5:
 		HISTORY.append('Can fight very well')
 	elif MELEE<=3:
-		HISTORY.append('Can\'t hold his own in a fist fight')
+		
+		if 'gun' in HISTORY[len(HISTORY)-1]:
+			HISTORY[len(HISTORY)-1] += ', but can\'t hold his own in a fist fight'
+		else:
+			HISTORY[len(HISTORY)-1] += ' and can\'t fight'
 	
-	print '. '.join(HISTORY)+'.'
+	return {'mathematics': MATHEMATICS,
+		'reading': READING,
+		'engineering': ENGINEERING,
+		'firearms': FIREARMS,
+		'melee': MELEE,
+		'trading': TRADING,
+		'description': '. '.join(HISTORY)+'.'}
 
 if __name__ == '__main__':
-	create_background({})
+	print create_background({})

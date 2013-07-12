@@ -5,6 +5,7 @@ import life as lfe
 
 import numbers
 import bullets
+import alife
 import items
 
 import random
@@ -45,6 +46,10 @@ def get_accuracy(life, weapon):
 		_accuracy *= 1.2
 	elif life['stance'] == 'crawling':
 		_accuracy *= 1
+		
+	_accuracy *= alife.stats.get_accuracy(life)
+	
+	print 'Accuracy', _accuracy
 	
 	return _accuracy
 

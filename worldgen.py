@@ -57,7 +57,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
-	#generate_life(source_map, amount=life)
+	generate_life(source_map, amount=life)
 	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
@@ -144,7 +144,8 @@ def generate_life(source_map, amount=1):
 			_spawn = (30, 70)
 		
 		alife = life.create_life('human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
-		historygen.create_background(life)
+		alife['stats'].update(historygen.create_background(life))
+		
 		#if random.randint(0,1):
 		#	alife['hunger'] = 1000
 		#	alife['thirst'] = 1000
@@ -170,6 +171,7 @@ def create_player(source_map):
 		name=['Tester','Toaster'],
 		map=source_map,
 		position=[50,80,2])
+	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
 	
 	for item in BASE_ITEMS:

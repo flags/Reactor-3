@@ -247,6 +247,8 @@ def tick_all_items(MAP):
 		if 'BLOODY' in item['flags']:
 			if random.randint(0,50)<20:
 				effects.create_splatter('blood', item['pos'])
+			
+			print 'SPLAT'
 		
 		_x = item['pos'][0]-CAMERA_POS[0]
 		_y = item['pos'][1]-CAMERA_POS[1]

@@ -129,6 +129,10 @@ def desires_camp(life):
 	print 'Dead code'
 	return False
 
+def get_accuracy(life):
+	#print 'Accuracy:',numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
+	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
+
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
 

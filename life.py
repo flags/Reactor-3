@@ -2624,16 +2624,11 @@ def add_pain_to_limb(life,limb,amount=1):
 	_limb['pain'] += amount
 	print 'Pain', _limb['pain']
 
-def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None):
+def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	if cut:
-		if lodged_item:
-			_impact_velocity = lodged_item['velocity']
-		else:
-			_impact_velocity = [0, 0, 0]
-		
-		cut_limb(life, limb, amount=cut, impact_velocity=_impact_velocity)
+		cut_limb(life, limb, amount=cut, impact_velocity=impact_velocity)
 		
 		if not limb in life['body']:
 			return False
@@ -2732,9 +2727,19 @@ def damage_from_item(life,item,damage):
 	_poss_limbs = _rand_limb
 	_shot_by_alife = LIFE[item['owner']]
 	
+	if not _rand_limb:
+		memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+		create_and_update_self_snapshot(life)
+		
+		if 'player' in _shot_by_alife:
+			gfx.message('You miss wildly!', style='action')
+		elif 'player' in life:
+			gfx.message('%s shoots at you, but misses.' % language.get_introduction(life), style='player_combat_bad')
+		
+		return False
+	
 	memory(_shot_by_alife, 'shot', target=life['id'])
 	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
-	#memory(life, 'hostile', target=item['owner'])
 	create_and_update_self_snapshot(LIFE[item['owner']])
 	
 	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
@@ -2749,15 +2754,17 @@ def damage_from_item(life,item,damage):
 
 	_hit_limb = random.choice(_poss_limbs)
 	_dam_message = dam.bullet_hit(life, item, _hit_limb)
-	print _dam_message
+	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:
-		gfx.message(_dam_message)
+		say(life, _dam_message, action=True)
 	
 	create_and_update_self_snapshot(life)
+	
+	return True
 
 def natural_healing(life):
 	#TODO: Fix this.

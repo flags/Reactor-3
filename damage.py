@@ -78,7 +78,7 @@ def bullet_hit(life, bullet, limb):
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:
 					#_msg.append('penetrates the %s' % _item['name'])
-					graphics.message('%s\'s %s is destroyed!' % (language.get_name(life), _item['name']))
+					graphics.message('%s\'s %s is destroyed!' % (language.get_introduction(life, posession=True), _item['name']))
 				elif _tear<=-3:
 					_msg.append('rips <own> %s' % _item['name'])
 				elif _tear<=-2:
@@ -118,7 +118,7 @@ def bullet_hit(life, bullet, limb):
 				_bruise = _cut
 		
 			if _cut:
-				lfe.add_wound(life, limb, cut=_cut)
+				lfe.add_wound(life, limb, cut=_cut, impact_velocity=bullet['velocity'])
 			
 			#TODO: How thick is skin?
 			_cut -= 1
@@ -136,13 +136,16 @@ def bullet_hit(life, bullet, limb):
 		
 		if random.randint(0, 9)>=9-(_cut*2):
 			_msg.append('. It is lodged!')
-			lfe.add_wound(life, limb, lodged_item=bullet)
+			lfe.add_wound(life, limb, lodged_item=bullet, impact_velocity=bullet['velocity'])
 		else:
-			lfe.add_wound(life, limb, cut=_cut/2)
+			lfe.add_wound(life, limb, cut=_cut/2, impact_velocity=bullet['velocity'])
 	
 	_ret_string = own_language(life, _msg)
 	
-	return _ret_string+'.'
+	if _ret_string.endswith('!'):
+		return _ret_string
+	else:
+		return _ret_string+'.'
 
 def bite(life, target_id, limb):
 	target = LIFE[target_id]
