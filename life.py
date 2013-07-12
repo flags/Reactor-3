@@ -91,7 +91,8 @@ def get_max_speed(life):
 	_legs = get_legs(life)
 	
 	for limb in life['body']:
-		if limb in _legs:
+		if limb in _legs[:]:
+			_legs.remove(limb)
 			_limb = life['body'][limb]
 			_speed += _limb['cut']
 	
@@ -101,6 +102,8 @@ def get_max_speed(life):
 				
 				if 'speed' in item['mods']:
 					_speed -= item['mods']['speed']
+	
+	_speed += len(_legs)*2
 	
 	return numbers.clip(_speed, 0, 255)
 
