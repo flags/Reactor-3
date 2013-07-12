@@ -128,10 +128,10 @@ while SETTINGS['running'] in [-1, 1]:
 if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'], life=3, simulate_ticks=5, save=False, thread=True)
 
-LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.1})
-LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.1})
-LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 1, 'shake': 0.1})
-LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5, 'shake': 0.1})
+effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
+effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
+effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
+effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
 
 CURRENT_UPS = UPS
 

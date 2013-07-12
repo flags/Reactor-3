@@ -106,6 +106,7 @@ def render_lights(source_map):
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
 
+	_remove_lights = []
 	for light in LIGHTS:
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
@@ -161,6 +162,15 @@ def render_lights(source_map):
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+		
+		if light['fade']:
+			light['brightness'] -= light['fade']
+		
+		if light['brightness'] <= 0:
+			_remove_lights.append(light)
+	
+	for light in _remove_lights:
+		LIGHTS.remove(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]

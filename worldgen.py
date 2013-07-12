@@ -205,4 +205,4 @@ def create_player(source_map):
 		for y in range(-10, 11):
 			if random.randint(0, 1):
 				continue
-			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y), intensity=8)
+			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)

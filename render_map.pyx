@@ -8,7 +8,7 @@ import effects
 import numpy
 import time
 
-VERSION = 5
+VERSION = 6
 
 def render_map(map):
 	cdef int _CAMERA_POS[2]

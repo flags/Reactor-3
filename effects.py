@@ -68,6 +68,8 @@ def calculate_fire(fire):
 	
 	if fire['intensity'] <= 0:
 		unregister_effect(fire)
+	elif random.randint(0, 100) >= 99:
+		create_light(fire['pos'], (255, 0, 255), 2*fire['intensity'], 0.1, fade=0.05)
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
@@ -103,6 +105,9 @@ def draw_effect(pos):
 		_y = pos[1]-CAMERA_POS[1]
 		
 		effect['draw_callback']((_x, _y), effect)
+
+def create_light(pos, color, brightness, shake, fade=0):
+	LIGHTS.append({'pos': pos, 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade})
 
 def has_splatter(position, what=None):
 	#TODO: Make this into a dict so we can convert the position to a string and search that
