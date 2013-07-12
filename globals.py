@@ -22,16 +22,21 @@ ENCOUNTER_ANIMATION_TIME = 30
 #Map stuff
 CHUNK_MAP = {}
 WORLD_INFO = {'map': [],
-    'time': 0,
-    'time_of_day': 4000,
-    'time_scale': 1,
-    'length_of_day': 6000,
-    'day': 0,
+	'time': 0,
+	'time_of_day': 4000,
+	'time_scale': 1,
+	'length_of_day': 6000,
+	'day': 0,
 	'ticks': 0,
 	'tps': 0,
 	'tps_time': 0,
 	'pause_ticks': 0,
-	'in_combat': False}
+	'in_combat': False,
+	'world gravity': 0.3,
+	'lifeid': 1,
+	'itemid': 1,
+	'groupid': 1,
+	'effectid': 1}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
 CAMPS = {}
@@ -157,16 +162,13 @@ SETTINGS = {'running': True,
      'draw z-levels below': False,
      'progress bar max value': 25,
      'action queue size': 4,
-     'world gravity': 0.3,
      'los': 40,
-     'lifeid': 1,
-     'itemid': 1,
-     'groupid': 1,
      'heatmap': None,
      'controlling': None,
      'following': None,
      'state history size': 5,
-     'chunk size': 5}
+     'chunk size': 5,
+     'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
@@ -175,7 +177,8 @@ LIFE = {}
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
-EFFECTS = []
+EFFECTS = {}
+EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []

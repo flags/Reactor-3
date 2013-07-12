@@ -129,12 +129,12 @@ def create_item(name, position=[0,0,2], item=None):
 		
 		del item['marked_for_reint']
 
-	item['uid'] = SETTINGS['itemid']
+	item['uid'] = WORLD_INFO['itemid']
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0.0, 0.0, 0.0]
 	item['friction'] = 0
-	item['gravity'] = SETTINGS['world gravity']
+	item['gravity'] = WORLD_INFO['world gravity']
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
@@ -146,7 +146,7 @@ def create_item(name, position=[0,0,2], item=None):
 	
 	ITEMS[item['uid']] = item
 	
-	SETTINGS['itemid'] += 1
+	WORLD_INFO['itemid'] += 1
 	return item
 
 def delete_item(item):

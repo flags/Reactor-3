@@ -18,16 +18,16 @@ def create_group(life, add_creator=True):
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
-	GROUPS[SETTINGS['groupid']] = _group
+	GROUPS[WORLD_INFO['groupid']] = _group
 	
-	lfe.memory(life, 'created group', group=SETTINGS['groupid'])
-	logging.debug('%s created group: %s' % (' '.join(life['name']), SETTINGS['groupid']))
+	lfe.memory(life, 'created group', group=WORLD_INFO['groupid'])
+	logging.debug('%s created group: %s' % (' '.join(life['name']), WORLD_INFO['groupid']))
 	
 	if add_creator:
-		add_member(SETTINGS['groupid'], life['id'])
-		set_leader(SETTINGS['groupid'], life['id'])
+		add_member(WORLD_INFO['groupid'], life['id'])
+		set_leader(WORLD_INFO['groupid'], life['id'])
 	
-	SETTINGS['groupid'] += 1
+	WORLD_INFO['groupid'] += 1
 
 def get_group(group_id):
 	if not group_id in GROUPS:
@@ -49,7 +49,7 @@ def add_member(group_id, life_id):
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
-	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), SETTINGS['groupid']-1))
+	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']-1))
 
 def remove_member(group_id, life_id):
 	_group = get_group(group_id)

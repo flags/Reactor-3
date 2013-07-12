@@ -255,33 +255,6 @@ def draw_all_tiles():
 		tcod.console_set_char_background(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][1])
 		tcod.console_set_char(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['icon'])
 
-def draw_effects():
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-	
-	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for x in range(CAMERA_POS[0],_X_MAX):
-		_RENDER_X = x-CAMERA_POS[0]
-		for y in range(CAMERA_POS[1],_Y_MAX):
-			_RENDER_Y = y-CAMERA_POS[1]
-			#_drawn = False
-	
-			for effect in EFFECTS:
-				effect['size'] = (50,90)
-				
-				if (x>=effect['top_left'][0] and x<=effect['top_left'][0]+effect['size'][0]) and (y>=effect['top_left'][1] and y<=effect['top_left'][1]+effect['size'][1]):
-					if effect['height_map'][_RENDER_Y,_RENDER_X]>0:
-						darken_tile(_RENDER_X,_RENDER_Y,effect['height_map'][_RENDER_Y,_RENDER_X])
-						#print effect['height_map'][_RENDER_Y,_RENDER_X]
-
 def draw_dijkstra_heatmap():
 	if not SETTINGS['heatmap']:
 		return False

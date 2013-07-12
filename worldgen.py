@@ -6,6 +6,7 @@ import historygen
 import threading
 import profiles
 import logging
+import effects
 import logic
 import items
 import tiles
@@ -42,7 +43,8 @@ class Runner(threading.Thread):
 		self.running = False
 
 
-def draw_world_stats():	
+def draw_world_stats():
+	tcod.console_print(0, 0, 0, 'World Generation')
 	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
 	tcod.console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
 	tcod.console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
@@ -51,14 +53,27 @@ def draw_world_stats():
 	tcod.console_flush()
 
 def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=True):
-	tcod.console_print(0, 0, 0, 'World Generation')
-	tcod.console_flush()
-	
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
+	tcod.console_print(0, 0, 0, 'Updating chunk map...')
+	tcod.console_flush()
+	maps.update_chunk_map(source_map)
+	
+	tcod.console_print(0, 0, 0, 'Smoothing chunk map...')
+	tcod.console_flush()
+	maps.smooth_chunk_map()
+	
+	tcod.console_print(0, 0, 0, 'Generating reference map...')
+	tcod.console_flush()
+	maps.generate_reference_maps()
+	
+	tcod.console_print(0, 0, 0, 'Creating effects map...')
+	tcod.console_flush()
+	effects.create_effect_map()
+	
 	generate_life(source_map, amount=life)
-	generate_wildlife(source_map)
+	#generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
@@ -185,3 +200,9 @@ def create_player(source_map):
 	
 	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)
+	
+	for x in range(-10, 11):
+		for y in range(-10, 11):
+			if random.randint(0, 1):
+				continue
+			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y), intensity=8)

@@ -70,9 +70,6 @@ except IOError:
 
 WORLD_INFO['map'] = MAP
 tiles.create_all_tiles()
-maps.update_chunk_map(MAP)
-maps.smooth_chunk_map()
-maps.generate_reference_maps()
 language.load_strings()
 gfx.init_libtcod()
 
@@ -203,12 +200,12 @@ def main():
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
+	effects.calculate_all_effects()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
 	dialog.draw_dialog()
-	gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()
 	gfx.draw_console()

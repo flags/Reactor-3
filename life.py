@@ -227,7 +227,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	elif name:
 		_life['name'] = name
 	
-	_life['id'] = SETTINGS['lifeid']
+	_life['id'] = WORLD_INFO['lifeid']
 	
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
@@ -321,7 +321,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['engage_distance'] = 15+random.randint(-5, 5)
 	
 	initiate_limbs(_life)
-	SETTINGS['lifeid'] += 1
+	WORLD_INFO['lifeid'] += 1
 	LIFE[_life['id']] = _life
 	
 	return _life
@@ -883,7 +883,7 @@ def perform_collisions(life):
 			if life.has_key('player'):
 				gfx.message('You begin to fall...')
 		
-		life['gravity'] = SETTINGS['world gravity']
+		life['gravity'] = WORLD_INFO['world gravity']
 			
 	elif life['gravity']:
 		life['gravity'] = 0
@@ -894,7 +894,7 @@ def perform_collisions(life):
 			gfx.message('You land.')
 	
 	if life['gravity']:
-		life['realpos'][2] -= SETTINGS['world gravity']
+		life['realpos'][2] -= WORLD_INFO['world gravity']
 		life['pos'][2] = int(life['realpos'][2])
 	
 	return False
