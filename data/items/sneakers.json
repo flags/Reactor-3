@@ -5,7 +5,7 @@
 "description": "A pair of running shoes.",
 "mods": {"speed": 0.5},
 "attaches_to": "lfoot|rfoot",
-"flags": "CANWEAR|CANBURN|CANSOAK",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
 "size": "1x1",
 "thickness": 1,
 "material": "cloth"}

@@ -4,7 +4,7 @@
 "icon": "T",
 "description": "A plain, white t-shirt.",
 "attaches_to": "lshoulder|rshoulder|chest|stomach",
-"flags": "CANWEAR|CANSTACK|CANDISMANTLE[CREATE_AND_OWN_ITEM(white cloth, self.pos):DELETE()]|CANBURN|CANSOAK",
+"flags": "CAN_WEAR|CANSTACK|CANDISMANTLE[CREATE_AND_OWN_ITEM(white cloth, self.pos):DELETE()]|CAN_BURN|CAN_SOAK",
 "size": "1x1",
 "thickness": 1,
 "material": "cloth"}

@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 import graphics as gfx
+import life as lfe
 
 import render_los
 import numbers
@@ -14,17 +15,6 @@ import numpy
 import time
 import sys
 
-def create_effect_map():
-	for x in range(0, MAP_SIZE[0]):
-		_y = []
-		
-		for y in range(0, MAP_SIZE[1]):
-			_y.append([])
-		
-		EFFECT_MAP.append(_y)
-	
-	logging.debug('Effect map created.')
-
 def register_effect(effect):
 	effect['id'] = WORLD_INFO['effectid']
 	EFFECTS[effect['id']] = effect
@@ -33,6 +23,8 @@ def register_effect(effect):
 	WORLD_INFO['effectid'] += 1
 
 def unregister_effect(effect):
+	effect['unregister_callback'](effect)
+	
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
 	del EFFECTS[effect['id']]
 
@@ -44,6 +36,7 @@ def draw_fire(pos, fire):
 
 def calculate_fire(fire):
 	_neighbor_intensity = 0
+	_neighbor_lit = False
 	
 	for x in range(-1, 2):
 		_x = fire['pos'][0]+x
@@ -62,24 +55,40 @@ def calculate_fire(fire):
 			
 			for effect in [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']:
 				_neighbor_intensity += effect['intensity']
+				
+				if 'light' in effect:
+					_neighbor_lit = True
 	
-	fire['intensity'] -= ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
+	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
+	fire['intensity'] -= _intensity
+	
+	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
+		lfe.burn(life, fire['intensity'])
+	
 	update_effect(fire)
 	
 	if fire['intensity'] <= 0:
 		unregister_effect(fire)
-	elif random.randint(0, 100) >= 99:
-		create_light(fire['pos'], (255, 0, 255), 2*fire['intensity'], 0.1, fade=0.05)
+	
+	if 'light' in fire:
+		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
+	elif not _neighbor_lit:
+		fire['light'] = create_light(fire['pos'], (255, 0, 255), .3*(fire['intensity']/8.0), 0.1)
+
+def delete_fire(fire):
+	if 'light' in fire:
+		LIGHTS.remove(fire['light'])
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
 	
 	_effect = {'type': 'fire',
-			'color': tcod.Color(255, 69, 0),
-			'pos': list(pos),
-			'intensity': intensity,
-			'callback': calculate_fire,
-			'draw_callback': draw_fire}
+	    'color': tcod.Color(255, 69, 0),
+	    'pos': list(pos),
+	    'intensity': intensity,
+	    'callback': calculate_fire,
+	    'draw_callback': draw_fire,
+	    'unregister_callback': delete_fire}
 	
 	register_effect(_effect)
 
@@ -91,7 +100,7 @@ def update_effect(effect):
 	_x = effect['pos'][0]-CAMERA_POS[0]
 	_y = effect['pos'][1]-CAMERA_POS[1]
 	
-	if 0>_x>=MAP_WINDOW_SIZE[0] or 0>_y>=MAP_WINDOW_SIZE[1]:
+	if _x<0 or _x>=MAP_WINDOW_SIZE[0]-1 or _y<0 or _y>=MAP_WINDOW_SIZE[1]-1:
 		return False
 	
 	gfx.refresh_window_position(_x, _y)
@@ -106,8 +115,18 @@ def draw_effect(pos):
 		
 		effect['draw_callback']((_x, _y), effect)
 
+def light_exists_at(pos):
+	for light in LIGHTS:
+		if light['pos'] == list(pos):
+			return light
+	
+	return False
+
 def create_light(pos, color, brightness, shake, fade=0):
-	LIGHTS.append({'pos': pos, 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade})
+	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
+	LIGHTS.append(_light)
+	
+	return _light
 
 def has_splatter(position, what=None):
 	#TODO: Make this into a dict so we can convert the position to a string and search that

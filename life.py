@@ -234,6 +234,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['prev_pos'] = list(position)
 	_life['realpos'] = list(position)
 	
+	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
+	
 	#TODO: We only need this for pathing, so maybe we should move this to
 	#the `walk` function?
 	_life['animation'] = {}
@@ -857,9 +859,11 @@ def walk_path(life):
 			if _pos[2]>0:
 				#logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
 				life['pos'][2] += _pos[2]-1
-			
+		
+		LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
+		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
 		if life['path']:
 			return False
@@ -1539,7 +1543,7 @@ def item_is_worn(life, item):
 def can_wear_item(life, item):
 	"""Attaches item to limbs. Returns False on failure."""
 	#TODO: Function name makes no sense.
-	if not 'CANWEAR' in item['flags']:
+	if not 'CAN_WEAR' in item['flags']:
 		return False
 	
 	if item_is_worn(life, item):
@@ -1850,7 +1854,7 @@ def equip_item(life, item_id):
 	"""Helper function. Equips item."""	
 	item = get_inventory_item(life, item_id)
 	
-	if 'CANWEAR' in item['flags']:
+	if 'CAN_WEAR' in item['flags']:
 		if not _equip_clothing(life, item_id):
 			return False
 		
@@ -2609,7 +2613,6 @@ def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
-	#_limb['bleeding'] += 3
 
 def bruise_limb(life,limb):
 	_limb = life['body'][limb]
@@ -2621,7 +2624,29 @@ def rupture_artery(life, limb):
 	
 	_limb['artery_ruptured'] = True
 
-def add_pain_to_limb(life,limb,amount=1):
+def burn(life, intensity):
+	#TODO: Fire resistance
+	#TODO: Items burning
+	_limbs = []
+	
+	if life['stance'] == 'standing' and intensity>=3:
+		_limbs.extend(get_legs(life))
+	elif life['stance'] == 'crouching' and intensity>=3:
+		_limbs.extend(life['body'].keys())
+	elif life['stance'] == 'crawling':
+		_limbs.extend(life['body'].keys())
+	else:
+		return False
+	
+	_burn_amount = intensity*.015
+	_burn_limb = random.choice(_limbs)
+	
+	if 'player' in life:
+		gfx.message('The fire burns!')
+	
+	add_pain_to_limb(life, _burn_limb, amount=_burn_amount)
+
+def add_pain_to_limb(life, limb, amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount

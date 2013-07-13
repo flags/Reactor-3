@@ -23,7 +23,7 @@ ENCOUNTER_ANIMATION_TIME = 30
 CHUNK_MAP = {}
 WORLD_INFO = {'map': [],
 	'time': 0,
-	'time_of_day': 4000,
+	'time_of_day': 6000,
 	'time_scale': 1,
 	'length_of_day': 6000,
 	'day': 0,
@@ -152,28 +152,28 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 
 #Non-constants
 SETTINGS = {'running': True,
-     'paused': False,
-     'draw lights': True,
-     'diffuse light': False,
-     'debug host': '',
-     'debug port': 3335,
-     'draw console': False,
-     'draw z-levels above': True,
-     'draw z-levels below': False,
-     'progress bar max value': 25,
-     'action queue size': 4,
-     'los': 40,
-     'heatmap': None,
-     'controlling': None,
-     'following': None,
-     'state history size': 5,
-     'chunk size': 5,
-     'fire burn rate': 0.04}
+	'paused': False,
+	'draw lights': True,
+	'diffuse light': False,
+	'debug host': '',
+	'debug port': 3335,
+	'draw console': False,
+	'draw z-levels above': True,
+	'draw z-levels below': False,
+	'progress bar max value': 25,
+	'action queue size': 4,
+	'los': 40,
+	'controlling': None,
+	'following': None,
+	'state history size': 5,
+	'chunk size': 5,
+	'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
 LIFE_TYPES = {}
 LIFE = {}
+LIFE_MAP = []
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []

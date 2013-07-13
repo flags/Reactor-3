@@ -132,6 +132,7 @@ effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
 effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
 effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
 effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
 
 CURRENT_UPS = UPS
 

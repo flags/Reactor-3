@@ -100,7 +100,7 @@ def render_lights(source_map):
 
 	reset_lights()
 	
-	#Not enitrly my code. Made some changes to someone's code from libtcod's Python forum.
+	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
 	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
@@ -152,7 +152,7 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0, 255) / sqr_distance
+		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		
@@ -416,6 +416,22 @@ def get_open_position_in_chunk(source_map, chunk_id):
 				return (x, y)
 	
 	return False
+
+def create_position_maps():
+	_map = []
+	
+	for x in range(0, MAP_SIZE[0]):
+		_y = []
+		
+		for y in range(0, MAP_SIZE[1]):
+			_y.append([])
+		
+		_map.append(_y)
+	
+	EFFECT_MAP.extend(copy.deepcopy(_map))
+	LIFE_MAP.extend(copy.deepcopy(_map))
+	
+	logging.debug('Position maps created.')
 
 def update_chunk_map(source_map):
 	_stime = time.time()

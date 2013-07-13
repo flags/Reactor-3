@@ -68,9 +68,9 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	tcod.console_flush()
 	maps.generate_reference_maps()
 	
-	tcod.console_print(0, 0, 0, 'Creating effects map...')
+	tcod.console_print(0, 0, 0, 'Creating position maps...')
 	tcod.console_flush()
-	effects.create_effect_map()
+	maps.create_position_maps()
 	
 	generate_life(source_map, amount=life)
 	#generate_wildlife(source_map)
@@ -203,6 +203,6 @@ def create_player(source_map):
 	
 	for x in range(-10, 11):
 		for y in range(-10, 11):
-			if random.randint(0, 1):
+			if random.randint(0, 10):
 				continue
 			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
