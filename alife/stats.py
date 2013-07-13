@@ -192,7 +192,7 @@ def wants_group_member(life, life_id):
 		return False
 	
 	#TODO: Second chance?
-	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
+	if brain.get_alife_flag(life, life_id, 'invited_to_group'):
 		return False
 	
 	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
@@ -268,7 +268,7 @@ def is_family(life, life_id):
 		return False
 	
 	for relation in ['son', 'daughter', 'mother', 'father']:
-		if brain.get_alife_flag(life, _know['life'], relation):
+		if brain.get_alife_flag(life, life_id, relation):
 			return True
 	
 	return False

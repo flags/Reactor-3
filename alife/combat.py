@@ -171,7 +171,7 @@ def melee_combat(life, target):
 	_target = brain.knows_alife_by_id(life, target)
 	
 	if numbers.distance(life['pos'], _target['last_seen_at']) > 1:
-		movement.travel_to_target(life, target, _target['last_seen_at'])
+		movement.travel_to_position(life, _target['last_seen_at'])
 	else:
 		lfe.clear_actions(life, matches=[{'action': 'move'}])
 		
@@ -191,7 +191,7 @@ def ranged_combat(life, target):
 		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
-		if not movement.travel_to_target(life, target, target['last_seen_at'], stop_on_sight=True):
+		if not movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=True):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
 			for send_to in judgement.get_trusted(life):

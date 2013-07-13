@@ -24,10 +24,7 @@ def look(life):
 		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
-				
-				#TODO: havent_seen_in_a_while?
-				#if life['know'][ai['id']]['last_seen_time'] >= 300:
-				#	life['know'][ai['id']]['escaped'] = True
+			
 			continue
 		
 		life['seen'].append(ai['id'])

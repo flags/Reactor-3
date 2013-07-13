@@ -408,8 +408,9 @@ def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
 	for x1 in range(SETTINGS['chunk size']):
+		x = x1+_chunk['pos'][0]
+		
 		for y1 in range(SETTINGS['chunk size']):
-			x = x1+_chunk['pos'][0]
 			y = y1+_chunk['pos'][1]
 			
 			if source_map[x][y][2] and not source_map[x][y][3]:
@@ -432,6 +433,20 @@ def create_position_maps():
 	LIFE_MAP.extend(copy.deepcopy(_map))
 	
 	logging.debug('Position maps created.')
+
+def create_search_map(pos, size):
+	_map = numpy.ones((size, size))
+	
+	for x in [pos[0]+x for x in range(-size, size+1) if not pos[0]+x<0 and not pos[0]+x>=MAP_SIZE[0]]:
+		_x = pos[0]-x
+		
+		for y in [pos[1]+y for y in range(-size, size+1) if not pos[1]+y<0 and not pos[1]+y>=MAP_SIZE[1]]:
+			_y = pos[1]-y
+			
+			if not WORLD_INFO['map'][x][y][pos[2]]:
+				_map[_y, _x] = 0
+	
+	return _map
 
 def update_chunk_map(source_map):
 	_stime = time.time()

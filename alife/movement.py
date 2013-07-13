@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS
+from globals import WORLD_INFO, SETTINGS, MAP_SIZE
 
 import life as lfe
 
@@ -84,7 +84,7 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life, target, pos, stop_on_sight=False):
+def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
 		return False
 	
@@ -95,17 +95,27 @@ def travel_to_target(life, target, pos, stop_on_sight=False):
 	#	lfe.clear_actions(life)
 	#	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 
-def search_for_target(life, target, source_map):
-	if sight.can_see_position(life, target['last_seen_at']):
-		print 'We can see where we last saw him.'
+def search_for_target(life, target_id):
+	#TODO: Variable size instead of hardcoded
+	_size = 50
+	if brain.alife_has_flag(life, target_id, 'search_map'):
+		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
+	else:
+		_search_map = maps.create_search_map(life['pos'], _size)
+		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 	
-	if _cover:
-		print 'FIND TARGET',_cover['pos']
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
-		return False
+	for x in [life['pos'][0]+x for x in range(-_size, _size) if not life['pos'][0]+x<0 and not life['pos'][0]+x>=MAP_SIZE[0]-1]:
+		_x = x-life['pos'][0]
+		
+		for y in [life['pos'][1]+y for y in range(-_size, _size) if not life['pos'][1]+y<0 and not life['pos'][1]+y>=MAP_SIZE[1]-1]:
+			_y = y-life['pos'][1]
+			
+			if _search_map[_y, _x]:
+				if not travel_to_position(life, (x, y, life['pos'][2]), stop_on_sight=True):
+					_search_map[_y, _x] = 0
+		
 	
-	return True
+	print 'searching'
 
 def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions

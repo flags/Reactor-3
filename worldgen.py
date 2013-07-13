@@ -146,8 +146,8 @@ def generate_wildlife(source_map, amount='heavy'):
 			alife.brain.meet_alife(_p, _c)
 			alife.brain.meet_alife(_c, _p)
 			
-			alife.brain.flag_alife(_p, _c, 'son')
-			alife.brain.flag_alife(_c, _p, 'father')
+			alife.brain.flag_alife(_p, _c['id'], 'son')
+			alife.brain.flag_alife(_c, _p['id'], 'father')
 			
 			#alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
 
