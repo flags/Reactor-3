@@ -47,6 +47,8 @@ except IOError:
 	MAP = maps.create_map()
 	maps.save_map(MAP)
 
+maps.create_position_maps()
+
 gfx.init_libtcod(terraform=True)
 create_all_tiles()
 
