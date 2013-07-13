@@ -90,32 +90,51 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+	
 	return True
-	#if not tuple(life['pos']) == tuple(pos):
-	#	lfe.clear_actions(life)
-	#	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
-	_size = 50
+	_know = brain.knows_alife_by_id(life, target_id)
+	
+	_size = 30
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
 	else:
-		_search_map = maps.create_search_map(life['pos'], _size)
+		_search_map = maps.create_search_map(_know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 	
-	for x in [life['pos'][0]+x for x in range(-_size, _size) if not life['pos'][0]+x<0 and not life['pos'][0]+x>=MAP_SIZE[0]-1]:
-		_x = x-life['pos'][0]
-		
-		for y in [life['pos'][1]+y for y in range(-_size, _size) if not life['pos'][1]+y<0 and not life['pos'][1]+y>=MAP_SIZE[1]-1]:
-			_y = y-life['pos'][1]
-			
-			if _search_map[_y, _x]:
-				if not travel_to_position(life, (x, y, life['pos'][2]), stop_on_sight=True):
-					_search_map[_y, _x] = 0
-		
+	_search = []
+	_x_top_left = numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
+	_y_top_left = numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
 	
-	print 'searching'
+	for x in range(0, _size):
+		_x = _x_top_left+x
+		
+		if _x >= MAP_SIZE[0]-1:
+			continue
+		
+		for y in range(0, _size):
+			_y = _y_top_left+y
+			
+			if _y >= MAP_SIZE[1]-1:
+				continue
+			
+			if not _search_map[y, x]:
+				continue
+			
+			if sight.can_see_position(life, (_x, _y)):
+				_search_map[y, x] = 0
+			
+			_search.append((_x, _y, x, y))
+
+	if _search:
+		x, y, _x, _y = _search[0]
+		
+		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+			_search_map[_y, _x] = 0
+	else:
+		print 'No more search options'
 
 def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions

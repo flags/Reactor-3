@@ -437,14 +437,23 @@ def create_position_maps():
 def create_search_map(pos, size):
 	_map = numpy.ones((size, size))
 	
-	for x in [pos[0]+x for x in range(-size, size+1) if not pos[0]+x<0 and not pos[0]+x>=MAP_SIZE[0]]:
-		_x = pos[0]-x
+	_x_top_left = numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
+	_y_top_left = numbers.clip(pos[1]-(size/2), 0, MAP_SIZE[1])
+	
+	for x in range(0, size):
+		_x = _x_top_left+x
 		
-		for y in [pos[1]+y for y in range(-size, size+1) if not pos[1]+y<0 and not pos[1]+y>=MAP_SIZE[1]]:
-			_y = pos[1]-y
+		if _x >= MAP_SIZE[0]-1:
+			continue
+		
+		for y in range(0, size):
+			_y = _y_top_left+y
 			
-			if not WORLD_INFO['map'][x][y][pos[2]]:
-				_map[_y, _x] = 0
+			if _y >= MAP_SIZE[1]-1:
+				continue
+			
+			if not WORLD_INFO['map'][_x][_y][pos[2]] or WORLD_INFO['map'][_x][_y][pos[2]+1]:
+				_map[y, x] = 0
 	
 	return _map
 

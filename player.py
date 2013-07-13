@@ -833,7 +833,7 @@ def create_dialog(entry):
 	SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target, _dialog))
 	menus.delete_active_menu()
 
-def exit_target(entr):
+def exit_target(entry):
 	life.focus_on(SETTINGS['controlling'])
 	SETTINGS['controlling']['targeting'] = None
 	SELECTED_TILES[0] = []
