@@ -146,7 +146,7 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
 		if not escaped_only and (target['escaped'] or target['last_seen_time']>=10):
 			continue
-		elif escaped_only:
+		elif escaped_only and target['escaped'] == 1:
 			_targets.append(target['life']['id'])
 			continue
 		

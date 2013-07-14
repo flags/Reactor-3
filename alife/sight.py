@@ -38,6 +38,9 @@ def look(life):
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			life['know'][ai['id']]['escaped'] = False
 			
+			if brain.alife_has_flag(life, ai['id'], 'search_map'):
+				brain.unflag_alife(life, ai['id'], 'search_map')
+			
 			_chunk_id = lfe.get_current_chunk_id(ai)
 			judgement.judge_chunk(life, _chunk_id)
 			
@@ -87,6 +90,9 @@ def _can_see_position(pos1, pos2):
 
 def can_see_position(life, pos, distance=True, block_check=False):
 	"""Returns `true` if the life can see a certain position."""
+	if tuple(life['pos'][:2]) == tuple(pos):
+		return True
+	
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:

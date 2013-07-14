@@ -137,7 +137,7 @@ def search_for_target(life, target_id):
 		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
 			_search_map[_y, _x] = 0
 	else:
-		print 'No more search options'
+		_know['escaped'] = 2
 
 def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions

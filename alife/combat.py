@@ -200,9 +200,7 @@ def ranged_combat(life, target):
 					target=target['life']['id'],
 					matches=[{'id': send_to}])
 			
-			target['escaped'] = True
-		elif target['escaped']:
-			print 'ESCAPED?'
+			target['escaped'] = 1
 		
 		return False
 	
