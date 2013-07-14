@@ -212,7 +212,7 @@ def handle_input():
 			return False
 		
 		if SETTINGS['controlling']['targeting']:
-			life.throw_item(SETTINGS['controlling'],SETTINGS['controlling']['throwing']['id'],SETTINGS['controlling']['targeting'],1)
+			life.throw_item(SETTINGS['controlling'], SETTINGS['controlling']['throwing']['id'], SETTINGS['controlling']['targeting'], 2)
 			SETTINGS['controlling']['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
@@ -475,6 +475,9 @@ def handle_input():
 		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
 		
 		logging.debug('** SURRENDERING **')
+	
+	if INPUT['w']:
+		create_wound_menu()		
 	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
@@ -1126,6 +1129,97 @@ def create_crafting_menu():
 		position=(1,1),
 		format_str='$k',
 		on_select=craft_menu_response)
+	
+	menus.activate_menu(_menu)
+
+def create_wound_menu():
+	if menus.get_menu_by_name('Wounds')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Wounds'))
+		return False
+	
+	_entries = []
+	
+	for limb in SETTINGS['controlling']['body'].values():
+		_title = False
+		
+		for wound in limb['wounds']:
+			if not _title:					
+				_entries.append(menus.create_item('title', wound['limb'], None))
+				_title = True
+				
+			if wound['cut']:
+				_entries.append(menus.create_item('single', 'Cut', '%s' % wound['cut'], limb=wound['limb']))
+	
+	if not _entries:
+		gfx.message('You don\'t need medical attention.')
+		return False
+	
+	_i = menus.create_menu(title='Wounds (%s)' % len(_entries),
+        menu=_entries,
+        padding=(1,1),
+        position=(1,1),
+        format_str='$k: $v',
+        on_select=wound_examine)
+	
+	menus.activate_menu(_i)		
+
+def heal_wound(entry):
+	limb = entry['limb']
+	injury = entry['injury']
+	item_id = entry['item_id']
+	
+	item = life.remove_item_from_inventory(SETTINGS['controlling'], item_id)
+	
+	_remove_wounds = []
+	for wound in SETTINGS['controlling']['body'][limb]['wounds']:
+		if not injury in wound:
+			continue
+		
+		wound[injury] -= item['thickness']
+		print wound
+		_remove = True
+		for key in wound:
+			if key == 'limb':
+				continue
+			
+			if wound[key]:
+				_remove = False
+				break
+		
+		if _remove:
+			_remove_wounds.append(wound)
+	
+	for wound in _remove_wounds:
+		SETTINGS['controlling']['body'][limb]['wounds'].remove(wound)
+		gfx.message('Your %s has healed.' % wound['limb'])
+	
+	items.delete_item(item)	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	
+	if SETTINGS['controlling']['body'][limb]['wounds']:
+		create_wound_menu()
+
+def wound_examine(entry):
+	injury = entry['key'].lower()
+	limb = entry['limb']
+	
+	_entries = []
+	
+	if injury == 'cut':
+		for item in life.get_all_inventory_items(SETTINGS['controlling'], matches=[{'type': 'fabric'}]):
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['id']))
+	
+	if not _entries:
+		gfx.message('You have nothing to treat the %s.' % injury)
+		return False
+	
+	_menu = menus.create_menu(title='Heal',
+		menu=_entries,
+		padding=(1,1),
+		position=(1,1),
+		format_str='$k: $v',
+		on_select=heal_wound)
 	
 	menus.activate_menu(_menu)
 	

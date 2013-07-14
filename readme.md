@@ -64,6 +64,8 @@ Controls
 * `r` - Reload / fill mag or clip
 * `f` - Enter targeting mode (shoot)
 * `v` - Enter targeting mode (talk)
+* `k` - Open crafting menu
+* `w` - Open medical menu
 * `C (Shift-c)` - Stand up
 * `c` - Crouch
 * `Z (Shift-z)` - Prone

@@ -2801,8 +2801,32 @@ def damage_from_item(life,item,damage):
 	return True
 
 def natural_healing(life):
-	#TODO: Fix this.
-	return 0
+	for limb_name in life['body']:
+		_limb = get_limb(life, limb_name)
+		_remove_wounds = []
+		
+		for wound in _limb['wounds']:
+			if not wound['cut'] and _limb['bleeding']>0:
+				_limb['bleeding'] -= 0.01
+				_limb['bleeding'] = numbers.clip(_limb['bleeding'], 0, 255)
+			
+			_remove = True
+			for key in wound:
+				if key == 'limb':
+					continue
+				
+				if wound[key]:
+					_remove = False
+					break
+			
+			if _remove:
+				_remove_wounds.append(wound)
+		
+		for wound in _remove_wounds:
+			_limb['wounds'].remove(wound)
+			
+			if 'player' in life:
+				gfx.message('Your %s has healed.' % limb_name)
 
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

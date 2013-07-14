@@ -198,6 +198,8 @@ def create_player(source_map):
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER
 	
+	life.add_wound(PLAYER, 'chest', cut=1)
+	
 	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)
 	
