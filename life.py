@@ -1226,6 +1226,7 @@ def perform_action(life):
 			
 			#TODO: Too hacky
 			del _ammo['parent']
+			_action['weapon'][_action['weapon']['feed']] = None
 			_ammo['pos'] = life['pos'][:]
 		
 		set_animation(life, [';', 'u'], speed=6)
@@ -1455,7 +1456,7 @@ def throw_item(life,id,target,speed):
 	
 	direction = numbers.direction_to(life['pos'],target)
 	
-	items.move(_item,direction,speed)
+	items.move(_item, direction, speed)
 
 def update_container_capacity(life,container):
 	"""Updates the current capacity of container. Returns nothing."""
