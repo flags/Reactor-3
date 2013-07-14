@@ -101,10 +101,10 @@ def search_for_target(life, target_id):
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
 	else:
-		_search_map = maps.create_search_map(_know['last_seen_at'], _size)
+		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 	
-	_search = []
+	_lowest = {'score': -1, 'pos': None}
 	_x_top_left = numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
 	_y_top_left = numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
 	
@@ -126,10 +126,13 @@ def search_for_target(life, target_id):
 			if sight.can_see_position(life, (_x, _y)):
 				_search_map[y, x] = 0
 			
-			_search.append((_x, _y, x, y))
+			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
+				_lowest['score'] = _search_map[y, x]
+				_lowest['pos'] = (_x, _y, x, y)
+			#_search.append((_x, _y, x, y))
 
-	if _search:
-		x, y, _x, _y = _search[0]
+	if _lowest['pos']:
+		x, y, _x, _y = _lowest['pos']
 		
 		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
 			_search_map[_y, _x] = 0

@@ -1,5 +1,6 @@
 import judgement
 import survival
+import numbers
 import combat
 import stats
 
@@ -26,6 +27,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'closest': None,
 	'kill': None,
 	'has_attacked_trusted': stats.has_attacked_trusted,
+	'distance_to_pos': stats.distance_from_pos_to_pos,
 	'always': always,
 	'never': never}
 

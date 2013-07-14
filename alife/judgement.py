@@ -144,7 +144,7 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	
 	_passed_combat_targets = []
 	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if not escaped_only and (target['escaped'] or target['last_seen_time']>=300):
+		if not escaped_only and (target['escaped'] or target['last_seen_time']>=10):
 			continue
 		elif escaped_only:
 			_targets.append(target['life']['id'])
@@ -272,6 +272,9 @@ def get_influence(life, target_id, gist):
 			return _impression['modifiers']['influence']
 	
 	return 0
+
+def judge_search_pos(life, pos):
+	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
 
 def judge_chunk(life, chunk_id, visited=False):
 	chunk = CHUNK_MAP[chunk_id]

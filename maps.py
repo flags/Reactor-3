@@ -434,7 +434,7 @@ def create_position_maps():
 	
 	logging.debug('Position maps created.')
 
-def create_search_map(pos, size):
+def create_search_map(life, pos, size):
 	_map = numpy.ones((size, size))
 	
 	_x_top_left = numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
@@ -454,6 +454,8 @@ def create_search_map(pos, size):
 			
 			if not WORLD_INFO['map'][_x][_y][pos[2]] or WORLD_INFO['map'][_x][_y][pos[2]+1]:
 				_map[y, x] = 0
+			else:
+				_map[y, x] = alife.judgement.judge_search_pos(life, (_x, _y))
 	
 	return _map
 

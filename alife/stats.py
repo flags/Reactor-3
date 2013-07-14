@@ -293,3 +293,6 @@ def has_attacked_trusted(life, life_id):
 			return True
 	
 	return False
+
+def distance_from_pos_to_pos(life, pos1, pos2):
+	return numbers.distance(pos1, pos2)

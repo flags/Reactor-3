@@ -186,6 +186,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 				brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 			
 			if break_on_true:
+				if _func:
+					return _func
+				
 				return True
 		elif break_on_false:
 			return False
@@ -1426,6 +1429,7 @@ def remove_item_from_limb(life,item,limb):
 	"""Removes item from limb. Returns True."""
 	life['body'][limb]['holding'].remove(item)
 	create_and_update_self_snapshot(life)
+	
 	#logging.debug('%s removed from %s' % (item,limb))
 	
 	return True
@@ -2547,7 +2551,8 @@ def remove_limb(life, limb, no_children=False):
 		return False
 	
 	for item in get_items_attached_to_limb(life, limb):
-		drop_item(life, item)
+		#remove_item_from_limb(life, item, limb)
+		remove_item_from_inventory(life, item)
 	
 	if can_knock_over(life, limb):
 		if 'player' in life:

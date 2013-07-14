@@ -201,7 +201,6 @@ def main():
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
-	effects.calculate_all_effects()
 	life.draw_life_info()
 	menus.align_menus()
 	menus.draw_menus()
