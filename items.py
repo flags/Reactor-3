@@ -234,6 +234,21 @@ def collision_with_solid(item, pos):
 		
 		return True
 	
+	if item['velocity'][2]>=0:
+		_z = 1
+	else:
+		_z = -1
+	
+	if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
+		item['velocity'][0] = -item['velocity'][0]*.8
+	elif not pos[0]+1 <= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
+		item['velocity'][0] = -item['velocity'][0]*.8
+	
+	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:
+		item['velocity'][1] = -item['velocity'][1]*.8
+	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
+		item['velocity'][1] = -item['velocity'][1]*.8
+	
 	return False
 
 def create_effects(item, pos, real_z_pos, z_min):
@@ -243,7 +258,7 @@ def create_effects(item, pos, real_z_pos, z_min):
 		if WORLD_INFO['map'][pos[0]][pos[1]][_z_level]:
 			if int(round(real_z_pos))-_z_level<=2:
 				if 'BLOODY' in item['flags']:
-					if random.randint(0,50)<=30:
+					if random.randint(0,50)<=35:
 						effects.create_splatter('blood', [pos[0]+random.randint(-2, 2), pos[1]+random.randint(-2, 2), _z_level])
 			
 				break
@@ -270,14 +285,13 @@ def tick_all_items(MAP):
 			item['velocity'][2] -= item['gravity']
 			item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 			item['pos'][2] = int(round(item['realpos'][2]))
-			print 'no line',item['pos'][2]
 			
 			_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 			if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
 				_break = True
 				break
 			
-			create_effects(item, pos, item['realpos'][2], _z_min)
+			create_effects(item, item['pos'], item['realpos'][2], _z_min)
 		
 		for pos in _line:
 			item['realpos'][2] += item['velocity'][2]
