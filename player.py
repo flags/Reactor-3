@@ -1176,6 +1176,7 @@ def heal_wound(entry):
 			continue
 		
 		wound[injury] -= item['thickness']
+		SETTINGS['controlling']['body'][limb][injury] -= item['thickness']
 		print wound
 		_remove = True
 		for key in wound:

@@ -32,6 +32,7 @@ def look(life):
 		#TODO: Don't pass entire life, just id
 		if ai['id'] in life['know']:
 			if life['know'][ai['id']]['last_seen_time']:
+				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
 				judgement.judge(life, ai['id'])
 			
 			life['know'][ai['id']]['last_seen_time'] = 0

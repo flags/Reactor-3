@@ -73,7 +73,7 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	maps.create_position_maps()
 	
 	generate_life(source_map, amount=life)
-	#generate_wildlife(source_map)
+	generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
@@ -134,7 +134,7 @@ def generate_wildlife(source_map, amount='heavy'):
 		_p = life.create_life('dog',
 			name=['Wild', 'Dog%s' % i],
 			map=source_map,
-			position=[55+(i*5),81,2])
+			position=[55+(i*10),81,2])
 		
 		if random.randint(0, 3)>=2:
 			_c = life.create_life('dog',
@@ -148,8 +148,6 @@ def generate_wildlife(source_map, amount='heavy'):
 			
 			alife.brain.flag_alife(_p, _c['id'], 'son')
 			alife.brain.flag_alife(_c, _p['id'], 'father')
-			
-			#alife.brain.add_impression(_c, _p['id'], 'follow', {'influence': 60})
 
 def generate_life(source_map, amount=1):
 	for i in range(amount):
@@ -198,13 +196,11 @@ def create_player(source_map):
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER
 	
-	life.add_wound(PLAYER, 'chest', cut=1)
-	
 	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)
 	
-	for x in range(-10, 11):
-		for y in range(-10, 11):
-			if random.randint(0, 10):
-				continue
-			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
+	#for x in range(-10, 11):
+	#	for y in range(-10, 11):
+	#		if random.randint(0, 10):
+	#			continue
+	#		effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)

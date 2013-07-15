@@ -2471,8 +2471,12 @@ def calculate_blood(life):
 	if life['blood']<=0:
 		return 0
 	
-	for limb in [life['body'][limb] for limb in life['body']]:
-		_blood += limb['bleeding']
+	for limb in life['body'].values():
+		if limb['bleeding']>0:
+			#print limb_is_cut
+			limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
+			limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
+			_blood += limb['bleeding']
 	
 	life['blood'] -= _blood*LIFE_BLEED_RATE
 	
@@ -2805,11 +2809,7 @@ def natural_healing(life):
 		_limb = get_limb(life, limb_name)
 		_remove_wounds = []
 		
-		for wound in _limb['wounds']:
-			if not wound['cut'] and _limb['bleeding']>0:
-				_limb['bleeding'] -= 0.01
-				_limb['bleeding'] = numbers.clip(_limb['bleeding'], 0, 255)
-			
+		for wound in _limb['wounds']:			
 			_remove = True
 			for key in wound:
 				if key == 'limb':
@@ -2821,6 +2821,10 @@ def natural_healing(life):
 			
 			if _remove:
 				_remove_wounds.append(wound)
+		
+		#if _limb['bleeding']>0:
+		#	_limb['bleeding'] -= .5*(_limb['bleed_mod']*float(len(_limb['wounds'])))
+		#	_limb['bleeding'] = numbers.clip(_limb['bleeding'], 0, 255)
 		
 		for wound in _remove_wounds:
 			_limb['wounds'].remove(wound)
