@@ -1368,10 +1368,6 @@ def tick(life, source_map):
 	
 	_crit_injury = can_die_via_critical_injury(life)
 	if _crit_injury:
-		if life['body'][_crit_injury]['wounds']:
-			kill(life, life['body'][_crit_injury]['wounds'].pop())
-			return True
-		
 		kill(life, 'acute pain in the %s.' % life['body'][_crit_injury])
 		
 		return True

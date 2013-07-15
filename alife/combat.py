@@ -172,7 +172,7 @@ def melee_combat(life, target):
 	
 	if numbers.distance(life['pos'], _target['last_seen_at']) > 1:
 		movement.travel_to_position(life, _target['last_seen_at'])
-	else:
+	elif sight.can_see_position(life, _target['life']['pos']):
 		lfe.clear_actions(life, matches=[{'action': 'move'}])
 		
 		lfe.add_action(life,{'action': 'bite',
@@ -180,6 +180,8 @@ def melee_combat(life, target):
 			'limb': random.choice(_target['life']['body'].keys())},
 			5000,
 			delay=0)
+	else:
+		_target['escaped'] = 1
 
 def ranged_combat(life, target):
 	target = brain.knows_alife_by_id(life, target)
