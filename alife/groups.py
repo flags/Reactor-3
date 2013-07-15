@@ -40,6 +40,7 @@ def add_member(group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
 	if LIFE[life_id]['group']:
+		lfe.memory(LIFE[life_id], 'left group for group', left_group=LIFE[life_id]['group'], group=group_id)
 		remove_member(LIFE[life_id]['group'], life_id)
 	
 	_group = get_group(group_id)

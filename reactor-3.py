@@ -126,7 +126,7 @@ while SETTINGS['running'] in [-1, 1]:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=3, simulate_ticks=5, save=False, thread=True)
+	worldgen.generate_world(WORLD_INFO['map'], life=15, simulate_ticks=5, save=False, thread=True)
 
 effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
 effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)

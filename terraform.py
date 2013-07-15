@@ -207,9 +207,9 @@ def handle_input():
 		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
 		_matching = 'grass'
 		
-		SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
-			_matching,
-			(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
+		#SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
+		#	_matching,
+		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
 		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \

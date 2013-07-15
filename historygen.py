@@ -65,6 +65,15 @@ def create_background(life):
 	#1 - 10 (CLUELESS - WALL STREET)
 	TRADING = numbers.roll((MAX_STREET_SMARTS+MAX_BOOK_SMART) - (MATHEMATICS<5), 2)
 	
+	#BOOL (IS LEADER)
+	IS_LEADER = (numbers.roll((2<PARENTING_QUALITY<=4 or FOUGHT_BACK)+(GRADUATED or STREET_SMART), 4)>=4)
+	
+	#BOOL (SELF ABSORBED)
+	SELF_ABSORBED = (numbers.roll((PARENTING_QUALITY>=5)+(MAX_BOOK_SMART==1), 5)>=7)
+	
+	#BOOL (LONE WOLF)
+	LONE_WOLF = ((numbers.roll(SELF_ABSORBED+STREET_SMART, 5) * (not IS_LEADER))>=5)
+	
 	print 'Birth parents:', HAS_BIRTH_PARENTS
 	print 'Adopted:', WAS_ADOPTED
 	print 'Parenting quality:', PARENTING_QUALITY
@@ -78,6 +87,9 @@ def create_background(life):
 	print 'Firearms:', FIREARMS
 	print 'Melee:', MELEE
 	print 'Trading:', TRADING
+	print 'Leader:', IS_LEADER
+	print 'Self-absorbed:', SELF_ABSORBED
+	print 'Lone wolf:', LONE_WOLF
 	
 	if not HAS_BIRTH_PARENTS:
 		HISTORY.append('Lost his parents in late childhood')
@@ -130,11 +142,20 @@ def create_background(life):
 	if MELEE>=5:
 		HISTORY.append('Can fight very well')
 	elif MELEE<=3:
-		
 		if 'gun' in HISTORY[len(HISTORY)-1]:
 			HISTORY[len(HISTORY)-1] += ', but can\'t hold his own in a fist fight'
 		else:
 			HISTORY[len(HISTORY)-1] += ' and can\'t fight'
+	
+	if IS_LEADER:
+		if SELF_ABSORBED:
+			HISTORY.append('Would rather lead than follow')
+		else:
+			HISTORY.append('Is a fine leader')
+	elif LONE_WOLF:
+		HISTORY.append('Prefers to work alone')
+	
+	print '. '.join(HISTORY)+'.'	
 	
 	return {'mathematics': MATHEMATICS,
 		'reading': READING,
@@ -142,7 +163,10 @@ def create_background(life):
 		'firearms': FIREARMS,
 		'melee': MELEE,
 		'trading': TRADING,
+		'is_leader': IS_LEADER,
+		'self_absorbed': SELF_ABSORBED,
+		'lone_wolf': LONE_WOLF,
 		'description': '. '.join(HISTORY)+'.'}
 
 if __name__ == '__main__':
-	print create_background({})
+	create_background({})
