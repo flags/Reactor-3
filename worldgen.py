@@ -2,9 +2,8 @@ from globals import *
 
 import libtcodpy as tcod
 
-import threading
+import historygen
 import profiles
-import logging
 import effects
 import logic
 import items
@@ -13,6 +12,8 @@ import alife
 import life
 import maps
 
+import threading
+import logging
 import random
 import time
 import json

@@ -284,8 +284,6 @@ def judge_chunk(life, chunk_id, visited=False):
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
 	
-	_antisocial_mod = stats.get_antisocial_percentage(life)
-	_group_size_max = stats.get_max_group_size(life)
 	_trusted = 0
 	for _target in life['know'].values():
 		_is_here = False
@@ -299,16 +297,13 @@ def judge_chunk(life, chunk_id, visited=False):
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
 			else:
-				_trusted += _target['trust']*_antisocial_mod
+				_trusted += _target['trust']
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
 	
 	if stats.desires_interaction(life):
-		if _trusted>_group_size_max:
-			_score += _trusted*_antisocial_mod
-		else:
-			_score += _trusted
+		_score += _trusted
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
@@ -418,11 +413,7 @@ def judge_camp(life, camp):
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	_known_camps = [c['reference'] for c in life['known_camps'].values()]
 	
-	if _current_population > stats.get_max_group_size(life):
-		_score = _current_trust*stats.get_antisocial_percentage(life)
-		print life['name'],'2CROWDED'
-	else:
-		_score = _current_trust
+	_score = _current_trust
 	
 	_camp = camps.get_camp_via_reference(camp)
 	if _camp:

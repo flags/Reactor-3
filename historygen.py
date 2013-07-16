@@ -74,6 +74,19 @@ def create_background(life):
 	#BOOL (LONE WOLF)
 	LONE_WOLF = ((numbers.roll(SELF_ABSORBED+STREET_SMART, 5) * (not IS_LEADER))>=5)
 	
+	#1 - 10 (ADHD - PATIENCE OF A SAINT)
+	PATIENCE = numbers.roll((GRADUATED or STREET_SMART)+(READING>=5 or PARENTING_QUALITY>=3), 5)
+
+	#0 - 3 (PERSONALITY TOTALS)
+	INTROVERSION = LONE_WOLF+(not HAS_BIRTH_PARENTS and not WAS_ADOPTED)+(not STREET_SMART)+(BULLIED and not FOUGHT_BACK)
+	EXTROVERSION = 3-INTROVERSION
+	
+	#1 - 10 (PHYSICAL TRAIT TOTALS)
+	CHARISMA = numbers.roll(3, 3)
+	
+	#1 - 10 (SHY - SOCIAL BUTTERFLY)
+	SOCIABILITY = numbers.clip(numbers.roll(numbers.clip(((CHARISMA>=5))+(2*(EXTROVERSION>=1)+2*(GRADUATED==1)), 1, 3), 4), 1, 10)
+	
 	print 'Birth parents:', HAS_BIRTH_PARENTS
 	print 'Adopted:', WAS_ADOPTED
 	print 'Parenting quality:', PARENTING_QUALITY
@@ -90,6 +103,11 @@ def create_background(life):
 	print 'Leader:', IS_LEADER
 	print 'Self-absorbed:', SELF_ABSORBED
 	print 'Lone wolf:', LONE_WOLF
+	print 'Patience:', PATIENCE
+	print 'Introversion:', INTROVERSION
+	print 'Extroversion:', EXTROVERSION
+	print 'Charisma:', CHARISMA
+	print 'Sociability:', SOCIABILITY
 	
 	if not HAS_BIRTH_PARENTS:
 		HISTORY.append('Lost his parents in late childhood')
@@ -155,6 +173,11 @@ def create_background(life):
 	elif LONE_WOLF:
 		HISTORY.append('Prefers to work alone')
 	
+	if PATIENCE>=7:
+		HISTORY.append('Patient')
+	elif PATIENCE<=3:
+		HISTORY.append('Very impatient')
+	
 	print '. '.join(HISTORY)+'.'	
 	
 	return {'mathematics': MATHEMATICS,
@@ -166,6 +189,9 @@ def create_background(life):
 		'is_leader': IS_LEADER,
 		'self_absorbed': SELF_ABSORBED,
 		'lone_wolf': LONE_WOLF,
+		'patience': PATIENCE,
+		'charisma': CHARISMA,
+		'sociability': SOCIABILITY,
 		'description': '. '.join(HISTORY)+'.'}
 
 if __name__ == '__main__':
