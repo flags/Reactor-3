@@ -62,15 +62,16 @@ except ImportError, e:
 
 gfx.log(WINDOW_TITLE)
 
-try:
-	MAP = maps.load_map('map1.dat')
-except IOError:
-	MAP = maps.create_map()
-	maps.save_map(MAP)
-
-WORLD_INFO['map'] = MAP
 tiles.create_all_tiles()
 language.load_strings()
+
+try:
+	maps.load_map('map1.dat', like_new=True)
+except IOError:
+	#MAP = maps.create_map()
+	#maps.save_map(MAP)
+	pass
+
 gfx.init_libtcod()
 
 def move_camera(pos,scroll=False):
@@ -163,25 +164,25 @@ def main():
 			CURRENT_UPS-=1
 		else:
 			CURRENT_UPS = 3
-			logic.tick_all_objects(MAP)
+			logic.tick_all_objects(WORLD_INFO['map'])
 			
 	draw_targeting()
 	
 	if CYTHON_ENABLED:
-		render_map.render_map(MAP)
+		render_map.render_map(WORLD_INFO['map'])
 	else:
-		maps.render_map(MAP)
+		maps.render_map(WORLD_INFO['map'])
 	
 	move_camera(SETTINGS['following']['pos'])
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
-	maps.render_lights(MAP)
+	maps.render_lights(WORLD_INFO['map'])
 	
 	if SETTINGS['controlling']['encounters']:
-		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
 	else:
-		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
 	
 	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

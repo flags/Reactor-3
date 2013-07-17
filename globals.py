@@ -21,6 +21,7 @@ ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
+CAMPS = {}
 WORLD_INFO = {'map': [],
 	'time': 0,
 	'time_of_day': 6000,
@@ -37,11 +38,10 @@ WORLD_INFO = {'map': [],
 	'itemid': 1,
 	'groupid': 1,
 	'effectid': 1,
-	'zoneid': 1}
-REFERENCE_MAP = {'roads': [],
-	'buildings': []}
-SLICES = {}
-CAMPS = {}
+	'zoneid': 1,
+    'chunk_map': CHUNK_MAP,
+    'reference_map': {'roads': [], 'buildings': []},
+    'slices': {}}
 
 #Return values
 STATE_CHANGE = 2

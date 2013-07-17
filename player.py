@@ -1066,11 +1066,7 @@ def handle_options_menu(entry):
 		global MAP
 		del MAP
 		
-		MAP = maps.load_map('map1.dat')
-		
-		logging.warning('Updating references to map. This may take a while.')
-		for entry in [LIFE[i] for i in LIFE]:
-			entry['map'] = MAP
+		maps.load_map('map1.dat')
 		
 		logging.warning('Redrawing LOS.')
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)

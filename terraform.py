@@ -40,17 +40,15 @@ except ImportError, e:
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
 gfx.log(WINDOW_TITLE)
+create_all_tiles()
 
 try:
-	MAP = maps.load_map('map1.dat')
+	maps.load_map('map1.dat')
 except IOError:
-	MAP = maps.create_map()
-	maps.save_map(MAP)
-
-maps.create_position_maps()
+	maps.create_map()
+	maps.save_map()
 
 gfx.init_libtcod(terraform=True)
-create_all_tiles()
 
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
@@ -293,7 +291,7 @@ def menu_item_selected(entry):
 	value = entry['values'][entry['value']]
 	
 	if value == 'Save':
-		maps.save_map('map1.dat',MAP)
+		maps.save_map('map1.dat')
 	elif value == 'Exit':
 		SETTINGS['running'] = False
 
@@ -377,13 +375,13 @@ def main():
 		handle_input()
 
 		if CYTHON_ENABLED:
-			render_map.render_map(MAP)
+			render_map.render_map(WORLD_INFO['map'])
 		else:
-			maps.render_map(MAP)
+			maps.render_map(WORLD_INFO['map'])
 		
 		#TODO: Cython-ify
-		maps.render_x_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
-		maps.render_y_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
+		maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
+		maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 		
 		gfx.draw_all_tiles()
 		gfx.draw_bottom_ui_terraform()
@@ -419,4 +417,4 @@ else:
 #TODO: write this into the utility
 #MAP = maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
 
-maps.save_map('map1.dat',MAP)
+maps.save_map('map1.dat')

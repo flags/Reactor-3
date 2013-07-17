@@ -5,7 +5,6 @@ import libtcodpy as tcod
 import historygen
 import profiles
 import effects
-import zones
 import logic
 import items
 import tiles
@@ -57,25 +56,6 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
-	tcod.console_print(0, 0, 0, 'Updating chunk map...')
-	tcod.console_flush()
-	maps.update_chunk_map(source_map)
-	
-	tcod.console_print(0, 0, 0, 'Smoothing chunk map...')
-	tcod.console_flush()
-	maps.smooth_chunk_map()
-	
-	tcod.console_print(0, 0, 0, 'Generating reference map...')
-	tcod.console_flush()
-	maps.generate_reference_maps()
-	
-	tcod.console_print(0, 0, 0, 'Creating position maps...')
-	tcod.console_flush()
-	maps.create_position_maps()
-	
-	zones.create_zone_map()
-	zones.connect_ramps()
-	
 	generate_life(source_map, amount=life)
 	#generate_wildlife(source_map)
 	randomize_item_spawns()
@@ -113,7 +93,7 @@ def load_world(world):
 
 def save_world():
 	logging.debug('Offloading world...')
-	maps.save_map('map', WORLD_INFO['map'], base_dir=profiles.get_world(WORLD_INFO['id']))
+	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
 	logging.debug('Saving life...')
 	_life = life.save_all_life()
 	
@@ -123,7 +103,7 @@ def save_world():
 	logging.info('World saved.')
 
 def randomize_item_spawns():
-	for building in REFERENCE_MAP['buildings']:
+	for building in WORLD_INFO['reference_map']['buildings']:
 		_chunk_key = random.choice(building)
 		_chunk = maps.get_chunk(_chunk_key)
 		

@@ -14,6 +14,7 @@ import numbers
 import effects
 import random
 import damage
+import zones
 import alife
 import items
 import menus
@@ -819,6 +820,15 @@ def path_dest(life):
 	
 	return tuple(life['path'][len(life['path'])-1])
 
+def can_walk_to(life, pos):
+	if not len(pos) == 3:
+		pos = list(pos)
+		pos.append(life['pos'][2])
+	_z1 = zones.get_zone_at_coords(life['pos'])
+	_z2 = zones.get_zone_at_coords(pos)
+	
+	return zones.can_path_to_zone(_z1, _z2)
+
 def walk(life, to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']>0:
@@ -838,7 +848,10 @@ def walk(life, to):
 	
 	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
 		_stime = time.time()
-		life['path'] = pathfinding.create_path_old(life['pos'], to, source_map=WORLD_INFO['map'])
+		if can_walk_to(life, to):
+			life['path'] = pathfinding.create_path_old(life['pos'], to, source_map=WORLD_INFO['map'])
+		else:
+			logging.warning('Can\'t walk there.')
 		#print '\ttotal',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]

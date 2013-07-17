@@ -1,19 +1,20 @@
 from globals import *
 from tiles import *
 
+import graphics as gfx
 import life as lfe
 
+import maputils
+import numbers
+import drawing
+import items
+import zones
 import alife
 import tiles
 
-import graphics as gfx
-import maputils
 import logging
-import numbers
-import drawing
 import random
 import numpy
-import items
 import copy
 import time
 import json
@@ -49,7 +50,7 @@ def create_map():
 	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
 	return _map
 
-def save_map(map_name, map, base_dir=DATA_DIR):
+def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
@@ -61,33 +62,60 @@ def save_map(map_name, map, base_dir=DATA_DIR):
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
-			_map_file.write(json.dumps(map))
+			_map_file.write(json.dumps(WORLD_INFO))
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
 		except TypeError:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
-def load_map(map_name, base_dir=DATA_DIR):
+def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		try:
-			_map_string = json.loads(_map_file.readline())
-			_map_size = maputils.get_map_size(_map_string)
+			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+			
+			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]
 			MAP_SIZE[1] = _map_size[1]
 			MAP_SIZE[2] = _map_size[2]
 			
-			logging.info('Map \'%s\' loaded.' % map_name)
-			gfx.log('Map \'%s\' loaded.' % map_name)
+			if like_new:
+				update_chunk_map()
+				smooth_chunk_map()
+			else:
+				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
+			
+		except ValueError:
+			print _map_file.seek(0)
+			WORLD_INFO['map'] = json.loads(_map_file.readline())
+			
+			_map_size = maputils.get_map_size(WORLD_INFO['map'])
+			MAP_SIZE[0] = _map_size[0]
+			MAP_SIZE[1] = _map_size[1]
+			MAP_SIZE[2] = _map_size[2]
+			
+			logging.warning('Hello legacy users :)')
+			update_chunk_map()
+			smooth_chunk_map()
+			generate_reference_maps()
+			logging.warning('Zone maps regenerating (This should only happen once)')
+			zones.create_zone_map()
+			zones.connect_ramps()
+		
+		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		
+		create_position_maps()
+		logging.info('Map \'%s\' loaded.' % map_name)
+		gfx.log('Map \'%s\' loaded.' % map_name)
 
-			return _map_string
-		except TypeError:
-			logging.error('FATAL: Map not JSON serializable.')
-			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+		return True
+		#except TypeError:
+		#	logging.error('FATAL: Map not JSON serializable.')
+		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
 def reset_lights():
 	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -459,7 +487,7 @@ def create_search_map(life, pos, size):
 	
 	return _map
 
-def update_chunk_map(source_map):
+def update_chunk_map():
 	_stime = time.time()
 	_chunk_map = {}
 	
@@ -479,13 +507,13 @@ def update_chunk_map(source_map):
 			_tiles = {}
 			for y2 in range(y1, y1+SETTINGS['chunk size']):
 				for x2 in range(x1, x1+SETTINGS['chunk size']):
-					if not source_map[x2][y2][2]:
+					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
 					_tile_type = None
-					if not source_map[x2][y2][4]:
+					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_tile(source_map[x2][y2][2])
+						_tile = get_tile(WORLD_INFO['map'][x2][y2][2])
 					
 					if 'type' in _tile:
 						_type = _tile['type']
@@ -589,16 +617,16 @@ def generate_reference_maps():
 			_current_chunk = get_chunk(_current_chunk_key)
 			
 			if _current_chunk['type'] == 'road':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['roads'])
+				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['roads'])
 				if _ret:
-					REFERENCE_MAP['roads'].append(_ret)
+					WORLD_INFO['reference_map']['roads'].append(_ret)
 					_current_chunk['reference'] = _ret
 			elif _current_chunk['type'] == 'building':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['buildings'])
+				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['buildings'])
 				if _ret:
-					REFERENCE_MAP['buildings'].append(_ret)
+					WORLD_INFO['reference_map']['buildings'].append(_ret)
 					_current_chunk['reference'] = _ret
 	
 	logging.info('Reference map created in %.2f seconds.' % (time.time()-_stime))
-	logging.info('\tRoads:\t\t %s' % (len(REFERENCE_MAP['roads'])))
-	logging.info('\tBuildings:\t %s' % (len(REFERENCE_MAP['buildings'])))
+	logging.info('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
+	logging.info('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
