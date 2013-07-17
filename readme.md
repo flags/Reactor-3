@@ -3,6 +3,10 @@ Reactor 3
 =========
 Reactor 3 is an action roguelike in the same vein as IVAN - A Violent Road to Death and S.T.A.L.K.E.R.: Shadow of Chernobyl.
 
+What is Reactor 3?
+-------------------
+Reactor 3 (R3) is a roguelike. You might be familiar with a few games in the genre, like Dwarf Fortress, NetHack, or DCSS. This game is much different, however, and focuses much more on building an interactive world
+
 If You're Reading This...
 -------------------------
 This game has been in the works for roughly 9 months, but I chose to keep the repo private until I had at least something to show. The bad news is that there isn't much in the way of content yet (intentionally.) As I've said in the past, I wouldn't build content around a game that wasn't ready for it. I knew from the start that I would want to be able to make changes without fearing a breakage elsewhere, and having very little content has enabled that. What you're seeing here is an engine.

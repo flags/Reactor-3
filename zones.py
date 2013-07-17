@@ -90,18 +90,18 @@ def can_path_to_zone(z1, z2, checked=[], path=[]):
 	z2 = int(z2)
 	
 	if z1 == z2:
-		path.append(z1)
-		return path
+		#TODO: BROKEN: SHOULD RETURN ZONE
+		return True
 	
-	if not path:
-		path.append(z1)
+	#if not path:
+	#	path.append(z1)
 	
 	checked.append(z1)
 	#print checked
 	
 	if z2 in WORLD_INFO['slices'][z1]['neighbors']:
-		path.append(z1)
 		path.append(z2)
+		#path.append(z1)
 		return path
 	
 	_neighbors = [n for n in WORLD_INFO['slices'][z1]['neighbors'] if not n in checked]

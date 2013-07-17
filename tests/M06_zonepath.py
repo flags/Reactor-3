@@ -91,6 +91,10 @@ def process_slice(z):
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
+					if z < MAP_SIZE[2]-1:
+						if MAP[x][y][z+1]:
+							_slice[x][y] = -1
+					
 					if not _slice[x][y] == _z_id:
 						continue
 					
@@ -99,6 +103,9 @@ def process_slice(z):
 						_y = y+y_mod
 						
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
+							continue
+						
+						if _slice[_x][_y] == -1:
 							continue
 						
 						if MAP[_x][_y][z] and not _slice[_x][_y] == _z_id:
@@ -158,7 +165,7 @@ def connect_ramps():
 		print 'Connecting:','Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
 		for x,y,z in SLICES[_slice]['ramps']:
 			for _matched_slice in get_slices_at_z(z):
-				if _matched_slice['map'][x][y]:
+				if _matched_slice['map'][x][y]>0:
 					if not _matched_slice['map'][x][y] in SLICES[_slice]['neighbors']:
 						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]]= [(x, y)]
 					elif not (x, y) in SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]]:
