@@ -1,5 +1,7 @@
 from globals import *
 
+import libtcodpy as tcod
+
 import time
 
 def create_map_array():
@@ -54,6 +56,10 @@ def process_slice(z):
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
+					if z < MAP_SIZE[2]-1:
+						if WORLD_INFO['map'][x][y][z+1]:
+							_slice[x][y] = -1
+					
 					if not _slice[x][y] == _z_id:
 						continue
 					
@@ -64,14 +70,37 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
+						if _slice[_x][_y] == -1:
+							continue
+						
 						if WORLD_INFO['map'][_x][_y][z] and not _slice[_x][_y] == _z_id:
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
-						if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
-							_ramps.append((_x, _y, z+1))
+						if not _slice[_x][_y] and z:
+							_pos = (_x, _y, z-1)
+							
+							if _pos in _ramps:
+								continue
+							
+							_ramps.append(_pos)						
+						
+						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
+							continue
+						elif z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
+							_pos = (_x, _y, z+1)
+							
+							if _pos in _ramps:
+								continue
+							
+							_ramps.append(_pos)
 						elif not WORLD_INFO['map'][_x][_y][z] and z and WORLD_INFO['map'][_x][_y][z-1]:
-							_ramps.append((_x, _y, z-1))
+							_pos = (_x, _y, z-1)
+							
+							if _pos in _ramps:
+								continue
+							
+							_ramps.append(_pos)
 	
 		WORLD_INFO['slices'][_z_id] = {'z': z, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
@@ -119,21 +148,36 @@ def can_path_to_zone(z1, z2, checked=[], path=[]):
 	return False
 
 def create_zone_map():
+	WORLD_INFO['slices'] = {}
+	WORLD_INFO['zoneid'] = 1
+	tcod.console_set_default_foreground(0, tcod.white)
+	tcod.console_flush()
+	
 	for z in range(MAP_SIZE[2]):
-		_stime = time.time()
+		tcod.console_print(0, 0, 0, 'Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
+		tcod.console_flush()
 		process_slice(z)
-		print time.time()-_stime
+	
+	tcod.console_print(0, 0, 0, '              ')
 
 def connect_ramps():
+	_i = 1
+	
 	for _slice in WORLD_INFO['slices']:
-		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z']
+		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
+		tcod.console_print(0, 0, 0, 'Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
+		tcod.console_flush()
+		_i += 1
+		
 		for x,y,z in WORLD_INFO['slices'][_slice]['ramps']:
 			for _matched_slice in get_slices_at_z(z):
-				if _matched_slice['map'][x][y]:
+				if _matched_slice['map'][x][y]>0:
 					if not _matched_slice['map'][x][y] in WORLD_INFO['slices'][_slice]['neighbors']:
-						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]= [(x, y)]
+						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
-		
-		for neighbor in WORLD_INFO['slices'][_slice]['neighbors']:
-			print '\tNeighbor:', neighbor, '(%s ramps)' % len(WORLD_INFO['slices'][_slice]['neighbors'][neighbor])
+					
+					if not _slice in _matched_slice['neighbors']:
+						_matched_slice['neighbors'][_slice] = [(x, y)]
+					elif not (x, y) in _matched_slice['neighbors'][_slice]:
+						_matched_slice['neighbors'][_slice].append((x, y))

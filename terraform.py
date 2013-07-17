@@ -3,12 +3,14 @@ from libtcodpy import *
 from globals import *
 from inputs import *
 from tiles import *
+
 import graphics as gfx
 import cProfile
 import maputils
 import logging
 import prefabs
 import random
+import zones
 import menus
 import time
 import maps
@@ -291,7 +293,18 @@ def menu_item_selected(entry):
 	value = entry['values'][entry['value']]
 	
 	if value == 'Save':
+		console_set_default_foreground(0, white)
+		console_print(0, 0, 0, 'Saving...')
+		console_flush()
+		
 		maps.save_map('map1.dat')
+	elif value == 'Compile':
+		_stime = time.time()
+		
+		zones.create_zone_map()
+		zones.connect_ramps()
+		
+		logging.debug('Map compile took: %s' % (time.time()-_stime))
 	elif value == 'Exit':
 		SETTINGS['running'] = False
 
@@ -355,6 +368,7 @@ _menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
 _menu_items.append(menus.create_item('title','General',None,enabled=False))
 _menu_items.append(menus.create_item('list','S','Save'))
+_menu_items.append(menus.create_item('list','C','Compile'))
 _menu_items.append(menus.create_item('list','L','Load'))
 _menu_items.append(menus.create_item('list','E','Exit'))
 

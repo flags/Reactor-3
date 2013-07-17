@@ -3,7 +3,6 @@ import time
 MAP_SIZE = (20, 20, 4)
 WORLD_INFO = {'zoneid': 0}
 SLICES = {}
-
 MAP = []
 
 def create_map_array(flat=False):
@@ -48,6 +47,17 @@ def draw_slice(slice_map):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
 			print slice_map[x][y],
+		
+		print
+
+def draw_ramps(ramps):
+	_ramps = [r[:2] for r in ramps]
+	for x in range(MAP_SIZE[0]):
+		for y in range(MAP_SIZE[1]):
+			if (x, y) in _ramps:
+				print '^',
+			else:
+				print '.',
 		
 		print
 
@@ -111,13 +121,19 @@ def process_slice(z):
 						if MAP[_x][_y][z] and not _slice[_x][_y] == _z_id:
 							_slice[_x][_y] = _z_id
 							_changed = True
+						
+						if not _slice[_x][_y] and z:
+							_ramps.append((_x, _y, z-1))
 							
-						if z < MAP_SIZE[2]-1 and MAP[_x][_y][z+1]:
+						if z < MAP_SIZE[2]-2 and MAP[_x][_y][z+2]:
+							continue
+						elif z < MAP_SIZE[2]-1 and MAP[_x][_y][z+1]:
 							_ramps.append((_x, _y, z+1))
 						elif not MAP[_x][_y][z] and z and MAP[_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
 		SLICES[_z_id] = {'z': z, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		#draw_ramps(_ramps)
 
 def get_slices_at_z(z):
 	return [s for s in SLICES.values() if s['z'] == z]
@@ -162,15 +178,22 @@ def create_zone_map():
 
 def connect_ramps():
 	for _slice in SLICES:
-		print 'Connecting:','Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
+		#print 'Connecting:','Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
 		for x,y,z in SLICES[_slice]['ramps']:
 			for _matched_slice in get_slices_at_z(z):
 				if _matched_slice['map'][x][y]>0:
 					if not _matched_slice['map'][x][y] in SLICES[_slice]['neighbors']:
-						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]]= [(x, y)]
+						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
 					elif not (x, y) in SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]]:
 						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
-		
+				
+					if not _slice in _matched_slice['neighbors']:
+						_matched_slice['neighbors'][_slice] = [(x, y)]
+					elif not (x, y) in _matched_slice['neighbors'][_slice]:
+						_matched_slice['neighbors'][_slice].append((x, y))
+						
+	for _slice in SLICES:	
+		print 'Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
 		for neighbor in SLICES[_slice]['neighbors']:
 			print '\tNeighbor:', neighbor, '(%s ramps)' % len(SLICES[_slice]['neighbors'][neighbor])
 		

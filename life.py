@@ -838,6 +838,7 @@ def can_walk_to(life, pos):
 	if not _z2:
 		return False
 	
+	print _z1, _z2
 	return zones.can_path_to_zone(_z1, _z2)
 
 def walk(life, to):

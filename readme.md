@@ -5,11 +5,23 @@ Reactor 3 is an action roguelike in the same vein as IVAN - A Violent Road to De
 
 What is Reactor 3?
 -------------------
-Reactor 3 (R3) is a roguelike. You might be familiar with a few games in the genre, like Dwarf Fortress, NetHack, or DCSS. This game is much different, however, and focuses much more on building an interactive world
+Reactor 3 (R3) is a roguelike. You might be familiar with a few games in the genre, like Dwarf Fortress, NetHack, or DCSS, while also borrowing elements from Fallout and S.T.A.L.K.E.R..
+
+R3 is a game about survival in a hostile, unforgiving environment. It takes place in the Chernobyl Exclusion Zone, where (in an alternate timeline) another disaster occurs, further corrupting the area. It is rumored that the items formed from the spike of radiation can be sold for high amounts of money on the black market.
+
+At its core, R3 is less about combat and more about reputation. The NPCs maintain their own interpretation of the world based on randomly generated personality traits and stats, and can act independently or in groups to accomplish tasks based on this intepretation. Bandits will attack on sight, while others will ask deeper questions before confrontation begins (Am I in danger? What have I heard about this person? etc)
+
+Combat is a last resort, but it is by no means neglected in terms of development. A full damage model is simulated, ranging from minor cuts and scrapes to full dismemberment depending on the type of injury. For example, a bullet fired towards someone wearing a backback will result in either the bullet tearing through it, or possibly colliding and causing damage to an item inside of it.
+
+The game is developed in two parts: Engine and content. The engine still currently houses *some* content-specific features (for now), but forms most of its functionality by parsing external files that can be thought of as mods. Anything from controlling the body structure of an entity to its AI can be done outside of the game's code entirely.
+
+Screenshots
+-----------
+[Imgur gallery.]()
 
 If You're Reading This...
 -------------------------
-This game has been in the works for roughly 9 months, but I chose to keep the repo private until I had at least something to show. The bad news is that there isn't much in the way of content yet (intentionally.) As I've said in the past, I wouldn't build content around a game that wasn't ready for it. I knew from the start that I would want to be able to make changes without fearing a breakage elsewhere, and having very little content has enabled that. What you're seeing here is an engine.
+This game has been in the works for roughly 10 months, but I chose to keep the repo private until I had at least something to show. The bad news is that there isn't much in the way of content yet (intentionally.) As I've said in the past, I wouldn't build content around a game that wasn't ready for it. I knew from the start that I would want to be able to make changes without fearing a breakage elsewhere, and having very little content has enabled that. What you're seeing here is an engine.
 
 In addition, I am enamored with the idea of a game that generates its own stories and its own content, and much like other games in the genre, I feel like I can accomplish something similar, but it will take time and dedication before I might ever see the payoff from it.
 
