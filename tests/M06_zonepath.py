@@ -1,6 +1,6 @@
 import time
 
-MAP_SIZE = (20, 20, 5)
+MAP_SIZE = (20, 20, 3)
 WORLD_INFO = {'zoneid': 0}
 SLICES = {}
 
@@ -21,6 +21,8 @@ def create_map_array(flat=False):
 					if (y >= 5 and x >= 10 and not x==15) and z == 1:
 						_z.append(1)
 					elif (y < 5 or x < 10 or x == 15) and not z:
+						_z.append(1)
+					elif (y >= 8 and x >= 16 and not x==15) and z == 2:
 						_z.append(1)
 					else:
 						_z.append(0)
@@ -50,7 +52,7 @@ def draw_slice(slice_map):
 def get_unzoned(slice_map, z):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
-			if not MAP[x][y][z]:# or (z<MAP_SIZE[2]-1 and not MAP[x][y][z+1]):
+			if not MAP[x][y][z]:
 				continue
 			
 			if slice_map[x][y]:
@@ -73,7 +75,7 @@ def process_slice(z):
 		_start_pos = get_unzoned(_slice, z)
 		
 		if not _start_pos:
-			#draw_slice(_slice)
+			draw_slice(_slice)
 			#draw_map(MAP, z)
 			print '\tRuns:',_runs,'Time:',
 			break
@@ -103,13 +105,28 @@ def process_slice(z):
 							
 						if z < MAP_SIZE[2]-1 and MAP[_x][_y][z+1]:
 							_ramps.append((_x, _y, z+1))
-						elif z and MAP[_x][_y][z-1]:
+						elif not MAP[_x][_y][z] and z and MAP[_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
 		SLICES[_z_id] = {'z': z, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_slices_at_z(z):
 	return [s for s in SLICES.values() if s['z'] == z]
+
+def can_path_to_zone(z1, z2, checked=[]):
+	checked.append(z1)
+	
+	if z2 in SLICES[z1]['neighbors']:
+		return True
+	
+	_neighbors = [n for n in SLICES[z1]['neighbors'] if not n in checked]
+	
+	if not _neighbors:
+		return False
+	
+	for _neighbor in _neighbors:
+		if can_path_to_zone(_neighbor, z2, checked=checked):
+			return True
 
 def create_zone_map():
 	for z in range(MAP_SIZE[2]):
@@ -130,9 +147,14 @@ def connect_ramps():
 		
 		for neighbor in SLICES[_slice]['neighbors']:
 			print '\tNeighbor:', neighbor, '(%s ramps)' % len(SLICES[_slice]['neighbors'][neighbor])
-			
+		
+		#print SLICES[_slice]['neighbors'].keys()
+		
+		if not SLICES[_slice]['neighbors']:
+			print '\tNo neighbors.'
 
 if __name__ == '__main__':
 	create_zone_map()
 	print
 	connect_ramps()
+	print can_path_to_zone(3, 4)

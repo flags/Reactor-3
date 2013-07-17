@@ -5,6 +5,7 @@ import libtcodpy as tcod
 import historygen
 import profiles
 import effects
+import zones
 import logic
 import items
 import tiles
@@ -71,6 +72,9 @@ def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=Tr
 	tcod.console_print(0, 0, 0, 'Creating position maps...')
 	tcod.console_flush()
 	maps.create_position_maps()
+	
+	zones.create_zone_map()
+	zones.connect_ramps()
 	
 	generate_life(source_map, amount=life)
 	#generate_wildlife(source_map)

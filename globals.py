@@ -36,9 +36,11 @@ WORLD_INFO = {'map': [],
 	'lifeid': 1,
 	'itemid': 1,
 	'groupid': 1,
-	'effectid': 1}
+	'effectid': 1,
+	'zoneid': 1}
 REFERENCE_MAP = {'roads': [],
 	'buildings': []}
+SLICES = {}
 CAMPS = {}
 
 #Return values
