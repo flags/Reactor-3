@@ -1,6 +1,6 @@
 import time
 
-MAP_SIZE = (20, 20, 3)
+MAP_SIZE = (20, 20, 4)
 WORLD_INFO = {'zoneid': 0}
 SLICES = {}
 
@@ -22,7 +22,9 @@ def create_map_array(flat=False):
 						_z.append(1)
 					elif (y < 5 or x < 10 or x == 15) and not z:
 						_z.append(1)
-					elif (y >= 8 and x >= 16 and not x==15) and z == 2:
+					elif (y >= 8 and x >= 16) and z == 2:
+						_z.append(1)
+					elif (y >= 9 and x >= 17) and z == 3 and not x == 18:
 						_z.append(1)
 					else:
 						_z.append(0)
@@ -113,11 +115,24 @@ def process_slice(z):
 def get_slices_at_z(z):
 	return [s for s in SLICES.values() if s['z'] == z]
 
-def can_path_to_zone(z1, z2, checked=[]):
+def can_path_to_zone(z1, z2, checked=[], path=[]):
+	z1 = int(z1)
+	z2 = int(z2)
+	
+	path.append(z1)
+	if z1 == z2:
+		#path.append(z1)
+		return True
+	
+	#if not path:
+	#	path.append(z1)
+	
 	checked.append(z1)
+	#print checked
 	
 	if z2 in SLICES[z1]['neighbors']:
-		return True
+		path.append(z2)
+		return path
 	
 	_neighbors = [n for n in SLICES[z1]['neighbors'] if not n in checked]
 	
@@ -125,8 +140,12 @@ def can_path_to_zone(z1, z2, checked=[]):
 		return False
 	
 	for _neighbor in _neighbors:
-		if can_path_to_zone(_neighbor, z2, checked=checked):
-			return True
+		_zone = can_path_to_zone(_neighbor, z2, checked=checked, path=path)
+		if _zone:
+			return path
+		
+	
+	return False
 
 def create_zone_map():
 	for z in range(MAP_SIZE[2]):
@@ -157,4 +176,4 @@ if __name__ == '__main__':
 	create_zone_map()
 	print
 	connect_ramps()
-	print can_path_to_zone(3, 4)
+	print can_path_to_zone(4, 9)

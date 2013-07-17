@@ -127,7 +127,7 @@ while SETTINGS['running'] in [-1, 1]:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=15, simulate_ticks=5, save=False, thread=False)
+	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=200, save=False, thread=True)
 
 effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
 effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
@@ -145,7 +145,7 @@ def main():
 	_played_moved = False
 
 	while life.get_highest_action(SETTINGS['controlling']) and not life.find_action(SETTINGS['controlling'], matches=[{'action': 'move'}]):
-		logic.tick_all_objects(MAP)
+		logic.tick_all_objects(WORLD_INFO['map'])
 		_played_moved = True
 		
 		if CURRENT_UPS:

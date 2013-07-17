@@ -85,14 +85,24 @@ def get_zone_at_coords(pos):
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
-def can_path_to_zone(z1, z2, checked=[]):
+def can_path_to_zone(z1, z2, checked=[], path=[]):
+	z1 = int(z1)
+	z2 = int(z2)
+	
 	if z1 == z2:
-		return True
+		path.append(z1)
+		return path
+	
+	if not path:
+		path.append(z1)
 	
 	checked.append(z1)
+	#print checked
 	
 	if z2 in WORLD_INFO['slices'][z1]['neighbors']:
-		return True
+		path.append(z1)
+		path.append(z2)
+		return path
 	
 	_neighbors = [n for n in WORLD_INFO['slices'][z1]['neighbors'] if not n in checked]
 	
@@ -100,8 +110,13 @@ def can_path_to_zone(z1, z2, checked=[]):
 		return False
 	
 	for _neighbor in _neighbors:
-		if can_path_to_zone(_neighbor, z2, checked=checked):
-			return True
+		_zone = can_path_to_zone(_neighbor, z2, checked=checked, path=path)
+		if _zone:
+			#path.extend(_zone)
+			return path
+		
+	
+	return False
 
 def create_zone_map():
 	for z in range(MAP_SIZE[2]):
