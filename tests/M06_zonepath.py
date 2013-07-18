@@ -1,10 +1,13 @@
 import time
 import sys
 
-MAP_SIZE = (20, 20, 3)
-SLICES = {}
-MAP = []
-WORLD_INFO = {'zoneid': 0, 'slices': SLICES, 'map': MAP}
+MAP_SIZE = (20, 20, 4)
+WORLD_INFO = {'zoneid': 0, 'slices': {}, 'map': []}
+
+# Slice map key
+# -1  - 
+# 0   - Clear (shouldn't see this)
+# >=1 - Slice id
 
 def create_map_array(flat=False):
 	_map = []
@@ -35,13 +38,15 @@ def create_map_array(flat=False):
 	
 	return _map
 
-MAP.extend(create_map_array())
+WORLD_INFO['map'].extend(create_map_array())
 
 def draw_map(source_map, z):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
-			print source_map[x][y][z],
-		
+			if source_map[x][y][z]:
+				print '#',
+			else:
+				print '.',
 		print
 
 def draw_slice(slice_map):
@@ -53,6 +58,8 @@ def draw_slice(slice_map):
 				print 'v',
 			elif slice_map[x][y] == -3:
 				print ' '
+			elif not slice_map[x][y]:
+				print '.',
 			else:
 				print slice_map[x][y],
 		
@@ -72,7 +79,7 @@ def draw_ramps(ramps):
 def get_unzoned(slice_map, z):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
-			if not MAP[x][y][z]:
+			if not WORLD_INFO['map'][x][y][z]:
 				continue
 			
 			if slice_map[x][y]>0 or slice_map[x][y] <= -1:
@@ -113,10 +120,11 @@ def process_slice(z):
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
-					if z < MAP_SIZE[2]-1 and MAP[x][y][z+1]:
-						_slice[x][y] = -1
-					#elif z >= 2 and not MAP[x][y][z-1] and not MAP[x][y][z-2]:
-					#	_slice[x][y] = -2
+					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+							pass
+						else:
+							_slice[x][y] = -1
 					
 					if not _slice[x][y] == _z_id:
 						continue
@@ -128,41 +136,34 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
-						#if _slice[_x][_y] <= -1:
-						#	continue
-						
-						if MAP[_x][_y][z] and not _slice[_x][_y] == _z_id:
+						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
 							_slice[_x][_y] = _z_id
 							_changed = True
-							
-						#Below
-						if z and not MAP[_x][_y][z] and MAP[_x][_y][z-1]:
-							_ramps.append((_x, _y, z-1))
 						
-						#Above
-						if z < MAP_SIZE[2]-1 and MAP[_x][_y][z+1]:
-							if z < MAP_SIZE[2]-2 and MAP[_x][_y][z+2]:
+						#Above, Below
+						if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
+							if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
 								pass
 							else:
-								_ramps.append((_x, _y, z-1))
-								
-						#if z < MAP_SIZE[2]-2 and MAP[_x][_y][z+2]:
-						#	continue
-						#if z < MAP_SIZE[2]-1 and MAP[_x][_y][z+1]:
-						#	_ramps.append((_x, _y, z+1))
-						#if not MAP[_x][_y][z] and z and MAP[_x][_y][z-1]:
-						#	_ramps.append((_x, _y, z-1))
+								_ramps.append((_x, _y, z+1))
+								continue
+						
+						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+							_ramps.append((_x, _y, z-1))
 	
-		SLICES[_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		WORLD_INFO['slices'][str(_z_id)] = {'z': z, 'id': str(_z_id), 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 		
 		if 'ramp' in sys.argv:
 			draw_ramps(_ramps)
 			print
 
 def get_slices_at_z(z):
-	return [s for s in SLICES.values() if s['z'] == z]
+	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
+	z1 = str(z1)
+	z2 = str(z2)
+	
 	_checked = []
 	_to_check = [z1]
 	
@@ -179,38 +180,6 @@ def can_path_to_zone(z1, z2):
 	
 	return False
 
-def can_path_to_zone_old(z1, z2, checked=[], path=[]):
-	z1 = int(z1)
-	z2 = int(z2)
-	
-	path.append(z1)
-	if z1 == z2:
-		#path.append(z1)
-		return True
-	
-	#if not path:
-	#	path.append(z1)
-	
-	checked.append(z1)
-	#print checked
-	
-	if z2 in SLICES[z1]['neighbors']:
-		path.append(z2)
-		return path
-	
-	_neighbors = [n for n in SLICES[z1]['neighbors'] if not n in checked]
-	
-	if not _neighbors:
-		return False
-	
-	for _neighbor in _neighbors:
-		_zone = can_path_to_zone(_neighbor, z2, checked=checked, path=path)
-		if _zone:
-			return path
-		
-	
-	return False
-
 def create_zone_map():
 	for z in range(MAP_SIZE[2]):
 		_stime = time.time()
@@ -218,34 +187,24 @@ def create_zone_map():
 		print time.time()-_stime
 
 def connect_ramps():
-	for _slice in SLICES:
-		#print 'Connecting:','Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
-		for x,y,z in SLICES[_slice]['ramps']:
+	for _slice in WORLD_INFO['slices']:
+		for x,y,z in WORLD_INFO['slices'][_slice]['ramps']:
 			for _matched_slice in get_slices_at_z(z):
-				if _matched_slice['id'] == _slice:
-					continue
-				
 				if _matched_slice['map'][x][y]>0:
-					if not _matched_slice['map'][x][y] in SLICES[_slice]['neighbors']:
-						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
-					elif not (x, y) in SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]]:
-						SLICES[_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
-				
-					#if not _slice in _matched_slice['neighbors']:
-					#	_matched_slice['neighbors'][_slice] = [(x, y)]
-					#elif not (x, y) in _matched_slice['neighbors'][_slice]:
-					#	_matched_slice['neighbors'][_slice].append((x, y))
+					if not _matched_slice['map'][x][y] in WORLD_INFO['slices'][_slice]['neighbors']:
+						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
+					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]:
+						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
 						
-	for _slice in SLICES:
-		pass
-		#print 'Zone %s' % _slice, '@ z-level',SLICES[_slice]['z']
-		#for neighbor in SLICES[_slice]['neighbors']:
-		#	print '\tNeighbor:', neighbor, '(%s ramps)' % len(SLICES[_slice]['neighbors'][neighbor])
+	for _slice in WORLD_INFO['slices']:
+		print 'Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z']
+		for neighbor in WORLD_INFO['slices'][_slice]['neighbors']:
+			print '\tNeighbor:', neighbor, '(%s ramps)' % len(WORLD_INFO['slices'][_slice]['neighbors'][neighbor])
 		
-		#print SLICES[_slice]['neighbors'].keys()
+		#print WORLD_INFO['slices'][_slice]['neighbors'].keys()
 		
-		#if not SLICES[_slice]['neighbors']:
-		#	print '\tNo neighbors.'
+		if not WORLD_INFO['slices'][_slice]['neighbors']:
+			print '\tNo neighbors.'
 
 if __name__ == '__main__':
 	create_zone_map()

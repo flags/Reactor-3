@@ -89,10 +89,6 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 			else:
 				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
 			
-			for _slice in WORLD_INFO['slices'].keys():
-				WORLD_INFO['slices'][int(_slice)] = WORLD_INFO['slices'][_slice]
-				del WORLD_INFO['slices'][_slice]
-			
 		except ValueError:
 			_map_file.seek(0)
 			WORLD_INFO['map'] = json.loads(_map_file.readline())

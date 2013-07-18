@@ -42,8 +42,6 @@ def process_slice(z):
 		_start_pos = get_unzoned(_slice, z)
 		
 		if not _start_pos:
-			#draw_slice(_slice)
-			#draw_map(MAP, z)
 			print '\tRuns:',_runs,'Time:',
 			break
 		
@@ -56,8 +54,10 @@ def process_slice(z):
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
-					if z < MAP_SIZE[2]-1:
-						if WORLD_INFO['map'][x][y][z+1]:
+					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+							pass
+						else:
 							_slice[x][y] = -1
 					
 					if not _slice[x][y] == _z_id:
@@ -70,39 +70,22 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
-						if _slice[_x][_y] == -1:
-							continue
-						
-						if WORLD_INFO['map'][_x][_y][z] and not _slice[_x][_y] == _z_id:
+						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
-						if not _slice[_x][_y] and z:
-							_pos = (_x, _y, z-1)
-							
-							if _pos in _ramps:
+						#Above, Below
+						if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
+							if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
+								pass
+							else:
+								_ramps.append((_x, _y, z+1))
 								continue
-							
-							_ramps.append(_pos)						
 						
-						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
-							continue
-						elif z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
-							_pos = (_x, _y, z+1)
-							
-							if _pos in _ramps:
-								continue
-							
-							_ramps.append(_pos)
-						elif not WORLD_INFO['map'][_x][_y][z] and z and WORLD_INFO['map'][_x][_y][z-1]:
-							_pos = (_x, _y, z-1)
-							
-							if _pos in _ramps:
-								continue
-							
-							_ramps.append(_pos)
+						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][_z_id] = {'z': z, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		WORLD_INFO['slices'][str(_z_id)] = {'z': z, 'id': str(_z_id), 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
@@ -114,12 +97,13 @@ def get_zone_at_coords(pos):
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
-def can_path_to_zone(z1, z2, checked=[], path=[]):
-	z1 = int(z1)
-	z2 = int(z2)
+def can_path_to_zone_old(z1, z2, checked=[], path=[]):
+	z1 = str(z1)
+	z2 = str(z2)
 	
+	path.append(z1)
 	if z1 == z2:
-		#TODO: BROKEN: SHOULD RETURN ZONE
+		#path.append(z1)
 		return True
 	
 	#if not path:
@@ -130,7 +114,6 @@ def can_path_to_zone(z1, z2, checked=[], path=[]):
 	
 	if z2 in WORLD_INFO['slices'][z1]['neighbors']:
 		path.append(z2)
-		#path.append(z1)
 		return path
 	
 	_neighbors = [n for n in WORLD_INFO['slices'][z1]['neighbors'] if not n in checked]
@@ -141,7 +124,6 @@ def can_path_to_zone(z1, z2, checked=[], path=[]):
 	for _neighbor in _neighbors:
 		_zone = can_path_to_zone(_neighbor, z2, checked=checked, path=path)
 		if _zone:
-			#path.extend(_zone)
 			return path
 		
 	
@@ -176,8 +158,3 @@ def connect_ramps():
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
-					
-					if not _slice in _matched_slice['neighbors']:
-						_matched_slice['neighbors'][_slice] = [(x, y)]
-					elif not (x, y) in _matched_slice['neighbors'][_slice]:
-						_matched_slice['neighbors'][_slice].append((x, y))
