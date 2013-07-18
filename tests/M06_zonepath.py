@@ -151,7 +151,7 @@ def process_slice(z):
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][str(_z_id)] = {'z': z, 'id': str(_z_id), 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 		
 		if 'ramp' in sys.argv:
 			draw_ramps(_ramps)
@@ -161,9 +161,6 @@ def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
-	z1 = str(z1)
-	z2 = str(z2)
-	
 	_checked = []
 	_to_check = [z1]
 	

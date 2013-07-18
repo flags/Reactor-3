@@ -85,7 +85,7 @@ def process_slice(z):
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][str(_z_id)] = {'z': z, 'id': str(_z_id), 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
@@ -97,35 +97,20 @@ def get_zone_at_coords(pos):
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
-def can_path_to_zone_old(z1, z2, checked=[], path=[]):
-	z1 = str(z1)
-	z2 = str(z2)
+def can_path_to_zone(z1, z2):
+	_checked = []
+	_to_check = [z1]
 	
-	path.append(z1)
-	if z1 == z2:
-		#path.append(z1)
-		return True
-	
-	#if not path:
-	#	path.append(z1)
-	
-	checked.append(z1)
-	#print checked
-	
-	if z2 in WORLD_INFO['slices'][z1]['neighbors']:
-		path.append(z2)
-		return path
-	
-	_neighbors = [n for n in WORLD_INFO['slices'][z1]['neighbors'] if not n in checked]
-	
-	if not _neighbors:
-		return False
-	
-	for _neighbor in _neighbors:
-		_zone = can_path_to_zone(_neighbor, z2, checked=checked, path=path)
-		if _zone:
-			return path
+	while _to_check:
+		_checking = _to_check.pop()
+		_checked.append(_checking)
 		
+		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if not n in _checked])
+		
+		if z2 in _to_check:
+			_checked.append(z2)
+			print _checked
+			return True
 	
 	return False
 
