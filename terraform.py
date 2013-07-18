@@ -156,7 +156,7 @@ def handle_input():
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][PREFAB_CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 		else:
-			MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
 	elif INPUT['m']:
@@ -212,34 +212,34 @@ def handle_input():
 		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
 	
 	elif INPUT['a']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(SAND_TILES))
 	
 	elif INPUT['b']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(RED_BRICK_TILES))
 
 	elif INPUT['g']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
 	elif INPUT['h']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(WHITE_TILE_TILES))
 	
 	elif INPUT['s']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 	
 	elif INPUT['z']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_TILES))
 
 	elif INPUT['l']:
