@@ -18,7 +18,8 @@ def parse_packet(packet):
 	
 	if _packet['type'] == 'get':
 		if _packet['what'] == 'stats':
-			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()])}
+			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()]),
+				'active_life': len([l for l in LIFE.values() if not l['dead']])}
 			
 			return json.dumps(_stats)
 		elif _packet['what'] == 'groups':
