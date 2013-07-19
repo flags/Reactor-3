@@ -337,6 +337,11 @@ def listen(life):
 			#_target = brain.knows_alife(life, event['alife'])['score']
 			logging.warning('target_needs_disarmed: Needs handling code.')
 		
+		elif event['gist'] == 'group_set_camp':
+			#TODO: Question this
+			life['camp'] = event['camp']
+			camps.discover_camp(life, event['from']['known_camps'][event['camp']])
+		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		

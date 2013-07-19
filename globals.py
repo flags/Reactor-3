@@ -39,9 +39,10 @@ WORLD_INFO = {'map': [],
 	'groupid': 1,
 	'effectid': 1,
 	'zoneid': 1,
-    'chunk_map': CHUNK_MAP,
-    'reference_map': {'roads': [], 'buildings': []},
-    'slices': {}}
+	'chunk_map': CHUNK_MAP,
+	'reference_map': {'roads': [], 'buildings': []},
+	'slices': {},
+	'chunk_size': 5}
 
 #Return values
 STATE_CHANGE = 2
@@ -168,7 +169,6 @@ SETTINGS = {'running': True,
 	'controlling': None,
 	'following': None,
 	'state history size': 5,
-	'chunk size': 5,
 	'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]

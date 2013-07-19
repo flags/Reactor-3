@@ -36,12 +36,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 			return RETURN_VALUE
 		elif _unfounded_camp['camp']:
 			brain.store_in_memory(life, 'explore_camp', _unfounded_camp['camp'])
-			print 'only interested'
+			print 'only interested in camp (exploring)'
 			return RETURN_VALUE
-	else:
-		if life['camp']:
-			return False
-	
+
 	return False
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
@@ -53,9 +50,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_dest = lfe.path_dest(life)
 		
 		if not _dest or not chunks.position_is_in_chunk(_dest, _closest_key):
+			_pos = random.choice(_chunk['ground'])
+			print _pos
 			lfe.clear_actions(life)
 			lfe.add_action(life,{'action': 'move',
-				'to': random.choice(_chunk['ground'])}, 200)
+				'to': _pos}, 200)
 		return True
 	
 	_best_camp = camps.find_best_unfounded_camp(life)['camp']

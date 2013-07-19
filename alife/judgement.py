@@ -339,8 +339,8 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 		
 		_count += 1
 		_chunk = maps.get_chunk(key)
-		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk size']/2),
-			_chunk['pos'][1]+(SETTINGS['chunk size']/2))
+		_chunk_center = (_chunk['pos'][0]+(WORLD_INFO['chunk_size']/2),
+			_chunk['pos'][1]+(WORLD_INFO['chunk_size']/2))
 		_distance = numbers.distance(life['pos'], _chunk_center)
 		
 		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
@@ -372,14 +372,14 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 	_score += _count
 	
 	#Subtract distance in chunks
-	_score -= _closest_chunk_key['distance']/SETTINGS['chunk size']
+	_score -= _closest_chunk_key['distance']/WORLD_INFO['chunk_size']
 	
 	#TODO: Average time since last visit (check every key in reference)
 	#TODO: For tracking last visit use world ticks
 	
 	return _score
 
-def judge_camp(life, camp):
+def judge_camp(life, camp, for_founding=False):
 	#This is kinda complicated so I'll do my best to describe what's happening.
 	#The ALife keeps track of chunks it's aware of, which we'll use when
 	#calculating how much of a camp we know about (value between 0..1)
@@ -394,6 +394,20 @@ def judge_camp(life, camp):
 	#After scoring this camp, we simply multiply by the percentage of the camp
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
+	
+	#In addition to all that, we want to prevent returning camps that are too close
+	#to other camps. This is hardcoded (can't think of a reason why the ALife would want this)
+	
+	if for_founding:
+		for _known_camp in [c['reference'] for c in life['known_camps'].values()]:
+			for _pos1 in _known_camp:
+				pos1 = [int(i) for i in _pos1.split(',')]
+				for _pos2 in camp:
+					pos2 = [int(i) for i in _pos2.split(',')]
+					_dist = numbers.distance(pos1, pos2) / WORLD_INFO['chunk_size']
+					
+					if _dist <= 15:
+						return 0
 	
 	_known_chunks_of_camp = references.get_known_chunks_in_reference(life, camp)
 	
@@ -411,11 +425,9 @@ def judge_camp(life, camp):
 			_current_trust -= _target['danger']
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
-	_known_camps = [c['reference'] for c in life['known_camps'].values()]
-	
 	_score = _current_trust
-	
 	_camp = camps.get_camp_via_reference(camp)
+	
 	if _camp:
 		_score += judge_group(life, camps.get_controlling_group(_camp))
 	

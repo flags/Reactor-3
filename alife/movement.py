@@ -38,7 +38,7 @@ def score_escape(life,target,pos):
 	return _score
 
 def score_hide(life,target,pos):
-	_chunk_id = '%s,%s' % ((pos[0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (pos[1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	_chunk_id = '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	_chunk = maps.get_chunk(_chunk_id)
 	_life_dist = numbers.distance(life['pos'], pos)
 	_target_dist = numbers.distance(target['last_seen_at'], pos)

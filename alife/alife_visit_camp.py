@@ -12,8 +12,8 @@ STATE = 'visiting camp'
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 
-	if not 'INTELLIGENT' in life['life_flags']:
-		return False	
+	if life['state'] == 'exploring':
+		return False
 	
 	if not judgement.is_safe(life):
 		return False	
@@ -46,7 +46,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				{'text': 'deny_from_camp', 'camp': _camp['id'], 'founder': '*'}],
 				match_gist_only=True,
 				answer_all=True)
-			
-	
-	#life['camp'] = _camp['id']
-	print 'lookan'
+	else:
+		#TODO: Store this in memory! Don't keep calling it
+		lfe.clear_actions(life)
+		lfe.add_action(life,{'action': 'move',
+			'to': camps.get_nearest_position_in_camp(life, _camp['id'])},
+			200)
+		
+		print life['name'],'lookan'

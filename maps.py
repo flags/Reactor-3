@@ -435,10 +435,10 @@ def broadcast_chunk_change(chunk_id):
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
-	for x1 in range(SETTINGS['chunk size']):
+	for x1 in range(WORLD_INFO['chunk_size']):
 		x = x1+_chunk['pos'][0]
 		
-		for y1 in range(SETTINGS['chunk size']):
+		for y1 in range(WORLD_INFO['chunk_size']):
 			y = y1+_chunk['pos'][1]
 			
 			if source_map[x][y][2] and not source_map[x][y][3]:
@@ -491,8 +491,8 @@ def update_chunk_map():
 	_stime = time.time()
 	_chunk_map = {}
 	
-	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
@@ -505,8 +505,8 @@ def update_chunk_map():
 				'digest': None}
 			
 			_tiles = {}
-			for y2 in range(y1, y1+SETTINGS['chunk size']):
-				for x2 in range(x1, x1+SETTINGS['chunk size']):
+			for y2 in range(y1, y1+WORLD_INFO['chunk_size']):
+				for x2 in range(x1, x1+WORLD_INFO['chunk_size']):
 					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
@@ -549,15 +549,15 @@ def smooth_chunk_map():
 		_change = False
 		_runs += 1
 		
-		for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-			for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+		for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+			for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 				_current_chunk_key = '%s,%s' % (x1, y1)
 				_current_chunk = _chunk_map[_current_chunk_key]
 				_neighbors = []
 				
 				for pos in [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]:
-					x2 = x1+(pos[0]*SETTINGS['chunk size'])
-					y2 = y1+(pos[1]*SETTINGS['chunk size'])
+					x2 = x1+(pos[0]*WORLD_INFO['chunk_size'])
+					y2 = y1+(pos[1]*WORLD_INFO['chunk_size'])
 					
 					if x2>=MAP_SIZE[0] or x2<0 or y2>=MAP_SIZE[1] or y2<0:
 						continue
@@ -611,8 +611,8 @@ def find_all_linked_chunks(chunk_key, check=[]):
 def generate_reference_maps():
 	_stime = time.time()
 	
-	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_current_chunk_key = '%s,%s' % (x1, y1)
 			_current_chunk = get_chunk(_current_chunk_key)
 			

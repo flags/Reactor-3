@@ -55,8 +55,8 @@ def look(life):
 		
 		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
-			_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
-				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+			_item_chunk_key = '%s,%s' % ((item['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
+				(item['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 			judgement.judge_chunk(life, _item_chunk_key)
 		
 			if not item['uid'] in life['know_items']:

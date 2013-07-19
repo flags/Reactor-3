@@ -45,7 +45,7 @@ def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 #		if chunk_key in life['known_chunks']:
 #			continue
 #		
-#		chunk_center = [int(val)+(SETTINGS['chunk size']/2) for val in chunk_key.split(',')]
+#		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
 #		_distance = numbers.distance(life['pos'], chunk_center)
 #		
 #		if not _nearest['key'] or _distance<_nearest['distance']:
@@ -66,8 +66,8 @@ def find_surrounding_unknown_chunks(life):
 def is_in_chunk(life, chunk_id):
 	_chunk = maps.get_chunk(chunk_id)
 	
-	if life['pos'][0] >= _chunk['pos'][0] and life['pos'][0] <= _chunk['pos'][0]+SETTINGS['chunk size']\
-		and life['pos'][1] >= _chunk['pos'][1] and life['pos'][1] <= _chunk['pos'][1]+SETTINGS['chunk size']:
+	if life['pos'][0] >= _chunk['pos'][0] and life['pos'][0] <= _chunk['pos'][0]+WORLD_INFO['chunk_size']\
+		and life['pos'][1] >= _chunk['pos'][1] and life['pos'][1] <= _chunk['pos'][1]+WORLD_INFO['chunk_size']:
 			return True
 	
 	return False
@@ -75,11 +75,23 @@ def is_in_chunk(life, chunk_id):
 def position_is_in_chunk(position, chunk_id):
 	_chunk = maps.get_chunk(chunk_id)
 	
-	if position[0] >= _chunk['pos'][0] and position[0] <= _chunk['pos'][0]+SETTINGS['chunk size']\
-		and position[1] >= _chunk['pos'][1] and position[1] <= _chunk['pos'][1]+SETTINGS['chunk size']:
+	if position[0] >= _chunk['pos'][0] and position[0] <= _chunk['pos'][0]+WORLD_INFO['chunk_size']\
+		and position[1] >= _chunk['pos'][1] and position[1] <= _chunk['pos'][1]+WORLD_INFO['chunk_size']:
 			return True
 	
 	return False
+
+def get_nearest_position_in_chunk(position, chunk_id):
+	_closest = {'pos': None, 'score': 0}
+	
+	for pos in get_walkable_areas(chunk_id):
+		_dist = numbers.distance(position, pos)
+		
+		if not _closest['pos'] or _dist<_closest['score']:
+			_closest['pos'] = pos
+			_closest['score'] = _dist
+	
+	return _closest['pos']
 
 def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
@@ -90,7 +102,7 @@ def can_see_chunk(life, chunk_id):
 	
 	return False
 
-def get_walkable_areas(life, chunk_id):
+def get_walkable_areas(chunk_id):
 	return maps.get_chunk(chunk_id)['ground']
 
 def get_visible_walkable_areas(life, chunk_id):

@@ -26,7 +26,7 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 		if skip_unknown and not _nearest_key in life['known_chunks']:
 			continue
 
-		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
 		_distance = numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -44,7 +44,7 @@ def _find_nearest_reference_exact(position, ref_type=None):
 			continue
 		
 		for reference in WORLD_INFO['reference_map'][_r_type]:
-			_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
+			_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
 			_distance = numbers.distance(position, _center)
 			_nearest_key = find_nearest_key_in_reference_exact(position, reference)
 			
@@ -66,7 +66,7 @@ def _find_best_unknown_reference(life, ref_type):
 		
 		#TODO: We do this twice (check in path_along_reference). Not good!
 		if numbers.distance(life['pos'],
-			maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/SETTINGS['chunk size']>10:
+			maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/WORLD_INFO['chunk_size']>10:
 			continue
 		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
@@ -88,7 +88,7 @@ def find_nearest_key_in_reference(life, reference, unknown=False, ignore_current
 		if not maps.get_chunk(_key)['ground']:
 			continue
 		
-		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		_distance = numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -104,7 +104,7 @@ def find_nearest_key_in_reference_exact(position, reference):
 		if not maps.get_chunk(_key)['ground']:
 			continue
 		
-		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		_distance = numbers.distance(position, _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -148,9 +148,9 @@ def path_along_reference(life, ref_type):
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
 		
-		_neighbor_pos = [int(val)+(SETTINGS['chunk size']/2) for val in neighbor_key.split(',')]
-		_cent = (lfe.get_current_chunk(life)['pos'][0]+(SETTINGS['chunk size']/2),
-			lfe.get_current_chunk(life)['pos'][1]+(SETTINGS['chunk size']/2))
+		_neighbor_pos = [int(val)+(WORLD_INFO['chunk_size']/2) for val in neighbor_key.split(',')]
+		_cent = (lfe.get_current_chunk(life)['pos'][0]+(WORLD_INFO['chunk_size']/2),
+			lfe.get_current_chunk(life)['pos'][1]+(WORLD_INFO['chunk_size']/2))
 		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
 	

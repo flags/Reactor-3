@@ -459,7 +459,7 @@ def get_current_known_chunk(life):
 	return False
 
 def get_current_known_chunk_id(life):
-	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	_chunk_key = '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	
 	if _chunk_key in life['known_chunks']:
 		return _chunk_key
@@ -472,7 +472,7 @@ def get_current_chunk(life):
 	return maps.get_chunk(_chunk_id)
 
 def get_current_chunk_id(life):
-	return '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	return '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
 def get_known_life(life, id):
 	if id in life['know']:
@@ -536,8 +536,8 @@ def get_surrounding_unknown_chunks(life, distance=1):
 			if not x and not y:
 				continue
 			
-			_next_x = _start_x+(x*SETTINGS['chunk size'])
-			_next_y = _start_y+(y*SETTINGS['chunk size'])
+			_next_x = _start_x+(x*WORLD_INFO['chunk_size'])
+			_next_y = _start_y+(y*WORLD_INFO['chunk_size'])
 			
 			if _next_x<0 or _next_x>=MAP_SIZE[0]:
 				continue

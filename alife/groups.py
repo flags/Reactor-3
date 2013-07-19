@@ -47,6 +47,10 @@ def add_member(group_id, life_id):
 	for member in _group['members']:
 		brain.meet_alife(LIFE[member], LIFE[life_id])
 	
+	if _group['camp']:
+		LIFE[life_id]['camp'] = _group['camp']
+		camps.discover_camp(life, LIFE[_group['founder']]['known_camps'][_group['camp']])
+	
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
@@ -119,7 +123,10 @@ def get_camp(group_id):
 	return get_group(group_id)['camp']
 
 def set_camp(group_id, camp_id):
-	get_group(group_id)['camp'] = camp_id
+	_group = get_group(group_id)
+	_group['camp'] = camp_id
+	
+	distribute(LIFE[_group['leader']], 'group_set_camp', camp=camp_id)
 
 def set_leader(group_id, life_id):
 	get_group(group_id)['leader'] = life_id

@@ -32,7 +32,7 @@ def find_best_unfounded_camp(life, ignore_fully_explored=False):
 		if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
 			continue
 	
-		_score = judgement.judge_camp(life, camp)
+		_score = judgement.judge_camp(life, camp, for_founding=True)
 		if _score>_best_camp['score']:
 			_best_camp['camp'] = camp
 			_best_camp['score'] = _score
@@ -47,7 +47,7 @@ def _get_nearest_known_camp(life):
 			continue
 		
 		_key = references.find_nearest_key_in_reference(life, camp['reference'])
-		_center = [int(val)+(SETTINGS['chunk size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		
 		_distance = numbers.distance(life['pos'], _center)
 		
@@ -127,8 +127,6 @@ def has_discovered_camp(life, camp):
 	return False
 
 def discover_camp(life, camp):
-	if not life['known_camps']:
-		life['camp'] = camp['id']
 	life['known_camps'][camp['id']] = camp.copy()
 	life['known_camps'][camp['id']]['time_discovered'] = WORLD_INFO['ticks']
 
@@ -147,6 +145,12 @@ def is_in_any_camp(position):
 
 def position_is_in_camp(position, camp):
 	return references.is_in_reference(position, camp['reference'])
+
+def get_nearest_position_in_camp(life, camp):
+	_camp = CAMPS[camp]
+	_key = references.find_nearest_key_in_reference_exact(life['pos'], _camp['reference'])
+	
+	return chunks.get_nearest_position_in_chunk(life, camp)
 
 def get_founded_camps(life):
 	return [CAMPS[i] for i in CAMPS if CAMPS[i]['founder'] == life['id']]
