@@ -161,6 +161,9 @@ def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
+	if z1 == z2:
+		return True
+	
 	_checked = []
 	_to_check = [z1]
 	
@@ -207,4 +210,4 @@ if __name__ == '__main__':
 	create_zone_map()
 	print
 	connect_ramps()
-	#print can_path_to_zone(3, 9)
+	print can_path_to_zone(1, 1)

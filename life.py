@@ -821,7 +821,9 @@ def path_dest(life):
 	return tuple(life['path'][len(life['path'])-1])
 
 def can_walk_to(life, pos):
-	if not len(pos) == 3:
+	if len(pos) == 3:
+		pos = list(pos)
+	else:
 		pos = list(pos)
 		pos.append(life['pos'][2])
 		
@@ -829,7 +831,8 @@ def can_walk_to(life, pos):
 	_z2 = zones.get_zone_at_coords(pos)
 	
 	if not _z2:
-		for z in range(0, MAP_SIZE[2]):
+		#TODO: Don't use this, dingus! Wow!
+		for z in [life['pos'][2]-1, life['pos'][2]+1]:
 			_z2 = zones.get_zone_at_coords((pos[0], pos[1], z))
 		
 			if _z2:
@@ -838,7 +841,6 @@ def can_walk_to(life, pos):
 	if not _z2:
 		return False
 	
-	print _z1, _z2
 	return zones.can_path_to_zone(_z1, _z2)
 
 def walk(life, to):
@@ -865,8 +867,7 @@ def walk(life, to):
 		if _zone:
 			life['path'] = pathfinding.create_path_old(life['pos'], to, _zone, source_map=WORLD_INFO['map'])
 		else:
-			logging.warning('Can\'t walk there.')
-			print life['pos'], to,life['state']
+			logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
 		#print '\ttotal',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]

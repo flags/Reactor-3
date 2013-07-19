@@ -89,7 +89,7 @@ def process_slice(z):
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
-		if _splice['map'][pos[0]][pos[1]]:
+		if _splice['map'][pos[0]][pos[1]]>0:
 			return _splice['map'][pos[0]][pos[1]]
 	
 	return None
@@ -98,6 +98,12 @@ def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
+	if z1 == z2:
+		return True
+	
+	z1 = str(z1)
+	z2 = str(z2)
+	
 	_checked = []
 	_to_check = [z1]
 	
@@ -109,7 +115,6 @@ def can_path_to_zone(z1, z2):
 		
 		if z2 in _to_check:
 			_checked.append(z2)
-			print _checked
 			return True
 	
 	return False
