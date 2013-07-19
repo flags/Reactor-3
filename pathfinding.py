@@ -172,7 +172,7 @@ def walk_path(life, path):
 	
 
 class Astar:
-	def __init__(self, start=None, end=None, omap=None, dist=None):
+	def __init__(self, zone=None, start=None, end=None, omap=None, dist=None):
 		#create_path({}, start, end, omap=omap, dist=dist)
 		_line = alife.sight._can_see_position(start, end)
 		self.path = []
@@ -184,6 +184,7 @@ class Astar:
 			self.map = []
 			self.omap = omap
 	
+			self.zone = zone
 			self.start = tuple(start)
 			self.end = tuple(end)
 			self.olist = [self.start]
@@ -240,7 +241,7 @@ class Astar:
 					#But we can climb to this position if there is something to climb on
 					if self.omap[_map_x_pos][_map_y_pos][self.start[2]+1]:
 						#TODO: Change this back to 2 :+)
-						self.map[_y,_x] = 0#2
+						self.map[_y,_x] = 2
 	
 						#Not if there's a tile above the position we'd be climing to!
 						if self.omap[_map_x_pos][_map_y_pos][self.start[2]+2]:
@@ -527,7 +528,7 @@ def path_from_dijkstra_old(start_position,dijkstra,downhill=False):
 			logging.info('No path found!')
 			return _path
 
-def create_path_old(start,end,source_map):
+def create_path_old(start, end, zone, source_map):
 	_dist = numbers.distance(start,end)
 	
 	for x1 in range(-1,2):
@@ -535,4 +536,4 @@ def create_path_old(start,end,source_map):
 			if (start[0],start[1]) == (end[0]+x1,end[1]+y1):
 				return short_path(start,end,source_map)
 	
-	return Astar(start=start,end=end,omap=source_map,dist=_dist).get_path()
+	return Astar(zone, start=start,end=end,omap=source_map,dist=_dist).get_path()

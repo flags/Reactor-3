@@ -21,20 +21,27 @@ ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
+CAMPS = {}
 WORLD_INFO = {'map': [],
-    'time': 0,
-    'time_of_day': 4000,
-    'time_scale': 1,
-    'length_of_day': 6000,
-    'day': 0,
+	'time': 0,
+	'time_of_day': 6000,
+	'time_scale': 1,
+	'length_of_day': 6000,
+	'day': 0,
 	'ticks': 0,
 	'tps': 0,
 	'tps_time': 0,
 	'pause_ticks': 0,
-	'in_combat': False}
-REFERENCE_MAP = {'roads': [],
-	'buildings': []}
-CAMPS = {}
+	'in_combat': False,
+	'world gravity': 0.3,
+	'lifeid': 1,
+	'itemid': 1,
+	'groupid': 1,
+	'effectid': 1,
+	'zoneid': 1,
+    'chunk_map': CHUNK_MAP,
+    'reference_map': {'roads': [], 'buildings': []},
+    'slices': {}}
 
 #Return values
 STATE_CHANGE = 2
@@ -88,7 +95,7 @@ DEFAULT_ITEM_SIZE = '2x2'
 DEFAULT_ITEM_PREFIX = 'a'
 
 #Versions
-MAP_RENDER_VERSION = 5
+MAP_RENDER_VERSION = 6
 
 #Graphics tweaks
 FADE_TO_WHITE = [0]
@@ -147,35 +154,33 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 
 #Non-constants
 SETTINGS = {'running': True,
-			'paused': False,
-			'draw lights': True,
-			'diffuse light': False,
-			'debug host': '',
-			'debug port': 3333,
-			'draw console': False,
-			'draw z-levels above': True,
-			'draw z-levels below': False,
-			'progress bar max value': 25,
-			'action queue size': 4,
-			'world gravity': 0.1,
-			'los': 40,
-			'lifeid': 1,
-     		'itemid': 1,
-     		'groupid': 1,
-			'heatmap': None,
-			'controlling': None,
-			'following': None,
-			'state history size': 5,
-			'chunk size': 5}
+	'paused': False,
+	'draw lights': True,
+	'diffuse light': False,
+	'debug host': '',
+	'debug port': 3335,
+	'draw console': False,
+	'draw z-levels above': True,
+	'draw z-levels below': False,
+	'progress bar max value': 25,
+	'action queue size': 4,
+	'los': 40,
+	'controlling': None,
+	'following': None,
+	'state history size': 5,
+	'chunk size': 5,
+	'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
 LIFE_TYPES = {}
 LIFE = {}
+LIFE_MAP = []
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
-EFFECTS = []
+EFFECTS = {}
+EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []

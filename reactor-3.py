@@ -62,18 +62,16 @@ except ImportError, e:
 
 gfx.log(WINDOW_TITLE)
 
-try:
-	MAP = maps.load_map('map1.dat')
-except IOError:
-	MAP = maps.create_map()
-	maps.save_map(MAP)
-
-WORLD_INFO['map'] = MAP
 tiles.create_all_tiles()
-maps.update_chunk_map(MAP)
-maps.smooth_chunk_map()
-maps.generate_reference_maps()
 language.load_strings()
+
+try:
+	maps.load_map('map1.dat', like_new=True)
+except IOError:
+	#MAP = maps.create_map()
+	#maps.save_map(MAP)
+	pass
+
 gfx.init_libtcod()
 
 def move_camera(pos,scroll=False):
@@ -129,12 +127,13 @@ while SETTINGS['running'] in [-1, 1]:
 	mainmenu.draw_main_menu()
 
 if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'], life=3, simulate_ticks=5, save=False, thread=True)
+	worldgen.generate_world(WORLD_INFO['map'], life=5, simulate_ticks=100, save=False, thread=True)
 
-LIGHTS.append({'pos': (14, 72, 2), 'color': (255, 0, 255), 'brightness': 2, 'shake': 0.1})
-LIGHTS.append({'pos': (12, 76, 2), 'color': (255, 0, 255), 'brightness': 7, 'shake': 0.1})
-LIGHTS.append({'pos': (52, 61, 2), 'color': (255, 0, 255), 'brightness': 1, 'shake': 0.1})
-LIGHTS.append({'pos': (73, 76, 2), 'color': (255, 0, 255), 'brightness': 5, 'shake': 0.1})
+effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
+effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
+effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
+effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
 
 CURRENT_UPS = UPS
 
@@ -146,7 +145,7 @@ def main():
 	_played_moved = False
 
 	while life.get_highest_action(SETTINGS['controlling']) and not life.find_action(SETTINGS['controlling'], matches=[{'action': 'move'}]):
-		logic.tick_all_objects(MAP)
+		logic.tick_all_objects(WORLD_INFO['map'])
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -165,25 +164,25 @@ def main():
 			CURRENT_UPS-=1
 		else:
 			CURRENT_UPS = 3
-			logic.tick_all_objects(MAP)
+			logic.tick_all_objects(WORLD_INFO['map'])
 			
 	draw_targeting()
 	
 	if CYTHON_ENABLED:
-		render_map.render_map(MAP)
+		render_map.render_map(WORLD_INFO['map'])
 	else:
-		maps.render_map(MAP)
+		maps.render_map(WORLD_INFO['map'])
 	
 	move_camera(SETTINGS['following']['pos'])
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
-	maps.render_lights(MAP)
+	maps.render_lights(WORLD_INFO['map'])
 	
 	if SETTINGS['controlling']['encounters']:
-		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], SETTINGS['controlling']['pos'], cython=CYTHON_ENABLED)
 	else:
-		LOS_BUFFER[0] = maps._render_los(MAP, SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], SETTINGS['following']['pos'], cython=CYTHON_ENABLED)
 	
 	if SETTINGS['controlling']['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
@@ -208,7 +207,6 @@ def main():
 	menus.draw_menus()
 	logic.draw_encounter()
 	dialog.draw_dialog()
-	gfx.draw_effects()
 	gfx.draw_message_box()
 	gfx.draw_status_line()
 	gfx.draw_console()

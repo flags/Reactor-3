@@ -5,6 +5,7 @@ import life as lfe
 
 import numbers
 import bullets
+import alife
 import items
 
 import random
@@ -19,7 +20,12 @@ def get_fire_mode(weapon):
 	return weapon['firemodes'][weapon['firemode']]
 
 def get_recoil(life):
-	weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+	_guns = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if not _guns:
+		return 0
+	
+	weapon = lfe.get_inventory_item(life, _guns[0])
 	_recoil = weapon['recoil']
 	
 	if life['stance'] == 'standing':
@@ -40,6 +46,10 @@ def get_accuracy(life, weapon):
 		_accuracy *= 1.2
 	elif life['stance'] == 'crawling':
 		_accuracy *= 1
+		
+	_accuracy *= alife.stats.get_accuracy(life)
+	
+	print 'Accuracy', _accuracy
 	
 	return _accuracy
 

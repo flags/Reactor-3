@@ -3,6 +3,7 @@ from math import *
 import pathfinding
 import render_los
 import logging
+import random
 import numpy
 import tiles
 import time
@@ -11,6 +12,9 @@ import maps
 def clip(number,start,end):
 	"""Returns `number`, but makes sure it's in the range of [start..end]"""
 	return max(start, min(number, end))
+
+def roll(dice, sides):
+	return sum([random.choice(range(sides))+1 for d in range(dice)])
 
 def distance(pos1, pos2, old=False):
 	if old:
@@ -177,13 +181,4 @@ def create_dijkstra_map(center,source_map,targets,flee=False):
 			_farthest_distance = _dist+1
 	
 	return _create_dijkstra_map(center,source_map,targets,size=(_farthest_distance,_farthest_distance),flee=flee)
-
-if __name__ == "__main__":
-	_targets = [{'position': (45,30),'score': 50}]
-	MAP = maps.load_map('map1.dat')
-	_a = create_dijkstra_map((40,15,2),MAP,_targets,flee=True)
-	#_a = create_flee_map(_a)
-	_path = pathfinding.path_from_dijkstra((45,30,2),_a,downhill=True)
-	print _path
-	draw_dijkstra(_a,_path)
 

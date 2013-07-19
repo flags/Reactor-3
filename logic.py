@@ -4,6 +4,7 @@ import alife as alfe
 import libtcodpy as tcod
 
 import encounters
+import effects
 import menus
 import items
 import life
@@ -89,6 +90,7 @@ def tick_all_objects(source_map):
 	if WORLD_INFO['tps'] > TPS:
 		return False
 	
+	effects.calculate_all_effects()
 	tick_world()
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)

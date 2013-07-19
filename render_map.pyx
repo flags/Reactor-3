@@ -8,7 +8,7 @@ import effects
 import numpy
 import time
 
-VERSION = 5
+VERSION = 6
 
 def render_map(map):
 	cdef int _CAMERA_POS[2]
@@ -71,6 +71,8 @@ def render_map(map):
 							
 							if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 								effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
+							
+							effects.draw_effect((x, y))
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])

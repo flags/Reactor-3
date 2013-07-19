@@ -22,7 +22,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if judgement.get_visible_threats(life):
 		return False
 	
-	if life['state'] in ['combat']:
+	if life['state'] in ['combat', 'searching']:
 		return False
 	
 	if not life['state'] == STATE:

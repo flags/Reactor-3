@@ -439,6 +439,20 @@ Other Concepts:
 		Can references be Zones?
 	Dead Zones
 		Zones of the map not accessible from the current Zone
+
+New Pathing v2
+--------------
+I'm going to call this method "zone pathing." This is a much more comprehensive way to ensure that paths are
+correct the first time. We'll be slicing the map into vertical sections while keeping the same chunk size.
+
+For each slice:
+	
+	* Set the zone and ramp maps to 0.
+	* Increment the global zone counter.
+	* Start flooding the zone map beginning in the top left of the slice (if the position is walkable) with the number held in the zone counter
+	* If the position is walkable and is near to another z level, set the current position to RAMP on the neighboring ramp map and set RAMP on the position where this z-level decreases
+	* After we are done flooding, save all of these positions to a dictionary so we can search for zones easily
+	* Repeat for each zone level
 	
 Combat Fix #1 (Complete)
 --------------

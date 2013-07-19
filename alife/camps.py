@@ -25,7 +25,7 @@ def find_best_unfounded_camp(life, ignore_fully_explored=False):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
 	
 	_best_camp = {'camp': None, 'score': 0}
-	for camp in REFERENCE_MAP['buildings']:
+	for camp in WORLD_INFO['reference_map']['buildings']:
 		if camp in _founded_camps:
 			continue
 		

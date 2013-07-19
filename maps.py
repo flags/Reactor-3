@@ -1,19 +1,20 @@
 from globals import *
 from tiles import *
 
+import graphics as gfx
 import life as lfe
 
+import maputils
+import numbers
+import drawing
+import items
+import zones
 import alife
 import tiles
 
-import graphics as gfx
-import maputils
 import logging
-import numbers
-import drawing
 import random
 import numpy
-import items
 import copy
 import time
 import json
@@ -49,7 +50,7 @@ def create_map():
 	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
 	return _map
 
-def save_map(map_name, map, base_dir=DATA_DIR):
+def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
@@ -61,33 +62,60 @@ def save_map(map_name, map, base_dir=DATA_DIR):
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
-			_map_file.write(json.dumps(map))
+			_map_file.write(json.dumps(WORLD_INFO))
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
 		except TypeError:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
-def load_map(map_name, base_dir=DATA_DIR):
+def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		try:
-			_map_string = json.loads(_map_file.readline())
-			_map_size = maputils.get_map_size(_map_string)
+			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+			
+			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]
 			MAP_SIZE[1] = _map_size[1]
 			MAP_SIZE[2] = _map_size[2]
 			
-			logging.info('Map \'%s\' loaded.' % map_name)
-			gfx.log('Map \'%s\' loaded.' % map_name)
+			if like_new:
+				update_chunk_map()
+				smooth_chunk_map()
+			else:
+				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
+			
+		except ValueError:
+			_map_file.seek(0)
+			WORLD_INFO['map'] = json.loads(_map_file.readline())
+			
+			_map_size = maputils.get_map_size(WORLD_INFO['map'])
+			MAP_SIZE[0] = _map_size[0]
+			MAP_SIZE[1] = _map_size[1]
+			MAP_SIZE[2] = _map_size[2]
+			
+			logging.warning('Hello legacy users :)')
+			update_chunk_map()
+			smooth_chunk_map()
+			generate_reference_maps()
+			logging.warning('Zone maps regenerating (This should only happen once)')
+			zones.create_zone_map()
+			zones.connect_ramps()
+		
+		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		
+		create_position_maps()
+		logging.info('Map \'%s\' loaded.' % map_name)
+		gfx.log('Map \'%s\' loaded.' % map_name)
 
-			return _map_string
-		except TypeError:
-			logging.error('FATAL: Map not JSON serializable.')
-			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+		return True
+		#except TypeError:
+		#	logging.error('FATAL: Map not JSON serializable.')
+		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
 def reset_lights():
 	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
@@ -100,12 +128,13 @@ def render_lights(source_map):
 
 	reset_lights()
 	
-	#Not enitrly my code. Made some changes to someone's code from libtcod's Python forum.
+	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
 	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
 
+	_remove_lights = []
 	for light in LIGHTS:
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
@@ -151,7 +180,7 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0, 255) / sqr_distance
+		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		
@@ -161,6 +190,15 @@ def render_lights(source_map):
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+		
+		if light['fade']:
+			light['brightness'] -= light['fade']
+		
+		if light['brightness'] <= 0:
+			_remove_lights.append(light)
+	
+	for light in _remove_lights:
+		LIGHTS.remove(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]
@@ -309,86 +347,6 @@ def render_y_cutout(map,x_pos,y_pos):
 				rgb_fore_buffer=Y_CUTOUT_RGB_FORE_BUFFER,
 				rgb_back_buffer=Y_CUTOUT_RGB_BACK_BUFFER)
 
-def render_shadows(map):
-	_stime = time.time()
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for x in range(CAMERA_POS[0],_X_MAX):
-		_RENDER_X = x-CAMERA_POS[0]
-		for y in range(CAMERA_POS[1],_Y_MAX):
-			_RENDER_Y = y-CAMERA_POS[1]
-			_zlock = -1
-			
-			for pos in drawing.draw_3d_line(SUN_POS,(x,y,2)):
-				pos = list(pos)
-				_actual_pos = (pos[0]-CAMERA_POS[0],pos[1]-CAMERA_POS[1])
-				
-				if _actual_pos[0] < 0:
-					continue
-				
-				if pos[2] >= MAP_SIZE[2]:
-					continue
-				
-				if pos[0] >= MAP_WINDOW_SIZE[0]:
-					continue
-				
-				if pos[1] >= MAP_WINDOW_SIZE[1]:
-					continue
-				
-				if _zlock>=0 and not pos[2]==_zlock:
-					break
-				
-				if map[pos[0]][pos[1]][pos[2]]:
-					_zlock = pos[2]
-					gfx.darken_tile(_actual_pos[0],_actual_pos[1],50)
-					gfx.lighten_tile(_actual_pos[0],_actual_pos[1],(pos[2]*20))
-
-def soften_shadows(map):
-	global DARK_BUFFER
-	
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-	
-	_DARK_BUFFER_COPY = numpy.copy(DARK_BUFFER)
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for r in range(1):
-		for x in range(CAMERA_POS[0],_X_MAX):
-			_RENDER_X = x-CAMERA_POS[0]
-			for y in range(CAMERA_POS[1],_Y_MAX):
-				_RENDER_Y = y-CAMERA_POS[1]
-				
-				for x1 in range(-1,2):
-					for y1 in range(-1,2):
-						if not x1 and not y1:
-							continue
-						
-						if _RENDER_X+x1<0 or _RENDER_X+x1>=MAP_WINDOW_SIZE[0]:
-							continue
-						
-						if _RENDER_Y+y1<0 or _RENDER_Y+y1>=MAP_WINDOW_SIZE[1]:
-							continue
-						
-						_near_dark = DARK_BUFFER[0][_RENDER_Y+y1,_RENDER_X+x1]
-						
-						#print _near_dark,DARK_BUFFER[0][_RENDER_Y,_RENDER_X]
-						if _near_dark<DARK_BUFFER[0][_RENDER_Y,_RENDER_X]:
-							_DARK_BUFFER_COPY[0][_RENDER_Y,_RENDER_X] = 50#255-abs((_DARK_BUFFER_COPY[0][_RENDER_Y,_RENDER_X]-_near_dark))
-		
-		DARK_BUFFER[0] = numpy.copy(_DARK_BUFFER_COPY)[0]
-
 def flood_select_by_tile(map_array,tile_id,where,fuzzy=True):
 	_to_check = [where]
 	_checked = []
@@ -478,8 +436,9 @@ def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
 	for x1 in range(SETTINGS['chunk size']):
+		x = x1+_chunk['pos'][0]
+		
 		for y1 in range(SETTINGS['chunk size']):
-			x = x1+_chunk['pos'][0]
 			y = y1+_chunk['pos'][1]
 			
 			if source_map[x][y][2] and not source_map[x][y][3]:
@@ -487,7 +446,48 @@ def get_open_position_in_chunk(source_map, chunk_id):
 	
 	return False
 
-def update_chunk_map(source_map):
+def create_position_maps():
+	_map = []
+	
+	for x in range(0, MAP_SIZE[0]):
+		_y = []
+		
+		for y in range(0, MAP_SIZE[1]):
+			_y.append([])
+		
+		_map.append(_y)
+	
+	EFFECT_MAP.extend(copy.deepcopy(_map))
+	LIFE_MAP.extend(copy.deepcopy(_map))
+	
+	logging.debug('Position maps created.')
+
+def create_search_map(life, pos, size):
+	_map = numpy.ones((size, size))
+	
+	_x_top_left = numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
+	_y_top_left = numbers.clip(pos[1]-(size/2), 0, MAP_SIZE[1])
+	
+	for x in range(0, size):
+		_x = _x_top_left+x
+		
+		if _x >= MAP_SIZE[0]-1:
+			continue
+		
+		for y in range(0, size):
+			_y = _y_top_left+y
+			
+			if _y >= MAP_SIZE[1]-1:
+				continue
+			
+			if not WORLD_INFO['map'][_x][_y][pos[2]] or WORLD_INFO['map'][_x][_y][pos[2]+1]:
+				_map[y, x] = 0
+			else:
+				_map[y, x] = alife.judgement.judge_search_pos(life, (_x, _y))
+	
+	return _map
+
+def update_chunk_map():
 	_stime = time.time()
 	_chunk_map = {}
 	
@@ -507,13 +507,13 @@ def update_chunk_map(source_map):
 			_tiles = {}
 			for y2 in range(y1, y1+SETTINGS['chunk size']):
 				for x2 in range(x1, x1+SETTINGS['chunk size']):
-					if not source_map[x2][y2][2]:
+					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
 					_tile_type = None
-					if not source_map[x2][y2][4]:
+					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_tile(source_map[x2][y2][2])
+						_tile = get_tile(WORLD_INFO['map'][x2][y2][2])
 					
 					if 'type' in _tile:
 						_type = _tile['type']
@@ -617,16 +617,16 @@ def generate_reference_maps():
 			_current_chunk = get_chunk(_current_chunk_key)
 			
 			if _current_chunk['type'] == 'road':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['roads'])
+				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['roads'])
 				if _ret:
-					REFERENCE_MAP['roads'].append(_ret)
+					WORLD_INFO['reference_map']['roads'].append(_ret)
 					_current_chunk['reference'] = _ret
 			elif _current_chunk['type'] == 'building':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=REFERENCE_MAP['buildings'])
+				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['buildings'])
 				if _ret:
-					REFERENCE_MAP['buildings'].append(_ret)
+					WORLD_INFO['reference_map']['buildings'].append(_ret)
 					_current_chunk['reference'] = _ret
 	
 	logging.info('Reference map created in %.2f seconds.' % (time.time()-_stime))
-	logging.info('\tRoads:\t\t %s' % (len(REFERENCE_MAP['roads'])))
-	logging.info('\tBuildings:\t %s' % (len(REFERENCE_MAP['buildings'])))
+	logging.info('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
+	logging.info('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))

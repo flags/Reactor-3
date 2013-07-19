@@ -110,12 +110,3 @@ def generate_memory_phrase(memory):
 		return '%s seems like a good guy.' % (' '.join(LIFE[memory['target']]['name']))
 	else:
 		print 'DIDNT HAVE A PHRASE FOR',_topic
-
-def get_description(life):
-	_facts = []
-	
-	_group_threshold = alife.stats.get_max_group_size(life)
-	if _group_threshold >= alife.stats.MAX_SOCIABILITY*.9:
-		_facts.append('{pn} {prefers} large groups.')
-	elif _group_threshold <= alife.stats.MAX_SOCIABILITY*.4:
-		_facts.append('{pn} {avoids} groups.')

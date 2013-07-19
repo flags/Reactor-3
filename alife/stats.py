@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import historygen
 import groups
 import sight
 import brain
@@ -11,20 +12,17 @@ import numbers
 import logging
 import random
 
-MAX_INFLUENCE_FROM = 75
-MAX_WILLPOWER = 25
+MAX_INFLUENCE_FROM = 80
 MAX_INTROVERSION = 10
-MAX_SOCIABILITY = 25
-MAX_INTERACTION = 25
-MAX_CHARISMA = 20
+MAX_CHARISMA = 9
 
 def init(life):
-	life['stats']['willpower'] = random.randint(1, MAX_WILLPOWER)
-	life['stats']['sociability'] = random.randint(15, MAX_SOCIABILITY)
-	life['stats']['introversion'] = random.randint(1, MAX_INTROVERSION)
-	life['stats']['charisma'] = random.randint(1, MAX_CHARISMA)
+	life['stats'] = historygen.create_background(life)
+	#life['stats']['charisma'] = random.randint(1, MAX_CHARISMA)
 
 def desires_job(life):
+	#TODO: We recalculate this, but the answer is always the same.
+	
 	_wont = brain.get_flag(life, 'wont_work')
 	if life['job'] or _wont:
 		if _wont:
@@ -32,10 +30,10 @@ def desires_job(life):
 			
 		return False
 	
-	if life['stats']['willpower']>random.randint(0, MAX_WILLPOWER-(life['stats']['willpower']/2)):
+	if not life['stats']['lone_wolf']:
 		return True
 	
-	brain.flag(life, 'wont_work', value=1000-(life['stats']['willpower']*15))
+	brain.flag(life, 'wont_work', value=1000)
 	return False
 
 def desires_life(life, life_id):
@@ -69,7 +67,7 @@ def desires_to_create_group(life):
 	if life['group']:
 		return False
 	
-	if life['stats']['willpower'] >= MAX_WILLPOWER*.5:
+	if life['stats']['is_leader']:
 		return True
 	
 	return False
@@ -80,7 +78,7 @@ def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 			return True
 	
 	_group = groups.get_group(group_id)
-	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['willpower']+life['stats']['sociability']:
+	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['patience']:
 		return False
 	
 	_top_group = {'id': -1, 'score': 0}
@@ -129,6 +127,10 @@ def desires_camp(life):
 	print 'Dead code'
 	return False
 
+def get_accuracy(life):
+	#print 'Accuracy:',numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
+	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
+
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
 
@@ -137,9 +139,6 @@ def get_minimum_group_score(life):
 		return judgement.judge_group(life, life['group'])
 	
 	return 0
-
-def get_max_group_size(life):
-	return int(round(life['stats']['sociability']*get_antisocial_percentage(life)))
 
 def get_employability(life):
 	#TODO: Placeholder
@@ -164,7 +163,7 @@ def get_influence_from(life, life_id):
 	
 	_score += _target['stats']['charisma']
 	
-	return numbers.clip(_score*2, 0, MAX_INFLUENCE_FROM-(MAX_WILLPOWER-_target['stats']['willpower']))
+	return numbers.clip(_score*2, 0, MAX_INFLUENCE_FROM-((10-_target['stats']['patience'])*8))
 
 def get_minimum_camp_score(life):
 	if life['group'] and groups.is_leader(life['group'], life['id']):
@@ -179,16 +178,12 @@ def wants_group_member(life, life_id):
 	if not groups.is_leader(life['group'], life['id']):
 		return False
 	
-	_group = groups.get_group(life['group'])
-	if len(_group['members'])>get_max_group_size(life):
-		return False
-	
 	_know = brain.knows_alife_by_id(life, life_id)
 	if not _know:
 		return False
 	
 	#TODO: Second chance?
-	if brain.get_alife_flag(life, _know['life'], 'invited_to_group'):
+	if brain.get_alife_flag(life, life_id, 'invited_to_group'):
 		return False
 	
 	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
@@ -264,7 +259,7 @@ def is_family(life, life_id):
 		return False
 	
 	for relation in ['son', 'daughter', 'mother', 'father']:
-		if brain.get_alife_flag(life, _know['life'], relation):
+		if brain.get_alife_flag(life, life_id, relation):
 			return True
 	
 	return False
@@ -276,7 +271,8 @@ def is_compatible_with(life, life_id):
 	if not is_same_species(life, life_id):
 		return False
 	
-	if _diff < life['stats']['sociability']:
+	#print _diff, life['stats']['sociability']
+	if _diff <= life['stats']['sociability']:
 		return True
 	
 	return False
@@ -289,3 +285,6 @@ def has_attacked_trusted(life, life_id):
 			return True
 	
 	return False
+
+def distance_from_pos_to_pos(life, pos1, pos2):
+	return numbers.distance(pos1, pos2)

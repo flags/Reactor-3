@@ -127,7 +127,7 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-def get_targets(life, must_be_known=False):
+def get_targets(life, must_be_known=False, escaped_only=False):
 	_targets = []
 	_combat_targets = []
 	
@@ -144,7 +144,10 @@ def get_targets(life, must_be_known=False):
 	
 	_passed_combat_targets = []
 	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if target['escaped'] or target['last_seen_time']>=300:
+		if not escaped_only and  target['escaped']:
+			continue
+		elif escaped_only and target['escaped'] == 1:
+			_targets.append(target['life']['id'])
 			continue
 		
 		#TODO: Maybe the job calls for us to engage this target?
@@ -153,8 +156,8 @@ def get_targets(life, must_be_known=False):
 		
 		_passed_combat_targets.append(target['life']['id'])
 	
-	#for t in _all_targets:
-	#	print 'ALL:',type(t)
+	if escaped_only:
+		return _targets
 	
 	brain.store_in_memory(life, 'combat_targets', _passed_combat_targets)
 	_targets.extend(_passed_combat_targets)
@@ -270,6 +273,9 @@ def get_influence(life, target_id, gist):
 	
 	return 0
 
+def judge_search_pos(life, pos):
+	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
+
 def judge_chunk(life, chunk_id, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
@@ -278,8 +284,6 @@ def judge_chunk(life, chunk_id, visited=False):
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'digest': chunk['digest']}
 	
-	_antisocial_mod = stats.get_antisocial_percentage(life)
-	_group_size_max = stats.get_max_group_size(life)
 	_trusted = 0
 	for _target in life['know'].values():
 		_is_here = False
@@ -293,16 +297,13 @@ def judge_chunk(life, chunk_id, visited=False):
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
 			else:
-				_trusted += _target['trust']*_antisocial_mod
+				_trusted += _target['trust']
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
 	
 	if stats.desires_interaction(life):
-		if _trusted>_group_size_max:
-			_score += _trusted*_antisocial_mod
-		else:
-			_score += _trusted
+		_score += _trusted
 	
 	if visited:
 		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
@@ -412,11 +413,7 @@ def judge_camp(life, camp):
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
 	_known_camps = [c['reference'] for c in life['known_camps'].values()]
 	
-	if _current_population > stats.get_max_group_size(life):
-		_score = _current_trust*stats.get_antisocial_percentage(life)
-		print life['name'],'2CROWDED'
-	else:
-		_score = _current_trust
+	_score = _current_trust
 	
 	_camp = camps.get_camp_via_reference(camp)
 	if _camp:
@@ -456,10 +453,10 @@ def judge_raid(life, raiders, camp):
 		
 		#TODO: Find a better way to do this
 		#TODO: This has to be broken: _knows['life']
-		if not brain.get_alife_flag(life, _knows['life'], 'combat_score'):
+		if not brain.get_alife_flag(life, raider, 'combat_score'):
 			judge(life, raider)
 		
-		if brain.get_alife_flag(life, _knows['life'], 'combat_score'):
+		if brain.get_alife_flag(life, raider, 'combat_score'):
 			_score += _knows['flags']['combat_score']
 	
 	logging.debug('RAID: %s judged raid with score %s' % (' '.join(life['name']), _score))

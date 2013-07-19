@@ -11,7 +11,7 @@ import numbers
 def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False, skip_unknown=False, ignore_array=[]):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	
-	for reference in REFERENCE_MAP[ref_type]:
+	for reference in WORLD_INFO['reference_map'][ref_type]:
 		if reference in ignore_array:
 			continue
 		
@@ -39,11 +39,11 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 def _find_nearest_reference_exact(position, ref_type=None):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	
-	for _r_type in REFERENCE_MAP:
+	for _r_type in WORLD_INFO['reference_map']:
 		if ref_type and not _r_type == ref_type:
 			continue
 		
-		for reference in REFERENCE_MAP[_r_type]:
+		for reference in WORLD_INFO['reference_map'][_r_type]:
 			_center = [int(val)+(SETTINGS['chunk size']/2) for val in _nearest_key.split(',')]
 			_distance = numbers.distance(position, _center)
 			_nearest_key = find_nearest_key_in_reference_exact(position, reference)
@@ -58,7 +58,7 @@ def _find_nearest_reference_exact(position, ref_type=None):
 def _find_best_unknown_reference(life, ref_type):
 	_best_reference = {'reference': None, 'score': -1}
 	
-	for reference in REFERENCE_MAP[ref_type]:
+	for reference in WORLD_INFO['reference_map'][ref_type]:
 		_score = judgement.judge_reference(life, reference, ref_type, known_penalty=True)
 		
 		if not _score:
@@ -197,8 +197,8 @@ def is_in_reference(position, reference):
 	return False
 
 def is_in_any_reference(position):
-	for r_type in REFERENCE_MAP:
-		for reference in REFERENCE_MAP[r_type]:
+	for r_type in WORLD_INFO['reference_map']:
+		for reference in WORLD_INFO['reference_map'][r_type]:
 			if is_in_reference(position, reference):
 				return reference
 	

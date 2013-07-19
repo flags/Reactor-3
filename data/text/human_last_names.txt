@@ -678,7 +678,6 @@ Krasotkin
 Krivkov
 Krivov
 Krivoukhov
-Kri?utchkov
 Kropanin
 Kruglikov
 Kruglov
@@ -906,6 +905,7 @@ Moiseyev
 Molchanov
 Mordvinov
 Morenov
+Morgendorffer
 Morozov
 Moroshkin
 Moryakov
