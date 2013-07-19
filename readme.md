@@ -99,13 +99,6 @@ Flags
 * `--debug` - Allows ReactorWatch (`tools/ReactorWatch.py`) to access debug data across the network while the game is running.
 * `--profile` - Dumps a profile to `profile.dat`. `tools/show_profile.py` can be used to view the profile (use the argument `highest` to show the most time consuming functions)
 
-Issues
-------
-* Throwing does not work
-* Freezes sometimes occur when group leaders begin searching for open camp sites
-* Pathfinding is very unstable.
-	It's the oldest part of the game and is being revised in the next milestone to make use of reference maps and chunks.
-
 Credits
 -------
 Reactor 3 is made possible by the `libtcod` library. All other work was done by flags, a member of the ASCII Worlds Collective.
