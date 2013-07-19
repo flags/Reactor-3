@@ -24,19 +24,23 @@ def look(life):
 		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
-				
-				#TODO: havent_seen_in_a_while?
-				#if life['know'][ai['id']]['last_seen_time'] >= 300:
-				#	life['know'][ai['id']]['escaped'] = True
+			
 			continue
 		
 		life['seen'].append(ai['id'])
 		
 		#TODO: Don't pass entire life, just id
 		if ai['id'] in life['know']:
+			if life['know'][ai['id']]['last_seen_time']:
+				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
+				judgement.judge(life, ai['id'])
+			
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			life['know'][ai['id']]['escaped'] = False
+			
+			if brain.alife_has_flag(life, ai['id'], 'search_map'):
+				brain.unflag_alife(life, ai['id'], 'search_map')
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
 			judgement.judge_chunk(life, _chunk_id)
@@ -85,24 +89,37 @@ def _can_see_position(pos1, pos2):
 	
 	return _line
 
-def can_see_position(life, pos, distance=True):
+def can_see_position(life, pos, distance=True, block_check=False):
 	"""Returns `true` if the life can see a certain position."""
-	_line = render_los.draw_line(life['pos'][0],
-		life['pos'][1],
-		pos[0],
-		pos[1])
+	if tuple(life['pos'][:2]) == tuple(pos):
+		return True
+	
+	if block_check:
+		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
+	else:
+		_check = [(0, 0)]
+	
+	_ret_line = []
+	for _pos in _check:
+		_line = render_los.draw_line(life['pos'][0]+_pos[0],
+			life['pos'][1]+_pos[1],
+			pos[0],
+			pos[1])
+			
+		if not _line:
+			_line = []
 		
-	if not _line:
-		_line = []
+		if _pos == (0, 0):
+			_ret_line = _line
+		
+		if len(_line) >= get_vision(life) and distance:
+			return False	
+		
+		for pos in _line:
+			if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+				return False
 	
-	if len(_line) >= get_vision(life) and distance:
-		return False	
-	
-	for pos in _line:
-		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
-			return False
-	
-	return _line
+	return _ret_line
 
 def can_see_target(life, target_id):
 	_knows = LIFE[target_id]
@@ -120,9 +137,7 @@ def view_blocked_by_life(life, position, allow=[]):
 	allow.append(life['id'])
 	
 	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
-	print 'AVOID',_avoid_positions
-	
-	_can_see = can_see_position(life, position)
+	_can_see = can_see_position(life, position, block_check=True)
 	
 	if not _can_see:
 		return True

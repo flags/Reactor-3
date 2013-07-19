@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS
+from globals import WORLD_INFO, SETTINGS, MAP_SIZE
 
 import life as lfe
 
@@ -47,11 +47,9 @@ def score_hide(life,target,pos):
 	#	return 20-_target_dist
 	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
-		print 'TARGET IS HERE!'
 		return numbers.clip(300-_life_dist, 200, 300)
 	
 	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
-		print 'in reference'
 		return numbers.clip(200-_life_dist, 100, 200)
 	
 	#if _chunk['type'] == 'building':
@@ -86,28 +84,60 @@ def position_for_combat(life,target,position,source_map):
 	
 	return True
 
-def travel_to_target(life, target, pos):
-	if sight.can_see_position(life, pos):
+def travel_to_position(life, pos, stop_on_sight=False):
+	if stop_on_sight and sight.can_see_position(life, pos):
 		return False
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+	
 	return True
-	#if not tuple(life['pos']) == tuple(pos):
-	#	lfe.clear_actions(life)
-	#	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 
-def search_for_target(life, target, source_map):
-	if sight.can_see_position(life, target['last_seen_at']):
-		print 'We can see where we last saw him.'
+def search_for_target(life, target_id):
+	#TODO: Variable size instead of hardcoded
+	_know = brain.knows_alife_by_id(life, target_id)
 	
-	if _cover:
-		print 'FIND TARGET',_cover['pos']
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)
-		return False
+	_size = 30
+	if brain.alife_has_flag(life, target_id, 'search_map'):
+		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
+	else:
+		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
+		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 	
-	return True
+	_lowest = {'score': -1, 'pos': None}
+	_x_top_left = numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
+	_y_top_left = numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
+	
+	for x in range(0, _size):
+		_x = _x_top_left+x
+		
+		if _x >= MAP_SIZE[0]-1:
+			continue
+		
+		for y in range(0, _size):
+			_y = _y_top_left+y
+			
+			if _y >= MAP_SIZE[1]-1:
+				continue
+			
+			if not _search_map[y, x]:
+				continue
+			
+			if sight.can_see_position(life, (_x, _y)):
+				_search_map[y, x] = 0
+			
+			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
+				_lowest['score'] = _search_map[y, x]
+				_lowest['pos'] = (_x, _y, x, y)
+			#_search.append((_x, _y, x, y))
+
+	if _lowest['pos']:
+		x, y, _x, _y = _lowest['pos']
+		
+		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+			_search_map[_y, _x] = 0
+	else:
+		_know['escaped'] = 2
 
 def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions

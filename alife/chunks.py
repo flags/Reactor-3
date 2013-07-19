@@ -17,6 +17,8 @@ def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 		
 		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
+		elif ignore_time:
+			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	if not ignore_starting:
 		_current_known_chunk = lfe.get_current_known_chunk(life)

@@ -3,12 +3,14 @@ from libtcodpy import *
 from globals import *
 from inputs import *
 from tiles import *
+
 import graphics as gfx
 import cProfile
 import maputils
 import logging
 import prefabs
 import random
+import zones
 import menus
 import time
 import maps
@@ -40,15 +42,15 @@ except ImportError, e:
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
 gfx.log(WINDOW_TITLE)
+create_all_tiles()
 
 try:
-	MAP = maps.load_map('map1.dat')
+	maps.load_map('map1.dat')
 except IOError:
-	MAP = maps.create_map()
-	maps.save_map(MAP)
+	maps.create_map()
+	maps.save_map()
 
 gfx.init_libtcod(terraform=True)
-create_all_tiles()
 
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
@@ -84,6 +86,8 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 		
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
 			camera[1]-=1
+	
+	gfx.refresh_window()
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
@@ -152,7 +156,7 @@ def handle_input():
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][PREFAB_CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 		else:
-			MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 	
 	elif INPUT['m']:
@@ -203,39 +207,39 @@ def handle_input():
 		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
 		_matching = 'grass'
 		
-		SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
-			_matching,
-			(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
+		#SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
+		#	_matching,
+		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
 	
 	elif INPUT['a']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(SAND_TILES))
 	
 	elif INPUT['b']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(RED_BRICK_TILES))
 
 	elif INPUT['g']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_FLOOR_TILES))
 	
 	elif INPUT['h']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(WHITE_TILE_TILES))
 	
 	elif INPUT['s']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(DIRT_TILES))
 	
 	elif INPUT['z']:
-		MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
+		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(random.choice(CONCRETE_TILES))
 
 	elif INPUT['l']:
@@ -246,40 +250,61 @@ def handle_input():
 
 	elif INPUT['1']:
 		CAMERA_POS[2] = 1
+		gfx.refresh_window()
 
 	elif INPUT['2']:
 		CAMERA_POS[2] = 2
+		gfx.refresh_window()
 
 	elif INPUT['3']:
 		CAMERA_POS[2] = 3
+		gfx.refresh_window()
 
 	elif INPUT['4']:
 		CAMERA_POS[2] = 4
+		gfx.refresh_window()
 
 	elif INPUT['5']:
 		CAMERA_POS[2] = 5
+		gfx.refresh_window()
 	
 	elif INPUT['6']:
 		CAMERA_POS[2] = 6
+		gfx.refresh_window()
 	
 	elif INPUT['7']:
 		CAMERA_POS[2] = 7
+		gfx.refresh_window()
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
+		gfx.refresh_window()
 	
 	elif INPUT['9']:
 		CAMERA_POS[2] = 9
+		gfx.refresh_window()
 	
 	elif INPUT['0']:
 		CAMERA_POS[2] = 10
+		gfx.refresh_window()
 
 def menu_item_selected(entry):
 	global RUNNING
 	value = entry['values'][entry['value']]
 	
 	if value == 'Save':
-		maps.save_map('map1.dat',MAP)
+		console_set_default_foreground(0, white)
+		console_print(0, 0, 0, 'Saving...')
+		console_flush()
+		
+		maps.save_map('map1.dat')
+	elif value == 'Compile':
+		_stime = time.time()
+		
+		zones.create_zone_map()
+		zones.connect_ramps()
+		
+		logging.debug('Map compile took: %s' % (time.time()-_stime))
 	elif value == 'Exit':
 		SETTINGS['running'] = False
 
@@ -292,12 +317,16 @@ def menu_item_changed(entry):
 			SETTINGS['draw z-levels below'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Blit z-level above':
 		if value == 'On':
 			SETTINGS['draw z-levels above'] = True
 		elif value == 'Off':
 			SETTINGS['draw z-levels above'] = False
+		
+		gfx.refresh_window()
 	
 	elif key == 'Draw lights':
 		if value == 'On':
@@ -305,6 +334,8 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			maps.reset_lights()
 			SETTINGS['draw lights'] = False
+		
+		gfx.refresh_window()
 
 def menu_align():
 	for menu in MENUS:
@@ -337,6 +368,7 @@ _menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
 _menu_items.append(menus.create_item('title','General',None,enabled=False))
 _menu_items.append(menus.create_item('list','S','Save'))
+_menu_items.append(menus.create_item('list','C','Compile'))
 _menu_items.append(menus.create_item('list','L','Load'))
 _menu_items.append(menus.create_item('list','E','Exit'))
 
@@ -357,13 +389,13 @@ def main():
 		handle_input()
 
 		if CYTHON_ENABLED:
-			render_map.render_map(MAP)
+			render_map.render_map(WORLD_INFO['map'])
 		else:
-			maps.render_map(MAP)
+			maps.render_map(WORLD_INFO['map'])
 		
 		#TODO: Cython-ify
-		maps.render_x_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
-		maps.render_y_cutout(MAP,MAP_CURSOR[0],MAP_CURSOR[1])
+		maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
+		maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 		
 		gfx.draw_all_tiles()
 		gfx.draw_bottom_ui_terraform()
@@ -399,4 +431,4 @@ else:
 #TODO: write this into the utility
 #MAP = maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
 
-maps.save_map('map1.dat',MAP)
+maps.save_map('map1.dat')

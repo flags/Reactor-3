@@ -18,7 +18,8 @@ def parse_packet(packet):
 	
 	if _packet['type'] == 'get':
 		if _packet['what'] == 'stats':
-			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()])}
+			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()]),
+				'active_life': len([l for l in LIFE.values() if not l['dead']])}
 			
 			return json.dumps(_stats)
 		elif _packet['what'] == 'groups':
@@ -51,7 +52,8 @@ def parse_packet(packet):
 				'job': _job,
 				'group': _life['group'],
 				'tempstor': _life['tempstor2'],
-				'know': _knows}
+				'know': _knows,
+				'stats': _life['stats']}
 			
 			return json.dumps(_sent_life)
 		elif _packet['what'] == 'memory':

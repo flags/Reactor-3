@@ -7,6 +7,7 @@ import language
 import dialog
 import groups
 import sight
+import stats
 
 import logging
 import random
@@ -58,28 +59,30 @@ def receive(life, target, gist):
 		
 	return True
 
-def announce(life, gist, public=False, group=None, **kvargs):
+def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
 	"""Sends `gist` to any known ALife. If `public`, then send to everyone."""
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
+	elif trusted:
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if judgement.can_trust(life, i)]
 	elif group:
 		_announce_to = [LIFE[i] for i in groups.get_group(group)['members'] if not i == life['id']]
 	else:
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_target_dangerous(life, i)]
 	
 	for target in _announce_to:
-		if not 'INTELLIGENT' in target['life_flags']:
-			continue
-		
 		if not public and has_sent(life, target, gist):
 			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
+			continue
+		
+		if not stats.can_talk_to(life, target['id']):
 			continue
 		
 		if not sight.can_see_position(life, target['pos']) and not lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 			#print life['name'],'cant see',target['id']
 			continue
 	
-		#logging.debug('\t%s got announce.' % ' '.join(target['name']))
+		#logging.debug('%s got announce: %s, %s' % (' '.join(target['name']), gist, life['name']))
 		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
 		
 		if not public:

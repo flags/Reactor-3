@@ -33,7 +33,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		
 		if _unfounded_camp['score'] >= stats.get_minimum_camp_score(life):
 			brain.store_in_memory(life, 'explore_camp', None)
-			print life['name'],'YO!!!! LETS CAMP, DUDE!'
 			return RETURN_VALUE
 		elif _unfounded_camp['camp']:
 			brain.store_in_memory(life, 'explore_camp', _unfounded_camp['camp'])
@@ -48,7 +47,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_to_explore = brain.retrieve_from_memory(life, 'explore_camp')
 	if _to_explore:
-		print life['name'],'LOOKING AT CAMP'
+		logging.warning('%s is looking for a camp (possible crash incoming)' % ' '.join(life['name']))
 		_closest_key =  references.find_nearest_key_in_reference(life, _to_explore, unknown=True)
 		_chunk = maps.get_chunk(_closest_key)
 		_dest = lfe.path_dest(life)
@@ -60,7 +59,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		return True
 	
 	_best_camp = camps.find_best_unfounded_camp(life)['camp']
-	print 'lets camp ;)'
 	
 	if not _best_camp:
 		return False

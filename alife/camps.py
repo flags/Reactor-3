@@ -25,7 +25,7 @@ def find_best_unfounded_camp(life, ignore_fully_explored=False):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
 	
 	_best_camp = {'camp': None, 'score': 0}
-	for camp in REFERENCE_MAP['buildings']:
+	for camp in WORLD_INFO['reference_map']['buildings']:
 		if camp in _founded_camps:
 			continue
 		
@@ -178,7 +178,7 @@ def guard_camp(life):
 	_delay = random.randint(25, jobs.get_job_detail(life['job'], 'pause'))
 	
 	if not life['path'] and not lfe.find_action(life, matches=[{'action': 'move'}]):
-		_chunk = CHUNK_MAP[references.find_least_controlled_key_in_reference(life, CAMPS[life['camp']]['reference'])]
+		_chunk = CHUNK_MAP[references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
 		lfe.add_action(life,{'action': 'move',
 			'to': random.choice(_chunk['ground'])},
 			200,

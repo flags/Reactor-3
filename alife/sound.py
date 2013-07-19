@@ -244,44 +244,45 @@ def listen(life):
 		
 		elif event['gist'] == 'under_attack':
 			_knows_attacker = True
-			if not brain.knows_alife_by_id(life, event['attacker']):
-				brain.meet_alife(life, LIFE[event['attacker']])
-				_knows_attacker = False
 			
-			_target = brain.knows_alife_by_id(life, event['attacker'])
-			_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']])
-			
-			print '*'*20
-			print life['name'],'HEY DUDE!!!!!',LIFE[event['attacker']]['name']
-
-			#SITUATION 1: We believe it
-			if _believes == event['from']['id']:
-				lfe.memory(life, 'heard about attack',
-					attacker=event['attacker'],
-					target=event['from']['id'])
-				lfe.memory(life, 'target attacked victim',
-					target=event['attacker'],
-					victim=event['from']['id'],
-					trust=-brain.knows_alife_by_id(life, event['from']['id'])['trust'],
-					danger=5)
-				
-				if event['last_seen_at']:
-					_target['last_seen_at'] = event['last_seen_at'][:]
-				else:
-					_target['last_seen_at'] = event['from']['pos'][:]
+			if life['id'] == event['attacker']:
+				pass
 			else:
-				lfe.memory(life, 'reject under_attack: attacker is trusted',
-					attacker=event['attacker'],
-					target=event['from']['id'])
+				if not brain.knows_alife_by_id(life, event['attacker']):
+					brain.meet_alife(life, LIFE[event['attacker']])
+					_knows_attacker = False
+				
+				_target = brain.knows_alife_by_id(life, event['attacker'])
+				_believes = judgement.believe_which_alife(life, [event['from']['id'], event['attacker']])
+	
+				#SITUATION 1: We believe it
+				if _believes == event['from']['id']:
+					lfe.memory(life, 'heard about attack',
+						attacker=event['attacker'],
+						target=event['from']['id'])
+					#lfe.memory(life, 'target attacked victim',
+					#	target=event['attacker'],
+					#	victim=event['from']['id'],
+					#	trust=-brain.knows_alife_by_id(life, event['from']['id'])['trust'],
+					#	danger=5)
 					
-				lfe.create_question(life,
-					'opinion_of_target',
-					{'target': event['from']['id'], 'who': event['attacker']},
-					lfe.get_memory,
-					{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
-					answer_all=True,
-					interest=10)
-					
+					if event['last_seen_at']:
+						_target['last_seen_at'] = event['last_seen_at'][:]
+					else:
+						_target['last_seen_at'] = event['from']['pos'][:]
+				else:
+					lfe.memory(life, 'reject under_attack: attacker is trusted',
+						attacker=event['attacker'],
+						target=event['from']['id'])
+						
+					lfe.create_question(life,
+						'opinion_of_target',
+						{'target': event['from']['id'], 'who': event['attacker']},
+						lfe.get_memory,
+						[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
+					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']}],
+						answer_all=True,
+						interest=10)
 			
 			#if _believes == event['from']['id']:
 			#	if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):

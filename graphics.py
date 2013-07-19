@@ -24,8 +24,11 @@ def init_libtcod(terraform=False):
 		Y_CUTOUT_WINDOW = tcod.console_new(Y_CUTOUT_WINDOW_SIZE[0],Y_CUTOUT_WINDOW_SIZE[1])
 		
 		PREFAB_CHAR_BUFFER[0] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
+		PREFAB_CHAR_BUFFER[1] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
 		X_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
+		X_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
 		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
+		Y_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
 	
 	tcod.console_set_custom_font(FONT,FONT_LAYOUT)
 	tcod.console_set_keyboard_repeat(200, 0)
@@ -46,6 +49,7 @@ def init_libtcod(terraform=False):
 	
 	LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
@@ -73,6 +77,16 @@ def start_of_frame_terraform():
 	tcod.console_fill_foreground(Y_CUTOUT_WINDOW,Y_CUTOUT_RGB_FORE_BUFFER[0],Y_CUTOUT_RGB_FORE_BUFFER[1],Y_CUTOUT_RGB_FORE_BUFFER[2])
 	tcod.console_fill_char(Y_CUTOUT_WINDOW,Y_CUTOUT_CHAR_BUFFER[0])
 
+def refresh_window_position(x, y):
+	DARK_BUFFER[0][y,x] = 0
+	LIGHT_BUFFER[0][y,x] = 0
+	MAP_CHAR_BUFFER[1][y,x] = 0
+
+def refresh_window():
+	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+
 def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	_tile = get_tile(tile)
 
@@ -95,6 +109,7 @@ def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore
 		rgb_back_buffer[2][y,x] = back_color.b
 
 	char_buffer[0][y,x] = ord(char)
+	char_buffer[1][y,x] = 1
 
 def blit_string(x, y, text, console=0, fore_color=tcod.white, back_color=None, flicker=0):
 	i = 0
@@ -198,9 +213,13 @@ def draw_message_box():
 		elif msg['style'] == 'speech':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.gray)
 		elif msg['style'] == 'action':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lightest_gray)
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lighter_crimson)
 		elif msg['style'] == 'important':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
+		elif msg['style'] == 'player_combat_good':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
+		elif msg['style'] == 'player_combat_bad':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.crimson)
 		else:
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
 		
@@ -235,33 +254,6 @@ def draw_all_tiles():
 		tcod.console_set_char_foreground(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][0])
 		tcod.console_set_char_background(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][1])
 		tcod.console_set_char(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['icon'])
-
-def draw_effects():
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-	
-	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for x in range(CAMERA_POS[0],_X_MAX):
-		_RENDER_X = x-CAMERA_POS[0]
-		for y in range(CAMERA_POS[1],_Y_MAX):
-			_RENDER_Y = y-CAMERA_POS[1]
-			#_drawn = False
-	
-			for effect in EFFECTS:
-				effect['size'] = (50,90)
-				
-				if (x>=effect['top_left'][0] and x<=effect['top_left'][0]+effect['size'][0]) and (y>=effect['top_left'][1] and y<=effect['top_left'][1]+effect['size'][1]):
-					if effect['height_map'][_RENDER_Y,_RENDER_X]>0:
-						darken_tile(_RENDER_X,_RENDER_Y,effect['height_map'][_RENDER_Y,_RENDER_X])
-						#print effect['height_map'][_RENDER_Y,_RENDER_X]
 
 def draw_dijkstra_heatmap():
 	if not SETTINGS['heatmap']:

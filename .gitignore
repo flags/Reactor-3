@@ -8,6 +8,7 @@
 *.patch
 *.idea_wall
 
+.stats/*
 build/*
 tests/*
 docs/devjournal.md
@@ -15,3 +16,4 @@ docs/shortlist.md
 docs/talks/*
 
 profile.dat
+profile.txt

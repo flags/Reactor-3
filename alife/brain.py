@@ -10,6 +10,7 @@ import alife_find_camp
 import alife_discover
 import alife_explore
 import alife_impulse
+import alife_search
 import alife_hidden
 import alife_combat
 import alife_group
@@ -47,7 +48,8 @@ MODULES = [alife_hide,
 	alife_work,
 	alife_needs,
 	alife_group,
-	alife_impulse]
+	alife_impulse,
+	alife_search]
 
 def think(life, source_map):
 	sight.look(life)
@@ -76,17 +78,25 @@ def get_flag(life, flag):
 	
 	return life['flags'][flag]
 
-def flag_alife(life, target, flag, value=True):
-	life['know'][target['id']]['flags'][flag] = value
+def alife_has_flag(life, target_id, flag):
+	if flag in life['know'][target_id]['flags']:
+		return True
+	
+	return False
 
-def unflag_alife(life, target, flag):
-	del life['know'][target['id']]['flags'][flag] 
+def flag_alife(life, target_id, flag, value=True):
+	logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	life['know'][target_id]['flags'][flag] = value
 
-def get_alife_flag(life, target, flag):
-	if not flag in life['know'][target['id']]['flags']:
+def unflag_alife(life, target_id, flag):
+	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	del life['know'][target_id]['flags'][flag] 
+
+def get_alife_flag(life, target_id, flag):
+	if not flag in life['know'][target_id]['flags']:
 		return False
 	
-	return life['know'][target['id']]['flags'][flag]
+	return life['know'][target_id]['flags'][flag]
 
 def flag_item(life, item, flag, value=True):
 	if not item['uid'] in life['know_items']:
@@ -167,7 +177,10 @@ def knows_alife_by_id(life, alife_id):
 
 def meet_alife(life, target):
 	if life['id'] == target['id']:
-		raise Exception('Life learned about itself. Stopping.')
+		raise Exception('Life \'%s\' learned about itself. Stopping.' % ' '.join(life['name']))
+	
+	if target['id'] in life['know']:
+		return False
 	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,
@@ -175,10 +188,10 @@ def meet_alife(life, target):
 		'trust': 0,
 		'influence': 0,
 		'likes': copy.deepcopy(target['likes']),
-		'last_seen_time': 0,
+		'last_seen_time': -1,
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': target['pos'][:],
-		'last_encounter_time': -1000,
+		'last_encounter_time': 0,
 		'escaped': False,
 		'snapshot': {},
 		'sent': [],

@@ -27,7 +27,7 @@ def process_questions(life):
 			
 			if question['answer_all']:
 				for _question in lfe.get_questions(life):
-					if not question['gist'] == _question['gist']:
+					if not question['text'] == _question['text']:
 						continue
 					
 					_question['answered'].extend(question['answered'])

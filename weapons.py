@@ -1,10 +1,14 @@
 from globals import *
+
 import graphics as gfx
+import life as lfe
+
 import numbers
 import bullets
-import random
+import alife
 import items
-import life as lfe
+
+import random
 
 random.seed()
 
@@ -16,7 +20,12 @@ def get_fire_mode(weapon):
 	return weapon['firemodes'][weapon['firemode']]
 
 def get_recoil(life):
-	weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+	_guns = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+	
+	if not _guns:
+		return 0
+	
+	weapon = lfe.get_inventory_item(life, _guns[0])
 	_recoil = weapon['recoil']
 	
 	if life['stance'] == 'standing':
@@ -37,6 +46,10 @@ def get_accuracy(life, weapon):
 		_accuracy *= 1.2
 	elif life['stance'] == 'crawling':
 		_accuracy *= 1
+		
+	_accuracy *= alife.stats.get_accuracy(life)
+	
+	print 'Accuracy', _accuracy
 	
 	return _accuracy
 
@@ -45,7 +58,22 @@ def fire(life, target, limb=None):
 	if 'player' in life:
 		weapon = life['firing']
 	else:
-		weapon = lfe.get_inventory_item(life,lfe.get_held_items(life,matches=[{'type': 'gun'}])[0])
+		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+		
+		if _item:
+			print _item
+			_item = _item[0]
+		else:
+			return False
+		
+		if not _item:
+			if 'player' in life:
+				gfx.message('You aren\'t holding a weapon!')
+			life['facing'] = (_fx,_fy)
+			life['firing'] = None
+			return False
+		
+		weapon = lfe.get_inventory_item(life, _item)
 	
 	_mode = get_fire_mode(weapon)
 	if _mode == 'single':

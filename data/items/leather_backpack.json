@@ -4,7 +4,7 @@
 "icon": "B",
 "description": "As the name suggests, it is a backpack made of quality leather.",
 "attaches_to": "chest",
-"flags": "CANWEAR|CANBURN|CANSOAK",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
 "size": "6x5",
 "capacity": "6x5",
 "thickness": 3,

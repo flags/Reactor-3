@@ -2,22 +2,131 @@ from globals import *
 
 import libtcodpy as tcod
 import graphics as gfx
+import life as lfe
 
 import render_los
-import logging
 import numbers
+import items
+import maps
+
+import logging
 import random
 import numpy
 import time
-import maps
 import sys
 
-def register_effect(effect, callback):
-	effect['callback'] = callback
+def register_effect(effect):
+	effect['id'] = WORLD_INFO['effectid']
+	EFFECTS[effect['id']] = effect
+	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].append(effect['id'])
 	
-	EFFECTS.append(effect)
+	WORLD_INFO['effectid'] += 1
+
+def unregister_effect(effect):
+	effect['unregister_callback'](effect)
 	
-	logging.debug('Effect registered: %s' % effect['what'])
+	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
+	del EFFECTS[effect['id']]
+
+def draw_fire(pos, fire):
+	_intensity = fire['intensity']/float(8)
+	_rand_intensity = numbers.clip(_intensity-random.uniform(0, .2), 0, 1)
+	
+	gfx.tint_tile(pos[0], pos[1], fire['color'], _rand_intensity)
+
+def calculate_fire(fire):
+	_neighbor_intensity = 0
+	_neighbor_lit = False
+	
+	for x in range(-1, 2):
+		_x = fire['pos'][0]+x
+		
+		if -1>_x>MAP_SIZE[0]:
+			continue
+		
+		for y in range(-1, 2):
+			if not x and not y:
+				continue
+			
+			_y = fire['pos'][1]+y
+			
+			if -1>_y>MAP_SIZE[1]:
+				continue
+			
+			for effect in [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']:
+				_neighbor_intensity += effect['intensity']
+				
+				if 'light' in effect:
+					_neighbor_lit = True
+	
+	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
+	fire['intensity'] -= _intensity
+	
+	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
+		lfe.burn(life, fire['intensity'])
+	
+	update_effect(fire)
+	
+	if fire['intensity'] <= 0:
+		unregister_effect(fire)
+	
+	if 'light' in fire:
+		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
+	elif not _neighbor_lit:
+		fire['light'] = create_light(fire['pos'], (255, 0, 255), .3*(fire['intensity']/8.0), 0.1)
+
+def delete_fire(fire):
+	if 'light' in fire:
+		LIGHTS.remove(fire['light'])
+
+def create_fire(pos, intensity=1):
+	intensity = numbers.clip(intensity, 1, 8)
+	
+	_effect = {'type': 'fire',
+	    'color': tcod.Color(255, 69, 0),
+	    'pos': list(pos),
+	    'intensity': intensity,
+	    'callback': calculate_fire,
+	    'draw_callback': draw_fire,
+	    'unregister_callback': delete_fire}
+	
+	register_effect(_effect)
+
+def calculate_all_effects():
+	for effect in EFFECTS.values():
+		effect['callback'](effect)
+
+def update_effect(effect):
+	_x = effect['pos'][0]-CAMERA_POS[0]
+	_y = effect['pos'][1]-CAMERA_POS[1]
+	
+	if _x<0 or _x>=MAP_WINDOW_SIZE[0]-1 or _y<0 or _y>=MAP_WINDOW_SIZE[1]-1:
+		return False
+	
+	gfx.refresh_window_position(_x, _y)
+
+def draw_effect(pos):
+	if not EFFECT_MAP[pos[0]][pos[1]]:
+		return False
+	
+	for effect in [EFFECTS[eid] for eid in EFFECT_MAP[pos[0]][pos[1]]]:
+		_x = pos[0]-CAMERA_POS[0]
+		_y = pos[1]-CAMERA_POS[1]
+		
+		effect['draw_callback']((_x, _y), effect)
+
+def light_exists_at(pos):
+	for light in LIGHTS:
+		if light['pos'] == list(pos):
+			return light
+	
+	return False
+
+def create_light(pos, color, brightness, shake, fade=0):
+	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
+	LIGHTS.append(_light)
+	
+	return _light
 
 def has_splatter(position, what=None):
 	#TODO: Make this into a dict so we can convert the position to a string and search that
@@ -48,27 +157,6 @@ def create_splatter(what, position, velocity=0, intensity=4):
 	_splatter['pos'] = tuple(_splatter['pos'])
 	SPLATTERS.append(_splatter)
 
-def create_gas(where, what, amount, source_map):
-	effect = {'what': what, 'where': tuple(where),'amount': amount,'map': source_map,'height_map': 'Reset'}
-	
-	_x = numbers.clip(where[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-	_y = numbers.clip(where[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
-	_top_left = (_x,_y,where[2])
-	
-	effect['top_left'] = _top_left
-	
-	target_los = render_los.render_los(source_map,where,top_left=_top_left,no_edge=False)
-	target_los = numpy.multiply(target_los,50)
-	
-	effect['height_map'] = target_los
-	
-	register_effect(effect,simulate_gas)
-
-def simulate_gas(effect):
-	effect['height_map'] = numpy.multiply(effect['height_map'],0.99)
-	
-	return True
-
 def draw_splatter(position, render_at):
 	_has_splatter = has_splatter(position)
 	
@@ -77,11 +165,18 @@ def draw_splatter(position, render_at):
 	
 	gfx.tint_tile(render_at[0],render_at[1],_has_splatter['color'],_has_splatter['coef'])
 
-def tick_effects():
-	#global EFFECTS
-	_t = time.time()
-	for effect in EFFECTS[:]:		
-		if not effect['callback'](effect):
-			EFFECTS.remove(effect)
+def create_gib(life, icon, size, velocity):
+	_gib = {'name': 'gib',
+		'prefix': 'a',
+		'type': 'magazine',
+		'icon': icon,
+		'flags': ['BLOODY'],
+		'description': '%s\'s limb.' % ' '.join(life['name']),
+		'size': '%sx1' % size,
+		'material': 'flesh',
+		'thickness': size}
 	
-	print time.time()-_t
+	_i = items.create_item('gib', position=life['pos'][:], item=_gib)
+	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]
+	
+	logging.debug('Created gib.')

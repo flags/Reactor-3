@@ -18,6 +18,9 @@ CHECK_STATES.append(STATE)
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
+	if life['state'] == 'combat':
+		return False
+	
 	if judgement.is_safe(life):
 		return False
 	

@@ -3,6 +3,7 @@ from globals import *
 import alife
 
 import random
+import os
 
 def prettify_string_array(array, max_length):
 	"""Returns a human readable string from an array of strings."""
@@ -27,20 +28,68 @@ def prettify_string_array(array, max_length):
 	return _string
 
 def get_name(life):
-	if random.randint(0, 1):
-		return ' '.join(life['name'])
+	return ' '.join(life['name'])
+
+def get_name_ownership(life, pronoun=False):
+	if pronoun:
+		if life['type'] == 'humanoid':
+			return 'his'
+		else:
+			return 'its'
+	
+	return '%s\'s' % ' '.join(life['name'])
+
+def get_introduction(life, posession=False):
+	if 'player' in life:
+		if posession:
+			return 'Your'
+		
+		return 'You'
+	
+	if life['type'] == 'humanoid':
+		if posession:
+			return '%s\'s' % get_name(life)
+		else:
+			return get_name(life)
 	else:
-		return 'He'
+		#TODO: Check limb conditions
+		if posession:
+			return 'The %s\'s' % life['species']
+		else:
+			return 'The %s' % life['species']
+
+def _load_strings(a, directory, filenames):
+	for filename in [f for f in filenames if f.count('.txt')]:
+		_map_name = filename.strip('.txt')
+		TEXT_MAP[_map_name] = []
+		
+		with open(os.path.join(directory, filename), 'r') as e:
+			TEXT_MAP[_map_name].extend([line.strip() for line in e.readlines()])
 
 def load_strings():
-	with open(os.path.join(TEXT_DIR,'places.txt'),'r') as e:
-		NAMES_FOR_PLACES.extend([line.strip() for line in e.readlines()])
+	#TODO: Use better walk, like one in profiles.py
+	try:
+		os.path.walk(TEXT_DIR, _load_strings, None)
+	except:
+		raise Exception('Error loading strings.')
 
 def generate_place_name():
-	if not NAMES_FOR_PLACES:
+	if not TEXT_MAP['places']:
 		return 'Zoolandia'
 	
-	return NAMES_FOR_PLACES.pop(random.randint(0, len(NAMES_FOR_PLACES)-1))
+	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
+
+def generate_first_and_last_name_from_species(species):
+	_map_first_names = '%s_first_names' % species
+	_map_last_names = '%s_last_names' % species
+	
+	if not TEXT_MAP[_map_first_names] or not TEXT_MAP[_map_last_names]:
+		return ('Wayne', 'Brady')
+	
+	_first_name = TEXT_MAP[_map_first_names].pop(random.randint(0, len(TEXT_MAP[_map_first_names])-1))
+	_last_name = TEXT_MAP[_map_last_names].pop(random.randint(0, len(TEXT_MAP[_map_last_names])-1))
+	
+	return (_first_name, _last_name)
 
 def format_injury(injury):
 	if injury['lodged_item']:
@@ -61,12 +110,3 @@ def generate_memory_phrase(memory):
 		return '%s seems like a good guy.' % (' '.join(LIFE[memory['target']]['name']))
 	else:
 		print 'DIDNT HAVE A PHRASE FOR',_topic
-
-def get_description(life):
-	_facts = []
-	
-	_group_threshold = alife.stats.get_max_group_size(life)
-	if _group_threshold >= alife.stats.MAX_SOCIABILITY*.9:
-		_facts.append('{pn} {prefers} large groups.')
-	elif _group_threshold <= alife.stats.MAX_SOCIABILITY*.4:
-		_facts.append('{pn} {avoids} groups.')

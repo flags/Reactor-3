@@ -122,7 +122,7 @@ def manage_hands(life):
 				delay=lfe.get_item_access_time(life,item['id']))
 			continue
 		
-		if not 'CANWEAR' in item['flags'] and lfe.get_all_storage(life):
+		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
 			_store_action = {'action': 'storeitem',
 				'item': item['id'],
 				'container': lfe.get_all_storage(life)[0]['id']}

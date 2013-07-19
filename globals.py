@@ -21,18 +21,27 @@ ENCOUNTER_ANIMATION_TIME = 30
 
 #Map stuff
 CHUNK_MAP = {}
-WORLD_INFO = {'map': [],
-    'time': 0,
-    'time_of_day': 4000,
-    'time_scale': 1,
-    'length_of_day': 6000,
-    'day': 0,
-	'ticks': 0,
-	'pause_ticks': 0,
-	'in_combat': False}
-REFERENCE_MAP = {'roads': [],
-	'buildings': []}
 CAMPS = {}
+WORLD_INFO = {'map': [],
+	'time': 0,
+	'time_of_day': 6000,
+	'time_scale': 1,
+	'length_of_day': 6000,
+	'day': 0,
+	'ticks': 0,
+	'tps': 0,
+	'tps_time': 0,
+	'pause_ticks': 0,
+	'in_combat': False,
+	'world gravity': 0.3,
+	'lifeid': 1,
+	'itemid': 1,
+	'groupid': 1,
+	'effectid': 1,
+	'zoneid': 1,
+    'chunk_map': CHUNK_MAP,
+    'reference_map': {'roads': [], 'buildings': []},
+    'slices': {}}
 
 #Return values
 STATE_CHANGE = 2
@@ -43,10 +52,11 @@ CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
-FPS = 30
+FPS = 100
 FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
+TPS = 30
 FONT = 'terminal12x12_gs_ro.png'
 FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
 HEIGHT_MAP = [[]]
@@ -64,10 +74,10 @@ X_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 Y_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 RGB_LIGHT_BUFFER = [[],[],[]]
 LOS_BUFFER = [[]]
-MAP_CHAR_BUFFER = [[]]
-PREFAB_CHAR_BUFFER = [[]]
-X_CUTOUT_CHAR_BUFFER = [[]]
-Y_CUTOUT_CHAR_BUFFER = [[]]
+MAP_CHAR_BUFFER = [[], []]
+PREFAB_CHAR_BUFFER = [[], []]
+X_CUTOUT_CHAR_BUFFER = [[], []]
+Y_CUTOUT_CHAR_BUFFER = [[], []]
 LIGHTS = []
 CONSOLE_HISTORY = []
 CONSOLE_HISTORY_MAX_LINES = 29
@@ -85,7 +95,7 @@ DEFAULT_ITEM_SIZE = '2x2'
 DEFAULT_ITEM_PREFIX = 'a'
 
 #Versions
-MAP_RENDER_VERSION = 4
+MAP_RENDER_VERSION = 6
 
 #Graphics tweaks
 FADE_TO_WHITE = [0]
@@ -94,10 +104,10 @@ BORDER_COLOR = tcod.Color(128,128,128)
 MAX_MESSAGES_IN_DIALOG = 9
 
 #Strings
-NAMES_FOR_PLACES = []
+TEXT_MAP = {}
 
 #Life constants
-LIFE_MAX_SPEED = 2
+LIFE_MAX_SPEED = 4
 LIFE_BLEED_RATE = .4 #Higher is faster
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
@@ -144,35 +154,33 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 
 #Non-constants
 SETTINGS = {'running': True,
-			'paused': False,
-			'draw lights': True,
-			'diffuse light': False,
-			'debug host': '',
-			'debug port': 3333,
-			'draw console': False,
-			'draw z-levels above': True,
-			'draw z-levels below': False,
-			'progress bar max value': 25,
-			'action queue size': 4,
-			'world gravity': 0.1,
-			'los': 40,
-			'lifeid': 1,
-     		'itemid': 1,
-     		'groupid': 1,
-			'heatmap': None,
-			'controlling': None,
-			'following': None,
-			'state history size': 5,
-			'chunk size': 5}
+	'paused': False,
+	'draw lights': True,
+	'diffuse light': False,
+	'debug host': '',
+	'debug port': 3335,
+	'draw console': False,
+	'draw z-levels above': True,
+	'draw z-levels below': False,
+	'progress bar max value': 25,
+	'action queue size': 4,
+	'los': 40,
+	'controlling': None,
+	'following': None,
+	'state history size': 5,
+	'chunk size': 5,
+	'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
 LIFE_TYPES = {}
 LIFE = {}
+LIFE_MAP = []
 ITEM_TYPES = {}
 ITEMS = {}
 BULLETS = []
-EFFECTS = []
+EFFECTS = {}
+EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
