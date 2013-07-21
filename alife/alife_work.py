@@ -35,5 +35,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		lfe.clear_actions(life)
 		return True
 	
+	if jobs.process_cancel_if(life, life['job']):
+		return False
+	
 	if life['task'] and life['task']['callback'](life):
 		jobs.complete_task(life)

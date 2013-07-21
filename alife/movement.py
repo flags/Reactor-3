@@ -259,6 +259,27 @@ def find_alife(life):
 	
 	return False
 
+def find_alife_with_answer(life):
+	_asked = jobs.get_job_detail(life['job'], 'asked')
+	
+	for target in life['know']:
+		if target in _asked:
+			continue
+		
+		if _find_alife(life, target):
+			#_question = lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))
+			print life['name'],'SHOULD BE ASKING TARGET',_asked
+			_asked.append(target)
+		else:
+			print life['name'],'STILL LOOKING FOR TARGET!!!!!!!',_asked
+			break
+	
+	print jobs.get_job_detail(life['job'], 'question id')
+	if lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))['answered']:
+		return True
+	
+	return False
+
 def follow_alife(life):
 	if _find_alife(life, jobs.get_job_detail(life['job'], 'target'), distance=7):
 		lfe.stop(life)
@@ -266,13 +287,11 @@ def follow_alife(life):
 	
 	return False
 
-#TODO: Put this in a new file
-def find_alife_and_say(life):
-	_target = brain.knows_alife_by_id(life, jobs.get_job_detail(life['job'], 'target'))
+def _find_alife_and_say(life, target_id, say):
+	_target = brain.knows_alife_by_id(life, target_id)
 	
 	if _find_alife(life, _target['life']['id']):
-		_say = jobs.get_job_detail(life['job'], 'say')
-		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], camp=_say['camp'], founder=_say['founder'])
+		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], **say)
 		lfe.memory(life,
 			'told about founder',
 			camp=_say['camp'],
@@ -280,3 +299,7 @@ def find_alife_and_say(life):
 		return True
 	
 	return False
+
+#TODO: Put this in a new file
+def find_alife_and_say(life):	
+	return _find_alife_and_say(life, jobs.get_job_detail(life['job'], 'target'), jobs.get_job_detail(life['job'], 'target'))

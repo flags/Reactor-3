@@ -402,7 +402,7 @@ def path_from_dijkstra(start_position,dijkstra,downhill=False):
 	else:
 		_next = {'pos': [],'score': 0}
 
-	while 1:
+	while SETTINGS['running']:
 		for x1 in range(-1,2):
 			_x = (_s_pos[0]+x1)
 			x = (_s_pos[0]-dijkstra['x_range'][0])+x1
@@ -464,7 +464,7 @@ def path_from_dijkstra_old(start_position,dijkstra,downhill=False):
 
 	_path = []
 
-	while 1:
+	while SETTINGS['running']:
 		for x1 in range(-1,2):
 			_x = (_s_pos[0]+x1)
 			x = (_s_pos[0]-dijkstra['x_range'][0])+x1

@@ -307,6 +307,7 @@ def judge_chunk(life, chunk_id, visited=False):
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
+			_score += get_influence(life, _target['life']['id'], 'camp')
 	
 	for camp in life['known_camps'].values():
 		if not chunk_id in camp['reference']:

@@ -74,10 +74,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					
 				#This will be a very general job that give another alife a specific memory
 				_j = jobs.create_job(life, 'give information')
-				jobs.add_detail_to_job(_j, 'say', {'gist': 'camp_founder',
-					'founder': _info['founder'],
-					'camp': _camp['id'],
-					'target': _target['life']['id']})
+				jobs.add_detail_to_job(_j, 'say', None, gist='camp_founder',
+					founder=_info['founder'],
+					camp=_camp['id'],
+					target=_target['life']['id'])
 				jobs.add_detail_to_job(_j, 'target', _target['life']['id'])
 				jobs.add_job_task(_j, 'find alife', callback=movement.find_alife_and_say, required=True)
 				jobs.add_job_candidate(_j, life)

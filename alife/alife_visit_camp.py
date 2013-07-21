@@ -40,9 +40,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			'wants_founder_info',
 			{'camp': _camp['id']},
 			lfe.get_memory,
-			{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
+			{'camp': _camp['id'], 'founder': '*'})
 		
-		if lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'}):
+		if lfe.get_memory(life, matches={'camp': _camp['id'], 'founder': '*'}):
 			lfe.create_question(life,
 				'ask_to_join_camp',
 				{'camp': _camp['id']},
@@ -62,15 +62,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				print 'ALREADY HAS IMPRESSION'
 		else:
 			print 'does not know founder'
-			_q = lfe.create_question(life,
-				'wants_founder_info',
-				{'camp': _camp['id']},
-				lfe.get_memory,
-				{'text': 'heard_about_camp', 'camp': _camp['id'], 'founder': '*'})
-			
-			#if not life['state'] == 'working':
-			#	lfe.track_target(life, 
-			
 			if not life['state'] == 'working':
-				camps.investigate_camp(life, _camp['id'], _q)
+				_q = lfe.create_question(life,
+					'wants_founder_info',
+					{'camp': _camp['id']},
+					lfe.get_memory,
+					{'camp': _camp['id'], 'founder': '*'})
+				
+				#if not life['state'] == 'working':
+				#	lfe.track_target(life, 
+			
+				camps.investigate(life, _camp['id'], _q)
 	

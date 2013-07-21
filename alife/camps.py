@@ -6,6 +6,7 @@ import references
 import judgement
 import language
 import survival
+import movement
 import numbers
 import speech
 import chunks
@@ -41,16 +42,18 @@ def flag(life, camp_id, flag, value):
 
 def investigate(life, camp_id, question_id):
 	_j = jobs.create_job(life, 'investigate camp')
-	jobs.add_detail_to_job(_j, 'camp id', target_match)
+	jobs.cancel_if(_j, lfe.has_group)
 	jobs.add_detail_to_job(_j, 'asked', [])
 	jobs.add_detail_to_job(_j, 'question id', question_id)
-	jobs.add_job_task(_j, 'find target with question', callback=movement.find_alife_matching, required=True)
+	jobs.add_job_task(_j, 'investigate camp', callback=movement.find_alife_with_answer, required=True)
 	jobs.add_job_candidate(_j, life)
 	jobs.process_job(_j)
 
-
 def knows_founder(life, camp_id):
-	_memories = lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': camp_id, 'founder': '*'})
+	if CAMPS[camp_id]['founder'] == life['id']:
+		return life['id']
+	
+	_memories = lfe.get_memory(life, matches={'camp': camp_id, 'founder': '*'})
 	
 	if _memories:
 		_memory = _memories.pop()

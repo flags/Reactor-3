@@ -693,6 +693,9 @@ def has_dialog(life):
 	
 	return False
 
+def has_group(life):
+	return life['group']
+
 def can_ask(life, chosen, memory):
 	if 'target' in chosen and chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
 		return False
@@ -748,10 +751,10 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 		brain.add_impression(life, question['target'], 'talk', {'influence': alife.stats.get_influence_from(life, question['target'])})
 	
 	question['answer_all'] = answer_all
-	memory(life, gist, question)
+	_id = memory(life, gist, question)
 	
 	logging.debug('Creating question...')
-	return True
+	return _id
 
 def get_questions(life, target=None, no_filter=False, skip_answered=True):
 	_questions = []

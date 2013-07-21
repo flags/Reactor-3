@@ -341,6 +341,7 @@ def listen(life):
 			#TODO: Question this
 			life['camp'] = event['camp']
 			camps.discover_camp(life, event['from']['known_camps'][event['camp']])
+			lfe.memory(life, 'camp founder', camp=event['camp'], founder=event['from']['id'])
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

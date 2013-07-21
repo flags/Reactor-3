@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import historygen
 import groups
+import camps
 import sight
 import brain
 
@@ -124,8 +125,11 @@ def desires_to_create_camp(life):
 	return False
 
 def desires_to_join_camp(life, camp_id):
+	if life['group']:
+		return False
+	
 	if life['camp']:
-		print life['name'],'already has camp'
+		print life['name'],'already has camp',camps.knows_founder(life, life['camp'])
 		return False
 	
 	if life['stats']['lone_wolf']:
