@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import combat
 import speech
+import camps
 import brain
 import jobs
 
@@ -49,7 +50,7 @@ def add_member(group_id, life_id):
 	
 	if _group['camp']:
 		LIFE[life_id]['camp'] = _group['camp']
-		camps.discover_camp(life, LIFE[_group['founder']]['known_camps'][_group['camp']])
+		camps.discover_camp(LIFE[life_id], LIFE[_group['leader']]['known_camps'][_group['camp']])
 	
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)

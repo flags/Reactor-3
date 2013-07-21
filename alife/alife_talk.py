@@ -33,10 +33,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#	return False
 	
 	for ai in alife_seen:
-		#What's our relationship with them?
-		#if ai['life']['state'] in ['hiding', 'hidden']:
-		#	break
-		
 		if life['state'] in ['combat']:
 			break
 		

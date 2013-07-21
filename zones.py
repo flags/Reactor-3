@@ -111,7 +111,7 @@ def can_path_to_zone(z1, z2):
 		_checking = _to_check.pop()
 		_checked.append(_checking)
 		
-		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checked and not n in _checked])
+		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checking and not n in _checked])
 		
 		if z2 in _to_check:
 			_checked.append(z2)

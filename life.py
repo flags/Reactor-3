@@ -447,6 +447,13 @@ def tick_animation(life):
 		
 	return life['animation']['images'][life['animation']['index']]
 
+def track_target(life, target_id):
+	_j = jobs.create_job(life, 'track target')
+	jobs.add_detail_to_job(_j, 'target', target_id)
+	jobs.add_job_task(_j, 'find target', callback=movement.find_alife, required=True)
+	jobs.add_job_candidate(_j, life)
+	jobs.process_job(_j)
+
 def get_current_camp(life):
 	return life['known_camps'][life['camp']]
 
@@ -656,8 +663,9 @@ def say(life, text, action=False, volume=30, context=False):
 			gfx.message(text, style=_style)
 
 def memory(life, gist, *args, **kvargs):
-	_entry = {'text': gist, 'id': len(life['memory'])}
+	_entry = {'text': gist, 'id': WORLD_INFO['memoryid']}
 	_entry['time_created'] = WORLD_INFO['ticks']
+	WORLD_INFO['memoryid'] += 1
 	
 	for arg in args:
 		_entry.update(arg)
@@ -675,6 +683,8 @@ def memory(life, gist, *args, **kvargs):
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
+	
+	return _entry['id']
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:

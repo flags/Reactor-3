@@ -9,6 +9,17 @@ import numbers
 import random
 import time
 
+def get_flag(life, chunk_id, flag):
+	if flag in life['known_chunks'][chunk_id]:
+		return life['known_chunks'][chunk_id][flag]
+	
+	return False
+
+def flag(life, chunk_id, flag, value):
+	life['known_chunks'][chunk_id]['flags'][flag] = value
+	
+	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
+
 def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 	_interesting_chunks = {}
 	

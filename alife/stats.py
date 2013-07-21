@@ -123,9 +123,28 @@ def desires_to_create_camp(life):
 	
 	return False
 
-def desires_camp(life):
-	print 'Dead code'
-	return False
+def desires_to_join_camp(life, camp_id):
+	if life['camp']:
+		print life['name'],'already has camp'
+		return False
+	
+	if life['stats']['lone_wolf']:
+		print life['name'],'is lone wolf' * 10
+		return False
+	
+	_memories = lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': camp_id, 'founder': '*'})
+	if _memories:
+		_memory = _memories.pop()
+		
+		if not judgement.can_trust(life, _memory['founder']):
+			print life['name'],'Cant trust founder' * 10
+			return False
+		
+	if lfe.get_memory(life, matches={'text': 'ask_to_join_camp', 'camp': camp_id}):
+		print life['name'],'Asked to join camp already' * 10
+		return False
+	
+	return True
 
 def get_accuracy(life):
 	#print 'Accuracy:',numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)

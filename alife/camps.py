@@ -9,11 +9,58 @@ import survival
 import numbers
 import speech
 import chunks
+import brain
 import stats
 import jobs
 
 import logging
 import random
+
+def get_impressions(life, camp_id):
+	_score = 0
+	
+	for flag in life['known_camps'][camp_id]['flags']:
+		if flag.count('impression'):
+			_score += life['known_camps'][camp_id]['flags'][flag]
+	
+	return _score
+
+def get_flag(life, camp_id, flag):
+	if flag in life['known_camps'][camp_id]['flags']:
+		return life['known_camps'][camp_id]['flags'][flag]
+	
+	return None
+
+def flag(life, camp_id, flag, value):
+	if not camp_id in life['known_camps']:
+		raise Exception('%s does not know camp \'%s\'.' % (' '.join(life['name'])), value)
+	
+	life['known_camps'][camp_id]['flags'][flag] = value
+	
+	logging.debug('%s flagged camp \'%s\' with %s.' % (' '.join(life['name']), camp_id, flag))
+
+def investigate(life, camp_id, question_id):
+	_j = jobs.create_job(life, 'investigate camp')
+	jobs.add_detail_to_job(_j, 'camp id', target_match)
+	jobs.add_detail_to_job(_j, 'asked', [])
+	jobs.add_detail_to_job(_j, 'question id', question_id)
+	jobs.add_job_task(_j, 'find target with question', callback=movement.find_alife_matching, required=True)
+	jobs.add_job_candidate(_j, life)
+	jobs.process_job(_j)
+
+
+def knows_founder(life, camp_id):
+	_memories = lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': camp_id, 'founder': '*'})
+	
+	if _memories:
+		_memory = _memories.pop()
+	else:
+		return None
+	
+	if brain.knows_alife_by_id(life, _memory['founder']):
+		return _memory['founder']
+	
+	return None
 
 def find_nearest_unfounded_camp(life):
 	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
@@ -129,8 +176,11 @@ def has_discovered_camp(life, camp):
 def discover_camp(life, camp):
 	life['known_camps'][camp['id']] = camp.copy()
 	life['known_camps'][camp['id']]['time_discovered'] = WORLD_INFO['ticks']
+	life['known_camps'][camp['id']]['flags'] = {}
 
-	if not camp['founder'] == life['id']:
+	if camp['founder'] == life['id']:
+		judgement.judge_chunk(life, lfe.get_current_chunk_id(LIFE[camp['founder']]))
+	else:
 		logging.debug('%s discovered camp #%s.' % (' '.join(life['name']), camp['id']))
 
 def is_in_camp(life, camp):
@@ -150,7 +200,7 @@ def get_nearest_position_in_camp(life, camp):
 	_camp = CAMPS[camp]
 	_key = references.find_nearest_key_in_reference_exact(life['pos'], _camp['reference'])
 	
-	return chunks.get_nearest_position_in_chunk(life, camp)
+	return chunks.get_nearest_position_in_chunk(life['pos'], _key)
 
 def get_founded_camps(life):
 	return [CAMPS[i] for i in CAMPS if CAMPS[i]['founder'] == life['id']]

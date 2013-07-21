@@ -771,7 +771,7 @@ def process_response(life, target, dialog, chosen):
 		else:
 			_responses.append({'text': 'I\'ve only heard bad things about you.', 'gist': 'deny_from_camp', 'camp': chosen['camp'], 'dislike': 1})
 		
-		print 'YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO'
+		print 'YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO' * 10
 	
 	elif chosen['gist'] == 'opinion_of_target':
 		#TODO: This only works if this is asked as a question, NOT in dialog

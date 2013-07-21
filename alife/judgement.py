@@ -281,7 +281,13 @@ def judge_chunk(life, chunk_id, visited=False):
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
+		if chunks.get_walkable_areas(chunk_id) and sight.can_see_position(life, random.choice(chunks.get_walkable_areas(chunk_id))):
+			_last_visited = 0
+		else:
+			_last_visited = -1
+		
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
+			'flags': {},
 			'digest': chunk['digest']}
 	
 	_trusted = 0
@@ -302,6 +308,25 @@ def judge_chunk(life, chunk_id, visited=False):
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
 	
+	for camp in life['known_camps'].values():
+		if not chunk_id in camp['reference']:
+			continue
+		
+		#print life['name'],camps.get_impressions(life, camp['id'])
+		_score += camps.get_impressions(life, camp['id'])
+	#	
+	#	if stats.desires_to_join_camp(life, camp['id']):
+	#		print life['name'],'desires to join camp' * 10
+	#		#print camps.is_in_any_camp(life['pos'])
+	#		if camps.knows_founder(life, camp['id']):
+	#			print life['name'],'knows founder'
+	#			
+	#			
+	#		_score += 25
+	#	else:
+	#		if not 'player' in life:
+	#			print life['name'], 'no desire to join camp'
+				
 	if stats.desires_interaction(life):
 		_score += _trusted
 	
