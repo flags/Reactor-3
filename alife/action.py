@@ -61,29 +61,41 @@ def _execute(action):
 	#	print 'ASKING QUESTION' * 50
 	
 	if 'return' in action['args']:
-		if 'extend' in action['kwargs']:
-			_struct.update(action['kwargs']['extend'])
+		if 'include' in action['kwargs']:
+			_struct.update(action['kwargs']['include'])
 		
 		return _struct
 	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])
+		print 'FUNCTION' * 50
 		
 		if 'filter' in action['args']:
 			_ret_list = []
 			
+			for key in _arguments.keys():
+				if not key in action['kwargs']['arguments']['kwargs']:
+					if 'include' in action['kwargs']['arguments']['kwargs'] and key in action['kwargs']['arguments']['kwargs']['include']:
+						continue
+					
+					del _arguments[key]
+			
 			for result in _struct['list']:
 				_arguments.update({_struct['store_retrieve_as']: result})
-				if not action['kwargs'](**_arguments):
+				if not action['kwargs']['function'](**_arguments):
+					print 'THIS DID NOT MAKE IT' * 100
 					continue
 				
 				_ret_list.append(result)
+			
+			print 'RET LIST' * 50
+			print _ret_list
 	
 	if 'find_alife' in action['args']:
 		return _struct['life']['know'].keys()
 	
 	if 'track_alife' in action['args']:
-		print action['kwargs'], _struct['list']
+		#print action['kwargs'], _struct['list']
 		if not _struct['list']:
 			return False
 		
@@ -91,7 +103,7 @@ def _execute(action):
 			if not _struct['list'][0] in _struct['add_to']:
 				_struct['add_to'].append(_struct['list'][0])
 		
-		print 'WERE TRACKING' * 50
+		print 'Tracking'
 		lfe.focus_on(_struct['life'])
 		
 		return True

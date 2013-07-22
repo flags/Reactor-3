@@ -58,9 +58,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_founder = camps.knows_founder(life, _camp['id'])
 		
 		if _founder:
-			print 'Knows founder'
+			#print 'Knows founder'
+			pass
 		else:
-			print 'does not know founder!' * 10
+			#print 'does not know founder!' * 10
 			_g = goals.add_goal(life, 'find founder', {'camp': _camp['id'], 'founder': '*'})
 			if _g:
 				_q = lfe.create_question(life,
@@ -75,16 +76,18 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				goals.complete_on_answer(life, _g, _q)
 				
 				_c = goals.add_action(life, _g, action.make('find_alife', life=life['id'], matching={'id': '*'}))
-				goals.filter_criteria(life, _g, _c, judgement.can_trust)
-				goals.filter_criteria(life, _g, _c, judgement.is_target_lost, invert=True)
 				goals.filter_criteria_with_action(life, _g, _c,
 				                                  action.make('filter',
+				                                              life=life['id'],
 				                                              retrieve={'goal_id': _g, 'criteria_id': _c},
 				                                              store_retrieve_as='target_id',
 				                                              function=lfe.can_ask,
 				                                              arguments=action.make('return',
-				                                                                    extend={'memory_id': _q},
+				                                                                    include={'question_id': _q},
 				                                                                    life=life['id'])))
+				goals.filter_criteria(life, _g, _c, judgement.can_trust)
+				goals.filter_criteria(life, _g, _c, judgement.is_target_lost, invert=True)
+				
 				goals.add_action(life, _g, action.make('track_alife',
 				                                       life=life['id'],
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},

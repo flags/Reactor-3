@@ -129,7 +129,6 @@ def process_goals(life):
 			continue
 		
 		for question in _goal['complete_on_answer']:
-			print lfe.get_memory_via_id(life, question)
 			if lfe.get_memory_via_id(life, question)['answered']:
 				print 'DELETED GOAL!' * 100
 				_goal['complete'] = True
@@ -159,7 +158,7 @@ def _process_goal(life, goal_id):
 			criteria['result'] = _process
 			
 			if not criteria['result']:
-				print 'Goal not met', life['name'], criteria
+				#print 'Goal not met', life['name'], criteria
 				_passed = False
 				continue
 		else:
