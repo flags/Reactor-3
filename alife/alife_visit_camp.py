@@ -63,12 +63,28 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			print 'does not know founder!' * 10
 			_g = goals.add_goal(life, 'find founder', {'camp': _camp['id'], 'founder': '*'})
 			if _g:
-				_c = goals.add_action(life, _g, action.make('find_alife', matching={'id': '*'}))
+				goals.flag(life, _g, 'talk_to', [])
+				goals.flag(life, _g, 'talked_to', [])
+				_c = goals.add_action(life, _g, action.make('find_alife', life=life['id'], matching={'id': '*'}))
 				goals.filter_criteria(life, _g, _c, judgement.can_trust)
-				_c = goals.add_action(life, _g, action.make('talk', question='wants_founder_info'))
+				goals.filter_criteria(life, _g, _c, judgement.is_target_lost)
+				goals.add_action(life, _g, action.make('track_alife',
+				                                               life=life['id'],
+				                                               retrieve={'goal_id': _g, 'criteria_id': _c},
+				                                               add_to=goals.get_flag(life, _g, 'talk_to'),
+				                                               filter_by=goals.get_flag(life, _g, 'talked_to')))
+				
+				#goals.filter_criteria(life, _g, _c, action.make())
+				#goals.match_criteria(life, _g, _c, judgement.can_trust, target_id='founder')
+				
+				_c = goals.add_action(life, _g, action.make(retrieve={'list': goals.get_flag(life, _g, 'talk_to')},
+				                                            life=life['id'],
+				                                            question='wants_founder_info',
+				                                            callback=lfe.get_memory,
+				                                            answer={'camp': _camp['id'], 'founder': '*'}))
 				#_c = goals.add_task(life, _g, movement.find_vague_alife, matching={})
-				_c = goals.add_memory(life, _g, {'camp': _camp['id'], 'founder': '*'})
-				goals.with_criteria(life, _g, _c, judgement.can_trust, target_id='founder')
+				#_c = goals.add_memory(life, _g, {'camp': _camp['id'], 'founder': '*'})
+				#goals.match_criteria(life, _g, _c, judgement.can_trust, target_id='founder')
 		#print life['name'],'NOT IN CAMP AND WANTS TO JOIN'
 		#_founder = camps.knows_founder(life, _camp['id'])
 		#if _founder:

@@ -6,6 +6,7 @@ import judgement
 import combat
 import speech
 import brain
+import goals
 import jobs
 
 import logging
@@ -22,7 +23,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'searching', 'hiding', 'hidden', 'needs', 'looting']:
 		return False
 
-	if not life['job'] and not jobs.alife_is_factor_of_any_job(life):
+	if not life['goals'] and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	
 	if not life['state'] == STATE:
@@ -31,12 +32,15 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	if jobs.alife_is_factor_of_any_job(life):
-		lfe.clear_actions(life)
-		return True
-	
-	if jobs.process_cancel_if(life, life['job']):
-		return False
-	
-	if life['task'] and life['task']['callback'](life):
-		jobs.complete_task(life)
+	if life['goals']:
+		goals.process_goals(life)
+	else:
+		if jobs.alife_is_factor_of_any_job(life):
+			lfe.clear_actions(life)
+			return True
+		
+		if jobs.process_cancel_if(life, life['job']):
+			return False
+		
+		if life['task'] and life['task']['callback'](life):
+			jobs.complete_task(life)
