@@ -108,7 +108,13 @@ def is_target_dangerous(life, target_id):
 
 def is_target_lost(life, target_id):
 	_know = brain.knows_alife_by_id(life, target_id)
-	if sight.can_see_position(
+	if sight.can_see_position(life, _know['last_seen_at']):
+		if sight.can_see_position(life, _know['life']['pos']):
+			return False
+		else:
+			return True
+	
+	return False
 
 def is_safe(life):
 	if get_targets(life):
