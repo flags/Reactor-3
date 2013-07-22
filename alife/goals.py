@@ -88,13 +88,23 @@ def add_memory(life, goal_id, memory):
 	
 	return add_criteria(life, goal_id, 'memory', {'matching': memory})
 
-def filter_criteria(life, goal_id, criteria_id, callback):
+def filter_criteria(life, goal_id, criteria_id, callback, invert=False):
 	_goal = get_goal_via_id(life, goal_id)
 	
 	_criteria = get_criteria(life, goal_id, criteria_id)
 	_criteria['sub_criteria'].append({'filter': callback})
+	_criteria['invert'] = invert
 	
 	logging.debug('%s added sub-criteria filter to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
+
+def filter_criteria_with_action(life, goal_id, criteria_id, action):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	_criteria = get_criteria(life, goal_id, criteria_id)
+	_criteria['sub_criteria'].append({'filter_action': action})
+	_criteria['invert'] = invert
+	
+	logging.debug('%s added sub-criteria filter_action to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
 
 def match_criteria(life, goal_id, criteria_id, callback, **kwargs):
 	_goal = get_goal_via_id(life, goal_id)
@@ -120,6 +130,7 @@ def process_goals(life):
 			continue
 		
 		for question in _goal['complete_on_answer']:
+			print lfe.get_memory_via_id(life, question)
 			if lfe.get_memory_via_id(life, question)['answered']:
 				print 'DELETED GOAL!' * 100
 				_goal['complete'] = True
@@ -133,6 +144,7 @@ def process_goals(life):
 
 def _process_goal(life, goal_id):
 	_goal = get_goal_via_id(life, goal_id)
+	_passed = True
 	
 	for criteria in _goal['criteria'].values():
 		criteria['result'] = None
@@ -142,9 +154,6 @@ def _process_goal(life, goal_id):
 			
 		elif criteria['type'] == 'action':
 			criteria['result'] = action.execute(criteria['action'])
-			if criteria['result'] == MISSING_KEY_IN_ACTION:
-				traceback.print_exc(file=sys.stdout)
-				raise Exception('Key missing: %s' % criteria['action'])
 	
 		if criteria['result']:
 			_process = process_criteria(life, goal_id, criteria['id'], criteria['result'])
@@ -152,12 +161,14 @@ def _process_goal(life, goal_id):
 			
 			if not criteria['result']:
 				print 'Goal not met', life['name'], criteria
+				_passed = False
 				continue
 		else:
 			if not meet_criteria(life, goal_id, criteria['id']):
+				_passed = False
 				continue
 	
-	return True
+	return _passed
 
 def meet_criteria(life, goal_id, criteria_id):
 	""" Perform actions that will generate criteria """
@@ -169,8 +180,9 @@ def meet_criteria(life, goal_id, criteria_id):
 	elif 'match_action' in _criteria:
 		return action.execute(_criteria['match_action'])
 	elif 'filter' in _criteria:
-		return [entry for entry in result if _criteria['filter'](life, entry)]
-
+		return [entry for entry in result if not _criteria['filter'](life, entry) == _criteria['invert']]
+	elif 'filter_action' in _criteria:
+		return action.execute(_criteria['filter_action'])
 
 def process_criteria(life, goal_id, criteria_id, result):
 	""" Checks result of goal """
@@ -184,6 +196,8 @@ def process_criteria(life, goal_id, criteria_id, result):
 			return action.execute(sub_criteria['match_action'])
 		elif 'filter' in sub_criteria:
 			return [entry for entry in result if sub_criteria['filter'](life, entry)]
+		elif 'filter_action' in sub_criteria:
+			return action.execute(sub_criteria['filter_action'])
 
 def complete_on_answer(life, goal_id, question_id):
 	_goal = get_goal_via_id(life, goal_id)

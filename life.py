@@ -697,8 +697,13 @@ def has_dialog(life):
 def has_group(life):
 	return life['group']
 
-def can_ask(life, chosen, memory):
-	if 'target' in chosen and chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
+def can_ask(life, target_id, question_id):
+	question = get_memory_via_id(life, question_id)
+	
+	if not chosen:
+		return False
+	
+	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:
 		return False
 	
 	return True

@@ -76,7 +76,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				
 				_c = goals.add_action(life, _g, action.make('find_alife', life=life['id'], matching={'id': '*'}))
 				goals.filter_criteria(life, _g, _c, judgement.can_trust)
-				goals.filter_criteria(life, _g, _c, judgement.is_target_lost)
+				goals.filter_criteria(life, _g, _c, judgement.is_target_lost, invert=True)
+				goals.filter_criteria_with_action(life, _g, _c,
+				                                  action.make('filter',
+				                                              memory_id=_q,
+				                                              function=lfe.can_ask,
+				                                              arguments=action.make('return', life=life['id'],
+				                                                                    retrieve={'goal_id': _g, 'criteria_id': _c})))
 				goals.add_action(life, _g, action.make('track_alife',
 				                                       life=life['id'],
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},

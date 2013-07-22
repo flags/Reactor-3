@@ -25,50 +25,59 @@ def make(*args, **kwargs):
 	return {'args': args, 'kwargs': kwargs}
 	
 def _execute(action):
+	_struct = {}
+	
 	if 'life' in  action['kwargs']:
-		life = LIFE[action['kwargs']['life']]
+		_struct['life'] = LIFE[action['kwargs']['life']]
 	
 	if 'add_to' in action['kwargs']:
-		_add_to = action['kwargs']['add_to']
+		_struct['add_to'] = action['kwargs']['add_to']
 	else:
-		_add_to = []
+		_struct['add_to'] = []
 	
 	if 'retrieve' in action['kwargs']:
-		_list = retrieve(action['kwargs']['retrieve'], life=life)
+		_struct['list'] = retrieve(action['kwargs']['retrieve'], life=_struct['life'])
 	
 	if 'filter_by' in action['kwargs']:
 		for entry in action['kwargs']['filter_by']:
 			if entry in action['kwargs']['add_to']:
-				_add_to.remove(entry)
+				_struct['add_to'].remove(entry)
 	
 	if 'matching' in action['args']:
-		_match_mask = action['kwargs']['matching']
+		_struct['match_mask'] = action['kwargs']['matching']
 	else:
-		_match_mask = {'id': '*'}
+		_struct['match_mask'] = {'id': '*'}
 	
-	if 'question' in action['kwargs']:
-		lfe.create_question(life,
-	        action['kwargs']['question'],
-	        _match_mask,
-	        action['kwargs']['callback'],
-	        action['kwargs']['answer'])
-		
-		print 'ASKING QUESTION' * 50
+	#if 'question' in action['kwargs']:
+	#	lfe.create_question(_struct['life'],
+	#        action['kwargs']['question'],
+	#        _struct['match_mask'],
+	#        action['kwargs']['callback'],
+	#        action['kwargs']['answer'])
+	#	
+	#	print 'ASKING QUESTION' * 50
+	
+	if 'return' in action['args']:
+		return _struct
+	
+	if 'function' in action['kwargs']:
+		_arguments = execute(action['kwargs']['arguments'])
+		action['kwargs'](**_arguments)
 	
 	if 'find_alife' in action['args']:
-		return life['know'].keys()
+		return _struct['life']['know'].keys()
 	
 	if 'track_alife' in action['args']:
-		print action['kwargs'], _list
-		if not _list:
+		print action['kwargs'], _struct['list']
+		if not _struct['list']:
 			return False
 		
-		if movement._find_alife(life, target=_list[0]):
-			if not _list[0] in _add_to:
-				_add_to.append(_list[0])
+		if movement._find_alife(_struct['life'], target=_struct['list'][0]):
+			if not _struct['list'][0] in _struct['add_to']:
+				_struct['add_to'].append(_struct['list'][0])
 		
 		print 'WERE TRACKING' * 50
-		lfe.focus_on(life)
+		lfe.focus_on(_struct['life'])
 		
 		return True
 
