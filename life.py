@@ -297,6 +297,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
 	_life['needs'] = []
+	_life['goals'] = {}
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)

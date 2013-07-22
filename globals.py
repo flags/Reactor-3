@@ -40,6 +40,7 @@ WORLD_INFO = {'map': [],
 	'effectid': 1,
 	'zoneid': 1,
 	'memoryid': 1,
+	'goalid': 1,
 	'chunk_map': CHUNK_MAP,
 	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
@@ -49,6 +50,13 @@ WORLD_INFO = {'map': [],
 STATE_CHANGE = 2
 STATE_UNCHANGED = 3
 RETURN_SKIP = 4
+MISSING_KEY_IN_ACTION = 333
+
+#States
+IDLE = 1
+ACTIVE = 2
+
+THREAT = 4
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]

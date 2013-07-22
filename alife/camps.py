@@ -40,14 +40,14 @@ def flag(life, camp_id, flag, value):
 	
 	logging.debug('%s flagged camp \'%s\' with %s.' % (' '.join(life['name']), camp_id, flag))
 
-def investigate(life, camp_id, question_id):
-	_j = jobs.create_job(life, 'investigate camp')
-	jobs.cancel_if(_j, lfe.has_group)
-	jobs.add_detail_to_job(_j, 'asked', [])
-	jobs.add_detail_to_job(_j, 'question id', question_id)
-	jobs.add_job_task(_j, 'investigate camp', callback=movement.find_alife_with_answer, required=True)
-	jobs.add_job_candidate(_j, life)
-	jobs.process_job(_j)
+#def investigate(life, camp_id, question_id):
+	#_j = jobs.create_job(life, 'investigate camp')
+	#jobs.cancel_if(_j, lfe.has_group)
+	#jobs.add_detail_to_job(_j, 'asked', [])
+	#jobs.add_detail_to_job(_j, 'question id', question_id)
+	#jobs.add_job_task(_j, 'investigate camp', callback=movement.find_alife_with_answer, required=True)
+	#jobs.add_job_candidate(_j, life)
+	#jobs.process_job(_j)
 
 def knows_founder(life, camp_id):
 	if CAMPS[camp_id]['founder'] == life['id']:

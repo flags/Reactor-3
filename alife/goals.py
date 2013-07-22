@@ -1,0 +1,127 @@
+from globals import *
+
+import life as lfe
+
+import action
+
+import logging
+
+def has_goal(life, name, goal):
+	return [g for g in life['goals'].values() if g['goal'] == goal and g['name'] == name]
+
+def get_goal_via_id(life, goal_id):
+	if goal_id in life['goals']:
+		return life['goals'][goal_id]
+	
+	raise Exception('%s has no goal with ID `%s`' % (' '.join(life['name']), goal_id))
+
+def get_criteria(life, goal_id, criteria_id):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	if criteria_id in _goal['criteria']:
+		return _goal['criteria'][criteria_id]
+	
+	raise Exception('%s has no goal with criteria ID `%s`' % (' '.join(life['name']), criteria_id))
+
+def add_goal(life, name, goal):
+	if has_goal(life, name, goal):
+		return False
+	
+	_goal = {'name': name, 'goal': goal, 'criteria': {}, 'id': WORLD_INFO['goalid'], 'cid': 1}
+	life['goals'][_goal['id']] = _goal
+	
+	WORLD_INFO['goalid'] += 1
+	logging.debug('%s added goal: %s' % (' '.join(life['name']), name))
+	
+	return _goal['id']
+
+def add_criteria(life, goal_id, kind, criteria):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	criteria['id'] = _goal['cid']
+	criteria['sub_criteria'] = []
+	criteria['type'] = kind
+	_goal['criteria'][criteria['id']] = criteria
+	_goal['cid'] += 1
+	
+	logging.debug('%s added criteria to goal \'%s\': %s' % (' '.join(life['name']), _goal['name'], criteria['type']))
+	
+	return criteria['id']
+
+def add_action(life, goal_id, action):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	return add_criteria(life, goal_id, 'action', {'action': action})
+
+def add_task(life, goal_id, callback, **kwargs):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	return add_criteria(life, goal_id, 'task', {'args': kwargs})
+
+def add_memory(life, goal_id, memory):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	return add_criteria(life, goal_id, 'memory', {'matching': memory})
+
+def filter_criteria(life, goal_id, criteria_id, callback):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	_criteria = get_criteria(life, goal_id, criteria_id)
+	_criteria['sub_criteria'].append({'filter': callback})
+	
+	logging.debug('%s added sub-criteria filter to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
+
+def with_criteria(life, goal_id, criteria_id, callback, **kwargs):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	_criteria = get_criteria(life, goal_id, criteria_id)
+	_criteria['sub_criteria'].append({'callback': callback, 'args': kwargs})
+	
+	logging.debug('%s added sub-criteria match to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
+
+def process_goal(life, goal_id):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	for criteria in _goal['criteria'].values():
+		criteria['result'] = None
+		
+		if criteria['type'] == 'memory':
+			criteria['result'] = lfe.get_memory(life, matches=criteria['memory'])
+			
+		elif criteria['type'] == 'action':
+			criteria['result'] = action.execute(criteria['action'])
+			if criteria['result'] == MISSING_KEY_IN_ACTION:
+				raise Exception('Key missing: %s' % criteria['action'])
+	
+		if criteria['result']:
+			_process = process_criteria(life, goal_id, criteria['id', criteria['result']])
+			criteria['result'] = _process
+			
+			if not criteria['result']:
+				print 'Goal not met'
+				return False
+		else:
+			meet_criteria(life, goal_id, criteria['id'])
+			break
+
+def meet_criteria(life, goal_id, criteria_id):
+	#TODO: GO OUT AND DO
+	_goal = get_goal_via_id(life, goal_id)
+	_criteria = get_criteria(life, goal_id, criteria_id)
+	
+	#func call here
+
+def process_criteria(life, goal_id, criteria_id, result):
+	""" Checks result of goal """
+	_goal = get_goal_via_id(life, goal_id)
+	_criteria = get_criteria(life, goal_id, criteria_id)
+	
+	for sub_criteria in _criteria['sub_criteria']:
+		if 'match' in sub_criteria:
+			if not sub_criteria['match'](life, **sub_criteria['args']):
+				print 'SUB_CRITERIA BROKEN'
+				return False
+			
+			return result
+		elif 'filter' in sub_criteria:
+			return [entry for entry in result if sub_criteria(life, entry)]

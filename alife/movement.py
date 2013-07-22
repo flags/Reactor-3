@@ -259,26 +259,26 @@ def find_alife(life):
 	
 	return False
 
-def find_alife_with_answer(life):
-	_asked = jobs.get_job_detail(life['job'], 'asked')
+#def find_alife_with_answer(life):
+	#_asked = jobs.get_job_detail(life['job'], 'asked')
 	
-	for target in life['know']:
-		if target in _asked:
-			continue
-		
-		if _find_alife(life, target):
-			#_question = lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))
-			print life['name'],'SHOULD BE ASKING TARGET',_asked
-			_asked.append(target)
-		else:
-			print life['name'],'STILL LOOKING FOR TARGET!!!!!!!',_asked
-			break
-	
-	print jobs.get_job_detail(life['job'], 'question id')
-	if lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))['answered']:
-		return True
-	
-	return False
+	#for target in life['know']:
+	#	if target in _asked:
+	#		continue
+	#	
+	#	if _find_alife(life, target):
+	#		#_question = lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))
+	#		print life['name'],'SHOULD BE ASKING TARGET',_asked
+	#		_asked.append(target)
+	#	else:
+	#		print life['name'],'STILL LOOKING FOR TARGET!!!!!!!',_asked
+	#		break
+	#
+	#print jobs.get_job_detail(life['job'], 'question id')
+	#if lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))['answered']:
+	#	return True
+	#
+	#return False
 
 def follow_alife(life):
 	if _find_alife(life, jobs.get_job_detail(life['job'], 'target'), distance=7):

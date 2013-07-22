@@ -3,6 +3,9 @@ from globals import *
 import life as lfe
 
 import judgement
+import movement
+import action
+import goals
 import brain
 import camps
 import stats
@@ -52,25 +55,39 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				match_gist_only=True,
 				answer_all=True)
 	else:
-		print life['name'],'NOT IN CAMP AND WANTS TO JOIN'
 		_founder = camps.knows_founder(life, _camp['id'])
+		
 		if _founder:
-			if not brain.get_impression(life, _founder, 'camp'):
-				brain.add_impression(life, _founder, 'camp', {'influence': 25})
-				print 'INFLUENCE!!!!!!'*10
-			else:
-				print 'ALREADY HAS IMPRESSION'
+			print 'Knows founder'
 		else:
-			print 'does not know founder'
-			if not life['state'] == 'working':
-				_q = lfe.create_question(life,
-					'wants_founder_info',
-					{'camp': _camp['id']},
-					lfe.get_memory,
-					{'camp': _camp['id'], 'founder': '*'})
-				
-				#if not life['state'] == 'working':
-				#	lfe.track_target(life, 
-			
-				camps.investigate(life, _camp['id'], _q)
+			print 'does not know founder!' * 10
+			_g = goals.add_goal(life, 'find founder', {'camp': _camp['id'], 'founder': '*'})
+			if _g:
+				_c = goals.add_action(life, _g, action.make('find_alife', matching={'id': '*'}))
+				goals.filter_criteria(life, _g, _c, judgement.can_trust)
+				_c = goals.add_action(life, _g, action.make('talk', question='wants_founder_info'))
+				#_c = goals.add_task(life, _g, movement.find_vague_alife, matching={})
+				_c = goals.add_memory(life, _g, {'camp': _camp['id'], 'founder': '*'})
+				goals.with_criteria(life, _g, _c, judgement.can_trust, target_id='founder')
+		#print life['name'],'NOT IN CAMP AND WANTS TO JOIN'
+		#_founder = camps.knows_founder(life, _camp['id'])
+		#if _founder:
+		#	if not brain.get_impression(life, _founder, 'camp'):
+		#		brain.add_impression(life, _founder, 'camp', {'influence': 25})
+		#		print 'INFLUENCE!!!!!!'*10
+		#	else:
+		#		print 'ALREADY HAS IMPRESSION'
+		#else:
+		#	print 'does not know founder'
+		#	if not life['state'] == 'working':
+		#		_q = lfe.create_question(life,
+		#			'wants_founder_info',
+		#			{'camp': _camp['id']},
+		#			lfe.get_memory,
+		#			{'camp': _camp['id'], 'founder': '*'})
+		#		
+		#		#if not life['state'] == 'working':
+		#		#	lfe.track_target(life, 
+		#	
+		#		camps.investigate(life, _camp['id'], _q)
 	
