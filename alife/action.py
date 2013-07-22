@@ -38,6 +38,9 @@ def _execute(action):
 	if 'retrieve' in action['kwargs']:
 		_struct['list'] = retrieve(action['kwargs']['retrieve'], life=_struct['life'])
 	
+	if 'store_retrieve_as' in action['kwargs']:
+		_struct['store_retrieve_as'] = action['kwargs']['store_retrieve_as']
+	
 	if 'filter_by' in action['kwargs']:
 		for entry in action['kwargs']['filter_by']:
 			if entry in action['kwargs']['add_to']:
@@ -58,11 +61,23 @@ def _execute(action):
 	#	print 'ASKING QUESTION' * 50
 	
 	if 'return' in action['args']:
+		if 'extend' in action['kwargs']:
+			_struct.update(action['kwargs']['extend'])
+		
 		return _struct
 	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])
-		action['kwargs'](**_arguments)
+		
+		if 'filter' in action['args']:
+			_ret_list = []
+			
+			for result in _struct['list']:
+				_arguments.update({_struct['store_retrieve_as']: result})
+				if not action['kwargs'](**_arguments):
+					continue
+				
+				_ret_list.append(result)
 	
 	if 'find_alife' in action['args']:
 		return _struct['life']['know'].keys()

@@ -79,10 +79,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				goals.filter_criteria(life, _g, _c, judgement.is_target_lost, invert=True)
 				goals.filter_criteria_with_action(life, _g, _c,
 				                                  action.make('filter',
-				                                              memory_id=_q,
+				                                              retrieve={'goal_id': _g, 'criteria_id': _c},
+				                                              store_retrieve_as='target_id',
 				                                              function=lfe.can_ask,
-				                                              arguments=action.make('return', life=life['id'],
-				                                                                    retrieve={'goal_id': _g, 'criteria_id': _c})))
+				                                              arguments=action.make('return',
+				                                                                    extend={'memory_id': _q},
+				                                                                    life=life['id'])))
 				goals.add_action(life, _g, action.make('track_alife',
 				                                       life=life['id'],
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},

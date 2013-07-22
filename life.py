@@ -700,7 +700,7 @@ def has_group(life):
 def can_ask(life, target_id, question_id):
 	question = get_memory_via_id(life, question_id)
 	
-	if not chosen:
+	if not target_id:
 		return False
 	
 	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:

@@ -102,7 +102,6 @@ def filter_criteria_with_action(life, goal_id, criteria_id, action):
 	
 	_criteria = get_criteria(life, goal_id, criteria_id)
 	_criteria['sub_criteria'].append({'filter_action': action})
-	_criteria['invert'] = invert
 	
 	logging.debug('%s added sub-criteria filter_action to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
 
