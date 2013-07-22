@@ -93,35 +93,3 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},
 				                                       add_to=goals.get_flag(life, _g, 'talk_to'),
 				                                       filter_by=goals.get_flag(life, _g, 'talked_to')))
-				
-				#_c = goals.add_action(life, _g, action.make(retrieve={'list': goals.get_flag(life, _g, 'talk_to')},
-				#                                            life=life['id'],
-				#                                            question='wants_founder_info',
-				#                                            callback=lfe.get_memory,
-				#                                            answer={'camp': _camp['id'], 'founder': '*'}))
-				
-				#_c = goals.add_task(life, _g, movement.find_vague_alife, matching={})
-				#_c = goals.add_memory(life, _g, {'camp': _camp['id'], 'founder': '*'})
-				#goals.match_criteria(life, _g, _c, judgement.can_trust, target_id='founder')
-		#print life['name'],'NOT IN CAMP AND WANTS TO JOIN'
-		#_founder = camps.knows_founder(life, _camp['id'])
-		#if _founder:
-		#	if not brain.get_impression(life, _founder, 'camp'):
-		#		brain.add_impression(life, _founder, 'camp', {'influence': 25})
-		#		print 'INFLUENCE!!!!!!'*10
-		#	else:
-		#		print 'ALREADY HAS IMPRESSION'
-		#else:
-		#	print 'does not know founder'
-		#	if not life['state'] == 'working':
-		#		_q = lfe.create_question(life,
-		#			'wants_founder_info',
-		#			{'camp': _camp['id']},
-		#			lfe.get_memory,
-		#			{'camp': _camp['id'], 'founder': '*'})
-		#		
-		#		#if not life['state'] == 'working':
-		#		#	lfe.track_target(life, 
-		#	
-		#		camps.investigate(life, _camp['id'], _q)
-	

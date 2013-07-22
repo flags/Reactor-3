@@ -536,4 +536,4 @@ def create_path_old(start, end, zone, source_map):
 			if (start[0],start[1]) == (end[0]+x1,end[1]+y1):
 				return short_path(start,end,source_map)
 	
-	return Astar(zone, start=start,end=end,omap=source_map,dist=_dist).get_path()
+	return Astar(zone=zone, start=start, end=end, omap=source_map, dist=_dist).get_path()
