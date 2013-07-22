@@ -419,7 +419,7 @@ Structure: dict
 Keys:
 	Start		...
 	End			...
-	path_type	['
+	path_type	['']
 
 Operation:
 	First a "chunk path" is generated. The chunk map sees if it can path to the destination chunk.

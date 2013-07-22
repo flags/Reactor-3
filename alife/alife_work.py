@@ -23,7 +23,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'searching', 'hiding', 'hidden', 'needs', 'looting']:
 		return False
 
-	if not life['goals'] and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
+	if not goals.has_active_goals(life) and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	
 	if not life['state'] == STATE:
@@ -32,7 +32,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	if life['goals']:
+	if goals.has_active_goals(life):
 		goals.process_goals(life)
 	else:
 		if jobs.alife_is_factor_of_any_job(life):

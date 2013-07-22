@@ -11,6 +11,9 @@ import sys
 def has_goal(life, name, goal):
 	return [g for g in life['goals'].values() if g['goal'] == goal and g['name'] == name]
 
+def has_active_goals(life):
+	return [g for g in life['goals'].values() if not g['complete']]
+
 def get_goal_via_id(life, goal_id):
 	if goal_id in life['goals']:
 		return life['goals'][goal_id]
@@ -29,7 +32,14 @@ def add_goal(life, name, goal):
 	if has_goal(life, name, goal):
 		return False
 	
-	_goal = {'name': name, 'goal': goal, 'criteria': {}, 'id': WORLD_INFO['goalid'], 'cid': 1, 'flags': {}, 'complete_on_answer': []}
+	_goal = {'name': name,
+		'goal': goal,
+		'criteria': {},
+		'id': WORLD_INFO['goalid'],
+		'cid': 1,
+		'flags': {},
+		'complete_on_answer': [],
+		'complete': False}
 	life['goals'][_goal['id']] = _goal
 	
 	WORLD_INFO['goalid'] += 1
@@ -103,18 +113,21 @@ def match_action(life, goal_id, criteria_id, action):
 	logging.debug('%s added sub-criteria match_action to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
 
 def process_goals(life):
-	if life['goals'].keys():
-		_goal = get_goal_via_id(life, life['goals'].keys()[0])
+	for goal in life['goals'].keys():
+		_goal = get_goal_via_id(life, goal)
+		
+		if _goal['complete']:
+			continue
+		
 		for question in _goal['complete_on_answer']:
 			if lfe.get_memory_via_id(life, question)['answered']:
 				print 'DELETED GOAL!' * 100
-				del life['goals'][life['goals'].keys()[0]]	
-				process_goals(life)
-				return False
+				_goal['complete'] = True
+				break
 		
-		if _process_goal(life, life['goals'].keys()[0]):
+		if _process_goal(life, goal):
 			print 'DELETED GOAL!' * 100
-			del life['goals'][life['goals'].keys()[0]]
+			_goal['complete'] = True
 			
 			print 'FINISHED GOAL' * 50
 
