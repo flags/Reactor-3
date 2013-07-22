@@ -29,7 +29,7 @@ def add_goal(life, name, goal):
 	if has_goal(life, name, goal):
 		return False
 	
-	_goal = {'name': name, 'goal': goal, 'criteria': {}, 'id': WORLD_INFO['goalid'], 'cid': 1, 'flags': {}}
+	_goal = {'name': name, 'goal': goal, 'criteria': {}, 'id': WORLD_INFO['goalid'], 'cid': 1, 'flags': {}, 'complete_on_answer': []}
 	life['goals'][_goal['id']] = _goal
 	
 	WORLD_INFO['goalid'] += 1
@@ -104,7 +104,16 @@ def match_action(life, goal_id, criteria_id, action):
 
 def process_goals(life):
 	if life['goals'].keys():
+		_goal = get_goal_via_id(life, life['goals'].keys()[0])
+		for question in _goal['complete_on_answer']:
+			if lfe.get_memory_via_id(life, question)['answered']:
+				print 'DELETED GOAL!' * 100
+				del life['goals'][life['goals'].keys()[0]]	
+				process_goals(life)
+				return False
+		
 		if _process_goal(life, life['goals'].keys()[0]):
+			print 'DELETED GOAL!' * 100
 			del life['goals'][life['goals'].keys()[0]]
 			
 			print 'FINISHED GOAL' * 50
@@ -130,10 +139,10 @@ def _process_goal(life, goal_id):
 			
 			if not criteria['result']:
 				print 'Goal not met', life['name'], criteria
-				return False
+				continue
 		else:
 			if not meet_criteria(life, goal_id, criteria['id']):
-				return False
+				continue
 	
 	return True
 
@@ -142,8 +151,13 @@ def meet_criteria(life, goal_id, criteria_id):
 	_goal = get_goal_via_id(life, goal_id)
 	_criteria = get_criteria(life, goal_id, criteria_id)
 	
-	print 'Meet criteria not working'
-	#func call here
+	if 'match' in _criteria:
+		return _criteria['match'](life, *_criteria['args'])
+	elif 'match_action' in _criteria:
+		return action.execute(_criteria['match_action'])
+	elif 'filter' in _criteria:
+		return [entry for entry in result if _criteria['filter'](life, entry)]
+
 
 def process_criteria(life, goal_id, criteria_id, result):
 	""" Checks result of goal """
@@ -157,3 +171,7 @@ def process_criteria(life, goal_id, criteria_id, result):
 			return action.execute(sub_criteria['match_action'])
 		elif 'filter' in sub_criteria:
 			return [entry for entry in result if sub_criteria['filter'](life, entry)]
+
+def complete_on_answer(life, goal_id, question_id):
+	_goal = get_goal_via_id(life, goal_id)
+	_goal['complete_on_answer'].append(question_id)
