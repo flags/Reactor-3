@@ -68,7 +68,6 @@ def _execute(action):
 	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])
-		print 'FUNCTION' * 50
 		
 		if 'filter' in action['args']:
 			_ret_list = []
@@ -83,12 +82,11 @@ def _execute(action):
 			for result in _struct['list']:
 				_arguments.update({_struct['store_retrieve_as']: result})
 				if not action['kwargs']['function'](**_arguments):
+					_ret_list.append(result)
 					continue
 				
-				_ret_list.append(result)
-			
-			print 'RET LIST' * 50
-			print _ret_list
+			for entry in _ret_list:
+				_struct['list'].remove(entry)
 	
 	if 'find_alife' in action['args']:
 		return _struct['life']['know'].keys()
