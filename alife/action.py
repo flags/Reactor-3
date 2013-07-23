@@ -2,6 +2,7 @@ from globals import MISSING_KEY_IN_ACTION, LIFE
 
 import life as lfe
 
+import judgement
 import movement
 import goals
 
@@ -43,8 +44,8 @@ def _execute(action):
 	
 	if 'filter_by' in action['kwargs']:
 		for entry in action['kwargs']['filter_by']:
-			if entry in action['kwargs']['add_to']:
-				_struct['add_to'].remove(entry)
+			if entry in _struct['list']:
+				_struct['list'].remove(entry)
 	
 	if 'matching' in action['args']:
 		_struct['match_mask'] = action['kwargs']['matching']
@@ -59,6 +60,11 @@ def _execute(action):
 			return False
 		
 		lfe.speech.start_dialog_with_question(_struct['life'], _struct['list'][0], _struct['question'])
+		
+		if 'add_to' in _struct:
+			if not _struct['list'][0] in _struct['list']:
+				_struct['add_to'].append(_struct['list'][0])
+				print 'LOOK OUT!' * 55, _struct['add_to']
 		
 		return True
 	
@@ -90,6 +96,7 @@ def _execute(action):
 			for entry in _ret_list:
 				_struct['list'].remove(entry)
 			
+			print 'filter function',_struct['list']
 			return _struct['list']
 	
 	if 'get_known_alife' in action['args']:
@@ -106,6 +113,7 @@ def _execute(action):
 		
 		lfe.focus_on(_struct['life'])
 		print _struct['life']['name'],'Tracking',LIFE[_struct['list'][0]]['name']
+		print judgement.can_trust(_struct['life'], _struct['list'][0])
 		
 		return True
 

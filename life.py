@@ -701,10 +701,14 @@ def can_ask(life, target_id, question_id):
 	question = get_memory_via_id(life, question_id)
 	
 	if not target_id:
+		print 'cant ask because of wrong id'
 		return False
 	
 	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:
+		print 'already talked about this'
 		return False
+	
+	print 'should be OK'
 	
 	return True
 

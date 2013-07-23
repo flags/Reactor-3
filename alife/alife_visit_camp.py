@@ -93,7 +93,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},
 				                                       add_to=goals.get_flag(life, _g, 'talk_to'),
 				                                       filter_by=goals.get_flag(life, _g, 'talked_to')))
+				#goals.filter_criteria_with_action(life, _g, _c, action.make('filter',
+				#                                                            life=life['id'],
+				#                                                            retrieve=))
+				judgement.can_trust
 				goals.add_action(life, _g, action.make('ask',
 				                                       life=life['id'],
 				                                       retrieve={'list': goals.get_flag(life, _g, 'talk_to')},
+				                                       add_to=goals.get_flag(life, _g, 'talked_to'),
 				                                       question=_q))
