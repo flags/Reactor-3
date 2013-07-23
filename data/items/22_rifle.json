@@ -10,6 +10,7 @@
 "recoil": 1,
 "firemodes": ["single"],
 "firemode": 0,
-"accuracy": 1,
+"accuracy": [2, 5],
 "material": "metal",
-"thickness": 3}
+"thickness": 3,
+"effects": {"rusted": {}}}

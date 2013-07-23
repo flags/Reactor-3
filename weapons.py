@@ -37,19 +37,51 @@ def get_recoil(life):
 	
 	return _recoil
 
-def get_accuracy(life, weapon):
-	_accuracy = weapon['accuracy']
+def get_max_accuracy(weapon):
+	return weapon['accuracy'][0]*weapon['accuracy'][1]
+
+def get_accuracy(life, weapon, limb=None):
+	#_accuracy = weapon['accuracy']
+	
+	_accuracy = get_max_accuracy(weapon)
+	
+	if limb:
+		_stability = lfe.get_limb_stability(life, limb)
+		_accuracy *=  _stability
+		
+		if 'player' in life:
+			if _stability <= 0:
+				gfx.message('Your %s is useless.' % limb, style='damage')
+			elif _stability <= .25:
+				gfx.message('Your %s is nearly useless!' % limb, style='damage')
+				lfe.add_wound(life, limb, pain=2)
+			elif _stability <= .55:
+				gfx.message('You feel a sharp pain in your %s!' % limb, style='damage')
+				lfe.add_wound(life, limb, pain=1)
+			elif _stability <= .75:
+				gfx.message('Your %s stings from the recoil.' % limb, style='damage')
 	
 	if life['stance'] == 'standing':
-		_accuracy *= 1.5
+		_accuracy *= 0.7
 	elif life['stance'] == 'crouching':
-		_accuracy *= 1.2
+		_accuracy *= 0.9
 	elif life['stance'] == 'crawling':
 		_accuracy *= 1
-		
-	_accuracy *= alife.stats.get_accuracy(life)
 	
 	print 'Accuracy', _accuracy
+	
+	return _accuracy
+
+def get_impact_accuracy(life, bullet):
+	#_travel_time = WORLD_INFO['time']-bullet['time_shot']
+	_travel_distance = numbers.distance(bullet['start_pos'], bullet['pos'])
+	_bullet_sway = _travel_distance*bullet['scatter_rate']
+	
+	if _travel_distance <= 2:
+		return 0
+	
+	_accuracy = bullet['needed_accuracy']*alife.stats.get_firearm_accuracy(life)
+	_accuracy += _bullet_sway
 	
 	return _accuracy
 
@@ -93,15 +125,17 @@ def fire(life, target, limb=None):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)
-		_accuracy = int(round(get_accuracy(life, weapon)))
-		direction += random.randint(-_accuracy,_accuracy+1)
+		#direction += random.randint(-_accuracy,_accuracy+1)
 		
 		#TODO: Clean this up...
 		_bullet = _feed['rounds'].pop()
 		_bullet['pos'] = life['pos'][:]
+		_bullet['start_pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
 		_bullet['aim_at_limb'] = limb
-		_bullet['accuracy'] = _accuracy
+		_bullet['time_shot'] = WORLD_INFO['ticks']
+		_bullet['needed_accuracy'] = get_max_accuracy(weapon)
+		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=limb)))
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
 	

@@ -83,7 +83,6 @@ def _execute(action):
 			for result in _struct['list']:
 				_arguments.update({_struct['store_retrieve_as']: result})
 				if not action['kwargs']['function'](**_arguments):
-					print 'THIS DID NOT MAKE IT' * 100
 					continue
 				
 				_ret_list.append(result)

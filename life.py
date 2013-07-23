@@ -2118,8 +2118,8 @@ def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
 		_icon,_color = draw_life_icon(life)
 		
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0]-1 and\
+			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]-1:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
@@ -2706,7 +2706,7 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	print 'Pain', _limb['pain']
 
-def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
+def add_wound(life, limb, cut=0, pain=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	if cut:
@@ -2716,6 +2716,9 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact
 			return False
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
+	
+	if pain:
+		add_pain_to_limb(life, limb, amount=pain)
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7
@@ -2735,6 +2738,17 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact
 		'lodged_item': lodged_item}
 	
 	_limb['wounds'].append(_injury)
+
+def get_limb_stability(life, limb):
+	_limb = get_limb(life, limb)
+	
+	if limb_is_broken(life, limb):
+		return 0
+	
+	_stability = 10
+	_stability -= limb_is_cut(life, limb)
+	
+	return _stability/10.0
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -2800,8 +2814,7 @@ def damage_from_item(life,item,damage):
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	
-	if item['aim_at_limb'] and random.randint(0, 10-item['accuracy'])>=item['accuracy']:
+	if item['aim_at_limb'] and item['accuracy']>=weapons.get_impact_accuracy(life, item):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]

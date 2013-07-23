@@ -10,6 +10,6 @@
 "recoil": 1,
 "firemodes": ["single", "3burst"],
 "firemode": 0,
-"accuracy": 3,
+"accuracy": [1, 10],
 "material": "metal",
 "thickness": 3}
