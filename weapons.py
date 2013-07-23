@@ -44,6 +44,7 @@ def get_accuracy(life, weapon, limb=None):
 	#_accuracy = weapon['accuracy']
 	
 	_accuracy = get_max_accuracy(weapon)
+	_accuracy *= alife.stats.get_firearm_accuracy(life)
 	
 	if limb:
 		_stability = lfe.get_limb_stability(life, limb)
@@ -52,6 +53,7 @@ def get_accuracy(life, weapon, limb=None):
 		if 'player' in life:
 			if _stability <= 0:
 				gfx.message('Your %s is useless.' % limb, style='damage')
+				return 0
 			elif _stability <= .25:
 				gfx.message('Your %s is nearly useless!' % limb, style='damage')
 				lfe.add_wound(life, limb, pain=2)
@@ -80,8 +82,8 @@ def get_impact_accuracy(life, bullet):
 	if _travel_distance <= 2:
 		return 0
 	
-	_accuracy = bullet['needed_accuracy']*alife.stats.get_firearm_accuracy(life)
-	_accuracy += _bullet_sway
+	#_accuracy = bullet['needed_accuracy']*alife.stats.get_firearm_accuracy(life)
+	_accuracy = _bullet_sway
 	
 	return _accuracy
 

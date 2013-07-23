@@ -2748,7 +2748,7 @@ def get_limb_stability(life, limb):
 	_stability = 10
 	_stability -= limb_is_cut(life, limb)
 	
-	return _stability/10.0
+	return numbers.clip(_stability, 0, 10)/10.0
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
