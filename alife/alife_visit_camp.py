@@ -75,7 +75,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				
 				goals.complete_on_answer(life, _g, _q)
 				
-				_c = goals.add_action(life, _g, action.make('find_alife', life=life['id'], matching={'id': '*'}))
+				_c = goals.add_action(life, _g, action.make('get_known_alife', life=life['id'], matching={'id': '*'}))
 				goals.filter_criteria_with_action(life, _g, _c,
 				                                  action.make('filter',
 				                                              life=life['id'],
@@ -93,3 +93,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				                                       retrieve={'goal_id': _g, 'criteria_id': _c},
 				                                       add_to=goals.get_flag(life, _g, 'talk_to'),
 				                                       filter_by=goals.get_flag(life, _g, 'talked_to')))
+				goals.add_action(life, _g, action.make('ask',
+				                                       life=life['id'],
+				                                       retrieve={'list': goals.get_flag(life, _g, 'talk_to')},
+				                                       question=_q))

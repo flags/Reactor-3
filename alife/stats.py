@@ -133,7 +133,6 @@ def desires_to_join_camp(life, camp_id):
 		return False
 	
 	if life['stats']['lone_wolf']:
-		print life['name'],'is lone wolf' * 10
 		return False
 	
 	_memories = lfe.get_memory(life, matches={'text': 'heard_about_camp', 'camp': camp_id, 'founder': '*'})
@@ -145,7 +144,6 @@ def desires_to_join_camp(life, camp_id):
 			return False
 		
 	if lfe.get_memory(life, matches={'text': 'ask_to_join_camp', 'camp': camp_id}):
-		print life['name'],'Asked to join camp already' * 10
 		return False
 	
 	return True

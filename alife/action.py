@@ -51,14 +51,16 @@ def _execute(action):
 	else:
 		_struct['match_mask'] = {'id': '*'}
 	
-	#if 'question' in action['kwargs']:
-	#	lfe.create_question(_struct['life'],
-	#        action['kwargs']['question'],
-	#        _struct['match_mask'],
-	#        action['kwargs']['callback'],
-	#        action['kwargs']['answer'])
-	#	
-	#	print 'ASKING QUESTION' * 50
+	if 'question' in action['kwargs']:
+		_struct['question'] = action['kwargs']['question']
+	
+	if 'ask' in action['args']:
+		if not _struct['list']:
+			return False
+		
+		lfe.speech.start_dialog_with_question(_struct['life'], _struct['list'][0], _struct['question'])
+		
+		return True
 	
 	if 'return' in action['args']:
 		if 'include' in action['kwargs']:
@@ -87,21 +89,23 @@ def _execute(action):
 				
 			for entry in _ret_list:
 				_struct['list'].remove(entry)
+			
+			return _struct['list']
 	
-	if 'find_alife' in action['args']:
+	if 'get_known_alife' in action['args']:
 		return _struct['life']['know'].keys()
 	
 	if 'track_alife' in action['args']:
-		#print action['kwargs'], _struct['list']
 		if not _struct['list']:
 			return False
 		
 		if movement._find_alife(_struct['life'], target=_struct['list'][0]):
 			if not _struct['list'][0] in _struct['add_to']:
 				_struct['add_to'].append(_struct['list'][0])
+				print 'FOUND HIM!!!!!!!!!!!' * 50
 		
-		print 'Tracking'
 		lfe.focus_on(_struct['life'])
+		print _struct['life']['name'],'Tracking',LIFE[_struct['list'][0]]['name']
 		
 		return True
 

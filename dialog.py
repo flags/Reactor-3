@@ -16,10 +16,13 @@ import alife
 import logging
 import random
 
-def create_dialog_with(life, target, info):
+def create_dialog_with(life, target, info, question=None):
 	_messages = []
 	
-	if 'gist' in info:
+	if question:
+		_topics = _get_questions_to_ask(life, target, question)
+		_memories = []
+	elif 'gist' in info:
 		_topics, _memories = get_all_relevant_gist_responses(life, target, info['gist'])					
 	else:
 		_topics, _memories = get_all_relevant_target_topics(life, target)
@@ -340,6 +343,74 @@ def give_camp_founder(life, chosen):
 	
 	return _topics
 
+def _get_questions_to_ask(life, target, memory):
+	_topics = []
+	
+	if not lfe.can_ask(life, target, memory['id']):
+		return []
+	
+	if memory['text'] == 'wants_founder_info':
+		if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
+			_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
+		          'gist': 'who_founded_camp',
+		          'camp': memory['camp'],
+		          'memory': memory})
+			_topics.append({'text': 'Who runs camp %s?' % CAMPS[memory['camp']]['name'],
+		          'gist': 'who_founded_camp',
+		          'camp': memory['camp'],
+		          'memory': memory})
+			_topics.append({'text': 'Any idea who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
+		          'gist': 'who_founded_camp',
+		          'camp': memory['camp'],
+		          'memory': memory})
+			
+			if target:
+				memory['asked'][target] = WORLD_INFO['ticks']
+	#TODO: Possibly never triggered
+	elif memory['text'] == 'help find founder':
+		_topics.append({'text': 'Help %s locate the founder of %s.' % (' '.join(LIFE[memory['target']]['name']), CAMPS[memory['camp']]['name']),
+	          'gist': 'help_find_founder',
+	          'target': memory['target'],
+	          'camp': memory['camp'],
+	          'memory': memory})
+		
+		if target:
+			memory['asked'][target] = WORLD_INFO['ticks']
+	elif memory['text'] == 'where_is_target':
+		_topics.append({'text': 'Do you know where %s is?' % ' '.join(LIFE[memory['target']]['name']),
+	          'gist': 'last_seen_target_at',
+	          'target': memory['target'],
+	          'memory': memory})
+		
+		if target:
+			memory['asked'][target] = WORLD_INFO['ticks']
+	elif memory['text'] == 'wants item':
+		#TODO: Better description
+		_topics.append({'text': 'Do you have anything like this?',
+	          'gist': 'request_item',
+	          'item': memory['item']})
+		
+		if target:
+			memory['asked'][target] = WORLD_INFO['ticks']
+	elif memory['text'] == 'ask_to_join_camp':
+		_topics.append({'text': 'Is it okay if I join this camp?',
+	          'gist': 'ask_to_join_camp',
+	          'camp': memory['camp'],
+	          'memory': memory})
+		
+		if target:
+			memory['asked'][target] = WORLD_INFO['ticks']
+	elif memory['text'] == 'opinion_of_target':
+		_topics.append({'text': 'What is your relationship with %s?' % ' '.join(LIFE[memory['who']]['name']),
+	          'gist': 'opinion_of_target',
+	          'who': memory['who'],
+	          'memory': memory})
+		
+		if target:
+			memory['asked'][target] = WORLD_INFO['ticks']	
+	
+	return _topics
+
 def get_questions_to_ask(life, chosen):
 	_topics = []
 	_target = None
@@ -351,68 +422,7 @@ def get_questions_to_ask(life, chosen):
 		_target = None
 	
 	for memory in lfe.get_questions(life, target=_target):
-		if not lfe.can_ask(life, _target, memory['id']):
-			continue
-		
-		if memory['text'] == 'wants_founder_info':
-			if not lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': memory['camp'], 'founder': '*'}):
-				_topics.append({'text': 'Do you know who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
-					'gist': 'who_founded_camp',
-					'camp': memory['camp'],
-					'memory': memory})
-				_topics.append({'text': 'Who runs camp %s?' % CAMPS[memory['camp']]['name'],
-					'gist': 'who_founded_camp',
-					'camp': memory['camp'],
-					'memory': memory})
-				_topics.append({'text': 'Any idea who is in charge of camp %s?' % CAMPS[memory['camp']]['name'],
-					'gist': 'who_founded_camp',
-					'camp': memory['camp'],
-					'memory': memory})
-				
-				if _target:
-					memory['asked'][_target] = WORLD_INFO['ticks']
-		#TODO: Possibly never triggered
-		elif memory['text'] == 'help find founder':
-			_topics.append({'text': 'Help %s locate the founder of %s.' % (' '.join(LIFE[memory['target']]['name']), CAMPS[memory['camp']]['name']),
-				'gist': 'help_find_founder',
-				'target': memory['target'],
-				'camp': memory['camp'],
-				'memory': memory})
-			
-			if _target:
-				memory['asked'][_target] = WORLD_INFO['ticks']
-		elif memory['text'] == 'where_is_target':
-			_topics.append({'text': 'Do you know where %s is?' % ' '.join(LIFE[memory['target']]['name']),
-				'gist': 'last_seen_target_at',
-				'target': memory['target'],
-				'memory': memory})
-			
-			if _target:
-				memory['asked'][_target] = WORLD_INFO['ticks']
-		elif memory['text'] == 'wants item':
-			#TODO: Better description
-			_topics.append({'text': 'Do you have anything like this?',
-				'gist': 'request_item',
-				'item': memory['item']})
-			
-			if _target:
-				memory['asked'][_target] = WORLD_INFO['ticks']
-		elif memory['text'] == 'ask_to_join_camp':
-			_topics.append({'text': 'Is it okay if I join this camp?',
-				'gist': 'ask_to_join_camp',
-				'camp': memory['camp'],
-				'memory': memory})
-			
-			if _target:
-				memory['asked'][_target] = WORLD_INFO['ticks']
-		elif memory['text'] == 'opinion_of_target':
-			_topics.append({'text': 'What is your relationship with %s?' % ' '.join(LIFE[memory['who']]['name']),
-				'gist': 'opinion_of_target',
-				'who': memory['who'],
-				'memory': memory})
-			
-			if _target:
-				memory['asked'][_target] = WORLD_INFO['ticks']
+		_topics.extend(_get_questions_to_ask(life, _target, memory))
 	
 	if not _topics:
 		_topics.append({'text': 'Not really.', 'gist': 'end'})

@@ -193,6 +193,7 @@ def process_criteria(life, goal_id, criteria_id, result):
 		elif 'match_action' in sub_criteria:
 			return action.execute(sub_criteria['match_action'])
 		elif 'filter' in sub_criteria:
+			print 'filter',[entry for entry in result if sub_criteria['filter'](life, entry)]
 			return [entry for entry in result if sub_criteria['filter'](life, entry)]
 		elif 'filter_action' in sub_criteria:
 			return action.execute(sub_criteria['filter_action'])
