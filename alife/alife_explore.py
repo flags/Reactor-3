@@ -26,11 +26,16 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	_explore_chunk = chunks.find_best_known_chunk(life, ignore_starting=True, ignore_time=True)
+	_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True)
 	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
 	
 	if not _explore_chunk:
-		return False
+		_lost_method = lfe.execute_raw(life, 'discover', 'when_lost')
+		if _lost_method:
+			_explore_chunk = chunks.find_best_chunk(life, ignore_time=True, all_visible=True, lost_method=_lost_method)
+			brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
+		else:
+			return False
 	
 	return RETURN_VALUE
 

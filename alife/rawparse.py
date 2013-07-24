@@ -13,7 +13,7 @@ def always(life):
 def never(life):
 	return False
 
-CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
+CURLY_BRACE_MATCH = '{[\w+-\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
@@ -48,15 +48,15 @@ def create_action(script, identifier, arguments):
 	for argument in arguments:
 		if argument.count('['):
 			bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
-			curly_bspecies_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_Bspecies_MATCH, argument)]
+			curly_BRACE_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
 			_args.append({'function': argument.split('[')[0]})
 		else:
-			curly_bspecies_data = re.findall(CURLY_Bspecies_MATCH, argument)
+			curly_BRACE_data = re.findall(CURLY_BRACE_MATCH, argument)
 			
-			if curly_bspecies_data:
-				argument = [argument.replace(entry, '') for entry in curly_bspecies_data][0]
-				curly_bspecies_data = [data.strip('{').strip('}') for data in curly_bspecies_data][0].split(',')
-				_arguments = curly_bspecies_data
+			if curly_BRACE_data:
+				argument = [argument.replace(entry, '') for entry in curly_BRACE_data][0]
+				curly_BRACE_data = [data.strip('{').strip('}') for data in curly_BRACE_data][0].split(',')
+				_arguments = curly_BRACE_data
 				_values = []
 				
 				for value in _arguments:
@@ -77,17 +77,24 @@ def create_action(script, identifier, arguments):
 				argument = argument.split('{')[0]
 				_values = []
 			
-			#print argument, curly_bspecies_data
+			#print argument, curly_BRACE_data
 			
 			_true = True
-			if argument.startswith('!'):
+			_string = ''
+			if argument.startswith('\"'):
+				argument = argument.replace('\"', '')
+				_string = argument
+			elif argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
 			elif argument.startswith('*'):
 				argument = argument[1:]
 				_true = '*'
 			
-			_args.append({'function': translate(argument), 'values': _values, 'true': _true})
+			if _string:
+				_args.append({'string': _string})
+			else:
+				_args.append({'function': translate(argument), 'values': _values, 'true': _true, 'string': None})
 		
 	return {'id': identifier, 'arguments': _args}
 
@@ -96,7 +103,7 @@ def add_action(script, action):
 
 def parse(script, line, filename='', linenumber=0):
 	if not line.count('[') == line.count(']'):
-		raise Exception('Bspecies mismatch (%s, line %s): %s' % (filename, linenumber, line))
+		raise Exception('BRACE mismatch (%s, line %s): %s' % (filename, linenumber, line))
 	
 	bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', line)]
 	

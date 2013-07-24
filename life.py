@@ -180,6 +180,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	
 	"""
 	for rule in get_raw(life, section, identifier):
+		if rule['string']:
+			return rule['string'].lower()
+		
 		_func = rule['function'](life, **kwargs)
 		
 		if rule['true'] == '*' or _func == rule['true']:

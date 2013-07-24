@@ -180,10 +180,10 @@ def explore_unknown_chunks(life):
 	if life['path']:
 		return True
 	
-	_chunk_key = references.path_along_reference(life, 'buildings')
+	#_chunk_key = references.path_along_reference(life, 'buildings')
 	
-	if not _chunk_key:
-		_chunk_key = references.path_along_reference(life, 'roads')
+	#if not _chunk_key:
+	_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
 		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
@@ -191,7 +191,6 @@ def explore_unknown_chunks(life):
 			return False
 		
 		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
-		return False
 	
 	_walkable_area = chunks.get_walkable_areas(_chunk_key)
 	if not _walkable_area:

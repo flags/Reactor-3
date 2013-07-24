@@ -87,6 +87,12 @@ def create_background(life):
 	#1 - 10 (SHY - SOCIAL BUTTERFLY)
 	SOCIABILITY = numbers.clip(numbers.roll(numbers.clip(((CHARISMA>=5))+(2*(EXTROVERSION>=1)+2*(GRADUATED==1)), 1, 3), 4), 1, 10)
 	
+	#STRING (INTENTION)
+	# FORTUNE
+	# GREED
+	# 
+	#INTENTION = 
+	
 	#print 'Birth parents:', HAS_BIRTH_PARENTS
 	#print 'Adopted:', WAS_ADOPTED
 	#print 'Parenting quality:', PARENTING_QUALITY

@@ -2,6 +2,7 @@ from globals import *
 import life as lfe
 
 import references
+import judgement
 import sight
 import maps
 
@@ -21,16 +22,40 @@ def flag(life, chunk_id, flag, value):
 	
 	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
 
-def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
+def find_best_chunk(life, ignore_starting=False, ignore_time=False, all_visible=False, lost_method=None):
 	_interesting_chunks = {}
 	
-	for chunk_key in life['known_chunks']:
-		_chunk = life['known_chunks'][chunk_key]
-		
-		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
-			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
-		elif ignore_time:
-			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
+	if all_visible:
+		_center_chunk = lfe.get_current_chunk_id(life)
+		for x_mod in [-1, 0, 1]:
+			for y_mod in [-1, 0, 1]:
+				if not x_mod and not y_mod:
+					continue
+				
+				_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
+				_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
+				
+				if not _chunk_key in CHUNK_MAP:
+					print 'invalid chunk:',_chunk_key
+					continue				
+				
+				if not get_visible_walkable_areas(life, _chunk_key):
+					continue
+				
+				if not _chunk_key in life['known_chunks']:
+					judgement.judge_chunk(life, _chunk_key)
+				
+				_interesting_chunks[_chunk_key] = life['known_chunks'][_chunk_key]
+				print life['name'],'VALID'
+				
+	else:
+		for chunk_key in life['known_chunks']:
+			_chunk = life['known_chunks'][chunk_key]
+			
+			if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+				_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
+			elif ignore_time:
+				_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	if not ignore_starting:
 		_current_known_chunk = lfe.get_current_known_chunk(life)
@@ -41,9 +66,15 @@ def find_best_known_chunk(life, ignore_starting=False, ignore_time=False):
 	_best_chunk = {'score': _initial_score, 'chunk_key': None}
 	for chunk_key in _interesting_chunks:
 		chunk = _interesting_chunks[chunk_key]
+		_score = chunk['score']
 		
-		if chunk['score']>_best_chunk['score']:
-			_best_chunk['score'] = chunk['score']
+		if lost_method == 'furthest':
+			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+			_score = numbers.distance(life['pos'], chunk_center)
+			print life['name'],_score,_best_chunk['score']
+		
+		if _score>_best_chunk['score']:
+			_best_chunk['score'] = _score
 			_best_chunk['chunk_key'] = chunk_key
 		
 	if not _best_chunk['chunk_key']:
