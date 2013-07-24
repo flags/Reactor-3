@@ -4,10 +4,14 @@ import alife as alfe
 import libtcodpy as tcod
 
 import encounters
+import worldgen
 import effects
 import menus
 import items
 import life
+
+import logging
+import random
 
 def tick_all_objects(source_map):
 	if SETTINGS['paused']:
@@ -105,6 +109,23 @@ def tick_world():
 	else:
 		WORLD_INFO['time_of_day'] = 0
 		WORLD_INFO['day'] += 1
+	
+	if WORLD_INFO['life_spawn_interval'][0]:
+		WORLD_INFO['life_spawn_interval'][0] -= 1
+		logging.info(WORLD_INFO['life_spawn_interval'][0])
+	else:
+		worldgen.generate_life(amount=1)
+		#generate_wildlife(source_map)
+		if WORLD_INFO['life_density'] == 'Sparse':
+			WORLD_INFO['life_spawn_interval'] = [0, (770, 990)]
+		elif WORLD_INFO['life_density'] == 'Medium':
+			WORLD_INFO['life_spawn_interval'] = [0, (550, 700)]
+		else:
+			WORLD_INFO['life_spawn_interval'] = [0, (250, 445)]
+			
+		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
+		
+		logging.info('Reset spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
 	
 def get_time_of_day():
 	return WORLD_INFO['ticks']

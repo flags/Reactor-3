@@ -25,41 +25,14 @@ for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
 class Runner(threading.Thread):
-	def __init__(self, amount, life_density='Sparse'):
+	def __init__(self, amount):
 		self.amount = amount
-		self.life_density = life_density
 		self.running = True
 		
 		threading.Thread.__init__(self)
 	
 	def run(self):
-		if self.life_density == 'Sparse':
-			_life_spawn_interval = [0, (770, 990)]
-		elif self.life_density == 'Medium':
-			_life_spawn_interval = [0, (550, 700)]
-		elif self.life_density == 'Heavy':
-			_life_spawn_interval = [0, (250, 445)]
-		
-		while self.amount:
-			try:
-				
-				if _life_spawn_interval[0]:
-					_life_spawn_interval[0] -= 1
-					logging.info(_life_spawn_interval[0])
-				else:
-					generate_life(amount=1)
-					#generate_wildlife(source_map)
-					_life_spawn_interval[0] = random.randint(_life_spawn_interval[1][0], _life_spawn_interval[1][1])
-					logging.info('Reset spawn clock: %s' % _life_spawn_interval)
-				
-				logic.tick_all_objects(WORLD_INFO['map'])
-			except Exception as e:
-				logging.error('Crash: %s' % e)
-				SETTINGS['running'] = False
-				sys.exit(1)
-			
-			self.amount -= 1
-		
+		simulate_life(self.amount)
 		self.running = False
 
 
@@ -72,15 +45,28 @@ def draw_world_stats():
 	tcod.console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	tcod.console_flush()
 
+def simulate_life(amount):
+	while amount:
+		#try:
+		logic.tick_all_objects(WORLD_INFO['map'])
+		#except Exception as e:
+		#logging.error('Crash: %s' % e)
+		#SETTINGS['running'] = False
+		#sys.exit(1)
+		
+		amount -= 1
+
 def generate_world(source_map, life_density='Sparse', simulate_ticks=1000, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	randomize_item_spawns()
 	
+	WORLD_INFO['life_density'] = life_density
+	
 	if thread:
 		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
-		_r = Runner(simulate_ticks, life_density=life_density)
+		_r = Runner(simulate_ticks)
 		_r.start()
 
 		while _r.running:
@@ -89,7 +75,8 @@ def generate_world(source_map, life_density='Sparse', simulate_ticks=1000, save=
 			if not SETTINGS['running']:
 				return False
 	else:
-		simulate_life(source_map, amount=simulate_ticks)
+		print 'here'
+		simulate_life(simulate_ticks)
 	
 	create_player(source_map)
 	WORLD_INFO['id'] = 0
