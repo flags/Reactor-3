@@ -126,7 +126,7 @@ def desires_to_create_camp(life):
 	return False
 
 def desires_shelter(life):
-	if not judgement.is_safe(life):
+	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
 		return False
 	
 	if life['state'] == 'needs':
@@ -234,6 +234,12 @@ def will_obey(life, life_id):
 
 def can_talk_to(life, life_id):
 	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):
+		return False
+	
+	return True
+
+def can_camp(life):
+	if not lfe.execute_raw(life, 'camp', 'can_camp'):
 		return False
 	
 	return True

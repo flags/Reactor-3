@@ -3,6 +3,7 @@ import survival
 import numbers
 import combat
 import stats
+import logic
 
 import re
 
@@ -28,6 +29,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'kill': None,
 	'has_attacked_trusted': stats.has_attacked_trusted,
 	'distance_to_pos': stats.distance_from_pos_to_pos,
+	'is_night': logic.is_night,
 	'always': always,
 	'never': never}
 

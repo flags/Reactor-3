@@ -171,6 +171,7 @@ def switch_to_world_gen():
 	_menu_items = []
 	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks']))
 	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy']))
+	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy']))
 	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))

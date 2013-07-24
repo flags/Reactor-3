@@ -56,13 +56,28 @@ def simulate_life(amount):
 		
 		amount -= 1
 
-def generate_world(source_map, life_density='Sparse', simulate_ticks=1000, save=True, thread=True):
+def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
 	randomize_item_spawns()
 	
 	WORLD_INFO['life_density'] = life_density
+	WORLD_INFO['wildlife_density'] = wildlife_density
+	
+	if WORLD_INFO['life_density'] == 'Sparse':
+		WORLD_INFO['life_spawn_interval'] = [0, (770, 990)]
+	elif WORLD_INFO['life_density'] == 'Medium':
+		WORLD_INFO['life_spawn_interval'] = [0, (550, 700)]
+	else:
+		WORLD_INFO['life_spawn_interval'] = [0, (250, 445)]
+	
+	if WORLD_INFO['wildlife_density'] == 'Sparse':
+		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
+	elif WORLD_INFO['wildlife_density'] == 'Medium':
+		WORLD_INFO['wildlife_spawn_interval'] = [0, (550, 700)]
+	else:
+		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
 	
 	if thread:
 		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
@@ -118,18 +133,34 @@ def randomize_item_spawns():
 		_rand_pos = random.choice(_chunk['ground'])
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
-def generate_wildlife(source_map, amount='heavy'):
+def get_spawn_point():
+	_start_seed = random.randint(0, 3)
+	
+	if not _start_seed:
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
+	elif _start_seed == 1:
+		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
+	elif _start_seed == 2:
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
+	elif _start_seed == 3:
+		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
+	
+	return _spawn
+
+def generate_wildlife():
 	for i in range(1, 3):
+		_spawn = get_spawn_point()
+		
 		_p = life.create_life('dog',
 			name=['Wild', 'Dog%s' % i],
-			map=source_map,
-			position=[55+(i*10),81,2])
+			map=WORLD_INFO['map'],
+			position=[_spawn[0], _spawn[1], 2])
 		
 		if random.randint(0, 3)>=2:
 			_c = life.create_life('dog',
 				name=['(Young) Wild', 'Dog%s' % i],
-				map=source_map,
-				position=[55+(i*5),82,2])
+				map=WORLD_INFO['map'],
+				position=[_spawn[0], _spawn[1], 2])
 			_c['icon'] = 'd'
 			
 			alife.brain.meet_alife(_p, _c)
@@ -139,37 +170,26 @@ def generate_wildlife(source_map, amount='heavy'):
 			alife.brain.flag_alife(_c, _p['id'], 'father')
 
 def generate_life(amount=1):
-	for i in range(amount):
-		_start_seed = random.randint(0, 3)
+	_spawn = get_spawn_point()
+	
+	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	#alife['stats'].update(historygen.create_background(life))
+	
+	#if random.randint(0,1):
+	#	alife['hunger'] = 1000
+	#	alife['thirst'] = 1000
+	
+	for item in BASE_ITEMS:
+		life.add_item_to_inventory(alife, items.create_item(item))
+	
+	for item in RECRUIT_ITEMS:
+		if random.randint(0, 1):
+			continue
 		
-		if not _start_seed:
-			_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
-		elif _start_seed == 1:
-			_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
-		elif _start_seed == 2:
-			_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
-		elif _start_seed == 3:
-			_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
-		
-		print _spawn
-		alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-		#alife['stats'].update(historygen.create_background(life))
-		
-		#if random.randint(0,1):
-		#	alife['hunger'] = 1000
-		#	alife['thirst'] = 1000
-		
-		for item in BASE_ITEMS:
-			life.add_item_to_inventory(alife, items.create_item(item))
-		
-		for item in RECRUIT_ITEMS:
-			if random.randint(0, 1):
-				continue
-			
-			life.add_item_to_inventory(alife, items.create_item(item))
-		
-		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
-		#life.equip_item(alife, _wep[0])
+		life.add_item_to_inventory(alife, items.create_item(item))
+	
+	#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
+	#life.equip_item(alife, _wep[0])
 
 def create_player(source_map):
 	PLAYER = life.create_life('human',

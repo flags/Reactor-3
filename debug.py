@@ -23,4 +23,7 @@ def love_me():
 		alife.brain.add_impression(LIFE[target], SETTINGS['controlling']['id'], 'follow', {'influence': 100})
 
 def time(time):
-	WORLD_INFO['time_of_day'] = time
+	WORLD_INFO['real_time_of_day'] = time
+
+def timescale(scale):
+	WORLD_INFO['time_scale'] = scale

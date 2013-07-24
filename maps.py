@@ -184,7 +184,7 @@ def render_lights(source_map):
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		
-		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		_mod = numbers.clip(_mod-1, 0, 1)
 		SUN = (255*_mod, 165*_mod, 0*_mod)
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])

@@ -104,30 +104,40 @@ def tick_all_objects(source_map):
 def tick_world():
 	WORLD_INFO['ticks'] += 1
 	
-	if WORLD_INFO['time_of_day'] < WORLD_INFO['length_of_day']:
-		WORLD_INFO['time_of_day'] += WORLD_INFO['time_scale']
+	if WORLD_INFO['real_time_of_day'] < WORLD_INFO['length_of_day']:
+		WORLD_INFO['real_time_of_day'] += WORLD_INFO['time_scale']
 	else:
-		WORLD_INFO['time_of_day'] = 0
+		WORLD_INFO['real_time_of_day'] = 0
 		WORLD_INFO['day'] += 1
+	
+	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
+		WORLD_INFO['time_of_day'] = 'night'
+	else:
+		WORLD_INFO['time_of_day'] = 'day'
 	
 	if WORLD_INFO['life_spawn_interval'][0]:
 		WORLD_INFO['life_spawn_interval'][0] -= 1
 	else:
-		worldgen.generate_life(amount=1)
-		#generate_wildlife(source_map)
-		if WORLD_INFO['life_density'] == 'Sparse':
-			WORLD_INFO['life_spawn_interval'] = [0, (770, 990)]
-		elif WORLD_INFO['life_density'] == 'Medium':
-			WORLD_INFO['life_spawn_interval'] = [0, (550, 700)]
-		else:
-			WORLD_INFO['life_spawn_interval'] = [0, (250, 445)]
+		worldgen.generate_life()
 			
 		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
 		
-		logging.info('Reset spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
+		logging.info('Reset life spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
 	
-def get_time_of_day():
-	return WORLD_INFO['ticks']
+	if WORLD_INFO['wildlife_spawn_interval'][0]:
+		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
+	else:
+		worldgen.generate_wildlife()
+			
+		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
+		
+		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+def is_night(life):
+	if WORLD_INFO['time_of_day'] == 'night':
+		return True
+	
+	return False
 
 def draw_encounter():
 	if not SETTINGS['controlling']['encounters']:
