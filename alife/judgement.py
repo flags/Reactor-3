@@ -347,6 +347,9 @@ def judge_chunk(life, chunk_id, visited=False):
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
+			
+			print 'FOLLOW??????????',life['name'],_target['life']['name'],stats.desires_to_follow(life, _target['life']['id'])
+			_score += stats.desires_to_follow(life, _target['life']['id'])
 		else:
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])

@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import chunks
 import brain
 
 import render_fast_los
@@ -16,6 +17,23 @@ def look(life):
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
+	
+	_center_chunk = lfe.get_current_chunk_id(life)
+	for x_mod in range(-5, 6):
+		for y_mod in range(-5, 6):
+			if not x_mod and not y_mod:
+				continue
+			
+			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
+			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
+			
+			if not _chunk_key in CHUNK_MAP:
+				continue				
+			
+			if not chunks.can_see_chunk(life, _chunk_key):
+				continue
+			
+			judgement.judge_chunk(life, _chunk_key)	
 	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not can_see_target(life, ai['id']):
@@ -40,7 +58,7 @@ def look(life):
 				brain.unflag_alife(life, ai['id'], 'search_map')
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
-			judgement.judge_chunk(life, _chunk_id)
+			#judgement.judge_chunk(life, _chunk_id)
 			
 			continue
 		
@@ -52,9 +70,9 @@ def look(life):
 		
 		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
-			_item_chunk_key = '%s,%s' % ((item['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
-				(item['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
-			judgement.judge_chunk(life, _item_chunk_key)
+			#_item_chunk_key = '%s,%s' % ((item['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
+			#	(item['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+			#judgement.judge_chunk(life, _item_chunk_key)
 		
 			if not item['uid'] in life['know_items']:
 				brain.remember_item(life, item)

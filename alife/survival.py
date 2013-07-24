@@ -160,9 +160,12 @@ def explore_known_chunks(life):
 	#automatically.
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
-	#the module itself.	
+	#the module itself.
 	_chunk_key = brain.retrieve_from_memory(life, 'explore_chunk')
 	_chunk = maps.get_chunk(_chunk_key)
+	
+	if life['path'] and chunks.position_is_in_chunk(lfe.path_dest(life), _chunk_key):
+		return True
 	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
 		life['known_chunks'][_chunk_key]['last_visited'] = time.time()

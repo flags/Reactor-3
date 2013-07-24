@@ -29,6 +29,9 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'kill': None,
 	'has_attacked_trusted': stats.has_attacked_trusted,
 	'distance_to_pos': stats.distance_from_pos_to_pos,
+	'is_idle': lambda life: life['state'] in ['idle', 'discovering'],
+	'is_child': stats.is_child,
+	'is_parent': stats.is_parent,
 	'is_night': logic.is_night,
 	'always': always,
 	'never': never}
@@ -81,12 +84,16 @@ def create_action(script, identifier, arguments):
 			
 			_true = True
 			_string = ''
+			_self_call = False
 			if argument.startswith('\"'):
 				argument = argument.replace('\"', '')
 				_string = argument
 			elif argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
+			elif argument.startswith('@'):
+				argument = argument[1:]
+				_self_call = True
 			elif argument.startswith('*'):
 				argument = argument[1:]
 				_true = '*'
@@ -94,7 +101,11 @@ def create_action(script, identifier, arguments):
 			if _string:
 				_args.append({'string': _string})
 			else:
-				_args.append({'function': translate(argument), 'values': _values, 'true': _true, 'string': None})
+				_args.append({'function': translate(argument),
+					'values': _values,
+					'true': _true,
+					'string': None,
+					'self_call': _self_call})
 		
 	return {'id': identifier, 'arguments': _args}
 

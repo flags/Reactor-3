@@ -300,6 +300,41 @@ def is_family(life, life_id):
 	
 	return False
 
+def is_child(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
+
+	if not _know:
+		return False
+	
+	for relation in ['mother', 'father']:
+		if brain.get_alife_flag(life, life_id, relation):
+			return True
+	
+	return False
+
+def is_parent(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
+	
+	if not _know:
+		return False
+	
+	for relation in ['son', 'daughter']:
+		if brain.get_alife_flag(life, life_id, relation):
+			return True
+	
+	return False
+
+def desires_to_follow(life, life_id):
+	_know = brain.knows_alife_by_id(life, life_id)
+	
+	if not _know:
+		return False
+	
+	if not lfe.execute_raw(life, 'movement', 'follow', life_id=life_id):
+		return False
+	
+	return _know['trust']
+
 def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
 	

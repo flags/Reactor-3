@@ -183,7 +183,10 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 		if rule['string']:
 			return rule['string'].lower()
 		
-		_func = rule['function'](life, **kwargs)
+		if rule['self_call']:
+			_func = rule['function'](life)
+		else:
+			_func = rule['function'](life, **kwargs)
 		
 		if rule['true'] == '*' or _func == rule['true']:
 			for value in rule['values']:

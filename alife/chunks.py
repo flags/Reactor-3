@@ -22,40 +22,16 @@ def flag(life, chunk_id, flag, value):
 	
 	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
 
-def find_best_chunk(life, ignore_starting=False, ignore_time=False, all_visible=False, lost_method=None):
+def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None):
 	_interesting_chunks = {}
 	
-	if all_visible:
-		_center_chunk = lfe.get_current_chunk_id(life)
-		for x_mod in [-1, 0, 1]:
-			for y_mod in [-1, 0, 1]:
-				if not x_mod and not y_mod:
-					continue
-				
-				_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
-				_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
-				
-				if not _chunk_key in CHUNK_MAP:
-					print 'invalid chunk:',_chunk_key
-					continue				
-				
-				if not get_visible_walkable_areas(life, _chunk_key):
-					continue
-				
-				if not _chunk_key in life['known_chunks']:
-					judgement.judge_chunk(life, _chunk_key)
-				
-				_interesting_chunks[_chunk_key] = life['known_chunks'][_chunk_key]
-				print life['name'],'VALID'
-				
-	else:
-		for chunk_key in life['known_chunks']:
-			_chunk = life['known_chunks'][chunk_key]
-			
-			if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
-				_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
-			elif ignore_time:
-				_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
+	for chunk_key in life['known_chunks']:
+		_chunk = life['known_chunks'][chunk_key]
+		
+		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
+		elif ignore_time:
+			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	if not ignore_starting:
 		_current_known_chunk = lfe.get_current_known_chunk(life)
