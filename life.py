@@ -216,7 +216,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
+	logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type, position=(0,0,2), name=None, map=None):
 	"""Initiates and returns a deepcopy of a life type."""

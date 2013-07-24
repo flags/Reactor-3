@@ -310,7 +310,6 @@ def judge_shelter(life, chunk_id):
 	return _score
 
 def judge_chunk(life, chunk_id, visited=False):
-	print 'Updated chunk,', chunk_id
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
 	

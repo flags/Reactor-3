@@ -19,12 +19,8 @@ def look(life):
 	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not can_see_target(life, ai['id']):
-			continue
-		
-		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
-			
 			continue
 		
 		life['seen'].append(ai['id'])
@@ -34,6 +30,7 @@ def look(life):
 			if life['know'][ai['id']]['last_seen_time']:
 				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
 				judgement.judge(life, ai['id'])
+				print 'HAVENT SEEN YOU IN A WHILE', LIFE[ai['id']]['name']
 			
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]

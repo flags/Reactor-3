@@ -9,7 +9,7 @@ def update_self_snapshot(life,snapshot):
 def update_snapshot_of_target(life,target,snapshot):
 	life['know'][target['id']]['snapshot'].update(snapshot)
 	
-	#logging.debug('%s updated their snapshot of %s.' % (' '.join(life['name']), ' '.join(target['name'])))
+	logging.debug('%s updated their snapshot of %s.' % (' '.join(life['name']), ' '.join(target['name'])))
 
 def create_snapshot(life):
 	_snapshot = {'damage': lfe.get_damage(life),
