@@ -112,7 +112,6 @@ def tick_world():
 	
 	if WORLD_INFO['life_spawn_interval'][0]:
 		WORLD_INFO['life_spawn_interval'][0] -= 1
-		logging.info(WORLD_INFO['life_spawn_interval'][0])
 	else:
 		worldgen.generate_life(amount=1)
 		#generate_wildlife(source_map)

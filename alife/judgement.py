@@ -291,6 +291,9 @@ def judge_shelter(life, chunk_id):
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
+	if _known_chunk['life']:
+		return 0
+	
 	if chunk['type'] == 'building':
 		for building in WORLD_INFO['reference_map']['buildings']:
 			if chunk_id in building:
@@ -307,6 +310,7 @@ def judge_shelter(life, chunk_id):
 	return _score
 
 def judge_chunk(life, chunk_id, visited=False):
+	print 'Updated chunk,', chunk_id
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
 	
@@ -319,7 +323,10 @@ def judge_chunk(life, chunk_id, visited=False):
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
 			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
-			'digest': chunk['digest']}
+			'digest': chunk['digest'],
+			'life': []}
+	
+	_known_chunk = life['known_chunks'][chunk_id]
 	
 	_trusted = 0
 	for _target in life['know'].values():
@@ -331,6 +338,9 @@ def judge_chunk(life, chunk_id, visited=False):
 			_is_here = True
 			
 		if _is_here:
+			if not _target['life']['id'] in _known_chunk['life']:
+				_known_chunk['life'].append(_target['life']['id'])
+			
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
 			else:
@@ -338,6 +348,9 @@ def judge_chunk(life, chunk_id, visited=False):
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
+		else:
+			if _target['life']['id'] in _known_chunk['life']:
+				_known_chunk['life'].remove(_target['life']['id'])
 	
 	for camp in life['known_camps'].values():
 		if not chunk_id in camp['reference']:
