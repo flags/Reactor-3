@@ -5,13 +5,14 @@ import references
 import sight
 import maps
 
+import logging
 import numbers
 import random
 import time
 
 def get_flag(life, chunk_id, flag):
-	if flag in life['known_chunks'][chunk_id]:
-		return life['known_chunks'][chunk_id][flag]
+	if flag in life['known_chunks'][chunk_id]['flags']:
+		return life['known_chunks'][chunk_id]['flags'][flag]
 	
 	return False
 

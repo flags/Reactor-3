@@ -17,6 +17,7 @@ import logging
 import random
 import time
 import json
+import sys
 
 BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack', 'radio', 'glock', '9x19mm magazine', 'electric lantern', 'soda']
 RECRUIT_ITEMS = [ '.22 rifle', 'corn', 'soda']
@@ -24,21 +25,40 @@ for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
 class Runner(threading.Thread):
-	def __init__(self, function, source_map, amount):
-		self.function = function
-		self.source_map = source_map
+	def __init__(self, amount, life_density='Sparse'):
 		self.amount = amount
+		self.life_density = life_density
 		self.running = True
 		
 		threading.Thread.__init__(self)
 	
 	def run(self):
-		try:
-			self.function(self.source_map, amount=self.amount)
-		except Exception as e:
-			logging.error('Crash: %s' % e)
-			SETTINGS['running'] = False
-			raise
+		if self.life_density == 'Sparse':
+			_life_spawn_interval = [0, (770, 990)]
+		elif self.life_density == 'Medium':
+			_life_spawn_interval = [0, (550, 700)]
+		elif self.life_density == 'Heavy':
+			_life_spawn_interval = [0, (250, 445)]
+		
+		while self.amount:
+			try:
+				
+				if _life_spawn_interval[0]:
+					_life_spawn_interval[0] -= 1
+					logging.info(_life_spawn_interval[0])
+				else:
+					generate_life(amount=1)
+					#generate_wildlife(source_map)
+					_life_spawn_interval[0] = random.randint(_life_spawn_interval[1][0], _life_spawn_interval[1][1])
+					logging.info('Reset spawn clock: %s' % _life_spawn_interval)
+				
+				logic.tick_all_objects(WORLD_INFO['map'])
+			except Exception as e:
+				logging.error('Crash: %s' % e)
+				SETTINGS['running'] = False
+				sys.exit(1)
+			
+			self.amount -= 1
 		
 		self.running = False
 
@@ -52,17 +72,15 @@ def draw_world_stats():
 	tcod.console_print(0, 0, 6, 'Time elapsed: %.2f' % (time.time()-WORLD_INFO['inittime']))
 	tcod.console_flush()
 
-def generate_world(source_map, life=1, simulate_ticks=1000, save=True, thread=True):
+def generate_world(source_map, life_density='Sparse', simulate_ticks=1000, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	
-	generate_life(source_map, amount=life)
-	#generate_wildlife(source_map)
 	randomize_item_spawns()
 	
 	if thread:
 		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
-		_r = Runner(simulate_life, source_map, amount=simulate_ticks)
+		_r = Runner(simulate_ticks, life_density=life_density)
 		_r.start()
 
 		while _r.running:
@@ -133,14 +151,21 @@ def generate_wildlife(source_map, amount='heavy'):
 			alife.brain.flag_alife(_p, _c['id'], 'son')
 			alife.brain.flag_alife(_c, _p['id'], 'father')
 
-def generate_life(source_map, amount=1):
+def generate_life(amount=1):
 	for i in range(amount):
-		if i % 2:
-			_spawn = (40, 40)
-		else:
-			_spawn = (30, 70)
+		_start_seed = random.randint(0, 3)
 		
-		alife = life.create_life('human',map=source_map,position=[_spawn[0]+(i*2),_spawn[1]+(i*3),2])
+		if not _start_seed:
+			_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
+		elif _start_seed == 1:
+			_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
+		elif _start_seed == 2:
+			_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
+		elif _start_seed == 3:
+			_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
+		
+		print _spawn
+		alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		#alife['stats'].update(historygen.create_background(life))
 		
 		#if random.randint(0,1):
@@ -158,10 +183,6 @@ def generate_life(source_map, amount=1):
 		
 		#_wep = life.get_all_unequipped_items(alife, matches=[{'type': 'gun'}])
 		#life.equip_item(alife, _wep[0])
-
-def simulate_life(source_map, amount=1000):
-	for i in range(amount):
-		logic.tick_all_objects(source_map)
 
 def create_player(source_map):
 	PLAYER = life.create_life('human',

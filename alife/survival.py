@@ -191,6 +191,7 @@ def explore_unknown_chunks(life):
 			return False
 		
 		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
+		return False
 	
 	_walkable_area = chunks.get_walkable_areas(_chunk_key)
 	if not _walkable_area:

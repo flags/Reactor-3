@@ -2,8 +2,9 @@ from globals import *
 
 import life as lfe
 
-import judgement
 import historygen
+import judgement
+import survival
 import groups
 import camps
 import sight
@@ -123,6 +124,15 @@ def desires_to_create_camp(life):
 			return True
 	
 	return False
+
+def desires_shelter(life):
+	if not judgement.is_safe(life):
+		return False
+	
+	if life['state'] == 'needs':
+		return False
+	
+	return True
 
 def desires_to_join_camp(life, camp_id):
 	if life['group']:

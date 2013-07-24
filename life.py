@@ -708,8 +708,6 @@ def can_ask(life, target_id, question_id):
 		print 'already talked about this'
 		return False
 	
-	print 'should be OK'
-	
 	return True
 
 def get_memory(life, matches={}):

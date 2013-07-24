@@ -286,6 +286,26 @@ def get_influence(life, target_id, gist):
 def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
 
+def judge_shelter(life, chunk_id):
+	chunk = CHUNK_MAP[chunk_id]
+	_known_chunk = life['known_chunks'][chunk_id]
+	_score = 0
+	
+	if chunk['type'] == 'building':
+		for building in WORLD_INFO['reference_map']['buildings']:
+			if chunk_id in building:
+				_score += len(building)
+				_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
+				_score = numbers.clip(_score, 0, 10)
+				break
+	
+	if chunks.get_flag(life, chunk_id, 'shelter'):
+		_score += 1
+	elif _score == 10:
+		chunks.flag(life, chunk_id, 'shelter', True)
+	
+	return _score
+
 def judge_chunk(life, chunk_id, visited=False):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
@@ -297,6 +317,7 @@ def judge_chunk(life, chunk_id, visited=False):
 			_last_visited = -1
 		
 		life['known_chunks'][chunk_id] = {'last_visited': 0,
+			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
 			'digest': chunk['digest']}
 	
@@ -321,7 +342,16 @@ def judge_chunk(life, chunk_id, visited=False):
 	for camp in life['known_camps'].values():
 		if not chunk_id in camp['reference']:
 			continue
-				
+		
+		if not life['camp'] == camp['id']:
+			continue
+	
+		if stats.desires_shelter(life):
+			_score += judge_camp(life, life['camp'])
+	
+	if stats.desires_shelter(life):
+		_score += judge_shelter(life, chunk_id)
+	
 	if stats.desires_interaction(life):
 		_score += _trusted
 	
@@ -508,6 +538,11 @@ def judge_group(life, group_id):
 			_score -= _knows['danger']
 	
 	return _score
+
+#def get_best_goal(life):
+#	for goal in life['goal'].values():
+#		if 'investigate'
+		
 
 def group_judge_group(group_id, target_group_id):
 	_group1 = groups.get_group(group_id)

@@ -87,27 +87,27 @@ def create_background(life):
 	#1 - 10 (SHY - SOCIAL BUTTERFLY)
 	SOCIABILITY = numbers.clip(numbers.roll(numbers.clip(((CHARISMA>=5))+(2*(EXTROVERSION>=1)+2*(GRADUATED==1)), 1, 3), 4), 1, 10)
 	
-	print 'Birth parents:', HAS_BIRTH_PARENTS
-	print 'Adopted:', WAS_ADOPTED
-	print 'Parenting quality:', PARENTING_QUALITY
-	print 'Bullied:', BULLIED
-	print 'Fought back:', FOUGHT_BACK
-	print 'Graduated:', GRADUATED
-	print 'Street smart:', STREET_SMART
-	print 'Math:', MATHEMATICS
-	print 'Reading:', READING
-	print 'Engineering:', ENGINEERING
-	print 'Firearms:', FIREARMS
-	print 'Melee:', MELEE
-	print 'Trading:', TRADING
-	print 'Leader:', IS_LEADER
-	print 'Self-absorbed:', SELF_ABSORBED
-	print 'Lone wolf:', LONE_WOLF
-	print 'Patience:', PATIENCE
-	print 'Introversion:', INTROVERSION
-	print 'Extroversion:', EXTROVERSION
-	print 'Charisma:', CHARISMA
-	print 'Sociability:', SOCIABILITY
+	#print 'Birth parents:', HAS_BIRTH_PARENTS
+	#print 'Adopted:', WAS_ADOPTED
+	#print 'Parenting quality:', PARENTING_QUALITY
+	#print 'Bullied:', BULLIED
+	#print 'Fought back:', FOUGHT_BACK
+	#print 'Graduated:', GRADUATED
+	#print 'Street smart:', STREET_SMART
+	#print 'Math:', MATHEMATICS
+	#print 'Reading:', READING
+	#print 'Engineering:', ENGINEERING
+	#print 'Firearms:', FIREARMS
+	#print 'Melee:', MELEE
+	#print 'Trading:', TRADING
+	#print 'Leader:', IS_LEADER
+	#print 'Self-absorbed:', SELF_ABSORBED
+	#print 'Lone wolf:', LONE_WOLF
+	#print 'Patience:', PATIENCE
+	#print 'Introversion:', INTROVERSION
+	#print 'Extroversion:', EXTROVERSION
+	#print 'Charisma:', CHARISMA
+	#print 'Sociability:', SOCIABILITY
 	
 	if not HAS_BIRTH_PARENTS:
 		HISTORY.append('Lost his parents in late childhood')
@@ -178,7 +178,7 @@ def create_background(life):
 	elif PATIENCE<=3:
 		HISTORY.append('Very impatient')
 	
-	print '. '.join(HISTORY)+'.'	
+	#print '. '.join(HISTORY)+'.'	
 	
 	return {'mathematics': MATHEMATICS,
 		'reading': READING,

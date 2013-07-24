@@ -62,7 +62,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			pass
 		else:
 			#print 'does not know founder!' * 10
-			_g = goals.add_goal(life, 'find founder', {'camp': _camp['id'], 'founder': '*'})
+			_g = goals.add_goal(life, 'find founder', investigate=True)
 			if _g:
 				_q = lfe.create_question(life,
 					'wants_founder_info',
@@ -96,7 +96,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				#goals.filter_criteria_with_action(life, _g, _c, action.make('filter',
 				#                                                            life=life['id'],
 				#                                                            retrieve=))
-				judgement.can_trust
 				goals.add_action(life, _g, action.make('ask',
 				                                       life=life['id'],
 				                                       retrieve={'list': goals.get_flag(life, _g, 'talk_to')},

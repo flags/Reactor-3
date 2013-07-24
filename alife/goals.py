@@ -8,8 +8,8 @@ import traceback
 import logging
 import sys
 
-def has_goal(life, name, goal):
-	return [g for g in life['goals'].values() if g['goal'] == goal and g['name'] == name]
+def has_goal(life, name):
+	return [g for g in life['goals'].values() if g['name'] == name]
 
 def has_active_goals(life):
 	return [g for g in life['goals'].values() if not g['complete']]
@@ -28,18 +28,22 @@ def get_criteria(life, goal_id, criteria_id):
 	
 	raise Exception('%s has no goal with criteria ID `%s`' % (' '.join(life['name']), criteria_id))
 
-def add_goal(life, name, goal):
+def add_goal(life, name, **kwargs):
 	if has_goal(life, name, goal):
 		return False
 	
 	_goal = {'name': name,
-		'goal': goal,
 		'criteria': {},
 		'id': WORLD_INFO['goalid'],
 		'cid': 1,
 		'flags': {},
+	    'tags': {},
 		'complete_on_answer': [],
 		'complete': False}
+
+	if 'investigate' in kwargs:
+		_goal['tags']['investigate'] = True
+	
 	life['goals'][_goal['id']] = _goal
 	
 	WORLD_INFO['goalid'] += 1
@@ -174,13 +178,13 @@ def meet_criteria(life, goal_id, criteria_id):
 	_criteria = get_criteria(life, goal_id, criteria_id)
 	
 	if 'match' in _criteria:
-		return _criteria['match'](life, *_criteria['args'])
+		_criteria['result'] = _criteria['match'](life, *_criteria['args'])
 	elif 'match_action' in _criteria:
-		return action.execute(_criteria['match_action'])
+		_criteria['result'] = action.execute(_criteria['match_action'])
 	elif 'filter' in _criteria:
-		return [entry for entry in result if not _criteria['filter'](life, entry) == _criteria['invert']]
+		_criteria['result'] = [entry for entry in result if not _criteria['filter'](life, entry) == _criteria['invert']]
 	elif 'filter_action' in _criteria:
-		return action.execute(_criteria['filter_action'])
+		_criteria['result'] = action.execute(_criteria['filter_action'])
 
 def process_criteria(life, goal_id, criteria_id, result):
 	""" Checks result of goal """
@@ -191,14 +195,21 @@ def process_criteria(life, goal_id, criteria_id, result):
 		if 'match' in sub_criteria:
 			_criteria['result'] = sub_criteria['match'](life, **sub_criteria['args'])
 		elif 'match_action' in sub_criteria:
-			return action.execute(sub_criteria['match_action'])
+			_criteria['result'] = action.execute(sub_criteria['match_action'])
 		elif 'filter' in sub_criteria:
+			#print 'HERE' * 75
+			#for entry in result:
+			#	print sub_criteria['filter'](life, entry)
+				
 			_criteria['result'] = [entry for entry in result if sub_criteria['filter'](life, entry)]
 		elif 'filter_action' in sub_criteria:
 			_criteria['result'] = action.execute(sub_criteria['filter_action'])
 		
-		if not _criteria['result']:
-			print 'Criteria failed:', _criteria
+		if _criteria['result']:
+			print 'Sub-criteria passed:', sub_criteria
+		else:
+			print 'Sub-criteria failed:', sub_criteria
+			break
 	
 	return _criteria['result']
 
