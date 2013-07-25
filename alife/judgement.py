@@ -334,9 +334,11 @@ def judge_chunk(life, chunk_id, visited=False):
 		
 		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			_is_here = True
-			_actually_here = True
 		elif not _target['last_seen_time'] and _target['life']['path'] and chunks.position_is_in_chunk(lfe.path_dest(_target['life']), chunk_id):
 			_is_here = True
+		
+		if chunks.position_is_in_chunk(_target['life']['pos'], chunk_id):
+			_actually_here = True
 			
 		if _is_here:
 			if not _target['life']['id'] in _known_chunk['life']:

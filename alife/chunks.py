@@ -111,7 +111,24 @@ def get_nearest_position_in_chunk(position, chunk_id):
 	
 	return _closest['pos']
 
+def _can_see_chunk_quick(life, chunk_id):
+	chunk = maps.get_chunk(chunk_id)
+	
+	if not len(chunk['ground']):
+		return False
+	
+	for seg in [0, len(chunk['ground'])/2, len(chunk['ground'])-1]:
+		if sight.can_see_position(life, chunk['ground'][seg]):
+			return True
+	
+	return False
+
 def can_see_chunk(life, chunk_id):
+	_fast_see = _can_see_chunk_quick(life, chunk_id)
+	
+	if _fast_see:
+		return True
+	
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:

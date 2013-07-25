@@ -847,6 +847,22 @@ def path_dest(life):
 	
 	return tuple(life['path'][len(life['path'])-1])
 
+def can_traverse(life, pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+2]:
+			return False
+		
+		return True
+	
+	if not WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]]:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]-1]:
+			return True
+	
+	if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]]:
+		return True
+	
+	return False
+
 def can_walk_to(life, pos):
 	if len(pos) == 3:
 		pos = list(pos)

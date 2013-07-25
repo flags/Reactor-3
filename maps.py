@@ -60,6 +60,9 @@ def save_map(map_name, base_dir=DATA_DIR):
 	except:
 		pass
 
+	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
+		del _slice['rotmap']
+
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
 			_map_file.write(json.dumps(WORLD_INFO))

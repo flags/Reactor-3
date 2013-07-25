@@ -2,7 +2,9 @@ from copy import deepcopy
 from globals import *
 
 import zones as zns
+import life as lfe
 
+import render_los
 import numbers
 import alife
 import numpy
@@ -12,12 +14,11 @@ import logging
 import time
 import sys
 
-def create_path(life, start, end, zones, omap=None, dist=None):
+def astar(life, start, end, zones):
 	_stime = time.time()
 	
 	_path = {'start': tuple(start),
 	         'end': tuple(end),
-	         'omap': omap,
 	         'olist': [tuple(start)],
 	         'clist': [],
 	         'segments': [],
@@ -41,7 +42,10 @@ def create_path(life, start, end, zones, omap=None, dist=None):
 	
 	for zone in [zns.get_slice(z) for z in zones]:
 		_t = time.time()
-		_nm = numpy.rot90(numpy.fliplr(numpy.clip(numpy.array(zone['map']), -2, 9999999)))
+		
+		if not 'rotmap' in zone:
+			zone['rotmap'] = numpy.rot90(numpy.fliplr(numpy.clip(numpy.array(zone['map']), -2, 9999999)))
+			logging.debug('Generated rotmap for zone #%s' % zone['id'])
 		
 		#with open('mapout.txt', 'w') as mo:
 			#for y in range(MAP_SIZE[1]):
@@ -57,7 +61,7 @@ def create_path(life, start, end, zones, omap=None, dist=None):
 				#mo.write(_line+'\n')
 		
 		#print 'end',zone['z']
-		_path['map'] = numpy.add(_nm, _path['map'])
+		_path['map'] = numpy.add(zone['rotmap'], _path['map'])
 		#print time.time()-_t
 	
 	start = (start[0], start[1])
@@ -67,8 +71,8 @@ def create_path(life, start, end, zones, omap=None, dist=None):
 
 	#init time 0.00857901573181
 	#      old 0.0220770835876
-	#      new 0.00291109085083
-	print 'init time',time.time()-_stime
+	#      new 0.000559091567993
+	#print 'init time',time.time()-_stime
 	
 	#print 'init:',time.time()-_stime
 	return walk_path({}, _path)
@@ -165,34 +169,22 @@ def find_path(path):
 			path['tmap'][node[0]][node[1]] = 1
 			node = path['pmap'][node[0]][node[1]]
 
-		#There's a few ways to fix this...
-		#The issue is that pmap[self.end[0]][self.end[1]]
-		#fails, leading to only self.end being the path.
-		#The only way to REALLY fix this is to track where A*
-		#fails, which we can fix in getadj()
-		#If (_x,_y) is in an array (list of ALife positions), then
-		#we could walk backwards from there...
-		if _broken:
-			print self.end
-			print 'Broken A*!'
-			return self.start
-
 		return _path
 
-def short_path(start,end,source_map):
-	if source_map[end[0]][end[1]][start[2]+1]:
-		if source_map[end[0]][end[1]][start[2]+2]:
-			return [(start[0],start[1],0)]
-		return [(end[0],end[1],2)]
-
-	return [(end[0],end[1],0)]
-
-def create_path_old(start, end, zone, source_map):
-	_dist = numbers.distance(start,end)
+def short_path(life, start, end):
+	_s = time.time()
+	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
+	_line.pop(0)
 	
-	for x1 in range(-1,2):
-		for y1 in range(-1,2):
-			if (start[0],start[1]) == (end[0]+x1,end[1]+y1):
-				return short_path(start,end,source_map)
+	for pos in _line:
+		if not lfe.can_traverse(life, pos):
+			return False
 	
-	return Astar(zone=zone, start=start, end=end, omap=source_map, dist=_dist).get_path()
+	return _line
+
+def create_path(life, start, end, zones):
+	_shortpath = short_path(life, start, end)
+	if _shortpath:
+		return _shortpath
+	
+	return astar(life, start, end, zones)
