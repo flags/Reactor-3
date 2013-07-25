@@ -168,7 +168,7 @@ def explore_known_chunks(life):
 		return True
 	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
-		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
+		life['known_chunks'][_chunk_key]['last_visited'] = WORLD_INFO['ticks']
 		return False
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])

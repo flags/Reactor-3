@@ -32,9 +32,14 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_lost_method = lfe.execute_raw(life, 'discover', 'when_lost')
 		if _lost_method:
 			if not life['path'] or not brain.retrieve_from_memory(life, 'discovery_lock'):
-				_explore_chunk = chunks.find_best_chunk(life, ignore_time=True, lost_method=_lost_method)
+				sight.scan_surroundings(life)
+				_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True, lost_method=_lost_method, only_recent=True)
 				brain.store_in_memory(life, 'discovery_lock', True)
 				brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
+				
+				if not _explore_chunk:
+					print life['name'],'is lost'
+					return False
 				survival.explore_known_chunks(life)
 		else:
 			return False

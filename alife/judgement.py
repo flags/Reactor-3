@@ -309,23 +309,30 @@ def judge_shelter(life, chunk_id):
 	
 	return _score
 
-def judge_chunk(life, chunk_id, visited=False):
+def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
-		if chunks.get_walkable_areas(chunk_id) and sight.can_see_position(life, random.choice(chunks.get_walkable_areas(chunk_id))):
-			_last_visited = 0
-		else:
-			_last_visited = -1
-		
-		life['known_chunks'][chunk_id] = {'last_visited': 0,
+		life['known_chunks'][chunk_id] = {'last_visited': -1,
+			'last_seen': -1,
+			'last_checked': -1,
 			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
 			'digest': chunk['digest'],
 			'life': []}
 	
-	_known_chunk = life['known_chunks'][chunk_id]
+	_known_chunk = life['known_chunks'][chunk_id]	
+	
+	if seen:
+		_known_chunk['last_seen'] = WORLD_INFO['ticks']
+	
+	if visited:
+		_known_chunk['last_visited'] = WORLD_INFO['ticks']
+		_known_chunk['last_seen'] = WORLD_INFO['ticks']
+	
+	if checked:
+		_known_chunk['last_checked'] = WORLD_INFO['ticks']
 	
 	_trusted = 0
 	for _target in life['know'].values():
@@ -373,9 +380,6 @@ def judge_chunk(life, chunk_id, visited=False):
 	
 	if stats.desires_interaction(life):
 		_score += _trusted
-	
-	if visited:
-		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
 	
 	for item in chunk['items']:
 		_item = brain.remember_known_item(life, item)

@@ -22,15 +22,33 @@ def flag(life, chunk_id, flag, value):
 	
 	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
 
-def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None):
+def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
 		_chunk = life['known_chunks'][chunk_key]
 		
-		if not ignore_time and _chunk['last_visited'] == 0 or time.time()-_chunk['last_visited']>=900:
+		if not ignore_time and _chunk['last_visited'] == -1 or time.time()-_chunk['last_visited']>=900:
+			if only_unvisted and not _chunk['last_visited'] == -1:
+				continue
+			
+			if only_unseen and not _chunk['last_seen'] == -1:
+				continue
+			
+			#if only_recent and WORLD_INFO['ticks']-_chunk['discovered_at'] > 50:
+			#	continue
+			
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 		elif ignore_time:
+			if only_unvisted and not _chunk['last_visited'] == -1:
+				continue
+			
+			if only_unseen and not _chunk['last_seen'] == -1:
+				continue
+			
+			#if only_recent and WORLD_INFO['ticks']-_chunk['discovered_at'] > 50:
+			#	continue
+			
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
 	if not ignore_starting:
@@ -39,10 +57,22 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 	else:
 		_initial_score = 0
 	
+	if only_recent:
+		_recent = -1
+		for chunk_key in _interesting_chunks.keys():
+			chunk = _interesting_chunks[chunk_key]
+			
+			if chunk['discovered_at']>_recent:
+				_recent = chunk['discovered_at']
+	
 	_best_chunk = {'score': _initial_score, 'chunk_key': None}
 	for chunk_key in _interesting_chunks:
 		chunk = _interesting_chunks[chunk_key]
 		_score = chunk['score']
+
+		if only_recent:
+			if chunk['discovered_at']<_recent:
+				continue
 		
 		if lost_method == 'furthest':
 			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]

@@ -18,23 +18,6 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	_center_chunk = lfe.get_current_chunk_id(life)
-	for x_mod in range(-5, 6):
-		for y_mod in range(-5, 6):
-			if not x_mod and not y_mod:
-				continue
-			
-			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
-			
-			if not _chunk_key in CHUNK_MAP:
-				continue				
-			
-			if not chunks.can_see_chunk(life, _chunk_key):
-				continue
-			
-			judgement.judge_chunk(life, _chunk_key)	
-	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not can_see_target(life, ai['id']):
 			if ai['id'] in life['know']:
@@ -58,7 +41,7 @@ def look(life):
 				brain.unflag_alife(life, ai['id'], 'search_map')
 			
 			_chunk_id = lfe.get_current_chunk_id(ai)
-			#judgement.judge_chunk(life, _chunk_id)
+			judgement.judge_chunk(life, _chunk_id)
 			
 			continue
 		
@@ -70,12 +53,10 @@ def look(life):
 		
 		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
-			#_item_chunk_key = '%s,%s' % ((item['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
-			#	(item['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
-			#judgement.judge_chunk(life, _item_chunk_key)
-		
 			if not item['uid'] in life['know_items']:
 				brain.remember_item(life, item)
+			elif not life['know_items'][item['uid']]['last_seen_time']:
+				continue
 
 			life['know_items'][item['uid']]['last_seen_time'] = 0
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
@@ -321,3 +302,24 @@ def find_known_items(life, matches={}, visible=True):
 	
 	return _match
 
+def scan_surroundings(life, initial=False):
+	print life['name'],'scanning'
+	_center_chunk = lfe.get_current_chunk_id(life)
+	for x_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
+		for y_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
+			if not x_mod and not y_mod:
+				continue
+			
+			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
+			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
+			
+			if not _chunk_key in CHUNK_MAP:
+				continue
+			
+			if not chunks.can_see_chunk(life, _chunk_key):
+				continue
+			
+			if initial:
+				judgement.judge_chunk(life, _chunk_key, seen=True)
+			else:
+				judgement.judge_chunk(life, _chunk_key)
