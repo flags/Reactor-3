@@ -304,10 +304,11 @@ def judge_shelter(life, chunk_id):
 	
 	if chunks.get_flag(life, chunk_id, 'shelter'):
 		_score += 1
-	elif _score == 10:
-		chunks.flag(life, chunk_id, 'shelter', True)
 	
-	return _score
+	if _score:
+		chunks.flag(life, chunk_id, 'shelter', _score)
+	
+	return True
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	chunk = CHUNK_MAP[chunk_id]
@@ -375,8 +376,8 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 		if stats.desires_shelter(life):
 			_score += judge_camp(life, life['camp'])
 	
-	if stats.desires_shelter(life):
-		_score += judge_shelter(life, chunk_id)
+	#if stats.desires_shelter(life):
+	judge_shelter(life, chunk_id)
 	
 	if stats.desires_interaction(life):
 		_score += _trusted

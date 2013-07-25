@@ -29,7 +29,7 @@ def get_criteria(life, goal_id, criteria_id):
 	raise Exception('%s has no goal with criteria ID `%s`' % (' '.join(life['name']), criteria_id))
 
 def add_goal(life, name, **kwargs):
-	if has_goal(life, name, goal):
+	if has_goal(life, name):
 		return False
 	
 	_goal = {'name': name,
@@ -37,7 +37,7 @@ def add_goal(life, name, **kwargs):
 		'id': WORLD_INFO['goalid'],
 		'cid': 1,
 		'flags': {},
-	    'tags': {},
+		'tags': {},
 		'complete_on_answer': [],
 		'complete': False}
 
@@ -64,12 +64,13 @@ def get_flag(life, goal_id, flag):
 	
 	return _goal['flags'][flag]
 
-def add_criteria(life, goal_id, kind, criteria):
+def add_criteria(life, goal_id, kind, criteria, required=False):
 	_goal = get_goal_via_id(life, goal_id)
 	
 	criteria['id'] = _goal['cid']
 	criteria['sub_criteria'] = []
 	criteria['type'] = kind
+	criteria['required'] = required
 	_goal['criteria'][criteria['id']] = criteria
 	_goal['cid'] += 1
 	
@@ -77,10 +78,10 @@ def add_criteria(life, goal_id, kind, criteria):
 	
 	return criteria['id']
 
-def add_action(life, goal_id, action):
+def add_action(life, goal_id, action, required=False):
 	_goal = get_goal_via_id(life, goal_id)
 	
-	return add_criteria(life, goal_id, 'action', {'action': action})
+	return add_criteria(life, goal_id, 'action', {'action': action}, required=required)
 
 def add_task(life, goal_id, callback, **kwargs):
 	_goal = get_goal_via_id(life, goal_id)
@@ -138,15 +139,18 @@ def process_goals(life):
 				_goal['complete'] = True
 				break
 		
-		if _process_goal(life, goal):
+		_process = _process_goal(life, goal)
+		if _process == 1:
 			print 'DELETED GOAL!' * 100
 			_goal['complete'] = True
 			
 			print 'FINISHED GOAL' * 50
+		elif _process == 2:
+			print 'WE DIDNT MAKEIT'
 
 def _process_goal(life, goal_id):
 	_goal = get_goal_via_id(life, goal_id)
-	_passed = True
+	_passed = 1
 	
 	for criteria in _goal['criteria'].values():
 		criteria['result'] = None
@@ -162,12 +166,19 @@ def _process_goal(life, goal_id):
 			criteria['result'] = _process
 			
 			if not criteria['result']:
-				#print 'Goal not met', life['name'], criteria
-				_passed = False
+				print 'Goal not met', life['name'], criteria
+				
+				if criteria['required']:
+					_passed = 2
+				else:
+					_passed = False
 				continue
 		else:
 			if not meet_criteria(life, goal_id, criteria['id']):
-				_passed = False
+				if criteria['required']:
+					_passed = 2
+				else:
+					_passed = False
 				continue
 	
 	return _passed

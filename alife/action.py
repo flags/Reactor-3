@@ -74,6 +74,10 @@ def _execute(action):
 		
 		return _struct
 	
+	if 'return_key' in action['args']:
+		if 'key' in action['kwargs']:
+			return _struct[action['kwargs']['key']]
+	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])
 		

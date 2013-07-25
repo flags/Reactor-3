@@ -16,6 +16,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	RETURN_VALUE = STATE_UNCHANGED
 	
 	if not judgement.is_safe(life):
+		brain.store_in_memory(life, 'discovery_lock', False)
 		return False
 	
 	if life['state'] in ['exploring', 'searching', 'looting', 'managing', 'finding camp', 'camping', 'working', 'visiting camp', 'needs', 'hiding']:
@@ -43,5 +44,3 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				survival.explore_known_chunks(life)
 		else:
 			return False
-	#survival.explore_unknown_chunks(life)
-	

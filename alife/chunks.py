@@ -35,9 +35,6 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 			if only_unseen and not _chunk['last_seen'] == -1:
 				continue
 			
-			#if only_recent and WORLD_INFO['ticks']-_chunk['discovered_at'] > 50:
-			#	continue
-			
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 		elif ignore_time:
 			if only_unvisted and not _chunk['last_visited'] == -1:
@@ -45,9 +42,6 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 			
 			if only_unseen and not _chunk['last_seen'] == -1:
 				continue
-			
-			#if only_recent and WORLD_INFO['ticks']-_chunk['discovered_at'] > 50:
-			#	continue
 			
 			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
 	
@@ -77,6 +71,9 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 		if lost_method == 'furthest':
 			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
 			_score = numbers.distance(life['pos'], chunk_center)
+			
+			if ignore_starting and chunk_key == lfe.get_current_chunk_id(life):
+				continue
 		
 		if _score>_best_chunk['score']:
 			_best_chunk['score'] = _score
