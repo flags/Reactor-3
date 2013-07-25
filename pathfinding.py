@@ -40,21 +40,25 @@ def create_path(life, start, end, zones, omap=None, dist=None):
 	#3: Travels down
 	
 	for zone in [zns.get_slice(z) for z in zones]:
-		_nm = numpy.clip(numpy.array(zone['map']), 0, 1)
-		
 		_t = time.time()
+		_nm = numpy.rot90(numpy.fliplr(numpy.clip(numpy.array(zone['map']), -2, 9999999)))
+		
+		#with open('mapout.txt', 'w') as mo:
+			#for y in range(MAP_SIZE[1]):
+				#_line = ''
+				#for x in range(MAP_SIZE[0]):
+					#if _nm[y,x]==zone['id']:
+						#_line += ' '
+					#elif _nm[y,x]==-1:
+						#_line += '^'
+					#else:
+						#_line += '#'
+				
+				#mo.write(_line+'\n')
+		
+		#print 'end',zone['z']
 		_path['map'] = numpy.add(_nm, _path['map'])
 		print time.time()-_t
-		
-		#for pos in zone['walking']:
-		#	if zone['z'] > start[2]:
-		#		_path['map'][pos[1],pos[0]] = 2
-		#	elif zone['z'] < start[2]:
-		#		_path['map'][pos[1],pos[0]] = 3
-		#	else:
-		#		if len(zone['walking']) == 24:
-		#			print zone['map'][pos[0]][pos[1]]
-		#		_path['map'][pos[1],pos[0]] = 1
 	
 	start = (start[0], start[1])
 	
@@ -66,12 +70,13 @@ def create_path(life, start, end, zones, omap=None, dist=None):
 	#      new 0.00291109085083
 	#print 'init time',time.time()-_s
 	
-	print 'init:',time.time()-_stime
+	#print 'init:',time.time()-_stime
 	return walk_path({}, _path)
 
 def walk_path(life, path):
 	if path['map'][path['end'][1], path['end'][0]] == 0:
 		logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
+		#print path['map'][path['end'][1]][path['end'][0]]
 		return False
 
 	node = path['olist'][0]

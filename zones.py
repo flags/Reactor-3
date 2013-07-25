@@ -40,14 +40,12 @@ def process_slice(z):
 		_z_id = WORLD_INFO['zoneid']
 		_ramps = []
 		_start_pos = get_unzoned(_slice, z)
-		_walkable = []
 		
 		if not _start_pos:
 			print '\tRuns:',_runs,'Time:',
 			break
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
-		_walkable.append((_start_pos[0], _start_pos[1]))
 		
 		_changed = True
 		while _changed:
@@ -58,7 +56,7 @@ def process_slice(z):
 				for y in range(MAP_SIZE[1]):
 					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
 						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
-							pass
+							_slice[x][y] = -2
 						else:
 							_slice[x][y] = -1
 					
@@ -72,8 +70,7 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
-						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
-							_walkable.append((_x, _y))
+						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
@@ -88,7 +85,7 @@ def process_slice(z):
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}, 'walking': _walkable}
+		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
