@@ -330,9 +330,11 @@ def judge_chunk(life, chunk_id, visited=False):
 	_trusted = 0
 	for _target in life['know'].values():
 		_is_here = False
+		_actually_here = False
 		
 		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			_is_here = True
+			_actually_here = True
 		elif not _target['last_seen_time'] and _target['life']['path'] and chunks.position_is_in_chunk(lfe.path_dest(_target['life']), chunk_id):
 			_is_here = True
 			
@@ -348,8 +350,8 @@ def judge_chunk(life, chunk_id, visited=False):
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
 			
-			#print 'FOLLOW??????????',life['name'],_target['life']['name'],stats.desires_to_follow(life, _target['life']['id'])
-			_score += stats.desires_to_follow(life, _target['life']['id'])
+			if _actually_here:
+				_score += stats.desires_to_follow(life, _target['life']['id'])
 		else:
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
