@@ -47,7 +47,6 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 		if lost_method == 'furthest':
 			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
 			_score = numbers.distance(life['pos'], chunk_center)
-			print life['name'],_score,_best_chunk['score']
 		
 		if _score>_best_chunk['score']:
 			_best_chunk['score'] = _score

@@ -118,7 +118,7 @@ def tick_world():
 	if WORLD_INFO['life_spawn_interval'][0]:
 		WORLD_INFO['life_spawn_interval'][0] -= 1
 	else:
-		worldgen.generate_life()
+		#worldgen.generate_life()
 			
 		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
 		
@@ -127,7 +127,7 @@ def tick_world():
 	if WORLD_INFO['wildlife_spawn_interval'][0]:
 		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
 	else:
-		worldgen.generate_wildlife()
+		#worldgen.generate_wildlife()
 			
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		

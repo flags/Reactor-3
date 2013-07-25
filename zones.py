@@ -40,12 +40,14 @@ def process_slice(z):
 		_z_id = WORLD_INFO['zoneid']
 		_ramps = []
 		_start_pos = get_unzoned(_slice, z)
+		_walkable = []
 		
 		if not _start_pos:
 			print '\tRuns:',_runs,'Time:',
 			break
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
+		_walkable.append((_start_pos[0], _start_pos[1]))
 		
 		_changed = True
 		while _changed:
@@ -71,6 +73,7 @@ def process_slice(z):
 							continue
 						
 						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
+							_walkable.append((_x, _y))
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
@@ -85,7 +88,7 @@ def process_slice(z):
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}, 'walking': _walkable}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
@@ -94,12 +97,16 @@ def get_zone_at_coords(pos):
 	
 	return None
 
+def get_slice(zone_id):
+	zone_id = str(zone_id)
+	return WORLD_INFO['slices'][zone_id]
+
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
-		return True
+		return [z1]
 	
 	z1 = str(z1)
 	z2 = str(z2)
@@ -115,9 +122,9 @@ def can_path_to_zone(z1, z2):
 		
 		if z2 in _to_check:
 			_checked.append(z2)
-			return True
+			return _checked
 	
-	return False
+	return []
 
 def create_zone_map():
 	WORLD_INFO['slices'] = {}

@@ -1,17 +1,19 @@
 from copy import deepcopy
 from globals import *
 
+import zones as zns
+
 import numbers
-import logging
 import alife
 import numpy
 import tiles
+
+import logging
 import time
 import sys
 
-def create_path(life, start, end, omap=None, dist=None):
-	#if not len(start) == 3 or not len(end) == 3:
-	#	raise Exception('Path: Both start and end points must have 3 values.')
+def create_path(life, start, end, zones, omap=None, dist=None):
+	_stime = time.time()
 	
 	_path = {'start': tuple(start),
 	         'end': tuple(end),
@@ -20,90 +22,52 @@ def create_path(life, start, end, omap=None, dist=None):
 	         'clist': [],
 	         'segments': [],
 	         'map': []}
-	
-	if not dist:
-		dist = numbers.distance(start,end)+1
 
-	if dist<75:
-		dist=75
-
-	#TODO: Z-levels
-	_x_min = 0
-	_x_max = numbers.clip(start[0]+dist, 0, MAP_SIZE[0])
-	_y_min = 0
-	_y_max = numbers.clip(start[1]+dist, 0, MAP_SIZE[1])
-	_size = (_x_max,_y_max)
-
-	#Let's make a few of these
-	_path['fmap'] = numpy.zeros((_size[1], _size[0]))
-	_path['gmap'] = numpy.zeros((_size[1], _size[0]))
-	_path['hmap'] = numpy.zeros((_size[1], _size[0]))
+	_path['fmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_path['gmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_path['hmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
 	_path['pmap'] = []
-	_path['tmap'] = numpy.zeros((MAP_SIZE[1],MAP_SIZE[0]))
+	_path['tmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
 	
-	for x in range(_size[0]):
-		_path['pmap'].append([0] * _size[1])
+	for x in range(MAP_SIZE[0]):
+		_path['pmap'].append([0] * MAP_SIZE[1])
 
-	#Create our map
-	_path['map'] = numpy.zeros((_size[1], _size[0]))
+	_path['map'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
 	#KEY:
 	#0: Unwalkable (can't walk there, too low/high)
 	#1: Walkable
 	#2: Travels up
 	#3: Travels down
-
-	_map_z_pos = _path['start'][2]
-	for _x in xrange(_size[0]):
-		_map_x_pos = _x+_x_min
-		for _y in xrange(_size[1]):
-			_map_y_pos = _y+_y_min
-
-			if _map_x_pos >= MAP_SIZE[0] or _map_y_pos >= MAP_SIZE[1]:
-				continue
-
-			if _path['omap'][_map_x_pos][_map_y_pos][_map_z_pos]:
-				if _path['omap'][_map_x_pos][_map_y_pos][_map_z_pos+1]:
-					if _path['omap'][_map_x_pos][_map_y_pos][_map_z_pos+2]:
-						_path['map'][_y,_x] = 0
-					else:
-						_path['map'][_y,_x] = 2
-			else:
-				if _path['omap'][_map_x_pos][_map_y_pos][_map_z_pos-1]:
-					_path['map'][_y,_x] = 3
-				else:
-					_path['map'][_y,_x] = 0
-			
-			#TODO: replace self.start[2] with Z pos _map_x_pos and _map_y_pos
-			#if not _path['omap'][_map_x_pos][_map_y_pos][_path['start'][2]]:
-			#	_path['map'][_y,_x] = -2
-
-			#	#TODO: Will probably need this at some point (for falling risk?)
-			#	#for i in xrange(1,self.start[2]+1):
-			#	#	if not self.omap[x][y][self.start[2]-1-i]:
-			#	#		self.map[y,x] = -1-i
-			#	#		
-			#	#		break
-
-			#TODO: Same as above
-			#if _path['omap'][_map_x_pos][_map_y_pos][_path['start'][2]+1]:
-			#	_path['map'][_y,_x] = 2
-
-			#	#Not if there's a tile above the position we'd be climing to!
-			#	#TODO: Same as above
-			#	if _path['omap'][_map_x_pos][_map_y_pos][_path['start'][2]+2]:
-			#		_path['map'][_y,_x] = 0
 	
-	start = (start[0]-_x_min, start[1]-_y_min)
+	for zone in [zns.get_slice(z) for z in zones]:
+		_nm = numpy.clip(numpy.array(zone['map']), 0, 1)
+		
+		_t = time.time()
+		_path['map'] = numpy.add(_nm, _path['map'])
+		print time.time()-_t
+		
+		#for pos in zone['walking']:
+		#	if zone['z'] > start[2]:
+		#		_path['map'][pos[1],pos[0]] = 2
+		#	elif zone['z'] < start[2]:
+		#		_path['map'][pos[1],pos[0]] = 3
+		#	else:
+		#		if len(zone['walking']) == 24:
+		#			print zone['map'][pos[0]][pos[1]]
+		#		_path['map'][pos[1],pos[0]] = 1
 	
-	#Calculate our starting node
+	start = (start[0], start[1])
+	
 	_path['hmap'][start[1], start[0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
-
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]
 
 	#init time 0.00857901573181
+	#      old 0.0220770835876
+	#      new 0.00291109085083
 	#print 'init time',time.time()-_s
 	
-	walk_path({}, _path)
+	print 'init:',time.time()-_stime
+	return walk_path({}, _path)
 
 def walk_path(life, path):
 	if path['map'][path['end'][1], path['end'][0]] == 0:
@@ -119,10 +83,10 @@ def walk_path(life, path):
 	_fmap = path['fmap']
 	_pmap = path['pmap']
 	_stime = time.time()
+
 	while len(_olist):
 		_olist.remove(node)
 
-		#Is it the end?
 		if tuple(node) == path['end']:
 			_olist = []
 			break
@@ -130,20 +94,15 @@ def walk_path(life, path):
 		_clist.append(node)
 		_lowest = {'pos':None,'f':9000}
 
-		#Check adjacent
-		for adj in self.getadj(node):
+		for adj in getadj(path, node):
 			if not adj in _olist:
-				#Calculate g score for adj
 				if abs(node[0]-adj[0])+abs(node[1]-adj[1]) == 1:
 					_gmap[adj[1],adj[0]] = _gmap[node[1],node[0]]+10
 				else:
 					_gmap[adj[1],adj[0]] = _gmap[node[1],node[0]]+14
 
-				#Calculate h score for adj
-				#_hmap[adj[1],adj[0]] = (abs(adj[0]-self.end[0])+abs(adj[1]-self.end[1]))*10
-
-				xDistance = abs(adj[0]-self.end[0])
-				yDistance = abs(adj[1]-self.end[1])
+				xDistance = abs(adj[0]-path['end'][0])
+				yDistance = abs(adj[1]-path['end'][1])
 				if xDistance > yDistance:
 					_hmap[adj[1],adj[0]] = 14*yDistance + 10*(xDistance-yDistance)
 				else:
@@ -164,12 +123,56 @@ def walk_path(life, path):
 		if _lowest['pos']:
 			node = _lowest['pos']
 
-	path['path'] = self.find_path(path['start'])
+	return find_path(path)
 
-	if len(path['path'])==1:
-		if abs(path['start'][0]-path['path'][0][0])+abs(path['start'][1]-path['path'][0][1])>1:
-			path['path'] = None
-	
+def getadj(path, pos, checkclist=True):
+	adj = []
+
+	for r in [(-1,-1),(0,-1),(1,-1),(-1,0),(1,0),(-1,1),(0,1),(1,1)]:
+		_x = pos[0]+r[0]
+		_y = pos[1]+r[1]
+
+		if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1] or not path['map'][_y,_x]:
+			continue
+
+		if (_x,_y) in path['clist'] and checkclist:
+			continue
+
+		adj.append((_x,_y))
+
+	return adj
+
+def find_path(path):
+		if path['map'][path['end'][1], path['end'][0]] == 0:
+			return [[path['start'][0], path['start'][1],0]]
+
+		node = path['pmap'][path['end'][0]][path['end'][1]]
+		_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
+
+		_broken = False
+		while not tuple(node) == tuple(path['start']):
+			if not node:
+				_broken = True
+				break
+			else:
+				_path.insert(0,(node[0], node[1],int(path['map'][node[1], node[0]])))
+
+			path['tmap'][node[0]][node[1]] = 1
+			node = path['pmap'][node[0]][node[1]]
+
+		#There's a few ways to fix this...
+		#The issue is that pmap[self.end[0]][self.end[1]]
+		#fails, leading to only self.end being the path.
+		#The only way to REALLY fix this is to track where A*
+		#fails, which we can fix in getadj()
+		#If (_x,_y) is in an array (list of ALife positions), then
+		#we could walk backwards from there...
+		if _broken:
+			print self.end
+			print 'Broken A*!'
+			return self.start
+
+		return _path
 
 class Astar:
 	def __init__(self, zone=None, start=None, end=None, omap=None, dist=None):

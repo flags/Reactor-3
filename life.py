@@ -868,6 +868,7 @@ def can_walk_to(life, pos):
 	if not _z2:
 		return False
 	
+	print zones.can_path_to_zone(_z1, _z2)
 	return zones.can_path_to_zone(_z1, _z2)
 
 def walk(life, to):
@@ -892,10 +893,10 @@ def walk(life, to):
 		
 		_zone = can_walk_to(life, to)
 		if _zone:
-			life['path'] = pathfinding.create_path_old(life['pos'], to, _zone, source_map=WORLD_INFO['map'])
+			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
 		else:
 			logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
-		#print '\ttotal',time.time()-_stime
+		print '\ttotal',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]
 	return walk_path(life)
@@ -907,17 +908,23 @@ def walk_path(life):
 	
 	if life['path']:
 		_pos = list(life['path'].pop(0))
-		_nfx = numbers.clip(life['pos'][0]-_pos[0],-1,1)
-		_nfy = numbers.clip(life['pos'][1]-_pos[1],-1,1)
+		_nfx = _pos[0]
+		_nfy = _pos[1]
 		
 		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
 			life['facing'] = (_nfx,_nfy)
 			life['aim_at'] = life['id']
 		
-		if _pos[2] and abs(_pos[2])-1:
-			if _pos[2]>0:
-				#logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
-				life['pos'][2] += _pos[2]-1
+		#if _pos[2] and abs(_pos[2])-1:
+		#	if _pos[2]>0:
+		#		logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
+		#		life['pos'][2] += _pos[2]-1
+		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
+			life['pos'][2] += 1
+		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
+			life['pos'][2] -= 1
+		
+		print life['pos'][2]
 		
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
