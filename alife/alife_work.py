@@ -23,6 +23,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'searching', 'hiding', 'hidden', 'needs', 'looting']:
 		return False
 
+	#Here, we would find the active goal, then run prereq checks
 	if not goals.has_active_goals(life) and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	

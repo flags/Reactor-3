@@ -88,7 +88,7 @@ def refresh_window():
 	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
-	_tile = get_tile(tile)
+	_tile = get_raw_tile(tile)
 
 	blit_char(x,y,_tile['icon'],
 		_tile['color'][0],

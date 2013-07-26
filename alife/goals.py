@@ -126,8 +126,11 @@ def match_action(life, goal_id, criteria_id, action):
 	
 	logging.debug('%s added sub-criteria match_action to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
 
-def process_goals(life):
+def process_goals(life, only_required=False):
 	for goal in life['goals'].keys():
+		if only_required and not goal['required']:
+			continue
+		
 		_goal = get_goal_via_id(life, goal)
 		
 		if _goal['complete']:
@@ -166,19 +169,12 @@ def _process_goal(life, goal_id):
 			criteria['result'] = _process
 			
 			if not criteria['result']:
-				print 'Goal not met', life['name'], criteria
-				
-				if criteria['required']:
-					_passed = 2
-				else:
-					_passed = False
+				print 'Goal not met', life['name'], criteria				
+				_passed = False
 				continue
 		else:
 			if not meet_criteria(life, goal_id, criteria['id']):
-				if criteria['required']:
-					_passed = 2
-				else:
-					_passed = False
+				_passed = False
 				continue
 	
 	return _passed

@@ -111,6 +111,20 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		
+		for x in range(MAP_SIZE[0]):
+			for y in range(MAP_SIZE[1]):
+				for z in range(MAP_SIZE[2]):
+					if not WORLD_INFO['map'][x][y][z]:
+						continue
+					
+					for key in TILE_STRUCT_DEP:
+						if key in WORLD_INFO['map'][x][y][z]:
+							del WORLD_INFO['map'][x][y][z][key]
+					
+					for key in TILE_STRUCT:
+						if not key in WORLD_INFO['map'][x][y][z]:
+							WORLD_INFO['map'][x][y][z][key] = TILE_STRUCT[key]
+		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
 		gfx.log('Map \'%s\' loaded.' % map_name)
@@ -516,7 +530,7 @@ def update_chunk_map():
 					_tile_type = None
 					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_tile(WORLD_INFO['map'][x2][y2][2])
+						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
 					
 					if 'type' in _tile:
 						_type = _tile['type']

@@ -7,6 +7,7 @@ import life as lfe
 import render_los
 import numbers
 import items
+import tiles
 import maps
 
 import logging
@@ -53,11 +54,24 @@ def calculate_fire(fire):
 			if -1>_y>MAP_SIZE[1]:
 				continue
 			
-			for effect in [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']:
+			_effects = [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']
+			for effect in _effects:
 				_neighbor_intensity += effect['intensity']
 				
 				if 'light' in effect:
 					_neighbor_lit = True
+			
+			if not _effects:
+				#if tiles.get_flag(WORLD_INFO['map'][_x][_y][fire['pos'][2]], 'burnt'):
+				#	continue
+				_tile = WORLD_INFO['map'][_x][_y][fire['pos'][2]]
+				_raw_tile = tiles.get_raw_tile(_tile)
+				
+				_current_burn = int(round(fire['intensity']))
+				_max_burn = int(round(_current_burn*.8))
+				if _raw_tile['burnable'] and _current_burn>=_raw_tile['burnable'] and _max_burn:
+					create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(2, numbers.clip(2+_max_burn, 3, 8)))
+					tiles.flag(_tile, 'burnt', True)
 	
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
@@ -73,7 +87,7 @@ def calculate_fire(fire):
 	if 'light' in fire:
 		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
 	elif not _neighbor_lit:
-		fire['light'] = create_light(fire['pos'], (255, 0, 255), .3*(fire['intensity']/8.0), 0.1)
+		fire['light'] = create_light(fire['pos'], (255, 0, 255), .5*(fire['intensity']/8.0), 0.25)
 
 def delete_fire(fire):
 	if 'light' in fire:
@@ -81,6 +95,9 @@ def delete_fire(fire):
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
+	
+	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
+		return False
 	
 	_effect = {'type': 'fire',
 	    'color': tcod.Color(255, 69, 0),

@@ -211,8 +211,8 @@ def create_player(source_map):
 	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)
 	
-	#for x in range(-10, 11):
-	#	for y in range(-10, 11):
-	#		if random.randint(0, 10):
-	#			continue
-	#		effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
+	for x in range(-10, 11):
+		for y in range(-10, 11):
+			if random.randint(0, 10):
+				continue
+			effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
