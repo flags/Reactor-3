@@ -18,9 +18,10 @@ def get_flag(life, chunk_id, flag):
 	return False
 
 def flag(life, chunk_id, flag, value):
-	life['known_chunks'][chunk_id]['flags'][flag] = value
+	if not flag in life['known_chunks'][chunk_id]['flags']:
+		logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
 	
-	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
+	life['known_chunks'][chunk_id]['flags'][flag] = value
 
 def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
