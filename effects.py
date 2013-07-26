@@ -62,8 +62,6 @@ def calculate_fire(fire):
 					_neighbor_lit = True
 			
 			if not _effects:
-				#if tiles.get_flag(WORLD_INFO['map'][_x][_y][fire['pos'][2]], 'burnt'):
-				#	continue
 				_tile = WORLD_INFO['map'][_x][_y][fire['pos'][2]]
 				_raw_tile = tiles.get_raw_tile(_tile)
 				
@@ -93,6 +91,9 @@ def calculate_fire(fire):
 
 def delete_fire(fire):
 	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'heat', False)
+	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'burnt', True)
+	
+	create_ash(fire['pos'])
 	
 	if 'light' in fire:
 		LIGHTS.remove(fire['light'])
@@ -103,6 +104,9 @@ def create_fire(pos, intensity=1):
 	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
 		return False
 	
+	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
+		return False
+	
 	_effect = {'type': 'fire',
 	    'color': tcod.Color(255, 69, 0),
 	    'pos': list(pos),
@@ -110,6 +114,26 @@ def create_fire(pos, intensity=1):
 	    'callback': calculate_fire,
 	    'draw_callback': draw_fire,
 	    'unregister_callback': delete_fire}
+	
+	register_effect(_effect)
+
+def draw_ash(pos, ash):
+	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
+
+def delete_ash(ash):
+	unregister_effect(ash)
+
+def create_ash(pos):
+	_color = random.randint(0, 25)
+	_intensity = numbers.clip(_color/float(25), .3, 1)
+	
+	_effect = {'type': 'ash',
+	    'color': tcod.Color(_color, _color, _color),
+	    'intensity': _intensity, 
+	    'pos': list(pos),
+	    'callback': lambda x: 1==1,
+	    'draw_callback': draw_ash,
+	    'unregister_callback': delete_ash}
 	
 	register_effect(_effect)
 
