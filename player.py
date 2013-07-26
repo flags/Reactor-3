@@ -31,6 +31,7 @@ def handle_input():
 			SELECTED_TILES[0] = []
 		elif SETTINGS['controlling']['actions']:
 			life.clear_actions(SETTINGS['controlling'])
+			life.stop(SETTINGS['controlling'])
 			
 			if SETTINGS['controlling']['actions']:
 				SETTINGS['controlling']['actions'] = []

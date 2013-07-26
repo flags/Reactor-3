@@ -9,7 +9,7 @@ import alife_visit_camp
 import alife_find_camp
 import alife_discover
 import alife_explore
-import alife_impulse
+import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
@@ -48,7 +48,7 @@ MODULES = [alife_hide,
 	alife_work,
 	alife_needs,
 	alife_group,
-	alife_impulse,
+     alife_shelter,
 	alife_search]
 
 def think(life, source_map):

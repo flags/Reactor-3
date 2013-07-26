@@ -887,6 +887,12 @@ def can_walk_to(life, pos):
 	#print zones.can_path_to_zone(_z1, _z2),_z1,_z2
 	return zones.can_path_to_zone(_z1, _z2)
 
+def walk_to(life, position):
+	clear_actions(life)
+	add_action(life,{'action': 'move',
+          'to': position},
+          200)
+
 def walk(life, to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']>0:

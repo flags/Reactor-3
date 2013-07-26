@@ -294,19 +294,29 @@ def judge_shelter(life, chunk_id):
 	if _known_chunk['life']:
 		return 0
 	
-	if chunk['type'] == 'building':
-		for building in WORLD_INFO['reference_map']['buildings']:
-			if chunk_id in building:
-				_score += len(building)
-				_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
-				_score = numbers.clip(_score, 0, 10)
-				break
+	if not chunk['type'] == 'building':
+		return 0
+	#	for building in WORLD_INFO['reference_map']['buildings']:
+	#		if chunk_id in building:
+	#			_score += len(building)
+	#			_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
+	#			_score = numbers.clip(_score, 0, 10)
+	#			break
 	
-	if chunks.get_flag(life, chunk_id, 'shelter'):
-		_score += 1
+	if not chunks.get_flag(life, chunk_id, 'shelter'):
+		_cover = []
+		
+		for pos in chunk['ground']:
+			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
+				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
+					_cover.append(pos)
+		
+		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
 	
-	if _score:
-		chunks.flag(life, chunk_id, 'shelter', _score)
+	#if chunks.get_flag(life, chunk_id, 'shelter'):
+	#	_score += 1
+	
+	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
 	
 	return True
 
@@ -615,3 +625,9 @@ def believe_which_alife(life, alife):
 		return random.choice(_scores[max(_scores)])
 	else:
 		return _winners[0]
+
+def get_best_goal(life):
+	for goal in brain.retrieve_from_memory(life, 'active_goals'):
+		return goal
+	
+	return -1

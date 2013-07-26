@@ -138,6 +138,19 @@ def get_nearest_position_in_chunk(position, chunk_id):
 	
 	return _closest['pos']
 
+def get_nearest_chunk_in_list(pos, chunks):
+	_nearest_chunk = {'chunk_key': None, 'distance': -1}
+	
+	for chunk_key in chunks:
+		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+		_dist = numbers.distance(pos, chunk_center)
+		
+		if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
+			_nearest_chunk['distance'] = _dist
+			_nearest_chunk['chunk_key'] = chunk_key
+	
+	return _nearest_chunk['chunk_key']
+
 def _can_see_chunk_quick(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	

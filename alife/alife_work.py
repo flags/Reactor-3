@@ -23,8 +23,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if life['state'] in ['combat', 'searching', 'hiding', 'hidden', 'needs', 'looting']:
 		return False
 
-	#Here, we would find the active goal, then run prereq checks
-	if not goals.has_active_goals(life) and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
+	_active_goals = goals.get_active_goals(life)
+	brain.store_in_memory(life, 'active_goals', value=_active_goals)
+	
+	if not _active_goals and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
 		return False
 	
 	if not life['state'] == STATE:
@@ -33,8 +35,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	if goals.has_active_goals(life):
-		goals.process_goals(life)
+	if brain.retrieve_from_memory(life, 'active_goals'):
+		print 'ACTIVE GOAL' * 100
+		goals.perform_goal(life, judgement.get_best_goal(life))
 	else:
 		if jobs.alife_is_factor_of_any_job(life):
 			lfe.clear_actions(life)

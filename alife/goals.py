@@ -11,8 +11,14 @@ import sys
 def has_goal(life, name):
 	return [g for g in life['goals'].values() if g['name'] == name]
 
-def has_active_goals(life):
-	return [g for g in life['goals'].values() if not g['complete']]
+def get_active_goals(life):
+	_active = []
+	
+	for goal in [g for g in life['goals'].values() if not g['complete']]:
+		if perform_goal(life, goal['id'], only_required=True):
+			_active.append(goal['id'])
+
+	return _active
 
 def get_goal_via_id(life, goal_id):
 	if goal_id in life['goals']:
@@ -126,36 +132,32 @@ def match_action(life, goal_id, criteria_id, action):
 	
 	logging.debug('%s added sub-criteria match_action to \'%s\' in goal \'%s\'' % (' '.join(life['name']), criteria_id, goal_id))
 
-def process_goals(life, only_required=False):
-	for goal in life['goals'].keys():
-		if only_required and not goal['required']:
-			continue
-		
-		_goal = get_goal_via_id(life, goal)
-		
-		if _goal['complete']:
-			continue
-		
-		for question in _goal['complete_on_answer']:
-			if lfe.get_memory_via_id(life, question)['answered']:
-				print 'DELETED GOAL!' * 100
-				_goal['complete'] = True
-				break
-		
-		_process = _process_goal(life, goal)
-		if _process == 1:
+def check_for_goal_finish(life, goal_id, passed=False):
+	_goal = get_goal_via_id(life, goal_id)
+	
+	if _goal['complete']:
+		return True
+	
+	for question in _goal['complete_on_answer']:
+		if lfe.get_memory_via_id(life, question)['answered']:
 			print 'DELETED GOAL!' * 100
 			_goal['complete'] = True
-			
-			print 'FINISHED GOAL' * 50
-		elif _process == 2:
-			print 'WE DIDNT MAKEIT'
+			break
+	
+	if passed:
+		print 'DELETED GOAL!' * 100
+		_goal['complete'] = True
+		
+		print 'FINISHED GOAL' * 50
 
-def _process_goal(life, goal_id):
+def perform_goal(life, goal_id, only_required=False):
 	_goal = get_goal_via_id(life, goal_id)
-	_passed = 1
+	_passed = True
 	
 	for criteria in _goal['criteria'].values():
+		if only_required and not criteria['required']:
+			continue
+		
 		criteria['result'] = None
 		
 		if criteria['type'] == 'memory':
@@ -176,6 +178,8 @@ def _process_goal(life, goal_id):
 			if not meet_criteria(life, goal_id, criteria['id']):
 				_passed = False
 				continue
+	
+	check_for_goal_finish(life, _goal['id'], passed=_passed)
 	
 	return _passed
 

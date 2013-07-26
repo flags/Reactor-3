@@ -174,6 +174,10 @@ def find_path(path):
 def short_path(life, start, end):
 	_s = time.time()
 	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
+	
+	if not _line:
+		return [start]
+	
 	_line.pop(0)
 	
 	for pos in _line:
