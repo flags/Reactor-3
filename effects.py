@@ -67,11 +67,13 @@ def calculate_fire(fire):
 				_tile = WORLD_INFO['map'][_x][_y][fire['pos'][2]]
 				_raw_tile = tiles.get_raw_tile(_tile)
 				
+				_heat = tiles.get_flag(WORLD_INFO['map'][_x][_y][fire['pos'][2]], 'heat')
 				_current_burn = int(round(fire['intensity']))
 				_max_burn = int(round(_current_burn*.8))
-				if _raw_tile['burnable'] and _current_burn>=_raw_tile['burnable'] and _max_burn:
-					create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(2, numbers.clip(2+_max_burn, 3, 8)))
-					tiles.flag(_tile, 'burnt', True)
+				
+				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.01), 0, 8))>=_raw_tile['burnable']:
+					if _raw_tile['burnable'] and _max_burn:
+						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(2, numbers.clip(2+_max_burn, 3, 8)))
 	
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
@@ -81,7 +83,7 @@ def calculate_fire(fire):
 	
 	update_effect(fire)
 	
-	if fire['intensity'] <= 0:
+	if fire['intensity'] <= 0.25:
 		unregister_effect(fire)
 	
 	if 'light' in fire:
@@ -90,6 +92,8 @@ def calculate_fire(fire):
 		fire['light'] = create_light(fire['pos'], (255, 0, 255), .5*(fire['intensity']/8.0), 0.25)
 
 def delete_fire(fire):
+	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'heat', False)
+	
 	if 'light' in fire:
 		LIGHTS.remove(fire['light'])
 

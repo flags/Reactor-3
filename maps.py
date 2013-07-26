@@ -123,7 +123,7 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 					
 					for key in TILE_STRUCT:
 						if not key in WORLD_INFO['map'][x][y][z]:
-							WORLD_INFO['map'][x][y][z][key] = TILE_STRUCT[key]
+							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
