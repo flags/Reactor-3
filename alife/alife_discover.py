@@ -11,7 +11,7 @@ import brain
 import logging
 
 STATE = 'discovering'
-TIER = TIER_EXPLORE
+TIER = TIER_EXPLORE-.1
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
@@ -28,9 +28,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		brain.store_in_memory(life, 'discovery_lock', False)
 		return False
 	
-	if life['state'] in ['exploring', 'searching', 'looting', 'managing', 'finding camp', 'camping', 'working', 'visiting camp', 'needs', 'hiding']:
-		brain.store_in_memory(life, 'discovery_lock', False)
-		return False
+	#if life['state'] in ['exploring', 'searching', 'looting', 'managing', 'finding camp', 'camping', 'working', 'visiting camp', 'needs', 'hiding']:
+	#	brain.store_in_memory(life, 'discovery_lock', False)
+	#	return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE

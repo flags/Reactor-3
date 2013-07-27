@@ -95,7 +95,6 @@ def fire(life, target, limb=None):
 		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 		
 		if _item:
-			print _item
 			_item = _item[0]
 		else:
 			return False
@@ -114,6 +113,11 @@ def fire(life, target, limb=None):
 		_bullets = 1
 	elif _mode == '3burst':
 		_bullets = 3
+	
+	_aim_with_limb = None
+	for hand in life['hands']:
+		if weapon['id'] in lfe.get_limb(life, hand)['holding']:
+			_aim_with_limb = hand
 	
 	_ooa = False
 	for i in range(_bullets):
@@ -137,7 +141,7 @@ def fire(life, target, limb=None):
 		_bullet['aim_at_limb'] = limb
 		_bullet['time_shot'] = WORLD_INFO['ticks']
 		_bullet['needed_accuracy'] = get_max_accuracy(weapon)
-		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=limb)))
+		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=_aim_with_limb)))
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
 	

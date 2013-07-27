@@ -13,13 +13,10 @@ import brain
 import logging
 
 STATE = 'exploring'
-TIER = TIER_EXPLORE
+TIER = TIER_EXPLORE-.2
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
-	
-	if life['state'] in ['combat', 'searching', 'looting', 'finding camp', 'camping', 'needs', 'working']:
-		return False
 	
 	if not judgement.is_safe(life):
 		return False

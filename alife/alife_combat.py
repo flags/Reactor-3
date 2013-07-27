@@ -13,7 +13,7 @@ import jobs
 import logging
 
 STATE = 'combat'
-TIER = TIER_COMBAT
+TIER = TIER_COMBAT-.3
 
 def setup(life):
 	brain.store_in_memory(life, 'targets', judgement.get_targets(life))	

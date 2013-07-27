@@ -21,9 +21,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not judgement.is_safe(life):
 		return False
 
-	if life['state'] in ['combat', 'searching', 'hiding', 'hidden', 'needs', 'looting']:
-		return False
-
 	_active_goals = goals.get_active_goals(life)
 	brain.store_in_memory(life, 'active_goals', value=_active_goals)
 	

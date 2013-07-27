@@ -12,16 +12,19 @@ import random
 STATE = 'shelter'
 TIER = TIER_SURVIVAL
 
+def get_tier(life):
+	if not lfe.execute_raw(life, 'discover', 'desires_shelter') and lfe.execute_raw(life, 'state', 'shelter'):
+		return TIER_IDLE-.1
+	
+	return TIER
+
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
-	
-	if life['state'] in ['hiding', 'hidden', 'combat']:
-		return False	
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
+	if not lfe.execute_raw(life, 'discover', 'desires_shelter') and not lfe.execute_raw(life, 'state', 'shelter'):
 		return False
 	
 	if not [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:

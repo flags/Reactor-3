@@ -11,14 +11,10 @@ import brain
 import logging
 
 STATE = 'hiding'
-INITIAL_STATES = ['idle', 'hidden']
-TIER = TIER_COMBAT
+TIER = TIER_COMBAT-.2
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
-	
-	if life['state'] == 'combat':
-		return False
 	
 	if judgement.is_safe(life):
 		return False

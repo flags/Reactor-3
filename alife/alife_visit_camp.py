@@ -20,9 +20,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 	if not stats.can_camp(life):
 		return False
-
-	if life['state'] in ['combat', 'exploring', 'searching']:
-		return False
 	
 	if not judgement.is_safe(life):
 		return False	

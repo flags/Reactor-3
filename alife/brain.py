@@ -278,7 +278,12 @@ def understand(life, source_map):
 	for module in MODULES:
 		_stime = time.time()
 		
-		if module.TIER <= life['state_tier'] or module.TIER == TIER_PASSIVE:
+		try:
+			_module_tier = module.get_tier(life)
+		except:
+			_module_tier = module.TIER
+		
+		if _module_tier <= life['state_tier'] or _module_tier == TIER_PASSIVE:
 			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == STATE_CHANGE:
