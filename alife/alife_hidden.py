@@ -12,6 +12,7 @@ import logging
 
 STATE = 'hidden'
 INITIAL_STATE = 'hiding'
+TIER = TIER_COMBAT
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
@@ -35,7 +36,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	if not 'hiding' in life['state_flags']:
 		movement.hide(life, _threat)
-		life['state_flags'].append('hiding')
+		life['state_flags']['hiding'] = True
 		return True
 	
 	_weapon = combat.get_best_weapon(life)

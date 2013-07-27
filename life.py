@@ -260,7 +260,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['inventory'] = {}
 	_life['flags'] = {}
 	_life['state'] = 'idle'
-	_life['state_flags'] = []
+	_life['state_tier'] = 9999
+	_life['state_flags'] = {}
 	_life['states'] = []
 	_life['gravity'] = 0
 	_life['targeting'] = None
@@ -412,13 +413,14 @@ def show_debug_info(life):
 def get_engage_distance(life):
 	return 0
 
-def change_state(life, state):
+def change_state(life, state, tier):
 	if life['state'] == state:
 		return False
 	
 	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
 	life['state'] = state
-	life['state_flags'] = []
+	life['state_flags'] = {}
+	life['state_tier'] = tier
 	
 	life['states'].append(state)
 	if len(life['states'])>SETTINGS['state history size']:

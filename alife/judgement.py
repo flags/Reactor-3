@@ -386,8 +386,8 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 		if stats.desires_shelter(life):
 			_score += judge_camp(life, life['camp'])
 	
-	#if stats.desires_shelter(life):
-	judge_shelter(life, chunk_id)
+	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
+		judge_shelter(life, chunk_id)
 	
 	if stats.desires_interaction(life):
 		_score += _trusted

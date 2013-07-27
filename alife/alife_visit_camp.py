@@ -13,6 +13,7 @@ import stats
 import logging
 
 STATE = 'visiting camp'
+TIER = TIER_IDLE
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED

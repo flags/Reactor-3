@@ -11,9 +11,18 @@ import brain
 import logging
 
 STATE = 'discovering'
+TIER = TIER_EXPLORE
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
+	
+	if brain.get_flag(life, 'lost'):
+		if STATE in life['states']:
+			return False
+		else:
+			brain.unflag(life, 'lost')
+		
+		print life['name'],'lost'
 	
 	if not judgement.is_safe(life):
 		brain.store_in_memory(life, 'discovery_lock', False)
@@ -40,6 +49,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				
 				if not _explore_chunk:
 					print life['name'],'is lost'
+					brain.flag(life, 'lost')
 					return False
 				survival.explore_known_chunks(life)
 		else:

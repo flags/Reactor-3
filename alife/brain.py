@@ -4,7 +4,6 @@ import life as lfe
 
 import alife_manage_targets
 import alife_manage_items
-import alife_manage_camp
 import alife_visit_camp
 import alife_find_camp
 import alife_discover
@@ -42,13 +41,12 @@ MODULES = [alife_hide,
 	alife_visit_camp,
 	alife_camp,
 	alife_manage_items,
-	alife_manage_camp,
 	alife_manage_targets,
 	alife_combat,
 	alife_work,
 	alife_needs,
 	alife_group,
-     alife_shelter,
+	alife_shelter,
 	alife_search]
 
 def think(life, source_map):
@@ -279,23 +277,25 @@ def understand(life, source_map):
 	_times = []
 	for module in MODULES:
 		_stime = time.time()
-		_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 		
-		if _return == STATE_CHANGE:
-			lfe.change_state(life, module.STATE)
-		
-		if _return:
-			module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+		if module.TIER <= life['state_tier'] or module.TIER == TIER_PASSIVE:
+			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
-			if _return == RETURN_SKIP:
-				continue
+			if _return == STATE_CHANGE:
+				lfe.change_state(life, module.STATE, module.TIER)
 			
-			_modules_run = True
+			if _return:
+				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+				
+				if _return == RETURN_SKIP:
+					continue
+				
+				_modules_run = True
 		
 		_times.append({'time': time.time()-_stime, 'module': module.STATE})
 	
 	if not _modules_run:
-		lfe.change_state(life, 'idle')
+		lfe.change_state(life, 'idle', TIER_IDLE)
 	
 	#print ' '.join(life['name'])
 	#for entry in _times:

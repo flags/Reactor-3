@@ -16,6 +16,7 @@ import logging
 import random
 
 ENTRY_SCORE = 0
+TIER = TIER_PASSIVE
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#Note: We don't want to change the state because we're running this module alongside

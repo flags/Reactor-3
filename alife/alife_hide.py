@@ -12,8 +12,7 @@ import logging
 
 STATE = 'hiding'
 INITIAL_STATES = ['idle', 'hidden']
-CHECK_STATES = INITIAL_STATES[:]
-CHECK_STATES.append(STATE)
+TIER = TIER_COMBAT
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED

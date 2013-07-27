@@ -13,6 +13,7 @@ import jobs
 import logging
 
 STATE = 'searching'
+TIER = TIER_COMBAT
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED

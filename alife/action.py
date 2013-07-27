@@ -1,4 +1,4 @@
-from globals import MISSING_KEY_IN_ACTION, LIFE
+from globals import LIFE
 
 import life as lfe
 
