@@ -183,7 +183,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 		if rule['string']:
 			return rule['string'].lower()
 		
-		if rule['self_call']:
+		if rule['no_args']:
+			_func = rule['function']()
+		elif rule['self_call']:
 			_func = rule['function'](life)
 		else:
 			_func = rule['function'](life, **kwargs)
@@ -222,7 +224,7 @@ def create_and_update_self_snapshot(life):
 	_ss = snapshots.create_snapshot(life)
 	snapshots.update_self_snapshot(life,_ss)
 	
-	logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
+	#logging.debug('%s updated their snapshot.' % ' '.join(life['name']))
 
 def create_life(type, position=(0,0,2), name=None, map=None):
 	"""Initiates and returns a deepcopy of a life type."""

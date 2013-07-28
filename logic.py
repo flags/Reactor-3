@@ -133,7 +133,7 @@ def tick_world():
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
 	
-def is_night(life):
+def is_night():
 	if WORLD_INFO['time_of_day'] == 'night':
 		return True
 	

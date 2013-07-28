@@ -23,6 +23,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'prepare_for_ranged': combat.prepare_for_ranged,
 	'explore_unknown_chunks': survival.explore_unknown_chunks,
 	'is_nervous': stats.is_nervous,
+	'is_aggravated': stats.is_aggravated,
 	'is_safe': judgement.is_safe,
 	'is_healthy': None,
 	'closest': None,
@@ -85,9 +86,13 @@ def create_action(script, identifier, arguments):
 			_true = True
 			_string = ''
 			_self_call = False
+			_no_args = False
 			if argument.startswith('\"'):
 				argument = argument.replace('\"', '')
 				_string = argument
+			elif argument.startswith('%'):
+				argument = argument[1:]
+				_no_args = True
 			elif argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
@@ -105,7 +110,8 @@ def create_action(script, identifier, arguments):
 					'values': _values,
 					'true': _true,
 					'string': None,
-					'self_call': _self_call})
+					'self_call': _self_call,
+					'no_args': _no_args})
 		
 	return {'id': identifier, 'arguments': _args}
 

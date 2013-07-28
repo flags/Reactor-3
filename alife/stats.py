@@ -282,6 +282,12 @@ def is_nervous(life, life_id):
 	
 	return False
 
+def is_aggravated(life, life_id):
+	if lfe.execute_raw(life, 'judge', 'aggravated', life_id=life_id):
+		return True
+	
+	return False
+
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
 		return True
