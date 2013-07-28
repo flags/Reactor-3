@@ -11,7 +11,6 @@ import combat
 import logging
 
 STATE = 'hidden'
-INITIAL_STATE = 'hiding'
 TIER = TIER_COMBAT-.3
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
