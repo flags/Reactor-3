@@ -108,6 +108,9 @@ def fire(life, target, limb=None):
 		
 		weapon = lfe.get_inventory_item(life, _item)
 	
+	if not weapon:
+		return False
+	
 	_mode = get_fire_mode(weapon)
 	if _mode == 'single':
 		_bullets = 1
