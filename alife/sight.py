@@ -28,10 +28,9 @@ def look(life):
 		
 		#TODO: Don't pass entire life, just id
 		if ai['id'] in life['know']:
-			if life['know'][ai['id']]['last_seen_time']:
+			if life['know'][ai['id']]['last_seen_time'] or life['think_rate'] == life['think_rate_max']:
 				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
 				judgement.judge(life, ai['id'])
-				print 'HAVENT SEEN YOU IN A WHILE', LIFE[ai['id']]['name']
 			
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
