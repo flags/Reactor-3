@@ -53,7 +53,7 @@ def handle_input():
 	if SETTINGS['draw console']:
 		return
 
-	if INPUT['up']:
+	if INPUT['up'] or (SETTINGS['controlling'] and INPUT['8']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
@@ -67,7 +67,7 @@ def handle_input():
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]-1)},200)
 
-	if INPUT['down']:
+	if INPUT['down'] or (SETTINGS['controlling'] and INPUT['2']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['controlling']['targeting']:
@@ -81,7 +81,7 @@ def handle_input():
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]+1)},200)
 
-	if INPUT['right']:
+	if INPUT['right'] or (SETTINGS['controlling'] and INPUT['6']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -91,7 +91,7 @@ def handle_input():
 			life.clear_actions(SETTINGS['controlling'])
 			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]+1,SETTINGS['controlling']['pos'][1])},200)
 
-	if INPUT['left']:
+	if INPUT['left'] or (SETTINGS['controlling'] and INPUT['4']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -565,19 +565,65 @@ def handle_input():
 		create_crafting_menu()
 
 	if INPUT['1']:
-		CAMERA_POS[2] = 1
+		if SETTINGS['controlling']:
+			if SETTINGS['controlling']['targeting']:
+				SETTINGS['controlling']['targeting'][0]-=1
+				SETTINGS['controlling']['targeting'][1]+=1
+			else:
+				life.clear_actions(SETTINGS['controlling'])
+				life.add_action(SETTINGS['controlling'],
+				                {'action': 'move',
+				                 'to': (SETTINGS['controlling']['pos'][0]-1, SETTINGS['controlling']['pos'][1]+1)},
+				                200)
+		else:
+			CAMERA_POS[2] = 1
 
 	if INPUT['2']:
 		CAMERA_POS[2] = 2
 
 	if INPUT['3']:
-		CAMERA_POS[2] = 3
+		if SETTINGS['controlling']:
+			if SETTINGS['controlling']['targeting']:
+				SETTINGS['controlling']['targeting'][0]+=1
+				SETTINGS['controlling']['targeting'][1]+=1
+			else:
+				life.clear_actions(SETTINGS['controlling'])
+				life.add_action(SETTINGS['controlling'],
+				                {'action': 'move',
+				                 'to': (SETTINGS['controlling']['pos'][0]+1, SETTINGS['controlling']['pos'][1]+1)},
+				                200)
+		else:
+			CAMERA_POS[2] = 3
 
 	if INPUT['4']:
-		CAMERA_POS[2] = 4
+		if not SETTINGS['controlling']:
+			CAMERA_POS[2] = 4
 
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
+	
+	if INPUT['7']:
+		if SETTINGS['controlling']:
+			if SETTINGS['controlling']['targeting']:
+				SETTINGS['controlling']['targeting'][0]-=1
+				SETTINGS['controlling']['targeting'][1]-=1
+			else:
+				life.clear_actions(SETTINGS['controlling'])
+				life.add_action(SETTINGS['controlling'],
+				                {'action': 'move',
+				                 'to': (SETTINGS['controlling']['pos'][0]-1, SETTINGS['controlling']['pos'][1]-1)},
+				                200)
+	if INPUT['9']:
+		if SETTINGS['controlling']:
+			if SETTINGS['controlling']['targeting']:
+				SETTINGS['controlling']['targeting'][0]+=1
+				SETTINGS['controlling']['targeting'][1]-=1
+			else:
+				life.clear_actions(SETTINGS['controlling'])
+				life.add_action(SETTINGS['controlling'],
+				                {'action': 'move',
+				                 'to': (SETTINGS['controlling']['pos'][0]+1, SETTINGS['controlling']['pos'][1]-1)},
+				                200)
 
 def inventory_select(entry):
 	key = entry['key']
