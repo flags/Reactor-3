@@ -10,7 +10,7 @@ import maps
 import random
 
 STATE = 'shelter'
-TIER = TIER_SURVIVAL
+TIER = TIER_SURVIVAL-.1
 
 def get_tier(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter') and lfe.execute_raw(life, 'state', 'shelter'):

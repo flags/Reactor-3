@@ -53,6 +53,7 @@ def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
+	survival.process(life)
 	understand(life, source_map)
 
 def store_in_memory(life, key, value):

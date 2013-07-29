@@ -17,22 +17,77 @@ import sight
 import maps
 import time
 
-def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
-	life['needs'].append({'need': need,
-		'need_callback': need_callback,
-	    'can_meet_callback': can_meet_callback,
-	    'satisfy_callback': satisfy_callback,
-		'min_matches': min_matches,
-		'matches': [],
-	    'can_meet_with': [],
-	    'memory_location': None,
-		'num_met': False,
-	    'cancel_if_flag': cancel_if_flag})
+def _get_need_amount(life, need):
+	if need['amount_callback']:
+		return need['amount_callback'](life, need)
+	
+	if need['amount']:
+		return need['amount']
+
+def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
+	life['needs'].append({'type': 'item',
+	                      'match': item_match,
+	                      'met': False,
+	                      'amount': amount,
+	                      'amount_callback': amount_callback,
+	                      'satisfy_if': satisfy_if,
+	                      'satisfy_callback': satisfy_callback})
+	
+	logging.debug('Added item need: %s' % item_match)
+
+def process(life):
+	for need in life['needs']:
+		if need['type'] == 'item':
+			_has_items = lfe.get_all_inventory_items(life, matches=[need['match']])
+			
+			if len(_has_items) >= _get_need_amount(life, need):
+				need['met'] = [i['id'] for i in _has_items]
+			else:
+				need['met'] = False
+
+def is_need_met(life, need):
+	return need['met']
+
+def needs_to_satisfy(life, need):
+	if not need['satisfy_if']:
+		return False
+	
+	if not is_need_met(life, need):
+		return False
+	
+	return need['satisfy_if'](life)
+
+def satisfy(life, need):
+	if not need['satisfy_if']:
+		return False
+	
+	if not is_need_met(life, need):
+		return False
+	
+	if need['satisfy_if'](life):
+		if need['type'] == 'item':
+				need['satisfy_callback'](life, need['met'][0])
+				return True
+	
+	return False
+
+#def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
+#	life['needs'].append({'need': need,
+#		'need_callback': need_callback,
+#	    'can_meet_callback': can_meet_callback,
+#	    'satisfy_callback': satisfy_callback,
+#		'min_matches': min_matches,
+#		'matches': [],
+#	    'can_meet_with': [],
+#	    'memory_location': None,
+#		'num_above_needed': False,
+#	    'cancel_if_flag': cancel_if_flag})
 
 def can_meet_need(life, need):
 	_matches = []
 	
 	for meet_callback in need['can_meet_callback']:
+		print meet_callback(life, matches=need['need'])
 		_matches.extend(meet_callback(life, matches=need['need']))
 	
 	need['can_meet_with'] = _matches
@@ -101,11 +156,11 @@ def need_is_met(life, need):
 	need['matches'] = _res
 	
 	if len(_res)>=need['min_matches']:
-		need['num_met'] = (len(_res)-need['min_matches'])+1
+		need['num_above_needed'] = (len(_res)-need['min_matches'])+1
 		return True
 	
 	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
-	need['num_met'] = 0
+	need['num_above_needed'] = 0
 	return False
 
 def manage_hands(life):

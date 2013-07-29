@@ -496,7 +496,7 @@ def get_items_to_give(life, target, matches={}):
 		_break = False
 		if not 'player' in life:
 			for _match in _matches:
-				if _match['num_met']<=_match['min_matches']:
+				if _match['num_above_needed']<=_match['min_matches']:
 					_break = True
 					break
 		

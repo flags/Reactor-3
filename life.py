@@ -311,27 +311,14 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['stats'] = {}
 	alife.stats.init(_life)
 	
-	alife.survival.create_need(_life,
-		{'type': 'food'},
-		[alife.survival._has_inventory_item],
-		[alife.sight.find_known_items],
-		consume,
-		min_matches=1,
-		cancel_if_flag=('hungry', False))
-	
-	#alife.survival.create_need(_life,
-	#	{'type': 'backpack'},
-	#	[alife.survival._has_inventory_item],
-	#   [alife.sight.find_known_items],
-	#	min_matches=1)
-	
-	alife.survival.create_need(_life,
-		{'type': 'drink'},
-		[alife.survival._has_inventory_item],
-		[alife.sight.find_known_items],
-		consume,
-		min_matches=1,
-		cancel_if_flag=('thirsty', False))
+	alife.survival.add_needed_item(_life,
+	                               {'type': 'drink'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'thirsty'),
+	                               satisfy_callback=consume)
+	alife.survival.add_needed_item(_life,
+	                               {'type': 'food'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
+	                               satisfy_callback=consume)
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
@@ -1479,7 +1466,6 @@ def tick(life, source_map):
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
-		alife.survival.check_all_needs(life)
 		brain.think(life, source_map)
 	else:
 		brain.sight.look(life)

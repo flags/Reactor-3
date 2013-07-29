@@ -13,7 +13,7 @@ def make_hungry(life_id):
 	LIFE[life_id]['hunger'] = 500
 
 def make_thirsty(life_id):
-	LIFE[life_id]['hunger'] = 500
+	LIFE[life_id]['thirst'] = 500
 
 def simple_lights():
 	SETTINGS['draw light'] = False
