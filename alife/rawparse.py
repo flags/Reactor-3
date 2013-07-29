@@ -1,7 +1,10 @@
+import life as lfe
+
 import judgement
 import survival
 import numbers
 import combat
+import chunks
 import stats
 import logic
 
@@ -13,7 +16,7 @@ def always(life):
 def never(life):
 	return False
 
-CURLY_BRACE_MATCH = '{[\w+-\.,]*}'
+CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
@@ -30,6 +33,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'kill': None,
 	'has_attacked_trusted': stats.has_attacked_trusted,
 	'distance_to_pos': stats.distance_from_pos_to_pos,
+	'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
 	'is_idle': lambda life: life['state'] == 'idle',
 	'is_child': stats.is_child,
 	'is_parent': stats.is_parent,
@@ -74,6 +78,8 @@ def create_action(script, identifier, arguments):
 							_arg['value'] = int(value.partition('+')[2])
 						elif value.count('-'):
 							_arg['value'] = -int(value.partition('-')[2])
+					elif value.count('='):
+						_arg['key'],_arg['value'] = value.split('=')
 					
 					_values.append(_arg)
 				
@@ -81,12 +87,15 @@ def create_action(script, identifier, arguments):
 				argument = argument.split('{')[0]
 				_values = []
 			
-			#print argument, curly_BRACE_data
-			
 			_true = True
 			_string = ''
 			_self_call = False
 			_no_args = False
+
+			if argument.startswith('*'):
+				argument = argument.replace('*', '')
+				_true = '*'			
+			
 			if argument.startswith('\"'):
 				argument = argument.replace('\"', '')
 				_string = argument
@@ -99,9 +108,6 @@ def create_action(script, identifier, arguments):
 			elif argument.startswith('@'):
 				argument = argument[1:]
 				_self_call = True
-			elif argument.startswith('*'):
-				argument = argument[1:]
-				_true = '*'
 			
 			if _string:
 				_args.append({'string': _string})

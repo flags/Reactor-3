@@ -281,14 +281,14 @@ def understand(life, source_map):
 		
 		try:
 			_module_tier = module.get_tier(life)
-		except:
+		except AttributeError:
 			_module_tier = module.TIER
 		
 		if _module_tier <= life['state_tier'] or _module_tier == TIER_PASSIVE:
 			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == STATE_CHANGE:
-				lfe.change_state(life, module.STATE, module.TIER)
+				lfe.change_state(life, module.STATE, _module_tier)
 			
 			if _return:
 				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)

@@ -11,12 +11,7 @@ STATE = 'needs'
 
 TIER = TIER_SURVIVAL
 
-def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	RETURN_VALUE = STATE_UNCHANGED
-
-	if not judgement.is_safe(life):
-		return False
-
+def setup(life):
 	_needs_to_meet = []
 	for need in life['needs']:
 		if not survival.needs_to_satisfy(life, need):
@@ -28,6 +23,21 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		return False
 	
 	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
+
+def get_tier(life):
+	if lfe.execute_raw(life, 'state', 'needs'):
+		return TIER_SURVIVAL-.2
+	
+	return TIER
+
+def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	RETURN_VALUE = STATE_UNCHANGED
+
+	if not judgement.is_safe(life):
+		return False
+
+	if not brain.retrieve_from_memory(life, 'needs_to_meet'):
+		return False
 
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE

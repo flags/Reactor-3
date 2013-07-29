@@ -183,16 +183,28 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 		if rule['string']:
 			return rule['string'].lower()
 		
+		_func_args = {}
+		for value in rule['values']:
+			if 'key' in value:
+				_func_args[value['key']] = value['value']
+		
 		if rule['no_args']:
-			_func = rule['function']()
+			if _func_args:
+				_func = rule['function'](**_func_args)
+			else:
+				_func = rule['function']()
 		elif rule['self_call']:
-			_func = rule['function'](life)
+			if _func_args:
+				_func = rule['function'](life, **_func_args)
+			else:
+				_func = rule['function'](life)
 		else:
 			_func = rule['function'](life, **kwargs)
 		
 		if rule['true'] == '*' or _func == rule['true']:
 			for value in rule['values']:
-				brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
+				if 'flag' in value:
+					brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 			
 			if break_on_true:
 				if _func:
@@ -406,7 +418,7 @@ def change_state(life, state, tier):
 	if life['state'] == state:
 		return False
 	
-	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
+	logging.debug('%s state change: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], state, tier))
 	life['state'] = state
 	life['state_flags'] = {}
 	life['state_tier'] = tier
