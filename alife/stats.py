@@ -69,10 +69,10 @@ def desires_to_create_group(life):
 	if life['group']:
 		return False
 	
-	if life['stats']['is_leader']:
-		return True
+	if not lfe.execute_raw(life, 'group', 'create_group'):
+		return False
 	
-	return False
+	return True
 
 def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 	if with_new_group_in_mind:

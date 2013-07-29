@@ -38,6 +38,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_child': stats.is_child,
 	'is_parent': stats.is_parent,
 	'is_night': logic.is_night,
+	'is_born_leader': lambda life: life['stats']['is_leader'],
 	'always': always,
 	'never': never}
 

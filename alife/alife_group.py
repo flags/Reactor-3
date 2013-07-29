@@ -17,6 +17,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	if not life['group']:
+		if stats.desires_to_create_group(life):
+			groups.create_group(life)
+		
 		return False
 	
 	_group = groups.get_group(life['group'])

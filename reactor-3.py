@@ -130,7 +130,7 @@ if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'],
 		life_density='Medium',
 		wildlife_density='Sparse',
-		simulate_ticks=1,
+		simulate_ticks=1000,
 		save=False,
 		thread=False)
 

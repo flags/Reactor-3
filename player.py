@@ -579,7 +579,8 @@ def handle_input():
 			CAMERA_POS[2] = 1
 
 	if INPUT['2']:
-		CAMERA_POS[2] = 2
+		if not SETTINGS['controlling']:
+			CAMERA_POS[2] = 2
 
 	if INPUT['3']:
 		if SETTINGS['controlling']:
