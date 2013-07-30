@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import combat
 import speech
+import events
 import camps
 import brain
 import jobs
@@ -16,6 +17,7 @@ def create_group(life, add_creator=True):
 	    'leader': None,
 	    'members': [],
 	    'shelter': None,
+	    'events': [],
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
@@ -109,7 +111,7 @@ def find_successor(group_id, assign=False):
 	return _highest['id']
 
 def assign_job(life, group_id, job):
-	_group = get_group(life['group'])
+	_group = get_group(group_id)
 	
 	for member in _group['members']:
 		jobs.add_job_candidate(job, LIFE[member])
@@ -119,6 +121,11 @@ def distribute(life, message, **kvargs):
 	
 	for member in _group['members']:
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
+
+def add_event(group_id, event):
+	_group = get_group(group_id)
+	
+	_group['events'].append(event)
 
 def get_shelter(group_id):
 	return get_group(group_id)['shelter']
