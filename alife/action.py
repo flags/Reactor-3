@@ -23,7 +23,7 @@ def retrieve(match, **kwargs):
 def make(*args, **kwargs):
 	logging.debug('Created action: %s', kwargs)
 	
-	return {'args': args, 'kwargs': kwargs}
+	return {'_action': True, 'args': args, 'kwargs': kwargs}
 	
 def _execute(action):
 	_struct = {}
@@ -77,6 +77,9 @@ def _execute(action):
 	if 'return_key' in action['args']:
 		if 'key' in action['kwargs']:
 			return _struct[action['kwargs']['key']]
+	
+	if 'return_key' in action['kwargs']:
+		return _struct[action['kwargs']['return_key']]
 	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])

@@ -4,9 +4,11 @@ import graphics as gfx
 import life as lfe
 
 import judgement
+import groups
 import chunks
 import speech
 import combat
+import events
 import raids
 import brain
 import camps
@@ -338,12 +340,13 @@ def listen(life):
 		
 		elif event['gist'] == 'group_set_shelter':
 			if 'player' in life:
-				#gfx.message('From: %s, "Camp established at %s"' % (' '.join(event['from']['name'])), style='radio')
 				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['chunk_id']))
 			else:
 				judgement.judge_chunk(life, event['chunk_id'])
 				
 				print 'GOT SHELTER INFO' * 100
+			
+			events.accept(groups.get_event(life['group'], event['event_id']), life['id'])
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

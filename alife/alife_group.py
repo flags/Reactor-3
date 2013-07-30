@@ -29,10 +29,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			print 'ABANDONING ON THESE TERMS' * 10
 			return False
 		
-		if stats.desires_shelter(life):
-			groups.find_and_announce_shelter(life, life['group'])
-	
-	#elif brain.get_alife_flag(life, _group['leader'], 'follow'):
-	#	#TODO: Get this over to alife_explore?
-		
+		groups.process_events(life['group'])
 	

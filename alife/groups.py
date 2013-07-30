@@ -3,11 +3,13 @@ from globals import *
 import life as lfe
 
 import judgement
+import action
 import combat
 import speech
 import events
 import camps
 import brain
+import stats
 import jobs
 
 import logging
@@ -17,7 +19,9 @@ def create_group(life, add_creator=True):
 	    'leader': None,
 	    'members': [],
 	    'shelter': None,
-	    'events': [],
+	    'events': {},
+	    'event_id': 1,
+	    'announce_event': None,
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
@@ -116,16 +120,31 @@ def assign_job(life, group_id, job):
 	for member in _group['members']:
 		jobs.add_job_candidate(job, LIFE[member])
 
-def distribute(life, message, **kvargs):
+def distribute(life, message, filter_by=[], **kvargs):
 	_group = get_group(life['group'])
 	
 	for member in _group['members']:
+		if member in filter_by:
+			continue
+		
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
 
 def add_event(group_id, event):
 	_group = get_group(group_id)
 	
-	_group['events'].append(event)
+	_group['events'][_group['event_id']] = event
+	_group['event_id'] += 1
+	
+	return _group['event_id']-1
+
+def get_event(group_id, event_id):
+	return get_group(group_id)['events'][event_id]
+
+def process_events(group_id):
+	_group = get_group(group_id)
+	
+	for event in _group['events'].values():
+		events.process_event(event)
 
 def get_shelter(group_id):
 	return get_group(group_id)['shelter']
@@ -142,7 +161,11 @@ def find_shelter(life, group_id):
 
 def announce_shelter(group_id):
 	_group = get_group(group_id)
-	distribute(LIFE[_group['leader']], 'group_set_shelter', chunk_id=_group['shelter'])
+	distribute(LIFE[_group['leader']],
+	           'group_set_shelter',
+	           filter_by=get_event(group_id, _group['announce_event'])['accepted'],
+	           chunk_id=_group['shelter'],
+	           event_id=_group['announce_event'])
 
 def find_and_announce_shelter(life, group_id):
 	if get_shelter(group_id):
@@ -151,7 +174,15 @@ def find_and_announce_shelter(life, group_id):
 		find_shelter(life, group_id)
 
 def set_leader(group_id, life_id):
-	get_group(group_id)['leader'] = life_id
+	_group = get_group(group_id)
+	_group['leader'] = life_id
+	
+	_group['announce_event'] = add_event(group_id, events.create('shelter',
+	              find_and_announce_shelter,
+	              {'life': action.make(life=life_id, return_key='life'),
+	               'group_id': group_id},
+	              fail_callback=stats.desires_shelter,
+	              fail_arguments={'life': action.make(life=life_id, return_key='life')}))
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
