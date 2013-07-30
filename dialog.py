@@ -6,8 +6,9 @@
 
 from globals import *
 
-import life as lfe
 import libtcodpy as tcod
+import graphics as gfx
+import life as lfe
 
 import numbers
 import logic
@@ -627,6 +628,9 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
+		if 'player' in LIFE[dialog['listener']]:
+			gfx.message('%s ignores you.')
+		
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
 		_responses.extend(get_responses_about_self(life))

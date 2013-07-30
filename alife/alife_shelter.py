@@ -2,7 +2,7 @@ from globals import *
 
 import life as lfe
 
-import action
+import judgement
 import chunks
 import goals
 import maps
@@ -33,12 +33,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_shelters = [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]
+	if not 'shelter' in life['state_flags']:
+		life['state_flags']['shelter'] = judgement.get_best_shelter(life)
 	
-	if _shelters:
-		_shelter = chunks.get_nearest_chunk_in_list(life['pos'], _shelters)
-		
-		if not tuple(life['pos'][:2]) in chunks.get_flag(life, _shelter, 'shelter_cover'):
-			if not lfe.path_dest(life) or (not chunks.position_is_in_chunk(lfe.path_dest(life), _shelter)):
-				_cover = chunks.get_flag(life,_shelter, 'shelter_cover')
-				lfe.walk_to(life, random.choice(_cover))
+	if not tuple(life['pos'][:2]) in chunks.get_flag(life, life['state_flags']['shelter'], 'shelter_cover'):
+		if not lfe.path_dest(life) or (not chunks.position_is_in_chunk(lfe.path_dest(life), life['state_flags']['shelter'])):
+			_cover = chunks.get_flag(life, life['state_flags']['shelter'], 'shelter_cover')
+			lfe.walk_to(life, random.choice(_cover))

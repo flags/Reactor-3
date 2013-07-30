@@ -25,11 +25,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_group = groups.get_group(life['group'])
 	
 	if _group['leader'] == life['id']:
-		if stats.desires_to_create_camp(life) and groups.is_ready_to_camp(life['group']):
-			speech.announce(life, 'follow', group=life['group'])
-		
 		if stats.wants_to_abandon_group(life, life['group']):
 			print 'ABANDONING ON THESE TERMS' * 10
+			return False
+		
+		if stats.desires_shelter(life):
+			if not groups.get_shelter(life['group']):
+				groups.find_shelter(life, life['group'])
 			
 	
 	#elif brain.get_alife_flag(life, _group['leader'], 'follow'):

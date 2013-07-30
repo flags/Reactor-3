@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import chunks
 import speech
 import combat
 import raids
@@ -147,9 +148,6 @@ def listen(life):
 				lfe.say(life, 'I\'m new around here, sorry!')
 		
 		elif event['gist'] == 'share_chunk_info':
-			if event_delay(event, 20):
-				continue
-
 			if 'chunk_key' in event:
 				maps.refresh_chunk(event['chunk_key'])
 				judgement.judge_chunk(life, event['chunk_key'])
@@ -337,11 +335,10 @@ def listen(life):
 			#_target = brain.knows_alife(life, event['alife'])['score']
 			logging.warning('target_needs_disarmed: Needs handling code.')
 		
-		elif event['gist'] == 'group_set_camp':
-			#TODO: Question this
-			life['camp'] = event['camp']
-			camps.discover_camp(life, event['from']['known_camps'][event['camp']])
-			lfe.memory(life, 'camp founder', camp=event['camp'], founder=event['from']['id'])
+		elif event['gist'] == 'group_set_shelter':
+			judgement.judge_chunk(life, event['chunk_id'])
+			
+			print 'GOT SHELTER INFO' * 100
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

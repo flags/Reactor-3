@@ -15,7 +15,7 @@ def create_group(life, add_creator=True):
 	_group = {'creator': life['id'],
 	    'leader': None,
 	    'members': [],
-	    'camp': None,
+	    'shelter': None,
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
@@ -48,10 +48,9 @@ def add_member(group_id, life_id):
 	for member in _group['members']:
 		brain.meet_alife(LIFE[member], LIFE[life_id])
 	
-	if _group['camp']:
-		LIFE[life_id]['camp'] = _group['camp']
-		camps.discover_camp(LIFE[life_id], LIFE[_group['leader']]['known_camps'][_group['camp']])
-		lfe.memory(LIFE[life_id], 'camp founder', camp=_group['camp'], founder=_group['leader'])
+	if _group['shelter']:
+		LIFE[life_id]['shelter'] = _group['shelter']
+		lfe.memory(LIFE[life_id], 'shelter founder', shelter=_group['shelter'], founder=_group['leader'])
 	
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
@@ -121,14 +120,18 @@ def distribute(life, message, **kvargs):
 	for member in _group['members']:
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
 
-def get_camp(group_id):
-	return get_group(group_id)['camp']
+def get_shelter(group_id):
+	return get_group(group_id)['shelter']
 
-def set_camp(group_id, camp_id):
+def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	_group['camp'] = camp_id
+	_group['shelter'] = judgement.get_best_shelter(life)
 	
-	distribute(LIFE[_group['leader']], 'group_set_camp', camp=camp_id)
+	if _group['shelter']:
+		print 'SET SHELTER' * 100
+		distribute(LIFE[_group['leader']], 'group_set_shelter', chunk_id=_group['shelter'])
+	else:
+		print 'COULD NOT FIND SHELTER' * 100
 
 def set_leader(group_id, life_id):
 	get_group(group_id)['leader'] = life_id
@@ -178,10 +181,10 @@ def get_total_trust(group_id):
 def get_total_danger(group_id):
 	return get_status(group_id)[1]
 
-def is_ready_to_camp(group_id):
+def is_ready_to_shelter(group_id):
 	_group = get_group(group_id)
 	
-	if get_total_trust(group_id) < 4:
+	if get_total_trust(group_id)<0:
 		return False
 		
 	if WORLD_INFO['ticks']-_group['last_updated'] >= len(_group['members'])*11:

@@ -217,6 +217,7 @@ def wants_group_member(life, life_id):
 		return False
 	
 	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
+		print 'group not compat'
 		return False
 	
 	return True
@@ -240,6 +241,12 @@ def can_talk_to(life, life_id):
 
 def can_camp(life):
 	if not lfe.execute_raw(life, 'camp', 'can_camp'):
+		return False
+	
+	return True
+
+def can_create_camp(life):
+	if not lfe.execute_raw(life, 'camp', 'can_create_camp'):
 		return False
 	
 	return True

@@ -139,6 +139,12 @@ def is_night():
 	
 	return False
 
+def time_until_midnight():
+	if is_night():
+		return 0
+	
+	return WORLD_INFO['length_of_day']-WORLD_INFO['real_time_of_day']
+
 def draw_encounter():
 	if not SETTINGS['controlling']['encounters']:
 		return False

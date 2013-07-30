@@ -12,6 +12,7 @@ import brain
 import raids
 import sight
 import camps
+import logic
 import jobs
 
 import logging
@@ -364,8 +365,10 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
-			else:
+			elif life['group'] and groups.is_leader(life['group'], _target['life']['id']):
 				_trusted += _target['trust']
+			#else:
+			#	_trusted += _target['trust']
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
@@ -389,8 +392,8 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
 	
-	if stats.desires_interaction(life):
-		_score += _trusted
+	#if stats.desires_interaction(life):
+	#	_score += _trusted
 	
 	for item in chunk['items']:
 		_item = brain.remember_known_item(life, item)
@@ -631,3 +634,29 @@ def get_best_goal(life):
 		return goal
 	
 	return -1
+
+def get_best_shelter(life):
+	_best_shelter = {'distance': -1, 'shelter': None}
+	
+	if life['group']:
+		_shelter = groups.get_shelter(life['group'])
+		
+		if _shelter:
+			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _shelter.split(',')]
+			_dist = numbers.distance(life['pos'], _shelter_center)
+			
+			if _dist <= logic.time_until_midnight()*life['speed_max']:
+				print life['name'],'can get to shelter in time'
+				return _shelter
+			else:
+				print life['name'],'cant get to shelter in time'
+	
+	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
+		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+		_score = numbers.distance(life['pos'], chunk_center)
+		
+		if not _best_shelter['shelter'] or _score<_best_shelter['distance']:
+			_best_shelter['shelter'] = chunk_key
+			_best_shelter['score'] = _score
+	
+	return _best_shelter['shelter']
