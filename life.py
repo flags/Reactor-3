@@ -108,15 +108,30 @@ def get_max_speed(life):
 	
 	return numbers.clip(_speed, 0, 255)
 
+def initiate_raw(life):
+	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
+
+def initiate_needs(life):
+	life['needs'] = []
+	
+	alife.survival.add_needed_item(life,
+	                               {'type': 'drink'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'thirsty'),
+	                               satisfy_callback=consume)
+	alife.survival.add_needed_item(life,
+	                               {'type': 'food'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
+	                               satisfy_callback=consume)
+
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
 	if name in LIFE_TYPES:
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
 	
 	life = load_life(name)
-	life['raw'] = {'sections': {}}
+	life['raw_name'] = name
 	#try:
-	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, name+'.dat'))
+	initiate_raw(life)
 	#except:
 	#	print 'FIXME: Exception on no .dat for life'
 	
@@ -323,14 +338,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['stats'] = {}
 	alife.stats.init(_life)
 	
-	alife.survival.add_needed_item(_life,
-	                               {'type': 'drink'},
-	                               satisfy_if=lambda life: brain.get_flag(life, 'thirsty'),
-	                               satisfy_callback=consume)
-	alife.survival.add_needed_item(_life,
-	                               {'type': 'food'},
-	                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
-	                               satisfy_callback=consume)
+	initiate_needs(_life)
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
@@ -368,13 +376,11 @@ def sanitize_know(life):
 	#del life['know']
 
 def prepare_for_save(life):
-	_delete_keys = []
+	_delete_keys = ['raw', 'needs']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
 	for key in life.keys():#_delete_keys:
-		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'species', u'flags', 'known_chunks']:
-		#	continue
 		if key in _sanitize_keys:
 			_sanitize_keys[key](life)
 		elif key in _delete_keys:
@@ -385,20 +391,22 @@ def prepare_for_save(life):
 
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
-	#TODO: Don't needs this any more...
+	#TODO: Don't need this any more...
 	life['heard'] = []
+	life['needs'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
+	
+	initiate_raw(life)
 
 def save_all_life():
-	for life in [LIFE[i] for i in LIFE]:
-		#_life.append(get_save_string(life))
+	for life in LIFE.values():
 		prepare_for_save(life)
 	
 	_life = json.dumps(LIFE)
 	
-	for life in [LIFE[i] for i in LIFE]:
+	for life in LIFE.values():
 		post_save(life)
 	
 	return _life

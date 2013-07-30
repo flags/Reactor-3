@@ -2,7 +2,12 @@ import logging
 import os
 
 def get_home_directory():
-	return os.environ['HOME']
+	if 'HOME' in os.environ:
+		return os.environ['HOME']
+	elif 'USERPROFILE' in os.environ:
+		return os.environ['USERPROFILE']
+	else:
+		raise Exception('No home directory could be found.')
 
 def has_reactor3():	
 	_config_directory = os.path.join(get_home_directory(),'.config','reactor-3')

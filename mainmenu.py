@@ -77,7 +77,7 @@ def draw_intro():
 	SETTINGS['running'] = 1
 
 def draw_message():
-	_y = 10
+	_y = 25
 	for line in MESSAGE:
 		graphics.blit_string(1, _y, line)
 		_y += 1
@@ -94,8 +94,8 @@ def switch_to_main_menu():
 	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Start', None))
-	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=False))#profiles.get_worlds()))
-	_menu_items.append(menus.create_item('single', 'World Generation', None, enabled=False))
+	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
+	_menu_items.append(menus.create_item('single', 'World Generation', None))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
 	
 	_i = menus.create_menu(title='Reactor 3',
@@ -111,8 +111,17 @@ def switch_to_main_menu():
 
 def switch_to_start_game():
 	menus.delete_active_menu()
+
+	SETTINGS['controlling'] = None
+	SETTINGS['following'] = None
+	for life in LIFE.values():
+		if 'player' in life:
+			SETTINGS['controlling'] = life
+			SETTINGS['following'] = life
+			break
+	
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=False))
+	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=SETTINGS['controlling']))
 	_menu_items.append(menus.create_item('single', 'New Character', None))
 	_menu_items.append(menus.create_item('single', 'New Character (Advanced)', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
@@ -212,14 +221,12 @@ def generate_world():
 	elif _settings['World Age'] == '3 Weeks':
 		_ticks = 90000
 	
-	if _settings['Life Density'] == 'Sparse':
-		_life = 4
-	elif _settings['Life Density'] == 'Medium':
-		_life = 8
-	elif _settings['Life Density'] == 'Heavy':
-		_life = 12
-	
-	worldgen.generate_world(WORLD_INFO['map'], life=_life, simulate_ticks=_ticks)
+	worldgen.generate_world(WORLD_INFO['map'],
+		life_density=_settings['Life Density'],
+		wildlife_density=_settings['Wildlife Density'],
+		simulate_ticks=_ticks,
+	     save=True,
+		thread=True)
 
 def main_menu_select(entry):
 	key = entry['key']
@@ -239,6 +246,8 @@ def start_menu_select(entry):
 	
 	if key == 'New Character':
 		switch_to_spawn_point()
+	elif key == 'Existing Character':
+		start_game()
 	elif key == 'Back':
 		switch_to_main_menu()
 

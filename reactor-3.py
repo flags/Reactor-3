@@ -113,7 +113,7 @@ items.initiate_item('electric_lantern')
 items.create_item('leather backpack',position=[40,50,2])
 items.create_item('glock',position=[40,35,2])
 
-SETTINGS['running'] = 2
+SETTINGS['running'] = 1
 
 while SETTINGS['running'] in [-1, 1]:
 	if SETTINGS['running'] == -1:
@@ -130,8 +130,8 @@ if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'],
 		life_density='Heavy',
 		wildlife_density='Sparse',
-		simulate_ticks=2000,
-		save=False,
+		simulate_ticks=100,
+		save=True,
 		thread=False)
 
 effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
