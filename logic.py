@@ -1,7 +1,8 @@
 from globals import *
 
-import alife as alfe
 import libtcodpy as tcod
+import graphics as gfx
+import alife as alfe
 
 import encounters
 import worldgen
@@ -111,8 +112,14 @@ def tick_world():
 		WORLD_INFO['day'] += 1
 	
 	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
+		if WORLD_INFO['time_of_day'] == 'day':
+			gfx.message('Night falls.')
+		
 		WORLD_INFO['time_of_day'] = 'night'
 	else:
+		if WORLD_INFO['time_of_day'] == 'night':
+			gfx.message('The sun rises.')
+		
 		WORLD_INFO['time_of_day'] = 'day'
 	
 	if WORLD_INFO['life_spawn_interval'][0]:

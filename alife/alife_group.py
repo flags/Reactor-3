@@ -30,9 +30,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			return False
 		
 		if stats.desires_shelter(life):
-			if not groups.get_shelter(life['group']):
-				groups.find_shelter(life, life['group'])
-			
+			groups.find_and_announce_shelter(life, life['group'])
 	
 	#elif brain.get_alife_flag(life, _group['leader'], 'follow'):
 	#	#TODO: Get this over to alife_explore?

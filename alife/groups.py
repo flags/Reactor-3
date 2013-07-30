@@ -129,9 +129,19 @@ def find_shelter(life, group_id):
 	
 	if _group['shelter']:
 		print 'SET SHELTER' * 100
-		distribute(LIFE[_group['leader']], 'group_set_shelter', chunk_id=_group['shelter'])
+		announce_shelter(group_id)
 	else:
-		print 'COULD NOT FIND SHELTER' * 100
+		print life['name'],'COULD NOT FIND SHELTER' * 100
+
+def announce_shelter(group_id):
+	_group = get_group(group_id)
+	distribute(LIFE[_group['leader']], 'group_set_shelter', chunk_id=_group['shelter'])
+
+def find_and_announce_shelter(life, group_id):
+	if get_shelter(group_id):
+		announce_shelter(group_id)
+	else:
+		find_shelter(life, group_id)
 
 def set_leader(group_id, life_id):
 	get_group(group_id)['leader'] = life_id

@@ -216,6 +216,8 @@ def draw_message_box():
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lighter_crimson)
 		elif msg['style'] == 'important':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
+		elif msg['style'] == 'radio':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(225,245,169))
 		elif msg['style'] == 'player_combat_good':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
 		elif msg['style'] == 'player_combat_bad':
@@ -309,6 +311,9 @@ def message(text, style=None):
 		return None
 	
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
+
+def radio(source, text):
+	message('%s: %s' % (' '.join(life['name']), text), style='radio')
 
 def end_of_frame_terraform(editing_prefab=False):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

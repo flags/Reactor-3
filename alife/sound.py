@@ -1,5 +1,6 @@
 from globals import *
 
+import graphics as gfx
 import life as lfe
 
 import judgement
@@ -336,9 +337,13 @@ def listen(life):
 			logging.warning('target_needs_disarmed: Needs handling code.')
 		
 		elif event['gist'] == 'group_set_shelter':
-			judgement.judge_chunk(life, event['chunk_id'])
-			
-			print 'GOT SHELTER INFO' * 100
+			if 'player' in life:
+				#gfx.message('From: %s, "Camp established at %s"' % (' '.join(event['from']['name'])), style='radio')
+				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['chunk_id']))
+			else:
+				judgement.judge_chunk(life, event['chunk_id'])
+				
+				print 'GOT SHELTER INFO' * 100
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
