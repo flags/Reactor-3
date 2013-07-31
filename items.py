@@ -160,6 +160,14 @@ def delete_item(item):
 	
 	del ITEMS[item['uid']]
 
+def save_all_items():
+	for item in ITEMS.values():
+		item['icon'] = ord(item['icon'])
+
+def reload_all_items():
+	for item in ITEMS.values():
+		item['icon'] = chr(item['icon'])
+
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]

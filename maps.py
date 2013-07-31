@@ -64,7 +64,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		del _slice['rotmap']
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
-		print WORLD_INFO['groups']
 		try:
 			_map_file.write(json.dumps(WORLD_INFO))
 			logging.info('Map \'%s\' saved.' % map_name)
@@ -434,7 +433,7 @@ def refresh_chunk(chunk_id):
 	chunk['items'] = _items
 	chunk['life'] = _life
 	chunk['last_updated'] = WORLD_INFO['ticks']
-	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
+	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, len(_items))
 	broadcast_chunk_change(chunk_id)
 
 def broadcast_chunk_change(chunk_id):

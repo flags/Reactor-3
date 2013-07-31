@@ -20,7 +20,15 @@ import time
 import json
 import sys
 
-BASE_ITEMS = ['sneakers', 'blue jeans', 'white t-shirt', 'leather backpack', 'radio', 'glock', '9x19mm magazine', 'electric lantern', 'soda']
+BASE_ITEMS = ['sneakers',
+              'blue jeans',
+              'white t-shirt',
+              'leather backpack',
+              'radio',
+              'glock',
+              '9x19mm magazine',
+              'electric lantern',
+              'soda']
 RECRUIT_ITEMS = [ '.22 rifle', 'corn', 'soda']
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
@@ -106,22 +114,45 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 def load_world(world):
 	WORLD_INFO['id'] = world
 	maps.load_map('map', base_dir=profiles.get_world(world))
-	
+
+	logging.debug('Loading life from disk...')
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'r') as e:
 		LIFE.update(json.loads(e.readline()))
+
+	logging.debug('Loading items from disk...')
+	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'r') as e:
+		ITEMS.update(json.loads(e.readline()))	
+	
+	SETTINGS['controlling'] = None
+	SETTINGS['following'] = None
+	for life in LIFE.values():
+		if 'player' in life:
+			SETTINGS['controlling'] = life
+			SETTINGS['following'] = life
+			break
 	
 	lfe.load_all_life()
+	items.reload_all_items()
 	
 	logging.info('World loaded.')
 
 def save_world():
 	logging.debug('Offloading world...')
 	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
+	
 	logging.debug('Saving life...')
 	_life = life.save_all_life()
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
 		e.write(_life)
+	
+	logging.debug('Saving items...')
+	items.save_all_items()
+	
+	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
+		e.write(json.dumps(ITEMS))
+	
+	items.reload_all_items()
 	
 	logging.info('World saved.')
 
@@ -203,7 +234,7 @@ def create_player(source_map):
 	SETTINGS['controlling'] = PLAYER
 	SETTINGS['following'] = PLAYER
 	
-	_i = items.create_item('sneakers', position=PLAYER['pos'][:])
+	_i = items.create_item('burner', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)
 	
 	#for x in range(-10, 11):

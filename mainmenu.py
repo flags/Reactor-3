@@ -76,6 +76,10 @@ def draw_intro():
 	
 	SETTINGS['running'] = 1
 
+def clear(entry=None):
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	console_flush()
+
 def draw_message():
 	_y = 25
 	for line in MESSAGE:
@@ -111,14 +115,6 @@ def switch_to_main_menu():
 
 def switch_to_start_game():
 	menus.delete_active_menu()
-
-	SETTINGS['controlling'] = None
-	SETTINGS['following'] = None
-	for life in LIFE.values():
-		if 'player' in life:
-			SETTINGS['controlling'] = life
-			SETTINGS['following'] = life
-			break
 	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=SETTINGS['controlling']))
@@ -135,7 +131,7 @@ def switch_to_start_game():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_select_world():
 	menus.delete_active_menu()
@@ -154,7 +150,7 @@ def switch_to_select_world():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_spawn_point():
 	menus.delete_active_menu()
@@ -174,7 +170,7 @@ def switch_to_spawn_point():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_world_gen():
 	_menu_items = []
@@ -192,14 +188,10 @@ def switch_to_world_gen():
 		padding=(1,1),
 		position=(0,0),
 		on_select=worldgen_menu_select,
-		on_change=refresh_screen)
+		on_change=clear)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
-
-def refresh_screen(entry):
-	#TODO: Broken. Menus should be handling this anyway
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def start_game():
 	SETTINGS['running'] = 2

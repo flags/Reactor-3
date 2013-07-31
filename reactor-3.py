@@ -14,6 +14,7 @@ import maputils
 import worldgen
 import mainmenu
 import language
+import profiles
 import network
 import drawing
 import logging
@@ -109,11 +110,14 @@ items.initiate_item('radio')
 items.initiate_item('can_of_corn')
 items.initiate_item('soda')
 items.initiate_item('electric_lantern')
-
-items.create_item('leather backpack',position=[40,50,2])
-items.create_item('glock',position=[40,35,2])
+items.initiate_item('burner')
 
 SETTINGS['running'] = 1
+
+if SETTINGS['running'] == 2:
+	for world in profiles.get_worlds():
+		worldgen.load_world(world)
+		break
 
 while SETTINGS['running'] in [-1, 1]:
 	if SETTINGS['running'] == -1:

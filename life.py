@@ -404,9 +404,9 @@ def save_all_life():
 	for life in LIFE.values():
 		prepare_for_save(life)
 		
-		for key in life.keys():
-			print key, life[key]
-			json.dumps(life[key])
+		#for key in life.keys():
+		#	print key, life[key]
+		#	json.dumps(life[key])
 	
 	_life = json.dumps(LIFE)
 	
