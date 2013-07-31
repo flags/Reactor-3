@@ -25,14 +25,14 @@ def create_group(life, add_creator=True):
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
-	WORLD_INFO['groups'][WORLD_INFO['groupid']] = _group
+	WORLD_INFO['groups'][str(WORLD_INFO['groupid'])] = _group
 	
-	lfe.memory(life, 'created group', group=WORLD_INFO['groupid'])
+	lfe.memory(life, 'created group', group=str(WORLD_INFO['groupid']))
 	logging.debug('%s created group: %s' % (' '.join(life['name']), WORLD_INFO['groupid']))
 	
 	if add_creator:
-		add_member(WORLD_INFO['groupid'], life['id'])
-		set_leader(WORLD_INFO['groupid'], life['id'])
+		add_member(str(WORLD_INFO['groupid']), life['id'])
+		set_leader(str(WORLD_INFO['groupid']), life['id'])
 	
 	WORLD_INFO['groupid'] += 1
 
@@ -132,10 +132,10 @@ def distribute(life, message, filter_by=[], **kvargs):
 def add_event(group_id, event):
 	_group = get_group(group_id)
 	
-	_group['events'][_group['event_id']] = event
+	_group['events'][str(_group['event_id'])] = event
 	_group['event_id'] += 1
 	
-	return _group['event_id']-1
+	return str(_group['event_id']-1)
 
 def get_event(group_id, event_id):
 	return get_group(group_id)['events'][event_id]
@@ -176,12 +176,13 @@ def find_and_announce_shelter(life, group_id):
 def setup_group_events(group_id):
 	_group = get_group(group_id)
 	
-	_group['announce_event'] = add_event(group_id, events.create('shelter',
-	    action.make(return_function='find_and_announce_shelter'),
-	    {'life': action.make(life=_group['leader'], return_key='life'),
-	     'group_id': group_id},
-	    fail_callback=action.make(return_function='desires_shelter'),
-	    fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
+	if stats.desires_shelter(LIFE[_group['leader']]):
+		_group['announce_event'] = add_event(group_id, events.create('shelter',
+			action.make(return_function='find_and_announce_shelter'),
+			{'life': action.make(life=_group['leader'], return_key='life'),
+			 'group_id': group_id},
+			fail_callback=action.make(return_function='desires_shelter'),
+			fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
 
 def set_leader(group_id, life_id):
 	_group = get_group(group_id)

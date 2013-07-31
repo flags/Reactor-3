@@ -129,7 +129,7 @@ def create_item(name, position=[0,0,2], item=None):
 		
 		del item['marked_for_reint']
 
-	item['uid'] = WORLD_INFO['itemid']
+	item['uid'] = str(WORLD_INFO['itemid'])
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0.0, 0.0, 0.0]

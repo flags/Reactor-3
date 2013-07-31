@@ -546,15 +546,15 @@ def handle_input():
 	
 	if INPUT['y']:
 		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+2]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+2]
+			SETTINGS['following'] = LIFE[str(LIFE.keys().index(SETTINGS['following']['id'])+2)]
+			SETTINGS['controlling'] = LIFE[str(LIFE.keys().index(SETTINGS['controlling']['id'])+2)]
 			FADE_TO_WHITE[0] = 0
 			gfx.refresh_window()
 
 	if INPUT['u']:
 		if LIFE.keys().index(SETTINGS['following']['id'])>=1:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
+			SETTINGS['following'] = LIFE[str(LIFE.keys().index(SETTINGS['following']['id']))]
+			SETTINGS['controlling'] = LIFE[str(LIFE.keys().index(SETTINGS['controlling']['id']))]
 			FADE_TO_WHITE[0] = 0
 			gfx.refresh_window()
 

@@ -266,7 +266,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	elif name:
 		_life['name'] = name
 	
-	_life['id'] = WORLD_INFO['lifeid']
+	_life['id'] = str(WORLD_INFO['lifeid'])
 	
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)

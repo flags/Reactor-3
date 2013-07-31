@@ -204,6 +204,7 @@ def refresh_screen(entry):
 def start_game():
 	SETTINGS['running'] = 2
 	menus.delete_active_menu()
+	menus.delete_active_menu()
 
 def generate_world():
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]
