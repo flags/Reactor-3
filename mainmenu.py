@@ -216,7 +216,7 @@ def generate_world():
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 100
 	elif _settings['World Age'] == '1 Week':
-		_ticks = 30000
+		_ticks = 1000#30000
 	elif _settings['World Age'] == '2 Weeks':
 		_ticks = 60000
 	elif _settings['World Age'] == '3 Weeks':
