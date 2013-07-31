@@ -3,7 +3,9 @@ from alife import *
 
 import libtcodpy as tcod
 import graphics as gfx
+
 import crafting
+import worldgen
 import weapons
 import dialog
 import menus
@@ -53,7 +55,7 @@ def handle_input():
 	if SETTINGS['draw console']:
 		return
 
-	if INPUT['up'] or (LIFE[SETTINGS['controlling']] and INPUT['8']):
+	if INPUT['up'] or (SETTINGS['controlling'] and INPUT['8']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
@@ -67,7 +69,7 @@ def handle_input():
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
 
-	if INPUT['down'] or (LIFE[SETTINGS['controlling']] and INPUT['2']):
+	if INPUT['down'] or (SETTINGS['controlling'] and INPUT['2']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
@@ -81,7 +83,7 @@ def handle_input():
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
 
-	if INPUT['right'] or (LIFE[SETTINGS['controlling']] and INPUT['6']):
+	if INPUT['right'] or (SETTINGS['controlling'] and INPUT['6']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -91,7 +93,7 @@ def handle_input():
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 
-	if INPUT['left'] or (LIFE[SETTINGS['controlling']] and INPUT['4']):
+	if INPUT['left'] or (SETTINGS['controlling'] and INPUT['4']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -102,7 +104,7 @@ def handle_input():
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	
 	if INPUT['\r']:
-		if LIFE[SETTINGS['controlling']] and life.has_dialog(LIFE[SETTINGS['controlling']]):
+		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 			dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
 			return False
@@ -112,7 +114,7 @@ def handle_input():
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 	
-	if not LIFE[SETTINGS['controlling']]:
+	if not SETTINGS['controlling']:
 		return False
 	
 	if INPUT['?']:
@@ -488,6 +490,7 @@ def handle_input():
 		_options = []
 		_options.append(menus.create_item('title','Debug (Developer)',None))
 		_options.append(menus.create_item('spacer','=',None))
+		_options.append(menus.create_item('single','Save','Offload game to disk'))
 		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
 		
 		_i = menus.create_menu(title='Options',
@@ -1113,7 +1116,9 @@ def handle_options_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	if key == 'Reload map':
+	if key == 'Save':
+		worldgen.save_world()
+	elif key == 'Reload map':
 		logging.warning('Map reloading is not well tested!')
 		global MAP
 		del MAP

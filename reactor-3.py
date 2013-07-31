@@ -119,6 +119,9 @@ if SETTINGS['running'] == 2:
 		worldgen.load_world(world)
 		break
 
+if not 'start_age' in WORLD_INFO:
+	SETTINGS['running'] = 1
+
 while SETTINGS['running'] in [-1, 1]:
 	if SETTINGS['running'] == -1:
 		mainmenu.draw_intro()

@@ -370,10 +370,20 @@ def sanitize_know(life):
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
 
+def sanitize_inventory(life):
+	for item in life['inventory'].values():
+		item['icon'] = ord(item['icon'])
+
+def unsanitize_inventory(life):
+	for item in life['inventory'].values():
+		if isinstance(item['icon'], int):
+			item['icon'] = chr(item['icon'])
+
 def prepare_for_save(life):
 	_delete_keys = ['raw', 'needs', 'actions']
 	_sanitize_keys = {'heard': sanitize_heard,
-		'know': sanitize_know}
+		'know': sanitize_know,
+	     'inventory': sanitize_inventory}
 	
 	for key in life.keys():#_delete_keys:
 		if key in _sanitize_keys:
@@ -393,6 +403,8 @@ def post_save(life):
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
+		
+	unsanitize_inventory(life)
 	
 	initiate_raw(life)
 

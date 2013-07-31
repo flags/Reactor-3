@@ -28,7 +28,7 @@ def tick_all_objects(source_map):
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False
 	
-	if LIFE[SETTINGS['controlling']]:
+	if SETTINGS['controlling']:
 		if LIFE[SETTINGS['controlling']]['targeting'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
 			LIFE[SETTINGS['controlling']]['shoot_timer']-=1
 			return False
