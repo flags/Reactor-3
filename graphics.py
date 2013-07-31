@@ -232,10 +232,10 @@ def draw_status_line():
 	_flashing_text = ''
 	_non_flashing_text = ''
 	
-	if SETTINGS['following']['targeting']:
+	if LIFE[SETTINGS['following']]['targeting']:
 		_flashing_text += 'Firing'
 	
-	if SETTINGS['following']['strafing']:
+	if LIFE[SETTINGS['following']]['strafing']:
 		_non_flashing_text += 'Strafing'
 	
 	blit_string(0,
@@ -359,8 +359,8 @@ def end_of_frame():
 	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
-	if SETTINGS['controlling'] and SETTINGS['controlling']['encounters']:
-		_encounter = SETTINGS['controlling']['encounters'][0]
+	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['encounters']:
+		_encounter = LIFE[SETTINGS['controlling']]['encounters'][0]
 	
 	if _encounter and 'console' in _encounter:
 		tcod.console_blit(_encounter['console'], 0, 0,
@@ -372,8 +372,8 @@ def end_of_frame():
 			1, 0.5)
 	
 	_dialog = None
-	if SETTINGS['controlling'] and SETTINGS['controlling']['dialogs']:
-		_dialog = SETTINGS['controlling']['dialogs'][0]
+	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['dialogs']:
+		_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 	
 	if _dialog and 'console' in _dialog:
 		tcod.console_blit(_dialog['console'], 0, 0,

@@ -127,8 +127,8 @@ def load_world(world):
 	SETTINGS['following'] = None
 	for life in LIFE.values():
 		if 'player' in life:
-			SETTINGS['controlling'] = life
-			SETTINGS['following'] = life
+			SETTINGS['controlling'] = life['id']
+			SETTINGS['following'] = life['id']
 			break
 	
 	lfe.load_all_life()
@@ -231,8 +231,8 @@ def create_player(source_map):
 	for item in RECRUIT_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 
-	SETTINGS['controlling'] = PLAYER
-	SETTINGS['following'] = PLAYER
+	SETTINGS['controlling'] = PLAYER['id']
+	SETTINGS['following'] = PLAYER['id']
 	
 	_i = items.create_item('burner', position=PLAYER['pos'][:])
 	items.move(_i, 180, 3)

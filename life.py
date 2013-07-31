@@ -678,7 +678,7 @@ def say(life, text, action=False, volume=30, context=False):
 		_style = 'speech'
 	
 	if SETTINGS['following']:
-		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
+		if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
 			if context:
 				_style = 'important'
 			
@@ -2143,13 +2143,13 @@ def show_life_info(life):
 def draw_life_icon(life):
 	_icon = [tick_animation(life), tcod.white]
 	
-	if life['id'] in [context['from']['id'] for context in SETTINGS['following']['contexts']]:
+	if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
 		if time.time()%1>=0.5:
 			_icon[0] = '?'
 	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
-		if SETTINGS['controlling']['id'] in _targets:
+		if LIFE[SETTINGS['controlling']]['id'] in _targets:
 			_icon[1] = tcod.light_red
 	
 	if life['dead']:
@@ -2169,7 +2169,7 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
+			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in LIFE[SETTINGS['controlling']]['know']:
 				continue
 			
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
@@ -2288,7 +2288,7 @@ def draw_visual_inventory(life):
 
 #TODO: Since we are drawing in a blank area, we only need to do this once!
 def draw_life_info():
-	life = SETTINGS['following']
+	life = LIFE[SETTINGS['following']]
 	_info = []
 	_name_mods = []
 	_holding = get_held_items(life)
@@ -2371,7 +2371,7 @@ def draw_life_info():
 		if life['id'] == ai['id']:
 			continue
 		
-		if not alife.sight.can_see_position(SETTINGS['controlling'], ai['pos']):
+		if not alife.sight.can_see_position(LIFE[SETTINGS['controlling']], ai['pos']):
 			continue
 		
 		_icon = draw_life_icon(ai)
@@ -2379,13 +2379,13 @@ def draw_life_info():
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 		
 		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
-		if _targets and SETTINGS['controlling']['id'] in _targets:
+		if _targets and LIFE[SETTINGS['controlling']]['id'] in _targets:
 			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
 			tcod.console_set_default_foreground(0, tcod.white)
 		
-		if ai in [context['from'] for context in SETTINGS['controlling']['contexts']]:
+		if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:
 			if time.time()%1>=0.5:
 				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		

@@ -51,7 +51,7 @@ def create_encounter(life, target, context=None):
 	_encounter['text'] = _text
 	_encounter['start_time'] = WORLD_INFO['ticks']
 	
-	SETTINGS['following'] = target
+	SETTINGS['following'] = target['id']
 	life['encounters'].append(_encounter)
 	logging.debug('%s created encounter.' % ' '.join(target['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME

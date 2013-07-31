@@ -4,7 +4,7 @@ import alife
 import life
 
 def suicide():
-	life.kill(SETTINGS['controlling'], 'suicide')
+	life.kill(LIFE[SETTINGS['controlling']], 'suicide')
 
 def kill(life_id):
 	life.kill(LIFE[life_id], 'suicide')
@@ -19,8 +19,8 @@ def simple_lights():
 	SETTINGS['draw light'] = False
 
 def love_me():
-	for target in SETTINGS['controlling']['know']:
-		alife.brain.add_impression(LIFE[target], SETTINGS['controlling']['id'], 'follow', {'influence': 100})
+	for target in LIFE[SETTINGS['controlling']]['know']:
+		alife.brain.add_impression(LIFE[target], LIFE[SETTINGS['controlling']]['id'], 'follow', {'influence': 100})
 
 def time(time):
 	WORLD_INFO['real_time_of_day'] = time

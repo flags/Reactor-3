@@ -18,7 +18,7 @@ def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	if WORLD_INFO['in_combat'] and SETTINGS['controlling']['actions']:
+	if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
 		WORLD_INFO['pause_ticks'] = 0
 	
 	if WORLD_INFO['pause_ticks']:
@@ -28,30 +28,30 @@ def tick_all_objects(source_map):
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False
 	
-	if SETTINGS['controlling']:
-		if SETTINGS['controlling']['targeting'] and SETTINGS['controlling']['shoot_timer']:
-			SETTINGS['controlling']['shoot_timer']-=1
+	if LIFE[SETTINGS['controlling']]:
+		if LIFE[SETTINGS['controlling']]['targeting'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
+			LIFE[SETTINGS['controlling']]['shoot_timer']-=1
 			return False
 		
-		if SETTINGS['controlling']['contexts'] and SETTINGS['controlling']['shoot_timer']:
+		if LIFE[SETTINGS['controlling']]['contexts'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
 			#TODO: Just disable this...
-			SETTINGS['controlling']['shoot_timer'] = 0
+			LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 			return False
 		
-		if SETTINGS['controlling']['encounters']:
+		if LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
 		#if menus.get_menu_by_name('Aim at...') > -1:
 		#	return False
-		if SETTINGS['controlling']['targeting']:
+		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
 		
-		if life.has_dialog(SETTINGS['controlling']):
+		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
 	
 		_in_combat = False
 		for alife in [LIFE[i] for i in LIFE]:
-			if SETTINGS['controlling']['id'] == alife['id']:
+			if SETTINGS['controlling'] == alife['id']:
 				continue
 			
 			if alife['asleep'] or alife['dead']:
@@ -75,7 +75,7 @@ def tick_all_objects(source_map):
 				continue
 			
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
-			if _targets and SETTINGS['controlling']['id'] in _targets:
+			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:
@@ -153,11 +153,11 @@ def time_until_midnight():
 	return WORLD_INFO['length_of_day']-WORLD_INFO['real_time_of_day']
 
 def draw_encounter():
-	if not SETTINGS['controlling']['encounters']:
+	if not LIFE[SETTINGS['controlling']]['encounters']:
 		return False
 	
-	encounters.draw_encounter(SETTINGS['controlling'],
-		SETTINGS['controlling']['encounters'][0])
+	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
+		LIFE[SETTINGS['controlling']]['encounters'][0])
 
 def matches(dict1, dict2):
 	_break = False

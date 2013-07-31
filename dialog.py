@@ -858,10 +858,10 @@ def process_response(life, target, dialog, chosen):
 	alife_choose_response(life, target, dialog, _responses)
 
 def draw_dialog():
-	if not lfe.has_dialog(SETTINGS['controlling']):
+	if not lfe.has_dialog(LIFE[SETTINGS['controlling']]):
 		return False
 	
-	dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 	_sender = LIFE[dialog['sender']]
 	_receiver = LIFE[dialog['receiver']]
 	
