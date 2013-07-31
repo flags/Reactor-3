@@ -25,7 +25,7 @@ def create_group(life, add_creator=True):
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks']}
 	
-	GROUPS[WORLD_INFO['groupid']] = _group
+	WORLD_INFO['groups'][WORLD_INFO['groupid']] = _group
 	
 	lfe.memory(life, 'created group', group=WORLD_INFO['groupid'])
 	logging.debug('%s created group: %s' % (' '.join(life['name']), WORLD_INFO['groupid']))
@@ -37,10 +37,10 @@ def create_group(life, add_creator=True):
 	WORLD_INFO['groupid'] += 1
 
 def get_group(group_id):
-	if not group_id in GROUPS:
+	if not group_id in WORLD_INFO['groups']:
 		raise Exception('Group does not exist: %s' % group_id)
 	
-	return GROUPS[group_id]
+	return WORLD_INFO['groups'][group_id]
 
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
@@ -173,16 +173,21 @@ def find_and_announce_shelter(life, group_id):
 	else:
 		find_shelter(life, group_id)
 
+def setup_group_events(group_id):
+	_group = get_group(group_id)
+	
+	_group['announce_event'] = add_event(group_id, events.create('shelter',
+	    action.make(return_function='find_and_announce_shelter'),
+	    {'life': action.make(life=_group['leader'], return_key='life'),
+	     'group_id': group_id},
+	    fail_callback=action.make(return_function='desires_shelter'),
+	    fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
+
 def set_leader(group_id, life_id):
 	_group = get_group(group_id)
 	_group['leader'] = life_id
 	
-	_group['announce_event'] = add_event(group_id, events.create('shelter',
-	              find_and_announce_shelter,
-	              {'life': action.make(life=life_id, return_key='life'),
-	               'group_id': group_id},
-	              fail_callback=stats.desires_shelter,
-	              fail_arguments={'life': action.make(life=life_id, return_key='life')}))
+	setup_group_events(group_id)
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
@@ -264,4 +269,4 @@ def delete_group(group_id):
 	
 	logging.warning('Deleted group: %s' % group_id)
 	
-	del GROUPS[group_id]
+	del WORLD_INFO['groups'][group_id]

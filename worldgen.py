@@ -1,6 +1,7 @@
 from globals import *
 
 import libtcodpy as tcod
+import life as lfe
 
 import historygen
 import profiles
@@ -108,6 +109,12 @@ def load_world(world):
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'r') as e:
 		LIFE.update(json.loads(e.readline()))
+		
+		for key in LIFE.keys():
+			LIFE[int(key)] = LIFE[key]
+			del LIFE[key]
+	
+	lfe.load_all_life()
 	
 	logging.info('World loaded.')
 

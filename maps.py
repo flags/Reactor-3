@@ -64,6 +64,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 		del _slice['rotmap']
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
+		print WORLD_INFO['groups']
 		try:
 			_map_file.write(json.dumps(WORLD_INFO))
 			logging.info('Map \'%s\' saved.' % map_name)

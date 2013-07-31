@@ -46,6 +46,7 @@ WORLD_INFO = {'map': [],
 	'memoryid': 1,
 	'goalid': 1,
 	'chunk_map': CHUNK_MAP,
+	'groups': {},
 	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5}
@@ -200,7 +201,6 @@ EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
-GROUPS = {}
 
 #Consoles
 MAP_WINDOW = None

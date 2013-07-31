@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import movement
+import rawparse
 import goals
 
 import logging
@@ -80,6 +81,9 @@ def _execute(action):
 	
 	if 'return_key' in action['kwargs']:
 		return _struct[action['kwargs']['return_key']]
+
+	if 'return_function' in action['kwargs']:
+		return rawparse.FUNCTION_MAP[action['kwargs']['return_function']]
 	
 	if 'function' in action['kwargs']:
 		_arguments = execute(action['kwargs']['arguments'])

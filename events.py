@@ -36,7 +36,7 @@ def process_event(event):
 			else:
 				_args[key] = event['fail_on']['arguments'][key]
 		
-		if event['fail_on']['callback'](**_args):
+		if alife.action.execute(event['fail_on']['callback'])(**_args):
 			event['failed'] = True
 			return False
 	
@@ -48,7 +48,7 @@ def process_event(event):
 			else:
 				_args[key] = event['process']['arguments'][key]
 		
-		event['process']['callback'](**_args)
+		alife.action.execute(event['process']['callback'])(**_args)
 	
 	return True
 

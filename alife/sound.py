@@ -4,6 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import judgement
+import action
 import groups
 import chunks
 import speech
@@ -279,7 +280,6 @@ def listen(life):
 					lfe.create_question(life,
 						'opinion_of_target',
 						{'target': event['from']['id'], 'who': event['attacker']},
-						lfe.get_memory,
 						[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
 					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']}],
 						answer_all=True,

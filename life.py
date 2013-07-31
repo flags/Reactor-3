@@ -367,16 +367,11 @@ def sanitize_heard(life):
 	del life['heard']
 
 def sanitize_know(life):
-	if life['know']:
-		print life['know'][life['know'].keys()[0]].keys()
-	
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
-	
-	#del life['know']
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'needs']
+	_delete_keys = ['raw', 'needs', 'actions']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -394,15 +389,24 @@ def post_save(life):
 	#TODO: Don't need this any more...
 	life['heard'] = []
 	life['needs'] = []
+	life['actions'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
 	
 	initiate_raw(life)
 
+def load_all_life():
+	for life in LIFE.values():
+		post_save(life)
+
 def save_all_life():
 	for life in LIFE.values():
 		prepare_for_save(life)
+		
+		for key in life.keys():
+			print key, life[key]
+			json.dumps(life[key])
 	
 	_life = json.dumps(LIFE)
 	
@@ -754,9 +758,8 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False, interest=0):
+def create_question(life, gist, question, answer_match, match_gist_only=False, answer_all=False, interest=0):
 	question['question'] = True
-	question['answer_callback'] = callback
 	if not isinstance(answer_match, list):
 		answer_match = [answer_match]
 	
@@ -953,7 +956,9 @@ def walk_path(life):
 		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
 			life['pos'][2] -= 1
 		
-		LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
+		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
+			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
+		
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])

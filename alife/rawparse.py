@@ -1,8 +1,11 @@
+from globals import *
+
 import life as lfe
 
 import judgement
 import survival
 import numbers
+import groups
 import combat
 import chunks
 import stats
@@ -39,6 +42,8 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_parent': stats.is_parent,
 	'is_night': logic.is_night,
 	'is_born_leader': lambda life: life['stats']['is_leader'],
+	'find_and_announce_shelter': groups.find_and_announce_shelter,
+	'desires_shelter': stats.desires_shelter,
 	'always': always,
 	'never': never}
 

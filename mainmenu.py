@@ -275,4 +275,4 @@ def worldgen_menu_select(entry):
 	if key == 'Generate':
 		generate_world()
 	elif key == 'Back':
-		switch_to_start_game()
+		switch_to_main_menu()
