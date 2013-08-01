@@ -278,7 +278,7 @@ def handle_input():
 			return create_radio_menu()
 		
 		if LIFE[SETTINGS['controlling']]['encounters']:
-			SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+			SETTINGS['following'] = SETTINGS['controlling']
 			LIFE[SETTINGS['controlling']]['encounters'].pop(0)
 		
 		_i = menus.create_menu(title='React',
@@ -789,7 +789,7 @@ def inventory_throw(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):
-	LIFE[SETTINGS['following']] = LIFE[entry['target']]
+	SETTINGS['following'] = entry['target']
 	LIFE[SETTINGS['controlling']]['targeting'] = LIFE[entry['target']]['pos'][:]
 
 def inventory_fire(entry):
@@ -874,7 +874,7 @@ def create_target_list():
 			continue
 		
 		if not _menu_items:
-			LIFE[SETTINGS['following']] = target
+			SETTINGS['following'] = target['id']
 		
 		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
 	
@@ -886,8 +886,9 @@ def create_dialog(entry):
 	SELECTED_TILES[0] = []
 	
 	_dialog = {'type': 'dialog',
-          'from': LIFE[SETTINGS['controlling']]['id'],
+          'from': SETTINGS['controlling'],
           'enabled': True}
+	
 	LIFE[SETTINGS['controlling']]['dialogs'].append(dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _target, _dialog))
 	menus.delete_active_menu()
 
@@ -1143,6 +1144,10 @@ def radio_menu(entry):
 def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	
+	if LIFE[SETTINGS['controlling']]['group']:
+		_phrases.append(menus.create_item('title', 'Group', None))
+		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

@@ -361,7 +361,7 @@ def ticker(life, name, time):
 		return False
 
 def focus_on(life):
-	SETTINGS['following'] = life
+	SETTINGS['following'] = life['id']
 
 def sanitize_heard(life):
 	del life['heard']
@@ -2161,8 +2161,12 @@ def draw_life_icon(life):
 	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
-		if LIFE[SETTINGS['controlling']]['id'] in _targets:
+		if SETTINGS['controlling'] in _targets:
 			_icon[1] = tcod.light_red
+	
+	if life['group']:
+		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+			_icon[1] = tcod.light_green
 	
 	if life['dead']:
 		_icon[0] = 'X'
