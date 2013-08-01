@@ -1135,9 +1135,19 @@ def radio_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	_phrases = []
+	_life = LIFE[SETTINGS['controlling']]
 	
 	if key == 'Distress':
-		speech.announce(life, 'under_attack')
+		#speech.announce(life, 'under_attack')
+		pass
+	elif key == 'Locate':
+		speech.communicate(_life,
+		                   'group_location',
+		                   msg='Where are you?',
+		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   group_id=_life['group'])
+	elif key == 'Suggest Location':
+		pass
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -1148,6 +1158,7 @@ def create_radio_menu():
 	if LIFE[SETTINGS['controlling']]['group']:
 		_phrases.append(menus.create_item('title', 'Group', None))
 		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
+		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

@@ -19,7 +19,7 @@ import jobs
 
 import logging
 
-def listen(life):	
+def listen(life):
 	for event in life['heard'][:]:
 		if not event['from']['id'] in life['know']:
 			pass
@@ -344,6 +344,28 @@ def listen(life):
 				print 'GOT SHELTER INFO' * 100
 			
 			events.accept(groups.get_event(life['group'], event['event_id']), life['id'])
+		
+		elif event['gist'] == 'group_location':
+			if groups.is_leader(event['group_id'], life['id']):
+				_shelter = groups.get_shelter(event['group_id'])
+				
+				if _shelter:
+					speech.communicate(life,
+						               'answer_group_location',
+						               matches=[{'id': event['from']['id']}],
+						               group_id=event['group_id'],
+						               location=_shelter)
+				else:
+					speech.communicate(life,
+						               'answer_group_location_fail',
+						               matches=[{'id': event['from']['id']}],
+						               group_id=event['group_id'])
+		
+		elif event['gist'] == 'answer_group_location':
+			gfx.radio(event['from'], 'We\'re at marker %s.' % ','.join(event['location']))
+		
+		elif event['gist'] == 'answer_group_location_fail':
+			gfx.radio(event['from'], 'We don\'t have a camp yet. I\'ll let you know when we meet up.')
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

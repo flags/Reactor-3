@@ -1506,6 +1506,7 @@ def tick(life, source_map):
 		brain.think(life, source_map)
 	else:
 		brain.sight.look(life)
+		alife.sound.listen(life)
 		
 		for context in life['contexts'][:]:
 			context['time'] -= 1

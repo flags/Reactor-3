@@ -313,7 +313,7 @@ def message(text, style=None):
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):
-	message('%s: %s' % (' '.join(life['name']), text), style='radio')
+	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
 def end_of_frame_terraform(editing_prefab=False):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
