@@ -131,7 +131,7 @@ def remember_item_secondhand(life, target, item_memory):
 	_item['flags'] = []
 	_item['from'] = target['id']
 
-	life['know_items'][_item['item']['uid']] = _item
+	life['know_items'][_item['item']] = _item
 
 	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
@@ -203,8 +203,8 @@ def has_met_in_person(life, target):
 	
 	return True
 
-def get_remembered_item(life, item):
-	return life['know_items'][item['uid']]
+def get_remembered_item(life, item_id):
+	return life['know_items'][item_id]
 
 def get_matching_remembered_items(life, matches):
 	_matched_items = []
@@ -214,26 +214,26 @@ def get_matching_remembered_items(life, matches):
 	
 	return _matched_items
 
-def has_remembered_item(life, item):
-	if item['uid'] in life['know_items']:
+def has_remembered_item(life, item_id):
+	if item_id in life['know_items']:
 		return True
 	
 	return False
 
-def has_shared_item_with(life, target, item):
-	if target['id'] in life['know_items'][item['uid']]['shared_with']:
+def has_shared_item_with(life, target, item_id):
+	if target['id'] in life['know_items'][item_id]['shared_with']:
 		return True
 	
 	return False
 
-def share_item_with(life, target, item):
-	life['know_items'][item['uid']]['shared_with'].append(target['id'])
+def share_item_with(life, target, item_id):
+	life['know_items'][item_id]['shared_with'].append(target['id'])
 
 	#logging.debug('%s shared item #%s (%s) with %s.' % (' '.join(life['name']), item['uid'], item['name'], ' '.join(target['name'])))
 
-def remember_known_item(life, item_uid):
-	if item_uid in life['know_items']:
-		return life['know_items'][item_uid]
+def remember_known_item(life, item_id):
+	if item_id in life['know_items']:
+		return life['know_items'][item_id]
 	
 	return False
 

@@ -158,12 +158,9 @@ def listen(life):
 				lfe.memory(life, 'heard about a chunk', target=event['from']['id'])
 
 		elif event['gist'] == 'share_item_info':
-			if event_delay(event, 20):
-				continue
-
 			if not brain.has_remembered_item(life, event['item']['item']):
 				lfe.memory(life, 'heard about an item',
-					item=event['item']['item']['uid'],
+					item=event['item']['item'],
 					target=event['from']['id'])
 				brain.remember_item_secondhand(life, event['from'], event['item'])
 		

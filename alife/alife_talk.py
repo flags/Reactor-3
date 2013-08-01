@@ -156,7 +156,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if brain.has_shared_item_with(life, ai['life'], item['item']):
 				continue
 
-			if not item['item']['uid'] in ITEMS:
+			if not item['item'] in ITEMS:
 				continue
 
 			brain.share_item_with(life, ai['life'], item['item'])
