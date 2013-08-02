@@ -516,6 +516,11 @@ def handle_input():
 		_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
 		
 		if not _items:
+			gfx.message('There is nothing here to pick up.')
+			return False
+		
+		if menus.get_menu_by_name('Pick up')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Pick up'))
 			return False
 		
 		create_pick_up_item_menu(_items)
@@ -1053,7 +1058,7 @@ def pick_up_item_from_ground(entry):
 		return True
 	
 	gfx.message('You start to put %s in your %s.' %
-		(items.get_name(entry['item']),entry['container']['name']))
+		(items.get_name(items.get_item_from_uid(entry['item'])), items.get_name(items.get_item_from_uid(entry['container']))))
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupitem',
 		'item': entry['item'],
@@ -1077,7 +1082,7 @@ def pick_up_item_from_ground_action(entry):
 		_menu.append(menus.create_item('single','Equip',hand,item=entry['item']))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
-	for container in life.get_all_storage(LIFE[SETTINGS['controlling']]):		
+	for container in life.get_all_storage(LIFE[SETTINGS['controlling']]):
 		if container['capacity']+_item['size'] > container['max_capacity']:
 			_enabled = False
 		else:

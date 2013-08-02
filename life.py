@@ -1143,8 +1143,10 @@ def perform_action(life):
 		
 		if life.has_key('player'):
 			if _action.has_key('container'):
+				_item = items.get_item_from_uid(_action['item'])
+				_container = items.get_item_from_uid(_action['container'])
 				gfx.message('You store %s in your %s.'
-					% (items.get_name(_action['item']),_action['container']['name']))
+					% (items.get_name(_item), items.get_name(_container)))
 	
 	elif _action['action'] == 'dropitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1533,7 +1535,7 @@ def remove_item_from_limb(life,item,limb):
 
 def get_all_storage(life):
 	"""Returns list of all containers in a character's inventory."""
-	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
+	return [items.get_item_from_uid(item) for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in items.get_item_from_uid(item)]
 
 def get_all_visible_items(life):
 	_ret = []
@@ -1572,40 +1574,43 @@ def is_item_in_storage(life, item):
 	
 	return False
 
-def can_put_item_in_storage(life,item):
+def can_put_item_in_storage(life,item_uid):
 	"""Returns available storage container that can fit `item`. Returns False if none is found."""
 	#TODO: Should return list of containers instead.
 	#Whoa...
-	for _item in [life['inventory'][_item] for _item in life['inventory']]:
+	item = items.get_item_from_uid(item_uid)
+	
+	for _item in [items.get_item_from_uid(life['inventory'][_item]) for _item in life['inventory']]:
 		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
-			return _item
-		else:
-			pass
+			return _item['uid']
 	
 	return False
 
-def add_item_to_storage(life,item,container=None):
+def add_item_to_storage(life, item_uid, container=None):
 	"""Adds item to free storage container.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	"""
+	_item = items.get_item_from_uid(item_uid)
+	
 	if not container:
-		container = can_put_item_in_storage(life,item)
+		container = can_put_item_in_storage(life, item_uid)
 	
 	if not container:
 		return False
 	
-	container['storing'].append(item['id'])
-	container['capacity'] += item['size']
+	_container = items.get_item_from_uid(container)
+	_container['storing'].append(_item['id'])
+	_container['capacity'] += _item['size']
 	
-	brain.remember_item(life,item)
+	brain.remember_item(life, _item)
 	
 	return True
 
 def remove_item_in_storage(life,id):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(life['inventory'][_container]) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
@@ -1620,7 +1625,7 @@ def remove_item_in_storage(life,id):
 
 def item_is_stored(life,id):
 	"""Returns the container of an item. Returns False on failure."""
-	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(life['inventory'][_container]) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
@@ -1795,7 +1800,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
 		#Warning: No check is done to make sure the container isn't full!
-		add_item_to_storage(life,item,container=container)
+		add_item_to_storage(life,item['uid'],container=container)
 	
 	return _id
 
@@ -1855,6 +1860,7 @@ def remove_item_from_inventory(life, item_id):
 		item['pos'] = life['pos'][:]
 	
 	elif item_is_stored(life, item_id):
+		print 'ITEM IS STORED!!!'
 		remove_item_in_storage(life, item_id)
 		item['pos'] = life['pos'][:]
 	
