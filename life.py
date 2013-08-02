@@ -1282,7 +1282,7 @@ def perform_action(life):
 			return False
 
 		_dropped_item = remove_item_from_inventory(life,_action['item'])
-		_id = direct_add_item_to_inventory(life,_dropped_item)
+		_id = direct_add_item_to_inventory(life, _dropped_item)
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
@@ -1337,7 +1337,7 @@ def perform_action(life):
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
 		_action['round']['parent'] = _action['ammo']
-		_round = remove_item_from_inventory(life,_action['round']['id'])
+		_round = remove_item_from_inventory(life,_action['round']['uid'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')
@@ -1554,7 +1554,7 @@ def throw_item(life,id,target,speed):
 	
 	direction = numbers.direction_to(life['pos'],target)
 	
-	items.move(_item, direction, speed)
+	items.move(items.get_item_from_uid(_item), direction, speed)
 
 def update_container_capacity(life,container):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -1883,7 +1883,7 @@ def remove_item_from_inventory(life, item_id):
 	
 	create_and_update_self_snapshot(life)
 	
-	return item
+	return item_id
 
 def is_consuming(life):
 	return find_action(life, matches=[{'action': 'consumeitem'}])
@@ -2003,7 +2003,7 @@ def equip_item(life, item_id):
 
 def drop_item(life, item_id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
-	item = remove_item_from_inventory(life, item_id)
+	item = items.get_item_from_uid(remove_item_from_inventory(life, item_id))
 	item['pos'] = life['pos'][:]
 	
 	#TODO: Don't do this here/should probably be a function anyway.
@@ -2677,7 +2677,6 @@ def remove_limb(life, limb, no_children=False):
 		return False
 	
 	for item in get_items_attached_to_limb(life, limb):
-		#remove_item_from_limb(life, item, limb)
 		remove_item_from_inventory(life, item)
 	
 	if can_knock_over(life, limb):

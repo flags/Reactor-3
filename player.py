@@ -413,7 +413,7 @@ def handle_input():
 					weapon['name'],
 					'Empty',
 					icon=weapon['icon'],
-					id=weapon['id']))
+					id=weapon['uid']))
 		
 		for ammo in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'magazine'},{'type': 'clip'}]):
 			#TODO: Make `parent` an actual key.
@@ -431,7 +431,7 @@ def handle_input():
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
-					id=ammo['id']))
+					id=ammo['uid']))
 			
 		if _loaded_weapons:
 			_menu.append(menus.create_item('title','Loaded weapons',None))
@@ -1247,7 +1247,7 @@ def heal_wound(entry):
 	injury = entry['injury']
 	item_id = entry['item_id']
 	
-	item = life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id)
+	item = items.get_item_from_uid(life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id))
 	
 	_remove_wounds = []
 	for wound in LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
