@@ -66,13 +66,6 @@ gfx.log(WINDOW_TITLE)
 tiles.create_all_tiles()
 language.load_strings()
 
-try:
-	maps.load_map('map1.dat', like_new=True)
-except IOError:
-	#MAP = maps.create_map()
-	#maps.save_map(MAP)
-	pass
-
 gfx.init_libtcod()
 
 def move_camera(pos,scroll=False):
@@ -112,7 +105,7 @@ items.initiate_item('soda')
 items.initiate_item('electric_lantern')
 items.initiate_item('burner')
 
-SETTINGS['running'] = 2
+SETTINGS['running'] = 1
 
 if SETTINGS['running'] == 2:
 	for world in profiles.get_worlds():
@@ -132,6 +125,8 @@ while SETTINGS['running'] in [-1, 1]:
 	get_input()
 	handle_input()
 	mainmenu.draw_main_menu()
+
+gfx.refresh_window()
 
 if not 'start_age' in WORLD_INFO:
 	worldgen.generate_world(WORLD_INFO['map'],

@@ -1,3 +1,5 @@
+from globals import DATA_DIR
+
 import logging
 import os
 
@@ -25,6 +27,15 @@ def has_reactor3():
 		return (_config_directory, _worlds_directory)
 	except OSError:
 		return (_config_directory, _worlds_directory)
+
+def get_maps():
+	_map_dir = os.path.join(DATA_DIR, 'maps')
+	_maps = []
+	
+	for (dirpath, dirname, filenames) in os.walk(_map_dir):
+		_maps.extend(filenames)
+	
+	return _maps
 
 def get_worlds():
 	_config_directory, _worlds_directory = has_reactor3()

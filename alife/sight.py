@@ -302,7 +302,7 @@ def find_known_items(life, matches={}, visible=True):
 	return _match
 
 def scan_surroundings(life, initial=False):
-	print life['name'],'scanning'
+	#print life['name'],'scanning'
 	_center_chunk = lfe.get_current_chunk_id(life)
 	for x_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
 		for y_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):

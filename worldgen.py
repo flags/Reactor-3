@@ -221,7 +221,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[50,80,2])
+		position=[10, 10, 2])
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
 	

@@ -6,6 +6,7 @@ import worldgen
 import profiles
 import numbers
 import menus
+import maps
 
 import random
 import time
@@ -174,6 +175,7 @@ def switch_to_spawn_point():
 
 def switch_to_world_gen():
 	_menu_items = []
+	_menu_items.append(menus.create_item('list', 'Map', profiles.get_maps()))
 	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks']))
 	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy']))
 	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy']))
@@ -213,6 +215,8 @@ def generate_world():
 		_ticks = 60000
 	elif _settings['World Age'] == '3 Weeks':
 		_ticks = 90000
+	
+	maps.load_map(_settings['Map'])
 	
 	worldgen.generate_world(WORLD_INFO['map'],
 		life_density=_settings['Life Density'],

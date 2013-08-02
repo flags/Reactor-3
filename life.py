@@ -1182,8 +1182,8 @@ def perform_action(life):
 			say(life,'@n drops %s.' % _name,action=True)
 		
 		set_animation(life, ['o', ','], speed=6)
-		drop_item(life,_action['item'])
-		delete_action(life,action)
+		drop_item(life, _action['item'])
+		delete_action(life, action)
 	
 	elif _action['action'] == 'equipitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1831,24 +1831,26 @@ def add_item_to_inventory(life, item):
 	
 	return _id
 
-def remove_item_from_inventory(life,id):
+def remove_item_from_inventory(life, item_id):
 	"""Removes item from inventory and all storage containers. Returns item."""
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
-	_holding = is_holding(life,id)
+	_holding = is_holding(life, item_id)
 	if _holding:
-		_holding['holding'].remove(id)
+		_holding['holding'].remove(item_id)
 		logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
 		
-	elif item_is_equipped(life,id):
+	elif item_is_equipped(life, item_id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
 			remove_item_from_limb(life,item['id'],limb)
 		
 		item['pos'] = life['pos'][:]
-	elif item_is_stored(life,id):
-		remove_item_in_storage(life,id)
+	
+	elif item_is_stored(life, item_id):
+		remove_item_in_storage(life, item_id)
+		item['pos'] = life['pos'][:]
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
@@ -1865,7 +1867,10 @@ def remove_item_from_inventory(life,id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['id']})
 	
-	#logging.debug('Removed from inventory: %s' % item['name'])
+	logging.debug('Removed from inventory: %s' % item['name'])
+	
+	for key in item.keys():
+		print key, repr(item[key])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
@@ -1989,17 +1994,17 @@ def equip_item(life, item_id):
 	
 	return True
 
-def drop_item(life,id):
+def drop_item(life, item_id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
-	item = remove_item_from_inventory(life,id)
+	item = remove_item_from_inventory(life, item_id)
 	item['pos'] = life['pos'][:]
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
 		_hand = get_limb(life, hand)
 		
-		if str(id) in _hand['holding']:
-			_hand['holding'].remove(str(id))
+		if item_id in _hand['holding']:
+			_hand['holding'].remove(item_id)
 	
 	return item
 
@@ -2160,17 +2165,19 @@ def draw_life_icon(life):
 		if time.time()%1>=0.5:
 			_icon[0] = '?'
 	
+	if life['group'] and not life['id'] == SETTINGS['controlling']:
+		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+			_icon[1] = tcod.light_green
+		else:
+			_icon[1] = tcod.lighter_crimson
+	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
 		if SETTINGS['controlling'] in _targets:
 			_icon[1] = tcod.light_red
 	
-	if life['group']:
-		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
-			_icon[1] = tcod.light_green
-	
 	if life['dead']:
-		_icon[0] = 'X'
+		_icon[1] = tcod.darkest_gray
 	elif life['asleep']:
 		if time.time()%1>=0.5:
 			_icon[0] = 'S'
