@@ -105,7 +105,7 @@ items.initiate_item('soda')
 items.initiate_item('electric_lantern')
 items.initiate_item('burner')
 
-SETTINGS['running'] = 1
+SETTINGS['running'] = 2
 
 if SETTINGS['running'] == 2:
 	for world in profiles.get_worlds():

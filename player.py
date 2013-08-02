@@ -200,6 +200,10 @@ def handle_input():
 		
 		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],check_hands=True)
 		
+		if not _inventory:
+			gfx.message('You have no items to drop.')
+			return False
+		
 		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
 			padding=(1,1),
@@ -678,7 +682,7 @@ def inventory_unequip(entry):
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
 	
 	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
@@ -723,14 +727,14 @@ def inventory_unequip_action(entry):
 def inventory_drop(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['id']
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['id'])
 	
-	_name = items.get_name(life.get_inventory_item(LIFE[SETTINGS['controlling']],item))
+	_name = items.get_name(item)
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'dropitem',
-		'item': item},
+		'item': item['id']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
 	gfx.message('You start to drop %s.' % _name)
 	
@@ -743,7 +747,7 @@ def inventory_eat(entry):
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'consumeitem',
 		'item': item['id']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']],item['id']))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
 	if item['type'] == 'food':
 		gfx.message('You start to eat %s.' % items.get_name(item))
@@ -1022,28 +1026,29 @@ def inventory_fill_ammo(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def pick_up_item_from_ground(entry):	
-	_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
+	#_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
+		_item = items.get_item_from_uid(entry['item'])
 		if entry['values'][entry['value']] == 'Wear':
-			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupequipitem',
 				'item': entry['item']},
 				200,
-				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
-			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupholditem',
 				'item': entry['item'],
 				'hand': entry['values'][entry['value']]},
 				200,
-				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		return True
 	
@@ -1054,7 +1059,7 @@ def pick_up_item_from_ground(entry):
 		'item': entry['item'],
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
 	
 	return True
 
@@ -1066,10 +1071,10 @@ def pick_up_item_from_ground_action(entry):
 	_menu = []
 	#TODO: Can we equip this?
 	_menu.append(menus.create_item('title','Actions',None,enabled=False))
-	_menu.append(menus.create_item('single','Equip','Wear',item=_item))
+	_menu.append(menus.create_item('single','Equip','Wear',item=entry['item']))
 	
 	for hand in LIFE[SETTINGS['controlling']]['hands']:
-		_menu.append(menus.create_item('single','Equip',hand,item=_item))
+		_menu.append(menus.create_item('single','Equip',hand,item=entry['item']))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
 	for container in life.get_all_storage(LIFE[SETTINGS['controlling']]):		
@@ -1081,9 +1086,9 @@ def pick_up_item_from_ground_action(entry):
 		_menu.append(menus.create_item('single',
 			container['name'],
 			'%s/%s' % (container['capacity'],container['max_capacity']),
-			container=container,
+			container=container['uid'],
 			enabled=_enabled,
-			item=_item))
+			item=entry['item']))
 	
 	_i = menus.create_menu(title='Pick up (action)',
 		menu=_menu,

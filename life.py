@@ -1231,18 +1231,23 @@ def perform_action(life):
 			
 			return False
 		
+		item = items.get_item_from_uid(_action['item'])
+		
 		if life.has_key('player'):
-			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
+			gfx.message('You equip %s from the ground.' % items.get_name(item))
 		else:
 			say(life,'@n puts on %s from the ground.' % _name,action=True)
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
+		print repr(_action['item'])
 		_id = direct_add_item_to_inventory(life,_action['item'])
+		print _id
 		equip_item(life,_id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupholditem':
+		_item = items.get_item_from_uid(_action['item'])
 		_hand = get_limb(life, _action['hand'])
 		
 		if _hand['holding']:
@@ -1257,9 +1262,9 @@ def perform_action(life):
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
-			gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+			gfx.message('You hold %s in your %s.' % (items.get_name(_item) ,_action['hand']))
 		else:
-			say(life,'@n holds %s in their %s.' % (items.get_name(_action['item']),_action['hand']),action=True)
+			say(life,'@n holds %s in their %s.' % (items.get_name(_item),_action['hand']),action=True)
 		
 		set_animation(life, [',', ';'], speed=6)
 		delete_action(life,action)
@@ -1279,7 +1284,7 @@ def perform_action(life):
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
-			gfx.message('You hold %s.' % items.get_name(_dropped_item))
+			gfx.message('You hold %s.' % items.get_name(items.get_item_from_uid(_dropped_item)))
 		
 		set_animation(life, ['*', ';'], speed=6)
 		delete_action(life,action)
@@ -1289,7 +1294,7 @@ def perform_action(life):
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_action['hand']['holding'].append(_id)
 		
-		gfx.message('You aim %s.' % items.get_name(_dropped_item))
+		gfx.message('You aim %s.' % items.get_name(items.get_item_from_uid(_dropped_item)))
 		life['targeting'] = life['pos'][:]
 		
 		delete_action(life,action)
@@ -1636,9 +1641,11 @@ def item_is_worn(life, item):
 	
 	return False
 
-def can_wear_item(life, item):
+def can_wear_item(life, item_uid):
 	"""Attaches item to limbs. Returns False on failure."""
 	#TODO: Function name makes no sense.
+	item = items.get_item_from_uid(item_uid)
+	
 	if not 'CAN_WEAR' in item['flags']:
 		return False
 	
@@ -1655,13 +1662,13 @@ def can_wear_item(life, item):
 
 	return True
 
-def get_inventory_item(life,id):
+def get_inventory_item(life, item_id):
 	"""Returns inventory item."""
-	if not life['inventory'].has_key(str(id)):
+	if not life['inventory'].has_key(item_id):
 		raise Exception('%s does not have item of id #%s'
-			% (' '.join(life['name']),id))
+			% (' '.join(life['name']), item_id))
 	
-	return items.get_item_from_uid(life['inventory'][str(id)])
+	return items.get_item_from_uid(life['inventory'][item_id])
 
 def get_all_inventory_items(life,matches=None):
 	"""Returns list of all inventory items.
@@ -1733,6 +1740,7 @@ def _get_item_access_time(life, item):
 		elif life['stance'] == 'crawling':
 			return (item['size']+_time) * .6
 	
+	print 'wut',repr(item)
 	_item = get_inventory_item(life,item)
 	
 	if item_is_equipped(life,item):
@@ -1760,17 +1768,17 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
-	if not isinstance(item_uid, int):
-		raise Exception('Deprecated: Int not passed.')
+	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
 
-	unlock_item(life, item)
+	unlock_item(life, item_uid)
 	life['item_index'] += 1
-	_id = life['item_index']
+	_id = str(life['item_index'])
 	item['id'] = _id
 	item['parent_id'] = life['id']
-	life['inventory'][str(_id)] = item
+	life['inventory'][_id] = item_uid
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
@@ -1793,31 +1801,30 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 
 def add_item_to_inventory(life, item_uid):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
-	if not isinstance(item_uid, str):
-		print repr(item_uid)
-		raise Exception('Deprecated: Int not passed.')
+	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
 	
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
-	_id = life['item_index']
+	_id = str(life['item_index'])
 	item['id'] = _id
 	item['parent_id'] = life['id']
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
-	if not add_item_to_storage(life,item):
-		if not can_wear_item(life,item):
+	if not add_item_to_storage(life, item_uid):
+		if not can_wear_item(life, item_uid):
 			life['item_index'] -= 1
 			del item['id']
 			
 			return False
 		else:
-			life['inventory'][str(_id)] = item_uid
+			life['inventory'][_id] = item_uid
 			equip_item(life,_id)
 	else:
-		life['inventory'][str(_id)] = item_uid
+		life['inventory'][_id] = item_uid
 	
 	if 'max_capacity' in item:
 		for uid in item['storing'][:]:
@@ -1884,10 +1891,12 @@ def consume(life, item_id):
 		logging.warning('%s is already eating.' % ' '.join(life['name']))
 		return False
 	
+	_item = items.get_item_from_uid(item_id)
+	
 	add_action(life, {'action': 'consumeitem',
 		'item': item_id},
 		200,
-		delay=get_item_access_time(life, item_id))
+		delay=get_item_access_time(life, _item))
 	
 	return True
 
@@ -1920,7 +1929,7 @@ def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
 	item = get_inventory_item(life,id)
 	
-	if not can_wear_item(life,item):
+	if not can_wear_item(life, id):
 		return False
 	
 	_limbs = get_all_limbs(life['body'])
@@ -1960,7 +1969,7 @@ def _equip_item(life, item_id):
 	return True
 
 def equip_item(life, item_id):
-	"""Helper function. Equips item."""	
+	"""Helper function. Equips item."""
 	item = get_inventory_item(life, item_id)
 	
 	if 'CAN_WEAR' in item['flags']:
@@ -2011,10 +2020,10 @@ def drop_all_items(life):
 		drop_item(life, item)
 
 def lock_item(life, item_uid):
-	ITEMS[item_uid]['lock'] = life
+	items.get_item_from_uid(item_uid)['lock'] = life
 
 def unlock_item(life, item_uid):
-	ITEMS[item_uid]['lock'] = None
+	items.get_item_from_uid(item_uid)['lock'] = None
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""
@@ -2129,7 +2138,7 @@ def item_is_equipped(life,id,check_hands=False):
 		if not check_hands and _limb in life['hands']:
 			continue
 		
-		if int(id) in get_limb(life,_limb)['holding']:
+		if id in get_limb(life,_limb)['holding']:
 			return True
 	
 	return False
@@ -2220,7 +2229,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 		
 	#TODO: Time it would take to remove
 	if show_equipped:
-		_title = menus.create_item('title','Equipped',None,enabled=False)
+		_title = menus.create_item('title', 'Equipped', None, enabled=False)
 		_inventory.append(_title)
 	
 		for entry in life['inventory']:
@@ -2230,12 +2239,12 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				if not perform_match(item,matches):
 					continue					
 			
-			if item_is_equipped(life,entry,check_hands=check_hands):				
+			if item_is_equipped(life,entry,check_hands=check_hands):
 				_menu_item = menus.create_item('single',
 					item['name'],
 					'Equipped',
 					icon=item['icon'],
-					id=int(entry))
+					id=entry)
 			
 				_inventory_items += 1
 				_inventory.append(_menu_item)
@@ -2281,7 +2290,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 					item['name'],
 					'Not equipped',
 					icon=item['icon'],
-					id=int(_item))
+					id=_item)
 				
 				_inventory_items += 1
 				_inventory.append(_menu_item)

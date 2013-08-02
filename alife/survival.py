@@ -174,7 +174,7 @@ def manage_hands(life):
 		if lfe.can_wear_item(life, item):
 			lfe.add_action(life,_equip_action,
 				401,
-				delay=lfe.get_item_access_time(life,item['id']))
+				delay=lfe.get_item_access_time(life,item))
 			continue
 		
 		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
@@ -187,7 +187,7 @@ def manage_hands(life):
 			
 			lfe.add_action(life,_store_action,
 				401,
-				delay=lfe.get_item_access_time(life,item['id']))
+				delay=lfe.get_item_access_time(life,item))
 
 def manage_inventory(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life, check_hands=False)]:
@@ -201,7 +201,7 @@ def manage_inventory(life):
 			lfe.add_action(life,
 				_equip_action,
 				401,
-				delay=lfe.get_item_access_time(life, item['id']))
+				delay=lfe.get_item_access_time(life, item))
 			continue
 
 def explore_known_chunks(life):
