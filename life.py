@@ -370,20 +370,10 @@ def sanitize_know(life):
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
 
-def sanitize_inventory(life):
-	for item in life['inventory'].values():
-		item['icon'] = ord(item['icon'])
-
-def unsanitize_inventory(life):
-	for item in life['inventory'].values():
-		if isinstance(item['icon'], int):
-			item['icon'] = chr(item['icon'])
-
 def prepare_for_save(life):
 	_delete_keys = ['raw', 'needs', 'actions']
 	_sanitize_keys = {'heard': sanitize_heard,
-		'know': sanitize_know,
-	     'inventory': sanitize_inventory}
+		'know': sanitize_know}
 	
 	for key in life.keys():#_delete_keys:
 		if key in _sanitize_keys:
@@ -403,8 +393,6 @@ def post_save(life):
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
-		
-	unsanitize_inventory(life)
 	
 	initiate_raw(life)
 
@@ -1660,7 +1648,7 @@ def can_wear_item(life, item):
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		for _item in [life['inventory'][str(i)] for i in _limb['holding']]:
+		for _item in [items.get_item_from_uid(life['inventory'][str(i)]) for i in _limb['holding']]:
 			if not 'CANSTACK' in _item['flags']:
 				logging.warning('%s will not let %s stack.' % (_item['name'],item['name']))
 				return False
@@ -1673,7 +1661,7 @@ def get_inventory_item(life,id):
 		raise Exception('%s does not have item of id #%s'
 			% (' '.join(life['name']),id))
 	
-	return life['inventory'][str(id)]
+	return items.get_item_from_uid(life['inventory'][str(id)])
 
 def get_all_inventory_items(life,matches=None):
 	"""Returns list of all inventory items.
@@ -1684,7 +1672,7 @@ def get_all_inventory_items(life,matches=None):
 	_items = []
 	
 	for item in life['inventory']:
-		_item = life['inventory'][item]
+		_item = items.get_item_from_uid(life['inventory'][item])
 		
 		if find_action(life, matches=[{'item': _item['id']}]):
 			continue
@@ -1765,13 +1753,18 @@ def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
 	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
-def direct_add_item_to_inventory(life, item, container=None):
+def direct_add_item_to_inventory(life, item_uid, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
+	if not isinstance(item_uid, int):
+		raise Exception('Deprecated: Int not passed.')
+	
+	item = items.get_item_from_uid(item_uid)
+
 	unlock_item(life, item)
 	life['item_index'] += 1
 	_id = life['item_index']
@@ -1798,9 +1791,15 @@ def direct_add_item_to_inventory(life, item, container=None):
 	
 	return _id
 
-def add_item_to_inventory(life, item):
+def add_item_to_inventory(life, item_uid):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
-	unlock_item(life, item)
+	if not isinstance(item_uid, str):
+		print repr(item_uid)
+		raise Exception('Deprecated: Int not passed.')
+	
+	item = items.get_item_from_uid(item_uid)
+	
+	unlock_item(life, item_uid)
 	life['item_index'] += 1
 	_id = life['item_index']
 	item['id'] = _id
@@ -1815,17 +1814,17 @@ def add_item_to_inventory(life, item):
 			
 			return False
 		else:
-			life['inventory'][str(_id)] = item
+			life['inventory'][str(_id)] = item_uid
 			equip_item(life,_id)
 	else:
-		life['inventory'][str(_id)] = item
+		life['inventory'][str(_id)] = item_uid
 	
 	if 'max_capacity' in item:
 		for uid in item['storing'][:]:
 			_item = items.get_item_from_uid(uid)
 			
 			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life,_item))
+			item['storing'].append(direct_add_item_to_inventory(life, _item))
 	
 	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	
@@ -1868,9 +1867,6 @@ def remove_item_from_inventory(life, item_id):
 		menus.remove_item_from_menus({'id': item['id']})
 	
 	logging.debug('Removed from inventory: %s' % item['name'])
-	
-	for key in item.keys():
-		print key, repr(item[key])
 	
 	del life['inventory'][str(item['id'])]
 	del item['id']
@@ -2014,11 +2010,11 @@ def drop_all_items(life):
 	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
 		drop_item(life, item)
 
-def lock_item(life, item):
-	item['lock'] = life
+def lock_item(life, item_uid):
+	ITEMS[item_uid]['lock'] = life
 
-def unlock_item(life, item):
-	item['lock'] = None
+def unlock_item(life, item_uid):
+	ITEMS[item_uid]['lock'] = None
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""
