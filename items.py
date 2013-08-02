@@ -179,7 +179,7 @@ def get_items_at(position):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('id'):
+		if item.has_key('parent_id'):
 			continue
 		
 		if item.has_key('parent'):
@@ -212,7 +212,7 @@ def draw_items():
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('id'):
+		if item.has_key('parent_id'):
 			continue
 		
 		if item.has_key('parent'):

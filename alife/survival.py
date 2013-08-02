@@ -166,7 +166,7 @@ def need_is_met(life, need):
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 		_equip_action = {'action': 'equipitem',
-				'item': item['id']}
+				'item': item['uid']}
 		
 		if len(lfe.find_action(life,matches=[_equip_action])):
 			continue
@@ -179,7 +179,7 @@ def manage_hands(life):
 		
 		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
 			_store_action = {'action': 'storeitem',
-				'item': item['id'],
+				'item': item['uid'],
 				'container': lfe.get_all_storage(life)[0]['id']}
 			
 			if len(lfe.find_action(life,matches=[_store_action])):
@@ -192,7 +192,7 @@ def manage_hands(life):
 def manage_inventory(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life, check_hands=False)]:
 		_equip_action = {'action': 'equipitem',
-				'item': item['id']}
+				'item': item['uid']}
 		
 		if len(lfe.find_action(life,matches=[_equip_action])):
 			continue

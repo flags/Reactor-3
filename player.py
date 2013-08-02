@@ -348,7 +348,7 @@ def handle_input():
 					_item['name'],
 					'Temp',
 					icon=_item['icon'],
-					id=_item['id']))
+					id=_item['uid']))
 		
 		if not _weapons:
 			gfx.message('You have nothing to shoot!')
@@ -536,7 +536,7 @@ def handle_input():
 				items.get_name(_item),
 				None,
 				icon=_item['icon'],
-				id=_item['id']))
+				id=_item['uid']))
 		
 		if not _food:
 			gfx.message('You have nothing to eat.')
@@ -737,7 +737,7 @@ def inventory_drop(entry):
 	_name = items.get_name(item)
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'dropitem',
-		'item': item['id']},
+		'item': item['uid']},
 		200,
 		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
@@ -750,7 +750,7 @@ def inventory_eat(entry):
 	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['id'])
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'consumeitem',
-		'item': item['id']},
+		'item': item['uid']},
 		200,
 		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
@@ -780,7 +780,7 @@ def inventory_throw(entry):
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		return False
 
-	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']],item['id'])
+	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']], item['uid'])
 	if _stored:
 		_delay = 40
 		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
@@ -971,13 +971,13 @@ def inventory_handle_ammo(entry):
 	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	if key == 'Fill':
-		if not item['id'] in life.get_held_items(LIFE[SETTINGS['controlling']]):
+		if not item['uid'] in life.get_held_items(LIFE[SETTINGS['controlling']]):
 			if not life.can_hold_item(LIFE[SETTINGS['controlling']]):
 				gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
 				return False
 		
 		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'removeandholditem',
-			'item': item['id']},
+			'item': item['uid']},
 			200,
 			delay=20)
 		
@@ -1193,7 +1193,7 @@ def create_crafting_menu():
 		_items.append(menus.create_item('single',
 			item['name'],
 			None,
-			item=item['id'],
+			item=item['uid'],
 		    action='dismantle'))
 	
 	if _items:
@@ -1288,7 +1288,7 @@ def wound_examine(entry):
 	
 	if injury == 'cut':
 		for item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'fabric'}]):
-			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['id']))
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['uid']))
 	
 	if not _entries:
 		gfx.message('You have nothing to treat the %s.' % injury)

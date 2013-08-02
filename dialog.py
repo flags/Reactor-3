@@ -505,7 +505,11 @@ def get_items_to_give(life, target, matches={}):
 			continue
 		
 		print 'ITEM!!!!'
-		_responses.append({'text': 'Take this %s!' % item['name'], 'gist': 'give_item_to', 'target': target, 'item': item['id'], 'like': 1})
+		_responses.append({'text': 'Take this %s!' % item['name'],
+		                   'gist': 'give_item_to',
+		                   'target': target,
+		                   'item': item['uid'],
+		                   'like': 1})
 	
 	#TODO: Potential conflict 
 	_responses.append({'text': 'I don\'t have anything.', 'gist': 'nothing'})

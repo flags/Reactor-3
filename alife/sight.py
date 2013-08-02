@@ -267,7 +267,7 @@ def handle_lost_los(life):
 	return _nearest_target
 
 def find_visible_items(life):
-	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'id' in item['item']]
+	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
 def find_known_items(life, matches={}, visible=True):
 	_match = []
@@ -279,7 +279,7 @@ def find_known_items(life, matches={}, visible=True):
 		if visible and not can_see_position(life, item['item']['pos']):
 			continue
 		
-		if 'parent' in item['item'] or 'id' in item['item']:
+		if 'parent' in item['item'] or 'parent_id' in item['item']:
 			continue
 		
 		if 'demand_drop' in item['flags']:

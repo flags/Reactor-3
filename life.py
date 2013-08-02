@@ -286,7 +286,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
-	_life['inventory'] = {}
+	_life['inventory'] = []
 	_life['flags'] = {}
 	_life['state'] = 'idle'
 	_life['state_tier'] = 9999
@@ -1535,7 +1535,7 @@ def remove_item_from_limb(life,item,limb):
 
 def get_all_storage(life):
 	"""Returns list of all containers in a character's inventory."""
-	return [items.get_item_from_uid(item) for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in items.get_item_from_uid(item)]
+	return [items.get_item_from_uid(item) for item in life['inventory'] if 'max_capacity' in items.get_item_from_uid(item)]
 
 def get_all_visible_items(life):
 	_ret = []
@@ -1580,7 +1580,10 @@ def can_put_item_in_storage(life,item_uid):
 	#Whoa...
 	item = items.get_item_from_uid(item_uid)
 	
-	for _item in [items.get_item_from_uid(life['inventory'][_item]) for _item in life['inventory']]:
+	for _item in [items.get_item_from_uid(_item) for _item in life['inventory']]:
+		if _item['uid'] == item_uid:
+			continue
+		
 		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
 			return _item['uid']
 	
@@ -1598,10 +1601,11 @@ def add_item_to_storage(life, item_uid, container=None):
 		container = can_put_item_in_storage(life, item_uid)
 	
 	if not container:
+		print 'cannot store',_item['name']
 		return False
 	
 	_container = items.get_item_from_uid(container)
-	_container['storing'].append(_item['id'])
+	_container['storing'].append(_item['uid'])
 	_container['capacity'] += _item['size']
 	
 	brain.remember_item(life, _item)
@@ -1610,7 +1614,7 @@ def add_item_to_storage(life, item_uid, container=None):
 
 def remove_item_in_storage(life,id):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [items.get_item_from_uid(life['inventory'][_container]) for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(id) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
@@ -1625,7 +1629,7 @@ def remove_item_in_storage(life,id):
 
 def item_is_stored(life,id):
 	"""Returns the container of an item. Returns False on failure."""
-	for _container in [items.get_item_from_uid(life['inventory'][_container]) for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
@@ -1635,13 +1639,13 @@ def item_is_stored(life,id):
 	return False
 
 def item_is_worn(life, item):
-	if not 'id' in item:
+	if not 'parent_id' in item:
 		return False
 	
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		if item['id'] in _limb['holding']:
+		if item['uid'] in _limb['holding']:
 			return True
 	
 	return False
@@ -1660,7 +1664,10 @@ def can_wear_item(life, item_uid):
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		for _item in [items.get_item_from_uid(life['inventory'][str(i)]) for i in _limb['holding']]:
+		for _item in [items.get_item_from_uid(item_uid) for i in _limb['holding']]:
+			if item_uid == _item['uid']:
+				continue
+			
 			if not 'CANSTACK' in _item['flags']:
 				logging.warning('%s will not let %s stack.' % (_item['name'],item['name']))
 				return False
@@ -1669,11 +1676,11 @@ def can_wear_item(life, item_uid):
 
 def get_inventory_item(life, item_id):
 	"""Returns inventory item."""
-	if not life['inventory'].has_key(item_id):
+	if not item_id in life['inventory']:
 		raise Exception('%s does not have item of id #%s'
 			% (' '.join(life['name']), item_id))
 	
-	return items.get_item_from_uid(life['inventory'][item_id])
+	return items.get_item_from_uid(item_id)
 
 def get_all_inventory_items(life,matches=None):
 	"""Returns list of all inventory items.
@@ -1683,10 +1690,10 @@ def get_all_inventory_items(life,matches=None):
 	"""
 	_items = []
 	
-	for item in life['inventory']:
-		_item = items.get_item_from_uid(life['inventory'][item])
+	for item_id in life['inventory']:
+		_item = items.get_item_from_uid(item_id)
 		
-		if find_action(life, matches=[{'item': _item['id']}]):
+		if find_action(life, matches=[{'item': item_id}]):
 			continue
 		
 		if matches:
@@ -1780,10 +1787,8 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
-	_id = str(life['item_index'])
-	item['id'] = _id
 	item['parent_id'] = life['id']
-	life['inventory'][_id] = item_uid
+	life['inventory'].append(item_uid)
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
@@ -1792,17 +1797,16 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 		
 		for uid in item['storing'][:]:
 			logging.debug('\tAdding uid %s' % uid)
-			_item = items.get_item_from_uid(uid)
 
-			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life,_item))
+			#item['storing'].remove(uid)
+			item['storing'].append(direct_add_item_to_inventory(life, item['uid']))
 	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
 		#Warning: No check is done to make sure the container isn't full!
 		add_item_to_storage(life,item['uid'],container=container)
 	
-	return _id
+	return item_uid
 
 def add_item_to_inventory(life, item_uid):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
@@ -1812,35 +1816,29 @@ def add_item_to_inventory(life, item_uid):
 	item = items.get_item_from_uid(item_uid)
 	
 	unlock_item(life, item_uid)
-	life['item_index'] += 1
-	_id = str(life['item_index'])
-	item['id'] = _id
 	item['parent_id'] = life['id']
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
-			life['item_index'] -= 1
-			del item['id']
-			
 			return False
 		else:
-			life['inventory'][_id] = item_uid
-			equip_item(life,_id)
+			life['inventory'].append(item_uid)
+			equip_item(life,item_uid)
 	else:
-		life['inventory'][_id] = item_uid
+		life['inventory'].append(item_uid)
 	
 	if 'max_capacity' in item:
 		for uid in item['storing'][:]:
 			_item = items.get_item_from_uid(uid)
 			
 			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life, _item))
+			item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	
-	return _id
+	return item_uid
 
 def remove_item_from_inventory(life, item_id):
 	"""Removes item from inventory and all storage containers. Returns item."""
@@ -1855,12 +1853,11 @@ def remove_item_from_inventory(life, item_id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
-			remove_item_from_limb(life,item['id'],limb)
+			remove_item_from_limb(life,item['uid'],limb)
 		
 		item['pos'] = life['pos'][:]
 	
 	elif item_is_stored(life, item_id):
-		print 'ITEM IS STORED!!!'
 		remove_item_in_storage(life, item_id)
 		item['pos'] = life['pos'][:]
 	
@@ -1877,12 +1874,11 @@ def remove_item_from_inventory(life, item_id):
 	life['speed_max'] = get_max_speed(life)
 	
 	if 'player' in life:
-		menus.remove_item_from_menus({'id': item['id']})
+		menus.remove_item_from_menus({'id': item['uid']})
 	
 	logging.debug('Removed from inventory: %s' % item['name'])
 	
-	del life['inventory'][str(item['id'])]
-	del item['id']
+	life['inventory'].remove(item['uid'])
 	del item['parent_id']
 	
 	create_and_update_self_snapshot(life)
@@ -1952,7 +1948,7 @@ def _equip_clothing(life,id):
 	
 	if item['attaches_to']:			
 		for limb in item['attaches_to']:
-			attach_item_to_limb(life['body'],item['id'],limb)
+			attach_item_to_limb(life['body'],item['uid'],limb)
 	
 	return True
 
@@ -2022,7 +2018,7 @@ def drop_item(life, item_id):
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
 	
-	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
+	for item in [item['uid'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['uid'])]:
 		drop_item(life, item)
 
 def lock_item(life, item_uid):
@@ -2232,7 +2228,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 	"""
 	_inventory = []
 	_inventory_items = 0
-		
+	
 	#TODO: Time it would take to remove
 	if show_equipped:
 		_title = menus.create_item('title', 'Equipped', None, enabled=False)
@@ -2272,7 +2268,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				item['name'],
 				'Holding',
 				icon=item['icon'],
-				id=item['id'])
+				id=item['uid'])
 		
 			_inventory_items += 1
 			_inventory.append(_menu_item)
