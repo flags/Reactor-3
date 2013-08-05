@@ -23,6 +23,12 @@ def flag(life, chunk_id, flag, value):
 	
 	life['known_chunks'][chunk_id]['flags'][flag] = value
 
+def get_chunk_pos(chunk_id, center=False):
+	if center:
+		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]
+	
+	return [int(val) for val in chunk_id.split(',')]
+
 def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
 	
@@ -139,7 +145,7 @@ def get_nearest_position_in_chunk(position, chunk_id):
 	
 	return _closest['pos']
 
-def get_nearest_chunk_in_list(pos, chunks):
+def _get_nearest_chunk_in_list(pos, chunks):
 	_nearest_chunk = {'chunk_key': None, 'distance': -1}
 	
 	for chunk_key in chunks:
@@ -150,7 +156,13 @@ def get_nearest_chunk_in_list(pos, chunks):
 			_nearest_chunk['distance'] = _dist
 			_nearest_chunk['chunk_key'] = chunk_key
 	
-	return _nearest_chunk['chunk_key']
+	return _nearest_chunk
+
+def get_nearest_chunk_in_list(pos, chunks):
+	return _get_nearest_chunk_in_list(pos, chunks)['chunk_key']
+
+def get_distance_to_hearest_chunk_in_list(pos, chunks):
+	return _get_nearest_chunk_in_list(pos, chunks)['distance']
 
 def _can_see_chunk_quick(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)

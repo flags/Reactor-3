@@ -30,14 +30,14 @@ except ImportError, e:
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
-def create_map():
+def create_map(size=MAP_SIZE):
 	_map = []
 
-	for x in range(MAP_SIZE[0]):
+	for x in range(size[0]):
 		_y = []
-		for y in range(MAP_SIZE[1]):
+		for y in range(size[1]):
 			_z = []
-			for z in range(MAP_SIZE[2]):
+			for z in range(size[2]):
 				if z == 2:
 					_z.append(create_tile(random.choice(
 						[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
@@ -47,7 +47,7 @@ def create_map():
 			_y.append(_z)
 		_map.append(_y)
 
-	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
+	logging.debug('Created new map of size (%s,%s).' % (size[0], size[1]))
 	return _map
 
 def save_map(map_name, base_dir=DATA_DIR):
