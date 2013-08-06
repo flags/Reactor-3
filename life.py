@@ -1563,7 +1563,10 @@ def update_container_capacity(life,container):
 	_capacity = 0
 	
 	for item in container['storing']:
-		_capacity += get_inventory_item(life,item)['size']
+		if item in life['inventory']:
+			_capacity += get_inventory_item(life,item)['size']
+		else:
+			_capacity += items.get_item_from_uid(item)['size']
 	
 	container['capacity'] = _capacity
 
@@ -1611,7 +1614,8 @@ def add_item_to_storage(life, item_uid, container=None):
 	
 	brain.remember_item(life, _item)
 	
-	update_container_capacity(life, container)
+	print repr(_item['uid'])
+	update_container_capacity(life, _container)
 	
 	return True
 

@@ -41,7 +41,7 @@ def process(life):
 			_has_items = lfe.get_all_inventory_items(life, matches=[need['match']])
 			
 			if len(_has_items) >= _get_need_amount(life, need):
-				need['met'] = [i['id'] for i in _has_items]
+				need['met'] = [i['uid'] for i in _has_items]
 			else:
 				need['met'] = False
 
