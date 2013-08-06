@@ -7,13 +7,13 @@ import maps
 import logging
 import random
 
-TOWN_DISTANCE = 10
+TOWN_DISTANCE = 35
 TOWN_SIZE = 80
 FOREST_DISTANCE = 25
 
 tiles.create_all_tiles()
 
-def generate_map(size=(128, 128, 10), detail=4, towns=1, forests=1, underground=True):
+def generate_map(size=(128, 128, 10), detail=4, towns=4, forests=1, underground=True):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	Towns: Decides the amount of towns generated.
@@ -353,4 +353,4 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
-	generate_map(detail=2)
+	generate_map(detail=4)

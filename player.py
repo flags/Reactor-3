@@ -407,7 +407,7 @@ def handle_input():
 					weapon['name'],
 					'%s/%s' % (len(_feed['rounds']),_feed['maxrounds']),
 					icon=weapon['icon'],
-					id=weapon['id']))
+					id=weapon['uid']))
 			else:
 				_unloaded_weapons.append(menus.create_item('single',
 					weapon['name'],
@@ -425,7 +425,7 @@ def handle_input():
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
-					id=ammo['id']))
+					id=ammo['uid']))
 			else:
 				_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
@@ -937,7 +937,7 @@ def inventory_reload(entry):
 			if weapons.get_feed(weapon):
 				continue
 			
-			_weapons.append(menus.create_item('single',weapon['name'],None,ammo=item,id=weapon['id']))
+			_weapons.append(menus.create_item('single',weapon['name'],None,ammo=item,id=weapon['uid']))
 		
 		if _weapons:
 			_menu.append(menus.create_item('title','Load into',None,id=entry['id']))
@@ -959,7 +959,7 @@ def inventory_handle_feed(entry):
 	
 	if key == 'Remove feed':
 		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'unload',
-			'weapon': item},
+			'weapon': entry['id']},
 			200,
 			delay=20)
 	

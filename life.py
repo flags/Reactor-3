@@ -1303,7 +1303,7 @@ def perform_action(life):
 		
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
-		_ammo = remove_item_from_inventory(life,_action['ammo']['id'])
+		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']
 		
 		if life.has_key('player'):
@@ -1312,15 +1312,16 @@ def perform_action(life):
 		set_animation(life, [';', 'r'], speed=6)
 		delete_action(life,action)
 	
-	elif _action['action'] == 'unload':	
-		_ammo = _action['weapon'][_action['weapon']['feed']]
+	elif _action['action'] == 'unload':
+		_weapon = get_inventory_item(life, _action['weapon'])
+		_ammo = _weapon[_weapon['feed']]
 		_hand = can_hold_item(life)
 		
 		if _hand:
-			_id = direct_add_item_to_inventory(life,_ammo)
+			_id = direct_add_item_to_inventory(life, _ammo['uid'])
 			del _ammo['parent']
 			_hand['holding'].append(_id)
-			_action['weapon'][_action['weapon']['feed']] = None
+			_weapon[_weapon['feed']] = None
 		else:
 			if 'player' in life:
 				gfx.message('You have no hands free to hold %s!' % items.get_name(_ammo))
@@ -1328,7 +1329,7 @@ def perform_action(life):
 			
 			#TODO: Too hacky
 			del _ammo['parent']
-			_action['weapon'][_action['weapon']['feed']] = None
+			_weapon[_weapon['feed']] = None
 			_ammo['pos'] = life['pos'][:]
 		
 		set_animation(life, [';', 'u'], speed=6)
@@ -1610,19 +1611,22 @@ def add_item_to_storage(life, item_uid, container=None):
 	
 	brain.remember_item(life, _item)
 	
+	update_container_capacity(life, container)
+	
 	return True
 
 def remove_item_in_storage(life,id):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [items.get_item_from_uid(id) for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
 		if id in _container['storing']:
 			_container['storing'].remove(id)
 			_container['capacity'] -= get_inventory_item(life,id)['size']
-			#logging.debug('Removed item #%s from %s' % (id,_container['name']))
+			logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
+			update_container_capacity(life, _container)
 			return _container
 	
 	return False
@@ -1752,7 +1756,6 @@ def _get_item_access_time(life, item):
 		elif life['stance'] == 'crawling':
 			return (item['size']+_time) * .6
 	
-	print 'wut',repr(item)
 	_item = get_inventory_item(life,item)
 	
 	if item_is_equipped(life,item):
@@ -1765,7 +1768,7 @@ def _get_item_access_time(life, item):
 	
 	_stored = item_is_stored(life,item)
 	if _stored:
-		return get_item_access_time(life,_stored['id'])+_item['size']
+		return get_item_access_time(life,_stored['uid'])+_item['size']
 	
 	return _item['size']
 
@@ -1858,8 +1861,8 @@ def remove_item_from_inventory(life, item_id):
 		item['pos'] = life['pos'][:]
 	
 	elif item_is_stored(life, item_id):
-		remove_item_in_storage(life, item_id)
 		item['pos'] = life['pos'][:]
+		remove_item_in_storage(life, item_id)
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
@@ -2282,7 +2285,10 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 			
 			_inventory.append(_title)
 			for _item in container['storing']:
-				item = get_inventory_item(life,_item)
+				if not _item in life['inventory']:
+					continue
+				
+				item = items.get_item_from_uid(_item)
 				
 				if matches:
 					if not perform_match(item,matches):
