@@ -13,7 +13,7 @@ FOREST_DISTANCE = 25
 
 tiles.create_all_tiles()
 
-def generate_map(size=(128, 128, 10), detail=4, towns=2, forests=1, underground=True):
+def generate_map(size=(128, 128, 10), detail=4, towns=1, forests=1, underground=True):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	Towns: Decides the amount of towns generated.
@@ -34,8 +34,6 @@ def generate_map(size=(128, 128, 10), detail=4, towns=2, forests=1, underground=
 	generate_chunk_map(map_gen)
 	logging.debug('Drawing outlines...')
 	generate_outlines(map_gen)
-	
-	#clean_chunk_map(map_gen, 'town', kill_range=(0, 1))
 	print_chunk_map_to_console(map_gen)
 	
 	logging.debug('Building towns...')
@@ -92,6 +90,8 @@ def place_town(map_gen):
 			
 		if not _walked:
 			continue
+		
+		clean_walker(map_gen, _walked, kill_range=(0, 1))
 		
 		for pos in _walked:
 			map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'town'
@@ -192,21 +192,23 @@ def walker(map_gen, pos, moves, density=5, allow_diagonal_moves=True, avoid_chun
 	#print _walked
 	return _walked
 
-def clean_chunk_map(map_gen, chunk_type, kill_range=(-2, -1)):
-	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
-		for x1 in xrange(0, map_gen['size'][0], map_gen['chunk_size']):
-			_chunk_key = '%s,%s' % (x1, y1)
-			if not map_gen['chunk_map'][_chunk_key]['type'] == chunk_type:
-				continue
+def clean_walker(map_gen, walker, kill_range=(-2, -1)):
+	while 1:
+		_changed = False
+		
+		for pos in walker[:]:
+			_num = 0
+			for neighbor in get_neighbors_of_type(map_gen, pos, 'other'):
+				_neighbor_pos = list(map_gen['chunk_map'][neighbor]['pos'])
+				if _neighbor_pos in walker:
+					_num += 1
 			
-			if get_neighbors_of_type(map_gen, (x1, y1), 'town', return_keys=False) in range(kill_range[0], kill_range[1]+1):
-				#map_gen['chunk_map'][_chunk_key]['type'] = 'other'
-			
-				for ref in map_gen['refs']:
-					for ref_array in map_gen['refs'][ref]:
-						if map_gen['chunk_map'][_chunk_key]['pos'] in ref_array:
-							print 'remove'
-							ref_array.remove(map_gen['chunk_map'][_chunk_key]['pos'])
+			if _num in range(kill_range[0], kill_range[1]+1):
+				walker.remove(pos)
+				_changed = True
+		
+		if not _changed:
+			break
 
 def direction_from_key_to_key(map_gen, key1, key2):
 	_k1 = map_gen['chunk_map'][key1]['pos']
@@ -351,4 +353,4 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
-	generate_map()
+	generate_map(detail=2)
