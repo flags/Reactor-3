@@ -1,19 +1,24 @@
 from globals import *
 
-import alife as alfe
 import libtcodpy as tcod
+import graphics as gfx
+import alife as alfe
 
 import encounters
+import worldgen
 import effects
 import menus
 import items
 import life
 
+import logging
+import random
+
 def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	if WORLD_INFO['in_combat'] and SETTINGS['controlling']['actions']:
+	if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
 		WORLD_INFO['pause_ticks'] = 0
 	
 	if WORLD_INFO['pause_ticks']:
@@ -24,29 +29,29 @@ def tick_all_objects(source_map):
 		return False
 	
 	if SETTINGS['controlling']:
-		if SETTINGS['controlling']['targeting'] and SETTINGS['controlling']['shoot_timer']:
-			SETTINGS['controlling']['shoot_timer']-=1
+		if LIFE[SETTINGS['controlling']]['targeting'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
+			LIFE[SETTINGS['controlling']]['shoot_timer']-=1
 			return False
 		
-		if SETTINGS['controlling']['contexts'] and SETTINGS['controlling']['shoot_timer']:
+		if LIFE[SETTINGS['controlling']]['contexts'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
 			#TODO: Just disable this...
-			SETTINGS['controlling']['shoot_timer'] = 0
+			LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 			return False
 		
-		if SETTINGS['controlling']['encounters']:
+		if LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
 		#if menus.get_menu_by_name('Aim at...') > -1:
 		#	return False
-		if SETTINGS['controlling']['targeting']:
+		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
 		
-		if life.has_dialog(SETTINGS['controlling']):
+		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
 	
 		_in_combat = False
 		for alife in [LIFE[i] for i in LIFE]:
-			if SETTINGS['controlling']['id'] == alife['id']:
+			if SETTINGS['controlling'] == alife['id']:
 				continue
 			
 			if alife['asleep'] or alife['dead']:
@@ -70,7 +75,7 @@ def tick_all_objects(source_map):
 				continue
 			
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
-			if _targets and SETTINGS['controlling']['id'] in _targets:
+			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
 				
 				if not WORLD_INFO['pause_ticks']:
@@ -100,21 +105,59 @@ def tick_all_objects(source_map):
 def tick_world():
 	WORLD_INFO['ticks'] += 1
 	
-	if WORLD_INFO['time_of_day'] < WORLD_INFO['length_of_day']:
-		WORLD_INFO['time_of_day'] += WORLD_INFO['time_scale']
+	if WORLD_INFO['real_time_of_day'] < WORLD_INFO['length_of_day']:
+		WORLD_INFO['real_time_of_day'] += WORLD_INFO['time_scale']
 	else:
-		WORLD_INFO['time_of_day'] = 0
+		WORLD_INFO['real_time_of_day'] = 0
 		WORLD_INFO['day'] += 1
 	
-def get_time_of_day():
-	return WORLD_INFO['ticks']
+	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
+		if WORLD_INFO['time_of_day'] == 'day':
+			gfx.message('Night falls.')
+		
+		WORLD_INFO['time_of_day'] = 'night'
+	else:
+		if WORLD_INFO['time_of_day'] == 'night':
+			gfx.message('The sun rises.')
+		
+		WORLD_INFO['time_of_day'] = 'day'
+	
+	if WORLD_INFO['life_spawn_interval'][0]:
+		WORLD_INFO['life_spawn_interval'][0] -= 1
+	else:
+		worldgen.generate_life()
+			
+		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
+		
+		logging.info('Reset life spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
+	
+	if WORLD_INFO['wildlife_spawn_interval'][0]:
+		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
+	else:
+		#worldgen.generate_wildlife()
+			
+		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
+		
+		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+def is_night():
+	if WORLD_INFO['time_of_day'] == 'night':
+		return True
+	
+	return False
+
+def time_until_midnight():
+	if is_night():
+		return 0
+	
+	return WORLD_INFO['length_of_day']-WORLD_INFO['real_time_of_day']
 
 def draw_encounter():
-	if not SETTINGS['controlling']['encounters']:
+	if not LIFE[SETTINGS['controlling']]['encounters']:
 		return False
 	
-	encounters.draw_encounter(SETTINGS['controlling'],
-		SETTINGS['controlling']['encounters'][0])
+	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
+		LIFE[SETTINGS['controlling']]['encounters'][0])
 
 def matches(dict1, dict2):
 	_break = False

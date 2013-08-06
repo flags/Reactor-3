@@ -22,6 +22,7 @@ def create_job(creator, gist, description='Job description needed.'):
 	_job['workers'] = []
 	_job['candidates'] = []
 	_job['details'] = {}
+	_job['cancel_if'] = []
 	_job['id'] = len(JOBS)
 	JOBS[_job['id']] = _job
 	
@@ -56,6 +57,17 @@ def cancel_job(job, completed=False):
 	del JOBS[job['id']]
 	
 	logging.debug('Job canceled: %s' % job['gist'])
+
+def process_cancel_if(life, job):
+	for callback in job['cancel_if']:
+		if callback(life):
+			cancel_job(job)
+			return True
+	
+	return False
+
+def cancel_if(job, callback):
+	job['cancel_if'].append(callback)
 
 def complete_task(life):
 	life['job']['tasks'].remove(life['task'])

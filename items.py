@@ -129,7 +129,7 @@ def create_item(name, position=[0,0,2], item=None):
 		
 		del item['marked_for_reint']
 
-	item['uid'] = WORLD_INFO['itemid']
+	item['uid'] = str(WORLD_INFO['itemid'])
 	item['pos'] = list(position)
 	item['realpos'] = list(position)
 	item['velocity'] = [0.0, 0.0, 0.0]
@@ -147,7 +147,7 @@ def create_item(name, position=[0,0,2], item=None):
 	ITEMS[item['uid']] = item
 	
 	WORLD_INFO['itemid'] += 1
-	return item
+	return item['uid']
 
 def delete_item(item):
 	logging.debug('Deleting references to item %s' % item['uid'])
@@ -160,6 +160,14 @@ def delete_item(item):
 	
 	del ITEMS[item['uid']]
 
+def save_all_items():
+	for item in ITEMS.values():
+		item['icon'] = ord(item['icon'])
+
+def reload_all_items():
+	for item in ITEMS.values():
+		item['icon'] = chr(item['icon'])
+
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
@@ -171,7 +179,7 @@ def get_items_at(position):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('id'):
+		if item.has_key('parent_id'):
 			continue
 		
 		if item.has_key('parent'):
@@ -186,12 +194,13 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item,direction,speed,friction=0.05,_velocity=0):
+def move(item_uid, direction, speed, friction=0.05, _velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
-	#TODO: We have 30 frames per second. Any formula for finding speeds using that?
+	item = get_item_from_uid(item_uid)
+	
 	item['friction'] = friction
 	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
@@ -203,7 +212,7 @@ def draw_items():
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('id'):
+		if item.has_key('parent_id'):
 			continue
 		
 		if item.has_key('parent'):

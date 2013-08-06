@@ -90,19 +90,19 @@ def bullet_hit(life, bullet, limb):
 					_msg.append('is stopped by <own> %s' % _item['name'])
 					return ' '.join(_msg)
 			
-		#	elif _item['material'] == 'metal':
-		#		if _thickness and not _item['thickness']:
-		#			_msg.append('puncturing the %s' % _item['name'])
-		#		elif _tear<=-3:
-		#			_msg.append('denting the %s' % _item['name'])
-		#		elif _tear<=-2:
-		#			_msg.append('lightly denting the %s' % _item['name'])
-		#		elif _tear<=-1:
-		#			_msg.append('scraping the %s' % _item['name'])
-		#		
-		#		if _cut <= 0 and _item['thickness']:
-		#			_msg.append(', finally stopped by the %s' % _item['name'])
-		#			return ' '.join(_msg)
+			elif _item['material'] == 'metal':
+				if _thickness and not _item['thickness']:
+					_msg.append('puncturing the %s' % _item['name'])
+				elif _tear<=-3:
+					_msg.append('denting the %s' % _item['name'])
+				elif _tear<=-2:
+					_msg.append('lightly denting the %s' % _item['name'])
+				elif _tear<=-1:
+					_msg.append('scraping the %s' % _item['name'])
+				
+				if _cut <= 0 and _item['thickness']:
+					_msg.append(', finally stopped by the %s' % _item['name'])
+					return ' '.join(_msg)
 	
 		if not lfe.limb_is_cut(life, limb):
 			if _cut==1:

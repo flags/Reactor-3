@@ -7,6 +7,7 @@ import life as lfe
 import render_los
 import numbers
 import items
+import tiles
 import maps
 
 import logging
@@ -53,11 +54,24 @@ def calculate_fire(fire):
 			if -1>_y>MAP_SIZE[1]:
 				continue
 			
-			for effect in [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']:
+			_effects = [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']
+			for effect in _effects:
 				_neighbor_intensity += effect['intensity']
 				
 				if 'light' in effect:
 					_neighbor_lit = True
+			
+			if not _effects:
+				_tile = WORLD_INFO['map'][_x][_y][fire['pos'][2]]
+				_raw_tile = tiles.get_raw_tile(_tile)
+				
+				_heat = tiles.get_flag(WORLD_INFO['map'][_x][_y][fire['pos'][2]], 'heat')
+				_current_burn = int(round(fire['intensity']))
+				_max_burn = int(round(_current_burn*.8))
+				
+				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.01), 0, 8))>=_raw_tile['burnable']:
+					if _raw_tile['burnable'] and _max_burn:
+						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(2, numbers.clip(2+_max_burn, 3, 8)))
 	
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
@@ -67,20 +81,31 @@ def calculate_fire(fire):
 	
 	update_effect(fire)
 	
-	if fire['intensity'] <= 0:
+	if fire['intensity'] <= 0.25:
 		unregister_effect(fire)
 	
 	if 'light' in fire:
 		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
 	elif not _neighbor_lit:
-		fire['light'] = create_light(fire['pos'], (255, 0, 255), .3*(fire['intensity']/8.0), 0.1)
+		fire['light'] = create_light(fire['pos'], (255, 0, 255), .5*(fire['intensity']/8.0), 0.25)
 
 def delete_fire(fire):
+	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'heat', False)
+	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'burnt', True)
+	
+	create_ash(fire['pos'])
+	
 	if 'light' in fire:
 		LIGHTS.remove(fire['light'])
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
+	
+	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
+		return False
+	
+	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
+		return False
 	
 	_effect = {'type': 'fire',
 	    'color': tcod.Color(255, 69, 0),
@@ -89,6 +114,26 @@ def create_fire(pos, intensity=1):
 	    'callback': calculate_fire,
 	    'draw_callback': draw_fire,
 	    'unregister_callback': delete_fire}
+	
+	register_effect(_effect)
+
+def draw_ash(pos, ash):
+	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
+
+def delete_ash(ash):
+	unregister_effect(ash)
+
+def create_ash(pos):
+	_color = random.randint(0, 25)
+	_intensity = numbers.clip(_color/float(25), .3, 1)
+	
+	_effect = {'type': 'ash',
+	    'color': tcod.Color(_color, _color, _color),
+	    'intensity': _intensity, 
+	    'pos': list(pos),
+	    'callback': lambda x: 1==1,
+	    'draw_callback': draw_ash,
+	    'unregister_callback': delete_ash}
 	
 	register_effect(_effect)
 

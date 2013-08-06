@@ -3,7 +3,9 @@ from alife import *
 
 import libtcodpy as tcod
 import graphics as gfx
+
 import crafting
+import worldgen
 import weapons
 import dialog
 import menus
@@ -24,22 +26,23 @@ def handle_input():
 	if INPUT['\x1b'] or INPUT['q']:
 		if ACTIVE_MENU['menu'] >= 0:
 			menus.delete_menu(ACTIVE_MENU['menu'], abort=True)
-		elif SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'] = None
-			SETTINGS['controlling']['throwing'] = None
-			SETTINGS['controlling']['firing'] = None
+		elif LIFE[SETTINGS['controlling']]['targeting']:
+			LIFE[SETTINGS['controlling']]['targeting'] = None
+			LIFE[SETTINGS['controlling']]['throwing'] = None
+			LIFE[SETTINGS['controlling']]['firing'] = None
 			SELECTED_TILES[0] = []
-		elif SETTINGS['controlling']['actions']:
-			life.clear_actions(SETTINGS['controlling'])
+		elif LIFE[SETTINGS['controlling']]['actions']:
+			life.clear_actions(LIFE[SETTINGS['controlling']])
+			life.stop(LIFE[SETTINGS['controlling']])
 			
-			if SETTINGS['controlling']['actions']:
-				SETTINGS['controlling']['actions'] = []
-		elif SETTINGS['controlling']['dialogs']:
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']]
+			if LIFE[SETTINGS['controlling']]['actions']:
+				LIFE[SETTINGS['controlling']]['actions'] = []
+		elif LIFE[SETTINGS['controlling']]['dialogs']:
+			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']]
 			if _dialog:
 				_dialog = _dialog[0]
 				if not dialog.reset_dialog(_dialog):
-					SETTINGS['controlling']['dialogs'] = []
+					LIFE[SETTINGS['controlling']]['dialogs'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -52,58 +55,58 @@ def handle_input():
 	if SETTINGS['draw console']:
 		return
 
-	if INPUT['up']:
+	if INPUT['up'] or (SETTINGS['controlling'] and INPUT['8']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'][1]-=1
-		elif life.has_dialog(SETTINGS['controlling']):
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+		elif LIFE[SETTINGS['controlling']]['targeting']:
+			LIFE[SETTINGS['controlling']]['targeting'][1]-=1
+		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
+			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 
 			if _dialog['index']:
 				_dialog['index'] -= 1
 		else:
-			life.clear_actions(SETTINGS['controlling'])
-			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]-1)},200)
+			life.clear_actions(LIFE[SETTINGS['controlling']])
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
 
-	if INPUT['down']:
+	if INPUT['down'] or (SETTINGS['controlling'] and INPUT['2']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'][1]+=1
-		elif life.has_dialog(SETTINGS['controlling']):
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
+		elif LIFE[SETTINGS['controlling']]['targeting']:
+			LIFE[SETTINGS['controlling']]['targeting'][1]+=1
+		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
+			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
 				_dialog['index'] += 1
 		else:
-			life.clear_actions(SETTINGS['controlling'])
-			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0],SETTINGS['controlling']['pos'][1]+1)},200)
+			life.clear_actions(LIFE[SETTINGS['controlling']])
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
 
-	if INPUT['right']:
+	if INPUT['right'] or (SETTINGS['controlling'] and INPUT['6']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'][0]+=1
+		elif LIFE[SETTINGS['controlling']]['targeting']:
+			LIFE[SETTINGS['controlling']]['targeting'][0]+=1
 		else:
-			life.clear_actions(SETTINGS['controlling'])
-			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]+1,SETTINGS['controlling']['pos'][1])},200)
+			life.clear_actions(LIFE[SETTINGS['controlling']])
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 
-	if INPUT['left']:
+	if INPUT['left'] or (SETTINGS['controlling'] and INPUT['4']):
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['controlling']['targeting']:
-			SETTINGS['controlling']['targeting'][0]-=1
+		elif LIFE[SETTINGS['controlling']]['targeting']:
+			LIFE[SETTINGS['controlling']]['targeting'][0]-=1
 		else:
-			life.clear_actions(SETTINGS['controlling'])
-			life.add_action(SETTINGS['controlling'],{'action': 'move', 'to': (SETTINGS['controlling']['pos'][0]-1,SETTINGS['controlling']['pos'][1])},200)
+			life.clear_actions(LIFE[SETTINGS['controlling']])
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	
 	if INPUT['\r']:
-		if SETTINGS['controlling'] and life.has_dialog(SETTINGS['controlling']):
-			_dialog = [d for d in SETTINGS['controlling']['dialogs'] if d['enabled']][0]
-			dialog.give_menu_response(SETTINGS['controlling'], _dialog)
+		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
+			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
 			return False
 		
 		if ACTIVE_MENU['menu'] == -1:
@@ -129,7 +132,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],check_hands=True)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],check_hands=True)
 		
 		if not _inventory:
 			gfx.message('You have no items.')
@@ -149,7 +152,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],show_equipped=False,check_hands=False)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=False,check_hands=False)
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
@@ -169,7 +172,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],show_equipped=True,check_hands=True,show_containers=False)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=True,check_hands=True,show_containers=False)
 		
 		if not _inventory:
 			gfx.message('You have no items to unequip.')
@@ -185,17 +188,21 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['c']:
-		life.crouch(SETTINGS['controlling'])
+		life.crouch(LIFE[SETTINGS['controlling']])
 	
 	if INPUT['C']:
-		life.stand(SETTINGS['controlling'])
+		life.stand(LIFE[SETTINGS['controlling']])
 	
 	if INPUT['d']:
 		if menus.get_menu_by_name('Drop')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],check_hands=True)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],check_hands=True)
+		
+		if not _inventory:
+			gfx.message('You have no items to drop.')
+			return False
 		
 		_i = menus.create_menu(title='Drop',
 			menu=_inventory,
@@ -211,13 +218,13 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
-		if SETTINGS['controlling']['targeting']:
-			life.throw_item(SETTINGS['controlling'], SETTINGS['controlling']['throwing']['id'], SETTINGS['controlling']['targeting'], 2)
-			SETTINGS['controlling']['targeting'] = None
+		if LIFE[SETTINGS['controlling']]['targeting']:
+			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing']['id'], LIFE[SETTINGS['controlling']]['targeting'], 2)
+			LIFE[SETTINGS['controlling']]['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
 		
-		_throwable = life.get_fancy_inventory_menu_items(SETTINGS['controlling'],show_equipped=False,check_hands=True)
+		_throwable = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=False,check_hands=True)
 		
 		if not _throwable:
 			return False
@@ -236,7 +243,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Talk'))
 			return False
 		
-		if not SETTINGS['controlling']['targeting']:
+		if not LIFE[SETTINGS['controlling']]['targeting']:
 			_menu_items = create_target_list()
 	
 			if not _menu_items:
@@ -257,7 +264,7 @@ def handle_input():
 		else:
 			_target = None
 			for entry in [LIFE[i] for i in LIFE]:
-				if entry['pos'] == SETTINGS['controlling']['targeting']:
+				if entry['pos'] == LIFE[SETTINGS['controlling']]['targeting']:
 					_target = entry
 					break
 			
@@ -266,20 +273,20 @@ def handle_input():
 				return False
 	
 	if INPUT['V']:
-		if SETTINGS['controlling']['dialogs']:
-			_dialog = SETTINGS['controlling']['dialogs'].pop()
-			SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _dialog['from'], _dialog))
+		if LIFE[SETTINGS['controlling']]['dialogs']:
+			_dialog = LIFE[SETTINGS['controlling']]['dialogs'].pop()
+			LIFE[SETTINGS['controlling']]['dialogs'].append(dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _dialog['from'], _dialog))
 			return True
 		
-		if not SETTINGS['controlling']['contexts']:
+		if not LIFE[SETTINGS['controlling']]['contexts']:
 			return create_radio_menu()
 		
-		if SETTINGS['controlling']['encounters']:
+		if LIFE[SETTINGS['controlling']]['encounters']:
 			SETTINGS['following'] = SETTINGS['controlling']
-			SETTINGS['controlling']['encounters'].pop(0)
+			LIFE[SETTINGS['controlling']]['encounters'].pop(0)
 		
 		_i = menus.create_menu(title='React',
-			menu=SETTINGS['controlling']['contexts'].pop()['items'],
+			menu=LIFE[SETTINGS['controlling']]['contexts'].pop()['items'],
 			padding=(1,1),
 			position=(1,1),
 			format_str='$k: $v',
@@ -299,12 +306,12 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Fire'))
 			return False
 		
-		if SETTINGS['controlling']['targeting']:
+		if LIFE[SETTINGS['controlling']]['targeting']:
 			if menus.get_menu_by_name('Select Target')>-1:
 				return False
 			
 			_alife_menu = []
-			for _life in life.get_all_life_at_position(life, SETTINGS['controlling']['targeting']):
+			for _life in life.get_all_life_at_position(life, LIFE[SETTINGS['controlling']]['targeting']):
 				_alife = LIFE[_life]
 				
 				_alife_menu.append(menus.create_item('single',
@@ -328,20 +335,20 @@ def handle_input():
 			return True
 		
 		_weapons = []
-		for hand in SETTINGS['controlling']['hands']:
-			_limb = life.get_limb(SETTINGS['controlling'],hand)
+		for hand in LIFE[SETTINGS['controlling']]['hands']:
+			_limb = life.get_limb(LIFE[SETTINGS['controlling']],hand)
 			
 			if not _limb['holding']:
 				continue
 			
-			_item = life.get_inventory_item(SETTINGS['controlling'],_limb['holding'][0])
+			_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],_limb['holding'][0])
 			
 			if _item['type'] == 'gun':
 				_weapons.append(menus.create_item('single',
 					_item['name'],
 					'Temp',
 					icon=_item['icon'],
-					id=_item['id']))
+					id=_item['uid']))
 		
 		if not _weapons:
 			gfx.message('You have nothing to shoot!')
@@ -354,30 +361,30 @@ def handle_input():
 			format_str='[$i] $k: $v',
 			on_select=inventory_fire)
 		
-		#SETTINGS['controlling']['shoot_timer'] = SETTINGS['controlling']['shoot_timer_max']
+		#LIFE[SETTINGS['controlling']]['shoot_timer'] = LIFE[SETTINGS['controlling']]['shoot_timer_max']
 		menus.activate_menu(_i)
 	
 	if INPUT['F']:
-		if not SETTINGS['controlling']['encounters']:
+		if not LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
-		SETTINGS['following'] = SETTINGS['controlling']
-		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
-		SETTINGS['controlling']['shoot_timer'] = 0
+		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
+		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		
-		speech.communicate(SETTINGS['controlling'], 'appear_friendly', matches=[{'id': _target['id']}])
+		speech.communicate(LIFE[SETTINGS['controlling']], 'appear_friendly', matches=[{'id': _target['id']}])
 		
 		logging.debug('** APPEARING FRIENDLY **')
 	
 	if INPUT['H']:
-		if not SETTINGS['controlling']['encounters']:
+		if not LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
-		SETTINGS['following'] = SETTINGS['controlling']
-		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
-		SETTINGS['controlling']['shoot_timer'] = 0
+		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
+		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		
-		speech.communicate(SETTINGS['controlling'], 'appear_hostile', matches=[{'id': _target['id']}])
+		speech.communicate(LIFE[SETTINGS['controlling']], 'appear_hostile', matches=[{'id': _target['id']}])
 		
 		logging.debug('** APPEARING HOSTILE **')
 	
@@ -392,7 +399,7 @@ def handle_input():
 		_non_empty_ammo = []
 		_empty_ammo = []
 		
-		for weapon in life.get_all_inventory_items(SETTINGS['controlling'],matches=[{'type': 'gun'}]):
+		for weapon in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'gun'}]):
 			_feed = weapons.get_feed(weapon)
 			
 			if _feed:
@@ -400,15 +407,15 @@ def handle_input():
 					weapon['name'],
 					'%s/%s' % (len(_feed['rounds']),_feed['maxrounds']),
 					icon=weapon['icon'],
-					id=weapon['id']))
+					id=weapon['uid']))
 			else:
 				_unloaded_weapons.append(menus.create_item('single',
 					weapon['name'],
 					'Empty',
 					icon=weapon['icon'],
-					id=weapon['id']))
+					id=weapon['uid']))
 		
-		for ammo in life.get_all_inventory_items(SETTINGS['controlling'],matches=[{'type': 'magazine'},{'type': 'clip'}]):
+		for ammo in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'magazine'},{'type': 'clip'}]):
 			#TODO: Make `parent` an actual key.
 			if 'parent' in ammo:
 				continue
@@ -418,13 +425,13 @@ def handle_input():
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
-					id=ammo['id']))
+					id=ammo['uid']))
 			else:
 				_empty_ammo.append(menus.create_item('single',
 					ammo['name'],
 					'%s/%s' % (len(ammo['rounds']),ammo['maxrounds']),
 					icon=ammo['icon'],
-					id=ammo['id']))
+					id=ammo['uid']))
 			
 		if _loaded_weapons:
 			_menu.append(menus.create_item('title','Loaded weapons',None))
@@ -457,22 +464,22 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['s']:
-		if SETTINGS['controlling']['strafing']:
-			SETTINGS['controlling']['strafing'] = False
+		if LIFE[SETTINGS['controlling']]['strafing']:
+			LIFE[SETTINGS['controlling']]['strafing'] = False
 			print 'Not strafing'
 		else:
-			SETTINGS['controlling']['strafing'] = True
+			LIFE[SETTINGS['controlling']]['strafing'] = True
 			print 'Strafing'
 	
 	if INPUT['S']:
-		if not SETTINGS['controlling']['encounters']:
+		if not LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
-		SETTINGS['following'] = SETTINGS['controlling']
-		_target = SETTINGS['controlling']['encounters'].pop(0)['target']
-		SETTINGS['controlling']['shoot_timer'] = 0
+		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
+		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		
-		speech.communicate(SETTINGS['controlling'], 'surrender', matches=[{'id': _target['id']}])
+		speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
 		
 		logging.debug('** SURRENDERING **')
 	
@@ -487,6 +494,7 @@ def handle_input():
 		_options = []
 		_options.append(menus.create_item('title','Debug (Developer)',None))
 		_options.append(menus.create_item('spacer','=',None))
+		_options.append(menus.create_item('single','Save','Offload game to disk'))
 		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
 		
 		_i = menus.create_menu(title='Options',
@@ -499,15 +507,20 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['O']:
-		life.show_debug_info(SETTINGS['following'])
+		life.show_debug_info(LIFE[SETTINGS['following']])
 	
 	if INPUT['Z']:
-		life.crawl(SETTINGS['controlling'])
+		life.crawl(LIFE[SETTINGS['controlling']])
 	
 	if INPUT[',']:
-		_items = items.get_items_at(SETTINGS['controlling']['pos'])
+		_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
 		
 		if not _items:
+			gfx.message('There is nothing here to pick up.')
+			return False
+		
+		if menus.get_menu_by_name('Pick up')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Pick up'))
 			return False
 		
 		create_pick_up_item_menu(_items)
@@ -518,12 +531,12 @@ def handle_input():
 			return False
 		
 		_food = []
-		for _item in life.get_all_inventory_items(SETTINGS['controlling'], matches=[{'type': 'food'}, {'type': 'drink'}]):
+		for _item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'food'}, {'type': 'drink'}]):
 			_food.append(menus.create_item('single',
 				items.get_name(_item),
 				None,
 				icon=_item['icon'],
-				id=_item['id']))
+				id=_item['uid']))
 		
 		if not _food:
 			gfx.message('You have nothing to eat.')
@@ -539,19 +552,23 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['b']:
-		#print SETTINGS['following']['actions']
-		#print life.create_recent_history(SETTINGS['following'])
+		#print LIFE[SETTINGS['following']]['actions']
+		#print life.create_recent_history(LIFE[SETTINGS['following']])
 		life.print_life_table()
 	
 	if INPUT['y']:
-		if LIFE.keys().index(SETTINGS['following']['id'])<len(LIFE.keys())-1:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])+2]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])+2]
+		if int(SETTINGS['following'])>1:
+			SETTINGS['following'] = str(int(SETTINGS['following'])-1)
+			SETTINGS['controlling'] = str(int(SETTINGS['controlling'])-1)
+			FADE_TO_WHITE[0] = 0
+			gfx.refresh_window()
 
 	if INPUT['u']:
-		if LIFE.keys().index(SETTINGS['following']['id'])>=1:
-			SETTINGS['following'] = LIFE[LIFE.keys().index(SETTINGS['following']['id'])]
-			SETTINGS['controlling'] = LIFE[LIFE.keys().index(SETTINGS['controlling']['id'])]
+		if int(SETTINGS['following']) < len(LIFE.keys()):
+			SETTINGS['following'] = str(int(SETTINGS['following'])+1)
+			SETTINGS['controlling'] = str(int(SETTINGS['controlling'])+1)
+			FADE_TO_WHITE[0] = 0
+			gfx.refresh_window()
 
 	if INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -560,19 +577,66 @@ def handle_input():
 		create_crafting_menu()
 
 	if INPUT['1']:
-		CAMERA_POS[2] = 1
+		if LIFE[SETTINGS['controlling']]:
+			if LIFE[SETTINGS['controlling']]['targeting']:
+				LIFE[SETTINGS['controlling']]['targeting'][0]-=1
+				LIFE[SETTINGS['controlling']]['targeting'][1]+=1
+			else:
+				life.clear_actions(LIFE[SETTINGS['controlling']])
+				life.add_action(LIFE[SETTINGS['controlling']],
+				                {'action': 'move',
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]+1)},
+				                200)
+		else:
+			CAMERA_POS[2] = 1
 
 	if INPUT['2']:
-		CAMERA_POS[2] = 2
+		if not LIFE[SETTINGS['controlling']]:
+			CAMERA_POS[2] = 2
 
 	if INPUT['3']:
-		CAMERA_POS[2] = 3
+		if LIFE[SETTINGS['controlling']]:
+			if LIFE[SETTINGS['controlling']]['targeting']:
+				LIFE[SETTINGS['controlling']]['targeting'][0]+=1
+				LIFE[SETTINGS['controlling']]['targeting'][1]+=1
+			else:
+				life.clear_actions(LIFE[SETTINGS['controlling']])
+				life.add_action(LIFE[SETTINGS['controlling']],
+				                {'action': 'move',
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]+1)},
+				                200)
+		else:
+			CAMERA_POS[2] = 3
 
 	if INPUT['4']:
-		CAMERA_POS[2] = 4
+		if not LIFE[SETTINGS['controlling']]:
+			CAMERA_POS[2] = 4
 
 	if INPUT['5']:
 		CAMERA_POS[2] = 5
+	
+	if INPUT['7']:
+		if LIFE[SETTINGS['controlling']]:
+			if LIFE[SETTINGS['controlling']]['targeting']:
+				LIFE[SETTINGS['controlling']]['targeting'][0]-=1
+				LIFE[SETTINGS['controlling']]['targeting'][1]-=1
+			else:
+				life.clear_actions(LIFE[SETTINGS['controlling']])
+				life.add_action(LIFE[SETTINGS['controlling']],
+				                {'action': 'move',
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]-1)},
+				                200)
+	if INPUT['9']:
+		if LIFE[SETTINGS['controlling']]:
+			if LIFE[SETTINGS['controlling']]['targeting']:
+				LIFE[SETTINGS['controlling']]['targeting'][0]+=1
+				LIFE[SETTINGS['controlling']]['targeting'][1]-=1
+			else:
+				life.clear_actions(LIFE[SETTINGS['controlling']])
+				life.add_action(LIFE[SETTINGS['controlling']],
+				                {'action': 'move',
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]-1)},
+				                200)
 
 def inventory_select(entry):
 	key = entry['key']
@@ -596,17 +660,17 @@ def inventory_equip(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	_item = life.get_inventory_item(SETTINGS['controlling'],item)
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
 	
-	if _item['type'] == 'gun' and not life.can_hold_item(SETTINGS['controlling']):
+	if _item['type'] == 'gun' and not life.can_hold_item(LIFE[SETTINGS['controlling']]):
 		gfx.message('You can\'t possibly hold that!')
 		
 		return False
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'equipitem',
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'equipitem',
 		'item': item},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']],item))
 	
 	gfx.message('You start putting on the %s.' % _item['name'])
 	
@@ -617,13 +681,13 @@ def inventory_unequip(entry):
 	value = entry['values'][entry['value']]
 	item = entry['item']['id']
 	
-	_item = life.get_inventory_item(SETTINGS['controlling'],item)
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'storeitem',
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'storeitem',
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
 	
 	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
@@ -635,10 +699,10 @@ def inventory_unequip_action(entry):
 	value = entry['values'][entry['value']]
 	item = entry['id']
 	
-	_item = life.get_inventory_item(SETTINGS['controlling'],item)
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
 	_menu = []
 	
-	for container in life.get_all_storage(SETTINGS['controlling']):		
+	for container in life.get_all_storage(LIFE[SETTINGS['controlling']]):		
 		if container['capacity']+_item['size'] > container['max_capacity']:
 			continue
 		
@@ -668,14 +732,14 @@ def inventory_unequip_action(entry):
 def inventory_drop(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['id']
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['id'])
 	
-	_name = items.get_name(life.get_inventory_item(SETTINGS['controlling'],item))
+	_name = items.get_name(item)
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'dropitem',
-		'item': item},
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'dropitem',
+		'item': item['uid']},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
 	gfx.message('You start to drop %s.' % _name)
 	
@@ -683,12 +747,12 @@ def inventory_drop(entry):
 
 def inventory_eat(entry):
 	key = entry['key']
-	item = life.get_inventory_item(SETTINGS['controlling'], entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['id'])
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'consumeitem',
-		'item': item['id']},
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'consumeitem',
+		'item': item['uid']},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'],item['id']))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
 	
 	if item['type'] == 'food':
 		gfx.message('You start to eat %s.' % items.get_name(item))
@@ -699,33 +763,33 @@ def inventory_eat(entry):
 def inventory_throw(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
-	_hand = life.is_holding(SETTINGS['controlling'],entry['id'])
+	_hand = life.is_holding(LIFE[SETTINGS['controlling']],entry['id'])
 	if _hand:
-		SETTINGS['controlling']['targeting'] = SETTINGS['controlling']['pos'][:]
-		SETTINGS['controlling']['throwing'] = item
+		LIFE[SETTINGS['controlling']]['targeting'] = LIFE[SETTINGS['controlling']]['pos'][:]
+		LIFE[SETTINGS['controlling']]['throwing'] = item
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		
 		return True
 	
-	_hand = life.can_throw(SETTINGS['controlling'])
+	_hand = life.can_throw(LIFE[SETTINGS['controlling']])
 	if not _hand:
 		gfx.message('Both of your hands are full.')
 	
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		return False
 
-	_stored = life.item_is_stored(SETTINGS['controlling'],item['id'])
+	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']], item['uid'])
 	if _stored:
 		_delay = 40
 		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
 	else:
 		_delay = 20
 	
-	SETTINGS['controlling']['throwing'] = item
+	LIFE[SETTINGS['controlling']]['throwing'] = item
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'holditemthrow',
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'holditemthrow',
 		'item': entry['id'],
 		'hand': _hand},
 		200,
@@ -734,20 +798,20 @@ def inventory_throw(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):
-	SETTINGS['following'] = LIFE[entry['target']]
-	SETTINGS['controlling']['targeting'] = LIFE[entry['target']]['pos'][:]
+	SETTINGS['following'] = entry['target']
+	LIFE[SETTINGS['controlling']]['targeting'] = LIFE[entry['target']]['pos'][:]
 
 def inventory_fire(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
-	SETTINGS['controlling']['firing'] = item
+	LIFE[SETTINGS['controlling']]['firing'] = item
 	
-	if not life.is_holding(SETTINGS['controlling'],entry['id']):
-		_hand = life.can_throw(SETTINGS['controlling'])
+	if not life.is_holding(LIFE[SETTINGS['controlling']],entry['id']):
+		_hand = life.can_throw(LIFE[SETTINGS['controlling']])
 		if not _hand:
 			gfx.message('Both of your hands are full.')
 		
@@ -800,26 +864,26 @@ def inventory_fire_action(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'shoot',
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'shoot',
 	    'target': entry['target']['pos'][:],
 	    'limb': entry['limb']},
 		5000,
 		delay=0)
 	
-	SETTINGS['controlling']['targeting'] = None
-	SETTINGS['following'] = SETTINGS['controlling']
+	LIFE[SETTINGS['controlling']]['targeting'] = None
+	LIFE[SETTINGS['following']] = LIFE[SETTINGS['controlling']]
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def create_target_list():
 	_menu_items = []
-	for target in [l for l in LIFE.values() if sight.can_see_position(SETTINGS['controlling'], l['pos']) and not l == SETTINGS['controlling']]:
+	for target in [l for l in LIFE.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		if target['dead']:
 			continue
 		
 		if not _menu_items:
-			SETTINGS['following'] = target
+			SETTINGS['following'] = target['id']
 		
 		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
 	
@@ -827,24 +891,25 @@ def create_target_list():
 
 def create_dialog(entry):
 	_target = entry['target']
-	SETTINGS['controlling']['targeting'] = None
+	LIFE[SETTINGS['controlling']]['targeting'] = None
 	SELECTED_TILES[0] = []
 	
 	_dialog = {'type': 'dialog',
-          'from': SETTINGS['controlling']['id'],
+          'from': SETTINGS['controlling'],
           'enabled': True}
-	SETTINGS['controlling']['dialogs'].append(dialog.create_dialog_with(SETTINGS['controlling'], _target, _dialog))
+	
+	LIFE[SETTINGS['controlling']]['dialogs'].append(dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _target, _dialog))
 	menus.delete_active_menu()
 
 def exit_target(entry):
-	life.focus_on(SETTINGS['controlling'])
-	SETTINGS['controlling']['targeting'] = None
+	life.focus_on(LIFE[SETTINGS['controlling']])
+	LIFE[SETTINGS['controlling']]['targeting'] = None
 	SELECTED_TILES[0] = []
 
 def inventory_reload(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	if item['type'] == 'gun':
 		_menu = []
@@ -866,13 +931,13 @@ def inventory_reload(entry):
 		_menu.append(menus.create_item('single','Fill',None,id=entry['id']))
 		
 		_weapons = []
-		for _weapon in life.get_held_items(SETTINGS['controlling'],matches=[{'type': 'gun','ammotype': item['ammotype'],'feed': item['type']}]):
-			weapon = life.get_inventory_item(SETTINGS['controlling'],_weapon)
+		for _weapon in life.get_held_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'gun','ammotype': item['ammotype'],'feed': item['type']}]):
+			weapon = life.get_inventory_item(LIFE[SETTINGS['controlling']],_weapon)
 			
 			if weapons.get_feed(weapon):
 				continue
 			
-			_weapons.append(menus.create_item('single',weapon['name'],None,ammo=item,id=weapon['id']))
+			_weapons.append(menus.create_item('single',weapon['name'],None,ammo=item,id=weapon['uid']))
 		
 		if _weapons:
 			_menu.append(menus.create_item('title','Load into',None,id=entry['id']))
@@ -890,11 +955,11 @@ def inventory_reload(entry):
 def inventory_handle_feed(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	if key == 'Remove feed':
-		life.add_action(SETTINGS['controlling'],{'action': 'unload',
-			'weapon': item},
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'unload',
+			'weapon': entry['id']},
 			200,
 			delay=20)
 	
@@ -903,24 +968,24 @@ def inventory_handle_feed(entry):
 def inventory_handle_ammo(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	if key == 'Fill':
-		if not item['id'] in life.get_held_items(SETTINGS['controlling']):
-			if not life.can_hold_item(SETTINGS['controlling']):
+		if not item['uid'] in life.get_held_items(LIFE[SETTINGS['controlling']]):
+			if not life.can_hold_item(LIFE[SETTINGS['controlling']]):
 				gfx.message('You need a hand free to fill the %s with %s rounds.' % (item['type'],item['ammotype']))
 				return False
 		
-		life.add_action(SETTINGS['controlling'],{'action': 'removeandholditem',
-			'item': item['id']},
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'removeandholditem',
+			'item': item['uid']},
 			200,
 			delay=20)
 		
 		gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
 	
 		_rounds = len(item['rounds'])
-		for ammo in life.get_all_inventory_items(SETTINGS['controlling'],matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
-			life.add_action(SETTINGS['controlling'],{'action': 'refillammo',
+		for ammo in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'refillammo',
 				'ammo': item,
 				'round': ammo},
 				200,
@@ -931,7 +996,7 @@ def inventory_handle_ammo(entry):
 			if _rounds>=item['maxrounds']:
 				break
 	else:
-		life.add_action(SETTINGS['controlling'],{'action': 'reload',
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'reload',
 			'weapon': item,
 			'ammo': entry['ammo']},
 			200,
@@ -944,13 +1009,13 @@ def inventory_handle_ammo(entry):
 def inventory_fill_ammo(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(SETTINGS['controlling'],entry['id'])
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
 	
 	gfx.message('You start filling the %s with %s rounds.' % (item['type'],item['ammotype']))
 	
 	_rounds = len(item['rounds'])
-	for ammo in life.get_all_inventory_items(SETTINGS['controlling'],matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
-		life.add_action(SETTINGS['controlling'],{'action': 'refillammo',
+	for ammo in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'bullet', 'ammotype': item['ammotype']}]):
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'refillammo',
 			'ammo': item,
 			'round': ammo},
 			200,
@@ -966,39 +1031,40 @@ def inventory_fill_ammo(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def pick_up_item_from_ground(entry):	
-	_items = items.get_items_at(SETTINGS['controlling']['pos'])
+	#_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
+		_item = items.get_item_from_uid(entry['item'])
 		if entry['values'][entry['value']] == 'Wear':
-			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
-			life.add_action(SETTINGS['controlling'],{'action': 'pickupequipitem',
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupequipitem',
 				'item': entry['item']},
 				200,
-				delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
-		elif entry['values'][entry['value']] in SETTINGS['controlling']['hands']:
-			gfx.message('You start to pick up %s.' % items.get_name(entry['item']))
+		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
+			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
-			life.add_action(SETTINGS['controlling'],{'action': 'pickupholditem',
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupholditem',
 				'item': entry['item'],
 				'hand': entry['values'][entry['value']]},
 				200,
-				delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		return True
 	
 	gfx.message('You start to put %s in your %s.' %
-		(items.get_name(entry['item']),entry['container']['name']))
+		(items.get_name(items.get_item_from_uid(entry['item'])), items.get_name(items.get_item_from_uid(entry['container']))))
 	
-	life.add_action(SETTINGS['controlling'],{'action': 'pickupitem',
+	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupitem',
 		'item': entry['item'],
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(SETTINGS['controlling'], entry['item']))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
 	
 	return True
 
@@ -1010,13 +1076,13 @@ def pick_up_item_from_ground_action(entry):
 	_menu = []
 	#TODO: Can we equip this?
 	_menu.append(menus.create_item('title','Actions',None,enabled=False))
-	_menu.append(menus.create_item('single','Equip','Wear',item=_item))
+	_menu.append(menus.create_item('single','Equip','Wear',item=entry['item']))
 	
-	for hand in SETTINGS['controlling']['hands']:
-		_menu.append(menus.create_item('single','Equip',hand,item=_item))
+	for hand in LIFE[SETTINGS['controlling']]['hands']:
+		_menu.append(menus.create_item('single','Equip',hand,item=entry['item']))
 	
 	_menu.append(menus.create_item('title','Store in...',None,enabled=False))
-	for container in life.get_all_storage(SETTINGS['controlling']):		
+	for container in life.get_all_storage(LIFE[SETTINGS['controlling']]):
 		if container['capacity']+_item['size'] > container['max_capacity']:
 			_enabled = False
 		else:
@@ -1025,9 +1091,9 @@ def pick_up_item_from_ground_action(entry):
 		_menu.append(menus.create_item('single',
 			container['name'],
 			'%s/%s' % (container['capacity'],container['max_capacity']),
-			container=container,
+			container=container['uid'],
 			enabled=_enabled,
-			item=_item))
+			item=entry['item']))
 	
 	_i = menus.create_menu(title='Pick up (action)',
 		menu=_menu,
@@ -1061,7 +1127,9 @@ def handle_options_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	if key == 'Reload map':
+	if key == 'Save':
+		worldgen.save_world()
+	elif key == 'Reload map':
 		logging.warning('Map reloading is not well tested!')
 		global MAP
 		del MAP
@@ -1077,15 +1145,30 @@ def radio_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	_phrases = []
+	_life = LIFE[SETTINGS['controlling']]
 	
 	if key == 'Distress':
-		speech.announce(life, 'under_attack')
+		#speech.announce(life, 'under_attack')
+		pass
+	elif key == 'Locate':
+		speech.communicate(_life,
+		                   'group_location',
+		                   msg='Where are you?',
+		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   group_id=_life['group'])
+	elif key == 'Suggest Location':
+		pass
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	
+	if LIFE[SETTINGS['controlling']]['group']:
+		_phrases.append(menus.create_item('title', 'Group', None))
+		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
+		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,
@@ -1100,17 +1183,17 @@ def craft_menu_response(entry):
 	key = entry['key']
 	
 	if entry['action'] == 'dismantle':
-		crafting.dismantle_item(SETTINGS['controlling'], entry['item'])
+		crafting.dismantle_item(LIFE[SETTINGS['controlling']], entry['item'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def create_crafting_menu():
 	_items = []
-	for item in crafting.get_items_for_dismantle(SETTINGS['controlling']):
+	for item in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']]):
 		_items.append(menus.create_item('single',
 			item['name'],
 			None,
-			item=item['id'],
+			item=item['uid'],
 		    action='dismantle'))
 	
 	if _items:
@@ -1135,7 +1218,7 @@ def create_wound_menu():
 	
 	_entries = []
 	
-	for limb in SETTINGS['controlling']['body'].values():
+	for limb in LIFE[SETTINGS['controlling']]['body'].values():
 		_title = False
 		
 		for wound in limb['wounds']:
@@ -1164,15 +1247,15 @@ def heal_wound(entry):
 	injury = entry['injury']
 	item_id = entry['item_id']
 	
-	item = life.remove_item_from_inventory(SETTINGS['controlling'], item_id)
+	item = items.get_item_from_uid(life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id))
 	
 	_remove_wounds = []
-	for wound in SETTINGS['controlling']['body'][limb]['wounds']:
+	for wound in LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
 		if not injury in wound:
 			continue
 		
 		wound[injury] -= item['thickness']
-		SETTINGS['controlling']['body'][limb][injury] -= item['thickness']
+		LIFE[SETTINGS['controlling']]['body'][limb][injury] -= item['thickness']
 		print wound
 		_remove = True
 		for key in wound:
@@ -1187,14 +1270,14 @@ def heal_wound(entry):
 			_remove_wounds.append(wound)
 	
 	for wound in _remove_wounds:
-		SETTINGS['controlling']['body'][limb]['wounds'].remove(wound)
+		LIFE[SETTINGS['controlling']]['body'][limb]['wounds'].remove(wound)
 		gfx.message('Your %s has healed.' % wound['limb'])
 	
 	items.delete_item(item)	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
-	if SETTINGS['controlling']['body'][limb]['wounds']:
+	if LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
 		create_wound_menu()
 
 def wound_examine(entry):
@@ -1204,8 +1287,8 @@ def wound_examine(entry):
 	_entries = []
 	
 	if injury == 'cut':
-		for item in life.get_all_inventory_items(SETTINGS['controlling'], matches=[{'type': 'fabric'}]):
-			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['id']))
+		for item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'fabric'}]):
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['uid']))
 	
 	if not _entries:
 		gfx.message('You have nothing to treat the %s.' % injury)

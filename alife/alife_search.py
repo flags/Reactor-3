@@ -13,15 +13,13 @@ import jobs
 import logging
 
 STATE = 'searching'
+TIER = TIER_COMBAT
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
-	
-	if life['state'] in ['hiding', 'hidden', 'combat']:
-		return False
 	
 	_lost_targets = judgement.get_targets(life, escaped_only=True)
 	brain.store_in_memory(life, 'lost_targets', _lost_targets)

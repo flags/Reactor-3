@@ -5,7 +5,7 @@ WINDOW_TITLE = 'Reactor 3 - Milestone 5'
 
 #Constants
 WINDOW_SIZE = (100,60)
-MAP_SIZE = [500,500,5]
+MAP_SIZE = [250, 250, 5]
 MAP_WINDOW_SIZE = (50, 50)
 ITEM_WINDOW_SIZE = (40,1)
 CONSOLE_WINDOW_SIZE = (40,30)
@@ -24,7 +24,8 @@ CHUNK_MAP = {}
 CAMPS = {}
 WORLD_INFO = {'map': [],
 	'time': 0,
-	'time_of_day': 6000,
+	'real_time_of_day': 6000,
+	'time_of_day': 'limbo',
 	'time_scale': 1,
 	'length_of_day': 6000,
 	'day': 0,
@@ -32,6 +33,9 @@ WORLD_INFO = {'map': [],
 	'tps': 0,
 	'tps_time': 0,
 	'pause_ticks': 0,
+	'life_density': 'Sparse',
+	'life_spawn_interval': [0, (0, 0)],
+	'wildlife_spawn_interval': [0, (0, 0)],
 	'in_combat': False,
 	'world gravity': 0.3,
 	'lifeid': 1,
@@ -39,14 +43,26 @@ WORLD_INFO = {'map': [],
 	'groupid': 1,
 	'effectid': 1,
 	'zoneid': 1,
-    'chunk_map': CHUNK_MAP,
-    'reference_map': {'roads': [], 'buildings': []},
-    'slices': {}}
+	'memoryid': 1,
+	'goalid': 1,
+	'chunk_map': CHUNK_MAP,
+	'groups': {},
+	'reference_map': {'roads': [], 'buildings': []},
+	'slices': {},
+	'chunk_size': 5}
 
 #Return values
 STATE_CHANGE = 2
 STATE_UNCHANGED = 3
 RETURN_SKIP = 4
+
+#States
+TIER_COMBAT = 1
+TIER_SURVIVAL = 2
+TIER_EXPLORE = 3
+TIER_IDLE = 4
+TIER_WORK = 2.5
+TIER_PASSIVE = 333
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
@@ -168,23 +184,23 @@ SETTINGS = {'running': True,
 	'controlling': None,
 	'following': None,
 	'state history size': 5,
-	'chunk size': 5,
 	'fire burn rate': 0.04}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
+TILE_STRUCT = {'flags': {}}
+TILE_STRUCT_DEP = ['tiles']
 LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
-ITEM_TYPES = {}
 ITEMS = {}
+ITEM_TYPES = {}
 BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
-GROUPS = {}
 
 #Consoles
 MAP_WINDOW = None

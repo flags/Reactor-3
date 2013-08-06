@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import chunks
 import brain
 
 import render_fast_los
@@ -19,19 +20,15 @@ def look(life):
 	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not can_see_target(life, ai['id']):
-			continue
-		
-		if not can_see_position(life, ai['pos']):
 			if ai['id'] in life['know']:
 				life['know'][ai['id']]['last_seen_time'] += 1
-			
 			continue
 		
 		life['seen'].append(ai['id'])
 		
 		#TODO: Don't pass entire life, just id
 		if ai['id'] in life['know']:
-			if life['know'][ai['id']]['last_seen_time']:
+			if life['know'][ai['id']]['last_seen_time'] or life['think_rate'] == life['think_rate_max']:
 				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
 				judgement.judge(life, ai['id'])
 			
@@ -55,12 +52,10 @@ def look(life):
 		
 		_can_see = can_see_position(life, item['pos'])
 		if _can_see:
-			_item_chunk_key = '%s,%s' % ((item['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'],
-				(item['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
-			judgement.judge_chunk(life, _item_chunk_key)
-		
 			if not item['uid'] in life['know_items']:
 				brain.remember_item(life, item)
+			elif not life['know_items'][item['uid']]['last_seen_time']:
+				continue
 
 			life['know_items'][item['uid']]['last_seen_time'] = 0
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
@@ -272,7 +267,7 @@ def handle_lost_los(life):
 	return _nearest_target
 
 def find_visible_items(life):
-	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'id' in item['item']]
+	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
 def find_known_items(life, matches={}, visible=True):
 	_match = []
@@ -284,7 +279,7 @@ def find_known_items(life, matches={}, visible=True):
 		if visible and not can_see_position(life, item['item']['pos']):
 			continue
 		
-		if 'parent' in item['item'] or 'id' in item['item']:
+		if 'parent' in item['item'] or 'parent_id' in item['item']:
 			continue
 		
 		if 'demand_drop' in item['flags']:
@@ -306,3 +301,24 @@ def find_known_items(life, matches={}, visible=True):
 	
 	return _match
 
+def scan_surroundings(life, initial=False):
+	#print life['name'],'scanning'
+	_center_chunk = lfe.get_current_chunk_id(life)
+	for x_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
+		for y_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
+			if not x_mod and not y_mod:
+				continue
+			
+			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
+			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
+			
+			if not _chunk_key in CHUNK_MAP:
+				continue
+			
+			if not chunks.can_see_chunk(life, _chunk_key):
+				continue
+			
+			if initial:
+				judgement.judge_chunk(life, _chunk_key, seen=True)
+			else:
+				judgement.judge_chunk(life, _chunk_key)

@@ -88,7 +88,7 @@ def refresh_window():
 	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
-	_tile = get_tile(tile)
+	_tile = get_raw_tile(tile)
 
 	blit_char(x,y,_tile['icon'],
 		_tile['color'][0],
@@ -216,6 +216,8 @@ def draw_message_box():
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lighter_crimson)
 		elif msg['style'] == 'important':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
+		elif msg['style'] == 'radio':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(225,245,169))
 		elif msg['style'] == 'player_combat_good':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
 		elif msg['style'] == 'player_combat_bad':
@@ -230,10 +232,10 @@ def draw_status_line():
 	_flashing_text = ''
 	_non_flashing_text = ''
 	
-	if SETTINGS['following']['targeting']:
+	if LIFE[SETTINGS['following']]['targeting']:
 		_flashing_text += 'Firing'
 	
-	if SETTINGS['following']['strafing']:
+	if LIFE[SETTINGS['following']]['strafing']:
 		_non_flashing_text += 'Strafing'
 	
 	blit_string(0,
@@ -310,6 +312,9 @@ def message(text, style=None):
 	
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
+def radio(source, text):
+	message('%s: %s' % (' '.join(source['name']), text), style='radio')
+
 def end_of_frame_terraform(editing_prefab=False):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	tcod.console_blit(PREFAB_WINDOW,
@@ -354,8 +359,8 @@ def end_of_frame():
 	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
-	if SETTINGS['controlling'] and SETTINGS['controlling']['encounters']:
-		_encounter = SETTINGS['controlling']['encounters'][0]
+	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['encounters']:
+		_encounter = LIFE[SETTINGS['controlling']]['encounters'][0]
 	
 	if _encounter and 'console' in _encounter:
 		tcod.console_blit(_encounter['console'], 0, 0,
@@ -367,8 +372,8 @@ def end_of_frame():
 			1, 0.5)
 	
 	_dialog = None
-	if SETTINGS['controlling'] and SETTINGS['controlling']['dialogs']:
-		_dialog = SETTINGS['controlling']['dialogs'][0]
+	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:
+		_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 	
 	if _dialog and 'console' in _dialog:
 		tcod.console_blit(_dialog['console'], 0, 0,

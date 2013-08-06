@@ -53,7 +53,7 @@ def create_tile(tile):
 
 	return _ret_tile
 
-def get_tile(tile):
+def get_raw_tile(tile):
 	for _tile in TILES:
 		if _tile['id'] == tile['id']:
 			return _tile
@@ -128,7 +128,7 @@ while not console_is_window_closed():
 					_top_tile = MAP[x][y][z]
 					_top_tile_z = z
 
-			_tile = get_tile(_top_tile)
+			_tile = get_raw_tile(_top_tile)
 
 			console_set_char_background(None, x, y, _tile['color'][1]-LIGHT_MAP[TIME_OF_DAY])
 			console_set_char_foreground(None, x, y, _tile['color'][0]-LIGHT_MAP[TIME_OF_DAY])

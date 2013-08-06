@@ -9,19 +9,19 @@ BLANK_TILE = {'id':'blank_tile',
 SHORT_GRASS_TILE = {'id':'short_grass',
 					'icon':'.',
 					'color':(GRASS_GREEN_DARK, tcod.desaturated_green),
-					'burnable':True,
+					'burnable':8,
 					'cost':1}
 
 GRASS_TILE = {'id':'grass',
 			  'icon':';',
 			  'color':(GRASS_GREEN, tcod.desaturated_sea),
-			  'burnable':True,
+			  'burnable':7,
 			  'cost':1}
 
 TALL_GRASS_TILE = {'id':'tall_grass',
 				   'icon':'\\',
 				   'color':(GRASS_GREEN, tcod.desaturated_chartreuse),
-				   'burnable':True,
+				   'burnable':6,
 				   'cost':1}
 
 DIRT_TILE = {'id':'dirt',
@@ -186,9 +186,22 @@ def create_all_tiles():
 def create_tile(tile):
 	_ret_tile = {}
 	_ret_tile['id'] = tile['id']
-	_ret_tile['fire'] = 0
 
 	return _ret_tile
 
-def get_tile(tile):
+def get_raw_tile(tile):
 	return TILES[tile['id']]
+
+def get_tile(pos):
+	return WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
+
+def flag(tile, flag, value):
+	tile['flags'][flag] = value
+	
+	return value
+
+def get_flag(tile, flag):
+	if not flag in tile['flags']:
+		return False
+	
+	return tile['flags'][flag]

@@ -23,7 +23,7 @@ def parse_packet(packet):
 			
 			return json.dumps(_stats)
 		elif _packet['what'] == 'groups':
-			return json.dumps(GROUPS)
+			return json.dumps(WORLD_INFO['groups'])
 		elif _packet['what'] == 'life':
 			_life = LIFE[_packet['value']]
 			
@@ -61,7 +61,6 @@ def parse_packet(packet):
 			for entry in LIFE[_packet['value']]['memory']:
 				if 'question' in entry and entry['question']:
 					_q = entry.copy()
-					del _q['answer_callback']
 					_memory.append(_q)
 					continue
 				

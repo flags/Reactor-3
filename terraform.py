@@ -45,7 +45,7 @@ gfx.log(WINDOW_TITLE)
 create_all_tiles()
 
 try:
-	maps.load_map('map1.dat')
+	maps.load_map('temp_map.dat')
 except IOError:
 	maps.create_map()
 	maps.save_map()

@@ -108,15 +108,30 @@ def get_max_speed(life):
 	
 	return numbers.clip(_speed, 0, 255)
 
+def initiate_raw(life):
+	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
+
+def initiate_needs(life):
+	life['needs'] = []
+	
+	alife.survival.add_needed_item(life,
+	                               {'type': 'drink'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'thirsty'),
+	                               satisfy_callback=consume)
+	alife.survival.add_needed_item(life,
+	                               {'type': 'food'},
+	                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
+	                               satisfy_callback=consume)
+
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
 	if name in LIFE_TYPES:
 		logging.warning('Life type \'%s\' is already loaded. Reloading...' % name)
 	
 	life = load_life(name)
-	life['raw'] = {'sections': {}}
+	life['raw_name'] = name
 	#try:
-	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, name+'.dat'))
+	initiate_raw(life)
 	#except:
 	#	print 'FIXME: Exception on no .dat for life'
 	
@@ -180,11 +195,31 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	
 	"""
 	for rule in get_raw(life, section, identifier):
-		_func = rule['function'](life, **kwargs)
+		if rule['string']:
+			return rule['string'].lower()
+		
+		_func_args = {}
+		for value in rule['values']:
+			if 'key' in value:
+				_func_args[value['key']] = value['value']
+		
+		if rule['no_args']:
+			if _func_args:
+				_func = rule['function'](**_func_args)
+			else:
+				_func = rule['function']()
+		elif rule['self_call']:
+			if _func_args:
+				_func = rule['function'](life, **_func_args)
+			else:
+				_func = rule['function'](life)
+		else:
+			_func = rule['function'](life, **kwargs)
 		
 		if rule['true'] == '*' or _func == rule['true']:
 			for value in rule['values']:
-				brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
+				if 'flag' in value:
+					brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 			
 			if break_on_true:
 				if _func:
@@ -231,7 +266,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	elif name:
 		_life['name'] = name
 	
-	_life['id'] = WORLD_INFO['lifeid']
+	_life['id'] = str(WORLD_INFO['lifeid'])
 	
 	_life['speed'] = _life['speed_max']
 	_life['pos'] = list(position)
@@ -251,10 +286,11 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['encounters'] = []
 	_life['heard'] = []
 	_life['item_index'] = 0
-	_life['inventory'] = {}
+	_life['inventory'] = []
 	_life['flags'] = {}
 	_life['state'] = 'idle'
-	_life['state_flags'] = []
+	_life['state_tier'] = 9999
+	_life['state_flags'] = {}
 	_life['states'] = []
 	_life['gravity'] = 0
 	_life['targeting'] = None
@@ -297,31 +333,12 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
 	_life['needs'] = []
+	_life['goals'] = {}
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)
 	
-	alife.survival.create_need(_life,
-		{'type': 'food'},
-		[alife.survival._has_inventory_item],
-		[alife.sight.find_known_items],
-		consume,
-		min_matches=1,
-		cancel_if_flag=('hungry', False))
-	
-	#alife.survival.create_need(_life,
-	#	{'type': 'backpack'},
-	#	[alife.survival._has_inventory_item],
-	#   [alife.sight.find_known_items],
-	#	min_matches=1)
-	
-	alife.survival.create_need(_life,
-		{'type': 'drink'},
-		[alife.survival._has_inventory_item],
-		[alife.sight.find_known_items],
-		consume,
-		min_matches=1,
-		cancel_if_flag=('thirsty', False))
+	initiate_needs(_life)
 	
 	#Stats
 	_life['engage_distance'] = 15+random.randint(-5, 5)
@@ -344,28 +361,21 @@ def ticker(life, name, time):
 		return False
 
 def focus_on(life):
-	SETTINGS['following'] = life
+	SETTINGS['following'] = life['id']
 
 def sanitize_heard(life):
 	del life['heard']
 
 def sanitize_know(life):
-	if life['know']:
-		print life['know'][life['know'].keys()[0]].keys()
-	
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
-	
-	#del life['know']
 
 def prepare_for_save(life):
-	_delete_keys = []
+	_delete_keys = ['raw', 'needs', 'actions']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
 	for key in life.keys():#_delete_keys:
-		#if key in ['name', 'consciousness', 'shoot_timer_max', 'pos', 'actions', 'gravity', 'states', 'melee', 'know_items', 'asleep', 'pain_tolerance', 'seen', 'speed', 'id', 'facing', 'targeting', 'realpos', 'discover_direction', 'arms', 'state', 'animation', 'discover_direction_history', 'inventory', 'memory', 'snapshot', 'legs', 'encounters', u'body', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'stance', 'speed_max', 'conversations', 'known_camps', 'job', 'blood', 'engage_distance', 'hands', 'path', 'dead', u'icon', 'task', 'strafing', 'name', 'contexts', 'in_combat', 'camp', 'item_index', 'shoot_timer', 'base_speed', u'species', u'flags', 'known_chunks']:
-		#	continue
 		if key in _sanitize_keys:
 			_sanitize_keys[key](life)
 		elif key in _delete_keys:
@@ -376,20 +386,31 @@ def prepare_for_save(life):
 
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
-	#TODO: Don't needs this any more...
+	#TODO: Don't need this any more...
 	life['heard'] = []
+	life['needs'] = []
+	life['actions'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
+	
+	initiate_raw(life)
+
+def load_all_life():
+	for life in LIFE.values():
+		post_save(life)
 
 def save_all_life():
-	for life in [LIFE[i] for i in LIFE]:
-		#_life.append(get_save_string(life))
+	for life in LIFE.values():
 		prepare_for_save(life)
+		
+		#for key in life.keys():
+		#	print key, life[key]
+		#	json.dumps(life[key])
 	
 	_life = json.dumps(LIFE)
 	
-	for life in [LIFE[i] for i in LIFE]:
+	for life in LIFE.values():
 		post_save(life)
 	
 	return _life
@@ -405,13 +426,14 @@ def show_debug_info(life):
 def get_engage_distance(life):
 	return 0
 
-def change_state(life, state):
+def change_state(life, state, tier):
 	if life['state'] == state:
 		return False
 	
-	logging.debug('%s state change: %s -> %s' % (' '.join(life['name']), life['state'], state))
+	logging.debug('%s state change: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], state, tier))
 	life['state'] = state
-	life['state_flags'] = []
+	life['state_flags'] = {}
+	life['state_tier'] = tier
 	
 	life['states'].append(state)
 	if len(life['states'])>SETTINGS['state history size']:
@@ -447,6 +469,13 @@ def tick_animation(life):
 		
 	return life['animation']['images'][life['animation']['index']]
 
+def track_target(life, target_id):
+	_j = jobs.create_job(life, 'track target')
+	jobs.add_detail_to_job(_j, 'target', target_id)
+	jobs.add_job_task(_j, 'find target', callback=movement.find_alife, required=True)
+	jobs.add_job_candidate(_j, life)
+	jobs.process_job(_j)
+
 def get_current_camp(life):
 	return life['known_camps'][life['camp']]
 
@@ -459,7 +488,7 @@ def get_current_known_chunk(life):
 	return False
 
 def get_current_known_chunk_id(life):
-	_chunk_key = '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	_chunk_key = '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	
 	if _chunk_key in life['known_chunks']:
 		return _chunk_key
@@ -472,7 +501,7 @@ def get_current_chunk(life):
 	return maps.get_chunk(_chunk_id)
 
 def get_current_chunk_id(life):
-	return '%s,%s' % ((life['pos'][0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (life['pos'][1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	return '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
 def get_known_life(life, id):
 	if id in life['know']:
@@ -536,8 +565,8 @@ def get_surrounding_unknown_chunks(life, distance=1):
 			if not x and not y:
 				continue
 			
-			_next_x = _start_x+(x*SETTINGS['chunk size'])
-			_next_y = _start_y+(y*SETTINGS['chunk size'])
+			_next_x = _start_x+(x*WORLD_INFO['chunk_size'])
+			_next_y = _start_y+(y*WORLD_INFO['chunk_size'])
 			
 			if _next_x<0 or _next_x>=MAP_SIZE[0]:
 				continue
@@ -649,15 +678,16 @@ def say(life, text, action=False, volume=30, context=False):
 		_style = 'speech'
 	
 	if SETTINGS['following']:
-		if numbers.distance(SETTINGS['following']['pos'],life['pos'])<=volume:
+		if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
 			if context:
 				_style = 'important'
 			
 			gfx.message(text, style=_style)
 
 def memory(life, gist, *args, **kvargs):
-	_entry = {'text': gist, 'id': len(life['memory'])}
+	_entry = {'text': gist, 'id': WORLD_INFO['memoryid']}
 	_entry['time_created'] = WORLD_INFO['ticks']
+	WORLD_INFO['memoryid'] += 1
 	
 	for arg in args:
 		_entry.update(arg)
@@ -675,6 +705,8 @@ def memory(life, gist, *args, **kvargs):
 	
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
+	
+	return _entry['id']
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:
@@ -683,8 +715,18 @@ def has_dialog(life):
 	
 	return False
 
-def can_ask(life, chosen, memory):
-	if 'target' in chosen and chosen['target'] in memory['asked'] and WORLD_INFO['ticks']-memory['asked'][chosen['target']] < 900:
+def has_group(life):
+	return life['group']
+
+def can_ask(life, target_id, question_id):
+	question = get_memory_via_id(life, question_id)
+	
+	if not target_id:
+		print 'cant ask because of wrong id'
+		return False
+	
+	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:
+		print 'already talked about this'
 		return False
 	
 	return True
@@ -716,9 +758,8 @@ def delete_memory(life, matches={}):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
 
-def create_question(life, gist, question, callback, answer_match, match_gist_only=False, answer_all=False, interest=0):
+def create_question(life, gist, question, answer_match, match_gist_only=False, answer_all=False, interest=0):
 	question['question'] = True
-	question['answer_callback'] = callback
 	if not isinstance(answer_match, list):
 		answer_match = [answer_match]
 	
@@ -738,10 +779,10 @@ def create_question(life, gist, question, callback, answer_match, match_gist_onl
 		brain.add_impression(life, question['target'], 'talk', {'influence': alife.stats.get_influence_from(life, question['target'])})
 	
 	question['answer_all'] = answer_all
-	memory(life, gist, question)
+	_id = memory(life, gist, question)
 	
 	logging.debug('Creating question...')
-	return True
+	return _id
 
 def get_questions(life, target=None, no_filter=False, skip_answered=True):
 	_questions = []
@@ -820,6 +861,22 @@ def path_dest(life):
 	
 	return tuple(life['path'][len(life['path'])-1])
 
+def can_traverse(life, pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+2]:
+			return False
+		
+		return True
+	
+	if not WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]]:
+		if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]-1]:
+			return True
+	
+	if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]]:
+		return True
+	
+	return False
+
 def can_walk_to(life, pos):
 	if len(pos) == 3:
 		pos = list(pos)
@@ -841,7 +898,14 @@ def can_walk_to(life, pos):
 	if not _z2:
 		return False
 	
+	#print zones.can_path_to_zone(_z1, _z2),_z1,_z2
 	return zones.can_path_to_zone(_z1, _z2)
+
+def walk_to(life, position):
+	clear_actions(life)
+	add_action(life,{'action': 'move',
+          'to': position},
+          200)
 
 def walk(life, to):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
@@ -865,10 +929,10 @@ def walk(life, to):
 		
 		_zone = can_walk_to(life, to)
 		if _zone:
-			life['path'] = pathfinding.create_path_old(life['pos'], to, _zone, source_map=WORLD_INFO['map'])
+			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
 		else:
 			logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
-		#print '\ttotal',time.time()-_stime
+		#print 'total',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]
 	return walk_path(life)
@@ -880,19 +944,21 @@ def walk_path(life):
 	
 	if life['path']:
 		_pos = list(life['path'].pop(0))
-		_nfx = numbers.clip(life['pos'][0]-_pos[0],-1,1)
-		_nfy = numbers.clip(life['pos'][1]-_pos[1],-1,1)
+		_nfx = _pos[0]
+		_nfy = _pos[1]
 		
 		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
 			life['facing'] = (_nfx,_nfy)
 			life['aim_at'] = life['id']
 		
-		if _pos[2] and abs(_pos[2])-1:
-			if _pos[2]>0:
-				#logging.debug('%s is changing z-level: %s -> %s' % (life['name'][0],life['pos'][2],life['pos'][2]+(_pos[2]-1)))
-				life['pos'][2] += _pos[2]-1
+		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
+			life['pos'][2] += 1
+		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
+			life['pos'][2] -= 1
 		
-		LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
+		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
+			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
+		
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
@@ -1077,8 +1143,10 @@ def perform_action(life):
 		
 		if life.has_key('player'):
 			if _action.has_key('container'):
+				_item = items.get_item_from_uid(_action['item'])
+				_container = items.get_item_from_uid(_action['container'])
 				gfx.message('You store %s in your %s.'
-					% (items.get_name(_action['item']),_action['container']['name']))
+					% (items.get_name(_item), items.get_name(_container)))
 	
 	elif _action['action'] == 'dropitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1104,8 +1172,8 @@ def perform_action(life):
 			say(life,'@n drops %s.' % _name,action=True)
 		
 		set_animation(life, ['o', ','], speed=6)
-		drop_item(life,_action['item'])
-		delete_action(life,action)
+		drop_item(life, _action['item'])
+		delete_action(life, action)
 	
 	elif _action['action'] == 'equipitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1165,18 +1233,23 @@ def perform_action(life):
 			
 			return False
 		
+		item = items.get_item_from_uid(_action['item'])
+		
 		if life.has_key('player'):
-			gfx.message('You equip %s from the ground.' % items.get_name(_action['item']))
+			gfx.message('You equip %s from the ground.' % items.get_name(item))
 		else:
 			say(life,'@n puts on %s from the ground.' % _name,action=True)
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
+		print repr(_action['item'])
 		_id = direct_add_item_to_inventory(life,_action['item'])
+		print _id
 		equip_item(life,_id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
 	
 	elif _action['action'] == 'pickupholditem':
+		_item = items.get_item_from_uid(_action['item'])
 		_hand = get_limb(life, _action['hand'])
 		
 		if _hand['holding']:
@@ -1191,9 +1264,9 @@ def perform_action(life):
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
-			gfx.message('You hold %s in your %s.' % (items.get_name(_action['item']),_action['hand']))
+			gfx.message('You hold %s in your %s.' % (items.get_name(_item) ,_action['hand']))
 		else:
-			say(life,'@n holds %s in their %s.' % (items.get_name(_action['item']),_action['hand']),action=True)
+			say(life,'@n holds %s in their %s.' % (items.get_name(_item),_action['hand']),action=True)
 		
 		set_animation(life, [',', ';'], speed=6)
 		delete_action(life,action)
@@ -1209,11 +1282,11 @@ def perform_action(life):
 			return False
 
 		_dropped_item = remove_item_from_inventory(life,_action['item'])
-		_id = direct_add_item_to_inventory(life,_dropped_item)
+		_id = direct_add_item_to_inventory(life, _dropped_item)
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
-			gfx.message('You hold %s.' % items.get_name(_dropped_item))
+			gfx.message('You hold %s.' % items.get_name(items.get_item_from_uid(_dropped_item)))
 		
 		set_animation(life, ['*', ';'], speed=6)
 		delete_action(life,action)
@@ -1223,14 +1296,14 @@ def perform_action(life):
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_action['hand']['holding'].append(_id)
 		
-		gfx.message('You aim %s.' % items.get_name(_dropped_item))
+		gfx.message('You aim %s.' % items.get_name(items.get_item_from_uid(_dropped_item)))
 		life['targeting'] = life['pos'][:]
 		
 		delete_action(life,action)
 		
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
-		_ammo = remove_item_from_inventory(life,_action['ammo']['id'])
+		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']
 		
 		if life.has_key('player'):
@@ -1239,15 +1312,16 @@ def perform_action(life):
 		set_animation(life, [';', 'r'], speed=6)
 		delete_action(life,action)
 	
-	elif _action['action'] == 'unload':	
-		_ammo = _action['weapon'][_action['weapon']['feed']]
+	elif _action['action'] == 'unload':
+		_weapon = get_inventory_item(life, _action['weapon'])
+		_ammo = _weapon[_weapon['feed']]
 		_hand = can_hold_item(life)
 		
 		if _hand:
-			_id = direct_add_item_to_inventory(life,_ammo)
+			_id = direct_add_item_to_inventory(life, _ammo['uid'])
 			del _ammo['parent']
 			_hand['holding'].append(_id)
-			_action['weapon'][_action['weapon']['feed']] = None
+			_weapon[_weapon['feed']] = None
 		else:
 			if 'player' in life:
 				gfx.message('You have no hands free to hold %s!' % items.get_name(_ammo))
@@ -1255,7 +1329,7 @@ def perform_action(life):
 			
 			#TODO: Too hacky
 			del _ammo['parent']
-			_action['weapon'][_action['weapon']['feed']] = None
+			_weapon[_weapon['feed']] = None
 			_ammo['pos'] = life['pos'][:]
 		
 		set_animation(life, [';', 'u'], speed=6)
@@ -1264,7 +1338,7 @@ def perform_action(life):
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
 		_action['round']['parent'] = _action['ammo']
-		_round = remove_item_from_inventory(life,_action['round']['id'])
+		_round = remove_item_from_inventory(life,_action['round']['uid'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')
@@ -1425,10 +1499,10 @@ def tick(life, source_map):
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
 	if not 'player' in life:
-		alife.survival.check_all_needs(life)
 		brain.think(life, source_map)
 	else:
 		brain.sight.look(life)
+		alife.sound.listen(life)
 		
 		for context in life['contexts'][:]:
 			context['time'] -= 1
@@ -1462,7 +1536,7 @@ def remove_item_from_limb(life,item,limb):
 
 def get_all_storage(life):
 	"""Returns list of all containers in a character's inventory."""
-	return [item for item in [life['inventory'][item] for item in life['inventory']] if 'max_capacity' in item]
+	return [items.get_item_from_uid(item) for item in life['inventory'] if 'max_capacity' in items.get_item_from_uid(item)]
 
 def get_all_visible_items(life):
 	_ret = []
@@ -1481,7 +1555,7 @@ def throw_item(life,id,target,speed):
 	
 	direction = numbers.direction_to(life['pos'],target)
 	
-	items.move(_item, direction, speed)
+	items.move(items.get_item_from_uid(_item), direction, speed)
 
 def update_container_capacity(life,container):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -1489,7 +1563,10 @@ def update_container_capacity(life,container):
 	_capacity = 0
 	
 	for item in container['storing']:
-		_capacity += get_inventory_item(life,item)['size']
+		if item in life['inventory']:
+			_capacity += get_inventory_item(life,item)['size']
+		else:
+			_capacity += items.get_item_from_uid(item)['size']
 	
 	container['capacity'] = _capacity
 
@@ -1501,55 +1578,66 @@ def is_item_in_storage(life, item):
 	
 	return False
 
-def can_put_item_in_storage(life,item):
+def can_put_item_in_storage(life,item_uid):
 	"""Returns available storage container that can fit `item`. Returns False if none is found."""
 	#TODO: Should return list of containers instead.
 	#Whoa...
-	for _item in [life['inventory'][_item] for _item in life['inventory']]:
+	item = items.get_item_from_uid(item_uid)
+	
+	for _item in [items.get_item_from_uid(_item) for _item in life['inventory']]:
+		if _item['uid'] == item_uid:
+			continue
+		
 		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
-			return _item
-		else:
-			pass
+			return _item['uid']
 	
 	return False
 
-def add_item_to_storage(life,item,container=None):
+def add_item_to_storage(life, item_uid, container=None):
 	"""Adds item to free storage container.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	"""
-	if not container:
-		container = can_put_item_in_storage(life,item)
+	_item = items.get_item_from_uid(item_uid)
 	
 	if not container:
+		container = can_put_item_in_storage(life, item_uid)
+	
+	if not container:
+		print 'cannot store',_item['name']
 		return False
 	
-	container['storing'].append(item['id'])
-	container['capacity'] += item['size']
+	_container = items.get_item_from_uid(container)
+	_container['storing'].append(_item['uid'])
+	_container['capacity'] += _item['size']
 	
-	brain.remember_item(life,item)
+	brain.remember_item(life, _item)
+	
+	print repr(_item['uid'])
+	update_container_capacity(life, _container)
 	
 	return True
 
 def remove_item_in_storage(life,id):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
 		if id in _container['storing']:
 			_container['storing'].remove(id)
 			_container['capacity'] -= get_inventory_item(life,id)['size']
-			#logging.debug('Removed item #%s from %s' % (id,_container['name']))
+			logging.debug('Removed item #%s from %s' % (id,_container['name']))
 			
+			update_container_capacity(life, _container)
 			return _container
 	
 	return False
 
 def item_is_stored(life,id):
 	"""Returns the container of an item. Returns False on failure."""
-	for _container in [life['inventory'][_container] for _container in life['inventory']]:
+	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
@@ -1559,20 +1647,22 @@ def item_is_stored(life,id):
 	return False
 
 def item_is_worn(life, item):
-	if not 'id' in item:
+	if not 'parent_id' in item:
 		return False
 	
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		if item['id'] in _limb['holding']:
+		if item['uid'] in _limb['holding']:
 			return True
 	
 	return False
 
-def can_wear_item(life, item):
+def can_wear_item(life, item_uid):
 	"""Attaches item to limbs. Returns False on failure."""
 	#TODO: Function name makes no sense.
+	item = items.get_item_from_uid(item_uid)
+	
 	if not 'CAN_WEAR' in item['flags']:
 		return False
 	
@@ -1582,20 +1672,23 @@ def can_wear_item(life, item):
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		for _item in [life['inventory'][str(i)] for i in _limb['holding']]:
+		for _item in [items.get_item_from_uid(item_uid) for i in _limb['holding']]:
+			if item_uid == _item['uid']:
+				continue
+			
 			if not 'CANSTACK' in _item['flags']:
 				logging.warning('%s will not let %s stack.' % (_item['name'],item['name']))
 				return False
 
 	return True
 
-def get_inventory_item(life,id):
+def get_inventory_item(life, item_id):
 	"""Returns inventory item."""
-	if not life['inventory'].has_key(str(id)):
+	if not item_id in life['inventory']:
 		raise Exception('%s does not have item of id #%s'
-			% (' '.join(life['name']),id))
+			% (' '.join(life['name']), item_id))
 	
-	return life['inventory'][str(id)]
+	return items.get_item_from_uid(item_id)
 
 def get_all_inventory_items(life,matches=None):
 	"""Returns list of all inventory items.
@@ -1605,10 +1698,10 @@ def get_all_inventory_items(life,matches=None):
 	"""
 	_items = []
 	
-	for item in life['inventory']:
-		_item = life['inventory'][item]
+	for item_id in life['inventory']:
+		_item = items.get_item_from_uid(item_id)
 		
-		if find_action(life, matches=[{'item': _item['id']}]):
+		if find_action(life, matches=[{'item': item_id}]):
 			continue
 		
 		if matches:
@@ -1679,7 +1772,7 @@ def _get_item_access_time(life, item):
 	
 	_stored = item_is_stored(life,item)
 	if _stored:
-		return get_item_access_time(life,_stored['id'])+_item['size']
+		return get_item_access_time(life,_stored['uid'])+_item['size']
 	
 	return _item['size']
 
@@ -1687,19 +1780,22 @@ def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
 	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
-def direct_add_item_to_inventory(life, item, container=None):
+def direct_add_item_to_inventory(life, item_uid, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
 	
 	A specific container can be requested with the keyword argument `container`.
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
-	unlock_item(life, item)
+	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+		raise Exception('Deprecated: String not passed as item UID')
+	
+	item = items.get_item_from_uid(item_uid)
+
+	unlock_item(life, item_uid)
 	life['item_index'] += 1
-	_id = life['item_index']
-	item['id'] = _id
 	item['parent_id'] = life['id']
-	life['inventory'][str(_id)] = item
+	life['inventory'].append(item_uid)
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
@@ -1708,69 +1804,69 @@ def direct_add_item_to_inventory(life, item, container=None):
 		
 		for uid in item['storing'][:]:
 			logging.debug('\tAdding uid %s' % uid)
-			_item = items.get_item_from_uid(uid)
 
-			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life,_item))
+			#item['storing'].remove(uid)
+			item['storing'].append(direct_add_item_to_inventory(life, item['uid']))
 	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
 		#Warning: No check is done to make sure the container isn't full!
-		add_item_to_storage(life,item,container=container)
+		add_item_to_storage(life,item['uid'],container=container)
 	
-	return _id
+	return item_uid
 
-def add_item_to_inventory(life, item):
+def add_item_to_inventory(life, item_uid):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
-	unlock_item(life, item)
-	life['item_index'] += 1
-	_id = life['item_index']
-	item['id'] = _id
+	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+		raise Exception('Deprecated: String not passed as item UID')
+	
+	item = items.get_item_from_uid(item_uid)
+	
+	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
 	
 	maps.refresh_chunk(get_current_chunk_id(item))
 	
-	if not add_item_to_storage(life,item):
-		if not can_wear_item(life,item):
-			life['item_index'] -= 1
-			del item['id']
-			
+	if not add_item_to_storage(life, item_uid):
+		if not can_wear_item(life, item_uid):
 			return False
 		else:
-			life['inventory'][str(_id)] = item
-			equip_item(life,_id)
+			life['inventory'].append(item_uid)
+			equip_item(life,item_uid)
 	else:
-		life['inventory'][str(_id)] = item
+		life['inventory'].append(item_uid)
 	
 	if 'max_capacity' in item:
 		for uid in item['storing'][:]:
 			_item = items.get_item_from_uid(uid)
 			
 			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life,_item))
+			item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	
-	return _id
+	return item_uid
 
-def remove_item_from_inventory(life,id):
+def remove_item_from_inventory(life, item_id):
 	"""Removes item from inventory and all storage containers. Returns item."""
-	item = get_inventory_item(life,id)
+	item = get_inventory_item(life, item_id)
 	
-	_holding = is_holding(life,id)
+	_holding = is_holding(life, item_id)
 	if _holding:
-		_holding['holding'].remove(id)
+		_holding['holding'].remove(item_id)
 		logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
 		
-	elif item_is_equipped(life,id):
+	elif item_is_equipped(life, item_id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
 		for limb in item['attaches_to']:
-			remove_item_from_limb(life,item['id'],limb)
+			remove_item_from_limb(life,item['uid'],limb)
 		
 		item['pos'] = life['pos'][:]
-	elif item_is_stored(life,id):
-		remove_item_in_storage(life,id)
+	
+	elif item_is_stored(life, item_id):
+		item['pos'] = life['pos'][:]
+		remove_item_in_storage(life, item_id)
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
@@ -1785,17 +1881,16 @@ def remove_item_from_inventory(life,id):
 	life['speed_max'] = get_max_speed(life)
 	
 	if 'player' in life:
-		menus.remove_item_from_menus({'id': item['id']})
+		menus.remove_item_from_menus({'id': item['uid']})
 	
-	#logging.debug('Removed from inventory: %s' % item['name'])
+	logging.debug('Removed from inventory: %s' % item['name'])
 	
-	del life['inventory'][str(item['id'])]
-	del item['id']
+	life['inventory'].remove(item['uid'])
 	del item['parent_id']
 	
 	create_and_update_self_snapshot(life)
 	
-	return item
+	return item_id
 
 def is_consuming(life):
 	return find_action(life, matches=[{'action': 'consumeitem'}])
@@ -1805,10 +1900,12 @@ def consume(life, item_id):
 		logging.warning('%s is already eating.' % ' '.join(life['name']))
 		return False
 	
+	_item = items.get_item_from_uid(item_id)
+	
 	add_action(life, {'action': 'consumeitem',
 		'item': item_id},
 		200,
-		delay=get_item_access_time(life, item_id))
+		delay=get_item_access_time(life, _item))
 	
 	return True
 
@@ -1841,7 +1938,7 @@ def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
 	item = get_inventory_item(life,id)
 	
-	if not can_wear_item(life,item):
+	if not can_wear_item(life, id):
 		return False
 	
 	_limbs = get_all_limbs(life['body'])
@@ -1858,7 +1955,7 @@ def _equip_clothing(life,id):
 	
 	if item['attaches_to']:			
 		for limb in item['attaches_to']:
-			attach_item_to_limb(life['body'],item['id'],limb)
+			attach_item_to_limb(life['body'],item['uid'],limb)
 	
 	return True
 
@@ -1881,7 +1978,7 @@ def _equip_item(life, item_id):
 	return True
 
 def equip_item(life, item_id):
-	"""Helper function. Equips item."""	
+	"""Helper function. Equips item."""
 	item = get_inventory_item(life, item_id)
 	
 	if 'CAN_WEAR' in item['flags']:
@@ -1911,31 +2008,31 @@ def equip_item(life, item_id):
 	
 	return True
 
-def drop_item(life,id):
+def drop_item(life, item_id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
-	item = remove_item_from_inventory(life,id)
+	item = items.get_item_from_uid(remove_item_from_inventory(life, item_id))
 	item['pos'] = life['pos'][:]
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
 		_hand = get_limb(life, hand)
 		
-		if str(id) in _hand['holding']:
-			_hand['holding'].remove(str(id))
+		if item_id in _hand['holding']:
+			_hand['holding'].remove(item_id)
 	
 	return item
 
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
 	
-	for item in [item['id'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['id'])]:
+	for item in [item['uid'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['uid'])]:
 		drop_item(life, item)
 
-def lock_item(life, item):
-	item['lock'] = life
+def lock_item(life, item_uid):
+	items.get_item_from_uid(item_uid)['lock'] = life
 
-def unlock_item(life, item):
-	item['lock'] = None
+def unlock_item(life, item_uid):
+	items.get_item_from_uid(item_uid)['lock'] = None
 
 def pick_up_item_from_ground(life,uid):
 	"""Helper function. Adds item via UID. Returns inventory ID. Raises exception otherwise."""
@@ -2050,7 +2147,7 @@ def item_is_equipped(life,id,check_hands=False):
 		if not check_hands and _limb in life['hands']:
 			continue
 		
-		if int(id) in get_limb(life,_limb)['holding']:
+		if id in get_limb(life,_limb)['holding']:
 			return True
 	
 	return False
@@ -2078,17 +2175,23 @@ def show_life_info(life):
 def draw_life_icon(life):
 	_icon = [tick_animation(life), tcod.white]
 	
-	if life['id'] in [context['from']['id'] for context in SETTINGS['following']['contexts']]:
+	if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
 		if time.time()%1>=0.5:
 			_icon[0] = '?'
 	
+	if life['group'] and not life['id'] == SETTINGS['controlling']:
+		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+			_icon[1] = tcod.light_green
+		else:
+			_icon[1] = tcod.lighter_crimson
+	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	if _targets:
-		if SETTINGS['controlling']['id'] in _targets:
+		if SETTINGS['controlling'] in _targets:
 			_icon[1] = tcod.light_red
 	
 	if life['dead']:
-		_icon[0] = 'X'
+		_icon[1] = tcod.darkest_gray
 	elif life['asleep']:
 		if time.time()%1>=0.5:
 			_icon[0] = 'S'
@@ -2099,12 +2202,12 @@ def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
 		_icon,_color = draw_life_icon(life)
 		
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0]-1 and\
+			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]-1:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in SETTINGS['controlling']['know']:
+			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in LIFE[SETTINGS['controlling']]['know']:
 				continue
 			
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
@@ -2132,10 +2235,10 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 	"""
 	_inventory = []
 	_inventory_items = 0
-		
+	
 	#TODO: Time it would take to remove
 	if show_equipped:
-		_title = menus.create_item('title','Equipped',None,enabled=False)
+		_title = menus.create_item('title', 'Equipped', None, enabled=False)
 		_inventory.append(_title)
 	
 		for entry in life['inventory']:
@@ -2145,12 +2248,12 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				if not perform_match(item,matches):
 					continue					
 			
-			if item_is_equipped(life,entry,check_hands=check_hands):				
+			if item_is_equipped(life,entry,check_hands=check_hands):
 				_menu_item = menus.create_item('single',
 					item['name'],
 					'Equipped',
 					icon=item['icon'],
-					id=int(entry))
+					id=entry)
 			
 				_inventory_items += 1
 				_inventory.append(_menu_item)
@@ -2172,7 +2275,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				item['name'],
 				'Holding',
 				icon=item['icon'],
-				id=item['id'])
+				id=item['uid'])
 		
 			_inventory_items += 1
 			_inventory.append(_menu_item)
@@ -2186,7 +2289,10 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 			
 			_inventory.append(_title)
 			for _item in container['storing']:
-				item = get_inventory_item(life,_item)
+				if not _item in life['inventory']:
+					continue
+				
+				item = items.get_item_from_uid(_item)
 				
 				if matches:
 					if not perform_match(item,matches):
@@ -2196,7 +2302,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 					item['name'],
 					'Not equipped',
 					icon=item['icon'],
-					id=int(_item))
+					id=_item)
 				
 				_inventory_items += 1
 				_inventory.append(_menu_item)
@@ -2223,7 +2329,7 @@ def draw_visual_inventory(life):
 
 #TODO: Since we are drawing in a blank area, we only need to do this once!
 def draw_life_info():
-	life = SETTINGS['following']
+	life = LIFE[SETTINGS['following']]
 	_info = []
 	_name_mods = []
 	_holding = get_held_items(life)
@@ -2306,7 +2412,7 @@ def draw_life_info():
 		if life['id'] == ai['id']:
 			continue
 		
-		if not alife.sight.can_see_position(SETTINGS['controlling'], ai['pos']):
+		if not alife.sight.can_see_position(LIFE[SETTINGS['controlling']], ai['pos']):
 			continue
 		
 		_icon = draw_life_icon(ai)
@@ -2314,13 +2420,13 @@ def draw_life_info():
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 		
 		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
-		if _targets and SETTINGS['controlling']['id'] in _targets:
+		if _targets and LIFE[SETTINGS['controlling']]['id'] in _targets:
 			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
 		else:
 			tcod.console_set_default_foreground(0, tcod.white)
 		
-		if ai in [context['from'] for context in SETTINGS['controlling']['contexts']]:
+		if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:
 			if time.time()%1>=0.5:
 				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
@@ -2581,7 +2687,6 @@ def remove_limb(life, limb, no_children=False):
 		return False
 	
 	for item in get_items_attached_to_limb(life, limb):
-		#remove_item_from_limb(life, item, limb)
 		remove_item_from_inventory(life, item)
 	
 	if can_knock_over(life, limb):
@@ -2687,7 +2792,7 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	print 'Pain', _limb['pain']
 
-def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
+def add_wound(life, limb, cut=0, pain=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	if cut:
@@ -2697,6 +2802,9 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact
 			return False
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
+	
+	if pain:
+		add_pain_to_limb(life, limb, amount=pain)
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7
@@ -2716,6 +2824,17 @@ def add_wound(life, limb, cut=0, artery_ruptured=False, lodged_item=None, impact
 		'lodged_item': lodged_item}
 	
 	_limb['wounds'].append(_injury)
+
+def get_limb_stability(life, limb):
+	_limb = get_limb(life, limb)
+	
+	if limb_is_broken(life, limb):
+		return 0
+	
+	_stability = 10
+	_stability -= limb_is_cut(life, limb)
+	
+	return numbers.clip(_stability, 0, 10)/10.0
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -2781,8 +2900,7 @@ def damage_from_item(life,item,damage):
 	_hit_type = False
 	
 	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	
-	if item['aim_at_limb'] and random.randint(0, 10-item['accuracy'])>=item['accuracy']:
+	if item['aim_at_limb'] and item['accuracy']>=weapons.get_impact_accuracy(life, item):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]

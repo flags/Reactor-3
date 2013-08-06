@@ -4,11 +4,16 @@ import life as lfe
 import alife
 import raids
 
+TIER = TIER_PASSIVE
+
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	return RETURN_SKIP
 
 def add_raid_targets(life):
 	for raider in [LIFE[r] for r in raids.get_raiders(life['camp'])]:
+		if raider['id'] == life['id']:
+			continue
+		
 		if not alife.brain.knows_alife(life, raider):
 			alife.brain.meet_alife(life, raider)
 

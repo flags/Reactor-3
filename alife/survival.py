@@ -17,22 +17,77 @@ import sight
 import maps
 import time
 
-def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
-	life['needs'].append({'need': need,
-		'need_callback': need_callback,
-	    'can_meet_callback': can_meet_callback,
-	    'satisfy_callback': satisfy_callback,
-		'min_matches': min_matches,
-		'matches': [],
-	    'can_meet_with': [],
-	    'memory_location': None,
-		'num_met': False,
-	    'cancel_if_flag': cancel_if_flag})
+def _get_need_amount(life, need):
+	if need['amount_callback']:
+		return need['amount_callback'](life, need)
+	
+	if need['amount']:
+		return need['amount']
+
+def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
+	life['needs'].append({'type': 'item',
+	                      'match': item_match,
+	                      'met': False,
+	                      'amount': amount,
+	                      'amount_callback': amount_callback,
+	                      'satisfy_if': satisfy_if,
+	                      'satisfy_callback': satisfy_callback})
+	
+	logging.debug('Added item need: %s' % item_match)
+
+def process(life):
+	for need in life['needs']:
+		if need['type'] == 'item':
+			_has_items = lfe.get_all_inventory_items(life, matches=[need['match']])
+			
+			if len(_has_items) >= _get_need_amount(life, need):
+				need['met'] = [i['uid'] for i in _has_items]
+			else:
+				need['met'] = False
+
+def is_need_met(life, need):
+	return need['met']
+
+def needs_to_satisfy(life, need):
+	if not need['satisfy_if']:
+		return False
+	
+	if not is_need_met(life, need):
+		return False
+	
+	return need['satisfy_if'](life)
+
+def satisfy(life, need):
+	if not need['satisfy_if']:
+		return False
+	
+	if not is_need_met(life, need):
+		return False
+	
+	if need['satisfy_if'](life):
+		if need['type'] == 'item':
+				need['satisfy_callback'](life, need['met'][0])
+				return True
+	
+	return False
+
+#def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
+#	life['needs'].append({'need': need,
+#		'need_callback': need_callback,
+#	    'can_meet_callback': can_meet_callback,
+#	    'satisfy_callback': satisfy_callback,
+#		'min_matches': min_matches,
+#		'matches': [],
+#	    'can_meet_with': [],
+#	    'memory_location': None,
+#		'num_above_needed': False,
+#	    'cancel_if_flag': cancel_if_flag})
 
 def can_meet_need(life, need):
 	_matches = []
 	
 	for meet_callback in need['can_meet_callback']:
+		print meet_callback(life, matches=need['need'])
 		_matches.extend(meet_callback(life, matches=need['need']))
 	
 	need['can_meet_with'] = _matches
@@ -101,17 +156,17 @@ def need_is_met(life, need):
 	need['matches'] = _res
 	
 	if len(_res)>=need['min_matches']:
-		need['num_met'] = (len(_res)-need['min_matches'])+1
+		need['num_above_needed'] = (len(_res)-need['min_matches'])+1
 		return True
 	
 	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
-	need['num_met'] = 0
+	need['num_above_needed'] = 0
 	return False
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
 		_equip_action = {'action': 'equipitem',
-				'item': item['id']}
+				'item': item['uid']}
 		
 		if len(lfe.find_action(life,matches=[_equip_action])):
 			continue
@@ -119,12 +174,12 @@ def manage_hands(life):
 		if lfe.can_wear_item(life, item):
 			lfe.add_action(life,_equip_action,
 				401,
-				delay=lfe.get_item_access_time(life,item['id']))
+				delay=lfe.get_item_access_time(life,item))
 			continue
 		
 		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
 			_store_action = {'action': 'storeitem',
-				'item': item['id'],
+				'item': item['uid'],
 				'container': lfe.get_all_storage(life)[0]['id']}
 			
 			if len(lfe.find_action(life,matches=[_store_action])):
@@ -132,12 +187,12 @@ def manage_hands(life):
 			
 			lfe.add_action(life,_store_action,
 				401,
-				delay=lfe.get_item_access_time(life,item['id']))
+				delay=lfe.get_item_access_time(life,item))
 
 def manage_inventory(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life, check_hands=False)]:
 		_equip_action = {'action': 'equipitem',
-				'item': item['id']}
+				'item': item['uid']}
 		
 		if len(lfe.find_action(life,matches=[_equip_action])):
 			continue
@@ -146,7 +201,7 @@ def manage_inventory(life):
 			lfe.add_action(life,
 				_equip_action,
 				401,
-				delay=lfe.get_item_access_time(life, item['id']))
+				delay=lfe.get_item_access_time(life, item))
 			continue
 
 def explore_known_chunks(life):
@@ -160,12 +215,15 @@ def explore_known_chunks(life):
 	#automatically.
 	
 	#Note: Determining whether this fuction should run at all needs to be done inside
-	#the module itself.	
+	#the module itself.
 	_chunk_key = brain.retrieve_from_memory(life, 'explore_chunk')
 	_chunk = maps.get_chunk(_chunk_key)
 	
+	if life['path'] and chunks.position_is_in_chunk(lfe.path_dest(life), _chunk_key):
+		return True
+	
 	if chunks.is_in_chunk(life, '%s,%s' % (_chunk['pos'][0], _chunk['pos'][1])):
-		life['known_chunks'][_chunk_key]['last_visited'] = time.time()
+		life['known_chunks'][_chunk_key]['last_visited'] = WORLD_INFO['ticks']
 		return False
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])
@@ -180,10 +238,10 @@ def explore_unknown_chunks(life):
 	if life['path']:
 		return True
 	
-	_chunk_key = references.path_along_reference(life, 'buildings')
+	#_chunk_key = references.path_along_reference(life, 'buildings')
 	
-	if not _chunk_key:
-		_chunk_key = references.path_along_reference(life, 'roads')
+	#if not _chunk_key:
+	_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
 		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
@@ -192,7 +250,10 @@ def explore_unknown_chunks(life):
 		
 		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True)
 	
-	_walkable_area = chunks.get_walkable_areas(life, _chunk_key)
+	if not _chunk_key:
+		return False
+	
+	_walkable_area = chunks.get_walkable_areas(_chunk_key)
 	if not _walkable_area:
 		return False
 	

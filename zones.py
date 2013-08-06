@@ -56,7 +56,7 @@ def process_slice(z):
 				for y in range(MAP_SIZE[1]):
 					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
 						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
-							pass
+							_slice[x][y] = -2
 						else:
 							_slice[x][y] = -1
 					
@@ -70,7 +70,7 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
-						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
+						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
@@ -94,12 +94,16 @@ def get_zone_at_coords(pos):
 	
 	return None
 
+def get_slice(zone_id):
+	zone_id = str(zone_id)
+	return WORLD_INFO['slices'][zone_id]
+
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
-		return True
+		return [z1]
 	
 	z1 = str(z1)
 	z2 = str(z2)
@@ -111,13 +115,13 @@ def can_path_to_zone(z1, z2):
 		_checking = _to_check.pop()
 		_checked.append(_checking)
 		
-		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checked and not n in _checked])
+		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checking and not n in _checked])
 		
 		if z2 in _to_check:
 			_checked.append(z2)
-			return True
+			return _checked
 	
-	return False
+	return []
 
 def create_zone_map():
 	WORLD_INFO['slices'] = {}

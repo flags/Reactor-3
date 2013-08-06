@@ -12,6 +12,7 @@ import brain
 import raids
 import sight
 import camps
+import logic
 import jobs
 
 import logging
@@ -103,6 +104,16 @@ def is_target_dangerous(life, target_id):
 			return False
 		
 		return True
+	
+	return False
+
+def is_target_lost(life, target_id):
+	_know = brain.knows_alife_by_id(life, target_id)
+	if sight.can_see_position(life, _know['last_seen_at']):
+		if sight.can_see_position(life, _know['life']['pos']):
+			return False
+		else:
+			return True
 	
 	return False
 
@@ -276,37 +287,113 @@ def get_influence(life, target_id, gist):
 def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
 
-def judge_chunk(life, chunk_id, visited=False):
+def judge_shelter(life, chunk_id):
+	chunk = CHUNK_MAP[chunk_id]
+	_known_chunk = life['known_chunks'][chunk_id]
+	_score = 0
+	
+	if _known_chunk['life']:
+		return 0
+	
+	if not chunk['type'] == 'building':
+		return 0
+	#	for building in WORLD_INFO['reference_map']['buildings']:
+	#		if chunk_id in building:
+	#			_score += len(building)
+	#			_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
+	#			_score = numbers.clip(_score, 0, 10)
+	#			break
+	
+	if not chunks.get_flag(life, chunk_id, 'shelter'):
+		_cover = []
+		
+		for pos in chunk['ground']:
+			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
+				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
+					_cover.append(list(pos))
+		
+		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
+	
+	#if chunks.get_flag(life, chunk_id, 'shelter'):
+	#	_score += 1
+	
+	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
+	
+	return True
+
+def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	chunk = CHUNK_MAP[chunk_id]
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
-		life['known_chunks'][chunk_id] = {'last_visited': 0,
-			'digest': chunk['digest']}
+		life['known_chunks'][chunk_id] = {'last_visited': -1,
+			'last_seen': -1,
+			'last_checked': -1,
+			'discovered_at': WORLD_INFO['ticks'],
+			'flags': {},
+			'digest': chunk['digest'],
+			'life': []}
+	
+	_known_chunk = life['known_chunks'][chunk_id]	
+	
+	if seen:
+		_known_chunk['last_seen'] = WORLD_INFO['ticks']
+	
+	if visited:
+		_known_chunk['last_visited'] = WORLD_INFO['ticks']
+		_known_chunk['last_seen'] = WORLD_INFO['ticks']
+	
+	if checked:
+		_known_chunk['last_checked'] = WORLD_INFO['ticks']
 	
 	_trusted = 0
 	for _target in life['know'].values():
 		_is_here = False
+		_actually_here = False
 		
 		if chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			_is_here = True
 		elif not _target['last_seen_time'] and _target['life']['path'] and chunks.position_is_in_chunk(lfe.path_dest(_target['life']), chunk_id):
 			_is_here = True
+		
+		if chunks.position_is_in_chunk(_target['life']['pos'], chunk_id):
+			_actually_here = True
 			
 		if _is_here:
+			if not _target['life']['id'] in _known_chunk['life']:
+				_known_chunk['life'].append(_target['life']['id'])
+			
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
-			else:
+			elif life['group'] and groups.is_leader(life['group'], _target['life']['id']):
 				_trusted += _target['trust']
+			#else:
+			#	_trusted += _target['trust']
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
+			
+			if _actually_here:
+				_score += stats.desires_to_follow(life, _target['life']['id'])
+		else:
+			if _target['life']['id'] in _known_chunk['life']:
+				_known_chunk['life'].remove(_target['life']['id'])
 	
-	if stats.desires_interaction(life):
-		_score += _trusted
+	for camp in life['known_camps'].values():
+		if not chunk_id in camp['reference']:
+			continue
+		
+		if not life['camp'] == camp['id']:
+			continue
 	
-	if visited:
-		life['known_chunks'][chunk_id]['last_visited'] = WORLD_INFO['ticks']
+		if stats.desires_shelter(life):
+			_score += judge_camp(life, life['camp'])
+	
+	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
+		judge_shelter(life, chunk_id)
+	
+	#if stats.desires_interaction(life):
+	#	_score += _trusted
 	
 	for item in chunk['items']:
 		_item = brain.remember_known_item(life, item)
@@ -339,8 +426,8 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 		
 		_count += 1
 		_chunk = maps.get_chunk(key)
-		_chunk_center = (_chunk['pos'][0]+(SETTINGS['chunk size']/2),
-			_chunk['pos'][1]+(SETTINGS['chunk size']/2))
+		_chunk_center = (_chunk['pos'][0]+(WORLD_INFO['chunk_size']/2),
+			_chunk['pos'][1]+(WORLD_INFO['chunk_size']/2))
 		_distance = numbers.distance(life['pos'], _chunk_center)
 		
 		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
@@ -372,14 +459,14 @@ def judge_reference(life, reference, reference_type, known_penalty=False):
 	_score += _count
 	
 	#Subtract distance in chunks
-	_score -= _closest_chunk_key['distance']/SETTINGS['chunk size']
+	_score -= _closest_chunk_key['distance']/WORLD_INFO['chunk_size']
 	
 	#TODO: Average time since last visit (check every key in reference)
 	#TODO: For tracking last visit use world ticks
 	
 	return _score
 
-def judge_camp(life, camp):
+def judge_camp(life, camp, for_founding=False):
 	#This is kinda complicated so I'll do my best to describe what's happening.
 	#The ALife keeps track of chunks it's aware of, which we'll use when
 	#calculating how much of a camp we know about (value between 0..1)
@@ -394,6 +481,20 @@ def judge_camp(life, camp):
 	#After scoring this camp, we simply multiply by the percentage of the camp
 	#that is known. This will encourage ALife to discover a camp first before
 	#moving in.
+	
+	#In addition to all that, we want to prevent returning camps that are too close
+	#to other camps. This is hardcoded (can't think of a reason why the ALife would want this)
+	
+	if for_founding:
+		for _known_camp in [c['reference'] for c in life['known_camps'].values()]:
+			for _pos1 in _known_camp:
+				pos1 = [int(i) for i in _pos1.split(',')]
+				for _pos2 in camp:
+					pos2 = [int(i) for i in _pos2.split(',')]
+					_dist = numbers.distance(pos1, pos2) / WORLD_INFO['chunk_size']
+					
+					if _dist <= 15:
+						return 0
 	
 	_known_chunks_of_camp = references.get_known_chunks_in_reference(life, camp)
 	
@@ -411,11 +512,9 @@ def judge_camp(life, camp):
 			_current_trust -= _target['danger']
 	
 	_percent_known = len(_known_chunks_of_camp)/float(len(camp))
-	_known_camps = [c['reference'] for c in life['known_camps'].values()]
-	
 	_score = _current_trust
-	
 	_camp = camps.get_camp_via_reference(camp)
+	
 	if _camp:
 		_score += judge_group(life, camps.get_controlling_group(_camp))
 	
@@ -477,6 +576,11 @@ def judge_group(life, group_id):
 	
 	return _score
 
+#def get_best_goal(life):
+#	for goal in life['goal'].values():
+#		if 'investigate'
+		
+
 def group_judge_group(group_id, target_group_id):
 	_group1 = groups.get_group(group_id)
 	_group2 = groups.get_group(target_group_id)
@@ -524,3 +628,35 @@ def believe_which_alife(life, alife):
 		return random.choice(_scores[max(_scores)])
 	else:
 		return _winners[0]
+
+def get_best_goal(life):
+	for goal in brain.retrieve_from_memory(life, 'active_goals'):
+		return goal
+	
+	return -1
+
+def get_best_shelter(life):
+	_best_shelter = {'distance': -1, 'shelter': None}
+	
+	if life['group']:
+		_shelter = groups.get_shelter(life['group'])
+		
+		if _shelter:
+			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _shelter.split(',')]
+			_dist = numbers.distance(life['pos'], _shelter_center)
+			
+			if _dist <= logic.time_until_midnight()*life['speed_max']:
+				print life['name'],'can get to shelter in time'
+				return _shelter
+			else:
+				print life['name'],'cant get to shelter in time'
+	
+	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
+		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+		_score = numbers.distance(life['pos'], chunk_center)
+		
+		if not _best_shelter['shelter'] or _score<_best_shelter['distance']:
+			_best_shelter['shelter'] = chunk_key
+			_best_shelter['score'] = _score
+	
+	return _best_shelter['shelter']

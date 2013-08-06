@@ -55,7 +55,7 @@ def draw_slice(slice_map):
 			if slice_map[x][y] == -1:
 				print '^',
 			elif slice_map[x][y] == -2:
-				print 'v',
+				print '#',
 			elif slice_map[x][y] == -3:
 				print ' '
 			elif not slice_map[x][y]:
@@ -122,7 +122,7 @@ def process_slice(z):
 				for y in range(MAP_SIZE[1]):
 					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
 						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
-							pass
+							_slice[x][y] = -2
 						else:
 							_slice[x][y] = -1
 					

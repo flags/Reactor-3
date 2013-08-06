@@ -16,6 +16,7 @@ import logging
 import random
 
 ENTRY_SCORE = 0
+TIER = TIER_PASSIVE
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#Note: We don't want to change the state because we're running this module alongside
@@ -33,10 +34,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#	return False
 	
 	for ai in alife_seen:
-		#What's our relationship with them?
-		#if ai['life']['state'] in ['hiding', 'hidden']:
-		#	break
-		
 		if life['state'] in ['combat']:
 			break
 		
@@ -80,13 +77,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	for target in _potential_talking_targets:
 		if life['dialogs']:
+			print 'existing'
 			break
 		
 		if life['state'] in ['combat', 'hiding', 'hidden']:
+			print 'hiding'
 			break
 		
 		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
-			if not 'player' in target and stats.desires_life(life, target['id']):
+			if stats.desires_life(life, target['id']):
 				speech.start_dialog(life, target['id'], 'introduction')
 			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
 				speech.start_dialog(life, target['id'], 'introduction_negative')
@@ -94,9 +93,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
 				speech.start_dialog(life, target['id'], 'questions')
-		elif stats.desires_to_create_group(life):
-			groups.create_group(life)
+			print 'questions'
 		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
+			print life['name'],'wants',LIFE[target['id']]['name']
 			brain.flag_alife(life, target['id'], 'invited_to_group')
 			speech.start_dialog(life, target['id'], 'invite_to_group')
 	
@@ -138,7 +137,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 
 			speech.announce(life, 'under_attack', trusted=True, attacker=target, last_seen_at=_last_seen_at)
 
-	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'id' in life['know_items'][item]['item']]
+	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'parent_id' in ITEMS[life['know_items'][item]['item']]]
 	for ai in [life['know'][i] for i in life['know']]:
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
@@ -157,7 +156,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if brain.has_shared_item_with(life, ai['life'], item['item']):
 				continue
 
-			if not item['item']['uid'] in ITEMS:
+			if not item['item'] in ITEMS:
 				continue
 
 			brain.share_item_with(life, ai['life'], item['item'])

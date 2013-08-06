@@ -30,14 +30,14 @@ except ImportError, e:
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
-def create_map():
+def create_map(size=MAP_SIZE):
 	_map = []
 
-	for x in range(MAP_SIZE[0]):
+	for x in range(size[0]):
 		_y = []
-		for y in range(MAP_SIZE[1]):
+		for y in range(size[1]):
 			_z = []
-			for z in range(MAP_SIZE[2]):
+			for z in range(size[2]):
 				if z == 2:
 					_z.append(create_tile(random.choice(
 						[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
@@ -47,7 +47,7 @@ def create_map():
 			_y.append(_z)
 		_map.append(_y)
 
-	gfx.log('Created new map of size (%s,%s).' % (MAP_SIZE[0],MAP_SIZE[1]))
+	logging.debug('Created new map of size (%s,%s).' % (size[0], size[1]))
 	return _map
 
 def save_map(map_name, base_dir=DATA_DIR):
@@ -59,6 +59,9 @@ def save_map(map_name, base_dir=DATA_DIR):
 		os.mkdir(_map_dir)
 	except:
 		pass
+
+	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
+		del _slice['rotmap']
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
@@ -107,6 +110,20 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 			zones.connect_ramps()
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		
+		for x in range(MAP_SIZE[0]):
+			for y in range(MAP_SIZE[1]):
+				for z in range(MAP_SIZE[2]):
+					if not WORLD_INFO['map'][x][y][z]:
+						continue
+					
+					for key in TILE_STRUCT_DEP:
+						if key in WORLD_INFO['map'][x][y][z]:
+							del WORLD_INFO['map'][x][y][z][key]
+					
+					for key in TILE_STRUCT:
+						if not key in WORLD_INFO['map'][x][y][z]:
+							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
@@ -184,7 +201,7 @@ def render_lights(source_map):
 		brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		
-		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		_mod = numbers.clip(_mod-1, 0, 1)
 		SUN = (255*_mod, 165*_mod, 0*_mod)
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
@@ -416,7 +433,7 @@ def refresh_chunk(chunk_id):
 	chunk['items'] = _items
 	chunk['life'] = _life
 	chunk['last_updated'] = WORLD_INFO['ticks']
-	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, _item)
+	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, len(_items))
 	broadcast_chunk_change(chunk_id)
 
 def broadcast_chunk_change(chunk_id):
@@ -435,10 +452,10 @@ def broadcast_chunk_change(chunk_id):
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
-	for x1 in range(SETTINGS['chunk size']):
+	for x1 in range(WORLD_INFO['chunk_size']):
 		x = x1+_chunk['pos'][0]
 		
-		for y1 in range(SETTINGS['chunk size']):
+		for y1 in range(WORLD_INFO['chunk_size']):
 			y = y1+_chunk['pos'][1]
 			
 			if source_map[x][y][2] and not source_map[x][y][3]:
@@ -491,8 +508,8 @@ def update_chunk_map():
 	_stime = time.time()
 	_chunk_map = {}
 	
-	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
@@ -505,15 +522,15 @@ def update_chunk_map():
 				'digest': None}
 			
 			_tiles = {}
-			for y2 in range(y1, y1+SETTINGS['chunk size']):
-				for x2 in range(x1, x1+SETTINGS['chunk size']):
+			for y2 in range(y1, y1+WORLD_INFO['chunk_size']):
+				for x2 in range(x1, x1+WORLD_INFO['chunk_size']):
 					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
 					_tile_type = None
 					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_tile(WORLD_INFO['map'][x2][y2][2])
+						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
 					
 					if 'type' in _tile:
 						_type = _tile['type']
@@ -549,15 +566,15 @@ def smooth_chunk_map():
 		_change = False
 		_runs += 1
 		
-		for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-			for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+		for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+			for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 				_current_chunk_key = '%s,%s' % (x1, y1)
 				_current_chunk = _chunk_map[_current_chunk_key]
 				_neighbors = []
 				
 				for pos in [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]:
-					x2 = x1+(pos[0]*SETTINGS['chunk size'])
-					y2 = y1+(pos[1]*SETTINGS['chunk size'])
+					x2 = x1+(pos[0]*WORLD_INFO['chunk_size'])
+					y2 = y1+(pos[1]*WORLD_INFO['chunk_size'])
 					
 					if x2>=MAP_SIZE[0] or x2<0 or y2>=MAP_SIZE[1] or y2<0:
 						continue
@@ -611,8 +628,8 @@ def find_all_linked_chunks(chunk_key, check=[]):
 def generate_reference_maps():
 	_stime = time.time()
 	
-	for y1 in range(0, MAP_SIZE[1], SETTINGS['chunk size']):
-		for x1 in range(0, MAP_SIZE[0], SETTINGS['chunk size']):
+	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_current_chunk_key = '%s,%s' % (x1, y1)
 			_current_chunk = get_chunk(_current_chunk_key)
 			

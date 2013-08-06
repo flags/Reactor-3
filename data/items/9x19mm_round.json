@@ -5,6 +5,7 @@
 "description": "Pistol round effective at short to mid-range combat.",
 "speed": 25,
 "fallspeed": 0.05,
+"scatter_rate": 0.3,
 "flags": "",
 "damage": {"sharp": 3},
 "size": "1x1",
