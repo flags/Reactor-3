@@ -78,7 +78,6 @@ def get_accuracy(life, weapon, limb=None):
 	return _accuracy
 
 def get_impact_accuracy(life, bullet):
-	#_travel_time = WORLD_INFO['time']-bullet['time_shot']
 	_travel_distance = numbers.distance(bullet['start_pos'], bullet['pos'])
 	_bullet_sway = _travel_distance*bullet['scatter_rate']
 	
@@ -155,10 +154,12 @@ def fire(life, target, limb=None):
 		_bullet['owner'] = life['id']
 		_bullet['aim_at_limb'] = limb
 		_bullet['time_shot'] = WORLD_INFO['ticks']
+		
 		_bullet['needed_accuracy'] = get_max_accuracy(weapon)
 		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=_aim_with_limb)))
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
+		_bullet['start_velocity'] = _bullet['velocity'][:]
 	
 	if _ooa:
 		if 'player' in life:

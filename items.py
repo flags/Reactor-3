@@ -270,6 +270,23 @@ def create_effects(item, pos, real_z_pos, z_min):
 			
 				break
 
+def get_min_max_velocity(item):
+	if item['velocity'][0]>0:
+		_min_x_vel = 0
+		_max_x_vel = 255
+	else:
+		_min_x_vel = -255
+		_max_x_vel = 0
+	
+	if item['velocity'][1]>0:
+		_min_y_vel = 0
+		_max_y_vel = 255
+	else:
+		_min_y_vel = -255
+		_max_y_vel = 0
+	
+	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
+
 def tick_all_items(MAP):
 	_remove = []
 	
@@ -303,6 +320,23 @@ def tick_all_items(MAP):
 		for pos in _line:
 			item['realpos'][2] += item['velocity'][2]
 			item['velocity'][2] -= item['velocity'][2]*item['gravity']
+			
+			if 'drag' in item:
+				_drag = item['drag']
+			else:
+				_drag = item['gravity']
+				logging.warning('Improper use of gravity.')
+				
+			_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
+			
+			if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
+				item['velocity'][0] = 0
+			
+			if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
+				item['velocity'][1] = 0
+			
+			item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
+			item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 			
 			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 				logging.warning('Item OOM: %s', item['uid'])
@@ -366,19 +400,7 @@ def tick_all_items(MAP):
 			maps.refresh_chunk(life.get_current_chunk_id(item))
 			continue
 
-		if item['velocity'][0]>0:
-			_min_x_vel = 0
-			_max_x_vel = 255
-		else:
-			_min_x_vel = -255
-			_max_x_vel = 0
-		
-		if item['velocity'][1]>0:
-			_min_y_vel = 0
-			_max_y_vel = 255
-		else:
-			_min_y_vel = -255
-			_max_y_vel = 0
+		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
 		if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
 			item['velocity'][0] = 0
@@ -387,8 +409,14 @@ def tick_all_items(MAP):
 			item['velocity'][1] = 0
 		
 		#TODO: This isn't gravity...
-		item['velocity'][0] -= numbers.clip(item['velocity'][0]*item['gravity'], _min_x_vel, _max_x_vel)
-		item['velocity'][1] -= numbers.clip(item['velocity'][1]*item['gravity'], _min_y_vel, _max_y_vel)
+		if 'drag' in item:
+			_drag = item['drag']
+		else:
+			_drag = item['gravity']
+			logging.warning('Improper use of gravity.')
+		
+		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
+		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 	
 	for _id in _remove:
 		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])

@@ -4,7 +4,7 @@
 "icon": ".",
 "description": "Long Rifle cartridge effective at mid to long range.",
 "speed": 30,
-"fallspeed": 0.05,
+"drag": 0.05,
 "scatter_rate": 0.3,
 "flags": "",
 "damage": {"sharp": 2},

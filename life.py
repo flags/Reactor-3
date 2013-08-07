@@ -1350,10 +1350,10 @@ def perform_action(life):
 	elif _action['action'] == 'shoot':
 		weapons.fire(life, _action['target'], limb=_action['limb'])
 		
-		add_action(life,
-			{'action': 'recoil'},
-			5001,
-			delay=weapons.get_recoil(life))
+		#add_action(life,
+		#	{'action': 'recoil'},
+		#	5001,
+		#	delay=weapons.get_recoil(life))
 		
 		delete_action(life,action)
 	

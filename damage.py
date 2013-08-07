@@ -26,9 +26,7 @@ def own_language(life, message):
 	return _ret_string
 
 def bullet_hit(life, bullet, limb):
-	_velos = sum([abs(i) for i in bullet['velocity']])
-	_falloff = numbers.clip(_velos, 0, bullet['max_speed'])/float(bullet['max_speed'])
-	#_falloff = max(bullet['velocity'])/float(bullet['max_speed'])
+	_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
 	_damage = 0
 	_cut = 0
 	_bruise = 0
@@ -58,6 +56,7 @@ def bullet_hit(life, bullet, limb):
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
 		print 'cut',_cut
+		print 'falloff', _falloff
 	
 	if _cut:
 		_items_to_check = []

@@ -98,7 +98,7 @@ def switch_to_main_menu():
 	menus.delete_active_menu()
 	
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Start', None))
+	_menu_items.append(menus.create_item('single', 'Start', None, enabled=profiles.get_worlds()))
 	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
 	_menu_items.append(menus.create_item('single', 'World Generation', None))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
