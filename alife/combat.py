@@ -35,7 +35,7 @@ def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
 
 	_highest_feed = {'rounds': -1,'feed': None}
-	for feed in [lfe.get_inventory_item(life,_feed['id']) for _feed in _feeds]:
+	for feed in [lfe.get_inventory_item(life,_feed['uid']) for _feed in _feeds]:
 		if feed['rounds']>_highest_feed['rounds']:
 			_highest_feed['rounds'] = feed['rounds']
 			_highest_feed['feed'] = feed
@@ -43,14 +43,14 @@ def _get_feed(life, weapon):
 	return _highest_feed['feed']
 
 def _refill_feed(life,feed):
-	if not lfe.is_holding(life, feed['id']) and not lfe.can_hold_item(life):
+	if not lfe.is_holding(life, feed['uid']) and not lfe.can_hold_item(life):
 		logging.warning('No hands free to load ammo!')
 		
 		return False
 	
-	if not lfe.get_held_items(life,matches=[{'id': feed['id']}]):
+	if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]):
 		_hold = lfe.add_action(life,{'action': 'removeandholditem',
-			'item': feed['id']},
+			'item': feed['uid']},
 			200,
 			delay=0)
 
@@ -96,7 +96,7 @@ def _equip_weapon(life, weapon, feed):
 	else:
 		print 'should be equippan?'
 		lfe.add_action(life,{'action': 'equipitem',
-			'item': weapon['id']},
+			'item': weapon['uid']},
 			300,
 			delay=0)
 		

@@ -1207,7 +1207,7 @@ def perform_action(life):
 		_container = get_inventory_item(life,_action['container'])
 		
 		remove_item_from_inventory(life,_action['item'])
-		direct_add_item_to_inventory(life,_item_to_store,container=_container)
+		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		
 		if life.has_key('player'):
 			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
@@ -1241,9 +1241,7 @@ def perform_action(life):
 			say(life,'@n puts on %s from the ground.' % _name,action=True)
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
-		print repr(_action['item'])
 		_id = direct_add_item_to_inventory(life,_action['item'])
-		print _id
 		equip_item(life,_id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
@@ -1304,7 +1302,7 @@ def perform_action(life):
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
 		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
-		_action['ammo']['parent'] = _action['weapon']
+		_action['ammo']['parent'] = _action['weapon']['uid']
 		
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
@@ -1314,7 +1312,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'unload':
 		_weapon = get_inventory_item(life, _action['weapon'])
-		_ammo = _weapon[_weapon['feed']]
+		_ammo = items.get_item_from_uid(_weapon[_weapon['feed']])
 		_hand = can_hold_item(life)
 		
 		if _hand:
@@ -1337,8 +1335,8 @@ def perform_action(life):
 	
 	elif _action['action'] == 'refillammo':	
 		_action['ammo']['rounds'].append(_action['round'])
-		_action['round']['parent'] = _action['ammo']
-		_round = remove_item_from_inventory(life,_action['round']['uid'])
+		_action['round']['parent'] = _action['ammo']['uid']
+		_round = remove_item_from_inventory(life, _action['round']['uid'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')

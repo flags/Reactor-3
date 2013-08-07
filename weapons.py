@@ -119,7 +119,7 @@ def fire(life, target, limb=None):
 	
 	_aim_with_limb = None
 	for hand in life['hands']:
-		if weapon['id'] in lfe.get_limb(life, hand)['holding']:
+		if weapon['uid'] in lfe.get_limb(life, hand)['holding']:
 			_aim_with_limb = hand
 	
 	_ooa = False
@@ -137,7 +137,7 @@ def fire(life, target, limb=None):
 		#direction += random.randint(-_accuracy,_accuracy+1)
 		
 		#TODO: Clean this up...
-		_bullet = _feed['rounds'].pop()
+		_bullet = items.get_item_from_uid(_feed['rounds'].pop())
 		_bullet['pos'] = life['pos'][:]
 		_bullet['start_pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']

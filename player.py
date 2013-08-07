@@ -679,7 +679,7 @@ def inventory_equip(entry):
 def inventory_unequip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['item']['id']
+	item = entry['item']['uid']
 	
 	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
 	
@@ -687,7 +687,7 @@ def inventory_unequip(entry):
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
 	
 	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
@@ -706,13 +706,13 @@ def inventory_unequip_action(entry):
 		if container['capacity']+_item['size'] > container['max_capacity']:
 			continue
 		
-		if container['id'] == item:
+		if container['uid'] == item:
 			continue
 		
 		_menu.append(menus.create_item('single',
 			container['name'],
 			'%s/%s' % (container['capacity'],container['max_capacity']),
-			container=container['id'],
+			container=container['uid'],
 			item=_item))
 	
 	if not _menu:

@@ -150,6 +150,9 @@ def save_world():
 	items.save_all_items()
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
+		for item in ITEMS.values():
+			print item
+			json.dumps(item)
 		e.write(json.dumps(ITEMS))
 	
 	items.reload_all_items()

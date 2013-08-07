@@ -221,7 +221,7 @@ def create_gib(life, icon, size, velocity):
 		'material': 'flesh',
 		'thickness': size}
 	
-	_i = items.create_item('gib', position=life['pos'][:], item=_gib)
+	_i = items.get_item_from_uid(items.create_item('gib', position=life['pos'][:], item=_gib))
 	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]
 	
 	logging.debug('Created gib.')
