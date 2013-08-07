@@ -142,8 +142,8 @@ def fire(life, target, limb=None):
 			_ooa = True
 			continue
 		
-		direction = numbers.direction_to(life['pos'],target)
-		#direction += random.randint(-_accuracy,_accuracy+1)
+		direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
+		life['recoil'] += weapon['recoil']
 		
 		#TODO: Clean this up...
 		_bullet = items.get_item_from_uid(_feed['rounds'].pop())

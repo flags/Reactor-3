@@ -304,6 +304,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
+	_life['recoil'] = 0
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
@@ -1444,6 +1445,8 @@ def tick(life, source_map):
 		if not thirst(life):
 			return False
 	
+	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0, 10)
+	
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
@@ -2436,9 +2439,14 @@ def draw_life_info():
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
 		_i += 1
 	
+	if LIFE[SETTINGS['controlling']]['recoil']:
+		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
+		tcod.console_set_default_foreground(0, tcod.yellow)
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y, 'RECOIL')
+	
 	#Drawing the action queue
 	_y_mod = 1
-	_y_start = (MAP_WINDOW_SIZE[1]-2)-SETTINGS['action queue size']
+	_y_start = (MAP_WINDOW_SIZE[1]-1)-SETTINGS['action queue size']
 	
 	if len(life['actions']) > SETTINGS['action queue size']:
 		_queued_actions = 'Queued Actions (+%s)' % (len(life['actions'])-SETTINGS['action queue size'])
