@@ -194,12 +194,10 @@ def get_name(item):
 	"""Returns the full name of an item."""
 	return '%s %s' % (item['prefix'],item['name'])		
 
-def move(item_uid, direction, speed, friction=0.05, _velocity=0):
+def move(item, direction, speed, friction=0.05, _velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
 	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
-	
-	item = get_item_from_uid(item_uid)
 	
 	item['friction'] = friction
 	item['velocity'] = velocity

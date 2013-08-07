@@ -1300,7 +1300,7 @@ def perform_action(life):
 		delete_action(life,action)
 		
 	elif _action['action'] == 'reload':	
-		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
+		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
 		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
 		
@@ -1334,7 +1334,7 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'refillammo':	
-		_action['ammo']['rounds'].append(_action['round'])
+		_action['ammo']['rounds'].append(_action['round']['uid'])
 		_action['round']['parent'] = _action['ammo']['uid']
 		_round = remove_item_from_inventory(life, _action['round']['uid'])
 		
@@ -1874,7 +1874,7 @@ def remove_item_from_inventory(life, item_id):
 			item['storing'].remove(_item)
 			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
-			del life['inventory'][str(_item)]
+			life['inventory'].remove(_item)
 	
 	life['speed_max'] = get_max_speed(life)
 	

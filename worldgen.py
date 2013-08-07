@@ -237,7 +237,7 @@ def create_player(source_map):
 	SETTINGS['controlling'] = PLAYER['id']
 	SETTINGS['following'] = PLAYER['id']
 	
-	_i = items.create_item('burner', position=PLAYER['pos'][:])
+	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
 	items.move(_i, 180, 3)
 	
 	#for x in range(-10, 11):

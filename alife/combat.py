@@ -6,6 +6,7 @@ import judgement
 import movement
 import weapons
 import speech
+import items
 import sight
 import brain
 import jobs
@@ -20,10 +21,10 @@ def weapon_equipped_and_ready(life):
 	
 	_loaded_feed = None
 	for weapon in get_equipped_weapons(life):
-		_feed = weapons.get_feed(weapon)
+		_feed_uid = weapons.get_feed(weapon)
 		
-		if _feed and _feed['rounds']:
-			_loaded_feed = _feed
+		if _feed_uid and items.get_item_from_uid(_feed_uid)['rounds']:
+			_loaded_feed = items.get_item_from_uid(_feed_uid)
 
 	if not _loaded_feed:
 		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
@@ -144,8 +145,10 @@ def get_best_weapon(life):
 		_feeds = lfe.get_all_inventory_items(life,
 			matches=[{'type': _wep['feed'],'ammotype': _wep['ammotype']}])
 		
-		_loaded_feed = weapons.get_feed(_wep)
-		if _loaded_feed:
+		_loaded_feed_uid = weapons.get_feed(_wep)
+		if _loaded_feed_uid:
+			_loaded_feed = items.get_item_from_uid(_loaded_feed_uid)
+			
 			if len(_loaded_feed['rounds'])>_best_wep['rounds']:
 				_best_wep['weapon'] = _wep
 				_best_wep['feed'] = _loaded_feed

@@ -124,7 +124,16 @@ def fire(life, target, limb=None):
 	
 	_ooa = False
 	for i in range(_bullets):
-		_feed = get_feed(weapon)
+		_feed_uid = get_feed(weapon)
+		
+		if not _feed_uid:
+			if 'player' in life:
+				gfx.message('The weapon is unloaded.')
+			
+			_ooa = True
+			continue
+		
+		_feed = items.get_item_from_uid(_feed_uid)
 		
 		if not _feed or (_feed and not _feed['rounds']):
 			if 'player' in life:

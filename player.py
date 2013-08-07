@@ -400,9 +400,11 @@ def handle_input():
 		_empty_ammo = []
 		
 		for weapon in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'gun'}]):
-			_feed = weapons.get_feed(weapon)
+			_feed_uid = weapons.get_feed(weapon)
 			
-			if _feed:
+			if _feed_uid:
+				_feed = items.get_item_from_uid(_feed_uid)
+				
 				_loaded_weapons.append(menus.create_item('single',
 					weapon['name'],
 					'%s/%s' % (len(_feed['rounds']),_feed['maxrounds']),
@@ -1189,7 +1191,7 @@ def craft_menu_response(entry):
 
 def create_crafting_menu():
 	_items = []
-	for item in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']]):
+	for item in [items.get_item_from_uid(i) for i in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']])]:
 		_items.append(menus.create_item('single',
 			item['name'],
 			None,
