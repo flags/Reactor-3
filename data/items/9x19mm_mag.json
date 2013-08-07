@@ -4,7 +4,7 @@
 "icon": "L",
 "description": "A magazine designed for use in the Glock 17. Extendable to 19 rounds with optional floor plate.",
 "flags": "",
-"size": "2x2",
+"size": "1x2",
 "maxrounds": 17,
 "rounds": [],
 "ammotype": "9x19mm",

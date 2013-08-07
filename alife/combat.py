@@ -8,6 +8,7 @@ import weapons
 import speech
 import items
 import sight
+import stats
 import brain
 import jobs
 
@@ -215,7 +216,7 @@ def ranged_combat(life, target):
 			'target': target['life']['pos'][:],
 			'limb': 'chest'},
 			5000,
-			delay=0)
+			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 
 def wont_disarm(life):
 	jobs.cancel_job(life['job'])

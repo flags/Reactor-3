@@ -497,6 +497,7 @@ def handle_input():
 		_options.append(menus.create_item('title','Debug (Developer)',None))
 		_options.append(menus.create_item('spacer','=',None))
 		_options.append(menus.create_item('single','Save','Offload game to disk'))
+		_options.append(menus.create_item('single','Load','Load game from disk'))
 		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
 		
 		_i = menus.create_menu(title='Options',
@@ -966,6 +967,7 @@ def inventory_handle_feed(entry):
 			delay=20)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_handle_ammo(entry):
 	key = entry['key']
@@ -1131,6 +1133,8 @@ def handle_options_menu(entry):
 	
 	if key == 'Save':
 		worldgen.save_world()
+	if key == 'Load':
+		worldgen.load_world(WORLD_INFO['id'])
 	elif key == 'Reload map':
 		logging.warning('Map reloading is not well tested!')
 		global MAP

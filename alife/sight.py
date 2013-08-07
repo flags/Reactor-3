@@ -117,6 +117,9 @@ def can_see_position(life, pos, distance=True, block_check=False):
 	return _ret_line
 
 def can_see_target(life, target_id):
+	if not target_id in LIFE:
+		return False
+		
 	_knows = LIFE[target_id]
 	_dist = numbers.distance(life['pos'], _knows['pos'])
 	

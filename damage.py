@@ -35,6 +35,7 @@ def bullet_hit(life, bullet, limb):
 	_breaking = False
 	_lodged = False
 	_owner = LIFE[bullet['owner']]
+	_actual_limb = lfe.get_limb(life, limb)
 	
 	if 'player' in _owner:
 		if bullet['aim_at_limb'] == limb:
@@ -105,13 +106,14 @@ def bullet_hit(life, bullet, limb):
 					return ' '.join(_msg)
 	
 		if not lfe.limb_is_cut(life, limb):
-			if _cut==1:
+			_cut_percentage = _cut/float(_actual_limb['size'])
+			if _cut_percentage<=.25:
 				_msg.append(', cutting <own> %s' % limb)
-			elif _cut==2:
+			elif _cut_percentage<=.5:
 				_msg.append(', tearing <own> %s' % limb)
-			elif _cut==3:
+			elif _cut_percentage<=.75:
 				_msg.append(', ripping open <own> %s' % limb)
-			elif _cut==4:
+			elif _cut_percentage<=1:
 				_msg.append(', severing <own> %s!' % limb)
 				return ' '.join(_msg)
 			else:

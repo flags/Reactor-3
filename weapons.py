@@ -19,6 +19,14 @@ def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
 
+def get_stance_recoil_mod(life):
+	if life['stance'] == 'standing':
+		return 1
+	elif life['stance'] == 'crouching':
+		return .75
+	elif life['stance'] == 'crawling':
+		return .50
+
 def get_recoil(life):
 	_guns = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 	
@@ -28,12 +36,7 @@ def get_recoil(life):
 	weapon = lfe.get_inventory_item(life, _guns[0])
 	_recoil = weapon['recoil']
 	
-	if life['stance'] == 'standing':
-		_recoil *= 1
-	elif life['stance'] == 'crouching':
-		_recoil *= .75
-	elif life['stance'] == 'crawling':
-		_recoil *= .50
+	_recoil *= get_stance_recoil_mod(life)
 	
 	return _recoil
 
@@ -143,7 +146,7 @@ def fire(life, target, limb=None):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
-		life['recoil'] += weapon['recoil']
+		life['recoil'] += (weapon['recoil'] * get_stance_recoil_mod(life))
 		
 		#TODO: Clean this up...
 		_bullet = items.get_item_from_uid(_feed['rounds'].pop())
