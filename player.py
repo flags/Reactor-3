@@ -857,7 +857,7 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		padding=(1,1),
 		position=(1,1),
 		on_select=inventory_fire_action,
-	    on_close=exit_target,
+		on_close=exit_target,
 		format_str='$k')
 	
 	menus.activate_menu(_i)
@@ -873,7 +873,7 @@ def inventory_fire_action(entry):
 		delay=0)
 	
 	LIFE[SETTINGS['controlling']]['targeting'] = None
-	LIFE[SETTINGS['following']] = LIFE[SETTINGS['controlling']]
+	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])

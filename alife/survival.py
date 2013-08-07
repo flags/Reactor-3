@@ -171,23 +171,23 @@ def manage_hands(life):
 		if len(lfe.find_action(life,matches=[_equip_action])):
 			continue
 		
-		if lfe.can_wear_item(life, item):
-			lfe.add_action(life,_equip_action,
+		if lfe.can_wear_item(life, item['uid']):
+			lfe.add_action(life, _equip_action,
 				401,
-				delay=lfe.get_item_access_time(life,item))
+				delay=lfe.get_item_access_time(life, item['uid']))
 			continue
 		
 		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
 			_store_action = {'action': 'storeitem',
 				'item': item['uid'],
-				'container': lfe.get_all_storage(life)[0]['id']}
+				'container': lfe.get_all_storage(life)[0]['uid']}
 			
-			if len(lfe.find_action(life,matches=[_store_action])):
+			if len(lfe.find_action(life, matches=[_store_action])):
 				continue
 			
 			lfe.add_action(life,_store_action,
 				401,
-				delay=lfe.get_item_access_time(life,item))
+				delay=lfe.get_item_access_time(life, item['uid']))
 
 def manage_inventory(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life, check_hands=False)]:
