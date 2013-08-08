@@ -26,9 +26,10 @@ def tick_all_objects(source_map):
 	#	return False
 	
 	#if WORLD_INFO['in_combat']
-	if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
-		if not LIFE[SETTINGS['controlling']]['actions']:
-			return False
+	if SETTINGS['controlling']:
+		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
+			if not LIFE[SETTINGS['controlling']]['actions']:
+				return False
 	
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False

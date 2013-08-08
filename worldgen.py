@@ -24,12 +24,9 @@ BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt',
               'leather backpack',
-              'radio',
-              'glock',
-              '9x19mm magazine',
-              'electric lantern',
-              'soda']
-RECRUIT_ITEMS = [ '.22 rifle', 'corn', 'soda']
+              'radio']
+RECRUIT_ITEMS = ['glock', '9x19mm magazine']
+
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
 
@@ -228,8 +225,14 @@ def create_player(source_map):
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	for item in RECRUIT_ITEMS:
-		life.add_item_to_inventory(PLAYER, items.create_item(item))
+	life.add_item_to_inventory(PLAYER, items.create_item('.22 rifle'))
+	life.add_item_to_inventory(PLAYER, items.create_item('.22 LR magazine'))
+	
+	for i in range(10):
+		life.add_item_to_inventory(PLAYER, items.create_item('.22 LR cartridge'))
+	
+	#for item in RECRUIT_ITEMS:
+	#	life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER['id']
 	SETTINGS['following'] = PLAYER['id']

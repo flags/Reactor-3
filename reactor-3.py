@@ -104,6 +104,9 @@ items.initiate_item('can_of_corn')
 items.initiate_item('soda')
 items.initiate_item('electric_lantern')
 items.initiate_item('burner')
+items.initiate_item('22_rifle')
+items.initiate_item('22_lr_mag')
+items.initiate_item('22_lr_cartridge')
 
 SETTINGS['running'] = 2
 
