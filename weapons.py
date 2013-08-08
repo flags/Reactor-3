@@ -19,6 +19,14 @@ def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
 
+def get_stance_recoil_mod(life):
+	if life['stance'] == 'standing':
+		return 1
+	elif life['stance'] == 'crouching':
+		return .75
+	elif life['stance'] == 'crawling':
+		return .50
+
 def get_recoil(life):
 	_guns = lfe.get_held_items(life,matches=[{'type': 'gun'}])
 	
@@ -28,12 +36,7 @@ def get_recoil(life):
 	weapon = lfe.get_inventory_item(life, _guns[0])
 	_recoil = weapon['recoil']
 	
-	if life['stance'] == 'standing':
-		_recoil *= 1
-	elif life['stance'] == 'crouching':
-		_recoil *= .75
-	elif life['stance'] == 'crawling':
-		_recoil *= .50
+	_recoil *= get_stance_recoil_mod(life)
 	
 	return _recoil
 
@@ -75,7 +78,6 @@ def get_accuracy(life, weapon, limb=None):
 	return _accuracy
 
 def get_impact_accuracy(life, bullet):
-	#_travel_time = WORLD_INFO['time']-bullet['time_shot']
 	_travel_distance = numbers.distance(bullet['start_pos'], bullet['pos'])
 	_bullet_sway = _travel_distance*bullet['scatter_rate']
 	
@@ -119,12 +121,21 @@ def fire(life, target, limb=None):
 	
 	_aim_with_limb = None
 	for hand in life['hands']:
-		if weapon['id'] in lfe.get_limb(life, hand)['holding']:
+		if weapon['uid'] in lfe.get_limb(life, hand)['holding']:
 			_aim_with_limb = hand
 	
 	_ooa = False
 	for i in range(_bullets):
-		_feed = get_feed(weapon)
+		_feed_uid = get_feed(weapon)
+		
+		if not _feed_uid:
+			if 'player' in life:
+				gfx.message('The weapon is unloaded.')
+			
+			_ooa = True
+			continue
+		
+		_feed = items.get_item_from_uid(_feed_uid)
 		
 		if not _feed or (_feed and not _feed['rounds']):
 			if 'player' in life:
@@ -133,20 +144,22 @@ def fire(life, target, limb=None):
 			_ooa = True
 			continue
 		
-		direction = numbers.direction_to(life['pos'],target)
-		#direction += random.randint(-_accuracy,_accuracy+1)
+		direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
+		life['recoil'] = (weapon['recoil'] * get_stance_recoil_mod(life))
 		
 		#TODO: Clean this up...
-		_bullet = _feed['rounds'].pop()
+		_bullet = items.get_item_from_uid(_feed['rounds'].pop())
 		_bullet['pos'] = life['pos'][:]
 		_bullet['start_pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
 		_bullet['aim_at_limb'] = limb
 		_bullet['time_shot'] = WORLD_INFO['ticks']
+		
 		_bullet['needed_accuracy'] = get_max_accuracy(weapon)
 		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=_aim_with_limb)))
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
+		_bullet['start_velocity'] = _bullet['velocity'][:]
 	
 	if _ooa:
 		if 'player' in life:

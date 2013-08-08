@@ -6,7 +6,9 @@ import judgement
 import movement
 import weapons
 import speech
+import items
 import sight
+import stats
 import brain
 import jobs
 
@@ -20,10 +22,10 @@ def weapon_equipped_and_ready(life):
 	
 	_loaded_feed = None
 	for weapon in get_equipped_weapons(life):
-		_feed = weapons.get_feed(weapon)
+		_feed_uid = weapons.get_feed(weapon)
 		
-		if _feed and _feed['rounds']:
-			_loaded_feed = _feed
+		if _feed_uid and items.get_item_from_uid(_feed_uid)['rounds']:
+			_loaded_feed = items.get_item_from_uid(_feed_uid)
 
 	if not _loaded_feed:
 		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
@@ -35,7 +37,7 @@ def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
 
 	_highest_feed = {'rounds': -1,'feed': None}
-	for feed in [lfe.get_inventory_item(life,_feed['id']) for _feed in _feeds]:
+	for feed in [lfe.get_inventory_item(life,_feed['uid']) for _feed in _feeds]:
 		if feed['rounds']>_highest_feed['rounds']:
 			_highest_feed['rounds'] = feed['rounds']
 			_highest_feed['feed'] = feed
@@ -43,14 +45,14 @@ def _get_feed(life, weapon):
 	return _highest_feed['feed']
 
 def _refill_feed(life,feed):
-	if not lfe.is_holding(life, feed['id']) and not lfe.can_hold_item(life):
+	if not lfe.is_holding(life, feed['uid']) and not lfe.can_hold_item(life):
 		logging.warning('No hands free to load ammo!')
 		
 		return False
 	
-	if not lfe.get_held_items(life,matches=[{'id': feed['id']}]):
+	if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]):
 		_hold = lfe.add_action(life,{'action': 'removeandholditem',
-			'item': feed['id']},
+			'item': feed['uid']},
 			200,
 			delay=0)
 
@@ -96,7 +98,7 @@ def _equip_weapon(life, weapon, feed):
 	else:
 		print 'should be equippan?'
 		lfe.add_action(life,{'action': 'equipitem',
-			'item': weapon['id']},
+			'item': weapon['uid']},
 			300,
 			delay=0)
 		
@@ -144,8 +146,10 @@ def get_best_weapon(life):
 		_feeds = lfe.get_all_inventory_items(life,
 			matches=[{'type': _wep['feed'],'ammotype': _wep['ammotype']}])
 		
-		_loaded_feed = weapons.get_feed(_wep)
-		if _loaded_feed:
+		_loaded_feed_uid = weapons.get_feed(_wep)
+		if _loaded_feed_uid:
+			_loaded_feed = items.get_item_from_uid(_loaded_feed_uid)
+			
 			if len(_loaded_feed['rounds'])>_best_wep['rounds']:
 				_best_wep['weapon'] = _wep
 				_best_wep['feed'] = _loaded_feed
@@ -212,7 +216,7 @@ def ranged_combat(life, target):
 			'target': target['life']['pos'][:],
 			'limb': 'chest'},
 			5000,
-			delay=0)
+			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 
 def wont_disarm(life):
 	jobs.cancel_job(life['job'])

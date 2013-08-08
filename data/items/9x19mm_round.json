@@ -4,10 +4,10 @@
 "icon": ".",
 "description": "Pistol round effective at short to mid-range combat.",
 "speed": 25,
-"fallspeed": 0.05,
+"drag": 0.1,
 "scatter_rate": 0.3,
 "flags": "",
-"damage": {"sharp": 3},
+"damage": {"sharp": 2},
 "size": "1x1",
 "ammotype": "9x19mm",
 "material": "metal"}

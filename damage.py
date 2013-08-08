@@ -26,15 +26,14 @@ def own_language(life, message):
 	return _ret_string
 
 def bullet_hit(life, bullet, limb):
-	_velos = sum([abs(i) for i in bullet['velocity']])
-	_falloff = numbers.clip(_velos, 0, bullet['max_speed'])/float(bullet['max_speed'])
-	#_falloff = max(bullet['velocity'])/float(bullet['max_speed'])
+	_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
 	_damage = 0
 	_cut = 0
 	_bruise = 0
 	_breaking = False
 	_lodged = False
 	_owner = LIFE[bullet['owner']]
+	_actual_limb = lfe.get_limb(life, limb)
 	
 	if 'player' in _owner:
 		if bullet['aim_at_limb'] == limb:
@@ -57,6 +56,7 @@ def bullet_hit(life, bullet, limb):
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
 		print 'cut',_cut
+		print 'falloff', _falloff
 	
 	if _cut:
 		_items_to_check = []
@@ -105,13 +105,14 @@ def bullet_hit(life, bullet, limb):
 					return ' '.join(_msg)
 	
 		if not lfe.limb_is_cut(life, limb):
-			if _cut==1:
+			_cut_percentage = _cut/float(_actual_limb['size'])
+			if _cut_percentage<=.25:
 				_msg.append(', cutting <own> %s' % limb)
-			elif _cut==2:
+			elif _cut_percentage<=.5:
 				_msg.append(', tearing <own> %s' % limb)
-			elif _cut==3:
+			elif _cut_percentage<=.75:
 				_msg.append(', ripping open <own> %s' % limb)
-			elif _cut==4:
+			elif _cut_percentage<=1:
 				_msg.append(', severing <own> %s!' % limb)
 				return ' '.join(_msg)
 			else:

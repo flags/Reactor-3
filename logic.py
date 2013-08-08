@@ -18,12 +18,18 @@ def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
-		WORLD_INFO['pause_ticks'] = 0
+	#if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
+	#	WORLD_INFO['pause_ticks'] = 0
 	
-	if WORLD_INFO['pause_ticks']:
-		WORLD_INFO['pause_ticks'] -= 1
-		return False
+	#if WORLD_INFO['pause_ticks']:
+	#	WORLD_INFO['pause_ticks'] -= 1
+	#	return False
+	
+	#if WORLD_INFO['in_combat']
+	if SETTINGS['controlling']:
+		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
+			if not LIFE[SETTINGS['controlling']]['actions']:
+				return False
 	
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False
@@ -77,14 +83,6 @@ def tick_all_objects(source_map):
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
 			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
-				
-				if not WORLD_INFO['pause_ticks']:
-					if tcod.sys_get_fps()<=LOW_FPS:
-						WORLD_INFO['pause_ticks'] = 1
-					else:
-						WORLD_INFO['pause_ticks'] = 2
-			
-			WORLD_INFO['in_combat'] = _in_combat
 	
 	WORLD_INFO['tps'] += 1
 	
@@ -134,7 +132,7 @@ def tick_world():
 	if WORLD_INFO['wildlife_spawn_interval'][0]:
 		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
 	else:
-		#worldgen.generate_wildlife()
+		worldgen.generate_wildlife()
 			
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		

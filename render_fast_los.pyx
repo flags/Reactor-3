@@ -51,7 +51,7 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 			_y -= __y
 			_i += 1
 			
-			if _x<0 or _x>=los.shape[1] or _y<0 or _y>=los.shape[0] or pos[0]>=MAP_SIZE[0]-1 or pos[1]>=MAP_SIZE[1]-1:
+			if _x<0 or _x>=los.shape[1]-1 or _y<0 or _y>=los.shape[0]-1 or pos[0]>=MAP_SIZE[0]-1 or pos[1]>=MAP_SIZE[1]-1:
 				continue
 			
 			if source_map[pos[0]][pos[1]][start_point[2]+1]:

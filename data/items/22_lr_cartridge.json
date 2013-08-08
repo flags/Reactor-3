@@ -1,0 +1,13 @@
+{"name": ".22 LR cartridge",
+"prefix": "a",
+"type": "bullet",
+"icon": ".",
+"description": "Long Rifle cartridge effective at mid to long range.",
+"speed": 30,
+"drag": 0.05,
+"scatter_rate": 0.3,
+"flags": "",
+"damage": {"sharp": 2},
+"size": "1x1",
+"ammotype": ".22 LR",
+"material": "metal"}

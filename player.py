@@ -117,6 +117,9 @@ def handle_input():
 	if not SETTINGS['controlling']:
 		return False
 	
+	if INPUT[' '] or INPUT['.']:
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
+	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)
 		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())
@@ -400,9 +403,11 @@ def handle_input():
 		_empty_ammo = []
 		
 		for weapon in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'gun'}]):
-			_feed = weapons.get_feed(weapon)
+			_feed_uid = weapons.get_feed(weapon)
 			
-			if _feed:
+			if _feed_uid:
+				_feed = items.get_item_from_uid(_feed_uid)
+				
 				_loaded_weapons.append(menus.create_item('single',
 					weapon['name'],
 					'%s/%s' % (len(_feed['rounds']),_feed['maxrounds']),
@@ -495,6 +500,7 @@ def handle_input():
 		_options.append(menus.create_item('title','Debug (Developer)',None))
 		_options.append(menus.create_item('spacer','=',None))
 		_options.append(menus.create_item('single','Save','Offload game to disk'))
+		_options.append(menus.create_item('single','Load','Load game from disk'))
 		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
 		
 		_i = menus.create_menu(title='Options',
@@ -679,7 +685,7 @@ def inventory_equip(entry):
 def inventory_unequip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['item']['id']
+	item = entry['item']['uid']
 	
 	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
 	
@@ -687,7 +693,7 @@ def inventory_unequip(entry):
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
 	
 	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
@@ -706,13 +712,13 @@ def inventory_unequip_action(entry):
 		if container['capacity']+_item['size'] > container['max_capacity']:
 			continue
 		
-		if container['id'] == item:
+		if container['uid'] == item:
 			continue
 		
 		_menu.append(menus.create_item('single',
 			container['name'],
 			'%s/%s' % (container['capacity'],container['max_capacity']),
-			container=container['id'],
+			container=container['uid'],
 			item=_item))
 	
 	if not _menu:
@@ -855,7 +861,7 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		padding=(1,1),
 		position=(1,1),
 		on_select=inventory_fire_action,
-	    on_close=exit_target,
+		on_close=exit_target,
 		format_str='$k')
 	
 	menus.activate_menu(_i)
@@ -871,7 +877,7 @@ def inventory_fire_action(entry):
 		delay=0)
 	
 	LIFE[SETTINGS['controlling']]['targeting'] = None
-	LIFE[SETTINGS['following']] = LIFE[SETTINGS['controlling']]
+	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -963,6 +969,7 @@ def inventory_handle_feed(entry):
 			200,
 			delay=20)
 	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_handle_ammo(entry):
@@ -1129,6 +1136,8 @@ def handle_options_menu(entry):
 	
 	if key == 'Save':
 		worldgen.save_world()
+	if key == 'Load':
+		worldgen.load_world(WORLD_INFO['id'])
 	elif key == 'Reload map':
 		logging.warning('Map reloading is not well tested!')
 		global MAP
@@ -1189,7 +1198,7 @@ def craft_menu_response(entry):
 
 def create_crafting_menu():
 	_items = []
-	for item in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']]):
+	for item in [items.get_item_from_uid(i) for i in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']])]:
 		_items.append(menus.create_item('single',
 			item['name'],
 			None,

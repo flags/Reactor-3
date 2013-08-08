@@ -300,10 +300,10 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['consciousness'] = 100
 	_life['dead'] = False
 	_life['snapshot'] = {}
-	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
+	_life['recoil'] = 0
 	_life['stance'] = 'standing'
 	_life['facing'] = (0,0)
 	_life['strafing'] = False
@@ -369,6 +369,9 @@ def sanitize_heard(life):
 def sanitize_know(life):
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
+		
+		if alife.brain.get_alife_flag(life, entry['life'], 'search_map'):
+			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
 	_delete_keys = ['raw', 'needs', 'actions']
@@ -1207,7 +1210,7 @@ def perform_action(life):
 		_container = get_inventory_item(life,_action['container'])
 		
 		remove_item_from_inventory(life,_action['item'])
-		direct_add_item_to_inventory(life,_item_to_store,container=_container)
+		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		
 		if life.has_key('player'):
 			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
@@ -1241,9 +1244,7 @@ def perform_action(life):
 			say(life,'@n puts on %s from the ground.' % _name,action=True)
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
-		print repr(_action['item'])
 		_id = direct_add_item_to_inventory(life,_action['item'])
-		print _id
 		equip_item(life,_id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
@@ -1302,9 +1303,9 @@ def perform_action(life):
 		delete_action(life,action)
 		
 	elif _action['action'] == 'reload':	
-		_action['weapon'][_action['weapon']['feed']] = _action['ammo']
+		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
 		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
-		_action['ammo']['parent'] = _action['weapon']
+		_action['ammo']['parent'] = _action['weapon']['uid']
 		
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
@@ -1314,7 +1315,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'unload':
 		_weapon = get_inventory_item(life, _action['weapon'])
-		_ammo = _weapon[_weapon['feed']]
+		_ammo = items.get_item_from_uid(_weapon[_weapon['feed']])
 		_hand = can_hold_item(life)
 		
 		if _hand:
@@ -1336,9 +1337,9 @@ def perform_action(life):
 		delete_action(life,action)
 	
 	elif _action['action'] == 'refillammo':	
-		_action['ammo']['rounds'].append(_action['round'])
-		_action['round']['parent'] = _action['ammo']
-		_round = remove_item_from_inventory(life,_action['round']['uid'])
+		_action['ammo']['rounds'].append(_action['round']['uid'])
+		_action['round']['parent'] = _action['ammo']['uid']
+		_round = remove_item_from_inventory(life, _action['round']['uid'])
 		
 		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')
@@ -1348,10 +1349,10 @@ def perform_action(life):
 	elif _action['action'] == 'shoot':
 		weapons.fire(life, _action['target'], limb=_action['limb'])
 		
-		add_action(life,
-			{'action': 'recoil'},
-			5001,
-			delay=weapons.get_recoil(life))
+		#add_action(life,
+		#	{'action': 'recoil'},
+		#	5001,
+		#	delay=weapons.get_recoil(life))
 		
 		delete_action(life,action)
 	
@@ -1367,7 +1368,7 @@ def perform_action(life):
 		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
-	elif _action['action'] == 'recoil':
+	elif _action['action'] == 'rest':
 		delete_action(life, action)
 
 	else:
@@ -1445,6 +1446,8 @@ def tick(life, source_map):
 	if 'THIRST' in life['life_flags']:
 		if not thirst(life):
 			return False
+	
+	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0, 10)
 	
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
@@ -1876,7 +1879,7 @@ def remove_item_from_inventory(life, item_id):
 			item['storing'].remove(_item)
 			item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
-			del life['inventory'][str(_item)]
+			life['inventory'].remove(_item)
 	
 	life['speed_max'] = get_max_speed(life)
 	
@@ -2438,9 +2441,14 @@ def draw_life_info():
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
 		_i += 1
 	
+	if LIFE[SETTINGS['controlling']]['recoil']:
+		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
+		tcod.console_set_default_foreground(0, tcod.yellow)
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
+	
 	#Drawing the action queue
 	_y_mod = 1
-	_y_start = (MAP_WINDOW_SIZE[1]-2)-SETTINGS['action queue size']
+	_y_start = (MAP_WINDOW_SIZE[1]-1)-SETTINGS['action queue size']
 	
 	if len(life['actions']) > SETTINGS['action queue size']:
 		_queued_actions = 'Queued Actions (+%s)' % (len(life['actions'])-SETTINGS['action queue size'])
