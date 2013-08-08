@@ -18,12 +18,8 @@ def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	if EVENTS:
-		if EVENTS[0]['time']:
-			EVENTS[0]['time'] -= 1
-			return False
-		else:
-			EVENTS.pop(0)
+	if process_events():
+		return False
 	
 	if SETTINGS['controlling']:
 		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
@@ -158,6 +154,24 @@ def draw_encounter():
 
 def show_event(life, text, time=30):
 	EVENTS.append({'life': life['id'], 'text': text, 'time': time})
+
+def process_events():
+	if not EVENTS:
+		return False
+	
+	if EVENTS[0]['time']:
+		EVENTS[0]['time'] -= 1
+		gfx.draw_event(EVENTS[0])
+		life.focus_on(LIFE[EVENTS[0]['life']])
+		return True
+	
+	EVENTS.pop(0)
+	
+	if not EVENTS:
+		life.focus_on(LIFE[SETTINGS['controlling']])
+
+	gfx.refresh_window()
+	return False	
 
 def matches(dict1, dict2):
 	_break = False

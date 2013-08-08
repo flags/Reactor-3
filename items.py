@@ -287,119 +287,47 @@ def get_min_max_velocity(item):
 	
 	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
 
-def tick_all_items(MAP):
-	_remove = []
+def tick_item(item_uid):
+	_remove = False
 	
-	for item in ITEMS.values():
-		_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-		if item['velocity'][:2] == [0.0, 0.0] and MAP[item['pos'][0]][item['pos'][1]][_z_max]:
-			continue
+	item = ITEMS[item_uid]
+	
+	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
+		return False
+	
+	_x = item['pos'][0]-CAMERA_POS[0]
+	_y = item['pos'][1]-CAMERA_POS[1]
+	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
+		gfx.refresh_window_position(_x, _y)
+	
+	item['realpos'][0] += item['velocity'][0]
+	item['realpos'][1] += item['velocity'][1]
+	_break = False
+	_line = drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
+	
+	if not _line:
+		item['velocity'][2] -= item['gravity']
+		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
+		item['pos'][2] = int(round(item['realpos'][2]))
 		
-		_x = item['pos'][0]-CAMERA_POS[0]
-		_y = item['pos'][1]-CAMERA_POS[1]
-		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-			gfx.refresh_window_position(_x, _y)
+		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
+			pos = item['pos'][:]
+			_break = True
 		
-		item['realpos'][0] += item['velocity'][0]
-		item['realpos'][1] += item['velocity'][1]
-		_break = False
-		_line = drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
+		create_effects(item, item['pos'], item['realpos'][2], _z_min)
+	
+	for pos in _line:
+		item['realpos'][2] += item['velocity'][2]
+		item['velocity'][2] -= item['velocity'][2]*item['gravity']
 		
-		if not _line:
-			item['velocity'][2] -= item['gravity']
-			item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
-			item['pos'][2] = int(round(item['realpos'][2]))
-			
-			_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-			if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
-				_break = True
-				break
-			
-			create_effects(item, item['pos'], item['realpos'][2], _z_min)
-		
-		for pos in _line:
-			item['realpos'][2] += item['velocity'][2]
-			item['velocity'][2] -= item['velocity'][2]*item['gravity']
-			
-			if 'drag' in item:
-				_drag = item['drag']
-			else:
-				_drag = item['gravity']
-				logging.warning('Improper use of gravity.')
-				
-			_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
-			
-			if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
-				item['velocity'][0] = 0
-			
-			if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
-				item['velocity'][1] = 0
-			
-			item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
-			item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
-			
-			if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
-				logging.warning('Item OOM: %s', item['uid'])
-				_remove.append(item['uid'])
-				break
-			
-			if item['type'] == 'bullet':
-				for _life in [LIFE[i] for i in LIFE]:
-					if _life['id'] == item['owner'] or _life['dead']:
-						continue					
-					
-					if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
-						item['pos'] = [pos[0],pos[1],_life['pos'][2]]
-						life.damage_from_item(_life,item,60)
-						_break = True
-						
-						_remove.append(item['uid'])
-						break
-				
-			if _break:
-				break
-			
-			#_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-			#if MAP[pos[0]][pos[1]][_z_max]:
-			#	item['velocity'][0] = 0
-			#	item['velocity'][1] = 0
-			#	item['velocity'][2] = 0
-			#	item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-			#
-			#	print 'LANDED',item['pos']	
-			#	_break = True
-			#	break
-		
-			_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-			if collision_with_solid(item, [pos[0], pos[1], _z_min]):
-				_break = True
-				break
-			
-			create_effects(item, pos, item['realpos'][2], _z_min)
-		
-		if _break:
-			item['pos'][0] = int(pos[0])
-			item['pos'][1] = int(pos[1])
-			item['pos'][2] = int(round(item['realpos'][2]))
+		if 'drag' in item:
+			_drag = item['drag']
 		else:
-			item['pos'][0] = int(round(item['realpos'][0]))
-			item['pos'][1] = int(round(item['realpos'][1]))
-			item['pos'][2] = int(round(item['realpos'][2]))
-		
-		_x = item['pos'][0]-CAMERA_POS[0]
-		_y = item['pos'][1]-CAMERA_POS[1]
-		if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-			gfx.refresh_window_position(_x, _y)
-
-		if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
-			or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
-			if not item['uid'] in _remove:
-				_remove.append(item['uid'])
-				continue
-		elif _break:
-			maps.refresh_chunk(life.get_current_chunk_id(item))
-			continue
-
+			_drag = item['gravity']
+			logging.warning('Improper use of gravity.')
+			
 		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
 		if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
@@ -408,16 +336,92 @@ def tick_all_items(MAP):
 		if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
 			item['velocity'][1] = 0
 		
-		#TODO: This isn't gravity...
-		if 'drag' in item:
-			_drag = item['drag']
-		else:
-			_drag = item['gravity']
-			logging.warning('Improper use of gravity.')
-		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+		
+		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
+			logging.warning('Item OOM: %s', item['uid'])
+			_remove = True
+			break
+		
+		if item['type'] == 'bullet':
+			for _life in [LIFE[i] for i in LIFE]:
+				if _life['id'] == item['owner'] or _life['dead']:
+					continue					
+				
+				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
+					item['pos'] = [pos[0],pos[1],_life['pos'][2]]
+					life.damage_from_item(_life,item,60)
+					_break = True
+					
+					_remove = True
+					break
+			
+		if _break:
+			break
+		
+		#_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		#if MAP[pos[0]][pos[1]][_z_max]:
+		#	item['velocity'][0] = 0
+		#	item['velocity'][1] = 0
+		#	item['velocity'][2] = 0
+		#	item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
+		#
+		#	print 'LANDED',item['pos']	
+		#	_break = True
+		#	break
 	
-	for _id in _remove:
-		print 'Item deleted at: %s' % str(ITEMS[_id]['pos'])
-		delete_item(ITEMS[_id])
+		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		if collision_with_solid(item, [pos[0], pos[1], _z_min]):
+			_break = True
+			break
+		
+		create_effects(item, pos, item['realpos'][2], _z_min)
+	
+	if _break:
+		item['pos'][0] = int(pos[0])
+		item['pos'][1] = int(pos[1])
+		item['pos'][2] = int(round(item['realpos'][2]))
+	else:
+		item['pos'][0] = int(round(item['realpos'][0]))
+		item['pos'][1] = int(round(item['realpos'][1]))
+		item['pos'][2] = int(round(item['realpos'][2]))
+	
+	_x = item['pos'][0]-CAMERA_POS[0]
+	_y = item['pos'][1]-CAMERA_POS[1]
+	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
+		gfx.refresh_window_position(_x, _y)
+
+	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
+          or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
+		if not _remove:
+			_remove = True
+			
+	elif _break:
+		maps.refresh_chunk(life.get_current_chunk_id(item))
+
+	_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
+	
+	if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
+		item['velocity'][0] = 0
+	
+	if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
+		item['velocity'][1] = 0
+	
+	#TODO: This isn't gravity...
+	if 'drag' in item:
+		_drag = item['drag']
+	else:
+		_drag = item['gravity']
+		logging.warning('Improper use of gravity.')
+	
+	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
+	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+	
+	if _remove:
+		print 'Item deleted at: %s' % str(ITEMS[item_uid]['pos'])
+		delete_item(ITEMS[item_uid])
+
+def tick_all_items(MAP):
+	for item in ITEMS.keys():
+		tick_item(item)

@@ -14,6 +14,7 @@ import numbers
 import effects
 import random
 import damage
+import logic
 import zones
 import alife
 import items
@@ -305,7 +306,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['strafing'] = False
 	_life['recoil'] = 0
 	_life['stance'] = 'standing'
-	_life['facing'] = (0,0)
 	_life['strafing'] = False
 	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
@@ -680,24 +680,15 @@ def say(life, text, action=False, volume=30, context=False):
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
-	if not SETTINGS['controlling'] == life['id']:
-		if msg['style'] == 'damage':
-			logic.show_event(life, text, time=20)
-			#elif msg['style'] == 'speech':
-			#tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.gray)
-		elif msg['style'] == 'action':
-			pass
-		elif msg['style'] == 'player_combat_good':
-			logic.show_event(life, text, time=30)
-		#elif msg['style'] == 'player_combat_bad':
-		#	pass
-	
 	if SETTINGS['following']:
 		if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
 			if context:
 				_style = 'important'
 			
 			gfx.message(text, style=_style)
+			
+			if action:
+				logic.show_event(life, text)
 
 def memory(life, gist, *args, **kvargs):
 	_entry = {'text': gist, 'id': WORLD_INFO['memoryid']}
@@ -961,10 +952,6 @@ def walk_path(life):
 		_pos = list(life['path'].pop(0))
 		_nfx = _pos[0]
 		_nfy = _pos[1]
-		
-		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
-			life['facing'] = (_nfx,_nfy)
-			life['aim_at'] = life['id']
 		
 		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
 			life['pos'][2] += 1
@@ -1391,7 +1378,8 @@ def perform_action(life):
 def kill(life, injury):
 	if isinstance(injury, str) or isinstance(injury, unicode):
 		life['cause_of_death'] = injury
-		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
+		
+		say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
@@ -1400,7 +1388,7 @@ def kill(life, injury):
 		else:
 			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 		
-		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
+	logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if alife.sight.can_see_position(ai, life['pos']):
@@ -1486,7 +1474,7 @@ def tick(life, source_map):
 	
 	_crit_injury = can_die_via_critical_injury(life)
 	if _crit_injury:
-		kill(life, 'acute pain in the %s.' % life['body'][_crit_injury])
+		kill(life, 'acute pain in the %s' % _crit_injury)
 		
 		return True
 	
@@ -2958,6 +2946,7 @@ def damage_from_item(life,item,damage):
 	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
+		logic.show_event(life, _dam_message, time=20)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:

@@ -250,6 +250,34 @@ def draw_status_line():
 			MAP_WINDOW_SIZE[1]-1,
 			_flashing_text)
 
+def draw_event(event):
+	if len(event['text'])>=MAP_WINDOW_SIZE[0]:
+		_lines = list(event['text'].partition(','))
+		
+		if not len(_lines)>=2:
+			_lines = list(event['text'].partition('.'))
+		
+		if len(_lines)>=2:
+			print _lines
+			_lines.pop(1)
+		else:
+			lines = ['????']
+	else:
+		_lines = [event['text']]
+	
+	_i = 0
+	for line in _lines:
+		_half = len(line)/2
+		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
+		
+		print line
+		
+		blit_string(_x,
+			10+_i,
+			line)
+		
+		_i += 1
+
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
 		tcod.console_print(ITEM_WINDOW,pos,0,chr(15))
