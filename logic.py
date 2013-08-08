@@ -18,14 +18,13 @@ def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	#if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
-	#	WORLD_INFO['pause_ticks'] = 0
+	if EVENTS:
+		if EVENTS[0]['time']:
+			EVENTS[0]['time'] -= 1
+			return False
+		else:
+			EVENTS.pop(0)
 	
-	#if WORLD_INFO['pause_ticks']:
-	#	WORLD_INFO['pause_ticks'] -= 1
-	#	return False
-	
-	#if WORLD_INFO['in_combat']
 	if SETTINGS['controlling']:
 		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
 			if not LIFE[SETTINGS['controlling']]['actions']:
@@ -156,6 +155,9 @@ def draw_encounter():
 	
 	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
 		LIFE[SETTINGS['controlling']]['encounters'][0])
+
+def show_event(life, text, time=30):
+	EVENTS.append({'life': life['id'], 'text': text, 'time': time})
 
 def matches(dict1, dict2):
 	_break = False

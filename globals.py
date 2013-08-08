@@ -199,6 +199,7 @@ EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
+EVENTS = []
 
 #Consoles
 MAP_WINDOW = None

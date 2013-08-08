@@ -680,6 +680,18 @@ def say(life, text, action=False, volume=30, context=False):
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
+	if not SETTINGS['controlling'] == life['id']:
+		if msg['style'] == 'damage':
+			logic.show_event(life, text, time=20)
+			#elif msg['style'] == 'speech':
+			#tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.gray)
+		elif msg['style'] == 'action':
+			pass
+		elif msg['style'] == 'player_combat_good':
+			logic.show_event(life, text, time=30)
+		#elif msg['style'] == 'player_combat_bad':
+		#	pass
+	
 	if SETTINGS['following']:
 		if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
 			if context:
