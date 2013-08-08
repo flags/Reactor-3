@@ -238,6 +238,9 @@ def draw_status_line():
 	if LIFE[SETTINGS['following']]['strafing']:
 		_non_flashing_text += 'Strafing'
 	
+	if life.is_target_of(LIFE[SETTINGS['following']]):
+		_flashing_text += 'Combat'
+	
 	blit_string(0,
 		MAP_WINDOW_SIZE[1]-1,
 		_non_flashing_text)

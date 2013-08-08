@@ -300,7 +300,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['consciousness'] = 100
 	_life['dead'] = False
 	_life['snapshot'] = {}
-	_life['in_combat'] = False
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
@@ -1369,7 +1368,7 @@ def perform_action(life):
 		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
 		delete_action(life, action)
 
-	elif _action['action'] == 'recoil':
+	elif _action['action'] == 'rest':
 		delete_action(life, action)
 
 	else:
@@ -2445,7 +2444,7 @@ def draw_life_info():
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
 		tcod.console_set_default_foreground(0, tcod.yellow)
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y, 'RECOIL')
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
 	
 	#Drawing the action queue
 	_y_mod = 1

@@ -145,7 +145,7 @@ def fire(life, target, limb=None):
 			continue
 		
 		direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
-		life['recoil'] += (weapon['recoil'] * get_stance_recoil_mod(life))
+		life['recoil'] = (weapon['recoil'] * get_stance_recoil_mod(life))
 		
 		#TODO: Clean this up...
 		_bullet = items.get_item_from_uid(_feed['rounds'].pop())

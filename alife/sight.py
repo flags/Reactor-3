@@ -207,7 +207,6 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Unchecked Cython flag
-	_a = time.time()
 	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
 	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
 	_top_left = (_x,_y,at[2])
@@ -245,15 +244,9 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 		print 'Nowhere to hide'		
 		return False
 	
-	print time.time()-_a
-	
 	return _cover
 
 def handle_lost_los(life):
-	if life['in_combat']:
-		#TODO: Do something here...
-		pass
-	
 	#TODO: Take the original score and subtract/add stuff from there...
 	_nearest_target = {'target': None,'score': 0}
 	for entry in life['know']:

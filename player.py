@@ -117,6 +117,9 @@ def handle_input():
 	if not SETTINGS['controlling']:
 		return False
 	
+	if INPUT[' '] or INPUT['.']:
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
+	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)
 		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())

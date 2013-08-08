@@ -162,7 +162,7 @@ def get_firearm_accuracy(life):
 	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
 
 def get_recoil_recovery_rate(life):
-	return life['stats']['firearms']/10.0
+	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)
 
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
