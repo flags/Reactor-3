@@ -40,6 +40,3 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if _weapon:
 		if not combat.weapon_equipped_and_ready(life):
 			combat._equip_weapon(life, _weapon['weapon'], _weapon['feed'])
-		else:
-			print life['name'],'Weapon not ready!'
-			print combat.weapon_equipped_and_ready(life)

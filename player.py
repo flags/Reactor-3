@@ -8,6 +8,7 @@ import crafting
 import worldgen
 import weapons
 import dialog
+import logic
 import menus
 import items
 import time
@@ -118,7 +119,8 @@ def handle_input():
 		return False
 	
 	if INPUT[' '] or INPUT['.']:
-		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
+		if not logic.show_next_event():
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
 	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)

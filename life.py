@@ -1687,7 +1687,7 @@ def can_wear_item(life, item_uid):
 
 def get_inventory_item(life, item_id):
 	"""Returns inventory item."""
-	if not item_id in life['inventory']:
+	if not item_id in life['inventory'] and not item_is_stored(life, item_id):
 		raise Exception('%s does not have item of id #%s'
 			% (' '.join(life['name']), item_id))
 	
@@ -2715,7 +2715,8 @@ def remove_limb(life, limb, no_children=False):
 		life['melee'].remove(limb)	
 	
 	if 'CRUCIAL' in life['body'][limb]['flags']:
-		kill(life, 'a severed %s.' % limb)
+		if not life['dead']:
+			kill(life, 'a severed %s' % limb)
 	
 	if 'children' in life['body'][limb] and not no_children:
 		for _attached_limb in life['body'][limb]['children']:
