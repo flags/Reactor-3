@@ -288,8 +288,6 @@ def get_min_max_velocity(item):
 	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
 
 def tick_item(item_uid):
-	_remove = False
-	
 	item = ITEMS[item_uid]
 	
 	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
@@ -341,8 +339,8 @@ def tick_item(item_uid):
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 			logging.warning('Item OOM: %s', item['uid'])
-			_remove = True
-			break
+			delete_item(ITEMS[item_uid])
+			return False
 		
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
@@ -352,10 +350,8 @@ def tick_item(item_uid):
 				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
 					item['pos'] = [pos[0],pos[1],_life['pos'][2]]
 					life.damage_from_item(_life,item,60)
-					_break = True
-					
-					_remove = True
-					break
+					delete_item(ITEMS[item_uid])
+					return False
 			
 		if _break:
 			break
@@ -394,8 +390,8 @@ def tick_item(item_uid):
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
-		if not _remove:
-			_remove = True
+		delete_item(ITEMS[item_uid])
+		return False
 			
 	elif _break:
 		maps.refresh_chunk(life.get_current_chunk_id(item))
@@ -417,10 +413,6 @@ def tick_item(item_uid):
 	
 	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
-	
-	if _remove:
-		print 'Item deleted at: %s' % str(ITEMS[item_uid]['pos'])
-		delete_item(ITEMS[item_uid])
 
 def tick_all_items(MAP):
 	for item in ITEMS.keys():
