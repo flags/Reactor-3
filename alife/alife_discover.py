@@ -28,10 +28,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		brain.store_in_memory(life, 'discovery_lock', False)
 		return False
 	
-	#if life['state'] in ['exploring', 'searching', 'looting', 'managing', 'finding camp', 'camping', 'working', 'visiting camp', 'needs', 'hiding']:
-	#	brain.store_in_memory(life, 'discovery_lock', False)
-	#	return False
-	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
@@ -42,7 +38,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_lost_method = lfe.execute_raw(life, 'discover', 'when_lost')
 		if _lost_method:
 			if not life['path'] or not brain.retrieve_from_memory(life, 'discovery_lock'):
-				sight.scan_surroundings(life)
+				if not 'scanned_chunks' in life['state_flags']:
+					life['state_flags']['scanned_chunks'] = []
+				
+				sight.scan_surroundings(life, ignore_chunks=life['state_flags']['scanned_chunks'])
 				_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True, lost_method=_lost_method, only_recent=True)
 				brain.store_in_memory(life, 'discovery_lock', True)
 				brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
@@ -51,6 +50,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					print life['name'],'is lost'
 					brain.flag(life, 'lost')
 					return False
+				
 				survival.explore_known_chunks(life)
 		else:
 			return False
