@@ -964,6 +964,9 @@ def walk_path(life):
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
+		if 'player' in life:
+			LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+		
 		if life['path']:
 			return False
 		else:
@@ -2748,7 +2751,10 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
 	
-	if _limb['cut'] > _limb['size']:
+	print 'CUT' * 50
+	print amount, _limb['size']
+	
+	if _limb['cut'] >= _limb['size']:
 		sever_limb(life, limb, impact_velocity)
 		return True
 	
@@ -2946,7 +2952,7 @@ def damage_from_item(life,item,damage):
 	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
-		logic.show_event(life, _dam_message, time=20)
+		logic.show_event(life, _dam_message, time=35)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:
