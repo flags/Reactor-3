@@ -154,16 +154,17 @@ def draw_encounter():
 		LIFE[SETTINGS['controlling']]['encounters'][0])
 
 def draw_event(event):
-	if len(event['text'])>=MAP_WINDOW_SIZE[0]:
+	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
 		_lines = list(event['text'].partition(','))
 		
-		if not len(_lines)>=2:
+		if not len(_lines[1]):
 			_lines = list(event['text'].partition('.'))
 		
-		if len(_lines)>=2:
+		if len(_lines[1]):
 			_lines.pop(1)
 		else:
 			lines = ['????']
+		
 	else:
 		_lines = [event['text']]
 	
@@ -172,6 +173,7 @@ def draw_event(event):
 		_half = len(line)/2
 		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
 		
+		print line, len(line)
 		gfx.blit_string(_x,
 			10+_i,
 			line)
@@ -190,6 +192,7 @@ def show_next_event():
 	
 	if not EVENTS:
 		life.focus_on(LIFE[SETTINGS['controlling']])
+		return False
 	
 	return True
 
@@ -203,14 +206,7 @@ def process_events():
 		draw_event(EVENTS[0])
 		return True
 	
-	EVENTS.pop(0)
-	gfx.refresh_window()
-	
-	if not EVENTS:
-		life.focus_on(LIFE[SETTINGS['controlling']])
-		return False
-
-	return True
+	return show_next_event()
 
 def matches(dict1, dict2):
 	_break = False
