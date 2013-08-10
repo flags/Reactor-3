@@ -168,12 +168,14 @@ def draw_event(event):
 	else:
 		_lines = [event['text']]
 	
+	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
+		_lines = ['The most annoying error.']
+	
 	_i = 0
 	for line in _lines:
 		_half = len(line)/2
 		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
 		
-		print line, len(line)
 		gfx.blit_string(_x,
 			10+_i,
 			line)

@@ -115,14 +115,14 @@ def can_path_to_zone(z1, z2):
 		_checking = _to_check.pop()
 		_checked.append(_checking)
 		
-		if not _checking:
+		print 'Before:',_checking, (_checking == None), z1, z2
+		if _checking:
 			return []
 		
 		try:
 			_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checking and not n in _checked])
 		except:
-			print _checking
-			print WORLD_INFO['slices']
+			print _checking, _checked
 			raise Exception('Failed.')
 		
 		if z2 in _to_check:

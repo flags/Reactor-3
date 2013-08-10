@@ -231,9 +231,6 @@ def explore_known_chunks(life):
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
 	return True
 
-def _job_explore_unknown_chunks(life):
-	explore_unknown_chunks(life)
-
 def explore_unknown_chunks(life):
 	if life['path']:
 		return True
