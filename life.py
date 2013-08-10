@@ -276,8 +276,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
 	
-	#TODO: We only need this for pathing, so maybe we should move this to
-	#the `walk` function?
 	_life['animation'] = {}
 	_life['path'] = []
 	_life['actions'] = []
@@ -393,6 +391,7 @@ def post_save(life):
 	life['heard'] = []
 	life['needs'] = []
 	life['actions'] = []
+	life['path'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
