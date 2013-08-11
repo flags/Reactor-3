@@ -12,7 +12,8 @@ import os
 TOWN_DISTANCE = 35
 TOWN_SIZE = 80
 FOREST_DISTANCE = 25
-OPEN_TILES = ['.', 'd']
+OPEN_TILES = ['.']
+DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 
 tiles.create_all_tiles()
 
@@ -38,23 +39,14 @@ def create_building(buildings, building, chunk_size):
 			if y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
 				_bot = True
 	
-	_building_temp = copy.deepcopy(building)
+	_building_temp = {'open': {'top': _top, 'bot': _bot, 'left': _left, 'right': _right},
+	                  'building': copy.deepcopy(building)}
 	
-	if _top:
-		buildings['top'].append(_building_temp)
-	
-	if _bot:
-		buildings['bot'].append(_building_temp)
-	
-	if _left:
-		buildings['left'].append(_building_temp)
-	
-	if _right:
-		buildings['right'].append(_building_temp)
+	buildings.append(_building_temp)
 
 def load_buildings(chunk_size):
 	with open(os.path.join(TEXT_DIR, 'buildings.txt'), 'r') as f:
-		_buildings = {'top': [], 'bot': [], 'left': [], 'right': []}
+		_buildings = []
 		_building = []
 		_i = 0
 		for line in f.readlines():
@@ -63,7 +55,7 @@ def load_buildings(chunk_size):
 			if line.startswith('//'):
 				continue
 			
-			if len(line)>1 and not len(line)-1 == chunk_size:
+			if len(line)>1 and (not len(line)-1 == chunk_size or len(_building)>chunk_size):
 				logging.debug('Incorrect chunk size (%s) for building on line %s' % (len(line), _i))
 				print 'Incorrect chunk size %s (wanted %s) for building on line %s' % (len(line)-1, chunk_size, _i)
 				continue
@@ -96,11 +88,8 @@ def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=
 		'underground': underground,
 		'chunk_map': {},
 		'refs': {'towns': [], 'forests': []},
+		'buildings': load_buildings(detail),
 		'map': maps.create_map(size=size)}
-	
-	logging.debug('Grabbing buildings...')
-	_buildings = load_buildings(detail)
-	print _buildings
 	
 	logging.debug('Creating chunk map...')
 	generate_chunk_map(map_gen)
@@ -111,7 +100,7 @@ def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
-	#print_map_to_console(map_gen)
+	print_map_to_console(map_gen)
 	
 	return map_gen
 
@@ -148,7 +137,13 @@ def place_town(map_gen):
 		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town])
 	
 	while 1:
-		_town_chunk = random.choice(map_gen['chunk_map'].values())
+		while 1:
+			_town_chunk = random.choice(map_gen['chunk_map'].values())
+			if _town_chunk['pos'][0] == 0 or _town_chunk['pos'][1] == 0 or \
+			   _town_chunk['pos'][1] == map_gen['size'][0]+map_gen['chunk_size'] or _town_chunk['pos'][1]+map_gen['chunk_size'] == map_gen['size'][1]:
+				continue
+			
+			break
 				
 		if _avoid_chunk_keys and alife.chunks.get_distance_to_hearest_chunk_in_list(_town_chunk['pos'], _avoid_chunk_keys) < TOWN_DISTANCE:
 			continue
@@ -163,7 +158,18 @@ def place_town(map_gen):
 		if not _walked:
 			continue
 		
-		clean_walker(map_gen, _walked, kill_range=(0, 1))
+		_restart = False
+		while 1:
+			clean_walker(map_gen, _walked, kill_range=(0, 1))
+			
+			if _walked:
+				break
+			
+			_restart = True
+			break
+		
+		if _restart:
+			continue
 		
 		for pos in _walked:
 			map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'town'
@@ -215,7 +221,7 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 		if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]:
 			continue
 		
-		if map_gen['chunk_map'][_next_key]['type'] == chunk_type:
+		if chunk_type == 'any' or map_gen['chunk_map'][_next_key]['type'] == chunk_type:
 			_keys.append(_next_key)
 			_neighbors += 1
 	
@@ -309,7 +315,8 @@ def construct_town(map_gen, town):
 	while _open:
 		_start_key = _open.pop(random.randint(0, len(_open)-1))
 		
-		_occupied_chunks = random.randint(1, len(town))
+		print len(_open)
+		_occupied_chunks = random.randint(1, len(_open)+1)
 		_build_on_chunks = [_start_key]
 		
 		while len(_build_on_chunks) < _occupied_chunks:
@@ -325,9 +332,54 @@ def construct_town(map_gen, town):
 			if _chunk in _open:
 				_open.remove(_chunk)
 			
-			for _neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_chunk]['pos'], 'town'):
-				if not _neighbor in _build_on_chunks:
+			_directions = []
+			_avoid_directions = []
+			for _neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_chunk]['pos'], 'any'):
+				if _neighbor in _build_on_chunks:
+					_directions.append(str(direction_from_key_to_key(map_gen, _chunk, _neighbor)))
+				else:
+					_avoid_directions.append(str(direction_from_key_to_key(map_gen, _chunk, _neighbor)))
+					if _neighbor in _open:
+						_open.remove(_neighbor)
+						print 'REMOVE'
+			
+			_possible_buildings = []
+			_direction_keys = [DIRECTION_MAP[d] for d in _directions]
+			_avoid_direction_keys = [DIRECTION_MAP[d] for d in _avoid_directions]
+						
+			for building in map_gen['buildings']:
+				_continue = False
+				for _dir in _direction_keys:
+					if not building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
 					continue
+				
+				for _dir in _avoid_direction_keys:
+					if building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
+					continue
+				
+				_possible_buildings.append(building['building'])
+		
+			print _direction_keys, _avoid_direction_keys
+			
+			_chunk_pos = map_gen['chunk_map'][_chunk]['pos']
+			_building = random.choice(_possible_buildings)
+			for _y in range(map_gen['chunk_size']):
+				y = _chunk_pos[1]+_y
+				for _x in range(map_gen['chunk_size']):
+					x = _chunk_pos[0]+_x
+					
+					if _building[_y][_x] == '#':
+						map_gen['map'][x][y][2] = tiles.create_tile(tiles.WALL_TILE)
+					elif _building[_y][_x] == '.':
+						map_gen['map'][x][y][2] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
 
 #def construct_town(map_gen, town):
 	#_open = ['%s,%s' % (pos[0], pos[1]) for pos in town[:]]
