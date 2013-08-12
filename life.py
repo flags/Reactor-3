@@ -61,11 +61,9 @@ def calculate_base_stats(life):
 	
 	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
-	print 'SPEED MAX',life['species'],stats['speed_max']
 	
 	for var in life['vars'].split('|'):
 		key,val = var.split('=')
-		logging.debug('%s = %s' % (key, val))
 		
 		try:
 			life[key] = int(val)

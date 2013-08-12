@@ -7,6 +7,7 @@ import life as lfe
 import maputils
 import numbers
 import drawing
+import effects
 import items
 import zones
 import alife
@@ -66,6 +67,9 @@ def save_map(map_name, base_dir=DATA_DIR):
 	for light in WORLD_INFO['lights']:
 		if 'los' in light:
 			del light['los']
+		
+		if 'old_pos' in light:
+			del light['old_pos']
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
@@ -95,6 +99,10 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 				smooth_chunk_map()
 			else:
 				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
+			
+			if not WORLD_INFO['lights']:
+				logging.warning('World has no lights. Creating one manually.')
+				effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
 			
 		except ValueError:
 			_map_file.seek(0)

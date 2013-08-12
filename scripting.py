@@ -61,7 +61,6 @@ def get_functions(owner, text):
 	_functions = {}
 
 	for func in text.split(':'):
-		print text
 		for function in re.findall('[a-zA-Z_]*\(.*\)', func):
 			_name,_args = function.split('(')
 			_functions[_name] = _args#parse_arguments(owner, _args)
