@@ -964,7 +964,8 @@ def walk_path(life):
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
 		if 'player' in life:
-			LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+			#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+			LOS_BUFFER[0] = []
 		
 		if life['path']:
 			return False

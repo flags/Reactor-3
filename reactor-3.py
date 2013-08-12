@@ -178,12 +178,16 @@ def main():
 			
 	draw_targeting()
 	
+	move_camera(LIFE[SETTINGS['following']]['pos'])
+	
+	if LOS_BUFFER[0] == []:
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)	
+	
 	if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
 	else:
 		maps.render_map(WORLD_INFO['map'])
 	
-	move_camera(LIFE[SETTINGS['following']]['pos'])
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
