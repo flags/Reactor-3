@@ -26,7 +26,7 @@ def execute(script, **kvargs):
 		elif function == 'LIGHT_FOLLOW':
 			_item = ITEMS[kvargs['item_uid']]
 			
-			LIGHTS.append({'pos': kvargs['owner']['pos'],
+			WORLD_INFO['lights'].append({'pos': kvargs['owner']['pos'],
 			               'follow_item': kvargs['item_uid'],
 			               'color': (255, 0, 255), 'brightness': _item['brightness'],
 			               'shake': _item['light_shake']})

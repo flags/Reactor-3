@@ -87,6 +87,8 @@ def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
 	cdef int X_CAMERA_POS = top_left[0]
 	cdef int Y_CAMERA_POS = top_left[1]
 	cdef int Z_CAMERA_POS = top_left[2]
+	cdef int X_MAP_SIZE = MAP_SIZE[0]
+	cdef int Y_MAP_SIZE = MAP_SIZE[1]
 	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
 	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
 	cdef int POSITION[2]
@@ -103,6 +105,9 @@ def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
 			_y = pos[1]-Y_CAMERA_POS
 			
 			if _x<0 or _x>=X_MAP_WINDOW_SIZE or _y<0 or _y>=Y_MAP_WINDOW_SIZE:
+				continue
+			
+			if pos[0]<0 or pos[0]>=X_MAP_SIZE or pos[0]<0 or pos[1]>=Y_MAP_SIZE:
 				continue
 			
 			if map[pos[0]][pos[1]][Z_CAMERA_POS+1]:				

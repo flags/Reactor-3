@@ -62,6 +62,10 @@ def save_map(map_name, base_dir=DATA_DIR):
 
 	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
 		del _slice['rotmap']
+		
+	for light in WORLD_INFO['lights']:
+		if 'los' in light:
+			del light['los']
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
@@ -152,7 +156,7 @@ def render_lights(source_map):
 	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
 
 	_remove_lights = []
-	for light in LIGHTS:
+	for light in WORLD_INFO['lights']:
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
 		else:
@@ -215,7 +219,7 @@ def render_lights(source_map):
 			_remove_lights.append(light)
 	
 	for light in _remove_lights:
-		LIGHTS.remove(light)
+		WORLD_INFO['lights'].remove(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]

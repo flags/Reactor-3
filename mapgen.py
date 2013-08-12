@@ -1,7 +1,10 @@
 from globals import *
 
+import maputils
+import effects
 import alife
 import tiles
+import zones
 import maps
 
 import logging
@@ -103,6 +106,18 @@ def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=
 	print_map_to_console(map_gen)
 	
 	WORLD_INFO.update(map_gen)
+	
+	_map_size = maputils.get_map_size(WORLD_INFO['map'])
+	MAP_SIZE[0] = _map_size[0]
+	MAP_SIZE[1] = _map_size[1]
+	MAP_SIZE[2] = _map_size[2]
+	
+	logging.debug('Creating zone map...')
+	zones.create_zone_map()
+	
+	logging.debug('Connecting zone ramps...')
+	zones.connect_ramps()
+	
 	maps.save_map('test2.dat')
 	
 	return map_gen
@@ -320,7 +335,6 @@ def direction_from_key_to_key(map_gen, key1, key2):
 
 def construct_town(map_gen, town):
 	_open = ['%s,%s' % (pos[0], pos[1]) for pos in town[:]]
-	_town = ['%s,%s' % (pos[0], pos[1]) for pos in town[:]]
 	
 	while _open:
 		_start_key = _open.pop(random.randint(0, len(_open)-1))
@@ -393,11 +407,14 @@ def construct_town(map_gen, town):
 				for _x in range(map_gen['chunk_size']):
 					x = _chunk_pos[0]+_x
 					
-					if _building[_y][_x] == '#':
-						for i in range(3):
+					for i in range(3):
+						if _building[_y][_x] == '#':
 							map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.WALL_TILE)
-					elif _building[_y][_x] == '.':
-						map_gen['map'][x][y][2] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
+						elif (not i or i == 2) and _building[_y][_x] == '.':
+							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
+							
+							if not i and random.randint(0, 500) == 500:
+								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
 
 MAP_KEY = {'o': '.',
            't': 't'}
