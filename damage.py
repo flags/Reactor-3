@@ -88,7 +88,7 @@ def bullet_hit(life, bullet, limb):
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append('is stopped by <own> %s' % _item['name'])
-					return ' '.join(_msg)
+					return own_language(life, _msg)+'.'
 			
 			elif _item['material'] == 'metal':
 				if _thickness and not _item['thickness']:
