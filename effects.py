@@ -96,7 +96,7 @@ def delete_fire(fire):
 	create_ash(fire['pos'])
 	
 	if 'light' in fire:
-		LIGHTS.remove(fire['light'])
+		WORLD_INFO['lights'].remove(fire['light'])
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
@@ -161,7 +161,7 @@ def draw_effect(pos):
 		effect['draw_callback']((_x, _y), effect)
 
 def light_exists_at(pos):
-	for light in LIGHTS:
+	for light in WORLD_INFO['lights']:
 		if light['pos'] == list(pos):
 			return light
 	
@@ -169,7 +169,7 @@ def light_exists_at(pos):
 
 def create_light(pos, color, brightness, shake, fade=0):
 	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
-	LIGHTS.append(_light)
+	WORLD_INFO['lights'].append(_light)
 	
 	return _light
 

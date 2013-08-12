@@ -50,7 +50,8 @@ def _refill_feed(life,feed):
 		
 		return False
 	
-	if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]):
+	#TODO: Actual programming
+	if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]) and (lfe.item_is_stored(life, feed['uid']) or feed['uid'] in life['inventory']) and lfe.find_action(life, matches=[{'action': 'removeandholditem'}]):
 		_hold = lfe.add_action(life,{'action': 'removeandholditem',
 			'item': feed['uid']},
 			200,

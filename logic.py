@@ -7,6 +7,7 @@ import alife as alfe
 import encounters
 import worldgen
 import effects
+import numbers
 import menus
 import items
 import life
@@ -18,14 +19,9 @@ def tick_all_objects(source_map):
 	if SETTINGS['paused']:
 		return False
 	
-	#if WORLD_INFO['in_combat'] and LIFE[SETTINGS['controlling']]['actions']:
-	#	WORLD_INFO['pause_ticks'] = 0
+	if process_events():
+		return False
 	
-	#if WORLD_INFO['pause_ticks']:
-	#	WORLD_INFO['pause_ticks'] -= 1
-	#	return False
-	
-	#if WORLD_INFO['in_combat']
 	if SETTINGS['controlling']:
 		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
 			if not LIFE[SETTINGS['controlling']]['actions']:
@@ -156,6 +152,63 @@ def draw_encounter():
 	
 	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
 		LIFE[SETTINGS['controlling']]['encounters'][0])
+
+def draw_event(event):
+	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
+		_lines = list(event['text'].partition(','))
+		
+		if not len(_lines[1]):
+			_lines = list(event['text'].partition('.'))
+		
+		if len(_lines[1]):
+			_lines.pop(1)
+		else:
+			lines = ['????']
+		
+	else:
+		_lines = [event['text']]
+	
+	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
+		_lines = ['The most annoying error.']
+	
+	_i = 0
+	for line in _lines:
+		_half = len(line)/2
+		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
+		
+		gfx.blit_string(_x,
+			10+_i,
+			line)
+		
+		_i += 1
+
+def show_event(life, text, time=30):
+	EVENTS.append({'life': life['id'], 'text': text, 'time': time})
+
+def show_next_event():
+	if not EVENTS:
+		return False
+	
+	EVENTS.pop(0)
+	gfx.refresh_window()
+	
+	if not EVENTS:
+		life.focus_on(LIFE[SETTINGS['controlling']])
+		return False
+	
+	return True
+
+def process_events():
+	if not EVENTS:
+		return False
+	
+	if EVENTS[0]['time']:
+		EVENTS[0]['time'] -= 1
+		life.focus_on(LIFE[EVENTS[0]['life']])
+		draw_event(EVENTS[0])
+		return True
+	
+	return show_next_event()
 
 def matches(dict1, dict2):
 	_break = False

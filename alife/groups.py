@@ -156,8 +156,6 @@ def find_shelter(life, group_id):
 	if _group['shelter']:
 		print 'SET SHELTER' * 100
 		announce_shelter(group_id)
-	else:
-		print life['name'],'COULD NOT FIND SHELTER' * 100
 
 def announce_shelter(group_id):
 	_group = get_group(group_id)

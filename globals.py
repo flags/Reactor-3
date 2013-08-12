@@ -47,7 +47,8 @@ WORLD_INFO = {'map': [],
 	'groups': {},
 	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
-	'chunk_size': 5}
+	'chunk_size': 5,
+	'lights': []}
 
 #Return values
 STATE_CHANGE = 2
@@ -92,7 +93,6 @@ MAP_CHAR_BUFFER = [[], []]
 PREFAB_CHAR_BUFFER = [[], []]
 X_CUTOUT_CHAR_BUFFER = [[], []]
 Y_CUTOUT_CHAR_BUFFER = [[], []]
-LIGHTS = []
 CONSOLE_HISTORY = []
 CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
@@ -199,6 +199,7 @@ EFFECT_MAP = []
 SPLATTERS = []
 JOBS = {}
 SELECTED_TARGET = []
+EVENTS = []
 
 #Consoles
 MAP_WINDOW = None

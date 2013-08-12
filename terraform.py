@@ -44,8 +44,10 @@ except ImportError, e:
 gfx.log(WINDOW_TITLE)
 create_all_tiles()
 
+LOAD_MAP = 'test2.dat'
+
 try:
-	maps.load_map('temp_map.dat')
+	maps.load_map(LOAD_MAP)
 except IOError:
 	maps.create_map()
 	maps.save_map()
@@ -431,4 +433,4 @@ else:
 #TODO: write this into the utility
 #MAP = maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
 
-maps.save_map('map1.dat')
+maps.save_map(LOAD_MAP)

@@ -14,6 +14,7 @@ import numbers
 import effects
 import random
 import damage
+import logic
 import zones
 import alife
 import items
@@ -60,11 +61,9 @@ def calculate_base_stats(life):
 	
 	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
-	print 'SPEED MAX',life['species'],stats['speed_max']
 	
 	for var in life['vars'].split('|'):
 		key,val = var.split('=')
-		logging.debug('%s = %s' % (key, val))
 		
 		try:
 			life[key] = int(val)
@@ -275,8 +274,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
 	
-	#TODO: We only need this for pathing, so maybe we should move this to
-	#the `walk` function?
 	_life['animation'] = {}
 	_life['path'] = []
 	_life['actions'] = []
@@ -305,7 +302,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['strafing'] = False
 	_life['recoil'] = 0
 	_life['stance'] = 'standing'
-	_life['facing'] = (0,0)
 	_life['strafing'] = False
 	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
@@ -393,6 +389,7 @@ def post_save(life):
 	life['heard'] = []
 	life['needs'] = []
 	life['actions'] = []
+	life['path'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
@@ -686,6 +683,9 @@ def say(life, text, action=False, volume=30, context=False):
 				_style = 'important'
 			
 			gfx.message(text, style=_style)
+			
+			if action:
+				logic.show_event(life, text)
 
 def memory(life, gist, *args, **kvargs):
 	_entry = {'text': gist, 'id': WORLD_INFO['memoryid']}
@@ -901,7 +901,6 @@ def can_walk_to(life, pos):
 	if not _z2:
 		return False
 	
-	#print zones.can_path_to_zone(_z1, _z2),_z1,_z2
 	return zones.can_path_to_zone(_z1, _z2)
 
 def walk_to(life, position):
@@ -950,10 +949,6 @@ def walk_path(life):
 		_nfx = _pos[0]
 		_nfy = _pos[1]
 		
-		if not life['facing'][0] == _nfx or not life['facing'][1] == _nfy:
-			life['facing'] = (_nfx,_nfy)
-			life['aim_at'] = life['id']
-		
 		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
 			life['pos'][2] += 1
 		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
@@ -965,6 +960,10 @@ def walk_path(life):
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
+		
+		if 'player' in life:
+			#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+			LOS_BUFFER[0] = []
 		
 		if life['path']:
 			return False
@@ -1379,7 +1378,8 @@ def perform_action(life):
 def kill(life, injury):
 	if isinstance(injury, str) or isinstance(injury, unicode):
 		life['cause_of_death'] = injury
-		logging.debug('%s dies: %s' % (' '.join(life['name']), injury))
+		
+		say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
@@ -1388,7 +1388,7 @@ def kill(life, injury):
 		else:
 			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 		
-		logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
+	logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if alife.sight.can_see_position(ai, life['pos']):
@@ -1474,7 +1474,7 @@ def tick(life, source_map):
 	
 	_crit_injury = can_die_via_critical_injury(life)
 	if _crit_injury:
-		kill(life, 'acute pain in the %s.' % life['body'][_crit_injury])
+		kill(life, 'acute pain in the %s' % _crit_injury)
 		
 		return True
 	
@@ -1687,7 +1687,7 @@ def can_wear_item(life, item_uid):
 
 def get_inventory_item(life, item_id):
 	"""Returns inventory item."""
-	if not item_id in life['inventory']:
+	if not item_id in life['inventory'] and not item_is_stored(life, item_id):
 		raise Exception('%s does not have item of id #%s'
 			% (' '.join(life['name']), item_id))
 	
@@ -2715,7 +2715,8 @@ def remove_limb(life, limb, no_children=False):
 		life['melee'].remove(limb)	
 	
 	if 'CRUCIAL' in life['body'][limb]['flags']:
-		kill(life, 'a severed %s.' % limb)
+		if not life['dead']:
+			kill(life, 'a severed %s' % limb)
 	
 	if 'children' in life['body'][limb] and not no_children:
 		for _attached_limb in life['body'][limb]['children']:
@@ -2748,7 +2749,10 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
 	
-	if _limb['cut'] > _limb['size']:
+	print 'CUT' * 50
+	print amount, _limb['size']
+	
+	if _limb['cut'] >= _limb['size']:
 		sever_limb(life, limb, impact_velocity)
 		return True
 	
@@ -2946,6 +2950,7 @@ def damage_from_item(life,item,damage):
 	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
+		logic.show_event(life, _dam_message, time=35)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:

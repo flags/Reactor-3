@@ -7,7 +7,7 @@
 "drag": 0.05,
 "scatter_rate": 0.3,
 "flags": "",
-"damage": {"sharp": 2},
+"damage": {"sharp": 3},
 "size": "1x1",
 "ammotype": ".22 LR",
 "material": "metal"}

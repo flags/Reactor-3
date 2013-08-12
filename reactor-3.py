@@ -139,11 +139,11 @@ if not 'start_age' in WORLD_INFO:
 		save=True,
 		thread=False)
 
-effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
-effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
-effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
-effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
+#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
+#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
+#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
 
 CURRENT_UPS = UPS
 
@@ -177,13 +177,16 @@ def main():
 			logic.tick_all_objects(WORLD_INFO['map'])
 			
 	draw_targeting()
+	move_camera(LIFE[SETTINGS['following']]['pos'])
+	
+	if LOS_BUFFER[0] == []:
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)	
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
 	else:
 		maps.render_map(WORLD_INFO['map'])
 	
-	move_camera(LIFE[SETTINGS['following']]['pos'])
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
@@ -191,8 +194,9 @@ def main():
 	
 	if LIFE[SETTINGS['controlling']]['encounters']:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=CYTHON_ENABLED)
-	else:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=CYTHON_ENABLED)
+	
+	if not SETTINGS['controlling'] == SETTINGS['following']:
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

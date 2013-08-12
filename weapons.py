@@ -104,7 +104,7 @@ def fire(life, target, limb=None):
 		if not _item:
 			if 'player' in life:
 				gfx.message('You aren\'t holding a weapon!')
-			life['facing'] = (_fx,_fy)
+			
 			life['firing'] = None
 			return False
 		
@@ -160,18 +160,15 @@ def fire(life, target, limb=None):
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
 		_bullet['start_velocity'] = _bullet['velocity'][:]
+		items.tick_item(_bullet['uid'])
 	
 	if _ooa:
 		if 'player' in life:
 			gfx.message('You are out of ammo.')
-	
-	_fx = numbers.clip(life['facing'][0]-target[0],-1,1)
-	_fy = numbers.clip(life['facing'][1]-target[1],-1,1)
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
 			life['aim_at'] = _life['id']
 			break
 	
-	life['facing'] = (_fx,_fy)
 	life['firing'] = None

@@ -278,7 +278,8 @@ def listen(life):
 						'opinion_of_target',
 						{'target': event['from']['id'], 'who': event['attacker']},
 						[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
-					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']}],
+					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']},
+					     {'text': 'target doesn\'t know target', 'target': event['from']['id'], 'who': event['attacker']}],
 						answer_all=True,
 						interest=10)
 			

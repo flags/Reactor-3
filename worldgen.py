@@ -209,9 +209,6 @@ def generate_life(amount=1):
 		life.add_item_to_inventory(alife, items.create_item(item))
 	
 	for item in RECRUIT_ITEMS:
-		if random.randint(0, 1):
-			continue
-		
 		life.add_item_to_inventory(alife, items.create_item(item))
 
 def create_player(source_map):
