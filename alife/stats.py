@@ -158,6 +158,14 @@ def desires_to_join_camp(life, camp_id):
 	
 	return True
 
+def battle_cry(life):
+	_battle_cry = lfe.execute_raw(life, 'talk', 'battle_cry')
+	
+	if _battle_cry == 'action':
+		_battle_cry_action = lfe.execute_raw(life, 'talk', 'battle_cry_action')
+		
+		lfe.say(life, _battle_cry_action, action=True)
+
 def get_firearm_accuracy(life):
 	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
 
