@@ -18,6 +18,9 @@ import logging
 import random
 
 def get_camp(camp_id):
+	if not camp_id in WORLD_INFO['camps']:
+		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)
+	
 	return WORLD_INFO['camps'][camp_id]
 
 def get_flag(life, camp_id, flag):
@@ -41,7 +44,9 @@ def create_all_camps():
 		#if camp in _founded_camps:
 		#	continue
 		
-		WORLD_INFO['camps'][str(WORLD_INFO['campid'])] = {'id': str(WORLD_INFO['campid']), 'reference': camp}
+		WORLD_INFO['camps'][str(WORLD_INFO['campid'])] = {'id': str(WORLD_INFO['campid']),
+		                                                  'reference': camp,
+		                                                  'groups': {}}
 		WORLD_INFO['campid'] += 1
 		
 		#if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
@@ -63,7 +68,7 @@ def _get_nearest_known_camp(life):
 	_nearest_camp = {'camp': None, 'score': -1}
 	
 	for camp in [life['known_camps'][i] for i in life['known_camps']]:
-		_key = references.find_nearest_key_in_reference(life, camp['reference'])
+		_key = references.find_nearest_key_in_reference(life, get_camp(camp['id'])['reference'])
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		
 		_distance = numbers.distance(life['pos'], _center)
@@ -87,12 +92,6 @@ def get_camp_via_reference(reference):
 	
 	return None
 
-def get_camp(camp_id):
-	if not camp_id in CAMPS:
-		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)
-	
-	return CAMPS[camp_id]
-
 def get_controlling_groups(camp_id):
 	_groups = {}
 	
@@ -107,13 +106,24 @@ def get_controlling_groups(camp_id):
 	
 	return _groups
 
-def get_controlling_group(camp_id):
+def get_controlling_group_global(camp_id):
 	_groups = get_controlling_groups(camp_id)
 	
 	return [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
 
+def get_controlling_group_according_to(life, camp_id):
+	_best_group = {'group': None, 'score': 0}
+	_camp = life['known_camps'][camp_id]
+	
+	for group in _camp['snapshot']['groups']:
+		if not _best_group['group'] or _camp['snapshot']['groups'][group] > _best_group['score']:
+			_best_group['group'] = group
+			_best_group['score'] = _best_group['score']
+	
+	return _best_group['group']		
+
 def get_all_alife_in_camp(camp_id):
-	return [life['id'] for life in LIFE.values() if is_in_camp(life, CAMPS[camp_id])]
+	return [life['id'] for life in LIFE.values() if is_in_camp(life, WORLD_INFO['camps'][camp_id])]
 
 def is_in_camp(life, camp):
 	return references.life_is_in_reference(life, camp['reference'])
@@ -125,8 +135,8 @@ def is_in_any_camp(position):
 	
 	return False
 
-def position_is_in_camp(position, camp):
-	return references.is_in_reference(position, camp['reference'])
+def position_is_in_camp(position, camp_id):
+	return references.is_in_reference(position, get_camp(camp_id)['reference'])
 
 def get_nearest_position_in_camp(life, camp):
 	_camp = CAMPS[camp]

@@ -1170,6 +1170,13 @@ def radio_menu(entry):
 		                   group_id=_life['group'])
 	elif key == 'Suggest Location':
 		pass
+	#TODO: Steve "Jobs" Jobbers
+	elif key == 'Jobs':
+		speech.communicate(_life,
+		                   'group_jobs',
+		                   msg='Do you have any jobs for me?',
+		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   group_id=_life['group'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -1181,6 +1188,7 @@ def create_radio_menu():
 		_phrases.append(menus.create_item('title', 'Group', None))
 		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
+		_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

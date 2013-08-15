@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import movement
 import action
 import combat
 import speech
@@ -243,6 +244,33 @@ def is_ready_to_shelter(group_id):
 		return True
 	
 	return False
+
+def has_camp(group_id):
+	for camp in WORLD_INFO['camps']:
+		if camps.get_controlling_group_global(camp) == group_id:
+			return camp
+	
+	return None
+
+def get_jobs(group_id):
+	_group = get_group(group_id)
+	_jobs = []
+	
+	if not has_camp(group_id):
+		_nearest_camp = camps.get_nearest_known_camp(LIFE[_group['leader']])
+		if LIFE[_group['leader']]['known_camps']:
+			_j = jobs.create_job(LIFE[_group['leader']],
+			                     'raid camp %s' % _nearest_camp['id'],
+			                     description='Take control of camp %s.' % _nearest_camp['id'])
+			#jobs.add_job_completed_callback(_j, combat.disarm_completed)
+			#jobs.add_leave_job_callback(_j, combat.disarm_left)
+			jobs.add_job_factor(_j, 'camp', _nearest_camp)
+			jobs.add_job_task(_j, 'raid', callback=movement.raid, required=True)
+			#jobs.add_job_task(_j, 'guard', callback=combat.guard)
+			
+			_jobs.append(_j)
+	
+	return _jobs
 
 def is_member(group_id, life_id):
 	_group = get_group(group_id)

@@ -461,11 +461,18 @@ def tell_about_alife_memories(life, chosen):
 
 def get_jobs(life, chosen):
 	_topics = []
-	if life['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
-		for job in alife.camps.get_camp_jobs(life['camp']):			
-			_topics.append({'text': job['description'],
-				'gist': 'offer_job',
-				'job': job})
+	#if life['camp'] in [c['id'] for c in alife.camps.get_founded_camps(life)]:
+	#	for job in alife.camps.get_camp_jobs(life['camp']):			
+	#		_topics.append({'text': job['description'],
+	#			'gist': 'offer_job',
+	#			'job': job})
+	if life['group']:
+		print life['name']
+		if alife.groups.is_leader(life['group'], life['id']):
+			for job in alife.groups.get_jobs(life['group']):
+				_topics.append({'text': job['description'],
+			                     'gist': 'offer_job',
+			                     'job': job})
 	
 	if not _topics:
 		_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
@@ -475,10 +482,11 @@ def get_jobs(life, chosen):
 def get_responses_about_self(life):
 	_responses = []
 	
-	for camp in alife.camps.get_founded_camps(life):
-		_responses.append({'text': 'I\'m the founder of camp %s.' % camp['name'],
-			'gist': 'talk_about_camp',
-			'camp': camp['id']})
+	#TODO: Retool for groups
+	#for camp in alife.camps.get_founded_camps(life):
+	#	_responses.append({'text': 'I\'m the founder of camp %s.' % camp['name'],
+	#		'gist': 'talk_about_camp',
+	#		'camp': camp['id']})
 	
 	if not _responses:
 		if life['job']:

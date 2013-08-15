@@ -303,3 +303,8 @@ def _find_alife_and_say(life, target_id, say):
 #TODO: Put this in a new file
 def find_alife_and_say(life):	
 	return _find_alife_and_say(life, jobs.get_job_detail(life['job'], 'target'), jobs.get_job_detail(life['job'], 'target'))
+
+def raid(life):
+	jobs.add_job_candidate(_j, life)
+	jobs.announce_job(life, _j)
+	jobs.process_job(_j)

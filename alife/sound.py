@@ -4,6 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import judgement
+import dialog
 import action
 import groups
 import chunks
@@ -367,6 +368,18 @@ def listen(life):
 		
 		elif event['gist'] == 'answer_group_location_fail':
 			gfx.radio(event['from'], 'We don\'t have a camp yet. I\'ll let you know when we meet up.')
+		
+		elif event['gist'] == 'group_jobs':
+			if groups.is_leader(event['group_id'], life['id']):
+				_jobs = groups.get_jobs(event['group_id'])
+				
+				if _jobs:
+					gfx.radio(life, 'I\'ve got a few jobs for you...')
+					speech.start_dialog(event['from'], life['id'], 'jobs')
+			
+			#jobs.add_job_candidate(_j, life)
+			#jobs.announce_job(life, _j)
+			#jobs.process_job(_j)
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

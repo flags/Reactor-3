@@ -669,10 +669,22 @@ def get_best_shelter(life):
 def update_camps(life):
 	for camp in life['known_camps'].values():
 		camp['snapshot']['life'] = []
+		camp['snapshot']['groups'] = {}
 	
 	for _target in life['know'].values():
 		for camp in life['known_camps'].values():
 			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
 				continue
 			
-			camp['snapshot']['life'].append(_target['id'])
+			camp['snapshot']['life'].append(_target['life']['id'])
+			if _target['life']['group']:
+				if _target['life']['group'] in camp['snapshot']['groups']:
+					camp['snapshot']['groups'][_target['life']['group']] += 1
+				else:
+					camp['snapshot']['groups'][_target['life']['group']] = 1
+	
+	#for camp in life['known_camps'].values():
+	#	if not camp['snapshot']['life']:
+	#		continue
+	#	
+	#	print life['name'], camp['id'], camp['snapshot']['life']
