@@ -5,6 +5,7 @@ x		:	Complete
 /		:	Partially complete
 ?		:	Potentially a non-issue
 U		:	Unclear (for entries written too early in the morning)
+F		:	Future (considered for next version.)
 
 alife_camp.py
 	[ ] Do we even want to help other ALife find the founder?

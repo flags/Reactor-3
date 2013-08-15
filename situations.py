@@ -12,4 +12,4 @@ def create_heli_crash(kind):
 		if not _walkable:
 			continue
 		
-		s
+		

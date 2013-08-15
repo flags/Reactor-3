@@ -52,6 +52,7 @@ def think(life, source_map):
 	memory.process(life)
 	survival.process(life)
 	understand(life, source_map)
+	judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
 	life['tempstor2'][key] = value

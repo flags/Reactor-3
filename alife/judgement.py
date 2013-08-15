@@ -334,6 +334,10 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			'digest': chunk['digest'],
 			'life': []}
 	
+	_camp = camps.is_in_any_camp(chunk['pos'])
+	if _camp and not _camp in life['known_camps']:
+		camps.discover_camp(life, _camp)
+	
 	_known_chunk = life['known_chunks'][chunk_id]	
 	
 	if seen:
@@ -379,15 +383,16 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
 	
-	for camp in life['known_camps'].values():
-		if not chunk_id in camp['reference']:
-			continue
+	#for camp in life['known_camps']:
+	#	if not chunk_id in camps.get_camp(camp)['reference']:
+	#		continue
 		
-		if not life['camp'] == camp['id']:
-			continue
+		
+		#if not life['camp'] == camp['id']:
+		#	continue
 	
-		if stats.desires_shelter(life):
-			_score += judge_camp(life, life['camp'])
+		#if stats.desires_shelter(life):
+		#	_score += judge_camp(life, life['camp'])
 	
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
@@ -660,3 +665,14 @@ def get_best_shelter(life):
 			_best_shelter['score'] = _score
 	
 	return _best_shelter['shelter']
+
+def update_camps(life):
+	for camp in life['known_camps'].values():
+		camp['snapshot']['life'] = []
+	
+	for _target in life['know'].values():
+		for camp in life['known_camps'].values():
+			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
+				continue
+			
+			camp['snapshot']['life'].append(_target['id'])

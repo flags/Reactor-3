@@ -2749,9 +2749,6 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
 	
-	print 'CUT' * 50
-	print amount, _limb['size']
-	
 	if _limb['cut'] >= _limb['size']:
 		sever_limb(life, limb, impact_velocity)
 		return True

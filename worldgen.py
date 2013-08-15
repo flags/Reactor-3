@@ -65,9 +65,6 @@ def simulate_life(amount):
 def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
-	
-	randomize_item_spawns()
-	
 	WORLD_INFO['life_density'] = life_density
 	WORLD_INFO['wildlife_density'] = wildlife_density
 	
@@ -85,6 +82,9 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
 	
+	randomize_item_spawns()
+	alife.camps.create_all_camps()
+	
 	if thread:
 		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
 		_r = Runner(simulate_ticks)
@@ -96,7 +96,6 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 			if not SETTINGS['running']:
 				return False
 	else:
-		print 'here'
 		simulate_life(simulate_ticks)
 	
 	create_player(source_map)

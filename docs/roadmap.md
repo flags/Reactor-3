@@ -532,8 +532,7 @@ How I would like it to work (finding a camp leader.):
 	add_criteria_memory(camp=camp_id, group='*')
 		with_criteria(likes_group, group_id, required=True)
 	
-	
-		
-
-
-	
+Group Battles
+------------
+The last big issue we have to approach is the lack of any conflict in the Zone between groups. The reason for the current lack of conflict has to do with there being nothing to fight over.
+Proposing: Artifact fields. Areas of the map that generate a specifc kind of artifact, which change position after an established amount of time. Groups will be fighting for control of these areas.
