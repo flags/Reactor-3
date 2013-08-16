@@ -479,16 +479,33 @@ def handle_input():
 			print 'Strafing'
 	
 	if INPUT['S']:
-		if not LIFE[SETTINGS['controlling']]['encounters']:
-			return False
+		#if not LIFE[SETTINGS['controlling']]['encounters']:
+		#	return False
 		
-		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
-		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
-		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
+		#SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		#_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
+		#LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		
-		speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
+		#speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
 		
-		logging.debug('** SURRENDERING **')
+		#logging.debug('** SURRENDERING **')
+		_stats = []
+		_stats.append(menus.create_item('title', 'Stats', None))
+		_stats.append(menus.create_item('spacer', '=', None))
+		
+		for key in LIFE[SETTINGS['controlling']]['stats']:
+			if key == 'description':
+				continue
+			
+			_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
+		
+		_i = menus.create_menu(title='Options',
+			menu=_stats,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v')
+		
+		menus.activate_menu(_i)
 	
 	if INPUT['w']:
 		create_wound_menu()		
