@@ -92,15 +92,16 @@ def calculate_impacts(life, target, topics):
 		
 		topic['impact'] = GIST_MAP[topic['gist']]
 
-def reset_dialog(dialog, end=True):
+def reset_dialog(dialog, end=True, force=False):
 	_ret = False
 
 	if end:
-		if 'player' in LIFE[dialog['sender']] and dialog['starting_topics'] and not dialog['title'] == 'Talk':
+		if not force and 'player' in LIFE[dialog['sender']] and dialog['starting_topics'] and not dialog['title'] == 'Talk':
 			dialog['topics'] = dialog['starting_topics']
 			dialog['speaker'] = dialog['sender']
 			dialog['title'] = 'Talk'
 			dialog['index'] = 0
+			print "HERE"
 			return True
 			
 		LIFE[dialog['sender']]['dialogs'].remove(dialog)
@@ -466,9 +467,6 @@ def get_jobs(life, chosen):
 	#		_topics.append({'text': job['description'],
 	#			'gist': 'offer_job',
 	#			'job': job})
-	if life['group']:
-		print life['name']
-		
 	
 	if not _topics:
 		_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
@@ -690,6 +688,8 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'take_job':
 		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['speaker']])
 		alife.jobs.process_job(chosen['job'])
+		reset_dialog(dialog, end=True, force=True)
+		return True
 	elif chosen['gist'] == 'offer_job':
 		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['speaker']])
 		alife.jobs.process_job(chosen['job'])

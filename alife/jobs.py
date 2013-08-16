@@ -17,6 +17,7 @@ def create_job(creator, gist, description='Job description needed.'):
 	_job['score'] = 0
 	_job['completed_callback'] = None
 	_job['leave_job_callback'] = None
+	_job['tick_callback'] = {}
 	_job['tasks'] = []
 	_job['factors'] = []
 	_job['workers'] = []
@@ -29,6 +30,19 @@ def create_job(creator, gist, description='Job description needed.'):
 	logging.debug('%s created new job: %s' % (' '.join(creator['name']), gist))
 	
 	return _job
+
+def tick(job):
+	if job['tick_callback']:
+		if job['tick_callback']['callback'](**job['tick_callback']['args']):
+			cancel_job(job, completed=True)
+
+def tick_all_jobs():
+	for job in JOBS.values():
+		tick(job)
+
+def add_tick_callback(job, callback, **kwargs):
+	job['tick_callback']['callback'] = callback
+	job['tick_callback']['args'] = kwargs
 
 def add_job_completed_callback(job, callback):
 	job['completed_callback'] = callback

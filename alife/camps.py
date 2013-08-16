@@ -108,8 +108,11 @@ def get_controlling_groups(camp_id):
 
 def get_controlling_group_global(camp_id):
 	_groups = get_controlling_groups(camp_id)
+	_groups_controlling = [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+	if _groups_controlling:
+		return _groups_controlling[0]
 	
-	return [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+	return None
 
 def get_controlling_group_according_to(life, camp_id):
 	_best_group = {'group': None, 'score': 0}
@@ -139,7 +142,7 @@ def position_is_in_camp(position, camp_id):
 	return references.is_in_reference(position, get_camp(camp_id)['reference'])
 
 def get_nearest_position_in_camp(life, camp):
-	_camp = CAMPS[camp]
+	_camp = WORLD_INFO['camps'][camp]
 	_key = references.find_nearest_key_in_reference_exact(life['pos'], _camp['reference'])
 	
 	return chunks.get_nearest_position_in_chunk(life['pos'], _key)

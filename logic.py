@@ -91,6 +91,7 @@ def tick_all_objects(source_map):
 	
 	effects.calculate_all_effects()
 	tick_world()
+	alfe.jobs.tick_all_jobs()
 	items.tick_all_items(source_map)
 	life.tick_all_life(source_map)
 	

@@ -523,17 +523,21 @@ def handle_input():
 		
 		_jobs = []
 		_jobs.append(menus.create_item('title', _job['description'], None))
-		_jobs.append(menus.create_item('spacer', '-', None))
+		#_jobs.append(menus.create_item('spacer', '-', None))
 		
 		if LIFE[SETTINGS['controlling']]['job']:
 			_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
 			_jobs.append(menus.create_item('title', 'Workers', None))
-			_jobs.append(menus.create_item('spacer', '-', None))
+			#_jobs.append(menus.create_item('spacer', '-', None))
 			
 			_i = 1
 			for worker in _job['workers']:
 				_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
 				_i += 1
+			
+			_location = jobs.get_job_detail(_job, 'location')
+			if _location:
+				_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
 			
 			_i = menus.create_menu(title='Jobs',
 			                       menu=_jobs,
