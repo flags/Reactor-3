@@ -27,3 +27,7 @@ def time(time):
 
 def timescale(scale):
 	WORLD_INFO['time_scale'] = scale
+
+def warp(x, y):
+	LIFE[SETTINGS['controlling']]['pos'][0] = x
+	LIFE[SETTINGS['controlling']]['pos'][1] = y

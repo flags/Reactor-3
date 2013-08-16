@@ -468,11 +468,7 @@ def get_jobs(life, chosen):
 	#			'job': job})
 	if life['group']:
 		print life['name']
-		if alife.groups.is_leader(life['group'], life['id']):
-			for job in alife.groups.get_jobs(life['group']):
-				_topics.append({'text': job['description'],
-			                     'gist': 'offer_job',
-			                     'job': job})
+		
 	
 	if not _topics:
 		_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
@@ -682,9 +678,20 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'offering_help':
 		_responses.extend(get_questions_to_ask(life, chosen))
 	elif chosen['gist'] == 'ask_for_jobs':
-		_responses.extend(get_jobs(life, chosen))
+		_jobs = alife.groups.get_jobs(LIFE[dialog['listener']]['group'])
+		
+		if _jobs:
+			_responses.append({'text': 'I could use your help...', 'gist': 'show_jobs', 'jobs': _jobs})
+		else:
+			_responses.append({'text': 'I don\'t have anything for you.', 'gist': 'nothing'})
+	elif chosen['gist'] == 'show_jobs':
+		for job in chosen['jobs']:
+			_responses.append({'text': job['description'], 'gist': 'take_job', 'job': job, 'like': 1})
+	elif chosen['gist'] == 'take_job':
+		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['speaker']])
+		alife.jobs.process_job(chosen['job'])
 	elif chosen['gist'] == 'offer_job':
-		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['listener']])
+		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['speaker']])
 		alife.jobs.process_job(chosen['job'])
 	elif chosen['gist'] == 'no_jobs':
 		_responses.append({'text': 'Okay.', 'gist': 'end'})

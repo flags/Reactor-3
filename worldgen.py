@@ -69,11 +69,11 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	WORLD_INFO['wildlife_density'] = wildlife_density
 	
 	if WORLD_INFO['life_density'] == 'Sparse':
-		WORLD_INFO['life_spawn_interval'] = [0, (770, 990)]
+		WORLD_INFO['life_spawn_interval'] = [0, (1000, 1200)]
 	elif WORLD_INFO['life_density'] == 'Medium':
-		WORLD_INFO['life_spawn_interval'] = [0, (550, 700)]
+		WORLD_INFO['life_spawn_interval'] = [0, (800, 999)]
 	else:
-		WORLD_INFO['life_spawn_interval'] = [0, (250, 445)]
+		WORLD_INFO['life_spawn_interval'] = [0, (600, 799)]
 	
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
@@ -203,6 +203,9 @@ def generate_life(amount=1):
 	_spawn = get_spawn_point()
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	
+	if len(LIFE) == 1:
+		alife['stats']['is_leader'] = True
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(alife, items.create_item(item))
