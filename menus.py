@@ -203,7 +203,10 @@ def item_selected(menu,index):
 	_entry = get_selected_item(menu,index)
 	menu = get_menu(menu)
 	
-	return menu['on_select'](_entry)
+	if menu['on_select']:
+		return menu['on_select'](_entry)
+	
+	return False
 
 def item_changed(menu,index):
 	_entry = get_selected_item(menu,index)
