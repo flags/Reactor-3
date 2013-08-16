@@ -489,6 +489,10 @@ def handle_input():
 		#speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
 		
 		#logging.debug('** SURRENDERING **')
+		if menus.get_menu_by_name('Stats')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Stats'))
+			return False
+		
 		_stats = []
 		_stats.append(menus.create_item('title', 'Stats', None))
 		_stats.append(menus.create_item('spacer', '=', None))
@@ -506,6 +510,43 @@ def handle_input():
 			format_str='$k: $v')
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['j']:
+		if menus.get_menu_by_name('Jobs')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Jobs'))
+			return False
+		
+		_job = LIFE[SETTINGS['controlling']]['job']
+		if not _job:
+			gfx.message('You do not have a job.')
+			return False
+		
+		_jobs = []
+		_jobs.append(menus.create_item('title', _job['description'], None))
+		_jobs.append(menus.create_item('spacer', '-', None))
+		
+		if LIFE[SETTINGS['controlling']]['job']:
+			_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
+			_jobs.append(menus.create_item('title', 'Workers', None))
+			_jobs.append(menus.create_item('spacer', '-', None))
+			
+			_i = 1
+			for worker in _job['workers']:
+				_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
+				_i += 1
+			
+			_i = menus.create_menu(title='Jobs',
+			                       menu=_jobs,
+			                       padding=(1,1),
+			                       position=(1,1),
+			                       format_str='$k: $v')
+		
+			menus.activate_menu(_i)
+		#for key in LIFE[SETTINGS['controlling']]['job']:
+		#	if key == 'description':
+		#		continue
+		#	
+		#	_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
 	
 	if INPUT['w']:
 		create_wound_menu()		

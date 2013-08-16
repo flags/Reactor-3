@@ -115,7 +115,6 @@ def can_path_to_zone(z1, z2):
 		_checking = _to_check.pop()
 		_checked.append(_checking)
 		
-		print 'Before:',_checking, (_checking == None), z1, z2
 		if _checking:
 			return []
 		

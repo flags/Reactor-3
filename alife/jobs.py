@@ -11,7 +11,7 @@ import brain
 import logging
 
 def create_job(creator, gist, description='Job description needed.'):
-	_job = {'creator': creator}
+	_job = {'creator': creator['id']}
 	_job['gist'] = gist
 	_job['description'] = description
 	_job['score'] = 0
