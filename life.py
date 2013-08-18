@@ -323,9 +323,9 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['known_camps'] = {}
 	_life['camp'] = None
 	_life['tempstor2'] = {}
-	_life['job'] = {}
+	_life['jobs'] = []
+	_life['task'] = None
 	_life['group'] = None
-	_life['task'] = ''
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
 	_life['needs'] = []
@@ -468,13 +468,6 @@ def tick_animation(life):
 				return life['icon']
 		
 	return life['animation']['images'][life['animation']['index']]
-
-def track_target(life, target_id):
-	_j = jobs.create_job(life, 'track target')
-	jobs.add_detail_to_job(_j, 'target', target_id)
-	jobs.add_job_task(_j, 'find target', callback=movement.find_alife, required=True)
-	jobs.add_job_candidate(_j, life)
-	jobs.process_job(_j)
 
 def get_current_camp(life):
 	return life['known_camps'][life['camp']]
@@ -2165,15 +2158,6 @@ def get_all_life_at_position(life, position):
 		_life.append(alife['id'])
 	
 	return _life
-
-def show_life_info(life):
-	for key in life:
-		if key == 'body':
-			continue
-		
-		logging.debug('%s: %s' % (key,life[key]))
-	
-	return True
 	
 def draw_life_icon(life):
 	_icon = [tick_animation(life), tcod.white]

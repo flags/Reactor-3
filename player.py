@@ -553,7 +553,7 @@ def handle_input():
 		#	_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
 	
 	if INPUT['w']:
-		create_wound_menu()		
+		create_wound_menu()
 	
 	if INPUT['o']:
 		if menus.get_menu_by_name('Options')>-1:
@@ -575,9 +575,6 @@ def handle_input():
 			on_select=handle_options_menu)
 		
 		menus.activate_menu(_i)
-	
-	if INPUT['O']:
-		life.show_debug_info(LIFE[SETTINGS['following']])
 	
 	if INPUT['Z']:
 		life.crawl(LIFE[SETTINGS['controlling']])
@@ -1224,6 +1221,9 @@ def radio_menu(entry):
 	if key == 'Distress':
 		#speech.announce(life, 'under_attack')
 		pass
+	elif key == 'Gather':
+		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
+		jobs.join_job(_j, SETTINGS['controlling'])
 	elif key == 'Locate':
 		speech.communicate(_life,
 		                   'group_location',
@@ -1248,6 +1248,7 @@ def create_radio_menu():
 	
 	if LIFE[SETTINGS['controlling']]['group']:
 		_phrases.append(menus.create_item('title', 'Group', None))
+		_phrases.append(menus.create_item('title', 'Gather', 'Announce gather spot for interested parties.'))
 		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
 		_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
