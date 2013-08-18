@@ -272,7 +272,7 @@ def get_jobs(group_id):
 			jobs.add_detail_to_job(_j, 'location', camps.get_nearest_position_in_camp(LIFE[_group['leader']], _nearest_camp['id']))
 			jobs.add_job_task(_j, 'raid', callback=movement.raid, required=True)
 			jobs.add_tick_callback(_j, raids.has_control, camp_id=_nearest_camp['id'], group_id=group_id)
-			jobs.add_job_completed_callback(_j, lambda job: gfx.message('Camp raid complete!'))
+			jobs.add_job_completed_callback(_j, lambda job: gfx.message('Camp raid complete! %s' % WORLD_INFO['ticks']))
 			#jobs.add_job_task(_j, 'guard', callback=combat.guard)
 			
 			_jobs.append(_j)

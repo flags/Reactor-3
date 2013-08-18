@@ -10,6 +10,7 @@ import maps
 import logging
 import random
 import copy
+import sys
 import os
 
 TOWN_DISTANCE = 25
@@ -76,7 +77,7 @@ def load_buildings(chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=True):
+def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=True, skip_zoning=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	Towns: Decides the amount of towns generated.
@@ -112,11 +113,12 @@ def generate_map(size=(125, 125, 10), detail=5, towns=4, forests=1, underground=
 	MAP_SIZE[1] = _map_size[1]
 	MAP_SIZE[2] = _map_size[2]
 	
-	logging.debug('Creating zone map...')
-	zones.create_zone_map()
-	
-	logging.debug('Connecting zone ramps...')
-	zones.connect_ramps()
+	if not skip_zoning:
+		logging.debug('Creating zone map...')
+		zones.create_zone_map()
+		
+		logging.debug('Connecting zone ramps...')
+		zones.connect_ramps()
 	
 	maps.save_map('test2.dat')
 	
@@ -440,4 +442,4 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
-	generate_map()
+	generate_map(skip_zoning=False)
