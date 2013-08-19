@@ -9,6 +9,7 @@ import numbers
 import groups
 import combat
 import chunks
+import speech
 import stats
 import logic
 
@@ -46,6 +47,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'find_and_announce_shelter': groups.find_and_announce_shelter,
 	'desires_shelter': stats.desires_shelter,
 	'travel_to_position': movement.travel_to_position,
+	'start_dialog': speech.start_dialog,
 	'always': always,
 	'never': never}
 

@@ -1223,13 +1223,14 @@ def radio_menu(entry):
 		#speech.announce(life, 'under_attack')
 		pass
 	elif key == 'Gather':
+		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
 		jobs.add_task(_j, '0', 'move_to_chunk',
 		              action.make_small_script(function='travel_to_position',
 		                                       kwargs={'pos': _pos}))
-		jobs.add_task(_j, '1', 'move_to_chunk',
-		              action.make_small_script(function='travel_to_position',
-		                                       kwargs={'pos': (_pos[0]-10, _pos[1])}),
+		jobs.add_task(_j, '1', 'talk',
+		              action.make_small_script(function='start_dialog',
+		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
 		              requires=['0'])
 		jobs.join_job(_j, SETTINGS['controlling'])
 		
