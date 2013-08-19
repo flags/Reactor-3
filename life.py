@@ -326,6 +326,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['job'] = None
 	_life['jobs'] = []
 	_life['task'] = None
+	_life['completed_tasks'] = []
 	_life['group'] = None
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
@@ -394,6 +395,10 @@ def post_save(life):
 	
 	if not 'jobs' in life:
 		life['jobs'] = []
+	
+	if not 'completed_tasks' in life:
+		life['completed_tasks'] = []
+		life['completed_jobs'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]

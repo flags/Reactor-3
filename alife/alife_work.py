@@ -53,6 +53,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if jobs.work(life):
 			return False
 		
-		jobs.complete_task(life['job'], life['task'])
+		jobs.complete_task(life, life['job'], life['task'])
 		#if life['task'] and life['task']['callback'](life):
 		#	jobs.complete_task(life)
