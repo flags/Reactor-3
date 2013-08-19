@@ -162,8 +162,8 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 			continue
 		
 		#TODO: Maybe the job calls for us to engage this target?
-		if jobs.alife_is_factor_of_any_job(target['life']):
-			continue
+		#if jobs.alife_is_factor_of_any_job(target['life']):
+		#	continue
 		
 		_passed_combat_targets.append(target['life']['id'])
 	
@@ -532,13 +532,19 @@ def judge_camp(life, camp, for_founding=False):
 	return (len(camp)*_percent_known)*_score
 
 def judge_jobs(life):
-	#if life['job']:
-	#	return life['job']
 	_tier = 0
+	
+	if life['task']:
+		return life['job']
+	
+	_old_job = life['job']
 	life['job'] = None
 		
 	for job in [jobs.get_job(j) for j in life['jobs']]:
 		if not jobs.get_free_tasks(job['id']):
+			continue
+		
+		if job['id'] in life['completed_jobs']:
 			continue
 		
 		if job['tier'] >= _tier:
@@ -546,9 +552,13 @@ def judge_jobs(life):
 			_tier = job['tier']
 	
 	if life['job']:
-		for task in jobs.get_free_tasks(life['job']):
-			life['task'] = task
-			break
+		life['task'] = jobs.get_next_task(life, life['job'])
+	
+	if not life['task']:
+		life['job'] = None
+	
+	if not life['job'] == _old_job:
+		life['completed_tasks'] = []
 	
 	return life['job']
 

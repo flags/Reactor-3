@@ -100,7 +100,8 @@ def listen(life):
 			pass
 		
 		elif event['gist'] == 'looks_hostile':
-			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
+			#speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
+			pass
 		
 		elif event['gist'] == 'camp_raid':
 			print '*' * 10

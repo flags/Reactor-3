@@ -1227,11 +1227,13 @@ def radio_menu(entry):
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
 		jobs.add_task(_j, '0', 'move_to_chunk',
 		              action.make_small_script(function='travel_to_position',
-		                                       kwargs={'pos': _pos}))
+		                                       kwargs={'pos': _pos}),
+		              delete_on_finish=True)
 		jobs.add_task(_j, '1', 'talk',
 		              action.make_small_script(function='start_dialog',
 		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
-		              requires=['0'])
+		              requires=['0'],
+		              delete_on_finish=True)
 		jobs.join_job(_j, SETTINGS['controlling'])
 		
 		for life_id in LIFE[SETTINGS['controlling']]['know']:
@@ -1246,6 +1248,8 @@ def radio_menu(entry):
 		                   msg='Where are you?',
 		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
 		                   group_id=_life['group'])
+	elif key == 'Shelter':
+		groups.find_and_announce_shelter(_life, _life['group'])
 	elif key == 'Suggest Location':
 		pass
 	#TODO: Steve "Jobs" Jobbers
@@ -1264,10 +1268,14 @@ def create_radio_menu():
 	_phrases.append(menus.create_item('single', 'Gather', 'Announce gather spot for interested parties.'))
 	
 	if LIFE[SETTINGS['controlling']]['group']:
-		_phrases.append(menus.create_item('title', 'Group', None))
-		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
-		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
-		_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
+		if groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+			_phrases.append(menus.create_item('title', 'Group (Leader)', None))
+			_phrases.append(menus.create_item('single', 'Shelter', 'Set this location as a shelter.'))
+		else:
+			_phrases.append(menus.create_item('title', 'Group (Member)', None))
+			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
+			_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
+			_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

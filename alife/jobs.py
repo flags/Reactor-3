@@ -49,7 +49,7 @@ def reset_job(job_id):
 		
 	logging.debug('Job with ID \'%s\' reset.' % job_id)
 
-def add_task(job_id, task_id, name, action, description='Task description needed.', requires=[], max_workers=1):
+def add_task(job_id, task_id, name, action, description='Task description needed.', requires=[], max_workers=1, delete_on_finish=False):
 	_job = get_job(job_id)
 	
 	_task = {'id': str(task_id)}
@@ -60,6 +60,11 @@ def add_task(job_id, task_id, name, action, description='Task description needed
 	_task['_required'] = []
 	_task['max_workers'] = max_workers
 	_task['completed'] = False
+	
+	if delete_on_finish:
+		_task['max_workers'] = -1
+	else:
+		_task['max_workers'] = max_workers
 	
 	_job['tasks'][str(task_id)] = _task
 	
@@ -73,9 +78,20 @@ def remove_worker_from_task(job_id, task_id, worker_id):
 		
 		logging.debug('Removed worker \'%s\' from task \'%s\' of job \'%s\'.' % (' '.join(LIFE[worker_id]['name']), task_id, worker_id))
 
-def complete_task(job_id, task_id):
+def complete_task(life, job_id, task_id):
 	_job = get_job(job_id)
-	_job['tasks'][task_id]['completed'] = True
+	_task = get_task(job_id, task_id)
+	
+	if _task['max_workers'] == -1:
+		life['completed_tasks'].append(task_id)
+		life['task'] = None
+		
+		if not get_next_task(life, life['job']):
+			life['completed_jobs'].append(job_id)
+		
+		return False
+	
+	_task['completed'] = True
 	
 	for task in _job['tasks']:
 		if task_id in _job['tasks'][task]['requires']:
@@ -87,17 +103,49 @@ def complete_task(job_id, task_id):
 	
 	logging.debug('Task \'%s\' of job \'%s\' complete.' % (task_id, job_id))
 
-def get_free_tasks(job_id):
+def get_workers_on_task(job_id, task_id):
+	_task = get_task(job_id, task_id)
+	_workers = []
+	
+	for worker_id in get_job(job_id)['workers']:
+		if LIFE[worker_id]['task'] == task_id:
+			_workers.append(worker_id)
+	
+	return _workers
+
+def get_free_tasks(job_id, local_completed=[]):
 	_job = get_job(job_id)
 	_free_tasks = []
 	
 	for task in _job['tasks']:
-		if _job['tasks'][task]['completed'] or _job['tasks'][task]['requires']:
+		if local_completed:
+			_req = _job['tasks'][task]['requires'][:]
+			
+			for completed_task in local_completed:
+				if completed_task in _req:
+					_req.remove(completed_task)
+			
+			if _req:
+				continue
+		else:
+			if _job['tasks'][task]['completed'] or _job['tasks'][task]['requires']:
+				continue
+		
+		if not _job['tasks'][task]['max_workers'] == -1 and len(get_workers_on_task(job_id, task)) >= _job['tasks'][task]['max_workers']:
 			continue
 		
 		_free_tasks.append(task)
 	
 	return _free_tasks
+
+def get_next_task(life, job_id):
+	#_job = get_job(job_id)
+	
+	for task in get_free_tasks(job_id, local_completed=life['completed_tasks']):
+		if not task in life['completed_tasks']:
+			return task
+		
+	return None
 
 def join_job(job_id, life_id):
 	_job = get_job(job_id)
@@ -111,6 +159,8 @@ def alife_has_job(life):
 	return life['job']
 
 def work(life):
+	if not life['task']:
+		return True
 	_task = get_task(life['job'], life['task'])
 	
 	return action.execute_small_script(life, _task['action'])
