@@ -323,6 +323,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['known_camps'] = {}
 	_life['camp'] = None
 	_life['tempstor2'] = {}
+	_life['job'] = None
 	_life['jobs'] = []
 	_life['task'] = None
 	_life['group'] = None
@@ -390,6 +391,9 @@ def post_save(life):
 	life['needs'] = []
 	life['actions'] = []
 	life['path'] = []
+	
+	if not 'jobs' in life:
+		life['jobs'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]

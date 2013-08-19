@@ -4,6 +4,7 @@ import life as lfe
 
 import judgement
 import survival
+import movement
 import numbers
 import groups
 import combat
@@ -44,6 +45,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_born_leader': lambda life: life['stats']['is_leader'],
 	'find_and_announce_shelter': groups.find_and_announce_shelter,
 	'desires_shelter': stats.desires_shelter,
+	'travel_to_position': movement.travel_to_position,
 	'always': always,
 	'never': never}
 

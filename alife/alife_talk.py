@@ -37,7 +37,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['state'] in ['combat']:
 			break
 		
-		if jobs.alife_is_factor_of_any_job(ai['life']):
+		if jobs.alife_has_job(ai['life']):
 			break
 		
 		if not stats.can_talk_to(life, ai['life']['id']):

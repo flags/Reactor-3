@@ -17,9 +17,13 @@ def get_job(job_id):
 	
 	return WORLD_INFO['jobs'][job_id]
 
-def create_job(creator, name, description='Job description needed.'):
+def get_task(job_id, task_id):
+	return get_job(job_id)['tasks'][task_id]
+
+def create_job(creator, name, tier=TIER_WORK, description='Job description needed.'):
 	_job = {'id': str(WORLD_INFO['jobid'])}
 	_job['name'] = name
+	_job['tier'] = tier
 	_job['description'] = description
 	_job['tasks'] = {}
 	_job['workers'] = []
@@ -48,7 +52,7 @@ def reset_job(job_id):
 def add_task(job_id, task_id, name, action, description='Task description needed.', requires=[], max_workers=1):
 	_job = get_job(job_id)
 	
-	_task = {'id': task_id}
+	_task = {'id': str(task_id)}
 	_task['name'] = name
 	_task['description'] = description
 	_task['action'] = action
@@ -57,9 +61,17 @@ def add_task(job_id, task_id, name, action, description='Task description needed
 	_task['max_workers'] = max_workers
 	_task['completed'] = False
 	
-	_job['tasks'][task_id] = _task
+	_job['tasks'][str(task_id)] = _task
 	
-	return task_id
+	return str(task_id)
+
+def remove_worker_from_task(job_id, task_id, worker_id):
+	_job = get_job(job_id)
+	
+	if LIFE[worker_id]['task'] == task_id:
+		LIFE[worker_id]['task'] = None
+		
+		logging.debug('Removed worker \'%s\' from task \'%s\' of job \'%s\'.' % (' '.join(LIFE[worker_id]['name']), task_id, worker_id))
 
 def complete_task(job_id, task_id):
 	_job = get_job(job_id)
@@ -69,6 +81,11 @@ def complete_task(job_id, task_id):
 		if task_id in _job['tasks'][task]['requires']:
 			_job['tasks'][task]['requires'].remove(task_id)
 			_job['tasks'][task]['_required'].append(task_id)
+	
+	for worker in _job['workers']:
+		remove_worker_from_task(job_id, task_id, worker)
+	
+	logging.debug('Task \'%s\' of job \'%s\' complete.' % (task_id, job_id))
 
 def get_free_tasks(job_id):
 	_job = get_job(job_id)
@@ -78,7 +95,7 @@ def get_free_tasks(job_id):
 		if _job['tasks'][task]['completed'] or _job['tasks'][task]['requires']:
 			continue
 		
-		_free_tasks(task)
+		_free_tasks.append(task)
 	
 	return _free_tasks
 
@@ -86,7 +103,17 @@ def join_job(job_id, life_id):
 	_job = get_job(job_id)
 	_job['workers'].append(life_id)
 	
+	LIFE[life_id]['jobs'].append(job_id)
+	
 	logging.debug('%s joined job with ID \'%s\'.' % (' '.join(LIFE[life_id]['name']), job_id))
+
+def alife_has_job(life):
+	return life['job']
+
+def work(life):
+	_task = get_task(life['job'], life['task'])
+	
+	return action.execute_small_script(life, _task['action'])
 
 #def tick(job):
 #	if job['tick_callback']:

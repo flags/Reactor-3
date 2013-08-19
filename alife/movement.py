@@ -88,6 +88,9 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
 		return False
 	
+	if not numbers.distance(life['pos'], pos):
+		return False
+	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 	

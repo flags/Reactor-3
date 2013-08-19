@@ -531,18 +531,26 @@ def judge_camp(life, camp, for_founding=False):
 	#print 'camp score:',(len(camp)*_percent_known),_score,(len(camp)*_percent_known)*_score
 	return (len(camp)*_percent_known)*_score
 
-def judge_job(life, job):
-	_score = 0
-	for factor in job['factors']:
-		if factor['type'] == 'alife':
-			_alife = brain.knows_alife_by_id(life, factor['value'])
-			
-			if not _alife:
-				continue
-			
-			_score += judge(life, _alife)
-
-	return _score
+def judge_jobs(life):
+	#if life['job']:
+	#	return life['job']
+	_tier = 0
+	life['job'] = None
+		
+	for job in [jobs.get_job(j) for j in life['jobs']]:
+		if not jobs.get_free_tasks(job['id']):
+			continue
+		
+		if job['tier'] >= _tier:
+			life['job'] = job['id']
+			_tier = job['tier']
+	
+	if life['job']:
+		for task in jobs.get_free_tasks(life['job']):
+			life['task'] = task
+			break
+	
+	return life['job']
 
 def judge_raid(life, raiders, camp):
 	# score >= 0: We can handle it

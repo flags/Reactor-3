@@ -34,13 +34,7 @@ def listen(life):
 			
 			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
-		if event['gist'] == 'job':
-			if not jobs.alife_is_factor_of_job(life, event['job']):
-				print 'Got job:', event['job']['gist']
-				jobs.add_job_candidate(event['job'], life)
-				jobs.process_job(event['job'])
-		
-		elif event['gist'] == 'follow':
+		if event['gist'] == 'follow':
 			if stats.will_obey(life, event['from']['id']):
 				brain.add_impression(life, event['from']['id'], 'follow', {'influence': stats.get_influence_from(life, event['from']['id'])})
 		
@@ -380,6 +374,11 @@ def listen(life):
 			#jobs.add_job_candidate(_j, life)
 			#jobs.announce_job(life, _j)
 			#jobs.process_job(_j)
+		
+		elif event['gist'] == 'job':
+			if judgement.can_trust(life, event['from']['id']):
+				jobs.join_job(event['job_id'], life['id'])
+				print life['name'],'JOINED JOB' * 100
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

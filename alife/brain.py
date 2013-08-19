@@ -51,6 +51,7 @@ def think(life, source_map):
 	sound.listen(life)
 	memory.process(life)
 	survival.process(life)
+	judgement.judge_jobs(life)
 	understand(life, source_map)
 	judgement.update_camps(life)
 

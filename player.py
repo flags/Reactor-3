@@ -1217,13 +1217,28 @@ def radio_menu(entry):
 	value = entry['values'][entry['value']]
 	_phrases = []
 	_life = LIFE[SETTINGS['controlling']]
+	_pos = life.get_current_chunk(_life)['pos']
 	
 	if key == 'Distress':
 		#speech.announce(life, 'under_attack')
 		pass
 	elif key == 'Gather':
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
+		jobs.add_task(_j, '0', 'move_to_chunk',
+		              action.make_small_script(function='travel_to_position',
+		                                       kwargs={'pos': _pos}))
+		jobs.add_task(_j, '1', 'move_to_chunk',
+		              action.make_small_script(function='travel_to_position',
+		                                       kwargs={'pos': (_pos[0]-10, _pos[1])}),
+		              requires=['0'])
 		jobs.join_job(_j, SETTINGS['controlling'])
+		
+		for life_id in LIFE[SETTINGS['controlling']]['know']:
+			speech.communicate(_life,
+		                   'job',
+		                   msg='New group gather at xx,yy',
+		                   matches=[{'id': life_id}],
+		                   job_id=_j)
 	elif key == 'Locate':
 		speech.communicate(_life,
 		                   'group_location',
@@ -1245,10 +1260,10 @@ def radio_menu(entry):
 def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	_phrases.append(menus.create_item('single', 'Gather', 'Announce gather spot for interested parties.'))
 	
 	if LIFE[SETTINGS['controlling']]['group']:
 		_phrases.append(menus.create_item('title', 'Group', None))
-		_phrases.append(menus.create_item('title', 'Gather', 'Announce gather spot for interested parties.'))
 		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
 		_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
