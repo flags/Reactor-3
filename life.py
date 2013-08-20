@@ -394,13 +394,6 @@ def post_save(life):
 	life['actions'] = []
 	life['path'] = []
 	
-	if not 'jobs' in life:
-		life['jobs'] = []
-	
-	if not 'completed_tasks' in life:
-		life['completed_tasks'] = []
-		life['completed_jobs'] = []
-	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
 	

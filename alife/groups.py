@@ -26,7 +26,8 @@ def create_group(life, add_creator=True):
 	    'event_id': 1,
 	    'announce_event': None,
 	    'time_created': WORLD_INFO['ticks'],
-	    'last_updated': WORLD_INFO['ticks']}
+	    'last_updated': WORLD_INFO['ticks'],
+	    'flags': {}}
 	
 	WORLD_INFO['groups'][str(WORLD_INFO['groupid'])] = _group
 	
@@ -38,12 +39,23 @@ def create_group(life, add_creator=True):
 		set_leader(str(WORLD_INFO['groupid']), life['id'])
 	
 	WORLD_INFO['groupid'] += 1
+	
+	return str(WORLD_INFO['groupid']-1)
 
 def get_group(group_id):
 	if not group_id in WORLD_INFO['groups']:
 		raise Exception('Group does not exist: %s' % group_id)
 	
 	return WORLD_INFO['groups'][group_id]
+
+def flag(group_id, flag, value):
+	get_group(group_id)['flags'][flag] = value
+
+def get_flag(group_id, flag):
+	if not flag in get_group(group_id)['flags']:
+		return None
+	
+	return get_group(group_id)['flags'][flag]
 
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):

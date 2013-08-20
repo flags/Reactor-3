@@ -207,6 +207,9 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	
+	if life['group'] and not LIFE[target]['group'] == life['group']:
+		_topics.append({'text': 'Recruit...', 'message': 'Are you looking for a squad?', 'gist': 'inquire_about_group_work', 'group': life['group']})
+	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
 	return _topics, _memories
@@ -486,7 +489,7 @@ def get_responses_about_self(life):
 	
 	if not _responses:
 		if life['job']:
-			_responses.append({'text': life['job']['description'], 'gist': 'nothing'})
+			_responses.append({'text': alife.jobs.get_job(life['job'])['description'], 'gist': 'nothing'})
 		else:
 			_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
@@ -788,19 +791,26 @@ def process_response(life, target, dialog, chosen):
 
 	elif chosen['gist'] == 'ask_to_join_group':
 		_responses.append({'text': 'Will you join our squad?', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
+		
+	elif chosen['gist'] == 'inquire_about_group_work':
+		_responses.append({'text': 'What kind of work are we talking about?', 'gist': 'ask_about_group', 'like': 1, 'group': chosen['group']})
 
 	elif chosen['gist'] == 'ask_about_group':
 		#TODO: Change LIKE to DISLIKE depending on views
 		if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
 			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 		else:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 	
 	elif chosen['gist'] == 'decline_invite_to_group':
+		_responses.append({'text': 'Can we make a deal?', 'gist': 'group_bribe_request', 'group': chosen['group']})
+		_responses.append({'text': 'Understood.', 'gist': 'end', 'group': chosen['group']})
+	
+	elif chosen['gist'] == 'decline_invite_to_group_wrong_motive':
 		_responses.append({'text': 'I don\'t work for free.', 'gist': 'bribe_into_group', 'group': chosen['group']})
 		
 	elif chosen['gist'] == 'bribe_into_group':
@@ -991,7 +1001,7 @@ def draw_dialog():
 		_x = 41
 		
 		_impact = m['impact']
-		for line in part:			
+		for line in part:
 			if _impact == 1:
 				tcod.console_set_default_foreground(dialog['console'], tcod.black)
 				tcod.console_set_default_background(dialog['console'], tcod.green)

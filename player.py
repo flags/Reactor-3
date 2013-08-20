@@ -1212,19 +1212,55 @@ def handle_options_menu(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def announce_to(entry):
+	if entry['who'] == 'public':
+		_announce_to = LIFE.keys()
+		_announce_to.remove(SETTINGS['controlling'])
+	elif entry['who'] == 'trusted':
+		_announce_to = LIFE[SETTINGS['controlling']]['know'].keys()
+	elif entry['who'] == 'private':
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		return False
+	
+	for life_id in _announce_to:
+		speech.communicate(LIFE[SETTINGS['controlling']],
+			           'job',
+			           msg='New group gather at xx,yy',
+			           matches=[{'id': life_id}],
+			           job_id=entry['job_id'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_announce_group_menu(**kwargs):
+	_phrases = []
+	_phrases.append(menus.create_item('single', 'Private', None, who='private'))
+	_phrases.append(menus.create_item('single', 'Public', None, gist='job', who='public', **kwargs))
+	_phrases.append(menus.create_item('single', 'Trusted', None, gist='job', who='trusted', **kwargs))
+	
+	_menu = menus.create_menu(title='Announce group to...',
+                              menu=_phrases,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k',
+                              on_select=announce_to)
+
+	menus.activate_menu(_menu)
+
 def radio_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	_phrases = []
 	_life = LIFE[SETTINGS['controlling']]
 	_pos = life.get_current_chunk(_life)['pos']
 	
 	if key == 'Distress':
 		#speech.announce(life, 'under_attack')
 		pass
-	elif key == 'Gather':
+	elif key == 'Create group':
 		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
+		
 		jobs.add_task(_j, '0', 'move_to_chunk',
 		              action.make_small_script(function='travel_to_position',
 		                                       kwargs={'pos': _pos}),
@@ -1234,14 +1270,12 @@ def radio_menu(entry):
 		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
 		              requires=['0'],
 		              delete_on_finish=True)
-		jobs.join_job(_j, SETTINGS['controlling'])
 		
-		for life_id in LIFE[SETTINGS['controlling']]['know']:
-			speech.communicate(_life,
-		                   'job',
-		                   msg='New group gather at xx,yy',
-		                   matches=[{'id': life_id}],
-		                   job_id=_j)
+		groups.flag(_g, 'job_gather', _j)
+		
+		return create_announce_group_menu(job_id=_j)
+	elif key == 'Announce group':
+		return create_announce_group_menu(job_id=groups.get_flag(LIFE[SETTINGS['controlling']]['group'], 'job_gather'))
 	elif key == 'Locate':
 		speech.communicate(_life,
 		                   'group_location',
@@ -1250,7 +1284,7 @@ def radio_menu(entry):
 		                   group_id=_life['group'])
 	elif key == 'Shelter':
 		groups.find_and_announce_shelter(_life, _life['group'])
-	elif key == 'Suggest Location':
+	elif key == 'Suggest location':
 		pass
 	#TODO: Steve "Jobs" Jobbers
 	elif key == 'Jobs':
@@ -1265,7 +1299,11 @@ def radio_menu(entry):
 def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
-	_phrases.append(menus.create_item('single', 'Gather', 'Announce gather spot for interested parties.'))
+	
+	if not LIFE[SETTINGS['controlling']]['group'] or not groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+		_phrases.append(menus.create_item('single', 'Create group', 'Start a new group.'))
+	elif groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+		_phrases.append(menus.create_item('single', 'Announce group', 'Broadcast for more members.'))
 	
 	if LIFE[SETTINGS['controlling']]['group']:
 		if groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
@@ -1274,7 +1312,7 @@ def create_radio_menu():
 		else:
 			_phrases.append(menus.create_item('title', 'Group (Member)', None))
 			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
-			_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
+			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
 			_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
 	
 	_menu = menus.create_menu(title='Radio',

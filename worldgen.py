@@ -72,15 +72,19 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		WORLD_INFO['life_spawn_interval'] = [0, (1000, 1200)]
 	elif WORLD_INFO['life_density'] == 'Medium':
 		WORLD_INFO['life_spawn_interval'] = [0, (800, 999)]
-	else:
+	elif WORLD_INFO['life_density'] == 'Heavy':
 		WORLD_INFO['life_spawn_interval'] = [0, (600, 799)]
+	else:
+		WORLD_INFO['life_spawn_interval'] = [-1, (600, 799)]
 	
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (550, 700)]
-	else:
+	elif WORLD_INFO['wildlife_density'] == 'Heavy':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
+	else:
+		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 	
 	randomize_item_spawns()
 	alife.camps.create_all_camps()
@@ -126,6 +130,10 @@ def load_world(world):
 			SETTINGS['controlling'] = life['id']
 			SETTINGS['following'] = life['id']
 			break
+	
+	for group in WORLD_INFO['groups'].values():
+		if not 'flags' in group:
+			group['flags'] = {}
 	
 	lfe.load_all_life()
 	items.reload_all_items()

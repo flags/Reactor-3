@@ -116,18 +116,18 @@ def tick_world():
 		
 		WORLD_INFO['time_of_day'] = 'day'
 	
-	if WORLD_INFO['life_spawn_interval'][0]:
+	if WORLD_INFO['life_spawn_interval'][0]>0:
 		WORLD_INFO['life_spawn_interval'][0] -= 1
-	else:
+	elif not WORLD_INFO['life_spawn_interval'][0]:
 		worldgen.generate_life()
 			
 		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
 		
 		logging.info('Reset life spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
 	
-	if WORLD_INFO['wildlife_spawn_interval'][0]:
+	if WORLD_INFO['wildlife_spawn_interval'][0]>0:
 		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
-	else:
+	elif not WORLD_INFO['wildlife_spawn_interval'][0]:
 		worldgen.generate_wildlife()
 			
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
