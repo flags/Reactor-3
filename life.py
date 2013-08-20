@@ -327,6 +327,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['jobs'] = []
 	_life['task'] = None
 	_life['completed_tasks'] = []
+	_life['completed_jobs'] = []
 	_life['group'] = None
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
@@ -925,6 +926,9 @@ def walk(life, to):
 	elif life['speed']<=0:
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
+		
+		if life['recoil'] < get_max_speed(life):
+			life['recoil'] = get_max_speed(life)
 	
 	_dest = path_dest(life)
 	

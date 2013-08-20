@@ -139,7 +139,7 @@ def switch_to_select_world():
 	_menu_items = []
 	
 	for world in profiles.get_worlds():
-		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world))
+		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world, enabled=(not world == WORLD_INFO['id'])))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Select World',

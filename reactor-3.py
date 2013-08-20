@@ -108,7 +108,7 @@ items.initiate_item('22_rifle')
 items.initiate_item('22_lr_mag')
 items.initiate_item('22_lr_cartridge')
 
-SETTINGS['running'] = 2
+SETTINGS['running'] = 1
 
 if SETTINGS['running'] == 2:
 	for world in profiles.get_worlds():
