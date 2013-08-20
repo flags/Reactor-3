@@ -773,41 +773,52 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
 			
 			if LIFE[dialog['listener']]['group']:
-				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group', 'group': chosen['group']})
 		else:
 			if alife.stats.desires_group(LIFE[dialog['listener']], chosen['group']):
 				if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
 					_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
 					lfe.memory(LIFE[dialog['listener']], 'accept invite to group', group=chosen['group'])
 				else:
-					_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
+					_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': chosen['group']})
 					lfe.memory(LIFE[dialog['listener']], 'decline invite to group (judgement)', group=chosen['group'])
 			else:
-				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group'})
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group', 'group': chosen['group']})
 				lfe.memory(LIFE[dialog['listener']], 'decline invite to group (no desire)', group=chosen['group'])
+
+	elif chosen['gist'] == 'ask_to_join_group':
+		_responses.append({'text': 'Will you join our squad?', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 
 	elif chosen['gist'] == 'ask_about_group':
 		#TODO: Change LIKE to DISLIKE depending on views
 		if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'ask_about_group_positive', 'like': 1})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'ask_about_group_negative', 'dislike': 1})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'ask_about_group_positive', 'like': 1})
+			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 		else:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'ask_about_group_negative', 'dislike': 1})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'ask_about_group_positive', 'like': 1})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'ask_about_group_positive', 'like': 1})
+			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 	
-	elif chosen['gist'] == 'ask_about_group_positive':
-		_responses.append({'text': 'I\'m on board.', 'gist': 'join_group', 'like': 1, 'group': LIFE[dialog['speaker']]['group']})
+	elif chosen['gist'] == 'decline_invite_to_group':
+		_responses.append({'text': 'I don\'t work for free.', 'gist': 'bribe_into_group', 'group': chosen['group']})
+		
+	elif chosen['gist'] == 'bribe_into_group':
+		_responses.append({'text': 'What can I do, then?', 'gist': 'group_bribe_request', 'group': chosen['group']})
+
+	elif chosen['gist'] == 'group_bribe_request':
+		_responses.append({'text': 'Give me $1k and I\'ll join.', 'gist': 'accept_group_bribe_request', 'group': chosen['group']})
+
+	elif chosen['gist'] == 'accept_group_bribe_request':
+		_responses.append({'text': 'It\'s a deal.', 'gist': 'complete_group_bribe', 'group': chosen['group'], 'like': 1})
+		_responses.append({'text': 'That\'s too much for me.', 'gist': 'end', 'group': chosen['group'], 'like': 1})
 	
-	elif chosen['gist'] == 'ask_about_group_negative':
-		_responses.append({'text': 'Why would I support that?', 'gist': 'deny_group', 'dislike': 1})
+	elif chosen['gist'] == 'complete_group_bribe':
+		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
 	
 	elif chosen['gist'] == 'join_group':
 		alife.groups.add_member(chosen['group'], dialog['speaker'])
 		lfe.memory(LIFE[dialog['speaker']], 'join_group', group=chosen['group'])
-		
-		print LIFE[dialog['speaker']]['name']
 		
 		_responses.append({'text': 'Welcome!', 'gist': 'end', 'like': 1, 'group': chosen['group']})
 

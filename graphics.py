@@ -218,6 +218,8 @@ def draw_message_box():
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
 		elif msg['style'] == 'radio':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(225,245,169))
+		elif msg['style'] == 'good':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.light_green)
 		elif msg['style'] == 'player_combat_good':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
 		elif msg['style'] == 'player_combat_bad':

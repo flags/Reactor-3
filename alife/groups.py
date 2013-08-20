@@ -64,6 +64,9 @@ def add_member(group_id, life_id):
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
+	if _group['leader'] and 'player' in LIFE[_group['leader']]:
+		gfx.message('%s has joined your group.' % ' '.join(LIFE[life_id]['name']), style='good')
+	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']-1))
 
 def remove_member(group_id, life_id):
@@ -177,7 +180,7 @@ def find_and_announce_shelter(life, group_id):
 def setup_group_events(group_id):
 	_group = get_group(group_id)
 	
-	if stats.desires_shelter(LIFE[_group['leader']]):
+	if stats.desires_shelter(LIFE[_group['leader']]) or 'player' in LIFE[_group['leader']]:
 		_group['announce_event'] = add_event(group_id, events.create('shelter',
 			action.make(return_function='find_and_announce_shelter'),
 			{'life': action.make(life=_group['leader'], return_key='life'),
