@@ -131,10 +131,6 @@ def load_world(world):
 			SETTINGS['following'] = life['id']
 			break
 	
-	for group in WORLD_INFO['groups'].values():
-		if not 'flags' in group:
-			group['flags'] = {}
-	
 	lfe.load_all_life()
 	items.reload_all_items()
 	
