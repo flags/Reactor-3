@@ -67,6 +67,9 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	WORLD_INFO['start_age'] = simulate_ticks
 	WORLD_INFO['life_density'] = life_density
 	WORLD_INFO['wildlife_density'] = wildlife_density
+	WORLD_INFO['seed'] = time.time()
+	
+	random.seed(WORLD_INFO['seed'])
 	
 	if WORLD_INFO['life_density'] == 'Sparse':
 		WORLD_INFO['life_spawn_interval'] = [0, (1000, 1200)]

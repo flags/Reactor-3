@@ -87,33 +87,45 @@ def create_background(life):
 	#1 - 10 (SHY - SOCIAL BUTTERFLY)
 	SOCIABILITY = numbers.clip(numbers.roll(numbers.clip(((CHARISMA>=5))+(2*(EXTROVERSION>=1)+2*(GRADUATED==1)), 1, 3), 4), 1, 10)
 	
+	#1 - 10 (INNOCENT - GANG LEADER)
+	MOTIVE_FOR_CRIME = numbers.roll((READING<7 or SOCIABILITY>6)+(FIREARMS>6 or MELEE>5)+(TRADING>5 or SELF_ABSORBED)+(not LONE_WOLF)+(BULLIED or IS_LEADER), 2)
+	
+	#1 - 9 (BARRY - DAVE)
+	MOTIVE_FOR_WEALTH = numbers.roll((TRADING>4)+(MATHEMATICS>4)+(PATIENCE>5 or IS_LEADER), 3)
+	
+	#1 - 9 (BARRY - DAVE)
+	MOTIVE_FOR_SURVIVAL = numbers.roll((FIREARMS>5 or MOTIVE_FOR_WEALTH<5)+(MELEE>5 or PATIENCE>5)+(ENGINEERING>5 or IS_LEADER), 3)
+	
 	#STRING (INTENTION)
 	# FORTUNE
 	# GREED
 	# 
 	#INTENTION = 
 	
-	#print 'Birth parents:', HAS_BIRTH_PARENTS
-	#print 'Adopted:', WAS_ADOPTED
-	#print 'Parenting quality:', PARENTING_QUALITY
-	#print 'Bullied:', BULLIED
-	#print 'Fought back:', FOUGHT_BACK
-	#print 'Graduated:', GRADUATED
-	#print 'Street smart:', STREET_SMART
-	#print 'Math:', MATHEMATICS
-	#print 'Reading:', READING
-	#print 'Engineering:', ENGINEERING
-	#print 'Firearms:', FIREARMS
-	#print 'Melee:', MELEE
-	#print 'Trading:', TRADING
-	#print 'Leader:', IS_LEADER
-	#print 'Self-absorbed:', SELF_ABSORBED
-	#print 'Lone wolf:', LONE_WOLF
-	#print 'Patience:', PATIENCE
-	#print 'Introversion:', INTROVERSION
-	#print 'Extroversion:', EXTROVERSION
-	#print 'Charisma:', CHARISMA
-	#print 'Sociability:', SOCIABILITY
+	print 'Birth parents:', HAS_BIRTH_PARENTS
+	print 'Adopted:', WAS_ADOPTED
+	print 'Parenting quality:', PARENTING_QUALITY
+	print 'Bullied:', BULLIED
+	print 'Fought back:', FOUGHT_BACK
+	print 'Graduated:', GRADUATED
+	print 'Street smart:', STREET_SMART
+	print 'Math:', MATHEMATICS
+	print 'Reading:', READING
+	print 'Engineering:', ENGINEERING
+	print 'Firearms:', FIREARMS
+	print 'Melee:', MELEE
+	print 'Trading:', TRADING
+	print 'Leader:', IS_LEADER
+	print 'Self-absorbed:', SELF_ABSORBED
+	print 'Lone wolf:', LONE_WOLF
+	print 'Patience:', PATIENCE
+	print 'Introversion:', INTROVERSION
+	print 'Extroversion:', EXTROVERSION
+	print 'Charisma:', CHARISMA
+	print 'Sociability:', SOCIABILITY
+	print 'Motive for crime:', MOTIVE_FOR_CRIME
+	print 'Motive for wealth:', MOTIVE_FOR_WEALTH
+	print 'Motive for survival:', MOTIVE_FOR_SURVIVAL
 	
 	if not HAS_BIRTH_PARENTS:
 		HISTORY.append('Lost his parents in late childhood')
@@ -198,7 +210,10 @@ def create_background(life):
 		'patience': PATIENCE,
 		'charisma': CHARISMA,
 		'sociability': SOCIABILITY,
-		'description': '. '.join(HISTORY)+'.'}
+		'description': '. '.join(HISTORY)+'.',
+		'motive_for_crime': MOTIVE_FOR_CRIME,
+		'motive_for_wealth': MOTIVE_FOR_WEALTH,
+		'motive_for_survival': MOTIVE_FOR_SURVIVAL}
 
 if __name__ == '__main__':
 	create_background({})

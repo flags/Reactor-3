@@ -52,7 +52,7 @@ def execute_small_script(life, action):
 				_args[key] = execute_small_script(action['kwargs'][key])
 			else:
 				_args[key] = action['kwargs'][key]
-			
+		
 		return rawparse.translate(action['function'])(life, **action['kwargs'])
 
 def _execute(action):

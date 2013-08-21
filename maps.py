@@ -137,6 +137,8 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
+		random.seed(WORLD_INFO['seed'])
+		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
 		gfx.log('Map \'%s\' loaded.' % map_name)

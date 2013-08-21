@@ -27,7 +27,10 @@ def create_group(life, add_creator=True):
 	    'announce_event': None,
 	    'time_created': WORLD_INFO['ticks'],
 	    'last_updated': WORLD_INFO['ticks'],
-	    'flags': {}}
+	    'flags': {},
+	    'claimed_motive': 'survival',
+	    'actual_motive': 'survival',
+	    'stats': {'kills': 0, 'murders': 0}}
 	
 	WORLD_INFO['groups'][str(WORLD_INFO['groupid'])] = _group
 	
@@ -204,10 +207,15 @@ def set_leader(group_id, life_id):
 	_group = get_group(group_id)
 	_group['leader'] = life_id
 	
+	set_motive(group_id, stats.get_group_motive(LIFE[life_id]))
+	
 	setup_group_events(group_id)
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
+
+def set_motive(group_id, motive):
+	get_group(group_id)['claimed_motive'] = motive
 
 def get_combat_score(group_id, potential=False):
 	_group = get_group(group_id)

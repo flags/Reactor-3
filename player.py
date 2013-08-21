@@ -556,18 +556,21 @@ def handle_input():
 		create_wound_menu()
 	
 	if INPUT['o']:
-		if menus.get_menu_by_name('Options')>-1:
-			menus.delete_menu(menus.get_menu_by_name('Options'))
+		if menus.get_menu_by_name('Debug (Developer)')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
 		_options = []
-		_options.append(menus.create_item('title','Debug (Developer)',None))
-		_options.append(menus.create_item('spacer','=',None))
-		_options.append(menus.create_item('single','Save','Offload game to disk'))
-		_options.append(menus.create_item('single','Load','Load game from disk'))
-		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
+		_options.append(menus.create_item('title', 'Map Operations', None))
+		_options.append(menus.create_item('single', 'Save', 'Offload game to disk'))
+		_options.append(menus.create_item('single', 'Load', 'Load game from disk'))
+		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
+		_options.append(menus.create_item('title', 'World Info', None))
+		_options.append(menus.create_item('single', 'ALife', len(LIFE)))
+		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
+		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))
 		
-		_i = menus.create_menu(title='Options',
+		_i = menus.create_menu(title='Debug (Developer)',
 			menu=_options,
 			padding=(1,1),
 			position=(1,1),
@@ -1217,7 +1220,7 @@ def announce_to(entry):
 		_announce_to = LIFE.keys()
 		_announce_to.remove(SETTINGS['controlling'])
 	elif entry['who'] == 'trusted':
-		_announce_to = LIFE[SETTINGS['controlling']]['know'].keys()
+		_announce_to = judgement.get_trusted(LIFE[SETTINGS['controlling']], visible=False)
 	elif entry['who'] == 'private':
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		menus.delete_menu(ACTIVE_MENU['menu'])
@@ -1228,7 +1231,7 @@ def announce_to(entry):
 			           'job',
 			           msg='New group gather at xx,yy',
 			           matches=[{'id': life_id}],
-			           job_id=entry['job_id'])
+			           job_id=entry['job_id'],)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -1259,7 +1262,7 @@ def radio_menu(entry):
 		pass
 	elif key == 'Create group':
 		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
-		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.')
+		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.', gist='create_group')
 		
 		jobs.add_task(_j, '0', 'move_to_chunk',
 		              action.make_small_script(function='travel_to_position',

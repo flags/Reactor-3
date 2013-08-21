@@ -185,6 +185,18 @@ def get_employability(life):
 	#TODO: Placeholder
 	return 50
 
+def get_group_motive(life):
+	if life['stats']['motive_for_crime'] >= 6:
+		if life['stats']['motive_for_wealth'] >= 5:
+			return 'wealth'
+		
+		return 'crime'
+	
+	if life['stats']['motive_for_wealth'] >= 5:
+		return 'wealth'
+	
+	return 'survival'
+
 def get_influence_from(life, life_id):
 	judgement._calculate_impressions(life, life_id)
 	_target = LIFE[life_id]
@@ -371,6 +383,9 @@ def is_compatible_with(life, life_id):
 		return True
 	
 	return False
+
+def is_born_leader(life):
+	return life['stats']['is_leader']
 
 def has_attacked_trusted(life, life_id):
 	_trusted = judgement.get_trusted(life)

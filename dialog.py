@@ -37,7 +37,7 @@ def create_dialog_with(life, target, info, question=None):
 		return False
 	
 	if not alife.brain.knows_alife_by_id(life, target):
-		alife.brain.meet_alife(life, target)
+		alife.brain.meet_alife(life, LIFE[target])
 	
 	if not alife.brain.knows_alife(LIFE[target], life):
 		alife.brain.meet_alife(LIFE[target], life)

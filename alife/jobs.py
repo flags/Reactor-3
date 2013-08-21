@@ -20,9 +20,10 @@ def get_job(job_id):
 def get_task(job_id, task_id):
 	return get_job(job_id)['tasks'][task_id]
 
-def create_job(creator, name, tier=TIER_WORK, description='Job description needed.'):
+def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.'):
 	_job = {'id': str(WORLD_INFO['jobid'])}
 	_job['name'] = name
+	_job['gist'] = gist
 	_job['tier'] = tier
 	_job['description'] = description
 	_job['tasks'] = {}
@@ -30,6 +31,7 @@ def create_job(creator, name, tier=TIER_WORK, description='Job description neede
 	_job['flags'] = {}
 	_job['creator'] = creator['id']
 	_job['completed'] = False
+	#_job['requirements'] = []
 	
 	WORLD_INFO['jobid'] += 1
 	WORLD_INFO['jobs'][_job['id']] = _job
@@ -37,6 +39,13 @@ def create_job(creator, name, tier=TIER_WORK, description='Job description neede
 	logging.debug('%s created new job: %s' % (' '.join(creator['name']), name))
 	
 	return _job['id']
+
+#def add_requirement(job_id, action):
+#	_job = get_job(job_id)
+#	
+#	_job['requirements'].append(action)
+#	
+#	logging.debug('Added requirement to job \'%s\'.' % job_id)
 
 def reset_job(job_id):
 	_job = get_job(job_id)
@@ -112,6 +121,15 @@ def get_workers_on_task(job_id, task_id):
 			_workers.append(worker_id)
 	
 	return _workers
+
+#def meets_job_requirements(life, job_id):
+#	_job = get_job(job_id)
+#	
+#	for req in _job['requirements']:
+#		if not action.execute_small_script(life, req):
+#			return False
+#	
+#	return True
 
 def get_free_tasks(job_id, local_completed=[]):
 	_job = get_job(job_id)

@@ -23,6 +23,7 @@ ENCOUNTER_ANIMATION_TIME = 30
 CHUNK_MAP = {}
 WORLD_INFO = {'map': [],
 	'id': None,
+	'seed': 0,
 	'time': 0,
 	'real_time_of_day': 6000,
 	'time_of_day': 'limbo',

@@ -196,7 +196,7 @@ def main():
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=CYTHON_ENABLED)
 	
 	if not SETTINGS['controlling'] == SETTINGS['following']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
