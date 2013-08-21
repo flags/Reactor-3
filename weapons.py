@@ -10,8 +10,6 @@ import items
 
 import random
 
-random.seed()
-
 def get_feed(weapon):
 	return weapon[weapon['feed']]
 

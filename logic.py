@@ -98,6 +98,7 @@ def tick_all_objects(source_map):
 
 def tick_world():
 	WORLD_INFO['ticks'] += 1
+	alfe.groups.get_group_relationships()
 	
 	if WORLD_INFO['real_time_of_day'] < WORLD_INFO['length_of_day']:
 		WORLD_INFO['real_time_of_day'] += WORLD_INFO['time_scale']

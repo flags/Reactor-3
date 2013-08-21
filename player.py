@@ -1267,12 +1267,12 @@ def radio_menu(entry):
 		jobs.add_task(_j, '0', 'move_to_chunk',
 		              action.make_small_script(function='travel_to_position',
 		                                       kwargs={'pos': _pos}),
-		              delete_on_finish=True)
+		              delete_on_finish=False)
 		jobs.add_task(_j, '1', 'talk',
 		              action.make_small_script(function='start_dialog',
 		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
 		              requires=['0'],
-		              delete_on_finish=True)
+		              delete_on_finish=False)
 		
 		groups.flag(_g, 'job_gather', _j)
 		

@@ -3,6 +3,7 @@ import life as lfe
 
 import references
 import judgement
+import logic
 import sight
 import maps
 
@@ -132,6 +133,16 @@ def position_is_in_chunk(position, chunk_id):
 			return True
 	
 	return False
+
+def get_alife_in_chunk_matching(chunk_key, matching):
+	_life = []
+	_chunk = maps.get_chunk(chunk_key)
+	
+	for alife in [LIFE[l] for l in _chunk['life']]:
+		if logic.matches(alife, matching):
+			_life.append(alife['id'])
+	
+	return _life
 
 def get_nearest_position_in_chunk(position, chunk_id):
 	_closest = {'pos': None, 'score': 0}

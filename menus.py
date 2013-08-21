@@ -70,6 +70,9 @@ def format_entry(format_str,entry):
 		.replace('$v', str(entry['values'][entry['value']]))\
 		.replace('$i', str(entry['icon']))
 
+def redraw_menu(menu):
+	tcod.console_clear(menu['settings']['console'])
+
 def draw_menus():
 	for menu in MENUS:
 		_y_offset = menu['settings']['padding'][1]
@@ -188,10 +191,12 @@ def move_down(menu, index):
 def previous_item(menu,index):
 	if menu['menu'][index]['value']:
 		menu['menu'][index]['value']-=1
+		redraw_menu(menu)
 
 def next_item(menu,index):
 	if menu['menu'][index]['value']<len(menu['menu'][index]['values'])-1:
 		menu['menu'][index]['value']+=1
+		redraw_menu(menu)
 
 def get_selected_item(menu,index):
 	menu = get_menu(menu)

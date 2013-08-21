@@ -71,9 +71,9 @@ def add_task(job_id, task_id, name, action, description='Task description needed
 	_task['completed'] = False
 	
 	if delete_on_finish:
-		_task['max_workers'] = -1
-	else:
 		_task['max_workers'] = max_workers
+	else:
+		_task['max_workers'] = -1
 	
 	_job['tasks'][str(task_id)] = _task
 	

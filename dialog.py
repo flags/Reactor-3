@@ -235,11 +235,14 @@ def get_all_irrelevant_target_topics(life, target):
 def get_possible_alife_questions(life, chosen):
 	_topics = []
 	
-	_topics.append({'text': 'Camps...',
-		'gist': 'inquire_about',
-		'subtopics': get_known_camps})
-	_topics.append({'text': 'What\'s nearby?',
-		'gist': 'inquire_about_nearby_locations'})
+	_topics.append({'text': 'Groups...',
+	                'gist': 'inquire_about',
+	                'subtopics': get_known_groups})
+	#_topics.append({'text': 'Camps...',
+	#	'gist': 'inquire_about',
+	#	'subtopics': get_known_camps})
+	#_topics.append({'text': 'What\'s nearby?',
+	#	'gist': 'inquire_about_nearby_locations'})
 	
 	return _topics
 
@@ -279,6 +282,17 @@ def get_known_locations(life, chosen):
 	
 	return _topics
 
+def get_known_groups(life, chosen):
+	_topics = []
+	
+	for group in life['known_groups']:
+		_topics.append({'text': group,
+		                'gist': 'ask_about_group',
+		                'group': group,
+		                'subtopics': get_questions_for_group})
+	
+	return _topics
+
 def get_known_camps(life, chosen, gist='inquire_about_camp'):
 	_topics = []
 	
@@ -288,6 +302,15 @@ def get_known_camps(life, chosen, gist='inquire_about_camp'):
 			'gist': gist,
 			'camp': camp['id'],
 			'subtopics': get_questions_for_camp})
+	
+	return _topics
+
+def get_questions_for_group(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Who is in charge of group %s?' % chosen['group'],
+		'gist': 'ask_about_group_founder',
+		'group': chosen['group']})
 	
 	return _topics
 
@@ -481,11 +504,9 @@ def get_jobs(life, chosen):
 def get_responses_about_self(life):
 	_responses = []
 	
-	#TODO: Retool for groups
-	#for camp in alife.camps.get_founded_camps(life):
-	#	_responses.append({'text': 'I\'m the founder of camp %s.' % camp['name'],
-	#		'gist': 'talk_about_camp',
-	#		'camp': camp['id']})
+	_leader = alife.groups.is_leader_of_any_group(life)
+	if _leader:
+		_responses.append({'text': 'I\'m in charge of a group.', 'gist': 'tell_about_group', 'group': life['group']})
 	
 	if not _responses:
 		if life['job']:
@@ -689,10 +710,9 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I don\'t have anything for you.', 'gist': 'nothing'})
 	elif chosen['gist'] == 'show_jobs':
 		for job in chosen['jobs']:
-			_responses.append({'text': job['description'], 'gist': 'take_job', 'job': job, 'like': 1})
+			_responses.append({'text': alife.jobs.get_job(job)['description'], 'gist': 'take_job', 'job': job, 'like': 1})
 	elif chosen['gist'] == 'take_job':
-		alife.jobs.add_job_candidate(chosen['job'], LIFE[dialog['speaker']])
-		alife.jobs.process_job(chosen['job'])
+		alife.jobs.join_job(chosen['job'], dialog['speaker'])
 		reset_dialog(dialog, end=True, force=True)
 		return True
 	elif chosen['gist'] == 'offer_job':
@@ -773,7 +793,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'invite_to_group':
 		if 'player' in LIFE[dialog['listener']]:
 			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
-			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1})
+			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group',  'group': chosen['group'], 'dislike': 1})
 			
 			if LIFE[dialog['listener']]['group']:
 				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group', 'group': chosen['group']})
@@ -806,12 +826,22 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 	
+	elif chosen['gist'] == 'ask_about_group_founder':
+		if LIFE[dialog['listener']]['group'] == chosen['group']:
+			if alife.groups.is_leader(chosen['group'], dialog['listener']):
+				_responses.append({'text': 'I am.', 'gist': 'end'})
+			else:
+				_responses.append({'text': '%s is.' % ' '.join(LIFE[alife.groups.get_group(LIFE[dialog['listener']]['group'])['leader']]['name']), 'gist': 'end'})
+		else:
+			_responses.append({'text': 'I have no idea.', 'gist': 'end'})
+	
 	elif chosen['gist'] == 'decline_invite_to_group':
 		_responses.append({'text': 'Can we make a deal?', 'gist': 'group_bribe_request', 'group': chosen['group']})
 		_responses.append({'text': 'Understood.', 'gist': 'end', 'group': chosen['group']})
 	
 	elif chosen['gist'] == 'decline_invite_to_group_wrong_motive':
 		_responses.append({'text': 'I don\'t work for free.', 'gist': 'bribe_into_group', 'group': chosen['group']})
+		_responses.append({'text': 'I\'ll pass.', 'gist': 'nothing', 'group': chosen['group']})
 		
 	elif chosen['gist'] == 'bribe_into_group':
 		_responses.append({'text': 'What can I do, then?', 'gist': 'group_bribe_request', 'group': chosen['group']})
@@ -825,6 +855,13 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'complete_group_bribe':
 		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+	
+	elif chosen['gist'] == 'tell_about_group':
+		alife.groups.discover_group(LIFE[dialog['listener']], chosen['group'])
+		
+		if not LIFE[dialog['speaker']]['group'] == LIFE[dialog['listener']]['group']:
+			_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
+			_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
 	
 	elif chosen['gist'] == 'join_group':
 		alife.groups.add_member(chosen['group'], dialog['speaker'])
@@ -918,7 +955,7 @@ def process_response(life, target, dialog, chosen):
 				_single_responses[_response['text']] = _response
 			
 		_responses = _single_responses.values()
-		if _responses and not _responses[0]['gist'] in ['nothing', 'end']:
+		if _responses:# and not _responses[0]['gist'] in ['nothing', 'end']:
 			dialog['topics'] = _responses
 			dialog['index'] = 0
 		else:

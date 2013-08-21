@@ -29,33 +29,24 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			jobs.add_task(_j, '0', 'move_to_chunk',
 				          action.make_small_script(function='travel_to_position',
 				                                   kwargs={'pos': lfe.get_current_chunk(life)['pos']}),
-				          delete_on_finish=True)
+				          delete_on_finish=False)
 			jobs.add_task(_j, '1', 'talk',
 				          action.make_small_script(function='start_dialog',
 				                                   kwargs={'target': life['id'], 'gist': 'form_group'}),
 				          requires=['0'],
-				          delete_on_finish=True)
+				          delete_on_finish=False)
 			
 			groups.flag(_group_id, 'job_gather', _j)
 			
-			if _group['claimed_motive'] == 'wealth':
-				_announce_to = LIFE.keys()
-				_announce_to.remove(life['id'])
-			elif _group['claimed_motive'] == 'crime':
-				_announce_to = judgement.get_trusted(life, visible=False)
-			elif _group['claimed_motive'] == 'survival':
-				_announce_to = LIFE.keys()
-				_announce_to.remove(life['id'])
-			#TODO: Could have an option here to form an emergency "combat" group
-			
-			for life_id in _announce_to:
-				speech.communicate(life,
-						       'job',
-						       msg='New group gather at xx,yy',
-						       matches=[{'id': life_id}],
-						       job_id=_j)
+			groups.announce(_group_id, 'job', 'New group gathering.', consider_motive=True, job_id=_j)
 		
 		return False
+	
+	if groups.is_leader(life['group'], life['id']):
+		#TODO: Re-announce group from time to time LOGICALLY
+		if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
+			_job_id = groups.get_flag(life['group'], 'job_gather')
+			groups.announce(life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
 	
 	_group = groups.get_group(life['group'])
 	

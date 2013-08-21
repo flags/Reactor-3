@@ -9,6 +9,7 @@ import action
 import combat
 import speech
 import events
+import chunks
 import camps
 import brain
 import stats
@@ -60,6 +61,22 @@ def get_flag(group_id, flag):
 	
 	return get_group(group_id)['flags'][flag]
 
+def discover_group(life, group_id):
+	if not group_id in life['known_groups']:
+		life['known_groups'].append(group_id)
+		
+		if 'player' in life:
+			gfx.message('You learn about group %s.' % group_id)
+		return True
+	
+	return False
+
+def get_group_relationships():
+	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
+	
+	#for grp in _groups:
+	#	print _groups[grp]
+
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
@@ -76,6 +93,7 @@ def add_member(group_id, life_id):
 		LIFE[life_id]['shelter'] = _group['shelter']
 		lfe.memory(LIFE[life_id], 'shelter founder', shelter=_group['shelter'], founder=_group['leader'])
 	
+	discover_group(LIFE[life_id], group_id)
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
@@ -166,6 +184,31 @@ def process_events(group_id):
 	
 	for event in _group['events'].values():
 		events.process_event(event)
+
+def announce(group_id, gist, message, consider_motive=False, **kwargs):
+	_group = get_group(group_id)
+	life = LIFE[_group['leader']]
+	
+	if consider_motive:
+		if _group['claimed_motive'] == 'wealth':
+			_announce_to = LIFE.keys()
+			_announce_to.remove(life['id'])
+		elif _group['claimed_motive'] == 'crime':
+			_announce_to = judgement.get_trusted(life, visible=False)
+		elif _group['claimed_motive'] == 'survival':
+			_announce_to = LIFE.keys()
+			_announce_to.remove(life['id'])
+	else:
+		_announce_to = _group['members']
+		_announce_to.remove(life['id'])
+	#TODO: Could have an option here to form an emergency "combat" group
+	
+	for life_id in _announce_to:
+		speech.communicate(life,
+	                      gist,
+	                      msg=message,
+	                      matches=[{'id': life_id}],
+	                      **kwargs)
 
 def get_shelter(group_id):
 	return get_group(group_id)['shelter']
@@ -280,23 +323,33 @@ def has_camp(group_id):
 def get_jobs(group_id):
 	_group = get_group(group_id)
 	_jobs = []
+	_leader = LIFE[_group['leader']]
 	
 	if not has_camp(group_id):
-		_nearest_camp = camps.get_nearest_known_camp(LIFE[_group['leader']])
-		if LIFE[_group['leader']]['known_camps']:
-			_j = jobs.create_job(LIFE[_group['leader']],
-			                     'raid camp %s' % _nearest_camp['id'],
-			                     description='Take control of camp %s.' % _nearest_camp['id'])
-			#jobs.add_job_completed_callback(_j, combat.disarm_completed)
-			#jobs.add_leave_job_callback(_j, combat.disarm_left)
-			#jobs.add_job_factor(_j, 'camp', _nearest_camp['id'])
-			#jobs.add_job_factor(_j, 'location', camps.get_nearest_position_in_camp(LIFE[_group['leader']], _nearest_camp['id']))
-			jobs.add_detail_to_job(_j, 'camp', _nearest_camp['id'])
-			jobs.add_detail_to_job(_j, 'location', camps.get_nearest_position_in_camp(LIFE[_group['leader']], _nearest_camp['id']))
-			jobs.add_job_task(_j, 'raid', callback=movement.raid, required=True)
-			jobs.add_tick_callback(_j, raids.has_control, camp_id=_nearest_camp['id'], group_id=group_id)
-			jobs.add_job_completed_callback(_j, lambda job: gfx.message('Camp raid complete! %s' % WORLD_INFO['ticks']))
-			#jobs.add_job_task(_j, 'guard', callback=combat.guard)
+		_nearest_camp = camps.get_nearest_known_camp(_leader)
+		if _leader['known_camps']:
+			_j = jobs.create_job(_leader, 'Raid', gist='start_raid', description='Camp raid.')
+		
+			jobs.add_task(_j, '0', 'announce_to_group',
+			              action.make_small_script(function='announce_to_group',
+			                                       kwargs={'group_id': group_id,
+			                                               'gist': 'job',
+			                                               'message': jobs.get_job(_j)['description'],
+			                                               'job_id': _j}))
+			jobs.add_task(_j, '1', 'move_to_chunk',
+			              action.make_small_script(function='travel_to_position',
+			                                       kwargs={'pos': lfe.get_current_chunk(_leader)['pos']}),
+				          delete_on_finish=False)
+			jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
+			              action.make_small_script(function='number_of_alife_in_chunk_matching',
+			                                       kwargs={'amount': 2,
+			                                               'chunk_key': lfe.get_current_chunk_id(_leader),
+			                                               'matching': {'group': _leader['group']}}))
+			jobs.add_task(_j, '3', 'talk',
+			              action.make_small_script(function='travel_to_position',
+			                                       kwargs={'pos': chunks.get_nearest_chunk_in_list(_leader['pos'], camps.get_camp(_nearest_camp['id'])['reference'])}),
+			              requires=['1'],
+			              delete_on_finish=False)
 			
 			_jobs.append(_j)
 	
@@ -317,6 +370,12 @@ def is_leader(group_id, life_id):
 		return True
 	
 	return False
+
+def is_leader_of_any_group(life):
+	if not life['group']:
+		return False
+	
+	return is_leader(life['group'], life['id'])
 	
 def delete_group(group_id):
 	for member in get_group(group_id)['members']:

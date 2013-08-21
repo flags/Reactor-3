@@ -189,8 +189,7 @@ def switch_to_world_gen():
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		on_select=worldgen_menu_select,
-		on_change=clear)
+		on_select=worldgen_menu_select)
 	
 	menus.activate_menu(_i)
 	clear()

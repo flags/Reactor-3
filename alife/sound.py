@@ -371,15 +371,12 @@ def listen(life):
 				if _jobs:
 					gfx.radio(life, 'I\'ve got a few jobs for you...')
 					speech.start_dialog(event['from'], life['id'], 'jobs')
-			
-			#jobs.add_job_candidate(_j, life)
-			#jobs.announce_job(life, _j)
-			#jobs.process_job(_j)
 		
 		elif event['gist'] == 'job':
+			groups.discover_group(life, event['from']['group'])
+			
 			if judgement.can_trust(life, event['from']['id']):
 				jobs.join_job(event['job_id'], life['id'])
-				print life['name'],'JOINED JOB' * 100
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
