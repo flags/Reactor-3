@@ -18,6 +18,7 @@ MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 TICKER = ['\\', '|', '/', '-']
 ENCOUNTER_ANIMATION_TIME = 30
+UPDATE_CAMP_RATE = 5
 
 #Map stuff
 CHUNK_MAP = {}

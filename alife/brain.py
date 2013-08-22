@@ -54,7 +54,7 @@ def think(life, source_map):
 	judgement.judge_jobs(life)
 	understand(life, source_map)
 	
-	if lfe.ticker(life, 'update_camps', 5):
+	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
 		judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
