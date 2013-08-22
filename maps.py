@@ -448,20 +448,6 @@ def refresh_chunk(chunk_id):
 	chunk['life'] = _life
 	chunk['last_updated'] = WORLD_INFO['ticks']
 	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, len(_items))
-	broadcast_chunk_change(chunk_id)
-
-def broadcast_chunk_change(chunk_id):
-	for life in [LIFE[i] for i in LIFE]:
-		for known_chunk_key in life['known_chunks']:
-			_chunk = get_chunk(known_chunk_key)
-			_known_chunk = life['known_chunks'][known_chunk_key]
-			
-			if _chunk['digest'] == _known_chunk['digest']:
-				continue
-			
-			_known_chunk['digest'] = _chunk['digest']
-			
-			#logging.debug('%s got update for chunk #%s' % (' '.join(life['name']), '%s,%s' % (_chunk['pos'][0],_chunk['pos'][1])))
 
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)

@@ -53,7 +53,9 @@ def think(life, source_map):
 	survival.process(life)
 	judgement.judge_jobs(life)
 	understand(life, source_map)
-	judgement.update_camps(life)
+	
+	if lfe.ticker(life, 'update_camps', 5):
+		judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
 	life['tempstor2'][key] = value
