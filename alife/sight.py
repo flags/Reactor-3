@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import chunks
 import brain
+import maps
 
 import render_fast_los
 import render_los
@@ -18,49 +19,52 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-		if not can_see_target(life, ai['id']):
-			if ai['id'] in life['know']:
-				life['know'][ai['id']]['last_seen_time'] += 1
-			continue
-		
-		life['seen'].append(ai['id'])
-		
-		#TODO: Don't pass entire life, just id
-		if ai['id'] in life['know']:
-			if life['know'][ai['id']]['last_seen_time'] or life['think_rate'] == life['think_rate_max']:
-				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
-				judgement.judge(life, ai['id'])
-			
-			life['know'][ai['id']]['last_seen_time'] = 0
-			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
-			life['know'][ai['id']]['escaped'] = False
-			
-			if brain.alife_has_flag(life, ai['id'], 'search_map'):
-				brain.unflag_alife(life, ai['id'], 'search_map')
-			
-			_chunk_id = lfe.get_current_chunk_id(ai)
-			judgement.judge_chunk(life, _chunk_id)
-			
-			continue
-		
-		brain.meet_alife(life, ai)
-	
-	for item in [ITEMS[item] for item in ITEMS]:
-		if item.has_key('id') or item.has_key('parent'):
-			continue
-		
-		_can_see = can_see_position(life, item['pos'])
-		if _can_see:
-			if not item['uid'] in life['know_items']:
-				brain.remember_item(life, item)
-			elif not life['know_items'][item['uid']]['last_seen_time']:
+	for chunk in [maps.get_chunk(c) for c in scan_surroundings(life, judge=False, get_chunks=True)]:
+		for ai in [LIFE[i] for i in chunk['life']]:
+			#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+			if not can_see_target(life, ai['id']):
+				if ai['id'] in life['know']:
+					life['know'][ai['id']]['last_seen_time'] += 1
 				continue
-
-			life['know_items'][item['uid']]['last_seen_time'] = 0
-			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
-		elif item['uid'] in life['know_items']:
-			life['know_items'][item['uid']]['last_seen_time'] += 1
+			
+			life['seen'].append(ai['id'])
+			
+			#TODO: Don't pass entire life, just id
+			if ai['id'] in life['know']:
+				if life['know'][ai['id']]['last_seen_time'] or life['think_rate'] == life['think_rate_max']:
+					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
+					judgement.judge(life, ai['id'])
+				
+				life['know'][ai['id']]['last_seen_time'] = 0
+				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
+				life['know'][ai['id']]['escaped'] = False
+				
+				if brain.alife_has_flag(life, ai['id'], 'search_map'):
+					brain.unflag_alife(life, ai['id'], 'search_map')
+				
+				_chunk_id = lfe.get_current_chunk_id(ai)
+				judgement.judge_chunk(life, _chunk_id)
+				
+				continue
+			
+			brain.meet_alife(life, ai)
+	
+		for item in [ITEMS[i] for i in chunk['items']]:
+			#for item in [ITEMS[item] for item in ITEMS]:
+			if item.has_key('id') or item.has_key('parent'):
+				continue
+			
+			_can_see = can_see_position(life, item['pos'])
+			if _can_see:
+				if not item['uid'] in life['know_items']:
+					brain.remember_item(life, item)
+				elif not life['know_items'][item['uid']]['last_seen_time']:
+					continue
+	
+				life['know_items'][item['uid']]['last_seen_time'] = 0
+				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
+			elif item['uid'] in life['know_items']:
+				life['know_items'][item['uid']]['last_seen_time'] += 1
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
@@ -297,9 +301,11 @@ def find_known_items(life, matches={}, visible=True):
 	
 	return _match
 
-def scan_surroundings(life, initial=False, ignore_chunks=[]):
+def scan_surroundings(life, initial=False, ignore_chunks=[], judge=True, get_chunks=False):
 	#print life['name'],'scanning'
 	_center_chunk = lfe.get_current_chunk_id(life)
+	_visible_chunks = []
+	
 	for x_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
 		for y_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
 			if not x_mod and not y_mod:
@@ -319,7 +325,15 @@ def scan_surroundings(life, initial=False, ignore_chunks=[]):
 			if not chunks.can_see_chunk(life, _chunk_key):
 				continue
 			
-			if initial:
-				judgement.judge_chunk(life, _chunk_key, seen=True)
-			else:
-				judgement.judge_chunk(life, _chunk_key)
+			if get_chunks:
+				_visible_chunks.append(_chunk_key)
+			
+			if judge:
+				if initial:
+					judgement.judge_chunk(life, _chunk_key, seen=True)
+				else:
+					judgement.judge_chunk(life, _chunk_key)
+	
+	if get_chunks:
+		return _visible_chunks
+		
