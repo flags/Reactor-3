@@ -512,40 +512,10 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['j']:
-		if menus.get_menu_by_name('Jobs')>-1:
-			menus.delete_menu(menus.get_menu_by_name('Jobs'))
-			return False
-		
-		_job = LIFE[SETTINGS['controlling']]['job']
-		if not _job:
-			gfx.message('You do not have a job.')
-			return False
-		
-		_jobs = []
-		_jobs.append(menus.create_item('title', _job['description'], None))
-		#_jobs.append(menus.create_item('spacer', '-', None))
-		
 		if LIFE[SETTINGS['controlling']]['job']:
-			_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
-			_jobs.append(menus.create_item('title', 'Workers', None))
-			#_jobs.append(menus.create_item('spacer', '-', None))
-			
-			_i = 1
-			for worker in _job['workers']:
-				_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
-				_i += 1
-			
-			_location = jobs.get_job_detail(_job, 'location')
-			if _location:
-				_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
-			
-			_i = menus.create_menu(title='Jobs',
-			                       menu=_jobs,
-			                       padding=(1,1),
-			                       position=(1,1),
-			                       format_str='$k: $v')
-		
-			menus.activate_menu(_i)
+			create_tasks_menu()
+		else:
+			create_jobs_menu()
 		#for key in LIFE[SETTINGS['controlling']]['job']:
 		#	if key == 'description':
 		#		continue
@@ -1214,6 +1184,108 @@ def handle_options_menu(entry):
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_jobs_menu_action(entry):
+	if entry['key'] == 'Join':
+		LIFE[SETTINGS['controlling']]['job'] = jobs.join_job(entry['job_id'], SETTINGS['controlling'])
+	else:
+		jobs.leave_job(entry['job_id'], SETTINGS['controlling'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	create_jobs_menu()
+
+def handle_jobs_menu(entry):
+	if 'job_id' in entry:
+		_menu_items = [menus.create_item('single', 'Join', None, job_id=entry['job_id'])]
+		_menu_items.append(menus.create_item('single', 'Decline', None, job_id=entry['job_id']))	
+	
+		_i = menus.create_menu(title='Action',
+			menu=_menu_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k',
+			on_select=handle_jobs_menu_action)
+		
+		menus.activate_menu(_i)
+
+def create_jobs_menu():
+	if menus.get_menu_by_name('Jobs')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Jobs'))
+		return False
+	
+	_all_jobs = LIFE[SETTINGS['controlling']]['jobs']
+	if not _all_jobs:
+		gfx.message('You don\'t have any jobs.')
+		return False
+	
+	_jobs = [menus.create_item('title', 'Jobs', None)]
+	
+	for job in [jobs.get_job(j) for j in _all_jobs]:
+		_jobs.append(menus.create_item('single', job['name'], job['description'], job_id=job['id']))
+	
+	#if LIFE[SETTINGS['controlling']]['job']:
+	#	_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
+	#	_jobs.append(menus.create_item('title', 'Workers', None))
+	#	
+	#	_i = 1
+	#	for worker in _job['workers']:
+	#		_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
+	#		_i += 1
+	#	
+	#	_location = jobs.get_job_detail(_job, 'location')
+	#	if _location:
+	#		_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
+	
+	if _jobs:
+		_i = menus.create_menu(title='Jobs',
+	                           menu=_jobs,
+	                           padding=(1,1),
+	                           position=(1,1),
+	                           format_str='$k: $v',
+	                           on_select=handle_jobs_menu)
+	
+		menus.activate_menu(_i)
+
+def create_tasks_menu():
+	if menus.get_menu_by_name('Tasks')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Tasks'))
+		return False
+	
+	_life = LIFE[SETTINGS['controlling']]
+	_tasks = []
+	
+	for task_id in jobs.get_job(_life['job'])['tasks'].keys():
+		task = jobs.get_task(_life['job'], task_id)
+		
+		_tasks.append(menus.create_item('single',
+		                                task_id,
+		                                task['description'],
+		                                job_id=_life['job'],
+		                                task_id=task_id,
+		                                enabled=(task_id in jobs.get_free_tasks(_life['job']))))
+	
+	#if LIFE[SETTINGS['controlling']]['job']:
+	#	_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
+	#	_jobs.append(menus.create_item('title', 'Workers', None))
+	#	
+	#	_i = 1
+	#	for worker in _job['workers']:
+	#		_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
+	#		_i += 1
+	#	
+	#	_location = jobs.get_job_detail(_job, 'location')
+	#	if _location:
+	#		_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
+	
+	if _tasks:
+		_i = menus.create_menu(title='Tasks',
+	                           menu=_tasks,
+	                           padding=(1,1),
+	                           position=(1,1),
+	                           format_str='$k: $v')
+	
+		menus.activate_menu(_i)
 
 def announce_to(entry):
 	if entry['who'] == 'public':

@@ -207,8 +207,14 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	
-	if life['group'] and not LIFE[target]['group'] == life['group']:
-		_topics.append({'text': 'Recruit...', 'message': 'Are you looking for a squad?', 'gist': 'inquire_about_group_work', 'group': life['group']})
+	
+	
+	if life['group']:
+		if LIFE[target]['group'] == life['group']:
+			if alife.groups.is_leader(life['group'], target):
+				_topics.append({'text': 'Where\'s our camp?', 'message': 'Where is camp?', 'gist': 'inquire_about_group_camp', 'group': life['group']})
+		else:
+			_topics.append({'text': 'Recruit...', 'message': 'Are you looking for a squad?', 'gist': 'inquire_about_group_work', 'group': life['group']})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
@@ -497,7 +503,10 @@ def get_jobs(life, chosen):
 	#			'job': job})
 	
 	if not _topics:
-		_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
+		if life['known_camps']:
+			_topics.append({'text': 'I don\'t have any jobs.', 'gist': 'no_jobs'})
+		else:
+			_topics.append({'text': 'I\'m still looking for a place to camp.', 'gist': 'no_jobs'})
 	
 	return _topics
 
@@ -814,6 +823,14 @@ def process_response(life, target, dialog, chosen):
 		
 	elif chosen['gist'] == 'inquire_about_group_work':
 		_responses.append({'text': 'What kind of work are we talking about?', 'gist': 'ask_about_group', 'like': 1, 'group': chosen['group']})
+
+	elif chosen['gist'] == 'inquire_about_group_camp':
+		_shelter = alife.groups.get_shelter(chosen['group'])
+				
+		if _shelter:
+			_responses.append({'text': 'We\'re camping at %s,%s.' % (_shelter[0], _shelter[1]), 'gist': 'end', 'like': 1})
+		else:
+			_responses.append({'text': 'We don\'t have a space yet.', 'gist': 'end', 'like': 1})
 
 	elif chosen['gist'] == 'ask_about_group':
 		#TODO: Change LIKE to DISLIKE depending on views

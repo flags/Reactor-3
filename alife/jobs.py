@@ -169,9 +169,23 @@ def join_job(job_id, life_id):
 	_job = get_job(job_id)
 	_job['workers'].append(life_id)
 	
+	if not life_id in _job['workers']:
+		raise Exception('\'%s\' is already member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
+	
 	LIFE[life_id]['jobs'].append(job_id)
 	
 	logging.debug('%s joined job with ID \'%s\'.' % (' '.join(LIFE[life_id]['name']), job_id))
+	
+	return job_id
+
+def leave_job(job_id, life_id):
+	_job = get_job(job_id)
+	
+	if not life_id in _job['workers']:
+		raise Exception('\'%s\' is not a member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
+	
+	_job['workers'].remove(life_id)
+	LIFE[life_id]['jobs'].remove(job_id)
 
 def alife_has_job(life):
 	return life['job']

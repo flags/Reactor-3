@@ -100,6 +100,9 @@ def add_member(group_id, life_id):
 	if _group['leader'] and 'player' in LIFE[_group['leader']]:
 		gfx.message('%s has joined your group.' % ' '.join(LIFE[life_id]['name']), style='good')
 	
+	if SETTINGS['controlling'] == life_id:
+		gfx.message('You join group %s.' % group_id, style='good')
+	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']-1))
 
 def remove_member(group_id, life_id):
@@ -327,29 +330,34 @@ def get_jobs(group_id):
 	
 	if not has_camp(group_id):
 		_nearest_camp = camps.get_nearest_known_camp(_leader)
+		
 		if _leader['known_camps']:
-			_j = jobs.create_job(_leader, 'Raid', gist='start_raid', description='Camp raid.')
+			_j = jobs.create_job(_leader, 'Raid', gist='start_raid', description='Raid camp %s.' % _nearest_camp['id'])
+			_pos = lfe.get_current_chunk(_leader)['pos']
 		
 			jobs.add_task(_j, '0', 'announce_to_group',
 			              action.make_small_script(function='announce_to_group',
 			                                       kwargs={'group_id': group_id,
 			                                               'gist': 'job',
 			                                               'message': jobs.get_job(_j)['description'],
-			                                               'job_id': _j}))
+			                                               'job_id': _j}),
+			              description='Gather group members.')
 			jobs.add_task(_j, '1', 'move_to_chunk',
 			              action.make_small_script(function='travel_to_position',
-			                                       kwargs={'pos': lfe.get_current_chunk(_leader)['pos']}),
+			                                       kwargs={'pos': _pos}),
+			              description='Travel to position %s, %s' % (_pos[0], _pos[1]),
 				          delete_on_finish=False)
 			jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
 			              action.make_small_script(function='number_of_alife_in_chunk_matching',
 			                                       kwargs={'amount': 2,
 			                                               'chunk_key': lfe.get_current_chunk_id(_leader),
-			                                               'matching': {'group': _leader['group']}}))
-			jobs.add_task(_j, '3', 'talk',
-			              action.make_small_script(function='travel_to_position',
-			                                       kwargs={'pos': chunks.get_nearest_chunk_in_list(_leader['pos'], camps.get_camp(_nearest_camp['id'])['reference'])}),
-			              requires=['1'],
-			              delete_on_finish=False)
+			                                               'matching': {'group': _leader['group']}}),
+			              description='Wait until everyone arrives.')
+			#jobs.add_task(_j, '3', 'talk',
+			#              action.make_small_script(function='travel_to_position',
+			#                                       kwargs={'pos': chunks.get_nearest_chunk_in_list(_leader['pos'], camps.get_camp(_nearest_camp['id'])['reference'])}),
+			#              requires=['1'],
+			#              delete_on_finish=False)
 			
 			_jobs.append(_j)
 	
