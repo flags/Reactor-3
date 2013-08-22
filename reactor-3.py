@@ -32,6 +32,7 @@ import items
 import life
 import time
 import maps
+import smp
 import sys
 
 logger = logging.getLogger()
@@ -67,6 +68,7 @@ tiles.create_all_tiles()
 language.load_strings()
 
 gfx.init_libtcod()
+smp.init()
 
 def move_camera(pos,scroll=False):
 	_orig_pos = CAMERA_POS[:]

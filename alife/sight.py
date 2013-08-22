@@ -301,18 +301,16 @@ def find_known_items(life, matches={}, visible=True):
 	
 	return _match
 
-def scan_surroundings(life, initial=False, ignore_chunks=[], judge=True, get_chunks=False):
-	#print life['name'],'scanning'
-	_center_chunk = lfe.get_current_chunk_id(life)
-	_visible_chunks = []
+def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[]):
+	_chunks = []
 	
-	for x_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
-		for y_mod in range(-get_vision(life)/WORLD_INFO['chunk_size'], (get_vision(life)/WORLD_INFO['chunk_size'])+1):
+	for x_mod in range(-vision/chunk_size, (vision/chunk_size)+1):
+		for y_mod in range(-vision/chunk_size, (vision/chunk_size)+1):
 			if not x_mod and not y_mod:
 				continue
 			
-			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk.split(',')])
+			_pos_mod = [x_mod*chunk_size, y_mod*chunk_size]
+			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
 			
 			if _chunk_key in ignore_chunks:
 				continue
@@ -322,17 +320,27 @@ def scan_surroundings(life, initial=False, ignore_chunks=[], judge=True, get_chu
 			if not _chunk_key in CHUNK_MAP:
 				continue
 			
-			if not chunks.can_see_chunk(life, _chunk_key):
-				continue
-			
-			if get_chunks:
-				_visible_chunks.append(_chunk_key)
-			
-			if judge:
-				if initial:
-					judgement.judge_chunk(life, _chunk_key, seen=True)
-				else:
-					judgement.judge_chunk(life, _chunk_key)
+			_chunks.append(_chunk_key)
+	
+	return _chunks
+
+def scan_surroundings(life, initial=False, ignore_chunks=[], judge=True, get_chunks=False):
+	#print life['name'],'scanning'
+	_center_chunk = lfe.get_current_chunk_id(life)
+	_visible_chunks = []
+	
+	for chunk_key in _scan_surroundings(_center_chunk, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks):
+		if not chunks.can_see_chunk(life, chunk_key):
+			continue
+		
+		if get_chunks:
+			_visible_chunks.append(chunk_key)
+		
+		if judge:
+			if initial:
+				judgement.judge_chunk(life, chunk_key, seen=True)
+			else:
+				judgement.judge_chunk(life, chunk_key)
 	
 	if get_chunks:
 		return _visible_chunks

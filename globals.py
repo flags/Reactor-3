@@ -188,7 +188,8 @@ SETTINGS = {'running': True,
 	'controlling': None,
 	'following': None,
 	'state history size': 5,
-	'fire burn rate': 0.04}
+	'fire burn rate': 0.04,
+	'smp': None}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
