@@ -19,7 +19,12 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	for chunk in [maps.get_chunk(c) for c in scan_surroundings(life, judge=False, get_chunks=True)]:
+	if SETTINGS['smp']:
+		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'nearby_chunks') if c in CHUNK_MAP]
+	else:
+		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, judge=False, get_chunks=True)]
+	
+	for chunk in _chunks:
 		for ai in [LIFE[i] for i in chunk['life']]:
 			#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 			if not can_see_target(life, ai['id']):
@@ -301,7 +306,7 @@ def find_known_items(life, matches={}, visible=True):
 	
 	return _match
 
-def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[]):
+def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], chunk_map=CHUNK_MAP):
 	_chunks = []
 	
 	for x_mod in range(-vision/chunk_size, (vision/chunk_size)+1):
@@ -317,19 +322,24 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[]):
 			else:
 				ignore_chunks.append(_chunk_key)
 			
-			if not _chunk_key in CHUNK_MAP:
+			if chunk_map and not _chunk_key in chunk_map:
 				continue
 			
 			_chunks.append(_chunk_key)
 	
 	return _chunks
 
-def scan_surroundings(life, initial=False, ignore_chunks=[], judge=True, get_chunks=False):
+def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
 	#print life['name'],'scanning'
 	_center_chunk = lfe.get_current_chunk_id(life)
 	_visible_chunks = []
 	
-	for chunk_key in _scan_surroundings(_center_chunk, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks):
+	if _chunks:
+		_chunks = [c for c in _chunks if c in CHUNK_MAP]
+	else:
+		_chunks = _scan_surroundings(_center_chunk, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
+	
+	for chunk_key in _chunks:
 		if not chunks.can_see_chunk(life, chunk_key):
 			continue
 		

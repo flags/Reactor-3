@@ -94,9 +94,10 @@ def tick_all_objects(source_map):
 	effects.calculate_all_effects()
 	tick_world()
 	items.tick_all_items(source_map)
-	a = time.time()
-	smp.scan_all_surroundings()
-	print time.time()-a
+	
+	if SETTINGS['smp']:
+		smp.scan_all_surroundings()
+	
 	life.tick_all_life(source_map)
 	
 	return True

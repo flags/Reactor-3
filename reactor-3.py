@@ -60,95 +60,6 @@ def draw_targeting():
 		for pos in drawing.diag_line(LIFE[SETTINGS['controlling']]['pos'],LIFE[SETTINGS['controlling']]['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
 
-if __name__ == '__main__':
-	#TODO: Replace with "module_sanity_check"
-	#Optional Cython-compiled modules
-	try:
-		import render_map
-		import render_los
-		
-		if render_map.VERSION == MAP_RENDER_VERSION:
-			CYTHON_ENABLED = True
-		else:
-			logging.error('[Cython] render_map is out of date!')
-			logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
-			sys.exit(1)
-		
-	except ImportError, e:
-		CYTHON_ENABLED = False
-		logging.warning('[Cython] ImportError with module: %s' % e)
-		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
-		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
-	
-	gfx.log(WINDOW_TITLE)
-	
-	tiles.create_all_tiles()
-	language.load_strings()
-	
-	gfx.init_libtcod()
-	smp.init()
-
-	SETTINGS['draw z-levels below'] = True
-	SETTINGS['draw z-levels above'] = True
-	
-	life.initiate_life('human')
-	life.initiate_life('dog')
-	
-	items.initiate_item('white_shirt')
-	items.initiate_item('white_cloth')
-	items.initiate_item('sneakers')
-	items.initiate_item('leather_backpack')
-	items.initiate_item('blue_jeans')
-	items.initiate_item('glock')
-	items.initiate_item('22_rifle')
-	items.initiate_item('9x19mm_mag')
-	items.initiate_item('9x19mm_round')
-	items.initiate_item('radio')
-	items.initiate_item('can_of_corn')
-	items.initiate_item('soda')
-	items.initiate_item('electric_lantern')
-	items.initiate_item('burner')
-	items.initiate_item('22_rifle')
-	items.initiate_item('22_lr_mag')
-	items.initiate_item('22_lr_cartridge')
-	
-	SETTINGS['running'] = 2
-	
-	if SETTINGS['running'] == 2:
-		for world in profiles.get_worlds():
-			worldgen.load_world(world)
-			break
-	
-	if not 'start_age' in WORLD_INFO:
-		SETTINGS['running'] = 1
-	
-	while SETTINGS['running'] in [-1, 1]:
-		if SETTINGS['running'] == -1:
-			mainmenu.draw_intro()
-		
-		if not MENUS:
-			mainmenu.switch_to_main_menu()
-		
-		get_input()
-		handle_input()
-		mainmenu.draw_main_menu()
-	
-	gfx.refresh_window()
-	
-	if not 'start_age' in WORLD_INFO:
-		worldgen.generate_world(WORLD_INFO['map'],
-			life_density='Heavy',
-			wildlife_density='Sparse',
-			simulate_ticks=100,
-			save=True,
-			thread=False)
-	
-	#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
-	#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
-	#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-
 CURRENT_UPS = UPS
 
 def main():
@@ -232,7 +143,7 @@ def main():
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	print tcod.sys_get_fps()
+	#print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:
@@ -245,16 +156,105 @@ def tick():
 			if 'debug' in WORLD_INFO:
 				WORLD_INFO['debug'].quit()
 
-if '--debug' in sys.argv:
-	_debug_host = network.DebugHost()
-	_debug_host.start()
-	WORLD_INFO['debug'] = _debug_host
+if __name__ == '__main__':
+	#TODO: Replace with "module_sanity_check"
+	#Optional Cython-compiled modules
+	try:
+		import render_map
+		import render_los
+		
+		if render_map.VERSION == MAP_RENDER_VERSION:
+			CYTHON_ENABLED = True
+		else:
+			logging.error('[Cython] render_map is out of date!')
+			logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+			sys.exit(1)
+		
+	except ImportError, e:
+		CYTHON_ENABLED = False
+		logging.warning('[Cython] ImportError with module: %s' % e)
+		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
+		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+	
+	gfx.log(WINDOW_TITLE)
+	
+	tiles.create_all_tiles()
+	language.load_strings()
+	
+	gfx.init_libtcod()
+	smp.init()
 
-if '--profile' in sys.argv:
-	logging.info('Profiling. Exit when completed.')
-	cProfile.run('tick()','profile.dat')
-else:
-	tick()
-
-if 'debug' in WORLD_INFO:
-	WORLD_INFO['debug'].quit()
+	SETTINGS['draw z-levels below'] = True
+	SETTINGS['draw z-levels above'] = True
+	
+	life.initiate_life('human')
+	life.initiate_life('dog')
+	
+	items.initiate_item('white_shirt')
+	items.initiate_item('white_cloth')
+	items.initiate_item('sneakers')
+	items.initiate_item('leather_backpack')
+	items.initiate_item('blue_jeans')
+	items.initiate_item('glock')
+	items.initiate_item('22_rifle')
+	items.initiate_item('9x19mm_mag')
+	items.initiate_item('9x19mm_round')
+	items.initiate_item('radio')
+	items.initiate_item('can_of_corn')
+	items.initiate_item('soda')
+	items.initiate_item('electric_lantern')
+	items.initiate_item('burner')
+	items.initiate_item('22_rifle')
+	items.initiate_item('22_lr_mag')
+	items.initiate_item('22_lr_cartridge')
+	
+	SETTINGS['running'] = 2
+	
+	if SETTINGS['running'] == 2:
+		for world in profiles.get_worlds():
+			worldgen.load_world(world)
+			break
+	
+	if not 'start_age' in WORLD_INFO:
+		SETTINGS['running'] = 1
+	
+	while SETTINGS['running'] in [-1, 1]:
+		if SETTINGS['running'] == -1:
+			mainmenu.draw_intro()
+		
+		if not MENUS:
+			mainmenu.switch_to_main_menu()
+		
+		get_input()
+		handle_input()
+		mainmenu.draw_main_menu()
+	
+	gfx.refresh_window()
+	
+	if not 'start_age' in WORLD_INFO:
+		worldgen.generate_world(WORLD_INFO['map'],
+			life_density='Heavy',
+			wildlife_density='Sparse',
+			simulate_ticks=100,
+			save=True,
+			thread=False)
+	
+	if '--debug' in sys.argv:
+		_debug_host = network.DebugHost()
+		_debug_host.start()
+		WORLD_INFO['debug'] = _debug_host
+	
+	if '--profile' in sys.argv:
+		logging.info('Profiling. Exit when completed.')
+		cProfile.run('tick()','profile.dat')
+	else:
+		tick()
+	
+	if 'debug' in WORLD_INFO:
+		WORLD_INFO['debug'].quit()
+	
+	#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
+	#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
+	#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
+	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
