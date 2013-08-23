@@ -1187,13 +1187,12 @@ def handle_options_menu(entry):
 
 def handle_jobs_menu_action(entry):
 	if entry['key'] == 'Join':
-		LIFE[SETTINGS['controlling']]['job'] = jobs.join_job(entry['job_id'], SETTINGS['controlling'])
+		LIFE[SETTINGS['controlling']]['job'] = entry['job_id']
 	else:
 		jobs.leave_job(entry['job_id'], SETTINGS['controlling'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
-	create_jobs_menu()
 
 def handle_jobs_menu(entry):
 	if 'job_id' in entry:

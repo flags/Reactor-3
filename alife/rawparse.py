@@ -49,8 +49,9 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'desires_shelter': stats.desires_shelter,
 	'travel_to_position': movement.travel_to_position,
 	'wait': never,
-	'number_of_alife_in_chunk_matching': lambda chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
+	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 	'start_dialog': speech.start_dialog,
+	'announce_to_group': groups.announce,
 	'always': always,
 	'never': never}
 

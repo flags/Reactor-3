@@ -188,9 +188,8 @@ def process_events(group_id):
 	for event in _group['events'].values():
 		events.process_event(event)
 
-def announce(group_id, gist, message, consider_motive=False, **kwargs):
+def announce(life, group_id, gist, message, consider_motive=False, **kwargs):
 	_group = get_group(group_id)
-	life = LIFE[_group['leader']]
 	
 	if consider_motive:
 		if _group['claimed_motive'] == 'wealth':

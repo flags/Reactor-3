@@ -48,11 +48,12 @@ def execute_small_script(life, action):
 	if 'function' in action:
 		_args = {}
 		for key in action['kwargs']:
-			if isinstance(action['kwargs'][key], dict) and 'return' in action['kwargs'][key]['args']:
+			if isinstance(action['kwargs'][key], dict) and 'args' in action['kwargs'][key] and 'return' in action['kwargs'][key]['args']:
 				_args[key] = execute_small_script(action['kwargs'][key])
 			else:
 				_args[key] = action['kwargs'][key]
 		
+		print action
 		return rawparse.translate(action['function'])(life, **action['kwargs'])
 
 def _execute(action):

@@ -207,12 +207,13 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
 	
-	
-	
 	if life['group']:
 		if LIFE[target]['group'] == life['group']:
 			if alife.groups.is_leader(life['group'], target):
 				_topics.append({'text': 'Where\'s our camp?', 'message': 'Where is camp?', 'gist': 'inquire_about_group_camp', 'group': life['group']})
+			
+			if life['job']:
+				_topics.append({'text': 'Recruit for job', 'message': 'I could use your help with this job.', 'gist': 'recruit_for_job', 'job': life['job']})
 		else:
 			_topics.append({'text': 'Recruit...', 'message': 'Are you looking for a squad?', 'gist': 'inquire_about_group_work', 'group': life['group']})
 	
@@ -935,6 +936,18 @@ def process_response(life, target, dialog, chosen):
 			value=chosen['who'])
 		
 		print 'DONT KNOW' * 100
+	
+	elif chosen['gist'] == 'recruit_for_job':
+		if chosen['job'] in LIFE[dialog['listener']]['jobs']:
+			_responses.append({'text': 'I already know about this job and I\'m not interested.', 'gist': 'end'})
+		else:
+			LIFE[dialog['listener']]['jobs'].append(chosen['job'])
+			alife.judgement.judge_jobs(LIFE[dialog['listener']])
+			
+			if LIFE[dialog['listener']]['job'] == chosen['job']:
+				_responses.append({'text': 'I\'m in!', 'gist': 'end'})
+			else:
+				_responses.append({'text': 'No thanks.', 'gist': 'end'})
 	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
