@@ -966,7 +966,7 @@ def walk_path(life):
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
-		if 'player' in life:
+		if SETTINGS['following'] == life['id']:
 			#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
 			LOS_BUFFER[0] = []
 		
@@ -2206,14 +2206,15 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in LIFE[SETTINGS['controlling']]['know']:
-				continue
-			
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if not life['pos'] == life['prev_pos']:
-				gfx.refresh_window_position(_p_x, _p_y)
+			if 0<_p_x<MAP_WINDOW_SIZE[0] and 0<_p_y<MAP_WINDOW_SIZE[1]:
+				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
+					gfx.refresh_window_position(_p_x, _p_y)
+			
+			if not LOS_BUFFER[0][_y,_x]:
+				continue
 			
 			MAP_CHAR_BUFFER[1][_y,_x] = 0
 			gfx.blit_char(_x,
