@@ -44,7 +44,7 @@ except ImportError, e:
 gfx.log(WINDOW_TITLE)
 create_all_tiles()
 
-LOAD_MAP = 'test2.dat'
+LOAD_MAP = 'map1.dat'
 
 try:
 	maps.load_map(LOAD_MAP)
@@ -389,6 +389,8 @@ def main():
 	while SETTINGS['running']:
 		get_input()
 		handle_input()
+		
+		LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 		if CYTHON_ENABLED:
 			render_map.render_map(WORLD_INFO['map'])
