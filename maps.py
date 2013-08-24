@@ -70,6 +70,8 @@ def save_map(map_name, base_dir=DATA_DIR):
 		
 		if 'old_pos' in light:
 			del light['old_pos']
+	
+	WORLD_INFO['seed_state'] = random.getstate()
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
@@ -137,7 +139,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
-		random.seed(WORLD_INFO['seed'])
+		if WORLD_INFO['seed_state']:
+			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
+			random.setstate(tuple(WORLD_INFO['seed_state']))
 		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
@@ -183,7 +187,7 @@ def render_lights(source_map):
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map,(light['pos'][0],light['pos'][1]),top_left=_top_left)
+			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), 25, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -254,9 +258,9 @@ def diffuse_light(source_light):
 	
 	return (light.ravel(1), light.ravel(0))
 
-def _render_los(map,pos,cython=False):
+def _render_los(map, pos, size, cython=False):
 	if cython:
-		return cython_render_los.render_los(map,pos)
+		return cython_render_los.render_los(map, pos, size)
 	else:
 		return render_los(map,pos)
 
