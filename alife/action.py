@@ -53,7 +53,6 @@ def execute_small_script(life, action):
 			else:
 				_args[key] = action['kwargs'][key]
 		
-		print action
 		return rawparse.translate(action['function'])(life, **action['kwargs'])
 
 def _execute(action):

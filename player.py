@@ -1208,6 +1208,11 @@ def handle_jobs_menu(entry):
 		
 		menus.activate_menu(_i)
 
+def handle_tasks_menu(entry):
+	if entry['key'] == 'Quit':
+		LIFE[SETTINGS['controlling']]['job'] = None
+		menus.delete_menu(ACTIVE_MENU['menu'])
+
 def create_jobs_menu():
 	if menus.get_menu_by_name('Jobs')>-1:
 		menus.delete_menu(menus.get_menu_by_name('Jobs'))
@@ -1222,19 +1227,6 @@ def create_jobs_menu():
 	
 	for job in [jobs.get_job(j) for j in _all_jobs]:
 		_jobs.append(menus.create_item('single', job['name'], job['description'], job_id=job['id']))
-	
-	#if LIFE[SETTINGS['controlling']]['job']:
-	#	_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
-	#	_jobs.append(menus.create_item('title', 'Workers', None))
-	#	
-	#	_i = 1
-	#	for worker in _job['workers']:
-	#		_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
-	#		_i += 1
-	#	
-	#	_location = jobs.get_job_detail(_job, 'location')
-	#	if _location:
-	#		_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
 	
 	if _jobs:
 		_i = menus.create_menu(title='Jobs',
@@ -1264,25 +1256,16 @@ def create_tasks_menu():
 		                                task_id=task_id,
 		                                enabled=(task_id in jobs.get_free_tasks(_life['job']))))
 	
-	#if LIFE[SETTINGS['controlling']]['job']:
-	#	_jobs.append(menus.create_item('single', 'Creator', ' '.join(LIFE[_job['creator']]['name'])))
-	#	_jobs.append(menus.create_item('title', 'Workers', None))
-	#	
-	#	_i = 1
-	#	for worker in _job['workers']:
-	#		_jobs.append(menus.create_item('single', _i, ' '.join(LIFE[worker]['name'])))
-	#		_i += 1
-	#	
-	#	_location = jobs.get_job_detail(_job, 'location')
-	#	if _location:
-	#		_jobs.append(menus.create_item('single', 'Location', '%s, %s' % (_location[0], _location[1])))
+	_tasks.append(menus.create_item('title', 'Job', ''))
+	_tasks.append(menus.create_item('single', 'Quit', '', job_id=_life['job']))
 	
 	if _tasks:
 		_i = menus.create_menu(title='Tasks',
 	                           menu=_tasks,
 	                           padding=(1,1),
 	                           position=(1,1),
-	                           format_str='$k: $v')
+	                           format_str='$k: $v',
+		                       on_select=handle_tasks_menu)
 	
 		menus.activate_menu(_i)
 

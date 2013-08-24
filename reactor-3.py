@@ -95,7 +95,10 @@ def main():
 	move_camera(LIFE[SETTINGS['following']]['pos'])
 	
 	if LOS_BUFFER[0] == []:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)	
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['following']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['following']]),
+		                                 cython=True)	
 	
 	if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
@@ -182,7 +185,7 @@ if __name__ == '__main__':
 	language.load_strings()
 	
 	gfx.init_libtcod()
-	smp.init()
+	#smp.init()
 
 	SETTINGS['draw z-levels below'] = True
 	SETTINGS['draw z-levels above'] = True

@@ -78,7 +78,7 @@ def draw_line(x1,y1,x2,y2):
 	
 	return path
 
-def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
+def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	cdef int pos1[2]
@@ -97,8 +97,7 @@ def render_los(map,position,top_left=CAMERA_POS,no_edge=False):
 	
 	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
-	for _pos in draw_circle(POSITION[0], POSITION[1], SETTINGS['los']):
-
+	for _pos in draw_circle(POSITION[0], POSITION[1], size):
 		_dark = 0
 		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS

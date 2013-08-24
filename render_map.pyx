@@ -54,7 +54,7 @@ def render_map(map):
 				if map[x][y][z]:
 					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
+						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)
 						_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
@@ -73,10 +73,14 @@ def render_map(map):
 								effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
 							
 							effects.draw_effect((x, y))
+						
+						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+							darken_tile(_RENDER_X, _RENDER_Y, 30)
+							
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*30)
+						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)
 						_drawn = True
 				
 					if SETTINGS['draw z-levels above'] and _drawn:

@@ -23,12 +23,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if stats.desires_to_create_group(life):
 			_group_id = groups.create_group(life)
 			_group = groups.get_group(_group_id)
+			_pos = lfe.get_current_chunk(life)['pos']
 			
-			_j = jobs.create_job(life, 'Gather', gist='create_group', description='Gather for new group.')
+			_j = jobs.create_job(life, 'Gather',
+			                     gist='create_group',
+			                     description='Gathering new group %s at %s, %s.' % (_group_id, _pos[0], _pos[1]))
 		
 			jobs.add_task(_j, '0', 'move_to_chunk',
 				          action.make_small_script(function='travel_to_position',
-				                                   kwargs={'pos': lfe.get_current_chunk(life)['pos']}),
+				                                   kwargs={'pos': _pos}),
 				          delete_on_finish=False)
 			jobs.add_task(_j, '1', 'talk',
 				          action.make_small_script(function='start_dialog',

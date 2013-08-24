@@ -375,7 +375,7 @@ def listen(life):
 		elif event['gist'] == 'job':
 			groups.discover_group(life, event['from']['group'])
 			
-			if judgement.can_trust(life, event['from']['id']):
+			if not jobs.is_candidate(event['job_id'], life['id']) and judgement.can_trust(life, event['from']['id']):
 				jobs.join_job(event['job_id'], life['id'])
 		
 		else:
