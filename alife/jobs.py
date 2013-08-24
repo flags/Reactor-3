@@ -20,7 +20,7 @@ def get_job(job_id):
 def get_task(job_id, task_id):
 	return get_job(job_id)['tasks'][task_id]
 
-def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.'):
+def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', **kwargs):
 	_job = {'id': str(WORLD_INFO['jobid'])}
 	_job['name'] = name
 	_job['gist'] = gist
@@ -31,6 +31,7 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	_job['flags'] = {}
 	_job['creator'] = creator['id']
 	_job['completed'] = False
+	_job['flags'] = kwargs
 	#_job['requirements'] = []
 	
 	WORLD_INFO['jobid'] += 1
@@ -39,6 +40,11 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	logging.debug('%s created new job: %s' % (' '.join(creator['name']), name))
 	
 	return _job['id']
+
+def get_flag(job_id, flag):
+	_job = get_job(job_id)
+	
+	return _job['flags'][flag]
 
 #def add_requirement(job_id, action):
 #	_job = get_job(job_id)
@@ -58,13 +64,14 @@ def reset_job(job_id):
 		
 	logging.debug('Job with ID \'%s\' reset.' % job_id)
 
-def add_task(job_id, task_id, name, action, description='Task description needed.', requires=[], max_workers=1, delete_on_finish=False):
+def add_task(job_id, task_id, name, action, player_action=None, description='Task description needed.', requires=[], max_workers=1, delete_on_finish=False):
 	_job = get_job(job_id)
 	
 	_task = {'id': str(task_id)}
 	_task['name'] = name
 	_task['description'] = description
 	_task['action'] = action
+	_task['player_action'] = player_action
 	_task['requires'] = requires
 	_task['_required'] = []
 	_task['max_workers'] = max_workers
@@ -93,11 +100,12 @@ def complete_task(life, job_id, task_id):
 	
 	if _task['max_workers'] == -1:
 		life['completed_tasks'].append(task_id)
-		life['task'] = None
+		life['task'] = get_next_task(life, life['job'])
 		
-		if not get_next_task(life, life['job']):
+		if not life['task']:
 			life['completed_jobs'].append(job_id)
-		
+
+		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))
 		return False
 	
 	_task['completed'] = True
@@ -110,7 +118,7 @@ def complete_task(life, job_id, task_id):
 	for worker in _job['workers']:
 		remove_worker_from_task(job_id, task_id, worker)
 	
-	logging.debug('Task \'%s\' of job \'%s\' complete.' % (task_id, job_id))
+	logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))
 
 def get_workers_on_task(job_id, task_id):
 	_task = get_task(job_id, task_id)
@@ -166,9 +174,18 @@ def get_next_task(life, job_id):
 	return None
 
 def is_candidate(job_id, life_id):
+	if job_id in LIFE[life_id]['jobs']:
+		return True
+	
+	return False
+
+def add_job_candidate(job_id, life_id):
 	_job = get_job(job_id)
 	
-	return life_id in _job['workers']
+	if is_candidate(job_id, life_id):
+		raise Exception('\'%s\' is already a candidate for job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
+	
+	LIFE[life_id]['jobs'].append(job_id)
 
 def join_job(job_id, life_id):
 	_job = get_job(job_id)
@@ -177,28 +194,48 @@ def join_job(job_id, life_id):
 		raise Exception('\'%s\' is already member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
 	
 	_job['workers'].append(life_id)
-	
-	LIFE[life_id]['jobs'].append(job_id)
+	LIFE[life_id]['job'] = job_id
 	
 	logging.debug('%s joined job with ID \'%s\'.' % (' '.join(LIFE[life_id]['name']), job_id))
 	
 	return job_id
 
-def leave_job(job_id, life_id):
+def leave_job(job_id, life_id, reject=False):
 	_job = get_job(job_id)
 	
 	if not life_id in _job['workers']:
 		raise Exception('\'%s\' is not a member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
 	
 	_job['workers'].remove(life_id)
+	
+	if job_id == LIFE[life_id]['job']:
+		LIFE[life_id]['job'] = None
+	
+	if reject:
+		reject_job(job_id, life_id)
+	
+	logging.debug('%s left job with ID \'%s\'.' % (' '.join(LIFE[life_id]['name']), job_id))
+
+def reject_job(job_id, life_id):
 	LIFE[life_id]['jobs'].remove(job_id)
+	LIFE[life_id]['rejected_jobs'].append(job_id)
 
 def alife_has_job(life):
 	return life['job']
 
-def work(life):
+def _work(life):
 	if not life['task']:
-		return True
+		return False
+	
 	_task = get_task(life['job'], life['task'])
 	
+	if 'player' in life:
+		return action.execute_small_script(life, _task['player_action'])
+	
 	return action.execute_small_script(life, _task['action'])
+
+def work(life):
+	if _work(life):
+		return complete_task(life, life['job'], life['task'])
+	
+	return False

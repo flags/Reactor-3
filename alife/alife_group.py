@@ -27,15 +27,21 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			_j = jobs.create_job(life, 'Gather',
 			                     gist='create_group',
-			                     description='Gathering new group %s at %s, %s.' % (_group_id, _pos[0], _pos[1]))
+			                     description='Group %s: Looking for new members.' % _group_id,
+			                     group=life['group'])
 		
 			jobs.add_task(_j, '0', 'move_to_chunk',
 				          action.make_small_script(function='travel_to_position',
 				                                   kwargs={'pos': _pos}),
+			              player_action=action.make_small_script(function='is_in_chunk',
+				                                   kwargs={'chunk_key': lfe.get_current_chunk_id(life)}),
+			              description='Go to position %s, %s.' % (_pos[0], _pos[1]),
 				          delete_on_finish=False)
 			jobs.add_task(_j, '1', 'talk',
 				          action.make_small_script(function='start_dialog',
 				                                   kwargs={'target': life['id'], 'gist': 'form_group'}),
+			              player_action=action.make_small_script(function='always'),
+				          description='Talk to %s.' % (' '.join(life['name'])),
 				          requires=['0'],
 				          delete_on_finish=False)
 			

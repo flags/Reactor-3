@@ -329,6 +329,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['task'] = None
 	_life['completed_tasks'] = []
 	_life['completed_jobs'] = []
+	_life['rejected_jobs'] = []
 	_life['group'] = None
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
@@ -937,8 +938,8 @@ def walk(life, to):
 		_zone = can_walk_to(life, to)
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
-		else:
-			logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
+		#else:
+		#	logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
 		#print 'total',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]
@@ -1511,6 +1512,9 @@ def tick(life, source_map):
 	else:
 		brain.sight.look(life)
 		alife.sound.listen(life)
+		
+		if life['job']:
+			alife.jobs.work(life)
 		
 		for context in life['contexts'][:]:
 			context['time'] -= 1

@@ -50,9 +50,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		#	lfe.clear_actions(life)
 		#	return True
 		
-		if jobs.work(life):
-			return False
-		
-		jobs.complete_task(life, life['job'], life['task'])
+		jobs.work(life)
 		#if life['task'] and life['task']['callback'](life):
 		#	jobs.complete_task(life)

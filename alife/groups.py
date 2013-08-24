@@ -103,7 +103,7 @@ def add_member(group_id, life_id):
 	if SETTINGS['controlling'] == life_id:
 		gfx.message('You join group %s.' % group_id, style='good')
 	
-	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']-1))
+	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
 
 def remove_member(group_id, life_id):
 	_group = get_group(group_id)

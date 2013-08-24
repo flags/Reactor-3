@@ -111,10 +111,16 @@ def main():
 	maps.render_lights(WORLD_INFO['map'])
 	
 	if LIFE[SETTINGS['controlling']]['encounters']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['controlling']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']]),
+		                                 cython=CYTHON_ENABLED)
 	
 	if not SETTINGS['controlling'] == SETTINGS['following']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=True)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['controlling']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']]),
+		                                 cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

@@ -376,7 +376,7 @@ def listen(life):
 			groups.discover_group(life, event['from']['group'])
 			
 			if not jobs.is_candidate(event['job_id'], life['id']) and judgement.can_trust(life, event['from']['id']):
-				jobs.join_job(event['job_id'], life['id'])
+				jobs.add_job_candidate(event['job_id'], life['id'])
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

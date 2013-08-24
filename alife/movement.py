@@ -43,22 +43,12 @@ def score_hide(life,target,pos):
 	_life_dist = numbers.distance(life['pos'], pos)
 	_target_dist = numbers.distance(target['last_seen_at'], pos)
 	
-	#if sight.can_see_position(life, pos, distance=False):
-	#	return 20-_target_dist
-	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
 		return numbers.clip(300-_life_dist, 200, 300)
 	
 	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
 		return numbers.clip(200-_life_dist, 100, 200)
 	
-	#if _chunk['type'] == 'building':
-	#	if not sight._can_see_position(life['pos'], pos):
-	#		print 'CLOSE!'
-	#		return numbers.clip(49-_life_dist, 21, 49)
-	#	
-	#	print 'building'
-	#	return 89-_life_dist
 	if not sight._can_see_position(life['pos'], pos):
 		return 99-_target_dist
 	
@@ -86,15 +76,15 @@ def position_for_combat(life,target,position,source_map):
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
-		return False
+		return True
 	
 	if not numbers.distance(life['pos'], pos):
-		return False
+		return True
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 	
-	return True
+	return False
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded

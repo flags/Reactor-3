@@ -537,8 +537,9 @@ def judge_jobs(life):
 	if life['task']:
 		return life['job']
 	
+	_new_job = None
 	_old_job = life['job']
-	life['job'] = None
+	#life['job'] = None
 		
 	for job in [jobs.get_job(j) for j in life['jobs']]:
 		if not jobs.get_free_tasks(job['id']):
@@ -546,14 +547,28 @@ def judge_jobs(life):
 		
 		if life['group'] and job['gist'] == 'create_group':
 			if not stats.wants_to_abandon_group(life, life['group']):
+				jobs.reject_job(job['id'], life['id'])
+				continue
+			
+			if life['group'] == jobs.get_flag(job['id'], 'group'):
+				print 'DUDE I HAVE THIS ALREADY WTF!!!!!!!!!' * 100
+				jobs.reject_job(job['id'], life['id'])
 				continue
 		
-		if job['id'] in life['completed_jobs']:
+		if job['id'] in life['completed_jobs'] or job['id'] in life['rejected_jobs']:
 			continue
 		
 		if job['tier'] >= _tier:
-			life['job'] = job['id']
+			#jobs.join_job(job['id'], life['id'])
+			_new_job = job['id']
 			_tier = job['tier']
+	
+	if not _old_job == _new_job:
+		if _old_job:
+			jobs.leave_job(_old_job, life['id'])
+	
+		if _new_job:
+			jobs.join_job(_new_job, life['id'])
 	
 	if life['job']:
 		life['task'] = jobs.get_next_task(life, life['job'])

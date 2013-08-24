@@ -1187,7 +1187,8 @@ def handle_options_menu(entry):
 
 def handle_jobs_menu_action(entry):
 	if entry['key'] == 'Join':
-		LIFE[SETTINGS['controlling']]['job'] = entry['job_id']
+		jobs.join_job(entry['job_id'], SETTINGS['controlling'])
+		LIFE[SETTINGS['controlling']]['task'] = jobs.get_next_task(LIFE[SETTINGS['controlling']], entry['job_id'])
 	else:
 		jobs.leave_job(entry['job_id'], SETTINGS['controlling'])
 	
@@ -1210,7 +1211,8 @@ def handle_jobs_menu(entry):
 
 def handle_tasks_menu(entry):
 	if entry['key'] == 'Quit':
-		LIFE[SETTINGS['controlling']]['job'] = None
+		jobs.leave_job(entry['job_id'], SETTINGS['controlling'], reject=True)
+		
 		menus.delete_menu(ACTIVE_MENU['menu'])
 
 def create_jobs_menu():
@@ -1254,7 +1256,7 @@ def create_tasks_menu():
 		                                task['description'],
 		                                job_id=_life['job'],
 		                                task_id=task_id,
-		                                enabled=(task_id in jobs.get_free_tasks(_life['job']))))
+		                                enabled=(task_id in jobs.get_free_tasks(_life['job'], local_completed=_life['completed_tasks']))))
 	
 	_tasks.append(menus.create_item('title', 'Job', ''))
 	_tasks.append(menus.create_item('single', 'Quit', '', job_id=_life['job']))

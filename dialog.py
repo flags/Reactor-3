@@ -72,6 +72,10 @@ def add_message(life, dialog, chosen):
 	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
 	dialog['messages'].append(_message)
 	#print '%s: %s' % (' '.join(life['name']), _text)
+	
+def show_messages(dialog):
+	for mesg in dialog['messages']:
+		print mesg
 
 def calculate_impacts(life, target, topics):
 	#TODO: Unused arguments
@@ -722,7 +726,7 @@ def process_response(life, target, dialog, chosen):
 		for job in chosen['jobs']:
 			_responses.append({'text': alife.jobs.get_job(job)['description'], 'gist': 'take_job', 'job': job, 'like': 1})
 	elif chosen['gist'] == 'take_job':
-		alife.jobs.join_job(chosen['job'], dialog['speaker'])
+		alife.jobs.add_job_candidate(chosen['job'], dialog['speaker'])
 		reset_dialog(dialog, end=True, force=True)
 		return True
 	elif chosen['gist'] == 'offer_job':
@@ -882,6 +886,8 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
 	
 	elif chosen['gist'] == 'join_group':
+		show_messages(dialog)
+		
 		alife.groups.add_member(chosen['group'], dialog['speaker'])
 		lfe.memory(LIFE[dialog['speaker']], 'join_group', group=chosen['group'])
 		

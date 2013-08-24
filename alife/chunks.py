@@ -116,8 +116,8 @@ def find_surrounding_unknown_chunks(life):
 	
 	return _unknown_chunks
 
-def is_in_chunk(life, chunk_id):
-	_chunk = maps.get_chunk(chunk_id)
+def is_in_chunk(life, chunk_key):
+	_chunk = maps.get_chunk(chunk_key)
 	
 	if life['pos'][0] >= _chunk['pos'][0] and life['pos'][0] <= _chunk['pos'][0]+WORLD_INFO['chunk_size']\
 		and life['pos'][1] >= _chunk['pos'][1] and life['pos'][1] <= _chunk['pos'][1]+WORLD_INFO['chunk_size']:

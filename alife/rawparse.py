@@ -52,6 +52,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 	'start_dialog': speech.start_dialog,
 	'announce_to_group': groups.announce,
+    'is_in_chunk': chunks.is_in_chunk,
 	'always': always,
 	'never': never}
 
