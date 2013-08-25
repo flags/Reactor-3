@@ -216,6 +216,7 @@ if __name__ == '__main__':
 	items.initiate_item('22_rifle')
 	items.initiate_item('22_lr_mag')
 	items.initiate_item('22_lr_cartridge')
+	items.initiate_item('frag_grenade')
 	
 	SETTINGS['running'] = 2
 	

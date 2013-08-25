@@ -55,7 +55,8 @@ WORLD_INFO = {'map': [],
 	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5,
-	'lights': []}
+	'lights': [],
+	'timers': []}
 
 #Return values
 STATE_CHANGE = 2

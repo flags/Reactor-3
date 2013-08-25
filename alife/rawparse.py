@@ -10,6 +10,7 @@ import groups
 import combat
 import chunks
 import speech
+import items
 import stats
 import logic
 import jobs
@@ -53,6 +54,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'start_dialog': speech.start_dialog,
 	'announce_to_group': groups.announce,
     'is_in_chunk': chunks.is_in_chunk,
+    'explode': items.explode,
 	'always': always,
 	'never': never}
 

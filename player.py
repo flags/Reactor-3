@@ -8,6 +8,7 @@ import crafting
 import worldgen
 import weapons
 import dialog
+import timers
 import logic
 import menus
 import items
@@ -219,12 +220,15 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['t']:
-		if menus.get_menu_by_name('Throw')>-1:
+		if not menus.get_menu_by_name('Arm')==-1:
+			return False
+		
+		if menus.get_menu_by_name('Throw')>-1 and menus.get_menu_by_name('Arm')==-1:
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['targeting']:
-			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing']['id'], LIFE[SETTINGS['controlling']]['targeting'], 2)
+			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing'], LIFE[SETTINGS['controlling']]['targeting'], 2)
 			LIFE[SETTINGS['controlling']]['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
@@ -823,19 +827,51 @@ def inventory_throw(entry):
 
 	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']], item['uid'])
 	if _stored:
-		_delay = 40
+		_delay = 15
 		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
 	else:
-		_delay = 20
+		_delay = 8
 	
-	LIFE[SETTINGS['controlling']]['throwing'] = item
+	LIFE[SETTINGS['controlling']]['throwing'] = item['uid']
+	
+	if item['type'] == 'explosive':
+		if 'player' in LIFE[SETTINGS['controlling']]:
+			_items = [menus.create_item('list', 'Time', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], item=item['uid'])]
+	
+			_menu = menus.create_menu(title='Arm',
+					                  menu=_items,
+					                  padding=(1,1),
+					                  position=(1,1),
+					                  format_str='$k: $v',
+					                  on_select=handle_arm_item)
+			
+			menus.activate_menu(_menu)
+	else:
+		menus.delete_menu(ACTIVE_MENU['menu'])
+	
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'holditemthrow',
+			'item': entry['id'],
+			'hand': _hand},
+			200,
+			delay=_delay)
+	
+def handle_arm_item(entry):
+	key = entry['key']
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['item'])
+	value = entry['values'][entry['value']]*10
+	_hand = life.can_throw(LIFE[SETTINGS['controlling']])
+	
+	timers.create(item, action.make_small_script(function='explode',
+	                                       item=item['uid']),
+	              15+value)
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'holditemthrow',
-		'item': entry['id'],
-		'hand': _hand},
-		200,
-		delay=_delay)
+			'item': entry['item'],
+			'hand': _hand},
+			200,
+			delay=15)
 	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):

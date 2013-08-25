@@ -14,6 +14,7 @@ import numbers
 import effects
 import random
 import damage
+import timers
 import logic
 import zones
 import alife
@@ -1299,6 +1300,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'holditemthrow':
 		_dropped_item = drop_item(life,_action['item'])
+		print _dropped_item
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_action['hand']['holding'].append(_id)
 		
@@ -1402,6 +1404,7 @@ def kill(life, injury):
 	
 	drop_all_items(life)
 	life['dead'] = True
+	timers.remove_by_owner(life)
 
 def can_die_via_critical_injury(life):
 	for limb in life['body']:
@@ -1561,13 +1564,12 @@ def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
 	return can_hold_item(life)
 
-def throw_item(life,id,target,speed):
+def throw_item(life, id, target, speed):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
-	_item = remove_item_from_inventory(life,id)
+	_item = items.get_item_from_uid(remove_item_from_inventory(life, id))
 	
-	direction = numbers.direction_to(life['pos'],target)
-	
-	items.move(items.get_item_from_uid(_item), direction, speed)
+	direction = numbers.direction_to(life['pos'], target)
+	items.move(_item, direction, speed)
 
 def update_container_capacity(life,container):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -2032,7 +2034,7 @@ def drop_item(life, item_id):
 		if item_id in _hand['holding']:
 			_hand['holding'].remove(item_id)
 	
-	return item
+	return item['uid']
 
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))

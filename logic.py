@@ -8,6 +8,7 @@ import encounters
 import worldgen
 import effects
 import numbers
+import timers
 import menus
 import items
 import life
@@ -43,6 +44,9 @@ def tick_all_objects(source_map):
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['encounters']:
+			return False
+		
+		if MENUS:
 			return False
 		
 		#if menus.get_menu_by_name('Aim at...') > -1:
@@ -93,6 +97,7 @@ def tick_all_objects(source_map):
 	
 	effects.calculate_all_effects()
 	tick_world()
+	timers.tick()
 	items.tick_all_items(source_map)
 	
 	if SETTINGS['smp']:

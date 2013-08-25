@@ -24,7 +24,8 @@ BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt',
               'leather backpack',
-              'radio']
+              'radio',
+              'frag grenade']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine']
 
 for i in range(10):

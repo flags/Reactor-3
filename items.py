@@ -7,6 +7,7 @@ import maputils
 import drawing
 import numbers
 import effects
+import timers
 import maps
 import life
 
@@ -158,6 +159,8 @@ def delete_item(item):
 			
 			del life['know_items'][item['uid']]
 	
+	timers.remove_by_owner(item)
+	
 	del ITEMS[item['uid']]
 
 def save_all_items():
@@ -204,7 +207,6 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 	item['realpos'] = item['pos'][:]
 	
 	logging.debug('%s flies off in an arc! (%s)' % (get_name(item), item['velocity']))
-	print item['realpos'], item['pos'], item['uid']
 
 def draw_items():
 	for _item in ITEMS:
@@ -232,6 +234,20 @@ def draw_items():
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+
+def explode(item):
+	if not item['type'] == 'explosive':
+		return False
+	
+	if 'fire' in item['damage']:
+		for x in range(-item['radius'], item['radius']+1):
+			for y in range(-item['radius'], item['radius']+1):
+				if random.randint(0, 4):
+					continue
+				
+				effects.create_fire((item['pos'][0]+x, item['pos'][1]+y, item['pos'][2]), intensity=item['damage']['fire'])
+	
+	delete_item(item)
 
 def collision_with_solid(item, pos):
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
