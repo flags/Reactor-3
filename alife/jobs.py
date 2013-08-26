@@ -20,6 +20,9 @@ def get_job(job_id):
 def get_task(job_id, task_id):
 	return get_job(job_id)['tasks'][task_id]
 
+def get_creator(job_id):
+	return get_job(job_id)['creator']
+
 def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', **kwargs):
 	_job = {'id': str(WORLD_INFO['jobid'])}
 	_job['name'] = name

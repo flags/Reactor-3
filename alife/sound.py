@@ -378,6 +378,15 @@ def listen(life):
 			if not jobs.is_candidate(event['job_id'], life['id']) and judgement.can_trust(life, event['from']['id']):
 				jobs.add_job_candidate(event['job_id'], life['id'])
 		
+		elif event['gist'] == 'call':
+			if judgement.can_trust(life, event['from']['id']):
+				#_dialog = {'type': 'dialog',
+				#           'from': SETTINGS['controlling'],
+				#           'enabled': True}
+					 
+				#event['from']['dialogs'].append(dialog.create_dialog_with(event['from'], life['id'], _dialog))
+				speech.start_dialog(life, event['from']['id'], 'call_accepted')
+		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		

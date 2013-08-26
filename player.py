@@ -1343,6 +1343,11 @@ def create_announce_group_menu(**kwargs):
 
 	menus.activate_menu(_menu)
 
+def talk_to(entry):
+	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
 def radio_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
@@ -1352,6 +1357,25 @@ def radio_menu(entry):
 	if key == 'Distress':
 		#speech.announce(life, 'under_attack')
 		pass
+	elif key == 'Call':
+		_people = []
+		
+		for life_id in LIFE[SETTINGS['controlling']]['know']:
+			_people.append(menus.create_item('single',
+			                                 ' '.join(LIFE[life_id]['name']),
+			                                 None,
+			                                 target=life_id))
+		
+		if _people:
+			_menu = menus.create_menu(title='Talk to...',
+                              menu=_people,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k',
+                              on_select=talk_to)
+			menus.activate_menu(_menu)
+			return True
+		
 	elif key == 'Create group':
 		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.', gist='create_group')
@@ -1394,6 +1418,9 @@ def radio_menu(entry):
 def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	
+	if LIFE[SETTINGS['controlling']]['know']:
+		_phrases.append(menus.create_item('single', 'Call', 'Contact someone.'))
 	
 	if not LIFE[SETTINGS['controlling']]['group'] or not groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
 		_phrases.append(menus.create_item('single', 'Create group', 'Start a new group.'))

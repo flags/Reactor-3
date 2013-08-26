@@ -100,7 +100,6 @@ def reset_dialog(dialog, end=True, force=False):
 	_ret = False
 
 	if end:
-		print ('player' in LIFE[dialog['sender']]), (dialog['starting_topics']), (not 'gist' in dialog['info'])
 		if not force and 'player' in LIFE[dialog['sender']] and dialog['starting_topics'] and not 'gist' in dialog['info'] and not dialog['title'] == 'Talk':
 			dialog['topics'] = dialog['starting_topics']
 			dialog['speaker'] = dialog['sender']
@@ -194,6 +193,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'introduction_negative', 'dislike': 2})
 	elif gist == 'invite_to_group':
 		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
+	elif gist == 'call_accepted':
+		_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -955,6 +956,31 @@ def process_response(life, target, dialog, chosen):
 			else:
 				_responses.append({'text': 'No thanks.', 'gist': 'end'})
 	
+	elif chosen['gist'] == 'call_topics':
+		_life = LIFE[dialog['listener']]
+		if _life['job']:
+			_responses.append({'text': 'I\'m calling about a job.',
+			                   'gist': 'call_about_job',
+			                   'job': _life['job']})
+		
+		_responses.append({'text': 'Goodbye.', 'gist': 'end'})
+	
+	elif chosen['gist'] == 'call_about_job':
+		_life = LIFE[dialog['listener']]
+		
+		if alife.jobs.get_creator(chosen['job']) == dialog['listener']:
+			_responses.append({'text': 'What do you need?', 'gist': 'call_job_info'})
+
+	elif chosen['gist'] == 'call_job_info':
+		_life = LIFE[dialog['listener']]
+		
+		_responses.append({'text': 'Where are you located?', 'gist': 'call_get_location'})
+
+	elif chosen['gist'] == 'call_get_location':
+		_life = LIFE[dialog['listener']]
+		_responses.append({'text': 'I am near %s, %s.' % (_life['pos'][0], _life['pos'][1]), 'gist': 'restart'})
+
+	#NOTE: NO DIALOG AFTER THIS POINT WILL WORK	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
 		logging.error('Gist \'%s\' did not generate any responses.' % chosen['gist'])
 	
@@ -991,7 +1017,10 @@ def process_response(life, target, dialog, chosen):
 				_single_responses[_response['text']] = _response
 			
 		_responses = _single_responses.values()
-		if _responses:# and not _responses[0]['gist'] in ['nothing', 'end']:
+		if _responses[0]['gist'] == 'restart':
+			dialog['topics'] = dialog['starting_topics']
+			dialog['index'] = 0
+		elif _responses:# and not _responses[0]['gist'] in ['nothing', 'end']:
 			dialog['topics'] = _responses
 			dialog['index'] = 0
 		else:

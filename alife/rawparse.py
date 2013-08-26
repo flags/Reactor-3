@@ -13,6 +13,7 @@ import speech
 import items
 import stats
 import logic
+import sight
 import jobs
 
 import re
@@ -49,12 +50,14 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'find_and_announce_shelter': groups.find_and_announce_shelter,
 	'desires_shelter': stats.desires_shelter,
 	'travel_to_position': movement.travel_to_position,
+	'find_target': movement.find_target,
+	'can_see_target': sight.can_see_target,
 	'wait': never,
 	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 	'start_dialog': speech.start_dialog,
 	'announce_to_group': groups.announce,
-    'is_in_chunk': chunks.is_in_chunk,
-    'explode': items.explode,
+	'is_in_chunk': chunks.is_in_chunk,
+	'explode': items.explode,
 	'always': always,
 	'never': never}
 
