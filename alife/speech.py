@@ -109,7 +109,6 @@ def start_dialog(life, target, gist):
 	
 	if _dialog:
 		life['dialogs'].append(_dialog)
-		return False
 	
 	return True
 

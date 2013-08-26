@@ -239,13 +239,16 @@ def explode(item):
 	if not item['type'] == 'explosive':
 		return False
 	
+	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
+	
 	if 'fire' in item['damage']:
-		for x in range(-item['radius'], item['radius']+1):
-			for y in range(-item['radius'], item['radius']+1):
-				if random.randint(0, 4):
-					continue
-				
-				effects.create_fire((item['pos'][0]+x, item['pos'][1]+y, item['pos'][2]), intensity=item['damage']['fire'])
+		for pos in drawing.draw_circle(item['pos'], item['radius']):
+			if not random.randint(0, 4):
+				effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+		
+			_dist = numbers.distance(item['pos'], pos)/2
+			if not random.randint(0, _dist) or not _dist:
+				effects.create_ash(pos)
 	
 	delete_item(item)
 

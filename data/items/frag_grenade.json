@@ -6,7 +6,7 @@
 "speed": 1,
 "drag": 0,
 "flags": "",
-"radius": 5,
+"radius": 8,
 "damage": {"force": 4, "fire": 3},
 "size": "1x1",
 "material": "metal"}

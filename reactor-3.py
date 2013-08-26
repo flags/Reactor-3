@@ -99,6 +99,9 @@ def main():
 	draw_targeting()
 	move_camera(LIFE[SETTINGS['following']]['pos'])
 	
+	if SELECTED_TILES[0]:
+		gfx.refresh_window()
+	
 	if LOS_BUFFER[0] == []:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 LIFE[SETTINGS['following']]['pos'],
@@ -222,6 +225,7 @@ if __name__ == '__main__':
 	items.initiate_item('22_lr_mag')
 	items.initiate_item('22_lr_cartridge')
 	items.initiate_item('frag_grenade')
+	items.initiate_item('molotov')
 	
 	SETTINGS['running'] = 2
 	

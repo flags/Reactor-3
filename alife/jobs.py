@@ -105,7 +105,9 @@ def complete_task(life, job_id, task_id):
 		if not life['task']:
 			life['completed_jobs'].append(job_id)
 
-		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))
+		leave_job(job_id, life['id'])
+
+		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))		
 		return False
 	
 	_task['completed'] = True
