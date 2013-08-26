@@ -52,6 +52,11 @@ def move_camera(pos,scroll=False):
 	
 	if not _orig_pos == CAMERA_POS:
 		gfx.refresh_window()
+	elif SETTINGS['controlling'] and not alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'redraw') == pos:
+		gfx.refresh_window()
+	
+	if SETTINGS['controlling']:
+		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
 def draw_targeting():
 	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
