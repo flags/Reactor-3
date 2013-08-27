@@ -634,6 +634,9 @@ def modify_trust(life, target, chosen):
 	elif 'dislike' in chosen:
 		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
 			lfe.memory(life, chosen['gist'], trust=-chosen['dislike'], target=target)
+	
+	if 'danger' in chosen:
+		lfe.memory(life, chosen['gist']+'_danger', danger=chosen['danger'], target=target)
 
 def process_response(life, target, dialog, chosen):
 	#LIFE = listener, the one processing these gists
@@ -792,7 +795,7 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group',  'group': chosen['group'], 'dislike': 1})
 			
 			if LIFE[dialog['listener']]['group']:
-				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group', 'group': chosen['group']})
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group_in_group', 'group': chosen['group']})
 		else:
 			if alife.stats.desires_group(LIFE[dialog['listener']], chosen['group']):
 				if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
@@ -802,7 +805,7 @@ def process_response(life, target, dialog, chosen):
 					_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': chosen['group']})
 					lfe.memory(LIFE[dialog['listener']], 'decline invite to group (judgement)', group=chosen['group'])
 			else:
-				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group', 'group': chosen['group']})
+				_responses.append({'text': 'I\'m already in one.', 'gist': 'decline_invite_to_group_in_group', 'group': chosen['group']})
 				lfe.memory(LIFE[dialog['listener']], 'decline invite to group (no desire)', group=chosen['group'])
 
 	elif chosen['gist'] == 'ask_to_join_group':
@@ -843,6 +846,11 @@ def process_response(life, target, dialog, chosen):
 		_responses.append({'text': 'Can we make a deal?', 'gist': 'group_bribe_request', 'group': chosen['group']})
 		_responses.append({'text': 'Understood.', 'gist': 'end', 'group': chosen['group']})
 	
+	elif chosen['gist'] == 'decline_invite_to_group_in_group':
+		_responses.append({'text': 'Can we make a deal?', 'gist': 'group_bribe_request', 'group': chosen['group']})
+		_responses.append({'text': 'Understood.', 'gist': 'end', 'group': chosen['group']})
+		_responses.append({'text': 'Then why are you still here?', 'gist': 'negative', 'group': chosen['group'], 'dislike': 1, 'danger': 1})
+	
 	elif chosen['gist'] == 'decline_invite_to_group_wrong_motive':
 		_responses.append({'text': 'I don\'t work for free.', 'gist': 'bribe_into_group', 'group': chosen['group']})
 		_responses.append({'text': 'I\'ll pass.', 'gist': 'bribe_into_group_fail', 'group': chosen['group']})
@@ -865,10 +873,19 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'tell_about_group':
 		alife.groups.discover_group(LIFE[dialog['listener']], chosen['group'])
+		print 'HERE!'
 		
 		if not LIFE[dialog['speaker']]['group'] == LIFE[dialog['listener']]['group']:
-			_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
-			_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
+			if 'player' in LIFE[dialog['listener']]:
+				_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
+				_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
+				print 'not here!'
+			else:
+				print 'HERE TOO!'
+				if alife.stats.desires_group(LIFE[dialog['listener']], LIFE[dialog['speaker']]['group']):
+					_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
+				else:
+					_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
 	
 	elif chosen['gist'] == 'join_group':
 		show_messages(dialog)
@@ -899,11 +916,11 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'opinion_of_target':
 		#TODO: This only works if this is asked as a question, NOT in dialog
-		_know = alife.brain.knows_alife_by_id(LIFE[dialog['listener']], dialog['question']['who'])
+		_know = alife.brain.knows_alife_by_id(LIFE[dialog['speaker']], dialog['question']['who'])
 		
-		if not alife.brain.knows_alife_by_id(LIFE[dialog['listener']], chosen['who']):
+		if not alife.brain.knows_alife_by_id(LIFE[dialog['speaker']], chosen['who']):
 			_responses.append({'text': 'I don\'t know them.', 'gist': 'talk_about_trust_dont_know', 'who': chosen['who']})
-		elif alife.judgement.can_trust(LIFE[dialog['listener']], chosen['who']):
+		elif alife.judgement.can_trust(LIFE[dialog['speaker']], chosen['who']):
 			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
 		else:
 			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
