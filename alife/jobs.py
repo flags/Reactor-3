@@ -111,7 +111,6 @@ def complete_task(life, job_id, task_id):
 			life['completed_jobs'].append(job_id)
 			leave_job(job_id, life['id'])
 
-		print life['completed_tasks']
 		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))	
 		return False
 	

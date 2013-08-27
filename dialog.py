@@ -138,37 +138,10 @@ def give_menu_response(life, dialog):
 	else:
 		dialog['title'] = 'Answer'
 		add_message(life, dialog, _chosen)
-		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
-
-def alife_choose_response(life, target, dialog, responses):
-	#if not alife.brain.knows_alife(life, target):
-	#	alife.brain.meet_alife(life, target)
-	
-	_knows = alife.brain.knows_alife(life, target)
-	_score = alife.judgement.judge(life, _knows['life']['id'])
-	_choices = [r for r in responses]# if numbers.clip(_score, -1, 1) >= r['impact']]
-	
-	for _choice in _choices[:]:
-		if 'lie' in _choice:
-			if _choice['lie'] and alife.judgement.can_trust(life, target):
-				_choices.remove(_choice)
-	
-	if _choices:
-		_chosen = random.choice(_choices)		
-		add_message(life, dialog, _chosen)
-		
-		if _chosen['gist'] == 'ignore_question':
-			if 'question' in dialog:
-				dialog['question']['ignore'].append(life['id'])
-		
-		process_response(target, life, dialog, _chosen)
-	else:
-		reset_dialog(dialog)
-		logging.error('Dialog didn\'t return anything.')
+		process_response(LIFE[dialog['listener']], life, dialog, _chosen)
 
 def alife_response(life, dialog):
-	print life['id'], dialog['speaker'], dialog['listener']
-	_target = dialog['speaker']
+	_target = dialog['listener']
 	_knows = alife.brain.knows_alife_by_id(life, _target)
 	_score = alife.judgement.judge(life, _knows['life']['id'])
 	_choices = [r for r in dialog['topics']]
@@ -189,9 +162,7 @@ def alife_response(life, dialog):
 		dialog['question'] = _chosen['memory']
 	
 	if _chosen['gist'] == 'ignore_question':
-		dialog['question']['ignore'].append(life['id'])	
-	
-	print _chosen.keys(),_chosen['text']
+		dialog['question']['ignore'].append(life['id'])
 	
 	#TODO: Too tired :-)
 	if 'subtopics' in _chosen:
@@ -200,7 +171,6 @@ def alife_response(life, dialog):
 		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
-		print 'SHOULD BE ADDING'
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[_target], life, dialog, _chosen)
 		#modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
@@ -666,6 +636,8 @@ def modify_trust(life, target, chosen):
 			lfe.memory(life, chosen['gist'], trust=-chosen['dislike'], target=target)
 
 def process_response(life, target, dialog, chosen):
+	#LIFE = listener, the one processing these gists
+	#TARGET = speaker
 	if chosen['gist'] in ['end', 'nothing']:
 		reset_dialog(dialog, end=True)
 		return True
@@ -682,13 +654,12 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
-		if 'player' in target:
+		if 'player' in life:
 			gfx.message('%s ignores you.')
 		
 		lfe.memory(life, 'met', target=dialog['listener'])
 		lfe.memory(target, 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
-		print life['name'], target['name']
 		_responses.extend(get_responses_about_self(life))
 		lfe.memory(life, 'met', target=dialog['listener'])
 		lfe.memory(target, 'met', target=dialog['listener'])
@@ -874,10 +845,13 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'decline_invite_to_group_wrong_motive':
 		_responses.append({'text': 'I don\'t work for free.', 'gist': 'bribe_into_group', 'group': chosen['group']})
-		_responses.append({'text': 'I\'ll pass.', 'gist': 'nothing', 'group': chosen['group']})
+		_responses.append({'text': 'I\'ll pass.', 'gist': 'bribe_into_group_fail', 'group': chosen['group']})
 		
 	elif chosen['gist'] == 'bribe_into_group':
 		_responses.append({'text': 'What can I do, then?', 'gist': 'group_bribe_request', 'group': chosen['group']})
+	
+	elif chosen['gist'] == 'bribe_into_group_fail':
+		_responses.append({'text': 'Okay.', 'gist': 'end', 'group': chosen['group']})
 
 	elif chosen['gist'] == 'group_bribe_request':
 		_responses.append({'text': 'Give me $1k and I\'ll join.', 'gist': 'accept_group_bribe_request', 'group': chosen['group']})
@@ -1011,10 +985,10 @@ def process_response(life, target, dialog, chosen):
 	lfe.create_and_update_self_snapshot(LIFE[dialog['speaker']])
 	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
-	dialog['speaker'] = target['id']
-	dialog['listener'] = life['id']
+	dialog['speaker'] = life['id']
+	dialog['listener'] = target['id']
 	
-	if 'player' in  life:
+	if 'player' in LIFE[dialog['speaker']]:
 		_single_responses = {}
 		for _response in _responses:
 			if not _response['text'] in _single_responses:
