@@ -103,6 +103,7 @@ def complete_task(life, job_id, task_id):
 	
 	if _task['max_workers'] == -1:
 		life['completed_tasks'].append(task_id)
+		_old_task = life['task']
 		life['task'] = get_next_task(life, life['job'])
 		
 		if not life['task']:
@@ -110,7 +111,8 @@ def complete_task(life, job_id, task_id):
 			life['completed_jobs'].append(job_id)
 			leave_job(job_id, life['id'])
 
-		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))		
+		print life['completed_tasks']
+		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))	
 		return False
 	
 	_task['completed'] = True
@@ -196,7 +198,7 @@ def join_job(job_id, life_id):
 	_job = get_job(job_id)
 	
 	if life_id in _job['workers']:
-		raise Exception('\'%s\' is already member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
+		raise Exception('\'%s\' is already a member of job %s.' % (' '.join(LIFE[life_id]['name']), job_id))
 	
 	_job['workers'].append(life_id)
 	LIFE[life_id]['job'] = job_id

@@ -567,13 +567,15 @@ def judge_jobs(life):
 			jobs.leave_job(_old_job, life['id'])
 	
 		if _new_job:
+			print life['completed_jobs']
 			jobs.join_job(_new_job, life['id'])
 	
 	if life['job']:
 		life['task'] = jobs.get_next_task(life, life['job'])
 	
 	if not life['task']:
-		life['job'] = None
+		if life['job']:
+			jobs.leave_job(life['job'], life['id'], reject=True)
 	
 	if not life['job'] == _old_job:
 		life['completed_tasks'] = []
