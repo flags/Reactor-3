@@ -167,12 +167,8 @@ def alife_choose_response(life, target, dialog, responses):
 		logging.error('Dialog didn\'t return anything.')
 
 def alife_response(life, dialog):
-	if life['id'] == dialog['speaker']:
-		_target = dialog['listener']
-	else:
-		_target = dialog['speaker']
-		
 	print life['id'], dialog['speaker'], dialog['listener']
+	_target = dialog['speaker']
 	_knows = alife.brain.knows_alife_by_id(life, _target)
 	_score = alife.judgement.judge(life, _knows['life']['id'])
 	_choices = [r for r in dialog['topics']]
@@ -182,8 +178,6 @@ def alife_response(life, dialog):
 			if _choice['lie'] and alife.judgement.can_trust(life, target):
 				_choices.remove(_choice)
 	
-	
-	print _choices
 	if not _choices:
 		reset_dialog(dialog)
 		logging.error('Dialog didn\'t return anything.')
@@ -208,7 +202,7 @@ def alife_response(life, dialog):
 	else:
 		print 'SHOULD BE ADDING'
 		add_message(life, dialog, _chosen)
-		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
+		process_response(LIFE[_target], life, dialog, _chosen)
 		#modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
 		#modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 
@@ -688,13 +682,16 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
-		if 'player' in LIFE[dialog['listener']]:
+		if 'player' in target:
 			gfx.message('%s ignores you.')
 		
-		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
+		lfe.memory(life, 'met', target=dialog['listener'])
+		lfe.memory(target, 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
+		print life['name'], target['name']
 		_responses.extend(get_responses_about_self(life))
-		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
+		lfe.memory(life, 'met', target=dialog['listener'])
+		lfe.memory(target, 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_camp':
 		if lfe.get_memory(life, matches={'text': 'heard about camp', 'camp': chosen['camp']}):
 			_responses.append({'text': 'I\'ve heard of it.', 'gist': 'heard_of_camp'})
@@ -1009,15 +1006,13 @@ def process_response(life, target, dialog, chosen):
 	#if 'like' in chosen and not lfe.find_action(LIFE[dialog['listener']], matches=[{'text': chosen['gist'], 'target': dialog['speaker']}]):
 	#	lfe.memory(LIFE[dialog['listener']], chosen['gist'], trust=chosen['like'], target=dialog['speaker'])
 	
-	modify_trust(LIFE[dialog['speaker']], dialog['listener'], chosen)
-	modify_trust(LIFE[dialog['listener']], dialog['speaker'], chosen)
+	modify_trust(life, target['id'], chosen)
+	modify_trust(target, life['id'], chosen)
 	lfe.create_and_update_self_snapshot(LIFE[dialog['speaker']])
 	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
-	_speaker = dialog['speaker']
-	_listener = dialog['listener']
-	dialog['speaker'] = _listener
-	dialog['listener'] = _speaker
+	dialog['speaker'] = target['id']
+	dialog['listener'] = life['id']
 	
 	if 'player' in  life:
 		_single_responses = {}
@@ -1041,8 +1036,6 @@ def process_response(life, target, dialog, chosen):
 			
 		return True
 	
-	print 'PROCESSING'*10
-	#alife_choose_response(life, target, dialog, _responses)
 	dialog['topics'] = _responses
 	alife_response(life, dialog)
 
@@ -1052,7 +1045,7 @@ def draw_dialog():
 	
 	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 	_sender = LIFE[dialog['sender']]
-	_receiver = LIFE[dialog['receiver']]
+	_receiver = LIFE[dialog['listener']]
 	
 	if not 'console' in dialog:
 		dialog['console'] = tcod.console_new(WINDOW_SIZE[0], 40)
@@ -1123,7 +1116,7 @@ def draw_dialog():
 		for line in part:
 			if _i:
 				tcod.console_set_default_foreground(dialog['console'], tcod.white)
-				tcod.console_set_default_foreground(dialog['console'], tcod.black)
+				tcod.console_set_default_background(dialog['console'], tcod.black)
 			else:
 				if _impact == 1:
 					tcod.console_set_default_foreground(dialog['console'], tcod.black)
