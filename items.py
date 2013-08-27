@@ -412,8 +412,8 @@ def tick_item(item_uid):
 		delete_item(ITEMS[item_uid])
 		return False
 			
-	elif _break:
-		maps.refresh_chunk(life.get_current_chunk_id(item))
+	#elif _break:
+	#	maps.refresh_chunk(life.get_current_chunk_id(item))
 
 	_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 	

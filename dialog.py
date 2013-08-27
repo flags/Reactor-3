@@ -1017,7 +1017,7 @@ def process_response(life, target, dialog, chosen):
 				_single_responses[_response['text']] = _response
 			
 		_responses = _single_responses.values()
-		if _responses[0]['gist'] == 'restart':
+		if _responses and _responses[0]['gist'] == 'restart':
 			dialog['topics'] = dialog['starting_topics']
 			dialog['index'] = 0
 		elif _responses:# and not _responses[0]['gist'] in ['nothing', 'end']:

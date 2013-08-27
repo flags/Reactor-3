@@ -230,59 +230,24 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	
 	return False
 
-#def _find_alife(life, target, distance=-1):
-#	#Almost a 100% chance we know who this person is...
-#	_target = brain.knows_alife_by_id(life, target)
-#	
-#	#We'll try last_seen_at first
-#	#TODO: In the future we should consider how long it's been since we've seen them
-#	lfe.clear_actions(life)
-#	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
-#	
-#	if sight.can_see_position(life, _target['life']['pos']):
-#		if distance == -1 or numbers.distance(life['pos'], _target['last_seen_at'])<=distance:
-#			return True
-#	
-#	return False
-
-#def find_alife(life):
-#	if _find_alife(life, jobs.get_job_detail(life['job'], 'target')):
-#		lfe.stop(life)
-#		return True
-#	
-#	return False
-
-def find_target(life, target):
+def find_target(life, target, distance=5):
 	_target = brain.knows_alife_by_id(life, target)
 	
-	if sight.can_see_target(life, target):
+	_can_see = sight.can_see_target(life, target)
+	if _can_see and len(_can_see)<=distance:
 		return True
+	
+	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
+		return False
+	
+	#print _target['life']['pos'], _target['last_seen_at']
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,
-	               {'action': 'move','to': _target['last_seen_at']},
+	               {'action': 'move','to': _target['last_seen_at'][:2]},
 	               200)
-
-#def find_alife_with_answer(life):
-	#_asked = jobs.get_job_detail(life['job'], 'asked')
 	
-	#for target in life['know']:
-	#	if target in _asked:
-	#		continue
-	#	
-	#	if _find_alife(life, target):
-	#		#_question = lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))
-	#		print life['name'],'SHOULD BE ASKING TARGET',_asked
-	#		_asked.append(target)
-	#	else:
-	#		print life['name'],'STILL LOOKING FOR TARGET!!!!!!!',_asked
-	#		break
-	#
-	#print jobs.get_job_detail(life['job'], 'question id')
-	#if lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))['answered']:
-	#	return True
-	#
-	#return False
+	return False
 
 def follow_alife(life):
 	if _find_alife(life, jobs.get_job_detail(life['job'], 'target'), distance=7):

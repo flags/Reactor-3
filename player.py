@@ -1381,8 +1381,9 @@ def radio_menu(entry):
 		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.', gist='create_group')
 		
 		jobs.add_task(_j, '0', 'move_to_chunk',
-		              action.make_small_script(function='travel_to_position',
-		                                       kwargs={'pos': _pos}),
+		              action.make_small_script(function='find_target',
+		                                       kwargs={'target': SETTINGS['controlling'],
+		                                               'distance': 5}),
 		              delete_on_finish=False)
 		jobs.add_task(_j, '1', 'talk',
 		              action.make_small_script(function='start_dialog',

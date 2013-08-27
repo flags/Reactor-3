@@ -964,7 +964,15 @@ def walk_path(life):
 		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
 			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		
+		_old_chunk = get_current_chunk_id(life)
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
+		_new_chunk = get_current_chunk_id(life)
+		
+		if not _old_chunk == _new_chunk:
+			maps.leave_chunk(_old_chunk, life['id'])
+		
+		maps.enter_chunk(_new_chunk, life['id'])
+		
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
@@ -1811,8 +1819,6 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	item['parent_id'] = life['id']
 	life['inventory'].append(item_uid)
 	
-	maps.refresh_chunk(get_current_chunk_id(item))
-	
 	if 'max_capacity' in item:
 		logging.debug('Container found in direct_add')
 		
@@ -1838,8 +1844,6 @@ def add_item_to_inventory(life, item_uid):
 	
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
-	
-	maps.refresh_chunk(get_current_chunk_id(item))
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):

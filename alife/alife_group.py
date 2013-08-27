@@ -32,7 +32,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 			jobs.add_task(_j, '0', 'find_target',
 				          action.make_small_script(function='find_target',
-				                                   kwargs={'target': life['id']}),
+				                                   kwargs={'target': life['id'],
+			                                               'distance': 5}),
 			              player_action=action.make_small_script(function='can_see_target',
 				                                   kwargs={'target_id': life['id']}),
 			              description='Find %s.' % ' '.join(life['name']),

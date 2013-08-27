@@ -105,7 +105,7 @@ def main():
 	if LOS_BUFFER[0] == []:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 LIFE[SETTINGS['following']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['following']]),
+		                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
 		                                 cython=True)	
 	
 	if CYTHON_ENABLED:
@@ -121,13 +121,13 @@ def main():
 	if LIFE[SETTINGS['controlling']]['encounters']:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']]),
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
 		                                 cython=CYTHON_ENABLED)
 	
 	if not SETTINGS['controlling'] == SETTINGS['following']:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']]),
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
 		                                 cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:

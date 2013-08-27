@@ -427,7 +427,23 @@ def get_collision_map(map_array,start,end,mark=1):
 def get_chunk(chunk_id):
 	return CHUNK_MAP[chunk_id]
 
+def enter_chunk(chunk_key, life_id):
+	chunk = get_chunk(chunk_key)
+    
+	if not life_id in chunk['life']:
+		chunk['life'].append(life_id)
+
+def leave_chunk(chunk_key, life_id):
+	chunk = get_chunk(chunk_key)
+    
+	if life_id in chunk['life']:
+		chunk['life'].append(life_id)
+
 def refresh_chunk(chunk_id):
+	logging.warning('Phasing out refresh_chunk().')
+	raise Exception()
+	return False
+
 	chunk = get_chunk(chunk_id)
 	
 	if chunk['last_updated'] == WORLD_INFO['ticks']:

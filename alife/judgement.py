@@ -405,7 +405,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 		if _item:
 			_score += _item['score']
 
-	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score
