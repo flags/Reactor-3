@@ -170,6 +170,9 @@ def knows_alife_by_id(life, alife_id):
 		print alife_id.keys()
 		raise Exception('Not a valid ID.')
 	
+	if life['id'] == alife_id:
+		raise Exception('Life asking about itself (via ID). Stopping.')
+	
 	if alife_id in life['know']:
 		return life['know'][alife_id]
 	

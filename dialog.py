@@ -140,16 +140,64 @@ def give_menu_response(life, dialog):
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
 
+def alife_choose_response(life, target, dialog, responses):
+	#if not alife.brain.knows_alife(life, target):
+	#	alife.brain.meet_alife(life, target)
+	
+	_knows = alife.brain.knows_alife(life, target)
+	_score = alife.judgement.judge(life, _knows['life']['id'])
+	_choices = [r for r in responses]# if numbers.clip(_score, -1, 1) >= r['impact']]
+	
+	for _choice in _choices[:]:
+		if 'lie' in _choice:
+			if _choice['lie'] and alife.judgement.can_trust(life, target):
+				_choices.remove(_choice)
+	
+	if _choices:
+		_chosen = random.choice(_choices)		
+		add_message(life, dialog, _chosen)
+		
+		if _chosen['gist'] == 'ignore_question':
+			if 'question' in dialog:
+				dialog['question']['ignore'].append(life['id'])
+		
+		process_response(target, life, dialog, _chosen)
+	else:
+		reset_dialog(dialog)
+		logging.error('Dialog didn\'t return anything.')
+
 def alife_response(life, dialog):
-	#List of topics should be fairly relevant if the ALife created the dialog properly.
-	#TODO: Score these
-	_chosen = random.choice(dialog['topics'])
+	if life['id'] == dialog['speaker']:
+		_target = dialog['listener']
+	else:
+		_target = dialog['speaker']
+		
+	print life['id'], dialog['speaker'], dialog['listener']
+	_knows = alife.brain.knows_alife_by_id(life, _target)
+	_score = alife.judgement.judge(life, _knows['life']['id'])
+	_choices = [r for r in dialog['topics']]
+		
+	for _choice in _choices[:]:
+		if 'lie' in _choice:
+			if _choice['lie'] and alife.judgement.can_trust(life, target):
+				_choices.remove(_choice)
+	
+	
+	print _choices
+	if not _choices:
+		reset_dialog(dialog)
+		logging.error('Dialog didn\'t return anything.')
+		return False
+	
+	_chosen = random.choice(_choices)
 	
 	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
 		dialog['question'] = _chosen['memory']
 	
 	if _chosen['gist'] == 'ignore_question':
-		dialog['question']['ignore'].append(life['id'])
+		dialog['question']['ignore'].append(life['id'])	
+	
+	print _chosen.keys(),_chosen['text']
 	
 	#TODO: Too tired :-)
 	if 'subtopics' in _chosen:
@@ -158,10 +206,11 @@ def alife_response(life, dialog):
 		dialog['topics'] = _chosen['subtopics'](life, _chosen)
 		dialog['index'] = 0
 	else:
+		print 'SHOULD BE ADDING'
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[dialog['receiver']], life, dialog, _chosen)
-		#modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 		#modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
+		#modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 
 def tick(life, dialog):
 	if not dialog['speaker'] == life['id']:
@@ -622,32 +671,6 @@ def modify_trust(life, target, chosen):
 		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
 			lfe.memory(life, chosen['gist'], trust=-chosen['dislike'], target=target)
 
-def alife_choose_response(life, target, dialog, responses):
-	if not alife.brain.knows_alife(life, target):
-		alife.brain.meet_alife(life, target)
-	
-	_knows = alife.brain.knows_alife(life, target)
-	_score = alife.judgement.judge(life, _knows['life']['id'])
-	_choices = [r for r in responses]# if numbers.clip(_score, -1, 1) >= r['impact']]
-	
-	for _choice in _choices[:]:
-		if 'lie' in _choice:
-			if _choice['lie'] and alife.judgement.can_trust(life, target):
-				_choices.remove(_choice)
-	
-	if _choices:
-		_chosen = random.choice(_choices)		
-		add_message(life, dialog, _chosen)
-		
-		if _chosen['gist'] == 'ignore_question':
-			if 'question' in dialog:
-				dialog['question']['ignore'].append(life['id'])
-		
-		process_response(target, life, dialog, _chosen)
-	else:
-		reset_dialog(dialog)
-		logging.error('Dialog didn\'t return anything.')
-
 def process_response(life, target, dialog, chosen):
 	if chosen['gist'] in ['end', 'nothing']:
 		reset_dialog(dialog, end=True)
@@ -1018,7 +1041,10 @@ def process_response(life, target, dialog, chosen):
 			
 		return True
 	
-	alife_choose_response(life, target, dialog, _responses)
+	print 'PROCESSING'*10
+	#alife_choose_response(life, target, dialog, _responses)
+	dialog['topics'] = _responses
+	alife_response(life, dialog)
 
 def draw_dialog():
 	if not lfe.has_dialog(LIFE[SETTINGS['controlling']]):

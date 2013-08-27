@@ -608,6 +608,9 @@ def judge_raid(life, raiders, camp):
 def judge_group(life, group_id):
 	_score = 0
 	for member in groups.get_group(group_id)['members']:
+		if member == life['id']:
+			continue
+		
 		_knows = brain.knows_alife_by_id(life, member)
 		if not _knows:
 			continue

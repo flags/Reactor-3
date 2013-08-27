@@ -102,30 +102,30 @@ def create_background(life):
 	# 
 	#INTENTION = 
 	
-	print 'Birth parents:', HAS_BIRTH_PARENTS
-	print 'Adopted:', WAS_ADOPTED
-	print 'Parenting quality:', PARENTING_QUALITY
-	print 'Bullied:', BULLIED
-	print 'Fought back:', FOUGHT_BACK
-	print 'Graduated:', GRADUATED
-	print 'Street smart:', STREET_SMART
-	print 'Math:', MATHEMATICS
-	print 'Reading:', READING
-	print 'Engineering:', ENGINEERING
-	print 'Firearms:', FIREARMS
-	print 'Melee:', MELEE
-	print 'Trading:', TRADING
-	print 'Leader:', IS_LEADER
-	print 'Self-absorbed:', SELF_ABSORBED
-	print 'Lone wolf:', LONE_WOLF
-	print 'Patience:', PATIENCE
-	print 'Introversion:', INTROVERSION
-	print 'Extroversion:', EXTROVERSION
-	print 'Charisma:', CHARISMA
-	print 'Sociability:', SOCIABILITY
-	print 'Motive for crime:', MOTIVE_FOR_CRIME
-	print 'Motive for wealth:', MOTIVE_FOR_WEALTH
-	print 'Motive for survival:', MOTIVE_FOR_SURVIVAL
+	#print 'Birth parents:', HAS_BIRTH_PARENTS
+	#print 'Adopted:', WAS_ADOPTED
+	#print 'Parenting quality:', PARENTING_QUALITY
+	#print 'Bullied:', BULLIED
+	#print 'Fought back:', FOUGHT_BACK
+	#print 'Graduated:', GRADUATED
+	#print 'Street smart:', STREET_SMART
+	#print 'Math:', MATHEMATICS
+	#print 'Reading:', READING
+	#print 'Engineering:', ENGINEERING
+	#print 'Firearms:', FIREARMS
+	#print 'Melee:', MELEE
+	#print 'Trading:', TRADING
+	#print 'Leader:', IS_LEADER
+	#print 'Self-absorbed:', SELF_ABSORBED
+	#print 'Lone wolf:', LONE_WOLF
+	#print 'Patience:', PATIENCE
+	#print 'Introversion:', INTROVERSION
+	#print 'Extroversion:', EXTROVERSION
+	#print 'Charisma:', CHARISMA
+	#print 'Sociability:', SOCIABILITY
+	#print 'Motive for crime:', MOTIVE_FOR_CRIME
+	#print 'Motive for wealth:', MOTIVE_FOR_WEALTH
+	#print 'Motive for survival:', MOTIVE_FOR_SURVIVAL
 	
 	if not HAS_BIRTH_PARENTS:
 		HISTORY.append('Lost his parents in late childhood')
