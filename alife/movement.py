@@ -238,9 +238,8 @@ def find_target(life, target, distance=5):
 		return True
 	
 	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
+		speech.communicate(life, 'call', matches=[{'id': target}])
 		return False
-	
-	#print _target['life']['pos'], _target['last_seen_at']
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,

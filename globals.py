@@ -136,38 +136,6 @@ PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
 DEFAULT_CONTEXT_TIME = 25
 
-GIST_MAP = {'how_are_you': 0,
-	'ignore': 0,
-	'ignore_rude': -1,
-	'inquire_about': 0,
-	'tell_about': 0,
-	'inquire_response_positive': 1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'inquire_response_knows_positive': 1,
-	'inquire_response_knows_neutral': 0,
-	'inquire_response_knows_negative': -1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'last_seen_target_at': 0,
-	'status_response_positive': 1,
-	'status_response': 0,
-	'status_response_neutral': 0,
-	'status_response_neutral_question': 0,
-	'irritated_neutral': 0,
-	'irritated_negative': -1,
-	'heard_of_camp': 0,
-	'inquire_about_camp_founder': 0,
-	'inquire_about_camp_population': 0,
-	'talk_about_camp': 0,
-	'never_heard_of_camp': 0,
-	'tell_about_camp_founder': 0,
-	'ignore_question': 0,
-	'ignore_question_negative': -1,
-	'inform_of_camp': 0,
-	'end': 0,
-	'nothing': 0}
-
 QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
 	'wants item': {'type': '*'}}
 

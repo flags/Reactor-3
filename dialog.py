@@ -69,7 +69,12 @@ def add_message(life, dialog, chosen):
 	if not _text:
 		return False
 	
-	_message = {'sender': life['id'], 'text': _text, 'impact': 1}
+	if 'impact' in chosen:
+		_message = {'sender': life['id'], 'text': _text, 'impact': chosen['impact']}
+	else:
+		_message = {'sender': life['id'], 'text': _text, 'impact': 1}
+		logging.warning('Known issue: No impact set for this phrase.')
+	
 	dialog['messages'].append(_message)
 	#print '%s: %s' % (' '.join(life['name']), _text)
 	
@@ -78,23 +83,16 @@ def show_messages(dialog):
 		print mesg
 
 def calculate_impacts(life, target, topics):
-	#TODO: Unused arguments
-	#_score = judgement.judge(life, brain.knows_alife_by_id(life, target))
-	
 	for topic in topics:
 		if 'subtopic' in topic:
 			continue
 		
-		if not topic['gist'] in GIST_MAP:
-			if 'lie' in topic and topic['lie']:
-				topic['impact'] = -1
-				continue
-			
-			logging.warning('\'%s\' was not found in GIST_MAP.' % topic['gist'])
+		if 'negative' in topic['gist'] or 'lie' in topic and topic['lie']:
+			topic['impact'] = -1
+		elif 'positive' in topic['gist']:
+			topic['impact'] = 1
+		else:
 			topic['impact'] = 0
-			continue
-		
-		topic['impact'] = GIST_MAP[topic['gist']]
 
 def reset_dialog(dialog, end=True, force=False):
 	_ret = False
@@ -619,7 +617,7 @@ def modify_trust(life, target, chosen):
 		
 		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
 			lfe.memory(life, chosen['gist'], trust=chosen['like'], target=target)
-		#_knows['trust'] += _like
+		
 	elif 'dislike' in chosen:
 		if not lfe.find_action(life, matches=[{'text': chosen['gist'], 'target': target}]):
 			lfe.memory(life, chosen['gist'], trust=-chosen['dislike'], target=target)
@@ -634,7 +632,7 @@ def alife_choose_response(life, target, dialog, responses):
 	
 	for _choice in _choices[:]:
 		if 'lie' in _choice:
-			if _choice['lie'] and numbers.clip(_knows['trust'], -1, 1)>=0:
+			if _choice['lie'] and alife.judgement.can_trust(life, target):
 				_choices.remove(_choice)
 	
 	if _choices:
@@ -656,14 +654,6 @@ def process_response(life, target, dialog, chosen):
 		return True
 	
 	_responses = []
-	
-	#TODO: Unused
-	if chosen['gist'].count('positive'):
-		_impact = 1
-	elif chosen['gist'].count('negative'):
-		_impact = -1
-	else:
-		_impact = 0
 	
 	if chosen['gist'] == 'how_are_you':
 		if get_freshness_of_gist(life, target['id'], chosen['gist'])<0.5:
@@ -772,7 +762,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'last_seen_target_at':
 		if alife.sight.can_see_target(life, chosen['target']):
 			_responses.append({'text': 'He\'s right over there.', 'gist': 'saw_target_at', 'target': chosen['target'], 'location': LIFE[chosen['target']]['pos'][:]})
-		elif _impact>=0:
+		elif alife.judgement.can_trust(life, chosen['target'])>=0:
 			_knows = alife.brain.knows_alife_by_id(life, chosen['target'])
 			
 			if _knows:
@@ -1103,19 +1093,27 @@ def draw_dialog():
 		_x = 41
 		
 		_impact = m['impact']
+		_i = 0
 		for line in part:
-			if _impact == 1:
-				tcod.console_set_default_foreground(dialog['console'], tcod.black)
-				tcod.console_set_default_background(dialog['console'], tcod.green)
-				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
-			elif not _impact:
+			if _i:
 				tcod.console_set_default_foreground(dialog['console'], tcod.white)
-				tcod.console_set_default_background(dialog['console'], tcod.black)
-				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
-			else:
 				tcod.console_set_default_foreground(dialog['console'], tcod.black)
-				tcod.console_set_default_background(dialog['console'], tcod.red)
-				tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
+			else:
+				if _impact == 1:
+					tcod.console_set_default_foreground(dialog['console'], tcod.black)
+					tcod.console_set_default_background(dialog['console'], tcod.green)
+					tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
+				elif not _impact:
+					tcod.console_set_default_foreground(dialog['console'], tcod.white)
+					tcod.console_set_default_background(dialog['console'], tcod.darker_gray)
+					tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
+				else:
+					tcod.console_set_default_foreground(dialog['console'], tcod.black)
+					tcod.console_set_default_background(dialog['console'], tcod.red)
+					tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
+				
+				_i += 1
+			
 			
 			_impact = False
 			
