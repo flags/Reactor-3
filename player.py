@@ -1342,6 +1342,26 @@ def create_announce_group_menu(**kwargs):
                               on_select=announce_to)
 
 	menus.activate_menu(_menu)
+	
+def handle_create_job(entry):
+	for entry in entry['workers']:
+		print entry['key']
+
+def handle_select_workers(entry):
+	job = entry['key']
+	
+	_workers = []
+	for worker in [LIFE[w] for w in groups.get_group(LIFE[SETTINGS['controlling']]['group'])['members']]:
+		_workers.append(menus.create_item('list', ' '.join(worker['name']), ['Free', 'Assigned'], workers=_workers))
+	
+	_menu = menus.create_menu(title='Select Workers',
+                              menu=_workers,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k: $v',
+                              on_select=handle_create_job)
+	
+	menus.activate_menu(_menu)
 
 def talk_to(entry):
 	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
@@ -1404,6 +1424,19 @@ def radio_menu(entry):
 		                   group_id=_life['group'])
 	elif key == 'Shelter':
 		groups.find_and_announce_shelter(_life, _life['group'])
+	elif key == 'Manage Jobs':
+		_jobs = [menus.create_item('single', 'Free Roam', 'Scout out the area.', job='roam')]
+		_jobs.append(menus.create_item('single', 'Guard Area', 'Keep watch over a specific point.', job='guard_area'))
+		_jobs.append(menus.create_item('single', 'Guard Person', 'Protect a target.', job='guard_person'))
+		
+		_menu = menus.create_menu(title='Manage Jobs',
+		                          menu=_jobs,
+		                          padding=(1,1),
+		                          position=(1,1),
+		                          format_str='$k: $v',
+		                          on_select=handle_select_workers)
+		
+		return menus.activate_menu(_menu)
 	elif key == 'Suggest location':
 		pass
 	#TODO: Steve "Jobs" Jobbers
@@ -1431,12 +1464,13 @@ def create_radio_menu():
 	if LIFE[SETTINGS['controlling']]['group']:
 		if groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
 			_phrases.append(menus.create_item('title', 'Group (Leader)', None))
+			_phrases.append(menus.create_item('single', 'Manage Jobs', 'Create and view jobs.'))
 			_phrases.append(menus.create_item('single', 'Shelter', 'Set this location as a shelter.'))
 		else:
 			_phrases.append(menus.create_item('title', 'Group (Member)', None))
 			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
-			_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.'))
+			_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(LIFE[SETTINGS['controlling']]['group'])['workers'])>1))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,
