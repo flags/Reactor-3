@@ -115,8 +115,6 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 			
 		if _chunk_key in HIDDEN_CHUNKS:
 			continue
-		#if not _chunk_key in VISIBLE_CHUNKS:
-		#	continue
 		
 		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS

@@ -151,7 +151,7 @@ def guard_camp(life):
 	_delay = random.randint(25, jobs.get_job_detail(life['job'], 'pause'))
 	
 	if not life['path'] and not lfe.find_action(life, matches=[{'action': 'move'}]):
-		_chunk = CHUNK_MAP[references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
+		_chunk = WORLD_INFO['chunk_map'][references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
 		lfe.add_action(life,{'action': 'move',
 			'to': random.choice(_chunk['ground'])},
 			200,

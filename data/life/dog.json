@@ -99,7 +99,7 @@
     }
   }, 
   "name": "Wild Dog", 
-  "vars": "vision_max=50|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
+  "vars": "vision_max=30|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max", 
   "flags": "LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]", 
   "type": "animal", 
   "species": "dog", 

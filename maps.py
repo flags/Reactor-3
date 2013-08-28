@@ -100,7 +100,7 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 				update_chunk_map()
 				smooth_chunk_map()
 			else:
-				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
+				WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 			
 			if not WORLD_INFO['lights']:
 				logging.warning('World has no lights. Creating one manually.')
@@ -443,7 +443,7 @@ def get_collision_map(map_array,start,end,mark=1):
 	return collision_map
 
 def get_chunk(chunk_id):
-	return CHUNK_MAP[chunk_id]
+	return WORLD_INFO['chunk_map'][chunk_id]
 
 def enter_chunk(chunk_key, life_id):
 	chunk = get_chunk(chunk_key)
@@ -566,13 +566,13 @@ def update_chunk_map():
 			else:
 				_chunk_map[_chunk_key]['type'] = 'other'
 	
-	CHUNK_MAP.update(_chunk_map)
+	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 			
 def smooth_chunk_map():
 	_stime = time.time()
 	_runs = 0
-	_chunk_map = copy.deepcopy(CHUNK_MAP)
+	_chunk_map = copy.deepcopy(WORLD_INFO['chunk_map'])
 	_change = True
 	
 	while _change:
@@ -606,7 +606,7 @@ def smooth_chunk_map():
 				
 				_chunk_map[_current_chunk_key] = _current_chunk
 	
-	CHUNK_MAP.update(_chunk_map)	
+	WORLD_INFO['chunk_map'].update(_chunk_map)	
 	logging.info('Chunk map smoothing completed in %.2f seconds (%s runs).' % (time.time()-_stime, _runs))
 
 def find_all_linked_chunks(chunk_key, check=[]):

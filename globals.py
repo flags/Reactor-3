@@ -21,7 +21,6 @@ ENCOUNTER_ANIMATION_TIME = 30
 UPDATE_CAMP_RATE = 5
 
 #Map stuff
-CHUNK_MAP = {}
 WORLD_INFO = {'map': [],
 	'id': None,
 	'seed': 0,
@@ -48,7 +47,7 @@ WORLD_INFO = {'map': [],
 	'memoryid': 1,
 	'goalid': 1,
 	'jobid': 1,
-	'chunk_map': CHUNK_MAP,
+	'chunk_map': {},
 	'camps': {},
 	'groups': {},
 	'jobs': {},

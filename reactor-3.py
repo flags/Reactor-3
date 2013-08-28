@@ -204,7 +204,7 @@ if __name__ == '__main__':
 	language.load_strings()
 	
 	gfx.init_libtcod()
-	#smp.init()
+	smp.init()
 
 	SETTINGS['draw z-levels below'] = True
 	SETTINGS['draw z-levels above'] = True
@@ -238,9 +238,7 @@ if __name__ == '__main__':
 		for world in profiles.get_worlds():
 			worldgen.load_world(world)
 			break
-	maps.update_chunk_map()
-	maps.smooth_chunk_map()
-	print 'REMOVE THIS'*10
+
 	if not 'start_age' in WORLD_INFO:
 		SETTINGS['running'] = 1
 	

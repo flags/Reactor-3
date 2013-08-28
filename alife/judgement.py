@@ -288,7 +288,7 @@ def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
 
 def judge_shelter(life, chunk_id):
-	chunk = CHUNK_MAP[chunk_id]
+	chunk = WORLD_INFO['chunk_map'][chunk_id]
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
@@ -322,7 +322,7 @@ def judge_shelter(life, chunk_id):
 	return True
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
-	chunk = CHUNK_MAP[chunk_id]
+	chunk = WORLD_INFO['chunk_map'][chunk_id]
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
@@ -413,7 +413,7 @@ def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
 	_stime = time.time()
 	
-	for chunk in CHUNK_MAP:
+	for chunk in WORLD_INFO['chunk_map']:
 		judge_chunk(life, chunk)
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
