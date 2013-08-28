@@ -303,6 +303,8 @@ def menu_item_selected(entry):
 	elif value == 'Compile':
 		_stime = time.time()
 		
+		maps.update_chunk_map()
+		maps.smooth_chunk_map()
 		zones.create_zone_map()
 		zones.connect_ramps()
 		

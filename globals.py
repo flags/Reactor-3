@@ -159,7 +159,8 @@ SETTINGS = {'running': True,
 	'following': None,
 	'state history size': 5,
 	'fire burn rate': 0.04,
-	'smp': None}
+	'smp': None,
+	'map_slices': []}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}

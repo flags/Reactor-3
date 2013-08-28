@@ -258,9 +258,9 @@ def diffuse_light(source_light):
 	
 	return (light.ravel(1), light.ravel(0))
 
-def _render_los(map, pos, size, cython=False):
+def _render_los(map, pos, size, cython=False, life=None):
 	if cython:
-		return cython_render_los.render_los(map, pos, size)
+		return cython_render_los.render_los(map, pos, size, life=life)
 	else:
 		return render_los(map,pos)
 
@@ -336,6 +336,24 @@ def render_map(map):
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+
+def render_map_slices():
+	SETTINGS['map_slices'] = []
+	
+	for z in range(0, MAP_SIZE[2]):
+		SETTINGS['map_slices'].append(tcod.console_new(MAP_SIZE[0], MAP_SIZE[1]))
+		for x in range(0, MAP_SIZE[0]):
+			for y in range(0, MAP_SIZE[1]):
+				if not WORLD_INFO['map'][x][y][z]:
+					continue
+				
+				gfx.blit_tile_to_console(SETTINGS['map_slices'][z], x, y, WORLD_INFO['map'][x][y][z])
+
+def fast_draw_map():
+	_CAM_X = numbers.clip(CAMERA_POS[0], 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
+	_CAM_Y = numbers.clip(CAMERA_POS[1], 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
+	
+	tcod.console_blit(SETTINGS['map_slices'][2], _CAM_X, _CAM_Y, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW, 0, 0)
 
 #TODO: Put both of these into one function.
 def render_x_cutout(map,x_pos,y_pos):
@@ -439,36 +457,6 @@ def leave_chunk(chunk_key, life_id):
 	if life_id in chunk['life']:
 		chunk['life'].append(life_id)
 
-def refresh_chunk(chunk_id):
-	logging.warning('Phasing out refresh_chunk().')
-	raise Exception()
-	return False
-
-	chunk = get_chunk(chunk_id)
-	
-	if chunk['last_updated'] == WORLD_INFO['ticks']:
-		return False
-	
-	_life = []
-	for life in [LIFE[i] for i in LIFE]:
-		if alife.chunks.is_in_chunk(life, chunk_id):
-			_life.append(life['id'])
-	
-	_items = []
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
-		if item.has_key('id'):
-			continue
-		
-		if alife.chunks.is_in_chunk(item, chunk_id):
-			_items.append(_item)
-		
-	chunk['items'] = _items
-	chunk['life'] = _life
-	chunk['last_updated'] = WORLD_INFO['ticks']
-	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, len(_items))
-
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
 	
@@ -539,6 +527,7 @@ def update_chunk_map():
 				'neighbors': [],
 				'reference': None,
 				'last_updated': None,
+				'max_z': 0,
 				'digest': None}
 			
 			_tiles = {}
@@ -551,6 +540,10 @@ def update_chunk_map():
 					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
 						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
+					
+					for z in range(0, MAP_SIZE[2]):
+						if not WORLD_INFO['map'][x2][y2][z]:
+							_chunk_map[_chunk_key]['max_z'] = z-1
 					
 					if 'type' in _tile:
 						_type = _tile['type']

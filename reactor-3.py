@@ -106,12 +106,14 @@ def main():
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 LIFE[SETTINGS['following']]['pos'],
 		                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
-		                                 cython=True)	
+		                                 cython=True,
+		                                 life=LIFE[SETTINGS['following']])
 	
-	if CYTHON_ENABLED:
-		render_map.render_map(WORLD_INFO['map'])
-	else:
-		maps.render_map(WORLD_INFO['map'])
+	if not SETTINGS['map_slices']:
+		if CYTHON_ENABLED:
+			render_map.render_map(WORLD_INFO['map'])
+		else:
+			maps.render_map(WORLD_INFO['map'])
 	
 	items.draw_items()
 	bullets.draw_bullets()
@@ -156,7 +158,10 @@ def main():
 	gfx.draw_message_box()
 	gfx.draw_status_line()
 	gfx.draw_console()
-	gfx.start_of_frame()
+	if SETTINGS['map_slices']:
+		maps.fast_draw_map()
+	else:
+		gfx.start_of_frame(draw_char_buffer=True)
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
@@ -233,7 +238,9 @@ if __name__ == '__main__':
 		for world in profiles.get_worlds():
 			worldgen.load_world(world)
 			break
-	
+	maps.update_chunk_map()
+	maps.smooth_chunk_map()
+	print 'REMOVE THIS'*10
 	if not 'start_age' in WORLD_INFO:
 		SETTINGS['running'] = 1
 	

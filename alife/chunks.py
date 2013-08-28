@@ -187,7 +187,7 @@ def _can_see_chunk_quick(life, chunk_id):
 	
 	return False
 
-def can_see_chunk(life, chunk_id):
+def can_see_chunk(life, chunk_id, distance=True):
 	_fast_see = _can_see_chunk_quick(life, chunk_id)
 	
 	if _fast_see:
@@ -196,7 +196,7 @@ def can_see_chunk(life, chunk_id):
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:
-		if sight.can_see_position(life, pos):
+		if sight.can_see_position(life, pos, distance=distance):
 			return True
 	
 	return False

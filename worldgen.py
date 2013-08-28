@@ -139,6 +139,9 @@ def load_world(world):
 	lfe.load_all_life()
 	items.reload_all_items()
 	
+	#logging.debug('Rendering map slices...')
+	#maps.render_map_slices()
+	
 	logging.info('World loaded.')
 
 def save_world():

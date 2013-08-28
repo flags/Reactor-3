@@ -2,6 +2,8 @@ from globals import *
 
 import cython
 import numpy
+import alife
+import maps
 import time
 
 VERSION = 1
@@ -78,7 +80,7 @@ def draw_line(x1,y1,x2,y2):
 	
 	return path
 
-def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False):
+def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_chunks=None, life=None):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
 	cdef int pos1[2]
@@ -95,10 +97,27 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False):
 	POSITION[0] = position[0]
 	POSITION[1] = position[1]
 	
+	HIDDEN_CHUNKS = []
+	VISIBLE_CHUNKS = []
+	if life and alife.brain.get_flag(life, 'visible_chunks'):
+		VISIBLE_CHUNKS = alife.brain.get_flag(life, 'visible_chunks')
+		for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
+			if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
+				HIDDEN_CHUNKS.append(chunk_key)
+	
 	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
 	for _pos in draw_circle(POSITION[0], POSITION[1], size):
 		_dark = 0
+		
+		_chunk_key = '%s,%s' % ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
+			(_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+			
+		if _chunk_key in HIDDEN_CHUNKS:
+			continue
+		#if not _chunk_key in VISIBLE_CHUNKS:
+		#	continue
+		
 		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS
 			_y = pos[1]-Y_CAMERA_POS
@@ -111,15 +130,10 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False):
 			
 			if map[pos[0]][pos[1]][Z_CAMERA_POS+1]:				
 				if not _dark:
-					_dark = 1
-					
 					if not no_edge:
 						los_buffer[_y,_x] = 1
 					
-					continue
-				
-			if _dark:
-				continue
+					break
 
 			los_buffer[_y,_x] = 1
 	

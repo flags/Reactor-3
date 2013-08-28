@@ -20,21 +20,24 @@ def look(life):
 		return False
 	
 	if SETTINGS['smp']:
-		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'nearby_chunks') if c in CHUNK_MAP]
+		_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in CHUNK_MAP]
+		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
+		
 	else:
-		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)]
+		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+	
+	brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
 	for ai in life['know'].values():
 		ai['last_seen_time'] += 1
 	
 	#print len(_chunks)
 	for chunk in _chunks:
-		#print chunk['life'], chunk['last_updated'], WORLD_INFO['ticks']
 		for ai in [LIFE[i] for i in chunk['life']]:
 			if ai['id'] == life['id']:
 				continue
 			
-			#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 			if not can_see_target(life, ai['id']):
 				continue
 			
