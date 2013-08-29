@@ -31,3 +31,6 @@ def timescale(scale):
 def warp(x, y):
 	LIFE[SETTINGS['controlling']]['pos'][0] = x
 	LIFE[SETTINGS['controlling']]['pos'][1] = y
+
+def toss():
+	life.push(LIFE[SETTINGS['controlling']], 0, 2)

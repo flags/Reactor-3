@@ -272,6 +272,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['pos'] = list(position)
 	_life['prev_pos'] = list(position)
 	_life['realpos'] = list(position)
+	_life['velocity'] = [0.0, 0.0, 0.0]
 	
 	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
 	
@@ -290,7 +291,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
 	_life['states'] = []
-	_life['gravity'] = 0
+	_life['gravity'] = 0.05
 	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
@@ -907,6 +908,52 @@ def can_walk_to(life, pos):
 	
 	return zones.can_path_to_zone(_z1, _z2)
 
+def push(life, direction, speed, friction=0.05, _velocity=0):
+	"""Sets new velocity for an entity. Returns nothing."""
+	velocity = numbers.velocity(direction, speed)
+	velocity[2] = _velocity
+	
+	life['friction'] = friction
+	life['velocity'] = velocity
+	life['realpos'] = life['pos'][:]
+	
+	logging.debug('%s flies off in an arc! (%s)' % (' '.join(life['name']), life['velocity']))
+
+def calculate_velocity(life):
+	if not sum([abs(i) for i in life['velocity']]):
+		return False
+	
+	_next_pos = (int(life['pos'][0]+life['velocity'][0]), int(life['pos'][1]+life['velocity'][1]))
+	_last_pos = life['pos'][:]
+	
+	for pos in drawing.diag_line(life['pos'], _next_pos):
+		life['velocity'][2] -= life['velocity'][2]*life['gravity']
+		
+		if items.collision_with_solid(life, (pos[0], pos[1], 0)):
+			life['velocity'] = [0, 0, 0]
+			return False
+		
+		life['pos'][0] = pos[0]
+		life['pos'][1] = pos[1]
+	
+		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = items.get_min_max_velocity(life)
+		
+		if 0<life['velocity'][0]<1 or -1<life['velocity'][0]<0:
+			life['velocity'][0] = 0
+		
+		if 0<life['velocity'][1]<1 or -1<life['velocity'][1]<0:
+			life['velocity'][1] = 0
+		
+		life['velocity'][0] -= numbers.clip(life['velocity'][0]*0.2, _min_x_vel, _max_x_vel)
+		life['velocity'][1] -= numbers.clip(life['velocity'][1]*0.2, _min_y_vel, _max_y_vel)
+		
+		if not sum([abs(i) for i in life['velocity']]):
+			return False
+	
+		print life['velocity']
+	
+	return True
+
 def walk_to(life, position):
 	clear_actions(life)
 	add_action(life,{'action': 'move',
@@ -948,7 +995,7 @@ def walk(life, to):
 
 def walk_path(life):
 	"""Walks and returns whether the path is finished or not."""
-	if life['gravity']:
+	if calculate_velocity(life):
 		return False
 	
 	if life['path']:
@@ -1004,17 +1051,17 @@ def perform_collisions(life):
 		
 		life['gravity'] = WORLD_INFO['world gravity']
 			
-	elif life['gravity']:
-		life['gravity'] = 0
-		
-		_fall_dist = life['falling_startzpos']-life['pos'][2]
-		
-		if not damage_from_fall(life,_fall_dist) and life.has_key('player'):
-			gfx.message('You land.')
+	#elif life['gravity']:
+	#	life['gravity'] = 0
+	#	
+	#	_fall_dist = life['falling_startzpos']-life['pos'][2]
+	#	
+	#	if not damage_from_fall(life,_fall_dist) and life.has_key('player'):
+	#		gfx.message('You land.')
 	
-	if life['gravity']:
-		life['realpos'][2] -= WORLD_INFO['world gravity']
-		life['pos'][2] = int(life['realpos'][2])
+	#if life['gravity']:
+	#	life['realpos'][2] -= WORLD_INFO['world gravity']
+	#	life['pos'][2] = int(life['realpos'][2])
 	
 	return False
 
