@@ -860,6 +860,7 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'bribe_into_group_fail':
 		_responses.append({'text': 'Okay.', 'gist': 'end', 'group': chosen['group']})
+		_responses.append({'text': 'Maybe you should reconsider.', 'gist': 'intimidate_into_group', 'group': chosen['group'], 'dislike': 1, 'danger': 1})
 
 	elif chosen['gist'] == 'group_bribe_request':
 		_responses.append({'text': 'Give me $1k and I\'ll join.', 'gist': 'accept_group_bribe_request', 'group': chosen['group']})
@@ -979,7 +980,10 @@ def process_response(life, target, dialog, chosen):
 
 	elif chosen['gist'] == 'call_get_location':
 		_life = LIFE[dialog['listener']]
-		_responses.append({'text': 'I am near %s, %s.' % (_life['pos'][0], _life['pos'][1]), 'gist': 'restart'})
+		_responses.append({'text': 'I am near %s, %s.' % (_life['pos'][0], _life['pos'][1]), 'gist': 'okay'})
+
+	elif chosen['gist'] == 'okay':
+		_responses.append({'text': 'Okay.', 'gist': 'end'})
 
 	#NOTE: NO DIALOG AFTER THIS POINT WILL WORK	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:

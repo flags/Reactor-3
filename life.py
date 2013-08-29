@@ -1442,7 +1442,10 @@ def kill(life, injury):
 	if isinstance(injury, str) or isinstance(injury, unicode):
 		life['cause_of_death'] = injury
 		
-		say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+		if 'player' in life:
+			gfx.message('You die from %s.' % life['cause_of_death'])
+		else:
+			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
@@ -1625,6 +1628,11 @@ def throw_item(life, id, target, speed):
 	
 	direction = numbers.direction_to(life['pos'], target)
 	items.move(_item, direction, speed)
+	
+	if 'player' in life:
+		gfx.message('You throw %s.' % items.get_name(_item))
+	else:
+		say('@n throws %s.' % items.get_name(_item))
 
 def update_container_capacity(life,container):
 	"""Updates the current capacity of container. Returns nothing."""

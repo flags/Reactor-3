@@ -236,7 +236,10 @@ if __name__ == '__main__':
 	items.initiate_item('frag_grenade')
 	items.initiate_item('molotov')
 	
-	SETTINGS['running'] = 2
+	SETTINGS['running'] = 2	
+	
+	if '--menu' in sys.argv:
+		SETTINGS['running'] = 1
 	
 	if SETTINGS['running'] == 2:
 		for world in profiles.get_worlds():

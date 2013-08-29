@@ -962,7 +962,7 @@ def create_target_list():
 		if not _menu_items:
 			SETTINGS['following'] = target['id']
 		
-		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
+		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id']))
 	
 	return _menu_items
 
