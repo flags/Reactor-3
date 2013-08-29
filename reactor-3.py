@@ -110,6 +110,8 @@ def main():
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
 	
+	maps.render_lights(WORLD_INFO['map'])
+	
 	if not SETTINGS['map_slices']:
 		#if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
@@ -121,7 +123,6 @@ def main():
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
-	maps.render_lights(WORLD_INFO['map'])
 	
 	if LIFE[SETTINGS['controlling']]['encounters']:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
@@ -168,7 +169,7 @@ def main():
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	print tcod.sys_get_fps()
+	#print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:

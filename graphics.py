@@ -327,6 +327,16 @@ def message(text, style=None):
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
+def position_is_in_frame(pos):
+	if pos[0] >= CAMERA_POS[0] and pos[0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		return True
+	
+	return False
+
+def get_render_position(pos):
+	return [pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1]]
+
 def end_of_frame_terraform(editing_prefab=False):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	tcod.console_blit(PREFAB_WINDOW,

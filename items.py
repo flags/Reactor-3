@@ -161,6 +161,9 @@ def delete_item(item):
 	
 	timers.remove_by_owner(item)
 	
+	if gfx.position_is_in_frame(item['pos']):
+		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
+	
 	del ITEMS[item['uid']]
 
 def save_all_items():
@@ -249,6 +252,10 @@ def explode(item):
 			_dist = numbers.distance(item['pos'], pos)/2
 			if not random.randint(0, _dist) or not _dist:
 				effects.create_ash(pos)
+	
+			if gfx.position_is_in_frame(pos):
+				_render_pos = gfx.get_render_position(pos)
+				gfx.refresh_window_position(_render_pos[0], _render_pos[1])
 	
 	delete_item(item)
 

@@ -4,7 +4,7 @@
 "icon": "*",
 "description": "Mid-range frag grenade with a decent damage radius.",
 "speed": 1,
-"drag": 0,
+"drag": 0.02,
 "flags": "",
 "radius": 8,
 "damage": {"force": 4, "fire": 3},

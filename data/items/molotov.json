@@ -4,7 +4,7 @@
 "icon": "*",
 "description": "Improvised incendiary device.",
 "speed": 1,
-"drag": 0,
+"drag": 0.02,
 "flags": "",
 "radius": 8,
 "damage": {"force": 0, "fire": 6},
