@@ -6,6 +6,7 @@ import libtcodpy as tcod
 
 import effects
 import numpy
+import alife
 import time
 
 VERSION = 6
@@ -76,7 +77,15 @@ def render_map(map):
 						
 						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 							darken_tile(_RENDER_X, _RENDER_Y, 30)
+						
+						if SETTINGS['draw visible chunks']:
+							_visible_chunks = alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'visible_chunks')
 							
+							if _visible_chunks:
+								for _chunk in _visible_chunks:
+									if alife.chunks.position_is_in_chunk((x, y), _chunk):
+										darken_tile(_RENDER_X,_RENDER_Y,abs(90))
+									
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])

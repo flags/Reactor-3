@@ -6,6 +6,7 @@ from player import *
 
 import libtcodpy as tcod
 import render_fast_los
+import render_map
 
 import graphics as gfx
 import traceback
@@ -110,10 +111,12 @@ def main():
 		                                 life=LIFE[SETTINGS['following']])
 	
 	if not SETTINGS['map_slices']:
-		if CYTHON_ENABLED:
-			render_map.render_map(WORLD_INFO['map'])
-		else:
-			maps.render_map(WORLD_INFO['map'])
+		#if CYTHON_ENABLED:
+		render_map.render_map(WORLD_INFO['map'])
+		#	print 'yes'
+		#else:
+		#	print 'no???'
+		#	maps.render_map(WORLD_INFO['map'])
 	
 	items.draw_items()
 	bullets.draw_bullets()
@@ -165,7 +168,7 @@ def main():
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	#print tcod.sys_get_fps()
+	print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:
@@ -204,7 +207,7 @@ if __name__ == '__main__':
 	language.load_strings()
 	
 	gfx.init_libtcod()
-	smp.init()
+	#smp.init()
 
 	SETTINGS['draw z-levels below'] = True
 	SETTINGS['draw z-levels above'] = True

@@ -321,8 +321,8 @@ def find_known_items(life, matches={}, visible=True):
 def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], chunk_map=WORLD_INFO['chunk_map']):
 	_chunks = []
 	
-	for x_mod in range(-vision/chunk_size, (vision/chunk_size)+1):
-		for y_mod in range(-vision/chunk_size, (vision/chunk_size)+1):
+	for x_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
+		for y_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
 			_pos_mod = [x_mod*chunk_size, y_mod*chunk_size]
 			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
 			
