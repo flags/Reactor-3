@@ -31,7 +31,7 @@ def create_dialog_with(life, target, info, question=None):
 		_topics.extend(_t)
 		_memories.extend(_m)
 		
-		calculate_impacts(life, target, _topics)
+	calculate_impacts(life, target, _topics)
 	
 	if not _topics:
 		return False
@@ -76,7 +76,6 @@ def add_message(life, dialog, chosen):
 		logging.warning('Known issue: No impact set for this phrase.')
 	
 	dialog['messages'].append(_message)
-	#print '%s: %s' % (' '.join(life['name']), _text)
 	
 def show_messages(dialog):
 	for mesg in dialog['messages']:
@@ -87,9 +86,9 @@ def calculate_impacts(life, target, topics):
 		if 'subtopic' in topic:
 			continue
 		
-		if 'negative' in topic['gist'] or 'lie' in topic and topic['lie']:
+		if 'negative' in topic['gist'] or 'lie' in topic and topic['lie'] or 'dislike' in topic:
 			topic['impact'] = -1
-		elif 'positive' in topic['gist']:
+		elif 'positive' in topic['gist'] or 'like' in topic:
 			topic['impact'] = 1
 		else:
 			topic['impact'] = 0
@@ -138,7 +137,17 @@ def give_menu_response(life, dialog):
 	else:
 		dialog['title'] = 'Answer'
 		add_message(life, dialog, _chosen)
-		process_response(LIFE[dialog['listener']], life, dialog, _chosen)
+		
+		_target = dialog['listener']
+		if _target == dialog['listener']:
+			_target = dialog['speaker']
+		
+		if _target == dialog['listener']:
+			_target = dialog['receiver']
+		
+		print dialog['speaker'], dialog['listener'], dialog['receiver']
+		print 'this here',LIFE[dialog['listener']]['name'], LIFE[_target]['name']
+		process_response(LIFE[dialog['listener']], LIFE[_target], dialog, _chosen)
 
 def alife_response(life, dialog):
 	_target = dialog['listener']
@@ -156,7 +165,27 @@ def alife_response(life, dialog):
 		logging.error('Dialog didn\'t return anything.')
 		return False
 	
-	_chosen = random.choice(_choices)
+	if alife.stats.is_compatible_with(life, _target):
+		_target_impact = 1
+	elif alife.judgement.can_trust(life, _target):
+		_target_impact = 0
+	else:
+		_target_impact = -1
+	
+	_preferred_dialog_choices = []
+	_acceptable_dialog_choices = []
+	for choice in _choices:
+		if choice['impact']==0 and (_target_impact==1 or _target_impact==-1):
+			_acceptable_dialog_choices.append(choice)
+		elif choice['impact'] == _target_impact:
+			_preferred_dialog_choices.append(choice)
+	
+	if _preferred_dialog_choices:
+		_chosen = random.choice(_preferred_dialog_choices)
+	elif _acceptable_dialog_choices:
+		_chosen = random.choice(_acceptable_dialog_choices)
+	else:
+		print 'NO VALID DIALOG CHOICES. FIX TREE:', _choices, _target_impact
 	
 	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
 		dialog['question'] = _chosen['memory']
@@ -648,7 +677,8 @@ def process_response(life, target, dialog, chosen):
 	_responses = []
 	
 	if chosen['gist'] == 'how_are_you':
-		if get_freshness_of_gist(life, target['id'], chosen['gist'])<0.5:
+		print LIFE[dialog['listener']]['name'],LIFE[dialog['speaker']]['name']
+		if get_freshness_of_gist(LIFE[dialog['listener']], dialog['speaker'], chosen['gist'])<0.5:
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
 			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
 		else:
@@ -874,19 +904,19 @@ def process_response(life, target, dialog, chosen):
 	
 	elif chosen['gist'] == 'tell_about_group':
 		alife.groups.discover_group(LIFE[dialog['listener']], chosen['group'])
-		print 'HERE!'
 		
 		if not LIFE[dialog['speaker']]['group'] == LIFE[dialog['listener']]['group']:
 			if 'player' in LIFE[dialog['listener']]:
 				_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
 				_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
-				print 'not here!'
 			else:
-				print 'HERE TOO!'
 				if alife.stats.desires_group(LIFE[dialog['listener']], LIFE[dialog['speaker']]['group']):
 					_responses.append({'text': 'I\'m interested.', 'gist': 'ask_about_group', 'group': chosen['group'], 'like': 1})
 				else:
 					_responses.append({'text': 'I\'m not interested.', 'gist': 'not_interested_in_group', 'group': chosen['group']})
+	
+	elif chosen['gist'] == 'not_interested_in_group':
+		_responses.append({'text': 'Okay.', 'gist': 'end'})
 	
 	elif chosen['gist'] == 'join_group':
 		show_messages(dialog)
@@ -1006,6 +1036,7 @@ def process_response(life, target, dialog, chosen):
 	lfe.create_and_update_self_snapshot(LIFE[dialog['speaker']])
 	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
+	#if _responses:
 	dialog['speaker'] = life['id']
 	dialog['listener'] = target['id']
 	
@@ -1039,8 +1070,11 @@ def draw_dialog():
 		return False
 	
 	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
-	_sender = LIFE[dialog['sender']]
-	_receiver = LIFE[dialog['listener']]
+	
+	if 'player' in LIFE[dialog['sender']]:
+		_receiver = LIFE[dialog['receiver']]
+	else:
+		_receiver = LIFE[dialog['sender']]
 	
 	if not 'console' in dialog:
 		dialog['console'] = tcod.console_new(WINDOW_SIZE[0], 40)
@@ -1102,6 +1136,18 @@ def draw_dialog():
 			break
 	
 	_y = 1
+	_trust = alife.judgement.get_trust(_receiver, SETTINGS['controlling'])
+	
+	if alife.judgement.can_trust(_receiver, SETTINGS['controlling']):
+		tcod.console_set_default_foreground(dialog['console'], tcod.green)
+		_trust_string = 'Trusted (%s)' % _trust
+	else:
+		tcod.console_set_default_foreground(dialog['console'], tcod.red)
+		_trust_string = 'Not trusted (%s)' % _trust
+	
+	tcod.console_print(dialog['console'], 42+len(' '.join(_receiver['name'])), _y, _trust_string)
+	tcod.console_set_default_foreground(dialog['console'], tcod.white)
+	
 	for m in dialog['messages'][numbers.clip(abs(len(dialog['messages']))-MAX_MESSAGES_IN_DIALOG, 0, 99999):]:
 		part = (' '.join(LIFE[m['sender']]['name']), m['text'])
 		_x = 41
@@ -1127,7 +1173,6 @@ def draw_dialog():
 					tcod.console_set_background_flag(dialog['console'], tcod.BKGND_SET)
 				
 				_i += 1
-			
 			
 			_impact = False
 			
