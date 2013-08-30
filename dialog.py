@@ -1,8 +1,7 @@
-#A note before we start...
-#It's impossible to summarize conversations into a single word,
-#so we'll be passing around dictionaries that contain details
-#of it so we can perform fuzzy matches across memories when
-#finding responses.
+#NOTE: I'm refactoring all of this...
+#can't believe I let it get so uncontrollable, but
+#I'm tired of constant errors coming out of such a core
+#part of the game.
 
 from globals import *
 
@@ -30,12 +29,13 @@ def create_dialog_with(life, target, info, question=None):
 		_t, _m = get_all_irrelevant_target_topics(life, target)
 		_topics.extend(_t)
 		_memories.extend(_m)
-		
-	calculate_impacts(life, target, _topics)
 	
 	if not _topics:
 		return False
 	
+	calculate_impacts(life, target, _topics)
+	
+	#It happens... although hopefully this is handled by sounds
 	if not alife.brain.knows_alife_by_id(life, target):
 		alife.brain.meet_alife(life, LIFE[target])
 	
@@ -44,8 +44,8 @@ def create_dialog_with(life, target, info, question=None):
 	
 	_dialog = {'enabled': True,
 		'title': 'Talk',
-		'sender': life['id'],
-		'receiver': target,
+		'creator': life['id'],
+		'target': target,
 		'speaker': life['id'],
 		'listener': target,
 		'info': info,
@@ -97,26 +97,29 @@ def reset_dialog(dialog, end=True, force=False):
 	_ret = False
 
 	if end:
-		if not force and 'player' in LIFE[dialog['sender']] and dialog['starting_topics'] and not 'gist' in dialog['info'] and not dialog['title'] == 'Talk':
+		if not force and 'player' in LIFE[dialog['creator']] and dialog['starting_topics'] and not 'gist' in dialog['info'] and not dialog['title'] == 'Talk':
 			dialog['topics'] = dialog['starting_topics']
-			dialog['speaker'] = dialog['sender']
+			dialog['listener'] = dialog['target']
+			dialog['speaker'] = dialog['creator']
 			dialog['title'] = 'Talk'
 			dialog['index'] = 0
-			return True
 			
-		LIFE[dialog['sender']]['dialogs'].remove(dialog)
+			return True
 		
-		if dialog in LIFE[dialog['receiver']]['dialogs']:
-			LIFE[dialog['receiver']]['dialogs'].remove(dialog)	
+		LIFE[dialog['creator']]['dialogs'].remove(dialog)
+		
+		if dialog in LIFE[dialog['target']]['dialogs']:
+			LIFE[dialog['target']]['dialogs'].remove(dialog)	
 	
 	if dialog['previous_topics']:
 		dialog['topics'] = dialog['previous_topics'].pop(0)
 		dialog['previous_topics'] = []
 		_ret = True
 	else:
-		if 'player' in LIFE[dialog['sender']] and dialog['starting_topics']:
+		if 'player' in LIFE[dialog['creator']] and dialog['starting_topics']:
 			dialog['topics'] = dialog['starting_topics']
-			dialog['speaker'] = dialog['sender']
+			dialog['speaker'] = dialog['creator']
+			dialog['listener'] = dialog['target']
 	
 	dialog['title'] = ''
 	dialog['index'] = 0
@@ -138,16 +141,7 @@ def give_menu_response(life, dialog):
 		dialog['title'] = 'Answer'
 		add_message(life, dialog, _chosen)
 		
-		_target = dialog['listener']
-		if _target == dialog['listener']:
-			_target = dialog['speaker']
-		
-		if _target == dialog['listener']:
-			_target = dialog['receiver']
-		
-		print dialog['speaker'], dialog['listener'], dialog['receiver']
-		print 'this here',LIFE[dialog['listener']]['name'], LIFE[_target]['name']
-		process_response(LIFE[dialog['listener']], LIFE[_target], dialog, _chosen)
+		process_response(LIFE[dialog['listener']], LIFE[dialog['speaker']], dialog, _chosen)
 
 def alife_response(life, dialog):
 	_target = dialog['listener']
@@ -202,8 +196,6 @@ def alife_response(life, dialog):
 	else:
 		add_message(life, dialog, _chosen)
 		process_response(LIFE[_target], life, dialog, _chosen)
-		#modify_trust(LIFE[dialog['receiver']], dialog['sender'], _chosen)
-		#modify_trust(LIFE[dialog['sender']], dialog['receiver'], _chosen)
 
 def tick(life, dialog):
 	if not dialog['speaker'] == life['id']:
@@ -677,7 +669,7 @@ def process_response(life, target, dialog, chosen):
 	_responses = []
 	
 	if chosen['gist'] == 'how_are_you':
-		print LIFE[dialog['listener']]['name'],LIFE[dialog['speaker']]['name']
+		print life['name'],target['name']
 		if get_freshness_of_gist(LIFE[dialog['listener']], dialog['speaker'], chosen['gist'])<0.5:
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
 			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
@@ -1037,6 +1029,7 @@ def process_response(life, target, dialog, chosen):
 	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
 	#if _responses:
+	print 'CHECK', life['id'], target['id']
 	dialog['speaker'] = life['id']
 	dialog['listener'] = target['id']
 	
@@ -1071,10 +1064,10 @@ def draw_dialog():
 	
 	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 	
-	if 'player' in LIFE[dialog['sender']]:
-		_receiver = LIFE[dialog['receiver']]
+	if 'player' in LIFE[dialog['creator']]:
+		_receiver = LIFE[dialog['target']]
 	else:
-		_receiver = LIFE[dialog['sender']]
+		_receiver = LIFE[dialog['creator']]
 	
 	if not 'console' in dialog:
 		dialog['console'] = tcod.console_new(WINDOW_SIZE[0], 40)
