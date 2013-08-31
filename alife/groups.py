@@ -304,6 +304,18 @@ def get_total_trust(group_id):
 def get_total_danger(group_id):
 	return get_status(group_id)[1]
 
+def get_unwanted_members_with_perspective(life, group_id):
+	_group = get_group(group_id)
+	_untrusted = []
+	
+	for member in [m for m in _group['members'] if not life['id'] == m]:
+		if judgement.can_trust(life, member):
+			continue
+		
+		_untrusted.append(member)
+	
+	return _untrusted
+
 def is_ready_to_shelter(group_id):
 	_group = get_group(group_id)
 	

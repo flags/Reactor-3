@@ -222,7 +222,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 	elif gist == 'introduction':
 		_topics.append({'text': 'What do you do?', 'gist': 'talk_about_self', 'like': 1})
 	elif gist == 'introduction_negative':
-		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'introduction_negative', 'dislike': 2})
+		_topics.append({'text': 'I\'m not interested in talking.', 'gist': 'introduction_ignore'})
+		_topics.append({'text': 'Why don\'t you go bother someone else?', 'gist': 'introduction_negative', 'dislike': 1})
 	elif gist == 'invite_to_group':
 		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
 	elif gist == 'call_accepted':

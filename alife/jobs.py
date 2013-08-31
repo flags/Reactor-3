@@ -17,13 +17,23 @@ def get_job(job_id):
 	
 	return WORLD_INFO['jobs'][job_id]
 
+def get_job_via_name(name):
+	for job_id in WORLD_INFO['jobs']:
+		if WORLD_INFO['jobs'][job_id]['name'] == name:
+			return job_id
+	
+	return False
+
 def get_task(job_id, task_id):
 	return get_job(job_id)['tasks'][task_id]
 
 def get_creator(job_id):
 	return get_job(job_id)['creator']
 
-def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', **kwargs):
+def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', ignore_dupe=False, **kwargs):
+	if not ignore_dupe and get_job_via_name(name):
+		return False
+	
 	_job = {'id': str(WORLD_INFO['jobid'])}
 	_job['name'] = name
 	_job['gist'] = gist

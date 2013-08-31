@@ -175,7 +175,6 @@ BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
 SPLATTERS = []
-JOBS = {}
 SELECTED_TARGET = []
 EVENTS = []
 
