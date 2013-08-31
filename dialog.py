@@ -673,7 +673,6 @@ def process_response(life, target, dialog, chosen):
 	_responses = []
 	
 	if chosen['gist'] == 'how_are_you':
-		print life['name'],target['name']
 		if get_freshness_of_gist(LIFE[dialog['listener']], dialog['speaker'], chosen['gist'])<0.5:
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
 			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
@@ -690,7 +689,15 @@ def process_response(life, target, dialog, chosen):
 		lfe.memory(life, 'met', target=dialog['listener'])
 		lfe.memory(target, 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_self':
-		_responses.extend(get_responses_about_self(life))
+		if 'player' in life:
+			_responses.extend(get_responses_about_self(life))
+			_responses.append({'text': 'Why would I tell you?', 'gist': 'okay', 'dislike': 1})
+		else:
+			if alife.stats.is_compatible_with(target, life['id']):
+				_responses.extend(get_responses_about_self(life))
+			else:
+				_responses.append({'text': 'Why would I tell you?', 'gist': 'okay', 'dislike': 1})
+		
 		lfe.memory(life, 'met', target=dialog['listener'])
 		lfe.memory(target, 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'talk_about_camp':

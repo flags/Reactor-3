@@ -45,6 +45,7 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	_job['creator'] = creator['id']
 	_job['completed'] = False
 	_job['flags'] = kwargs
+	_job['cancel_on'] = []
 	#_job['requirements'] = []
 	
 	WORLD_INFO['jobid'] += 1
@@ -54,17 +55,27 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	
 	return _job['id']
 
+def delete_job(job_id):
+	_job = get_job(job_id)
+	
+	for worker in _job['workers']:
+		if LIFE[worker]['job'] == job_id:
+			LIFE[worker]['job'] = None
+			LIFE[worker]['task'] = None
+		
+		LIFE[worker]['jobs'].remove(job_id)
+	
+	del WORLD_INFO['jobs'][job_id]
+
+def cancel_on(job_id, action):
+	_job = get_job(job_id)
+	
+	_job['cancel_on'].append(action)
+
 def get_flag(job_id, flag):
 	_job = get_job(job_id)
 	
 	return _job['flags'][flag]
-
-#def add_requirement(job_id, action):
-#	_job = get_job(job_id)
-#	
-#	_job['requirements'].append(action)
-#	
-#	logging.debug('Added requirement to job \'%s\'.' % job_id)
 
 def reset_job(job_id):
 	_job = get_job(job_id)
@@ -242,6 +253,13 @@ def alife_has_job(life):
 def _work(life):
 	if not life['task']:
 		return False
+	
+	_job = get_job(life['job'])
+	
+	for cancel_on_action in _job['cancel_on']:
+		if not action.execute_small_script(life, _task['player_action']):
+			delete_job(life['job'])
+			return False
 	
 	_task = get_task(life['job'], life['task'])
 	

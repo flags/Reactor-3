@@ -27,7 +27,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_group = groups.get_group(_group_id)
 		_pos = lfe.get_current_chunk(life)['pos']
 		
-		_j = jobs.create_job(life, 'Gather',
+		_j = jobs.create_job(life, 'Gather for group %s.' % _group_id,
 	                         gist='create_group',
 	                         description='Group %s: Looking for new members.' % _group_id,
 	                         group=life['group'])
@@ -53,6 +53,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=_j)
 	
 	if groups.is_leader(life['group'], life['id']):
+		if stats.wants_to_abandon_group(life, life['group']):
+			print 'ABANDONING ON THESE TERMS' * 10
+			return False
+		
+		groups.process_events(life['group'])
 		#TODO: Re-announce group from time to time LOGICALLY
 		if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
 			_job_id = groups.get_flag(life['group'], 'job_gather')
@@ -67,13 +72,20 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			if _j:
 				jobs.join_job(_j, life['id'])
-	
-	_group = groups.get_group(life['group'])
-	
-	if _group['leader'] == life['id']:
-		if stats.wants_to_abandon_group(life, life['group']):
-			print 'ABANDONING ON THESE TERMS' * 10
-			return False
 		
-		groups.process_events(life['group'])
+		if len(groups.get_group(life['group'])['members'])<=3:
+			_j = jobs.create_job(life, 'Stay with group %s.' % life['group'],
+			                     gist='stay_with_group',
+			                     description='Stay nearby group.',
+			                     group=life['group'])
+			
+			if _j:
+				jobs.add_task(_j, '0', 'stay_with_group',
+				              action.make_small_script(function='find_target',
+				                                       kwargs={'target': life['id'],
+				                                               'distance': 5,
+				                                               'follow': True}),
+				              description='Find and stay with target')
+				groups.announce(life, life['group'], 'job', 'Stick together!', job_id=_j)
+				
 	

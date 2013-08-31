@@ -230,12 +230,15 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	
 	return False
 
-def find_target(life, target, distance=5):
+def find_target(life, target, distance=5, follow=False):
 	_target = brain.knows_alife_by_id(life, target)
 	
 	_can_see = sight.can_see_target(life, target)
 	if _can_see and len(_can_see)<=distance:
-		return True
+		if not follow:
+			return True
+		
+		lfe.stop(life)
 	
 	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
 		speech.communicate(life, 'call', matches=[{'id': target}])
