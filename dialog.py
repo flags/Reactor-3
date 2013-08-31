@@ -179,7 +179,7 @@ def alife_response(life, dialog):
 	elif _acceptable_dialog_choices:
 		_chosen = random.choice(_acceptable_dialog_choices)
 	else:
-		print 'NO VALID DIALOG CHOICES. FIX TREE:', _choices, _target_impact
+		raise Exception('No valid dialog choices for target input %s: %s' % (_target_impact, _choices))
 	
 	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
 		dialog['question'] = _chosen['memory']
@@ -643,6 +643,9 @@ def modify_trust(life, target, chosen):
 	_knows = alife.brain.knows_alife_by_id(life, target)
 	
 	if 'like' in chosen:
+		if not alife.judgement.can_trust(life, target):
+			return False
+		
 		_like = chosen['like']
 		
 		for key in get_matching_likes(life, target, chosen['gist']):
@@ -675,8 +678,9 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
 		else:
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
-			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral', 'like': 1})
+			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral'})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
+			_responses.append({'text': 'Why do you care?', 'gist': 'status_response_negative'})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
 		if 'player' in life:
@@ -744,6 +748,8 @@ def process_response(life, target, dialog, chosen):
 		
 		lfe.memory(LIFE[dialog['listener']], 'no jobs',
 			target=dialog['speaker'])
+	elif chosen['gist'] == 'status_response_negative':
+		_responses.append({'text': 'Okay.', 'gist': 'end'})
 	elif chosen['gist'].count('status_response'):
 		if chosen['gist'].count('question'):
 			_responses.append({'text': 'Same.', 'gist': 'status_response', 'like': 1})
@@ -1131,9 +1137,12 @@ def draw_dialog():
 	_y = 1
 	_trust = alife.judgement.get_trust(_receiver, SETTINGS['controlling'])
 	
-	if alife.judgement.can_trust(_receiver, SETTINGS['controlling']):
+	if alife.judgement.can_trust(_receiver, SETTINGS['controlling']) and _trust:
 		tcod.console_set_default_foreground(dialog['console'], tcod.green)
 		_trust_string = 'Trusted (%s)' % _trust
+	elif not _trust:
+		tcod.console_set_default_foreground(dialog['console'], tcod.lighter_gray)
+		_trust_string = 'Neutral (%s)' % _trust
 	else:
 		tcod.console_set_default_foreground(dialog['console'], tcod.red)
 		_trust_string = 'Not trusted (%s)' % _trust
