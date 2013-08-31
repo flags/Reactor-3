@@ -226,6 +226,9 @@ def explore_known_chunks(life):
 		life['known_chunks'][_chunk_key]['last_visited'] = WORLD_INFO['ticks']
 		return False
 	
+	if not _chunk['ground']:
+		return False
+	
 	_pos_in_chunk = random.choice(_chunk['ground'])
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)

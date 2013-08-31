@@ -2564,6 +2564,17 @@ def is_target_of(life):
 	
 	return _targets
 
+def is_in_shelter(life):
+	if life['path']:
+		return False
+	
+	_chunk_key = get_current_chunk_id(life)
+	
+	if chunks.get_flag(life, _chunk_key, 'shelter') and list(life['pos'][:2]) in chunks.get_flag(life, _chunk_key, 'shelter_cover'):
+		return True
+	
+	return False
+
 def collapse(life):
 	if life['stance'] in ['standing','crouching']:
 		life['stance'] = 'crawling'

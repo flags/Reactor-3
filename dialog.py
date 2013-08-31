@@ -179,7 +179,7 @@ def alife_response(life, dialog):
 	elif _acceptable_dialog_choices:
 		_chosen = random.choice(_acceptable_dialog_choices)
 	else:
-		raise Exception('No valid dialog choices for target input %s: %s' % (_target_impact, _choices))
+		raise Exception('No valid dialog choices for target impact %s: %s' % (_target_impact, _choices))
 	
 	if 'memory' in _chosen and 'question' in _chosen['memory'] and _chosen['memory']['question']:
 		dialog['question'] = _chosen['memory']
@@ -868,6 +868,8 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
 			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'like': 1, 'group': LIFE[dialog['listener']]['group']})
+		
+			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group_wrong_motive', 'group': LIFE[dialog['listener']]['group']})
 	
 	elif chosen['gist'] == 'ask_about_group_founder':
 		if LIFE[dialog['listener']]['group'] == chosen['group']:

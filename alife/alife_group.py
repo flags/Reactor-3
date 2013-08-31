@@ -57,35 +57,57 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			print 'ABANDONING ON THESE TERMS' * 10
 			return False
 		
-		groups.process_events(life['group'])
-		#TODO: Re-announce group from time to time LOGICALLY
-		if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
-			_job_id = groups.get_flag(life['group'], 'job_gather')
-			groups.announce(life, life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
-		
-		for member in groups.get_unwanted_members_with_perspective(life, life['group']):
-			_j = jobs.create_job(life, 'Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
-			                     gist='remove_member_from_group',
-			                     description='Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
-			                     group=life['group'],
-			                     target=member)
+		if life['state'] == 'idle' or lfe.is_in_shelter(life):
+			groups.process_events(life['group'])
+			#TODO: Re-announce group from time to time LOGICALLY
+			if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
+				_job_id = groups.get_flag(life['group'], 'job_gather')
+				groups.announce(life, life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
 			
-			if _j:
-				jobs.join_job(_j, life['id'])
-		
-		if len(groups.get_group(life['group'])['members'])<=3:
-			_j = jobs.create_job(life, 'Stay with group %s.' % life['group'],
-			                     gist='stay_with_group',
-			                     description='Stay nearby group.',
-			                     group=life['group'])
-			
-			if _j:
-				jobs.add_task(_j, '0', 'stay_with_group',
-				              action.make_small_script(function='find_target',
-				                                       kwargs={'target': life['id'],
-				                                               'distance': 5,
-				                                               'follow': True}),
-				              description='Find and stay with target')
-				groups.announce(life, life['group'], 'job', 'Stick together!', job_id=_j)
+			for member in groups.get_unwanted_members_with_perspective(life, life['group']):
+				_j = jobs.create_job(life, 'Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
+					                 gist='remove_member_from_group',
+					                 description='Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
+					                 group=life['group'],
+					                 target=member)
 				
+				if _j:
+					jobs.join_job(_j, life['id'])
+			
+			if len(groups.get_group(life['group'])['members'])<=3:
+				_j = jobs.create_job(life, 'Meet with group %s.' % life['group'],
+					                 gist='stay_with_group',
+					                 description='Stay nearby group.',
+					                 group=life['group'])
+				
+				if _j:
+					groups.flag(life['group'], 'meet_with_group', _j)
+					
+					jobs.add_task(_j, '0', 'meet_with_group',
+						          action.make_small_script(function='find_target',
+						                                   kwargs={'target': life['id'],
+						                                           'distance': 5,
+						                                           'follow': False}),
+					              player_action=action.make_small_script(function='can_see_target',
+	                                           kwargs={'target_id': life['id']}),
+						          description='Meet with group',
+					              delete_on_finish=False)
+					
+					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
+			              action.make_small_script(function='number_of_alife_in_chunk_matching',
+			                                       kwargs={'amount': 3,
+			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'matching': {'group': life['group']}}),
+			              description='Wait until everyone arrives.')
+				
+				if lfe.ticker(life, 'meet_with_group', 30):
+					_job_id = groups.get_flag(life['group'], 'meet_with_group')
+					groups.announce(life, life['group'],
+					                'job',
+					                'We need everyone here.',
+					                job_id=_job_id,
+					                filter_if=[action.make_small_script(function='has_completed_job',
+					                                                   kwargs={'job_id': _job_id})])
+			else:
+				print 'READY FOR MORE COMMANDS',len(groups.get_group(life['group'])['members'])
 	

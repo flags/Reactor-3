@@ -19,20 +19,22 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
+	_chunks = []
 	if SETTINGS['smp']:
 		_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in WORLD_INFO['chunk_map']]
 		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
-		
-	else:
+		brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	elif not brain.get_flag(life, 'visible_chunks') or not chunks.position_is_in_chunk(life['prev_pos'], lfe.get_current_chunk_id(life)):
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
-	brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	if not _chunks:
+		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for ai in life['know'].values():
 		ai['last_seen_time'] += 1
 	
-	#print len(_chunks)
 	for chunk in _chunks:
 		for ai in [LIFE[i] for i in chunk['life']]:
 			if ai['id'] == life['id']:
@@ -66,7 +68,6 @@ def look(life):
 			brain.meet_alife(life, ai)
 	
 		for item in [ITEMS[i] for i in chunk['items']]:
-			#for item in [ITEMS[item] for item in ITEMS]:
 			if item.has_key('id') or item.has_key('parent'):
 				continue
 			

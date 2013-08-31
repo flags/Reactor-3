@@ -58,6 +58,8 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'start_dialog': speech.start_dialog,
 	'announce_to_group': groups.announce,
 	'is_in_chunk': chunks.is_in_chunk,
+	'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
+	'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 	'explode': items.explode,
 	'always': always,
 	'never': never}

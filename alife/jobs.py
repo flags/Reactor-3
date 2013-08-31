@@ -46,7 +46,6 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	_job['completed'] = False
 	_job['flags'] = kwargs
 	_job['cancel_on'] = []
-	#_job['requirements'] = []
 	
 	WORLD_INFO['jobid'] += 1
 	WORLD_INFO['jobs'][_job['id']] = _job

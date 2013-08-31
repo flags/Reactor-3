@@ -181,8 +181,16 @@ def _can_see_chunk_quick(life, chunk_id):
 	if not len(chunk['ground']):
 		return False
 	
-	for seg in [0, len(chunk['ground'])/2, len(chunk['ground'])-1]:
-		if sight.can_see_position(life, chunk['ground'][seg]):
+	for pos in [(0, 0), (1, 0), (0, 1), (1, 1)]:
+		_x = pos[0]*WORLD_INFO['chunk_size']
+		_y = pos[1]*WORLD_INFO['chunk_size']
+		
+		if _x:
+			_x -= 1
+		if _y:
+			_y -= 1
+		
+		if sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y)):
 			return True
 	
 	return False

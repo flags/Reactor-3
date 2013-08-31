@@ -188,7 +188,7 @@ def process_events(group_id):
 	for event in _group['events'].values():
 		events.process_event(event)
 
-def announce(life, group_id, gist, message, consider_motive=False, **kwargs):
+def announce(life, group_id, gist, message, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(group_id)
 	
 	if consider_motive:
@@ -201,9 +201,14 @@ def announce(life, group_id, gist, message, consider_motive=False, **kwargs):
 			_announce_to = LIFE.keys()
 			_announce_to.remove(life['id'])
 	else:
-		_announce_to = _group['members']
+		_announce_to = _group['members'][:]
 		_announce_to.remove(life['id'])
 	#TODO: Could have an option here to form an emergency "combat" group
+	
+	for filter_action in filter_if:
+		for entry in _announce_to[:]:
+			if action.execute_small_script(LIFE[entry], filter_action):
+				_announce_to.remove(entry)
 	
 	for life_id in _announce_to:
 		speech.communicate(life,
@@ -345,6 +350,7 @@ def get_jobs(group_id):
 		if _leader['known_camps']:
 			_j = jobs.create_job(_leader, 'Raid', gist='start_raid', description='Raid camp %s.' % _nearest_camp['id'])
 			_pos = lfe.get_current_chunk(_leader)['pos']
+			_chunk_key = lfe.get_current_chunk_id(_leader)
 		
 			jobs.add_task(_j, '0', 'announce_to_group',
 			              action.make_small_script(function='announce_to_group',
@@ -352,16 +358,19 @@ def get_jobs(group_id):
 			                                               'gist': 'job',
 			                                               'message': jobs.get_job(_j)['description'],
 			                                               'job_id': _j}),
+			              player_action=action.make_small_script(function='always'),
 			              description='Gather group members.')
 			jobs.add_task(_j, '1', 'move_to_chunk',
 			              action.make_small_script(function='travel_to_position',
 			                                       kwargs={'pos': _pos}),
+			              player_action=action.make_small_script(function='is_in_chunk',
+	                                           kwargs={'chunk_key': _chunk_key}),
 			              description='Travel to position %s, %s' % (_pos[0], _pos[1]),
 				          delete_on_finish=False)
 			jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
 			              action.make_small_script(function='number_of_alife_in_chunk_matching',
 			                                       kwargs={'amount': 2,
-			                                               'chunk_key': lfe.get_current_chunk_id(_leader),
+			                                               'chunk_key': _chunk_key,
 			                                               'matching': {'group': _leader['group']}}),
 			              description='Wait until everyone arrives.')
 			#jobs.add_task(_j, '3', 'talk',
@@ -371,6 +380,20 @@ def get_jobs(group_id):
 			#              delete_on_finish=False)
 			
 			_jobs.append(_j)
+	
+	if len(_leader['known_groups'])>1:
+		_lowest = {'score': 0, 'group': None}
+		for group_id in [g for g in _leader['known_groups'] if not g==_leader['group']]:
+			_score = judgement.judge_group(_leader, group_id)
+			
+			if not _lowest['group'] or _score < _lowest['score']:
+				_lowest['score'] = _score
+				_lowest['group'] = group_id
+			
+		
+		print 'RAID', _lowest
+	else:
+		print 'ony one'
 	
 	return _jobs
 
