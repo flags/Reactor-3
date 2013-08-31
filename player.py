@@ -389,7 +389,7 @@ def handle_input():
 		if not LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
-		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		life.focus_on(LIFE[SETTINGS['controlling']])
 		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
 		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		

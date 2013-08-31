@@ -366,6 +366,8 @@ def ticker(life, name, time):
 
 def focus_on(life):
 	SETTINGS['following'] = life['id']
+	
+	LOS_BUFFER[0] = []
 
 def sanitize_heard(life):
 	del life['heard']
