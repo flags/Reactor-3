@@ -13,6 +13,7 @@ import numbers
 import logging
 import time
 
+#@profile
 def look(life):
 	life['seen'] = []
 	
@@ -25,8 +26,8 @@ def look(life):
 		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	else:
-		#_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
-		_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
+		#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
@@ -357,6 +358,9 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	for chunk_key in _chunks:
 		if visible_check and not chunks.can_see_chunk(life, chunk_key):
 			continue
+		
+		if not chunk_key in WORLD_INFO['chunk_map']:
+				continue
 		
 		if get_chunks:
 			_current_chunk = maps.get_chunk(chunk_key)

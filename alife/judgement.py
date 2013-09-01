@@ -322,6 +322,9 @@ def judge_shelter(life, chunk_id):
 	return True
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
+	if lfe.ticker(life, 'judge_tick', 30):
+		return False
+	
 	chunk = WORLD_INFO['chunk_map'][chunk_id]
 	_score = 0
 	
