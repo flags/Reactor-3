@@ -1045,7 +1045,6 @@ def process_response(life, target, dialog, chosen):
 	lfe.create_and_update_self_snapshot(LIFE[dialog['listener']])
 	
 	#if _responses:
-	print 'CHECK', life['id'], target['id']
 	dialog['speaker'] = life['id']
 	dialog['listener'] = target['id']
 	

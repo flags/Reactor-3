@@ -24,8 +24,8 @@ def look(life):
 		_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in WORLD_INFO['chunk_map']]
 		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	elif not brain.get_flag(life, 'visible_chunks') or not chunks.position_is_in_chunk(life['prev_pos'], lfe.get_current_chunk_id(life)):
-		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+	else:
+		_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
@@ -340,22 +340,36 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	return _chunks
 
 def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
-	#print life['name'],'scanning'
-	_center_chunk = lfe.get_current_chunk_id(life)
+	_center_chunk_key = lfe.get_current_chunk_id(life)
+	
+	if get_chunks:
+		_center_chunk = maps.get_chunk(_center_chunk_key)
+	
 	_visible_chunks = []
 	
 	if _chunks:
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	else:
-		_chunks = _scan_surroundings(_center_chunk, WORLD_INFO['chunk_size'], get_vision(life)/2, ignore_chunks=ignore_chunks)
+		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life)/2, ignore_chunks=ignore_chunks)
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	
 	for chunk_key in _chunks:
+		if chunk_key in _visible_chunks:
+			print 'SPED UP'
+			continue
+		
 		if not chunks.can_see_chunk(life, chunk_key):
 			continue
 		
 		if get_chunks:
+			_current_chunk = maps.get_chunk(chunk_key)
 			_visible_chunks.append(chunk_key)
+			
+			_current_chunk_pos = (_current_chunk['pos'][0]/WORLD_INFO['chunk_size'], _current_chunk['pos'][1]/WORLD_INFO['chunk_size'])
+			_center_chunk_pos = (_center_chunk['pos'][0]/WORLD_INFO['chunk_size'], _center_chunk['pos'][1]/WORLD_INFO['chunk_size'])
+			_direction = (_current_chunk_pos[0]-_center_chunk_pos[0], _current_chunk_pos[1]-_center_chunk_pos[1])
+			
+			print _direction
 		
 		if judge:
 			if initial:
@@ -365,4 +379,49 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	
 	if get_chunks:
 		return _visible_chunks
+
+def fast_scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
+	_vision = get_vision(life)/2
+	_center_chunk_key = lfe.get_current_chunk_id(life)
+	_limit = _vision/WORLD_INFO['chunk_size']
+	_outside_chunks = []
+	_inside_chunks = []
+	_visible_chunks = []
+	
+	for x_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
+		for y_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
+			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
+			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk_key.split(',')])
+			
+			if not _chunk_key in WORLD_INFO['chunk_map']:
+				continue
+			
+			if not ignore_chunks==0 and _chunk_key in ignore_chunks:
+				continue
+			elif isinstance(ignore_chunks, list):
+				ignore_chunks.append(_chunk_key)
+			
+			#if chunk_map and not _chunk_key in chunk_map:
+			#	continue
+			
+			if (x_mod == -_limit and (y_mod == -_limit or y_mod == _limit)) or (x_mod == _limit and (y_mod == -_limit or y_mod == _limit)):
+				_outside_chunks.append(_chunk_key)
+			else:
+				_inside_chunks.append(_chunk_key)
+			
+			#_chunks.append(_chunk_key)
+	
+	for chunk_key in _outside_chunks:
+		_can_see = chunks.can_see_chunk(life, chunk_key)
+		
+		if not _can_see:
+			continue
+		
+		for pos in _can_see:
+			_pos_chunk_key = chunks.get_chunk_key_at(pos)
+			
+			if not _pos_chunk_key in _visible_chunks:
+				_visible_chunks.append(_pos_chunk_key)
+	
+	return _visible_chunks
 		

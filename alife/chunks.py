@@ -30,6 +30,9 @@ def get_chunk_pos(chunk_id, center=False):
 	
 	return [int(val) for val in chunk_id.split(',')]
 
+def get_chunk_key_at(pos):
+	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+
 def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
 	
@@ -190,8 +193,10 @@ def _can_see_chunk_quick(life, chunk_id):
 		if _y:
 			_y -= 1
 		
-		if sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y)):
-			return True
+		_can_see = sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y))
+		
+		if _can_see:
+			return _can_see
 	
 	return False
 
@@ -199,13 +204,15 @@ def can_see_chunk(life, chunk_id, distance=True):
 	_fast_see = _can_see_chunk_quick(life, chunk_id)
 	
 	if _fast_see:
-		return True
+		return _fast_see
 	
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:
-		if sight.can_see_position(life, pos, distance=distance):
-			return True
+		_can_see = sight.can_see_position(life, pos, distance=distance)
+		
+		if _can_see:
+			return _can_see
 	
 	return False
 
