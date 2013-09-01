@@ -25,6 +25,7 @@ def look(life):
 		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	else:
+		#_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
 		_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
@@ -339,7 +340,7 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	
 	return _chunks
 
-def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
+def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False, visible_check=True):
 	_center_chunk_key = lfe.get_current_chunk_id(life)
 	
 	if get_chunks:
@@ -354,11 +355,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	
 	for chunk_key in _chunks:
-		if chunk_key in _visible_chunks:
-			print 'SPED UP'
-			continue
-		
-		if not chunks.can_see_chunk(life, chunk_key):
+		if visible_check and not chunks.can_see_chunk(life, chunk_key):
 			continue
 		
 		if get_chunks:
@@ -368,8 +365,6 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 			_current_chunk_pos = (_current_chunk['pos'][0]/WORLD_INFO['chunk_size'], _current_chunk['pos'][1]/WORLD_INFO['chunk_size'])
 			_center_chunk_pos = (_center_chunk['pos'][0]/WORLD_INFO['chunk_size'], _center_chunk['pos'][1]/WORLD_INFO['chunk_size'])
 			_direction = (_current_chunk_pos[0]-_center_chunk_pos[0], _current_chunk_pos[1]-_center_chunk_pos[1])
-			
-			print _direction
 		
 		if judge:
 			if initial:
@@ -404,7 +399,7 @@ def fast_scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], ju
 			#if chunk_map and not _chunk_key in chunk_map:
 			#	continue
 			
-			if (x_mod == -_limit and (y_mod == -_limit or y_mod == _limit)) or (x_mod == _limit and (y_mod == -_limit or y_mod == _limit)):
+			if (x_mod == -_limit or x_mod == _limit) or (y_mod == -_limit or y_mod == _limit):
 				_outside_chunks.append(_chunk_key)
 			else:
 				_inside_chunks.append(_chunk_key)
