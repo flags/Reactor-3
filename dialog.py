@@ -827,7 +827,7 @@ def process_response(life, target, dialog, chosen):
 		#		location=chosen['location'])
 	elif chosen['gist'] == 'invite_to_group':
 		if 'player' in LIFE[dialog['listener']]:
-			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 0})
 			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group',  'group': chosen['group'], 'dislike': 1})
 			
 			if LIFE[dialog['listener']]['group']:

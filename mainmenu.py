@@ -214,6 +214,8 @@ def generate_world():
 		_ticks = 2000
 	elif _settings['World Age'] == '3 Weeks':
 		_ticks = 3000
+	elif _settings['World Age'] == '4 Weeks':
+		_ticks = 4000
 	
 	maps.load_map(_settings['Map'])
 	

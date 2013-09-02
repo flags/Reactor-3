@@ -24,6 +24,15 @@ def flag(life, chunk_id, flag, value):
 	
 	life['known_chunks'][chunk_id]['flags'][flag] = value
 
+def flag_global(chunk_key, flag, value):
+	maps.get_chunk(chunk_key)['flags'][flag] = value
+
+def get_global_flag(chunk_key, flag):
+	if flag in maps.get_chunk(chunk_key)['flags']:
+		return maps.get_chunk(chunk_key)['flags'][flag]
+	
+	return False
+
 def get_chunk_pos(chunk_id, center=False):
 	if center:
 		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]

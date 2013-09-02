@@ -38,19 +38,16 @@ def flag(life, camp_id, flag, value):
 	logging.debug('%s flagged camp \'%s\' with %s.' % (' '.join(life['name']), camp_id, flag))
 
 def create_all_camps():
-	#_best_camp = {'camp': None, 'score': 0}
-	
 	for camp in WORLD_INFO['reference_map']['buildings']:
-		#if camp in _founded_camps:
-		#	continue
+		_camp_id = str(WORLD_INFO['campid'])
 		
-		WORLD_INFO['camps'][str(WORLD_INFO['campid'])] = {'id': str(WORLD_INFO['campid']),
+		for chunk_key in camp:
+			chunks.flag_global(chunk_key, 'camp', _camp_id)
+			
+		WORLD_INFO['camps'][_camp_id] = {'id': _camp_id,
 		                                                  'reference': camp,
 		                                                  'groups': {}}
 		WORLD_INFO['campid'] += 1
-		
-		#if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
-		#	continue
 
 def discover_camp(life, camp_id):
 	_camp = {'id': camp_id,

@@ -525,6 +525,7 @@ def update_chunk_map():
 				'items': [],
 				'control': {},
 				'neighbors': [],
+				'flags': {},
 				'reference': None,
 				'last_updated': None,
 				'max_z': 0,

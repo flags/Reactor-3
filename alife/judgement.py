@@ -325,7 +325,7 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	if lfe.ticker(life, 'judge_tick', 30):
 		return False
 	
-	chunk = WORLD_INFO['chunk_map'][chunk_id]
+	chunk = maps.get_chunk(chunk_id)
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
@@ -337,9 +337,10 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			'digest': chunk['digest'],
 			'life': []}
 	
-	_camp = camps.is_in_any_camp(chunk['pos'])
+	_camp = chunks.get_global_flag(chunk_id, 'camp')
 	if _camp and not _camp in life['known_camps']:
 		camps.discover_camp(life, _camp)
+		print 'WORKS' * 100
 	
 	_known_chunk = life['known_chunks'][chunk_id]	
 	
