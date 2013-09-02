@@ -340,7 +340,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	_camp = chunks.get_global_flag(chunk_id, 'camp')
 	if _camp and not _camp in life['known_camps']:
 		camps.discover_camp(life, _camp)
-		print 'WORKS' * 100
 	
 	_known_chunk = life['known_chunks'][chunk_id]	
 	

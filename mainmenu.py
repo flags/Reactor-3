@@ -176,7 +176,7 @@ def switch_to_spawn_point():
 def switch_to_world_gen():
 	_menu_items = []
 	_menu_items.append(menus.create_item('list', 'Map', profiles.get_maps()))
-	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks']))
+	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
 	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy', 'None']))
 	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy', 'None']))
 	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
@@ -216,6 +216,8 @@ def generate_world():
 		_ticks = 3000
 	elif _settings['World Age'] == '4 Weeks':
 		_ticks = 4000
+	elif _settings['World Age'] == '5 Weeks':
+		_ticks = 5000
 	
 	maps.load_map(_settings['Map'])
 	

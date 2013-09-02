@@ -827,7 +827,7 @@ def process_response(life, target, dialog, chosen):
 		#		location=chosen['location'])
 	elif chosen['gist'] == 'invite_to_group':
 		if 'player' in LIFE[dialog['listener']]:
-			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 0})
+			_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group']})
 			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group',  'group': chosen['group'], 'dislike': 1})
 			
 			if LIFE[dialog['listener']]['group']:
@@ -835,7 +835,7 @@ def process_response(life, target, dialog, chosen):
 		else:
 			if alife.stats.desires_group(LIFE[dialog['listener']], chosen['group']):
 				if alife.judgement.judge_group(LIFE[dialog['listener']], chosen['group'])>alife.stats.get_minimum_group_score(LIFE[dialog['listener']]):
-					_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+					_responses.append({'text': 'Sure, I\'ll join.', 'gist': 'join_group', 'group': chosen['group']})
 					lfe.memory(LIFE[dialog['listener']], 'accept invite to group', group=chosen['group'])
 				else:
 					_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group', 'dislike': 1, 'group': chosen['group']})
@@ -905,6 +905,7 @@ def process_response(life, target, dialog, chosen):
 
 	elif chosen['gist'] == 'accept_group_bribe_request':
 		_responses.append({'text': 'It\'s a deal.', 'gist': 'complete_group_bribe', 'group': chosen['group'], 'like': 1})
+		_responses.append({'text': 'That works for me.', 'gist': 'complete_group_bribe', 'group': chosen['group']})
 		_responses.append({'text': 'That\'s too much for me.', 'gist': 'end', 'group': chosen['group'], 'like': 1})
 	
 	elif chosen['gist'] == 'complete_group_bribe':

@@ -13,6 +13,10 @@ import random
 import time
 
 def get_flag(life, chunk_id, flag):
+	if not chunk_id in life['known_chunks']:
+		logging.warning('ALife \'%s\' does not know about chunk \'%s\'' % (' '.join(life['name']), chunk_id))
+		return False
+	
 	if flag in life['known_chunks'][chunk_id]['flags']:
 		return life['known_chunks'][chunk_id]['flags'][flag]
 	
