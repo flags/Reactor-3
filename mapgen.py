@@ -79,10 +79,11 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(300, 300, 10), detail=5, towns=4, forests=1, underground=True, skip_zoning=False):
+def generate_map(size=(300, 300, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
-	Towns: Decides the amount of towns generated.
+	towns: Number of towns.
+	factories: Decides the amount of factories generated.
 	Forests: Number of large forested areas.
 	Underground: Flags whether buildings can be constructed beneath the surface.
 	"""
@@ -90,10 +91,11 @@ def generate_map(size=(300, 300, 10), detail=5, towns=4, forests=1, underground=
 	map_gen = {'size': size,
 		'chunk_size': detail,
 		'towns': towns,
+		'factories': factories,
 		'forests': forests,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'towns': [], 'forests': [], 'roads': []},
+		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size)}
@@ -109,9 +111,14 @@ def generate_map(size=(300, 300, 10), detail=5, towns=4, forests=1, underground=
 	logging.debug('Creating roads...')
 	create_roads(map_gen)
 	
+	logging.debug('Building factories...')
+	for _factory in map_gen['refs']['factories']:
+		construct_factory(map_gen, _factory)
+	
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
+	
 	#print_map_to_console(map_gen)
 	
 	WORLD_INFO.update(map_gen)
@@ -175,6 +182,10 @@ def generate_chunk_map(map_gen):
 def generate_outlines(map_gen):
 	logging.debug('Placing roads...')
 	place_roads(map_gen)
+	
+	logging.debug('Placing factories...')
+	while len(map_gen['refs']['factories'])<map_gen['factories']:
+		place_factory(map_gen)
 	
 	logging.debug('Placing towns...')
 	while len(map_gen['refs']['towns'])<map_gen['towns']:
@@ -252,7 +263,7 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 			_possible_next_dirs.remove(_next_dir)
 			
 			for _turn in _possible_next_dirs:
-				place_roads(map_gen, start_pos=_pos[:], next_dir=_turn, turns=random.randint(0, 2), can_create=False)
+				place_roads(map_gen, start_pos=_pos[:], next_dir=_turn, turns=random.randint(0, 3), can_create=False)
 			
 			break
 		
@@ -262,12 +273,14 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 		
 		#take rest of _possible_next_dirs and make intersection?
 
-def place_town(map_gen):
-	_existing_towns = map_gen['refs']['towns']
+def place_factory(map_gen):
+	_existing_factories = map_gen['refs']['factories']
 	_avoid_chunk_keys = []
 	
-	for town in _existing_towns:
+	for town in _existing_factories:
 		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town])
+	
+	_avoid_chunk_keys.extend(map_gen['refs']['roads'])
 	
 	while 1:
 		while 1:
@@ -305,10 +318,43 @@ def place_town(map_gen):
 			continue
 		
 		for pos in _walked:
-			map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'town'
+			map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'factory'
 		
-		map_gen['refs']['towns'].append(_walked)
+		map_gen['refs']['factories'].append(_walked)
 		break
+
+def place_town(map_gen):
+	_avoid_chunk_keys = []
+	
+	for town in map_gen['refs']['towns']:
+		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town])
+	
+	#Find some areas near roads...
+	_potential_chunks = []
+	for road_chunk_key in map_gen['refs']['roads']:
+		_chunk = map_gen['chunk_map'][road_chunk_key]
+		for chunk_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True):
+			if not chunk_key in _potential_chunks:
+				_potential_chunks.append(chunk_key)
+	
+	_actual_town_chunks = []
+	_max_size = random.randint(30, 40)
+	_town_chunks = _potential_chunks[random.randint(0, len(_potential_chunks)-1):]
+	for chunk in _town_chunks:
+		if chunk in _avoid_chunk_keys:
+			continue
+		
+		if random.randint(0, 1):
+			continue
+		
+		map_gen['chunk_map'][chunk]['type'] = 'town'
+		_actual_town_chunks.append(chunk)
+		
+		if len(_actual_town_chunks)>_max_size:
+			print _actual_town_chunks
+			break	
+	
+	map_gen['refs']['towns'].append(_actual_town_chunks)
 
 def place_forest(map_gen):
 	_existing_chunks = map_gen['refs']['forests']
@@ -462,8 +508,8 @@ def create_roads(map_gen):
 				for y in range(0, map_gen['chunk_size']):
 					if (y == 0 or y == map_gen['chunk_size']-1) and not random.randint(0, 2):
 						_tile = random.choice(tiles.GRASS_TILES)
-					elif y == round(map_gen['chunk_size']/2) and x % 2:
-						_tile = random.choice(tiles.ROAD_STRIPES)
+					elif y == round(map_gen['chunk_size']/2) and x % 3:
+						_tile = tiles.ROAD_STRIPE_2
 					else:
 						_tile = random.choice(tiles.CONCRETE_TILES)
 						
@@ -529,7 +575,7 @@ def create_roads(map_gen):
 						
 					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2] = maps.create_tile(_tile)
 
-def construct_town(map_gen, town):
+def construct_factory(map_gen, town):
 	_open = ['%s,%s' % (pos[0], pos[1]) for pos in town[:]]
 	
 	while _open:
@@ -541,7 +587,7 @@ def construct_town(map_gen, town):
 		while len(_build_on_chunks) < _occupied_chunks:
 			_center_chunk = random.choice(_build_on_chunks)
 			
-			_possible_next_chunk = random.choice(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_center_chunk]['pos'], 'town'))
+			_possible_next_chunk = random.choice(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_center_chunk]['pos'], 'factory'))
 			if _possible_next_chunk in _build_on_chunks:
 				continue
 			
@@ -602,6 +648,77 @@ def construct_town(map_gen, town):
 				y = _chunk_pos[1]+_y
 				for _x in range(map_gen['chunk_size']):
 					x = _chunk_pos[0]+_x
+					
+					for i in range(3):
+						if _building[_y][_x] == '#':
+							map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.WALL_TILE)
+						elif (not i or i == 2) and _building[_y][_x] == '.':
+							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
+							
+							if not i and random.randint(0, 500) == 500:
+								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
+
+def construct_town(map_gen, town):
+	#_houses = []
+	_taken = []
+	for chunk_key in town:
+		if chunk_key in _taken:
+			continue
+		
+		_chunk = map_gen['chunk_map'][chunk_key]
+		_house = [chunk_key]
+		_house_dirs = {}
+		while 1:
+			_neighbors = get_neighbors_of_type(map_gen, _chunk['pos'], 'town')
+			_added = False
+			for neighbor_key in _neighbors:
+				if not neighbor_key in _house:
+					_house.append(neighbor_key)
+					_added = True
+			
+			if not _added:
+				break
+		
+		#_houses.append(_house)
+		_taken.extend(_house)
+		
+		for chunk_key in _house:
+			_avoid_directions = []
+			_directions = []
+			_chunk = map_gen['chunk_map'][chunk_key]
+			for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'town'):
+				if not neighbor_key in _house:
+					_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+					continue
+				
+				_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+		
+			_possible_tiles = []
+			for building in map_gen['buildings']:
+				_continue = False
+				for _dir in _directions:
+					if not building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
+					continue
+				
+				for _dir in _avoid_directions:
+					if building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
+					continue
+				
+				_possible_tiles.append(building['building'])
+			
+			_building = random.choice(_possible_tiles)
+			for _y in range(map_gen['chunk_size']):
+				y = _chunk['pos'][1]+_y
+				for _x in range(map_gen['chunk_size']):
+					x = _chunk['pos'][0]+_x
 					
 					for i in range(3):
 						if _building[_y][_x] == '#':
