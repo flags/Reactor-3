@@ -686,12 +686,13 @@ def construct_town(map_gen, town):
 			_avoid_directions = []
 			_directions = []
 			_chunk = map_gen['chunk_map'][chunk_key]
-			for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'town'):
+			for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'any'):
 				if not neighbor_key in _house:
 					_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
 					continue
 				
-				_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				if map_gen['chunk_map'][neighbor_key]['type'] == 'town':
+					_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
 		
 			_possible_tiles = []
 			for building in map_gen['buildings']:
