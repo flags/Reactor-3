@@ -909,7 +909,7 @@ def process_response(life, target, dialog, chosen):
 		_responses.append({'text': 'That\'s too much for me.', 'gist': 'end', 'group': chosen['group'], 'like': 1})
 	
 	elif chosen['gist'] == 'complete_group_bribe':
-		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group'], 'like': 1})
+		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group'], 'like': 0})
 	
 	elif chosen['gist'] == 'tell_about_group':
 		alife.groups.discover_group(LIFE[dialog['listener']], chosen['group'])

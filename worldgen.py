@@ -45,8 +45,16 @@ class Runner(threading.Thread):
 
 
 def draw_world_stats():
+	if not 'last_time' in WORLD_INFO:
+		WORLD_INFO['last_time'] = []
+	
+	WORLD_INFO['last_time'].append(WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime']))
+	
+	if len(WORLD_INFO['last_time'])>5:
+		WORLD_INFO['last_time'].pop(0)
+	
 	tcod.console_print(0, 0, 0, 'World Generation')
-	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
+	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], (sum(WORLD_INFO['last_time'])/len(WORLD_INFO['last_time']))))
 	tcod.console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
 	tcod.console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
 	tcod.console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * int((WORLD_INFO['ticks']/float(WORLD_INFO['start_age']))*10)))

@@ -44,7 +44,7 @@ except ImportError, e:
 gfx.log(WINDOW_TITLE)
 create_all_tiles()
 
-LOAD_MAP = 'map1.dat'
+LOAD_MAP = 'test2.dat'
 
 try:
 	maps.load_map(LOAD_MAP)
