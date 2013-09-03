@@ -121,6 +121,7 @@ def generate_map(size=(300, 300, 10), detail=5, towns=2, factories=4, forests=1,
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
 	
+	place_hills(map_gen)
 	#print_map_to_console(map_gen)
 	
 	WORLD_INFO.update(map_gen)
@@ -342,8 +343,23 @@ def place_town(map_gen):
 	for road_chunk_key in map_gen['refs']['roads']:
 		_chunk = map_gen['chunk_map'][road_chunk_key]
 		for chunk_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True):
-			if not chunk_key in _potential_chunks:
-				_potential_chunks.append(chunk_key)
+			_house_chunk = map_gen['chunk_map'][chunk_key]
+			#_house_chunk['type'] = 'road'
+			_direction = direction_from_key_to_key(map_gen, road_chunk_key, chunk_key)
+			_next_chunk_key = '%s,%s' % ((_house_chunk['pos'][0]+(map_gen['chunk_size']*_direction[0])),
+			                             (_house_chunk['pos'][1]+(map_gen['chunk_size']*_direction[1])))
+			
+			if not _next_chunk_key in map_gen['chunk_map']:
+				continue
+			
+			if not map_gen['chunk_map'][_next_chunk_key]['type'] == 'other':
+				continue
+			
+			if not _next_chunk_key in _potential_chunks:
+				_potential_chunks.append(_next_chunk_key)
+	
+	#if not _potential_chunks:
+	#	return False
 	
 	_actual_town_chunks = []
 	_max_size = random.randint(30, 40)
@@ -363,6 +379,21 @@ def place_town(map_gen):
 	
 	map_gen['refs']['towns'].append(_actual_town_chunks)
 
+def place_hills(map_gen):
+	_size = (map_gen['size'][0], map_gen['size'][1], 4)
+	_noise_map = generate_noise_map(_size)
+	
+	for y in range(0, map_gen['size'][1]):
+		for x in range(0, map_gen['size'][0]):
+			_chunk = map_gen['chunk_map']['%s,%s' % ((x/map_gen['chunk_size'])*map_gen['chunk_size'],
+			                                (y/map_gen['chunk_size'])*map_gen['chunk_size'])]
+			
+			if not _chunk['type'] == 'other':
+				continue
+			
+			for z in range(0, int(_noise_map[y, x])):
+				map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.GRASS_TILES))
+
 def place_forest(map_gen):
 	SMALLEST_FOREST = (10, 10)
 	
@@ -372,44 +403,26 @@ def place_forest(map_gen):
 	              random.randint(_top_left[1]+SMALLEST_FOREST[1], _top_left[1]+(map_gen['size'][1]-_top_left[1])))
 	
 	_size = (_bot_right[0]-_top_left[0],
-	         _bot_right[1]-_top_left[1], 4)
+	         _bot_right[1]-_top_left[1], 3)
 	_noise_map = generate_noise_map(_size)
 	
 	for y in range(_top_left[1], _bot_right[1]-1):
 		for x in range(_top_left[0], _bot_right[0]-1):
-			map_gen['chunk_map']['%s,%s' % ((x/map_gen['chunk_size'])*map_gen['chunk_size'],
-			                                (y/map_gen['chunk_size'])*map_gen['chunk_size'])]['type'] = 'forest'
+			_chunk = map_gen['chunk_map']['%s,%s' % ((x/map_gen['chunk_size'])*map_gen['chunk_size'],
+			                                (y/map_gen['chunk_size'])*map_gen['chunk_size'])]
 			
+			if not _chunk['type'] == 'other' and not _chunk['type'] == 'forest':
+				continue
+			
+			_chunk['type'] = 'forest'
 			_height = int(_noise_map[x-_top_left[0],y-_top_left[1]])
-			if not random.randint(0, ((_size[2]+1)-_height)*4):
-				#TODO: Tree tops
-				for z in range(0, _height):
-					map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
-	
-	#for chunk in _existing_chunks:
-	#	_avoid_chunk_keys.extend(['%s,%s' % (c[0], c[1]) for c in chunk])
-	#
-	#while 1:
-	#	_chunk = random.choice(map_gen['chunk_map'].values())
-	#			
-	#	if _avoid_chunk_keys and alife.chunks.get_distance_to_hearest_chunk_in_list(_chunk['pos'], _avoid_chunk_keys) < FOREST_DISTANCE:
-	#		continue
-	#	
-	#	_walked = walker(map_gen,
-	#		_chunk['pos'],
-	#	     60,
-	#		allow_diagonal_moves=False,
-	#		avoid_chunks=_avoid_chunk_keys,
-	#		avoid_chunk_distance=FOREST_DISTANCE)
-	#		
-	#	if not _walked:
-	#		continue
-	#	
-	#	for pos in _walked:
-	#		map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'forest'
-	#	
-	#	map_gen['refs']['forests'].append(_walked)
-	#	break
+			
+			for z in range(0, _height):
+				map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.GRASS_TILES))
+			#if not random.randint(0, ((_size[2]+1)-_height)*4):
+			#	#TODO: Tree tops
+			#	for z in range(0, _height):
+			#		map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
 	_directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]
@@ -517,6 +530,18 @@ def direction_from_key_to_key(map_gen, key1, key2):
 	
 	if _k1[0] > _k2[0] and _k1[1] == _k2[1]:
 		return (-1, 0)
+	
+	if _k1[0] < _k2[0] and _k1[1] < _k2[1]:
+		return (1, 1)
+	
+	if _k1[0] > _k2[0] and _k1[1] > _k2[1]:
+		return (-1, -1)
+	
+	if _k1[0] < _k2[0] and _k1[1] > _k2[1]:
+		return (1, -1)
+	
+	if _k1[0] > _k2[0] and _k1[1] < _k2[1]:
+		return (-1, 1)
 	
 	raise Exception('Invalid direction.')
 
