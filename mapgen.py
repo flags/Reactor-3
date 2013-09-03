@@ -3,6 +3,7 @@ from globals import *
 import libtcodpy as tcod
 
 import maputils
+import numbers
 import effects
 import alife
 import tiles
@@ -11,6 +12,7 @@ import maps
 
 import logging
 import random
+import numpy
 import copy
 import sys
 import os
@@ -139,29 +141,35 @@ def generate_map(size=(300, 300, 10), detail=5, towns=2, factories=4, forests=1,
 	
 	return map_gen
 
-def generate_height_map(map_gen):
+def generate_noise_map(size):
 	noise = tcod.noise_new(2)
 	noise_dx = 0
 	noise_dy = 0
 	noise_octaves = 3.0
 	noise_zoom = 12.0
 	
-	for y in range(map_gen['size'][1]):
-		for x in range(map_gen['size'][0]):
-			f = [noise_zoom * x / (2*map_gen['size'][0]) + noise_dx,
-			     noise_zoom * y / (2*map_gen['size'][1]) + noise_dy]
+	_noise_map = numpy.zeros(size[:2])
+	print _noise_map
+	for y in range(size[1]-1):
+		for x in range(size[0]-1):
+			f = [noise_zoom * x / (2*size[0]) + noise_dx,
+			     noise_zoom * y / (2*size[1]) + noise_dy]
 			
 			#value = tcod.noise_get_fbm(noise, f, noise_octaves, tcod.NOISE_PERLIN)
 			#value = tcod.noise_get_turbulence(noise, f, noise_octaves, tcod.NOISE_PERLIN)
 			#value = tcod.noise_get_fbm(noise, f, noise_octaves, tcod.NOISE_SIMPLEX)
 			value = tcod.noise_get(noise, f, tcod.NOISE_PERLIN)
-			height = int((value + 1.0) / 2.0 * map_gen['size'][2])
+			height = int((value + 1.0) / 2.0 * size[2])
 			
 			for z in range(height):
-				_tile = tiles.create_tile(random.choice(
-						[tiles.TALL_GRASS_TILE, tiles.SHORT_GRASS_TILE, tiles.GRASS_TILE]))
+				_noise_map[x, y] = height
+				#callback((x, y, z), value)
+				#_tile = tiles.create_tile(random.choice(
+				#		[tiles.TALL_GRASS_TILE, tiles.SHORT_GRASS_TILE, tiles.GRASS_TILE]))
 				
-				map_gen['map'][x][y][z] = _tile
+				#map_gen['map'][x][y][z] = _tile
+	
+	return _noise_map
 
 def generate_chunk_map(map_gen):
 	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
@@ -192,8 +200,8 @@ def generate_outlines(map_gen):
 		place_town(map_gen)
 	
 	logging.debug('Placing forests...')
-	while len(map_gen['refs']['forests'])<map_gen['forests']:
-		place_forest(map_gen)
+	#while len(map_gen['refs']['forests'])<map_gen['forests']:
+	place_forest(map_gen)
 
 def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=True):
 	_start_edge = random.randint(0, 3)
@@ -351,39 +359,57 @@ def place_town(map_gen):
 		_actual_town_chunks.append(chunk)
 		
 		if len(_actual_town_chunks)>_max_size:
-			print _actual_town_chunks
 			break	
 	
 	map_gen['refs']['towns'].append(_actual_town_chunks)
 
 def place_forest(map_gen):
-	_existing_chunks = map_gen['refs']['forests']
-	_avoid_chunk_keys = []
+	SMALLEST_FOREST = (10, 10)
 	
-	for chunk in _existing_chunks:
-		_avoid_chunk_keys.extend(['%s,%s' % (c[0], c[1]) for c in chunk])
+	_top_left = (random.randint(0, numbers.clip(map_gen['size'][0]-SMALLEST_FOREST[0], SMALLEST_FOREST[0], map_gen['size'][0]-SMALLEST_FOREST[0])),
+	             random.randint(0, map_gen['size'][1]-SMALLEST_FOREST[1]))
+	_bot_right = (random.randint(_top_left[0]+SMALLEST_FOREST[0], _top_left[0]+(map_gen['size'][0]-_top_left[0])),
+	              random.randint(_top_left[1]+SMALLEST_FOREST[1], _top_left[1]+(map_gen['size'][1]-_top_left[1])))
 	
-	while 1:
-		_chunk = random.choice(map_gen['chunk_map'].values())
-				
-		if _avoid_chunk_keys and alife.chunks.get_distance_to_hearest_chunk_in_list(_chunk['pos'], _avoid_chunk_keys) < FOREST_DISTANCE:
-			continue
-		
-		_walked = walker(map_gen,
-			_chunk['pos'],
-		     60,
-			allow_diagonal_moves=False,
-			avoid_chunks=_avoid_chunk_keys,
-			avoid_chunk_distance=FOREST_DISTANCE)
+	_size = (_bot_right[0]-_top_left[0],
+	         _bot_right[1]-_top_left[1], 4)
+	_noise_map = generate_noise_map(_size)
+	
+	for y in range(_top_left[1], _bot_right[1]-1):
+		for x in range(_top_left[0], _bot_right[0]-1):
+			map_gen['chunk_map']['%s,%s' % ((x/map_gen['chunk_size'])*map_gen['chunk_size'],
+			                                (y/map_gen['chunk_size'])*map_gen['chunk_size'])]['type'] = 'forest'
 			
-		if not _walked:
-			continue
-		
-		for pos in _walked:
-			map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'forest'
-		
-		map_gen['refs']['forests'].append(_walked)
-		break
+			_height = int(_noise_map[x-_top_left[0],y-_top_left[1]])
+			if not random.randint(0, ((_size[2]+1)-_height)*4):
+				#TODO: Tree tops
+				for z in range(0, _height):
+					map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
+	
+	#for chunk in _existing_chunks:
+	#	_avoid_chunk_keys.extend(['%s,%s' % (c[0], c[1]) for c in chunk])
+	#
+	#while 1:
+	#	_chunk = random.choice(map_gen['chunk_map'].values())
+	#			
+	#	if _avoid_chunk_keys and alife.chunks.get_distance_to_hearest_chunk_in_list(_chunk['pos'], _avoid_chunk_keys) < FOREST_DISTANCE:
+	#		continue
+	#	
+	#	_walked = walker(map_gen,
+	#		_chunk['pos'],
+	#	     60,
+	#		allow_diagonal_moves=False,
+	#		avoid_chunks=_avoid_chunk_keys,
+	#		avoid_chunk_distance=FOREST_DISTANCE)
+	#		
+	#	if not _walked:
+	#		continue
+	#	
+	#	for pos in _walked:
+	#		map_gen['chunk_map']['%s,%s' % (pos[0], pos[1])]['type'] = 'forest'
+	#	
+	#	map_gen['refs']['forests'].append(_walked)
+	#	break
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
 	_directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]

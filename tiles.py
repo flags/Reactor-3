@@ -137,6 +137,18 @@ WHITE_TILE_2 = {'id':'white_tile_2',
 			 'type': 'building',
 			 'cost':-1}
 
+SMALL_TREE_STUMP_1 = {'id':'small_tree_stump_1',
+			 'icon':'o',
+			 'color':(tcod.brass, tcod.desaturated_sea),
+			 'burnable':True,
+			 'cost':-1}
+
+SMALL_TREE_STUMP_2 = {'id':'small_tree_stump_2',
+			 'icon':'o',
+			 'color':(tcod.brass, tcod.desaturated_green),
+			 'burnable':True,
+			 'cost':-1}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -145,8 +157,7 @@ TEMP_TILES = [BLANK_TILE,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
 		RED_BRICK_2,
-		WHITE_TILE_1,
-		WHITE_TILE_2]
+        SMALL_TREE_STUMP_1]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,
@@ -155,6 +166,9 @@ GRASS_TILES = [SHORT_GRASS_TILE,
 DIRT_TILES = [DIRT_TILE_1,
 			DIRT_TILE_2,
 			DIRT_TILE_3]
+
+TREE_STUMPS = [SMALL_TREE_STUMP_1,
+               SMALL_TREE_STUMP_2]
 
 SAND_TILES = [SAND_TILE_1,
 			SAND_TILE_2]
@@ -182,6 +196,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(RED_BRICK_TILES)
 	TEMP_TILES.extend(WHITE_TILE_TILES)
+	TEMP_TILES.extend(TREE_STUMPS)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
