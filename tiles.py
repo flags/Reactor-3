@@ -167,6 +167,16 @@ WOOD_3 = {'id':'wood_3',
 			 'burnable':True,
 			 'cost':-1}
 
+LEAF_1 = {'id': 'leaf_1',
+            'icon': '\'',
+            'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
+            'burnable': True}
+
+LEAF_2 = {'id': 'leaf_2',
+            'icon': '`',
+            'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
+            'burnable': True}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -175,7 +185,7 @@ TEMP_TILES = [BLANK_TILE,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
 		RED_BRICK_2,
-        SMALL_TREE_STUMP_1]
+		SMALL_TREE_STUMP_1]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,
@@ -209,6 +219,10 @@ WHITE_TILE_TILES = [WHITE_TILE_1,
 WOOD_TILES = [WOOD_1,
               WOOD_2,
               WOOD_3]
+
+LEAF_TILES = [LEAF_1,
+              LEAF_2]
+
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -219,6 +233,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(WHITE_TILE_TILES)
 	TEMP_TILES.extend(TREE_STUMPS)
 	TEMP_TILES.extend(WOOD_TILES)
+	TEMP_TILES.extend(LEAF_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

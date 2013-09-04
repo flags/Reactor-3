@@ -3,6 +3,7 @@ from globals import *
 import libtcodpy as tcod
 
 import maputils
+import drawing
 import numbers
 import effects
 import alife
@@ -82,7 +83,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(300, 300, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False):
+def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -374,15 +375,23 @@ def place_town(map_gen):
 		if random.randint(0, 1):
 			continue
 		
-		if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveways[chunk]]['pos'], 'driveway'):
-			create_road(map_gen, _driveways[chunk], ground_tiles=tiles.CONCRETE_FLOOR_TILES, size=1)
-			map_gen['chunk_map'][_driveways[chunk]]['type'] = 'driveway'
-		
 		map_gen['chunk_map'][chunk]['type'] = 'town'
 		_actual_town_chunks.append(chunk)
 		
 		if len(_actual_town_chunks)>_max_size:
-			break	
+			break
+	
+	_covered_houses = []
+	for chunk in _actual_town_chunks:
+		#if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveways[chunk]]['pos'], 'driveway') and :
+		if chunk in _covered_houses:
+			continue
+		
+		_chunk = map_gen['chunk_map'][_driveways[chunk]]
+		create_road(map_gen, _driveways[chunk], ground_tiles=tiles.CONCRETE_FLOOR_TILES, size=1)
+		_chunk['type'] = 'driveway'
+		
+		_covered_houses.extend(get_all_connected_chunks_of_type(map_gen, _driveways[chunk], 'town'))
 	
 	map_gen['refs']['towns'].append(_actual_town_chunks)
 
@@ -401,6 +410,20 @@ def place_hills(map_gen):
 			for z in range(0, int(_noise_map[y, x])):
 				map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.GRASS_TILES))
 
+def create_tree(map_gen, position, height):
+	for z in range(1, height):
+		if z == height-1:
+			_size = random.randint(4, 7)
+			for pos in drawing.draw_circle(position[:2], _size):
+				if pos[0]<0 or pos[0]>=map_gen['size'][0]-1 or pos[1]<0 or pos[1]>=map_gen['size'][1]-1:
+					continue
+					
+				_dist = _size-numbers.clip(numbers.distance(position, pos), 1, height-map_gen['size'][2])
+				for _z in range(_dist/2, _dist):
+					map_gen['map'][pos[0]][pos[1]][2+_z] = tiles.create_tile(random.choice(tiles.LEAF_TILES))
+		else:
+			map_gen['map'][position[0]][position[1]][position[2]+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
+
 def place_forest(map_gen):
 	SMALLEST_FOREST = (80, 80)
 	
@@ -409,8 +432,6 @@ def place_forest(map_gen):
 	_bot_right = (random.randint(_top_left[0]+SMALLEST_FOREST[0], _top_left[0]+(map_gen['size'][0]-_top_left[0])),
 	              random.randint(_top_left[1]+SMALLEST_FOREST[1], _top_left[1]+(map_gen['size'][1]-_top_left[1])))
 	
-	#_size = (_bot_right[0]-_top_left[0],
-	#         _bot_right[1]-_top_left[1], 5)
 	_size = (map_gen['size'][0], map_gen['size'][1], 5)
 	_top_left = (0, 0)
 	_bot_right = (map_gen['size'][0], map_gen['size'][1])
@@ -432,13 +453,8 @@ def place_forest(map_gen):
 			if random.randint(0, _height*18):
 				continue
 			
-			for z in range(0, _height+(random.randint(1, 3))):
-				map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
-				#map_gen['map'][x][y][3+z] = tiles.create_tile(random.choice(tiles.GRASS_TILES))
-			#if not random.randint(0, ((_size[2]+1)-_height)*4):
-			#	#TODO: Tree tops
-			#	for z in range(0, _height):
-			#		map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.TREE_STUMPS))
+			_actual_height = _height+(random.randint(1, 3))
+			create_tree(map_gen, (x, y, 2), _actual_height)
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
 	_directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]
@@ -463,6 +479,22 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 		return _keys
 	
 	return _neighbors
+
+def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type):
+	_connected_chunks = [chunk_key]
+	_to_check = [chunk_key]
+	
+	while _to_check:
+		_chunk_key = _to_check.pop(0)
+		
+		for neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_chunk_key]['pos'], chunk_type):
+			if neighbor in _connected_chunks:
+				continue
+			
+			_to_check.append(neighbor)
+			_connected_chunks.append(neighbor)
+	
+	return _connected_chunks
 
 def walker(map_gen, pos, moves, density=5, allow_diagonal_moves=True, avoid_chunks=[], avoid_chunk_distance=0):
 	_pos = list(pos)
@@ -623,7 +655,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 				if (y == 0 or y == map_gen['chunk_size']-1) and not random.randint(0, 2):
 					_tile = random.choice(tiles.GRASS_TILES)
 					_height = 1
-				elif y == round(map_gen['chunk_size']/2) and x % 3:
+				elif y == round(map_gen['chunk_size']/2) and x % 3 and ground_tiles == tiles.CONCRETE_TILES:
 					_tile = tiles.ROAD_STRIPE_2
 					_height = height
 				else:
@@ -803,15 +835,19 @@ def construct_town(map_gen, town):
 		if chunk_key in _taken:
 			continue
 		
-		_chunk = map_gen['chunk_map'][chunk_key]
+		#_chunk = map_gen['chunk_map'][chunk_key]
 		_house = [chunk_key]
 		_house_dirs = {}
-		while 1:
+		_to_check = [chunk_key]
+		while _to_check:
+			_checking_chunk_key = _to_check.pop(0)
+			_chunk = map_gen['chunk_map'][_checking_chunk_key]
 			_neighbors = get_neighbors_of_type(map_gen, _chunk['pos'], 'town')
 			_added = False
 			for neighbor_key in _neighbors:
 				if not neighbor_key in _house:
 					_house.append(neighbor_key)
+					_to_check.append(neighbor_key)
 					_added = True
 			
 			if not _added:
@@ -878,8 +914,13 @@ def decorate_world(map_gen):
 				if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor]['pos'], 'driveway', diagonal=False):
 					_backyard.append(neighbor)
 		
-		#for chunk_key in _backyard:
-		#	map_gen['chunk_map'][chunk_key]['type'] = 'backyard'
+		for chunk_key in _backyard:
+			_chunk = map_gen['chunk_map'][chunk_key]
+			_chunk['type'] = 'backyard'
+			_pos = (_chunk['pos'][0]+random.randint(0, map_gen['chunk_size']-1),
+			        _chunk['pos'][1]+random.randint(0, map_gen['chunk_size']-1), 2)
+			
+			create_tree(map_gen, _pos, random.randint(4, 7))
 	
 	#fences
 	_possible_fences = []
