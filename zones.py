@@ -85,7 +85,9 @@ def process_slice(z):
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
 							_ramps.append((_x, _y, z-1))
 	
-		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		#NOTE: If stuff starts breaking, remove the condition:
+		if _ramps:
+			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):

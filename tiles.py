@@ -149,6 +149,24 @@ SMALL_TREE_STUMP_2 = {'id':'small_tree_stump_2',
 			 'burnable':True,
 			 'cost':-1}
 
+WOOD_1 = {'id':'wood_1',
+			 'icon':'#',
+			 'color':(tcod.light_sepia, tcod.sepia),
+			 'burnable':True,
+			 'cost':-1}
+
+WOOD_2 = {'id':'wood_2',
+			 'icon':'#',
+			 'color':(tcod.sepia, tcod.dark_sepia),
+			 'burnable':True,
+			 'cost':-1}
+
+WOOD_3 = {'id':'wood_3',
+			 'icon':'#',
+			 'color':(tcod.sepia, tcod.dark_sepia),
+			 'burnable':True,
+			 'cost':-1}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -188,6 +206,9 @@ RED_BRICK_TILES = [RED_BRICK_1,
 WHITE_TILE_TILES = [WHITE_TILE_1,
 			WHITE_TILE_2]
 
+WOOD_TILES = [WOOD_1,
+              WOOD_2,
+              WOOD_3]
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -197,6 +218,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(RED_BRICK_TILES)
 	TEMP_TILES.extend(WHITE_TILE_TILES)
 	TEMP_TILES.extend(TREE_STUMPS)
+	TEMP_TILES.extend(WOOD_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
