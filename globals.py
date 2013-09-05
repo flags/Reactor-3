@@ -4,7 +4,7 @@ import os
 WINDOW_TITLE = 'Reactor 3 - Milestone 5'
 
 #Constants
-WINDOW_SIZE = (200,120)
+WINDOW_SIZE = (100,60)
 MAP_SIZE = [250, 250, 5]
 MAP_WINDOW_SIZE = (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]-10)
 ITEM_WINDOW_SIZE = (40,1)

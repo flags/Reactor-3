@@ -177,6 +177,26 @@ LEAF_2 = {'id': 'leaf_2',
             'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
             'burnable': True}
 
+ROOF_DARK = {'id': 'roof_dark',
+            'icon': '^',
+            'color': (tcod.dark_sepia, tcod.darker_sepia),
+            'burnable': True}
+
+ROOF_DARKER = {'id': 'roof_darker',
+            'icon': '^',
+            'color': (tcod.darker_sepia, tcod.darkest_sepia),
+            'burnable': True}
+
+ROOF_BRIGHT = {'id': 'roof_bright',
+            'icon': '^',
+            'color': (tcod.sepia, tcod.darker_sepia),
+            'burnable': True}
+
+ROOF_BRIGHTER = {'id': 'roof_brighter',
+            'icon': '^',
+            'color': (tcod.light_sepia, tcod.sepia),
+            'burnable': True}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -223,6 +243,11 @@ WOOD_TILES = [WOOD_1,
 LEAF_TILES = [LEAF_1,
               LEAF_2]
 
+ROOF_TILES = [ROOF_BRIGHTER,
+              ROOF_BRIGHT,
+              ROOF_DARK,
+              ROOF_DARKER]
+
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -234,6 +259,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(TREE_STUMPS)
 	TEMP_TILES.extend(WOOD_TILES)
 	TEMP_TILES.extend(LEAF_TILES)
+	TEMP_TILES.extend(ROOF_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
