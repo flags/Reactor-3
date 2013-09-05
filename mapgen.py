@@ -974,10 +974,12 @@ def construct_town(map_gen, town):
 									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
 								else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+(-h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+									map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
 								
 								#else:
 								#	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+							elif len(_neighbor_dirs) == 4:
+								map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
 
 						elif _building[_y][_x] == '#':
 							map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.WALL_TILE)
@@ -1003,7 +1005,7 @@ def decorate_world(map_gen):
 			_pos = (_chunk['pos'][0]+random.randint(0, map_gen['chunk_size']-1),
 			        _chunk['pos'][1]+random.randint(0, map_gen['chunk_size']-1), 2)
 			
-			create_tree(map_gen, _pos, random.randint(4, 7))
+			#create_tree(map_gen, _pos, random.randint(4, 7))
 	
 	#fences
 	_possible_fences = []

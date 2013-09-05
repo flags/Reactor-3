@@ -1,9 +1,13 @@
 #Tools for generating buildings (prefabs)
-#from globals import *
+from globals import DATA_DIR
 from tiles import *
+
 import graphics as gfx
+
 import logging
 import random
+import json
+import os
 
 def create_new_prefab(size):
 	if not len(size) == 3:
@@ -27,6 +31,10 @@ def create_new_prefab(size):
 	logging.debug('Created new prefab of size (%s,%s,%s).' % (size[0],size[1],size[2]))
 	
 	return {'map': _prefab,'size': size}
+
+def save(prefab):
+	with open(os.path.join(PREFAB_DIR, 'test.json'), 'w') as f:
+		f.write(json.dumps(prefab))
 
 def draw_prefab(prefab):
 	_X_MAX = PREFAB_CAMERA_POS[0]+PREFAB_WINDOW_SIZE[0]

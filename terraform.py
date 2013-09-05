@@ -155,7 +155,7 @@ def handle_input():
 
 	elif INPUT[' ']:
 		if IN_PREFAB_EDITOR:
-			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][PREFAB_CAMERA_POS[2]] = \
+			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 		else:
 			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
@@ -218,7 +218,10 @@ def handle_input():
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
+		if IN_PREFAB_EDITOR:
+			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = None
+		else:
+			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
 	
 	elif INPUT['a']:
 		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
@@ -287,7 +290,7 @@ def handle_input():
 		gfx.refresh_window()
 	
 	elif INPUT['0']:
-		CAMERA_POS[2] = 10
+		CAMERA_POS[2] = 0
 		gfx.refresh_window()
 
 def menu_item_selected(entry):
@@ -299,7 +302,9 @@ def menu_item_selected(entry):
 		console_print(0, 0, 0, 'Saving...')
 		console_flush()
 		
-		maps.save_map('map1.dat')
+		maps.save_map(LOAD_MAP)
+	elif value == 'Save Prefab':
+		prefabs.save(CURRENT_PREFAB)
 	elif value == 'Compile':
 		_stime = time.time()
 		
@@ -370,6 +375,10 @@ _menu_items.append(menus.create_item('list','Blit z-level above',['On','Off']))
 _menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
 _menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 
+_menu_items.append(menus.create_item('title','Prefab',None,enabled=False))
+_menu_items.append(menus.create_item('list','S','Save Prefab'))
+_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+
 _menu_items.append(menus.create_item('title','General',None,enabled=False))
 _menu_items.append(menus.create_item('list','S','Save'))
 _menu_items.append(menus.create_item('list','C','Compile'))
@@ -385,7 +394,7 @@ menus.create_menu(title='Options',
 
 menu_align()
 
-CURRENT_PREFAB = prefabs.create_new_prefab((10,10,3))
+CURRENT_PREFAB = prefabs.create_new_prefab((5, 5, 5))
 
 def main():
 	while SETTINGS['running']:
