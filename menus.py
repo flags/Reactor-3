@@ -92,6 +92,17 @@ def draw_menus():
 			elif item['type'] == 'spacer':
 				tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				_line = item['key']*(menu['settings']['size'][0]-menu['settings']['padding'][0])
+			elif item['type'] == 'input':
+				#TODO: Input check?
+				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
+					#TODO: Colors
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
+				elif not item['enabled']:
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.darker_grey)
+				elif menu['settings']['dim']:
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
+				
+				_line = format_entry(menu['settings']['format'],item)
 			else:
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors
@@ -101,6 +112,7 @@ def draw_menus():
 				elif menu['settings']['dim']:
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
 			
+				#TODO: Per-item formats here
 				_line = format_entry(menu['settings']['format'],item)
 			
 			tcod.console_print(menu['settings']['console'],
@@ -221,3 +233,20 @@ def item_changed(menu,index):
 		return menu['on_change'](_entry)
 	else:
 		return False
+	
+def is_getting_input(menu_id):
+	_item = get_selected_item(menu_id, MENUS[menu_id]['index'])
+		
+	if _item['type'] == 'input':
+		return _item
+	
+	return False
+
+def is_any_menu_getting_input():
+	for menu_id in [MENUS.index(m) for m in MENUS]:
+		_item = is_getting_input(menu_id)
+		
+		if _item:
+			return _item
+	
+	return False

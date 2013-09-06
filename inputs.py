@@ -7,6 +7,7 @@ import libtcodpy as tcod
 import graphics as gfx
 
 import scripting
+import menus
 
 import sys
 
@@ -56,6 +57,10 @@ def get_keyboard_input():
 			
 		elif KEY.vk == tcod.KEY_BACKSPACE:
 			KEYBOARD_STRING[0] = KEYBOARD_STRING[0][:len(KEYBOARD_STRING[0])-1]
+	
+	_item = menus.is_getting_input(ACTIVE_MENU['menu'])
+	if _item and KEY.pressed:
+		_item['values'][0] += _key
 	
 	if not INPUT.has_key(_key):
 		INPUT[_key] = False

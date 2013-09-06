@@ -4,6 +4,8 @@ from tiles import *
 
 import graphics as gfx
 
+import menus
+
 import logging
 import random
 import json
@@ -32,11 +34,25 @@ def create_new_prefab(size):
 	
 	return {'map': _prefab,'size': size}
 
+def cache_prefab(name, path):
+	with open(path, 'r') as f:
+		_prefab = json.loads(''.join(f.readlines()))
+		_prefab['name'] = name
+		
+		PREFABS[name] = _prefab
+		logging.debug('Prefab cached: %s' % name)
+
+def cache_all_prefabs():
+	logging.debug('Caching all prefabs...')
+	for (dirpath, dirname, filenames) in os.walk(PREFAB_DIR):
+		for f in [f for f in filenames if f.count('.json')]:
+			cache_prefab(f.partition('.')[0], os.path.join(PREFAB_DIR, f))
+
 def save(prefab):
 	with open(os.path.join(PREFAB_DIR, 'test.json'), 'w') as f:
 		f.write(json.dumps(prefab))
 
-def draw_prefab(prefab):
+def _draw_prefab(prefab):
 	_X_MAX = PREFAB_CAMERA_POS[0]+PREFAB_WINDOW_SIZE[0]
 	_Y_MAX = PREFAB_CAMERA_POS[1]+PREFAB_WINDOW_SIZE[1]
 	
@@ -94,3 +110,31 @@ def draw_prefab(prefab):
 					char_buffer=PREFAB_CHAR_BUFFER,
 					rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 					rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
+
+def draw_prefab_thumbnail(entry):
+	#VIEWS
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_prefab = PREFABS[key]
+	
+	for y in range(0, _prefab['size'][1]):
+		for x in range(0, _prefab['size'][0]):
+			tcod.console_put_char(0, x, y, 
+
+def prefab_selected(entry):
+	pass
+
+def create_prefab_list():
+	tcod.console_clear(0)
+	tcod.console_clear(MAP_WINDOW)
+	_prefabs = []
+	for prefab in PREFABS.values():
+		_prefabs.append(menus.create_item('single', prefab['name'], None))
+	
+	return menus.create_menu(title='Prefabs',
+	                  menu=_prefabs,
+	                  padding=(0, 0),
+	                  position=(0, 0),
+	                  format_str='$k',
+	                  on_select=prefab_selected,
+	                  on_move=draw_prefab_thumbnail)

@@ -117,10 +117,14 @@ def handle_input():
 	
 	elif SETTINGS['draw console']:
 		return
+	
+	elif menus.is_getting_input(ACTIVE_MENU['menu']):
+		return
 
 	elif INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			#MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif IN_PREFAB_EDITOR:
 			#TODO: Make this and everything in the `else` statement a function.
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
@@ -129,7 +133,7 @@ def handle_input():
 
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
-			MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_after(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
+			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif IN_PREFAB_EDITOR:
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0,1))
 		else:
@@ -185,9 +189,14 @@ def handle_input():
 	
 	elif INPUT['\t']:
 		if IN_PREFAB_EDITOR:
-			IN_PREFAB_EDITOR = False
+			MENUS.pop(IN_PREFAB_EDITOR)
+			ACTIVE_MENU['menu'] = -1
+			IN_PREFAB_EDITOR = None
+			create_options_menu()
 		else:
-			IN_PREFAB_EDITOR = True
+			MENUS.pop()
+			IN_PREFAB_EDITOR = prefabs.create_prefab_list()
+			menus.activate_menu(IN_PREFAB_EDITOR)
 	
 	elif INPUT['q']:
 		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
@@ -356,70 +365,57 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
-_menu_items = []
-_menu_items.append(menus.create_item('title','Tile Operations',None,enabled=False))
-_menu_items.append(menus.create_item('single','^','Move selected up'))
-_menu_items.append(menus.create_item('single','v','Move selected down', enabled=False))
-_menu_items.append(menus.create_item('single','Del','Delete all'))
-_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+def create_options_menu():
+	_menu_items = []
+	_menu_items.append(menus.create_item('title','Tile Operations',None,enabled=False))
+	_menu_items.append(menus.create_item('single','^','Move selected up'))
+	_menu_items.append(menus.create_item('single','v','Move selected down', enabled=False))
+	_menu_items.append(menus.create_item('single','Del','Delete all'))
+	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	
+	_menu_items.append(menus.create_item('title','Map Utils',None,enabled=False))
+	_menu_items.append(menus.create_item('single','Width',MAP_SIZE[0]))
+	_menu_items.append(menus.create_item('single','Height',MAP_SIZE[1]))
+	_menu_items.append(menus.create_item('single','Depth',MAP_SIZE[2]))
+	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	
+	_menu_items.append(menus.create_item('title','View',None,enabled=False))
+	_menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
+	_menu_items.append(menus.create_item('list','Blit z-level above',['On','Off']))
+	_menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
+	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	
+	_menu_items.append(menus.create_item('title','Prefab',None,enabled=False))
+	_menu_items.append(menus.create_item('input','Name',''))
+	_menu_items.append(menus.create_item('list','S','Save Prefab'))
+	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	
+	_menu_items.append(menus.create_item('title','General',None,enabled=False))
+	_menu_items.append(menus.create_item('list','S','Save'))
+	_menu_items.append(menus.create_item('list','C','Compile'))
+	_menu_items.append(menus.create_item('list','L','Load'))
+	_menu_items.append(menus.create_item('list','E','Exit'))
+	
+	menus.create_menu(title='Options',
+		menu=_menu_items,
+		padding=(1,1),
+		position=(MAP_WINDOW_SIZE[0],0),
+		on_select=menu_item_selected,
+		on_change=menu_item_changed)
+	
+	menu_align()
 
-_menu_items.append(menus.create_item('title','Map Utils',None,enabled=False))
-_menu_items.append(menus.create_item('single','Width',MAP_SIZE[0]))
-_menu_items.append(menus.create_item('single','Height',MAP_SIZE[1]))
-_menu_items.append(menus.create_item('single','Depth',MAP_SIZE[2]))
-_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
-
-_menu_items.append(menus.create_item('title','View',None,enabled=False))
-_menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
-_menu_items.append(menus.create_item('list','Blit z-level above',['On','Off']))
-_menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
-_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
-
-_menu_items.append(menus.create_item('title','Prefab',None,enabled=False))
-_menu_items.append(menus.create_item('list','S','Save Prefab'))
-_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
-
-_menu_items.append(menus.create_item('title','General',None,enabled=False))
-_menu_items.append(menus.create_item('list','S','Save'))
-_menu_items.append(menus.create_item('list','C','Compile'))
-_menu_items.append(menus.create_item('list','L','Load'))
-_menu_items.append(menus.create_item('list','E','Exit'))
-
-menus.create_menu(title='Options',
-	menu=_menu_items,
-	padding=(1,1),
-	position=(MAP_WINDOW_SIZE[0],0),
-	on_select=menu_item_selected,
-	on_change=menu_item_changed)
-
-menu_align()
-
+prefabs.cache_all_prefabs()
 CURRENT_PREFAB = prefabs.create_new_prefab((5, 5, 5))
+create_options_menu()
 
 def main():
 	while SETTINGS['running']:
 		get_input()
 		handle_input()
 		
-		LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-		if CYTHON_ENABLED:
-			render_map.render_map(WORLD_INFO['map'])
-		else:
-			maps.render_map(WORLD_INFO['map'])
-		
-		#TODO: Cython-ify
-		maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
-		maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
-		
-		gfx.draw_all_tiles()
-		gfx.draw_bottom_ui_terraform()
-		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
-		menus.draw_menus()
-		gfx.draw_console()
-		prefabs.draw_prefab(CURRENT_PREFAB)
-		
 		if IN_PREFAB_EDITOR:
+			#prefabs.draw_prefab_editor()#(CURRENT_PREFAB)
 			gfx.draw_cursor(PREFAB_CURSOR,
 				PREFAB_CAMERA_POS,
 				PLACING_TILE,
@@ -427,12 +423,29 @@ def main():
 				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
 		else:
+			LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+
+			if CYTHON_ENABLED:
+				render_map.render_map(WORLD_INFO['map'])
+			else:
+				maps.render_map(WORLD_INFO['map'])
+			
+			#TODO: Cython-ify
+			maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
+			maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
+			
+			gfx.draw_all_tiles()
+			gfx.draw_bottom_ui_terraform()
+			gfx.draw_console()
 			gfx.draw_cursor(MAP_CURSOR,CAMERA_POS,PLACING_TILE)
 		
-		gfx.start_of_frame()
+		menus.draw_menus()
+		
+		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
+		gfx.start_of_frame(draw_char_buffer=(not menus.get_menu_by_name('Options')==-1))
 		gfx.start_of_frame_terraform()		
-		gfx.end_of_frame_terraform(editing_prefab=IN_PREFAB_EDITOR)
-		gfx.end_of_frame()
+		gfx.end_of_frame_terraform()#editing_prefab=IN_PREFAB_EDITOR)
+		gfx.end_of_frame(draw_map=(not menus.get_menu_by_name('Options')==-1))
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')

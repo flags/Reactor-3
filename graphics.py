@@ -377,8 +377,8 @@ def end_of_frame_terraform(editing_prefab=False):
 def end_of_frame_reactor3():
 	tcod.console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 
-def end_of_frame():
-	if not SETTINGS['map_slices']:
+def end_of_frame(draw_map=True):
+	if not SETTINGS['map_slices'] and draw_map:
 		tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
