@@ -188,7 +188,7 @@ def generate_chunk_map(map_gen):
 				'neighbors': [],
 				'reference': None,
 				'last_updated': None,
-				'digest': None,
+				'flags': {},
 				'type': 'other'}
 			
 def generate_outlines(map_gen):
@@ -375,7 +375,7 @@ def place_town(map_gen):
 	
 	_actual_town_chunks = []
 	_max_size = random.randint(30, 40)
-	_town_chunks = _potential_chunks[random.randint(0, len(_potential_chunks)-1):]
+	_town_chunks = _potential_chunks[:random.randint(0, numbers.clip(len(_potential_chunks)-1, 0, 60))]
 	for chunk in _town_chunks:
 		if random.randint(0, 1):
 			continue
@@ -824,6 +824,8 @@ def construct_factory(map_gen, town):
 		if len(_build_on_chunks) == 1:
 			break
 		
+		_wall_tile = tiles.WALL_TILE
+		_floor_tiles = tiles.CONCRETE_FLOOR_TILES
 		_make_door = False
 		for _chunk in _build_on_chunks:
 			if _chunk in _open:
@@ -879,9 +881,9 @@ def construct_factory(map_gen, town):
 					
 					for i in range(3):
 						if _building[_y][_x] == '#':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.WALL_TILE)
+							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
 						elif (not i or i == 2) and _building[_y][_x] == '.':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
+							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(_floor_tiles))
 							
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
@@ -914,7 +916,29 @@ def construct_town(map_gen, town):
 		#_houses.append(_house)
 		_taken.extend(_house)
 		
+		_main_rooms = ['bedroom', 'bathroom']
+		_secondary_rooms = ['kitchen', 'dining room']
+		_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
+		
 		for chunk_key in _house:
+			if 'room_type' in map_gen['chunk_map'][chunk_key]['flags']:
+				_room_type = map_gen['chunk_map'][chunk_key]['flags']['room_type']
+			elif _main_rooms:
+				_room_type = _main_rooms.pop(random.randint(0, len(_main_rooms)-1))
+			elif _secondary_rooms:
+				_room_type = _secondary_rooms.pop(random.randint(0, len(_secondary_rooms)-1))
+			else:
+				print 'pass due to empty room list'
+				break
+			
+			if _room_type == 'bedroom':
+				_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
+			elif _room_type == 'bathroom':
+				_floor_tiles = tiles.BLUE_FLOOR_TILES
+			elif _room_type == 'kitchen':
+				_floor_tiles = tiles.BROWN_FLOOR_TILES
+			
+			
 			_avoid_directions = []
 			_directions = []
 			_chunk = map_gen['chunk_map'][chunk_key]
@@ -950,6 +974,7 @@ def construct_town(map_gen, town):
 			_neighbor_dirs = [DIRECTION_MAP[str(d)] for d in [direction_from_key_to_key(map_gen, chunk_key, n) for n in get_neighbors_of_type(map_gen, _chunk['pos'], 'town')]]
 			_building = random.choice(_possible_tiles)
 			_half = map_gen['chunk_size']/2
+			
 			for _y in range(map_gen['chunk_size']):
 				y = _chunk['pos'][1]+_y
 				for _x in range(map_gen['chunk_size']):
@@ -1025,9 +1050,9 @@ def construct_town(map_gen, town):
 								map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
 
 						elif _building[_y][_x] == '#':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.WALL_TILE)
+							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
 						elif i in [0] and _building[_y][_x] == '.':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(tiles.CONCRETE_FLOOR_TILES))
+							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(_floor_tiles))
 							
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)

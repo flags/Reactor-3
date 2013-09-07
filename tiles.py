@@ -197,6 +197,41 @@ ROOF_BRIGHTER = {'id': 'roof_brighter',
             'color': (tcod.light_sepia, tcod.sepia),
             'burnable': True}
 
+WALL_BLUE = {'id': 'wall_blue',
+           'icon': '#',
+           'color': (tcod.Color(245, 245, 245), tcod.light_gray),
+           'burnable': False}
+
+FLOOR_BLUE_1 = {'id': 'floor_blue',
+           'icon': ',',
+           'color': (tcod.white, tcod.lightest_sky),
+           'burnable': False}
+
+FLOOR_BLUE_2 = {'id': 'floor_blue_2',
+           'icon': '.',
+           'color': (tcod.white, tcod.lightest_azure),
+           'burnable': False}
+
+FLOOR_DARK_BLUE_1 = {'id': 'floor_dark_blue_1',
+           'icon': '.',
+           'color': (tcod.darkest_sky, tcod.darker_azure),
+           'burnable': False}
+
+FLOOR_DARK_GREEN_1 = {'id': 'floor_dark_green_1',
+           'icon': '.',
+           'color': (tcod.darker_chartreuse, tcod.darker_lime),
+           'burnable': False}
+
+WALL_BROWN = {'id': 'wall_brown',
+           'icon': '#',
+           'color': (tcod.lighter_sepia, tcod.light_sepia),
+           'burnable': False}
+
+FLOOR_BROWN_1 = {'id': 'floor_brown_1',
+           'icon': '.',
+           'color': (tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'burnable': False}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -248,6 +283,16 @@ ROOF_TILES = [ROOF_BRIGHTER,
               ROOF_DARK,
               ROOF_DARKER]
 
+HOUSE_WALL_TILES = [WALL_BLUE, WALL_BROWN]
+
+BLUE_FLOOR_TILES = [FLOOR_BLUE_1, FLOOR_BLUE_2]
+
+DARK_BLUE_FLOOR_TILES = [FLOOR_DARK_BLUE_1]
+
+DARK_GREEN_FLOOR_TILES = [FLOOR_DARK_GREEN_1]
+
+BROWN_FLOOR_TILES = [FLOOR_BROWN_1]
+
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -260,6 +305,11 @@ def create_all_tiles():
 	TEMP_TILES.extend(WOOD_TILES)
 	TEMP_TILES.extend(LEAF_TILES)
 	TEMP_TILES.extend(ROOF_TILES)
+	TEMP_TILES.extend(HOUSE_WALL_TILES)
+	TEMP_TILES.extend(BLUE_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_BLUE_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
+	TEMP_TILES.extend(BROWN_FLOOR_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
