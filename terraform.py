@@ -442,10 +442,13 @@ def main():
 		menus.draw_menus()
 		
 		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
-		gfx.start_of_frame(draw_char_buffer=(not menus.get_menu_by_name('Options')==-1))
-		gfx.start_of_frame_terraform()		
-		gfx.end_of_frame_terraform()#editing_prefab=IN_PREFAB_EDITOR)
-		gfx.end_of_frame(draw_map=(not menus.get_menu_by_name('Options')==-1))
+		gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
+		
+		if menus.get_menu_by_name('Prefabs')==-1:
+			gfx.start_of_frame_terraform()
+		
+		gfx.end_of_frame_terraform(draw_cutouts=(not IN_PREFAB_EDITOR))#editing_prefab=IN_PREFAB_EDITOR)
+		gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')

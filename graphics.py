@@ -337,32 +337,34 @@ def position_is_in_frame(pos):
 def get_render_position(pos):
 	return [pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1]]
 
-def end_of_frame_terraform(editing_prefab=False):
+def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
-	tcod.console_blit(PREFAB_WINDOW,
-		0,
-		0,
-		PREFAB_WINDOW_SIZE[0],
-		PREFAB_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		PREFAB_WINDOW_OFFSET[1])
-	tcod.console_blit(X_CUTOUT_WINDOW,
-		0,
-		0,
-		X_CUTOUT_WINDOW_SIZE[0],
-		X_CUTOUT_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		11)
-	tcod.console_blit(Y_CUTOUT_WINDOW,
-		0,
-		0,
-		Y_CUTOUT_WINDOW_SIZE[0],
-		Y_CUTOUT_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		22)
+	
+	if draw_cutouts:
+		tcod.console_blit(PREFAB_WINDOW,
+			0,
+			0,
+			PREFAB_WINDOW_SIZE[0],
+			PREFAB_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			PREFAB_WINDOW_OFFSET[1])
+		tcod.console_blit(X_CUTOUT_WINDOW,
+			0,
+			0,
+			X_CUTOUT_WINDOW_SIZE[0],
+			X_CUTOUT_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			11)
+		tcod.console_blit(Y_CUTOUT_WINDOW,
+			0,
+			0,
+			Y_CUTOUT_WINDOW_SIZE[0],
+			Y_CUTOUT_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			22)
 	
 	if editing_prefab:
 		tcod.console_set_default_foreground(0, tcod.white)

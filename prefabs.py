@@ -117,9 +117,16 @@ def draw_prefab_thumbnail(entry):
 	value = entry['values'][entry['value']]
 	_prefab = PREFABS[key]
 	
+	PREFAB_TOP_VIEW_POS = (15, 1)
+	
 	for y in range(0, _prefab['size'][1]):
 		for x in range(0, _prefab['size'][0]):
-			tcod.console_put_char(0, x, y, 
+			for z in range(0, _prefab['size'][2]):
+				if not _prefab['map'][x][y][z]:
+					continue
+			
+				print _prefab['map'][x][y][z]
+			#tcod.console_put_char_(0, PREFAB_TOP_VIEW_POS[0]+x, PREFAB_TOP_VIEW_POS[1]+y, 
 
 def prefab_selected(entry):
 	pass

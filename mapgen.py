@@ -203,6 +203,11 @@ def generate_outlines(map_gen):
 	while len(map_gen['refs']['towns'])<map_gen['towns']:
 		place_town(map_gen)
 	
+	for chunk_key in clean_chunk_map(map_gen, 'town', minimum_chunks=1):
+		for town in map_gen['refs']['towns']:
+			if chunk_key in town:
+				town.remove(chunk_key)
+	
 	logging.debug('Decorating world...')
 	decorate_world(map_gen)
 	
@@ -375,13 +380,22 @@ def place_town(map_gen):
 		if random.randint(0, 1):
 			continue
 		
+		_skip = False
+		for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk]['pos'], 'town', diagonal=True):
+			if not neighbor_key in _town_chunks:
+				_skip = True
+				break
+		
+		if _skip:
+			continue
+		
 		map_gen['chunk_map'][chunk]['type'] = 'town'
 		_actual_town_chunks.append(chunk)
 		
 		if len(_actual_town_chunks)>_max_size:
 			break
 	
-	for chunk_key in _actual_town_chunks:
+	for chunk_key in _actual_town_chunks[:]:
 		_added = True
 		while _added:
 			_added = False
@@ -389,9 +403,22 @@ def place_town(map_gen):
 				#if neighbor_key in _actual_town_chunks:
 				#	continue
 				
-				if random.randint(0, 1):
+				_skip = False
+				for _next_neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'town'):
+					if not _next_neighbor in _actual_town_chunks:
+						_skip = True
+						break
+				
+				if _skip:
 					continue
 				
+				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'road'):
+					continue
+				
+				if random.randint(0, 3):
+					continue
+				
+				_actual_town_chunks.append(neighbor_key)
 				map_gen['chunk_map'][neighbor_key]['type'] = 'town'
 				_added = True
 	
@@ -575,6 +602,21 @@ def clean_walker(map_gen, walker, kill_range=(-2, -1)):
 		
 		if not _changed:
 			break
+
+def clean_chunk_map(map_gen, chunk_type, minimum_chunks=2, diagonal=False):
+	_chunks = []
+	for y in range(0, map_gen['size'][1], map_gen['chunk_size']):
+		for x in range(0, map_gen['size'][0], map_gen['chunk_size']):
+			_chunk = map_gen['chunk_map']['%s,%s' % (x, y)]
+			
+			if not _chunk['type'] == chunk_type:
+				continue
+			
+			if len(get_neighbors_of_type(map_gen, _chunk['pos'], chunk_type, diagonal=diagonal)) < minimum_chunks:
+				_chunk['type'] = 'other'
+				_chunks.append('%s,%s' % (x, y))
+				    
+	return _chunks
 
 def direction_from_key_to_key(map_gen, key1, key2):
 	_k1 = map_gen['chunk_map'][key1]['pos']
@@ -914,7 +956,8 @@ def construct_town(map_gen, town):
 					x = _chunk['pos'][0]+_x
 					
 					for i in range(3):
-						if i == 2:
+						if i == 2000000000000000000000000000000000000000000000000000000000000000000000000000000:
+							pass
 							h_x = _half-(abs(_half-_x))
 							h_y = _half-(abs(_half-_y))
 							
