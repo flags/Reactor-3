@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
+import copy
 import time
 
 def create_map_array():
@@ -30,6 +31,7 @@ def get_unzoned(slice_map, z):
 	
 	return None
 
+#@profile
 def process_slice(z):
 	print 'Processing:',z
 	_runs = 0
@@ -42,23 +44,34 @@ def process_slice(z):
 		_start_pos = get_unzoned(_slice, z)
 		
 		if not _start_pos:
-			print '\tRuns:',_runs,'Time:',
+			print '\tRuns for zone id %s: %s' % (_z_id, _runs)
 			break
+		else:
+			print '\tNew zone:', _z_id
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
 		
+		for x in range(MAP_SIZE[0]):
+			for y in range(MAP_SIZE[1]):
+				if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+					if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+						_slice[x][y] = -2
+					else:
+						_slice[x][y] = -1
+		
 		_changed = True
 		while _changed:
+			_per_run = time.time()
 			_runs += 1
 			_changed = False
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
-					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
-						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
-							_slice[x][y] = -2
-						else:
-							_slice[x][y] = -1
+					#if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+					#	if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+					#		_slice[x][y] = -2
+					#	else:
+					#		_slice[x][y] = -1
 					
 					if not _slice[x][y] == _z_id:
 						continue
@@ -79,15 +92,61 @@ def process_slice(z):
 							if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
 								pass
 							else:
+								if (_x, _y, z+1) in _ramps:
+									#print 'panic (2)'
+									continue
+								
 								_ramps.append((_x, _y, z+1))
 								continue
 						
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+							if (_x, _y, z-1) in _ramps:
+								print 'panic'
+								continue
+							
 							_ramps.append((_x, _y, z-1))
+			
+			print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 	
 		#NOTE: If stuff starts breaking, remove the condition:
 		if _ramps:
-			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
+		
+		
+		#for x in range(MAP_SIZE[0]):
+			#for y in range(MAP_SIZE[1]):
+				#if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+					#if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+							#_slice[x][y] = -2
+						#else:
+							#_slice[x][y] = -1
+				
+				##if not _slice[x][y] == _z_id:
+				##	continue
+				
+				#for x_mod,y_mod in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
+					#_x = x+x_mod
+					#_y = y+y_mod
+					
+					#if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
+						#continue
+					
+					#if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
+						#_slice[_x][_y] = _z_id
+						#_changed = True
+					
+					#if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
+						#if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
+							#pass
+						#else:
+							#_ramps.append((_x, _y, z+1))
+							#continue
+					
+					#if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+						#_ramps.append((_x, _y, z-1))
+		
+		#if _ramps:
+			#WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):

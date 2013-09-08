@@ -169,7 +169,8 @@ def main():
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	print tcod.sys_get_fps()
+	if '--fps' in sys.argv:
+		print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:

@@ -91,7 +91,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False):
+def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -149,6 +149,10 @@ def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1,
 		
 		logging.debug('Connecting zone ramps...')
 		zones.connect_ramps()
+	
+	if not skip_chunking:
+		maps.update_chunk_map()
+		maps.smooth_chunk_map()
 	
 	maps.save_map('test2.dat')
 	
@@ -1141,4 +1145,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(skip_zoning=True)
+		generate_map(skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

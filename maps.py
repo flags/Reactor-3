@@ -528,8 +528,7 @@ def update_chunk_map():
 				'flags': {},
 				'reference': None,
 				'last_updated': None,
-				'max_z': 0,
-				'digest': None}
+				'max_z': 0}
 			
 			_tiles = {}
 			for y2 in range(y1, y1+WORLD_INFO['chunk_size']):

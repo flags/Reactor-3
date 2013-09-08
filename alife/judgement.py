@@ -334,7 +334,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			'last_checked': -1,
 			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
-			'digest': chunk['digest'],
 			'life': []}
 	
 	_camp = chunks.get_global_flag(chunk_id, 'camp')
