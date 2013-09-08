@@ -1120,21 +1120,22 @@ def construct_town(map_gen, town):
 				if entry['open_neighbors'] == 3:
 					_only_one_neighbor.append(entry)
 			
-			_spawn_x, _spawn_y = random.choice([s['pos'] for s in _only_one_neighbor])
+			print _only_one_neighbor
+			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
 			_placed_containers = []
 			if _storage:
 				for _container in _storage:
 					if not _container['rarity']>random.uniform(0, 1.0):
 						continue
 					
-					_c = items.create_item(_container['item'], position=[x, y, 2])
+					_c = items.create_item(_container['item'], position=[_spawn_x, _spawn_y, 2])
 					_placed_containers.append(_container)
 					
 					for _inside_item in _container['spawn_list']:
 						if not can_spawn_item(_inside_item):
 							continue
 						
-						_i = items.create_item(_inside_item['item'], position=[x, y, 2])
+						_i = items.create_item(_inside_item['item'], position=[_spawn_x, _spawn_y, 2])
 						
 						if not items.can_store_item_in(_i, _c):
 							items.delete_item(_i)

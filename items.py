@@ -234,7 +234,6 @@ def draw_items():
 			_y = item['pos'][1] - CAMERA_POS[1]
 		
 			if not LOS_BUFFER[0][_y,_x]:
-				print 'cant draw dude'
 				continue
 			
 			gfx.blit_char(_x,
