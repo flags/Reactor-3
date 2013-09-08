@@ -1,8 +1,3 @@
-#NOTE: I'm refactoring all of this...
-#can't believe I let it get so uncontrollable, but
-#I'm tired of constant errors coming out of such a core
-#part of the game.
-
 from globals import *
 
 import libtcodpy as tcod
@@ -909,7 +904,7 @@ def process_response(life, target, dialog, chosen):
 		_responses.append({'text': 'That\'s too much for me.', 'gist': 'end', 'group': chosen['group'], 'like': 1})
 	
 	elif chosen['gist'] == 'complete_group_bribe':
-		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group'], 'like': 0})
+		_responses.append({'text': 'I\'m in.', 'gist': 'join_group', 'group': chosen['group']})
 	
 	elif chosen['gist'] == 'tell_about_group':
 		alife.groups.discover_group(LIFE[dialog['listener']], chosen['group'])
@@ -934,6 +929,7 @@ def process_response(life, target, dialog, chosen):
 		lfe.memory(LIFE[dialog['speaker']], 'join_group', group=chosen['group'])
 		
 		_responses.append({'text': 'Welcome!', 'gist': 'end', 'like': 1, 'group': chosen['group']})
+		_responses.append({'text': 'Welcome.', 'gist': 'end', 'group': chosen['group']})
 
 	elif chosen['gist'] == 'join_camp':
 		LIFE[dialog['speaker']]['camp'] = chosen['camp']

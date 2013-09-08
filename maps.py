@@ -91,6 +91,10 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		try:
 			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
 			
+			if 'items' in WORLD_INFO:
+				ITEMS.update(WORLD_INFO['items'])
+				#del WORLD_INFO['items']
+			
 			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]
 			MAP_SIZE[1] = _map_size[1]

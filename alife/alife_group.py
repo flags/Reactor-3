@@ -98,6 +98,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			                                       kwargs={'amount': 3,
 			                                               'chunk_key': lfe.get_current_chunk_id(life),
 			                                               'matching': {'group': life['group']}}),
+					      player_action=action.make_small_script(function='number_of_alife_in_chunk_matching',
+			                                       kwargs={'amount': 3,
+			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'matching': {'group': life['group']}}),
 			              description='Wait until everyone arrives.')
 				
 				if lfe.ticker(life, 'meet_with_group', 30):

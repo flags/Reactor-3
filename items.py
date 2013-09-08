@@ -20,11 +20,18 @@ except:
 	import json
 
 def load_item(item):
-	with open(os.path.join(ITEM_DIR,item+'.json'),'r') as e:
+	with open(os.path.join(ITEM_DIR, item),'r') as e:
 		try:
+			logging.debug('Caching item: %s' % item)
 			return json.loads(''.join(e.readlines()))
 		except ValueError,e:
 			raise Exception('Failed to load item: %s' % e)
+
+def initiate_all_items():
+	logging.debug('Loading all items...')
+	for (dirpath, dirname, filenames) in os.walk(ITEM_DIR):
+		for f in [f for f in filenames if f.count('.json')]:
+			initiate_item(f)
 
 def initiate_item(name):
 	"""Loads (and returns) new item type into memory."""
@@ -111,14 +118,6 @@ def initiate_item(name):
 	
 	return item
 
-def get_pos(item_uid):
-	item = ITEMS[item_uid]
-	
-	if 'parent_id' in item:
-		return LIFE[item['parent_id']]['pos']
-	
-	return item['pos']
-
 def create_item(name, position=[0,0,2], item=None):
 	"""Initiates and returns a copy of an item type."""
 	if not item:
@@ -178,6 +177,14 @@ def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
 
+def get_pos(item_uid):
+	item = ITEMS[item_uid]
+	
+	if 'parent_id' in item:
+		return LIFE[item['parent_id']]['pos']
+	
+	return item['pos']
+
 def get_items_at(position):
 	"""Returns list of all items at a given position."""
 	_items = []
@@ -227,6 +234,7 @@ def draw_items():
 			_y = item['pos'][1] - CAMERA_POS[1]
 		
 			if not LOS_BUFFER[0][_y,_x]:
+				print 'cant draw dude'
 				continue
 			
 			gfx.blit_char(_x,
@@ -237,6 +245,29 @@ def draw_items():
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+
+def can_store_item_in(item_uid, container_uid):
+	_item = get_item_from_uid(item_uid)
+	_container = get_item_from_uid(container_uid)
+	
+	if 'max_capacity' in _container and _container['capacity']+_item['size'] < _container['max_capacity']:
+		return container_uid
+		
+	return False
+
+def storage_item_in(life, item_uid, container_uid):
+	if not can_store_item_in(item_uid, container_uid):
+		return False
+	
+	_item = get_item_from_uid(item_uid)
+	
+	_container = items.get_item_from_uid(container_uid)
+	_container['storing'].append(item_uid)
+	_container['capacity'] += _item['size']
+	
+	update_container_capacity(life, _container)
+	
+	return True
 
 def explode(item):
 	if not item['type'] == 'explosive':

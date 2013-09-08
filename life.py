@@ -1667,7 +1667,7 @@ def can_put_item_in_storage(life,item_uid):
 		if _item['uid'] == item_uid:
 			continue
 		
-		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
+		if items.can_store_item_in(item_uid, _item['uid']):
 			return _item['uid']
 	
 	return False
@@ -1693,7 +1693,6 @@ def add_item_to_storage(life, item_uid, container=None):
 	
 	brain.remember_item(life, _item)
 	
-	print repr(_item['uid'])
 	update_container_capacity(life, _container)
 	
 	return True

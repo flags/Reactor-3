@@ -6,6 +6,7 @@ import maputils
 import drawing
 import numbers
 import effects
+import items
 import alife
 import tiles
 import zones
@@ -26,6 +27,7 @@ OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 
 tiles.create_all_tiles()
+items.initiate_all_items()
 
 def create_building(buildings, building, chunk_size):
 	_top = False
@@ -91,7 +93,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -110,7 +112,8 @@ def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1,
 		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
-		'map': maps.create_map(size=size)}
+		'map': maps.create_map(size=size),
+		'settings': {'back yards': False}}
 	
 	#logging.debug('Creating height map...')
 	#generate_height_map(map_gen)
@@ -136,6 +139,7 @@ def generate_map(size=(200, 200, 10), detail=5, towns=2, factories=4, forests=1,
 	#place_hills(map_gen)
 	#print_map_to_console(map_gen)
 	
+	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
 	
 	_map_size = maputils.get_map_size(WORLD_INFO['map'])
@@ -942,13 +946,32 @@ def construct_town(map_gen, town):
 			else:
 				print 'pass due to empty room list'
 				map_gen['chunk_map'][chunk_key]['type'] = 'other'
+				_last_placed_index = _house.index(chunk_key)
 				_house.remove(chunk_key)
+				
+				for delete_key in _house[_last_placed_index:]:
+					map_gen['chunk_map'][delete_key]['type'] = 'other'
+					print 'cleaned'
+				
 				break
 			
+			_items = []
+			_storage = []
 			if _room_type == 'bedroom':
 				_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
+				_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				               {'item': 'leather backpack', 'rarity': 0.65},
+				               {'item': 'sneakers', 'rarity': 1.0},
+				               {'item': 'white t-shirt', 'rarity': 1.0},
+				               {'item': 'white cloth', 'rarity': 0.4}]
+				_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _items}]
 			elif _room_type == 'bathroom':
 				_floor_tiles = tiles.BLUE_FLOOR_TILES
+				_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				               {'item': 'leather backpack', 'rarity': 0.65},
+				               {'item': 'sneakers', 'rarity': 1.0},
+				               {'item': 'white t-shirt', 'rarity': 1.0},
+				               {'item': 'white cloth', 'rarity': 0.4}]
 			elif _room_type == 'kitchen':
 				_floor_tiles = tiles.BROWN_FLOOR_TILES
 			
@@ -998,6 +1021,7 @@ def construct_town(map_gen, town):
 			_building = random.choice(_possible_tiles)
 			_half = map_gen['chunk_size']/2
 			
+			_open_spots = []
 			for _y in range(map_gen['chunk_size']):
 				y = _chunk['pos'][1]+_y
 				for _x in range(map_gen['chunk_size']):
@@ -1079,10 +1103,60 @@ def construct_town(map_gen, town):
 							
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
+							
+							_open_spots.append((x, y))
+			
+			_possible_spots = []
+			for pos in _open_spots:
+				_open = 0
+				for _n_pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+					if (pos[0]+_n_pos[0], pos[1]+_n_pos[1]) in _open_spots:
+						_open += 1
+				
+				_possible_spots.append({'spot': pos[:], 'open_neighbors': _open})
+			
+			_only_one_neighbor = []
+			for entry in _possible_spots:
+				if entry['open_neighbors'] == 3:
+					_only_one_neighbor.append(entry)
+			
+			_spawn_x, _spawn_y = random.choice([s['pos'] for s in _only_one_neighbor])
+			_placed_containers = []
+			if _storage:
+				for _container in _storage:
+					if not _container['rarity']>random.uniform(0, 1.0):
+						continue
+					
+					_c = items.create_item(_container['item'], position=[x, y, 2])
+					_placed_containers.append(_container)
+					
+					for _inside_item in _container['spawn_list']:
+						if not can_spawn_item(_inside_item):
+							continue
+						
+						_i = items.create_item(_inside_item['item'], position=[x, y, 2])
+						
+						if not items.can_store_item_in(_i, _c):
+							items.delete_item(_i)
+						
+			elif _items:
+				pass
+			
+			for container in _placed_containers:
+				_storage.remove(container)
+
+def can_spawn_item(item):
+	if item['rarity']>random.uniform(0, 1.0):
+		return True
+	
+	return False
 
 def decorate_world(map_gen):
 	#backyards
 	for town in map_gen['refs']['towns']:
+		if not map_gen['settings']['back yards']:
+			break
+		
 		_backyard = []
 		for chunk_key in town:
 			_chunk = map_gen['chunk_map'][chunk_key]

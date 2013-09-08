@@ -10,6 +10,7 @@ import maputils
 import logging
 import prefabs
 import random
+import items
 import zones
 import menus
 import time
@@ -43,6 +44,7 @@ except ImportError, e:
 
 gfx.log(WINDOW_TITLE)
 create_all_tiles()
+items.initiate_all_items()
 
 LOAD_MAP = 'test2.dat'
 
@@ -423,7 +425,7 @@ def main():
 				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
 		else:
-			LOS_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+			LOS_BUFFER[0] = numpy.ones((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 			if CYTHON_ENABLED:
 				render_map.render_map(WORLD_INFO['map'])
@@ -434,6 +436,7 @@ def main():
 			maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			
+			items.draw_items()
 			gfx.draw_all_tiles()
 			gfx.draw_bottom_ui_terraform()
 			gfx.draw_console()
