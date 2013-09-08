@@ -48,9 +48,17 @@ def create_building(buildings, building, chunk_size):
 			
 			if y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
 				_bot = True
+			
+			#print _tile,
+		
+		#print
 	
 	_building_temp = {'open': {'top': _top, 'bot': _bot, 'left': _left, 'right': _right},
 	                  'building': copy.deepcopy(building)}
+	
+	#for key in _building_temp['open']:
+	#	if _building_temp['open'][key]:
+	#		print key
 	
 	buildings.append(_building_temp)
 
@@ -920,7 +928,7 @@ def construct_town(map_gen, town):
 		_secondary_rooms = ['kitchen', 'dining room']
 		_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
 		
-		for chunk_key in _house:
+		for chunk_key in _house[:]:
 			if 'room_type' in map_gen['chunk_map'][chunk_key]['flags']:
 				_room_type = map_gen['chunk_map'][chunk_key]['flags']['room_type']
 			elif _main_rooms:
@@ -929,6 +937,8 @@ def construct_town(map_gen, town):
 				_room_type = _secondary_rooms.pop(random.randint(0, len(_secondary_rooms)-1))
 			else:
 				print 'pass due to empty room list'
+				map_gen['chunk_map'][chunk_key]['type'] = 'other'
+				_house.remove(chunk_key)
 				break
 			
 			if _room_type == 'bedroom':
@@ -938,17 +948,26 @@ def construct_town(map_gen, town):
 			elif _room_type == 'kitchen':
 				_floor_tiles = tiles.BROWN_FLOOR_TILES
 			
-			
 			_avoid_directions = []
 			_directions = []
 			_chunk = map_gen['chunk_map'][chunk_key]
 			for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'any'):
-				if not neighbor_key in _house:
+				if not neighbor_key in _house and not map_gen['chunk_map'][neighbor_key]['type'] == 'driveway':
 					_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
 					continue
 				
-				if map_gen['chunk_map'][neighbor_key]['type'] == 'town':
+				if map_gen['chunk_map'][neighbor_key]['type'] in ['town', 'driveway']:
 					_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				
+				#_neighbor_chunk = map_gen['chunk_map'][neighbor_key]
+				#for next_neighbor_key in get_neighbors_of_type(map_gen, _neighbor_chunk['pos'], 'driveway'):
+				#	_dir = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, neighbor_key, next_neighbor_key))]
+				#	
+				#	#if _dir in _directions:
+				#	#	continue
+				#	
+				#	_directions.append(_dir)
+				#	print 'yeah'
 		
 			_possible_tiles = []
 			for building in map_gen['buildings']:
