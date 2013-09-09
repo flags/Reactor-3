@@ -157,6 +157,7 @@ def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1,
 	if not skip_chunking:
 		maps.update_chunk_map()
 		maps.smooth_chunk_map()
+		maps.generate_reference_maps()
 	
 	maps.save_map('test2.dat')
 	
@@ -975,6 +976,9 @@ def construct_town(map_gen, town):
 			elif _room_type == 'kitchen':
 				_floor_tiles = tiles.BROWN_FLOOR_TILES
 			
+			_items = []
+			_storage = []
+			
 			_avoid_directions = []
 			_directions = []
 			_chunk = map_gen['chunk_map'][chunk_key]
@@ -1120,7 +1124,6 @@ def construct_town(map_gen, town):
 				if entry['open_neighbors'] == 3:
 					_only_one_neighbor.append(entry)
 			
-			print _only_one_neighbor
 			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
 			_placed_containers = []
 			if _storage:
@@ -1217,6 +1220,15 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
+	import logging
+	
+	logger = logging.getLogger()
+	logger.setLevel(logging.DEBUG)
+	console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
+	ch = logging.StreamHandler()
+	ch.setFormatter(console_formatter)
+	logger.addHandler(ch)
+	
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:

@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import chunks
 import brain
+import logic
 import maps
 
 import render_fast_los
@@ -90,6 +91,14 @@ def get_vision(life):
 		return 0
 	
 	#TODO: Fog? Smoke? Light?
+	#if logic.is_night():
+	#	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500:
+	#		_time = WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500)
+	#	else:
+	#		_time = WORLD_INFO['real_time_of_day']
+	#	
+	#	return int(life['vision_max']*(_time/1500.0))
+	
 	return life['vision_max']
 
 def _can_see_position(pos1, pos2):

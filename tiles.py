@@ -200,36 +200,43 @@ ROOF_BRIGHTER = {'id': 'roof_brighter',
 WALL_BLUE = {'id': 'wall_blue',
            'icon': '#',
            'color': (tcod.Color(47, 70, 94), tcod.Color(0, 20, 39)),
+           'type': 'building',
            'burnable': False}
 
 FLOOR_BLUE_1 = {'id': 'floor_blue',
            'icon': ',',
            'color': (tcod.white, tcod.lightest_sky),
+           'type': 'building',
            'burnable': False}
 
 FLOOR_BLUE_2 = {'id': 'floor_blue_2',
            'icon': '.',
            'color': (tcod.white, tcod.lightest_azure),
+           'type': 'building',
            'burnable': False}
 
 FLOOR_DARK_BLUE_1 = {'id': 'floor_dark_blue_1',
            'icon': '.',
            'color': (tcod.darkest_sky, tcod.darker_azure),
+           'type': 'building',
            'burnable': False}
 
 FLOOR_DARK_GREEN_1 = {'id': 'floor_dark_green_1',
            'icon': '.',
            'color': (tcod.darker_chartreuse, tcod.brass),
+           'type': 'building',
            'burnable': False}
 
 WALL_BROWN = {'id': 'wall_brown',
            'icon': '#',
            'color': (tcod.lighter_sepia, tcod.light_sepia),
+           'type': 'building',
            'burnable': False}
 
 FLOOR_BROWN_1 = {'id': 'floor_brown_1',
            'icon': '.',
            'color': (tcod.brass, tcod.Color(236, 200, 149)),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'type': 'building',
            'burnable': False}
 
 #Groups

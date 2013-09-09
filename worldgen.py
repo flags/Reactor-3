@@ -184,16 +184,21 @@ def randomize_item_spawns():
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def get_spawn_point():
-	_start_seed = random.randint(0, 3)
-	
-	if not _start_seed:
-		_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
-	elif _start_seed == 1:
-		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
-	elif _start_seed == 2:
-		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
-	elif _start_seed == 3:
-		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
+	if WORLD_INFO['reference_map']['roads']:
+		pass
+		#for chunk_key in WORLD_INFO['reference_map']['roads']:
+		#	if 
+	else:
+		_start_seed = random.randint(0, 3)
+		
+		if not _start_seed:
+			_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
+		elif _start_seed == 1:
+			_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
+		elif _start_seed == 2:
+			_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
+		elif _start_seed == 3:
+			_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
 	
 	return _spawn
 
