@@ -1,0 +1,11 @@
+{"name": "kevlar jacket",
+"prefix": "a",
+"type": "clothing",
+"icon": "T",
+"description": "A bulletproof jacket.",
+"attaches_to": "chest|stomach|lshoulder|rshoulder|lupperarm|rupperarm|lelbow|relbow|lforearm|rforearm",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "1x1",
+"capacity": "2x2",
+"thickness": 5,
+"material": "cloth"}

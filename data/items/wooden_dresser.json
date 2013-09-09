@@ -1,0 +1,10 @@
+{"name": "wooden dresser",
+"prefix": "a",
+"type": "storage",
+"icon": "D",
+"description": "A large wodden dresser.",
+"flags": "CAN_BURN",
+"size": "12x12",
+"capacity": "12x12",
+"thickness": 3,
+"material": "wood"}
