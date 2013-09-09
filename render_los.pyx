@@ -13,17 +13,20 @@ def draw_circle(x,y,size):
 	cdef float circle = 0
 	cdef int width=size
 	cdef int height=size
-	cdef int center_x=(width/2)
-	cdef int center_y=(height/2)
+	cdef float center_x=(width/2.0)
+	cdef float center_y=(height/2.0)
 	cdef int i,j
 	
-	_circle = []#[(x+j,y+i)]
+	_circle = []
 
-	for i in range(height):
+	for i in range(height+1):
 		for j in range(width+1):
 			circle = (((i-center_y)*(i-center_y))/((float(height)/2)*(float(height)/2)))+((((j-center_x)*(j-center_x))/((float(width)/2)*(float(width)/2))));
 			if circle>0 and circle<1.1:
 				_circle.append((x+(j-(width/2)),y+(i-(height/2))))
+	
+	if not (x, y) in _circle:
+		_circle.append((x, y))
 	
 	return _circle
 
@@ -33,7 +36,8 @@ def swap(n1,n2):
 @cython.locals(x1=cython.int, y1=cython.int, x2=cython.int, y2=cython.int)
 def draw_line(x1,y1,x2,y2):
 	path = []
-	#if start == end: return None
+	if (x1, y1) == (x2, y2):
+		return [(x2, y2)]
 	
 	start = [x1,y1]
 	end = [x2,y2]
