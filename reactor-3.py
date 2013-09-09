@@ -1,5 +1,14 @@
 """Reactor 3"""
 
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
+ch = logging.StreamHandler()
+ch.setFormatter(console_formatter)
+logger.addHandler(ch)
+
 from globals import *
 from inputs import *
 from player import *
@@ -18,7 +27,6 @@ import language
 import profiles
 import network
 import drawing
-import logging
 import weapons
 import effects
 import numbers
@@ -35,13 +43,6 @@ import time
 import maps
 import smp
 import sys
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
-ch = logging.StreamHandler()
-ch.setFormatter(console_formatter)
-logger.addHandler(ch)
 
 CYTHON_ENABLED = True
 

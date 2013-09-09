@@ -1,4 +1,14 @@
 """Terraform - World editor for Reactor 3"""
+
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
+ch = logging.StreamHandler()
+ch.setFormatter(console_formatter)
+logger.addHandler(ch)
+
 from libtcodpy import *
 from globals import *
 from inputs import *
@@ -7,7 +17,6 @@ from tiles import *
 import graphics as gfx
 import cProfile
 import maputils
-import logging
 import prefabs
 import random
 import items
@@ -16,13 +25,6 @@ import menus
 import time
 import maps
 import sys
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
-ch = logging.StreamHandler()
-ch.setFormatter(console_formatter)
-logger.addHandler(ch)
 
 #Optional Cython-compiled modules
 try:
@@ -321,6 +323,7 @@ def menu_item_selected(entry):
 		
 		maps.update_chunk_map()
 		maps.smooth_chunk_map()
+		maps.generate_reference_maps()
 		zones.create_zone_map()
 		zones.connect_ramps()
 		

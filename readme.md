@@ -86,6 +86,7 @@ Controls
 * `c` - Crouch
 * `Z (Shift-z)` - Prone
 * `P (Shift-P)` - Pause
+* `l` - Look
 * `o` - Options
 * `-` - Debug console
 

@@ -139,6 +139,9 @@ def create_item(name, position=[0,0,2], item=None):
 	item['owner'] = None
 	item['aim_at_limb'] = None
 	
+	if not 'examine_keys' in item:
+		item['examine_keys'] = ['description']
+	
 	if 'speed' in item:
 		item['max_speed'] = item['speed']
 	else:

@@ -615,7 +615,7 @@ def handle_input():
 			gfx.refresh_window()
 
 	if INPUT['l']:
-		SUN_BRIGHTNESS[0] += 4
+		create_look_list()
 	
 	if INPUT['k']:
 		create_crafting_menu()
@@ -966,6 +966,31 @@ def create_target_list():
 	
 	return _menu_items
 
+def create_look_list():
+	_menu_items = []
+	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+		if item.has_key('parent_id'):
+			continue
+		
+		if item.has_key('parent'):
+			continue
+		
+		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid']))
+	
+	if not _menu_items:
+		gfx.message('There\'s nothing to look at.')
+		return False
+	
+	_i = menus.create_menu(title='Look at...',
+	    menu=_menu_items,
+	    padding=(1,1),
+	    position=(1,1),
+	    on_move=handle_item_view,
+	    on_close=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
+	    format_str='$k')
+	
+	menus.activate_menu(_i)
+
 def create_dialog(entry):
 	_target = entry['target']
 	LIFE[SETTINGS['controlling']]['targeting'] = None
@@ -1250,6 +1275,25 @@ def handle_tasks_menu(entry):
 		jobs.leave_job(entry['job_id'], SETTINGS['controlling'], reject=True)
 		
 		menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_item_view(entry):
+	item = items.get_item_from_uid(entry['item'])
+	
+	if menus.get_menu_by_name('Examining...')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Equip'))
+	
+	_menu_items = []
+	
+	for key in item['examine_keys']:
+		_menu_items.append(menus.create_item('single', key, item[key]))	
+
+	_i = menus.create_menu(title='Examining...',
+        menu=_menu_items,
+        padding=(1,1),
+        position=(1,1),
+        format_str='$k: $v')
+	
+	#menus.activate_menu(_i)
 
 def create_jobs_menu():
 	if menus.get_menu_by_name('Jobs')>-1:

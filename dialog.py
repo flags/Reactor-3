@@ -557,6 +557,9 @@ def get_responses_about_self(life):
 		else:
 			_responses.append({'text': 'I don\'t do much.', 'gist': 'nothing'})
 	
+	if 'player' in life:
+		_responses.append({'text': 'I don\'t do much. What do you do?', 'gist': 'talk_about_self'})
+	
 	return _responses
 
 def get_items_to_give(life, target, matches={}):
@@ -692,6 +695,7 @@ def process_response(life, target, dialog, chosen):
 				_responses.extend(get_responses_about_self(life))
 			else:
 				_responses.append({'text': 'Why would I tell you?', 'gist': 'okay', 'dislike': 1})
+				_responses.append({'text': 'I think you\'re better off not knowing.', 'gist': 'okay'})
 		
 		lfe.memory(life, 'met', target=dialog['listener'])
 		lfe.memory(target, 'met', target=dialog['listener'])

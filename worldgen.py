@@ -6,6 +6,7 @@ import life as lfe
 import historygen
 import profiles
 import effects
+import mapgen
 import logic
 import items
 import tiles
@@ -185,20 +186,29 @@ def randomize_item_spawns():
 
 def get_spawn_point():
 	if WORLD_INFO['reference_map']['roads']:
-		pass
-		#for chunk_key in WORLD_INFO['reference_map']['roads']:
-		#	if 
-	else:
-		_start_seed = random.randint(0, 3)
+		_entry_road_keys = []
+		for road in WORLD_INFO['reference_map']['roads']:
+			for chunk_key in road:
+				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
+				
+				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:
+					_entry_road_keys.append(chunk_key)
 		
-		if not _start_seed:
-			_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
-		elif _start_seed == 1:
-			_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
-		elif _start_seed == 2:
-			_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
-		elif _start_seed == 3:
-			_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
+		if _entry_road_keys:
+			_spawn_pos = random.choice(WORLD_INFO['chunk_map'][random.choice(_entry_road_keys)]['ground'])
+			
+			return [_spawn_pos[0], _spawn_pos[1], 2]
+
+	_start_seed = random.randint(0, 3)
+	
+	if not _start_seed:
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
+	elif _start_seed == 1:
+		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
+	elif _start_seed == 2:
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
+	elif _start_seed == 3:
+		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
 	
 	return _spawn
 
@@ -242,7 +252,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[10, 10, 2])
+		position=get_spawn_point())
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
 	

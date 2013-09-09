@@ -26,9 +26,6 @@ FOREST_DISTANCE = 25
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 
-tiles.create_all_tiles()
-items.initiate_all_items()
-
 def create_building(buildings, building, chunk_size):
 	_top = False
 	_bot = False
@@ -976,9 +973,6 @@ def construct_town(map_gen, town):
 			elif _room_type == 'kitchen':
 				_floor_tiles = tiles.BROWN_FLOOR_TILES
 			
-			_items = []
-			_storage = []
-			
 			_avoid_directions = []
 			_directions = []
 			_chunk = map_gen['chunk_map'][chunk_key]
@@ -1220,8 +1214,6 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
-	import logging
-	
 	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
 	console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
@@ -1229,6 +1221,9 @@ if __name__ == '__main__':
 	ch.setFormatter(console_formatter)
 	logger.addHandler(ch)
 	
+	tiles.create_all_tiles()
+	items.initiate_all_items()
+
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
