@@ -22,15 +22,15 @@ def look(life):
 		return False
 	
 	_chunks = []
-	if SETTINGS['smp']:
-		_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in WORLD_INFO['chunk_map']]
-		_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
-		brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	else:
-		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
-		#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
-		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
-		brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	#if SETTINGS['smp']:
+	#	_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in WORLD_INFO['chunk_map']]
+	#	_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
+	#	brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	#else:
+	_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
+	#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+	_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+	brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
 	if not _chunks:
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]

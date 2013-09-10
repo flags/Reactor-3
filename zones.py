@@ -2,6 +2,8 @@ from globals import *
 
 import libtcodpy as tcod
 
+import smp
+
 import copy
 import time
 
@@ -32,14 +34,22 @@ def get_unzoned(slice_map, z):
 	return None
 
 #@profile
-def process_slice(z):
-	print 'Processing:',z
+def process_slice(z, world_info=None, start_id=0):
+	print 'Processing:', z
 	_runs = 0
 	_slice = create_map_array()
 	
+	if world_info:
+		WORLD_INFO.update(world_info)
+	
 	while 1:
-		WORLD_INFO['zoneid'] += 1
-		_z_id = WORLD_INFO['zoneid']
+		if world_info:
+			start_id += 1
+			_z_id = start_id
+		else:
+			WORLD_INFO['zoneid'] += 1
+			_z_id = WORLD_INFO['zoneid']
+		
 		_ramps = []
 		_start_pos = get_unzoned(_slice, z)
 		
@@ -110,7 +120,10 @@ def process_slice(z):
 	
 		#NOTE: If stuff starts breaking, remove the condition:
 		if _ramps:
-			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
+			if world_info:
+				return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
+			else:
+				WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': copy.deepcopy(_slice), 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
 		
 		
 		#for x in range(MAP_SIZE[0]):
@@ -197,12 +210,15 @@ def create_zone_map():
 	tcod.console_set_default_foreground(0, tcod.white)
 	tcod.console_flush()
 	
-	for z in range(MAP_SIZE[2]):
-		tcod.console_print(0, 0, 0, 'Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
-		tcod.console_flush()
-		process_slice(z)
+	if SETTINGS['smp']:
+		smp.create_zone_maps()
+	else:
+		for z in range(MAP_SIZE[2]):
+			tcod.console_print(0, 0, 0, 'Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
+			tcod.console_flush()
+			process_slice(z)
 	
-	tcod.console_print(0, 0, 0, '              ')
+		tcod.console_print(0, 0, 0, '              ')
 
 def connect_ramps():
 	_i = 1

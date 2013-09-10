@@ -327,6 +327,12 @@ def message(text, style=None):
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
+def title(text):
+	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
+	_center_y = WINDOW_SIZE[1]/2
+	tcod.console_print(0, _center_x, _center_y, text)
+	tcod.console_flush()
+
 def position_is_in_frame(pos):
 	if pos[0] >= CAMERA_POS[0] and pos[0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and \
 	   pos[1] >= CAMERA_POS[1] and pos[1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:

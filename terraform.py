@@ -25,6 +25,7 @@ import menus
 import time
 import maps
 import sys
+import smp
 
 #Optional Cython-compiled modules
 try:
@@ -45,6 +46,7 @@ except ImportError, e:
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
 gfx.log(WINDOW_TITLE)
+#smp.init()
 create_all_tiles()
 items.initiate_all_items()
 

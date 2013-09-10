@@ -100,8 +100,8 @@ def tick_all_objects(source_map):
 	timers.tick()
 	items.tick_all_items(source_map)
 	
-	if SETTINGS['smp']:
-		smp.scan_all_surroundings()
+	#if SETTINGS['smp']:
+	#	smp.scan_all_surroundings()
 	
 	life.tick_all_life(source_map)
 	

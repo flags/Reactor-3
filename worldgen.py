@@ -1,6 +1,7 @@
 from globals import *
 
 import libtcodpy as tcod
+import graphics as gfx
 import life as lfe
 
 import historygen
@@ -126,6 +127,8 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def load_world(world):
+	gfx.title('Loading...')
+	
 	WORLD_INFO['id'] = world
 	maps.load_map('map', base_dir=profiles.get_world(world))
 
@@ -154,6 +157,7 @@ def load_world(world):
 	logging.info('World loaded.')
 
 def save_world():
+	gfx.title('Saving...')
 	logging.debug('Offloading world...')
 	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
 	

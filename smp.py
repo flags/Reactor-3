@@ -1,8 +1,10 @@
 from multiprocessing import Pool, freeze_support
 from globals import *
 
-import alife
 import life as lfe
+import alife
+
+import zones
 
 import time
 
@@ -42,6 +44,27 @@ def scan_all_surroundings():
 		
 		for r in _rem:
 			_workers.remove(r)
+
+def _retrieve_zone_map(ret):
+	if ret:
+		WORLD_INFO['slices'][ret['id']] = ret
+
+def create_zone_map(world_info, z, start_id):
+	zones.process_slice(z, world_info=world_info, start_id=start_id)
+
+def create_zone_maps():
+	_workers = []
 	
+	for z in range(MAP_SIZE[2]):
+		WORLD_INFO['zoneid'] += 100
+		_z = WORLD_INFO['zoneid']
+		_workers.append(SETTINGS['smp'].apply_async(create_zone_map, args=(WORLD_INFO, z, _z), callback=_retrieve_zone_map))
 	
-	
+	while _workers:
+		_rem = []
+		for result in _workers:
+			if result.ready():
+				_rem.append(result)
+		
+		for r in _rem:
+			_workers.remove(r)

@@ -11,6 +11,7 @@ import alife
 import tiles
 import zones
 import maps
+import smp
 
 import cProfile
 import logging
@@ -98,6 +99,8 @@ def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1,
 	Forests: Number of large forested areas.
 	Underground: Flags whether buildings can be constructed beneath the surface.
 	"""
+	
+	#smp.init()
 	
 	map_gen = {'size': size,
 		'chunk_size': detail,
@@ -468,7 +471,7 @@ def place_hills(map_gen):
 def create_tree(map_gen, position, height):
 	_trunk = random.choice(tiles.TREE_STUMPS)
 	
-	for z in range(1, height):
+	for z in range(0, height):
 		if z == height-1:
 			_size = random.randint(4, 7)
 			for pos in drawing.draw_circle(position[:2], _size):
@@ -1117,6 +1120,9 @@ def construct_town(map_gen, town):
 			for entry in _possible_spots:
 				if entry['open_neighbors'] == 3:
 					_only_one_neighbor.append(entry)
+			
+			if not _only_one_neighbor:
+				continue
 			
 			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
 			_placed_containers = []
