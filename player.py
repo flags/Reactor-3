@@ -577,10 +577,6 @@ def handle_input():
 			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
 			_items.extend(items.get_items_at(__pos))
 		
-		if not _items:
-			gfx.message('There is nothing here to pick up.')
-			return False
-		
 		if menus.get_menu_by_name('Pick up')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Pick up'))
 			return False
@@ -1264,6 +1260,10 @@ def create_open_item_menu(items):
 	
 	if len(_menu_items)==1:
 		gfx.message('The %s is empty.' % items[0]['name'])
+		return False
+	
+	if not _menu_items:
+		gfx.message('There is nothing here to open.')
 		return False
 	
 	_i = menus.create_menu(title='Pick up',

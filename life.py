@@ -1674,20 +1674,21 @@ def add_item_to_storage(life, item_uid, container=None):
 		print 'cannot store',_item['name']
 		return False
 	
-	_container = items.get_item_from_uid(container)
-	_container['storing'].append(_item['uid'])
-	_container['capacity'] += _item['size']
+	#_container = items.get_item_from_uid(container)
+	#_container['storing'].append(_item['uid'])
+	#_container['capacity'] += _item['size']
+	items.store_item_in(item_uid, container)
 	
 	brain.remember_item(life, _item)
-	
-	items.update_container_capacity(_container['uid'])
 	
 	return True
 
 def remove_item_in_storage(life, item_uid):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
 	if 'stored_in' in items.get_item_from_uid(item_uid):
-			items.remove_item_from_any_storage(item_uid)	
+		items.remove_item_from_any_storage(item_uid)
+	else:
+		print 'incorrect: item not stored'
 	
 	#for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 	#	if not 'max_capacity' in _container:
@@ -1940,6 +1941,9 @@ def remove_item_from_inventory(life, item_id):
 	elif item_is_stored(life, item_id):
 		item['pos'] = life['pos'][:]
 		remove_item_in_storage(life, item_id)
+		print 'item is stored'
+	elif not item_is_stored(life, item_id):
+		print 'item is NOT stored'
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
