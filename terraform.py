@@ -63,7 +63,7 @@ gfx.init_libtcod(terraform=True)
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
 
-IN_PREFAB_EDITOR = False
+SETTINGS['view'] = 'chunk_map'
 PLACING_TILE = WALL_TILE
 
 def handle_scrolling(cursor,camera,window_size,map_size,change):
@@ -98,7 +98,7 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 	gfx.refresh_window()
 
 def handle_input():
-	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
+	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
 	if gfx.window_is_closed():
 		SETTINGS['running'] = False
@@ -131,7 +131,7 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			#MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
+		elif SETTINGS['view'] == 'prefab':
 			#TODO: Make this and everything in the `else` statement a function.
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
 		else:
@@ -140,7 +140,7 @@ def handle_input():
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
+		elif SETTINGS['view'] == 'prefab':
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0,1))
 		else:
 			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,1))
@@ -149,7 +149,7 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
+		elif SETTINGS['view'] == 'prefab':
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1,0))
 		else:
 			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1,0))
@@ -158,13 +158,13 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
+		elif SETTINGS['view'] == 'prefab':
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1,0))
 		else:
 			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1,0))
 
 	elif INPUT[' ']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 		else:
@@ -172,8 +172,10 @@ def handle_input():
 				create_tile(PLACING_TILE)
 	
 	elif INPUT['m']:
-		SUN_POS[0] += 1
-		SUN_POS[1] += 1
+		if SETTINGS['view'] == 'map':
+			SETTINGS['view'] = 'chunk_map'
+		else:
+			SETTINGS['view'] = 'map'
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
@@ -194,7 +196,7 @@ def handle_input():
 		ACTIVE_MENU['menu'] = -1
 	
 	elif INPUT['\t']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			MENUS.pop(IN_PREFAB_EDITOR)
 			ACTIVE_MENU['menu'] = -1
 			IN_PREFAB_EDITOR = None
@@ -233,7 +235,7 @@ def handle_input():
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = None
 		else:
 			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
@@ -421,7 +423,7 @@ def main():
 		get_input()
 		handle_input()
 		
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			#prefabs.draw_prefab_editor()#(CURRENT_PREFAB)
 			gfx.draw_cursor(PREFAB_CURSOR,
 				PREFAB_CAMERA_POS,
@@ -429,6 +431,10 @@ def main():
 				char_buffer=PREFAB_CHAR_BUFFER,
 				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
+		
+		elif SETTINGS['view'] == 'chunk_map':
+			gfx.draw_chunk_map()
+			
 		else:
 			LOS_BUFFER[0] = numpy.ones((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
@@ -447,16 +453,16 @@ def main():
 			gfx.draw_console()
 			gfx.draw_cursor(MAP_CURSOR,CAMERA_POS,PLACING_TILE)
 		
-		menus.draw_menus()
-		
-		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
-		gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
-		
-		if menus.get_menu_by_name('Prefabs')==-1:
-			gfx.start_of_frame_terraform()
-		
-		gfx.end_of_frame_terraform(draw_cutouts=(not IN_PREFAB_EDITOR))#editing_prefab=IN_PREFAB_EDITOR)
-		gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
+			menus.draw_menus()
+			
+			gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
+			gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
+			
+			if menus.get_menu_by_name('Prefabs')==-1:
+				gfx.start_of_frame_terraform()
+			
+			gfx.end_of_frame_terraform(draw_cutouts=(not SETTINGS['view'] == 'prefab'))
+			gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')

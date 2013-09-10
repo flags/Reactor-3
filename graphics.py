@@ -291,6 +291,31 @@ def draw_dijkstra_heatmap():
 			_light = numbers.clip(_score,0,150)
 			lighten_tile(x,y,_light)
 
+def draw_chunk_map():
+	tcod.console_rect(0, 0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], True, flag=tcod.BKGND_SET)
+	tcod.console_set_default_background(0, tcod.black)
+	
+	for y in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
+			_type = WORLD_INFO['chunk_map']['%s,%s' % (x, y)]['type']
+			_tile = str(_type[0])
+			
+			if _type == 'other':
+				tcod.console_set_default_foreground(0, tcod.Color(15, 15, 15))
+				_tile = '/'
+			elif _type == 'factory':
+				tcod.console_set_default_foreground(0, tcod.gray)
+			elif _type == 'forest':
+				tcod.console_set_default_foreground(0, tcod.darker_green)
+			elif _type == 'town':
+				tcod.console_set_default_foreground(0, tcod.brass)
+			elif _type == 'road':
+				tcod.console_set_default_foreground(0, tcod.light_gray)
+			else:
+				tcod.console_set_default_foreground(0, tcod.white)
+			tcod.console_put_char(0, x/WORLD_INFO['chunk_size'], y/WORLD_INFO['chunk_size'], _tile)
+	tcod.console_flush()
+
 def draw_console():
 	if not SETTINGS['draw console']:
 		return False

@@ -26,6 +26,10 @@ TOWN_SIZE = 160
 FOREST_DISTANCE = 25
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
+ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
+              'bathroom': {'required': True, 'floor_tiles': tiles.BLUE_FLOOR_TILES},
+              'kitchen': {'floor_tiles': tiles.BROWN_FLOOR_TILES},
+              'dining_room': {'floor_tiles': tiles.WHITE_TILE_TILES}}
 
 def create_building(buildings, building, chunk_size):
 	_top = False
