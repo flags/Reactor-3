@@ -63,7 +63,7 @@ gfx.init_libtcod(terraform=True)
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
 
-SETTINGS['view'] = 'chunk_map'
+SETTINGS['view'] = 'map'
 PLACING_TILE = WALL_TILE
 
 def handle_scrolling(cursor,camera,window_size,map_size,change):

@@ -273,6 +273,7 @@ def worldgen_menu_select(entry):
 	value = entry['values'][entry['value']]
 	
 	if key == 'Generate':
+		graphics.title('Setting up world...')
 		generate_world()
 	elif key == 'Back':
 		switch_to_main_menu()
