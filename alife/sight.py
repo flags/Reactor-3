@@ -71,7 +71,7 @@ def look(life):
 			brain.meet_alife(life, ai)
 	
 		for item in [ITEMS[i] for i in chunk['items']]:
-			if item.has_key('id') or item.has_key('parent'):
+			if item.has_key('parent') or item.has_key('parent_id') or item.has_key('stored_in'):
 				continue
 			
 			_can_see = can_see_position(life, item['pos'])

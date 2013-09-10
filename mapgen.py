@@ -1142,6 +1142,9 @@ def construct_town(map_gen, town):
 						
 						if not items.can_store_item_in(_i, _c):
 							items.delete_item(_i)
+							continue
+						
+						items.store_item_in(_i, _c)
 						
 			elif _items:
 				pass

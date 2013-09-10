@@ -544,6 +544,9 @@ def update_chunk_map():
 					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
 						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
+						
+						if not _tile:
+							continue
 					
 					for z in range(0, MAP_SIZE[2]):
 						if not WORLD_INFO['map'][x2][y2][z]:

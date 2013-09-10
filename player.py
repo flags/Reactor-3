@@ -529,7 +529,7 @@ def handle_input():
 	if INPUT['w']:
 		create_wound_menu()
 	
-	if INPUT['o']:
+	if INPUT['O']:
 		if menus.get_menu_by_name('Debug (Developer)')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
@@ -568,6 +568,24 @@ def handle_input():
 			return False
 		
 		create_pick_up_item_menu(_items)
+	
+	if INPUT['o']:
+		_pos = LIFE[SETTINGS['controlling']]['pos']
+		_items = []
+		
+		for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
+			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
+			_items.extend(items.get_items_at(__pos))
+		
+		if not _items:
+			gfx.message('There is nothing here to pick up.')
+			return False
+		
+		if menus.get_menu_by_name('Pick up')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Pick up'))
+			return False
+		
+		create_open_item_menu(_items)
 	
 	if INPUT['a']:
 		if menus.get_menu_by_name('Eat')>-1:
@@ -969,10 +987,7 @@ def create_target_list():
 def create_look_list():
 	_menu_items = []
 	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
-		if item.has_key('parent_id'):
-			continue
-		
-		if item.has_key('parent'):
+		if items.is_item_owned(item['uid']):
 			continue
 		
 		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid']))
@@ -1138,9 +1153,14 @@ def pick_up_item_from_ground(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
+	_item = items.get_item_from_uid(entry['item'])
+	
+	if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+		gfx.message('You can\'t lift the %s.' % _item['name'])
+		return False
+	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
-		_item = items.get_item_from_uid(entry['item'])
 		if entry['values'][entry['value']] == 'Wear':
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
@@ -1211,13 +1231,38 @@ def create_pick_up_item_menu(items):
 	_menu_items = []
 	
 	for item in items:
-		_menu_items.append(menus.create_item('single',0,item['name'],icon=item['icon'],item=item['uid']))
+		_menu_items.append(menus.create_item('single', item['name'], None, icon=item['icon'], item=item['uid']))
 	
 	_i = menus.create_menu(title='Pick up',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
-		format_str='[$i] $k: $v',
+		format_str='[$i] $k',
+		on_select=pick_up_item_from_ground_action)
+	
+	menus.activate_menu(_i)
+
+def create_open_item_menu(items):
+	_menu_items = []
+	
+	for item in items:
+		if not 'storing' in item:
+			continue
+		
+		_menu_items.append(menus.create_item('title', item['name'], None, icon=item['icon'], item=item['uid']))
+		
+		for stored_item in [ITEMS[s] for s in item['storing']]:
+			_menu_items.append(menus.create_item('single', stored_item['name'], None, icon=stored_item['icon'], item=stored_item['uid']))
+	
+	if len(_menu_items)==1:
+		gfx.message('The %s is empty.' % items[0]['name'])
+		return False
+	
+	_i = menus.create_menu(title='Pick up',
+		menu=_menu_items,
+		padding=(1,1),
+		position=(1,1),
+		format_str='[$i] $k',
 		on_select=pick_up_item_from_ground_action)
 	
 	menus.activate_menu(_i)

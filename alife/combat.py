@@ -291,13 +291,13 @@ def guard(life):
 		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
 	
 	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
-	if _dropped and not 'parent_id' in ITEMS[_dropped]:
+	if _dropped and not items.is_item_owned(_dropped):
 		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
 		
 		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'])>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
 			return True
 	
-	if _dropped and 'parent_id' in ITEMS[_dropped] and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
+	if _dropped and items.is_item_owned(_dropped) and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
 		wont_disarm(life)
 
 def retrieve_weapon(life):

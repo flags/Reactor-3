@@ -195,13 +195,10 @@ def get_items_at(position):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('parent_id'):
+		if is_item_owned(_item):
 			continue
 		
-		if item.has_key('parent'):
-			continue
-		
-		if item['pos'] == position:
+		if tuple(item['pos']) == tuple(position):
 			_items.append(item)
 	
 	return _items
@@ -221,14 +218,25 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 	
 	logging.debug('%s flies off in an arc! (%s)' % (get_name(item), item['velocity']))
 
+def is_item_owned(item_uid):
+	_item = get_item_from_uid(item_uid)
+	
+	if _item.has_key('parent_id'):
+		return True
+	
+	if _item.has_key('parent'):
+		return True
+	
+	if _item.has_key('stored_in'):
+		return True
+	
+	return False
+
 def draw_items():
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('parent_id'):
-			continue
-		
-		if item.has_key('parent'):
+		if is_item_owned(item['uid']):
 			continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
@@ -248,6 +256,16 @@ def draw_items():
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
 
+def update_container_capacity(container_uid):
+	"""Updates the current capacity of container. Returns nothing."""
+	_container = get_item_from_uid(container_uid)
+	_capacity = 0
+	
+	for item in _container['storing']:
+		_capacity += get_item_from_uid(item)['size']
+	
+	_container['capacity'] = _capacity
+
 def can_store_item_in(item_uid, container_uid):
 	_item = get_item_from_uid(item_uid)
 	_container = get_item_from_uid(container_uid)
@@ -257,19 +275,29 @@ def can_store_item_in(item_uid, container_uid):
 		
 	return False
 
-def storage_item_in(life, item_uid, container_uid):
+def store_item_in(item_uid, container_uid):
 	if not can_store_item_in(item_uid, container_uid):
+		print 'cannot store in'
 		return False
 	
 	_item = get_item_from_uid(item_uid)
 	
-	_container = items.get_item_from_uid(container_uid)
+	_container = get_item_from_uid(container_uid)
 	_container['storing'].append(item_uid)
 	_container['capacity'] += _item['size']
+	_item['stored_in'] = container_uid
 	
-	update_container_capacity(life, _container)
+	update_container_capacity(container_uid)
 	
 	return True
+
+def remove_item_from_any_storage(item_uid):
+	_item = get_item_from_uid(item_uid)
+	
+	_container = get_item_from_uid(_item['stored_in'])
+	_container['storing'].remove(item_uid)
+	update_container_capacity(_item['stored_in'])
+	del _item['stored_in']
 
 def explode(item):
 	if not item['type'] == 'explosive':

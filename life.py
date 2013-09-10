@@ -1636,19 +1636,6 @@ def throw_item(life, id, target, speed):
 	else:
 		say('@n throws %s.' % items.get_name(_item))
 
-def update_container_capacity(life,container):
-	"""Updates the current capacity of container. Returns nothing."""
-	logging.warning('life.update_container_capacity(): This method is untested!')
-	_capacity = 0
-	
-	for item in container['storing']:
-		if item in life['inventory']:
-			_capacity += get_inventory_item(life,item)['size']
-		else:
-			_capacity += items.get_item_from_uid(item)['size']
-	
-	container['capacity'] = _capacity
-
 def is_item_in_storage(life, item):
 	"""Returns True if item is in storage, else False."""
 	for container in get_all_storage(life):
@@ -1693,23 +1680,26 @@ def add_item_to_storage(life, item_uid, container=None):
 	
 	brain.remember_item(life, _item)
 	
-	update_container_capacity(life, _container)
+	items.update_container_capacity(_container['uid'])
 	
 	return True
 
-def remove_item_in_storage(life,id):
+def remove_item_in_storage(life, item_uid):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
-		if not 'max_capacity' in _container:
-			continue
-
-		if id in _container['storing']:
-			_container['storing'].remove(id)
-			_container['capacity'] -= get_inventory_item(life,id)['size']
-			logging.debug('Removed item #%s from %s' % (id,_container['name']))
-			
-			update_container_capacity(life, _container)
-			return _container
+	if 'stored_in' in items.get_item_from_uid(item_uid):
+			items.remove_item_from_any_storage(item_uid)	
+	
+	#for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
+	#	if not 'max_capacity' in _container:
+	#		continue
+	#
+	#	if id in _container['storing']:
+	#		_container['storing'].remove(id)
+	#		_container['capacity'] -= get_inventory_item(life,id)['size']
+	#		logging.debug('Removed item #%s from %s' % (id,_container['name']))
+	#		
+	#		update_container_capacity(_container['uid'])
+	#		return _container
 	
 	return False
 
@@ -1725,7 +1715,9 @@ def item_is_stored(life,id):
 	return False
 
 def item_is_worn(life, item):
-	if not 'parent_id' in item:
+	#if not 'parent_id' in item:
+	#	return False
+	if items.is_item_owned(item['uid']):
 		return False
 	
 	for limb in item['attaches_to']:
@@ -1873,6 +1865,10 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
 	item['parent_id'] = life['id']
+	
+	if 'stored_in' in item:
+		items.remove_item_from_any_storage(item_uid)
+	
 	life['inventory'].append(item_uid)
 	
 	if 'max_capacity' in item:
@@ -1900,6 +1896,9 @@ def add_item_to_inventory(life, item_uid):
 	
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
+	
+	if 'stored_in' in item:
+		items.remove_item_from_any_storage(item_uid)
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
@@ -2007,6 +2006,23 @@ def consume_item(life, item_id):
 			gfx.message('You finsh eating.')
 		else:
 			gfx.message('You finsh drinking.')
+
+def get_max_carry_size(life):
+	_greatest = 0
+	
+	for storage in [s for s in get_all_storage(life)]:
+		_capacity = storage['max_capacity']-storage['capacity']
+		
+		if _capacity > _greatest:
+			_greatest = _capacity
+	
+	return _greatest
+
+def can_carry_item(life, item_uid):
+	if items.get_item_from_uid(item_uid)['size'] < get_max_carry_size(life):
+		return True
+	
+	return False
 
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
