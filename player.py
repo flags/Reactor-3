@@ -8,6 +8,7 @@ import crafting
 import worldgen
 import weapons
 import dialog
+import timers
 import logic
 import menus
 import items
@@ -219,12 +220,15 @@ def handle_input():
 		menus.activate_menu(_i)
 	
 	if INPUT['t']:
-		if menus.get_menu_by_name('Throw')>-1:
+		if not menus.get_menu_by_name('Arm')==-1:
+			return False
+		
+		if menus.get_menu_by_name('Throw')>-1 and menus.get_menu_by_name('Arm')==-1:
 			menus.delete_menu(menus.get_menu_by_name('Throw'))
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['targeting']:
-			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing']['id'], LIFE[SETTINGS['controlling']]['targeting'], 2)
+			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing'], LIFE[SETTINGS['controlling']]['targeting'], 2)
 			LIFE[SETTINGS['controlling']]['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True
@@ -385,7 +389,7 @@ def handle_input():
 		if not LIFE[SETTINGS['controlling']]['encounters']:
 			return False
 		
-		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		life.focus_on(LIFE[SETTINGS['controlling']])
 		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
 		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
 		
@@ -479,33 +483,68 @@ def handle_input():
 			print 'Strafing'
 	
 	if INPUT['S']:
-		if not LIFE[SETTINGS['controlling']]['encounters']:
+		#if not LIFE[SETTINGS['controlling']]['encounters']:
+		#	return False
+		
+		#SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
+		#_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
+		#LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
+		
+		#speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
+		
+		#logging.debug('** SURRENDERING **')
+		if menus.get_menu_by_name('Stats')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Stats'))
 			return False
 		
-		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
-		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
-		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
+		_stats = []
+		_stats.append(menus.create_item('title', 'Stats', None))
+		_stats.append(menus.create_item('spacer', '=', None))
 		
-		speech.communicate(LIFE[SETTINGS['controlling']], 'surrender', matches=[{'id': _target['id']}])
+		for key in LIFE[SETTINGS['controlling']]['stats']:
+			if key == 'description':
+				continue
+			
+			_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
 		
-		logging.debug('** SURRENDERING **')
+		_i = menus.create_menu(title='Options',
+			menu=_stats,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v')
+		
+		menus.activate_menu(_i)
+	
+	if INPUT['j']:
+		if LIFE[SETTINGS['controlling']]['job']:
+			create_tasks_menu()
+		else:
+			create_jobs_menu()
+		#for key in LIFE[SETTINGS['controlling']]['job']:
+		#	if key == 'description':
+		#		continue
+		#	
+		#	_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
 	
 	if INPUT['w']:
-		create_wound_menu()		
+		create_wound_menu()
 	
-	if INPUT['o']:
-		if menus.get_menu_by_name('Options')>-1:
-			menus.delete_menu(menus.get_menu_by_name('Options'))
+	if INPUT['O']:
+		if menus.get_menu_by_name('Debug (Developer)')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
 		_options = []
-		_options.append(menus.create_item('title','Debug (Developer)',None))
-		_options.append(menus.create_item('spacer','=',None))
-		_options.append(menus.create_item('single','Save','Offload game to disk'))
-		_options.append(menus.create_item('single','Load','Load game from disk'))
-		_options.append(menus.create_item('single','Reload map','Reloads map from disk'))
+		_options.append(menus.create_item('title', 'Map Operations', None))
+		_options.append(menus.create_item('single', 'Save', 'Offload game to disk'))
+		_options.append(menus.create_item('single', 'Load', 'Load game from disk'))
+		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
+		_options.append(menus.create_item('title', 'World Info', None))
+		_options.append(menus.create_item('single', 'ALife', len(LIFE)))
+		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
+		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))
 		
-		_i = menus.create_menu(title='Options',
+		_i = menus.create_menu(title='Debug (Developer)',
 			menu=_options,
 			padding=(1,1),
 			position=(1,1),
@@ -513,9 +552,6 @@ def handle_input():
 			on_select=handle_options_menu)
 		
 		menus.activate_menu(_i)
-	
-	if INPUT['O']:
-		life.show_debug_info(LIFE[SETTINGS['following']])
 	
 	if INPUT['Z']:
 		life.crawl(LIFE[SETTINGS['controlling']])
@@ -532,6 +568,20 @@ def handle_input():
 			return False
 		
 		create_pick_up_item_menu(_items)
+	
+	if INPUT['o']:
+		_pos = LIFE[SETTINGS['controlling']]['pos']
+		_items = []
+		
+		for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
+			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
+			_items.extend(items.get_items_at(__pos))
+		
+		if menus.get_menu_by_name('Pick up')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Pick up'))
+			return False
+		
+		create_open_item_menu(_items)
 	
 	if INPUT['a']:
 		if menus.get_menu_by_name('Eat')>-1:
@@ -579,7 +629,7 @@ def handle_input():
 			gfx.refresh_window()
 
 	if INPUT['l']:
-		SUN_BRIGHTNESS[0] += 4
+		create_look_list()
 	
 	if INPUT['k']:
 		create_crafting_menu()
@@ -791,19 +841,51 @@ def inventory_throw(entry):
 
 	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']], item['uid'])
 	if _stored:
-		_delay = 40
+		_delay = 15
 		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
 	else:
-		_delay = 20
+		_delay = 8
 	
-	LIFE[SETTINGS['controlling']]['throwing'] = item
+	LIFE[SETTINGS['controlling']]['throwing'] = item['uid']
+	
+	if item['type'] == 'explosive':
+		if 'player' in LIFE[SETTINGS['controlling']]:
+			_items = [menus.create_item('list', 'Time', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], item=item['uid'])]
+	
+			_menu = menus.create_menu(title='Arm',
+					                  menu=_items,
+					                  padding=(1,1),
+					                  position=(1,1),
+					                  format_str='$k: $v',
+					                  on_select=handle_arm_item)
+			
+			menus.activate_menu(_menu)
+	else:
+		menus.delete_menu(ACTIVE_MENU['menu'])
+	
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'holditemthrow',
+			'item': entry['id'],
+			'hand': _hand},
+			200,
+			delay=_delay)
+	
+def handle_arm_item(entry):
+	key = entry['key']
+	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['item'])
+	value = entry['values'][entry['value']]*10
+	_hand = life.can_throw(LIFE[SETTINGS['controlling']])
+	
+	timers.create(item, action.make_small_script(function='explode',
+	                                       item=item['uid']),
+	              15+value)
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'holditemthrow',
-		'item': entry['id'],
-		'hand': _hand},
-		200,
-		delay=_delay)
+			'item': entry['item'],
+			'hand': _hand},
+			200,
+			delay=15)
 	
+	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):
@@ -894,9 +976,31 @@ def create_target_list():
 		if not _menu_items:
 			SETTINGS['following'] = target['id']
 		
-		_menu_items.append(menus.create_item('single', target['name'], None, target=target['id']))
+		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id']))
 	
 	return _menu_items
+
+def create_look_list():
+	_menu_items = []
+	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+		if items.is_item_owned(item['uid']):
+			continue
+		
+		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid']))
+	
+	if not _menu_items:
+		gfx.message('There\'s nothing to look at.')
+		return False
+	
+	_i = menus.create_menu(title='Look at...',
+	    menu=_menu_items,
+	    padding=(1,1),
+	    position=(1,1),
+	    on_move=handle_item_view,
+	    on_close=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
+	    format_str='$k')
+	
+	menus.activate_menu(_i)
 
 def create_dialog(entry):
 	_target = entry['target']
@@ -1045,10 +1149,15 @@ def pick_up_item_from_ground(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
+	_item = items.get_item_from_uid(entry['item'])
+	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
-		_item = items.get_item_from_uid(entry['item'])
 		if entry['values'][entry['value']] == 'Wear':
+			if not life.can_wear_item(LIFE[SETTINGS['controlling']], _item['uid']):
+				gfx.message('You can\'t equip this item!')
+				return False
+			
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupequipitem',
@@ -1057,6 +1166,10 @@ def pick_up_item_from_ground(entry):
 				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
+			if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+				gfx.message('You can\'t lift the %s.' % _item['name'])
+				return False
+			
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupholditem',
@@ -1066,6 +1179,10 @@ def pick_up_item_from_ground(entry):
 				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		return True
+	
+	if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+		gfx.message('You can\'t lift the %s.' % _item['name'])
+		return False
 	
 	gfx.message('You start to put %s in your %s.' %
 		(items.get_name(items.get_item_from_uid(entry['item'])), items.get_name(items.get_item_from_uid(entry['container']))))
@@ -1118,13 +1235,42 @@ def create_pick_up_item_menu(items):
 	_menu_items = []
 	
 	for item in items:
-		_menu_items.append(menus.create_item('single',0,item['name'],icon=item['icon'],item=item['uid']))
+		_menu_items.append(menus.create_item('single', item['name'], None, icon=item['icon'], item=item['uid']))
 	
 	_i = menus.create_menu(title='Pick up',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(1,1),
-		format_str='[$i] $k: $v',
+		format_str='[$i] $k',
+		on_select=pick_up_item_from_ground_action)
+	
+	menus.activate_menu(_i)
+
+def create_open_item_menu(items):
+	_menu_items = []
+	
+	for item in items:
+		if not 'storing' in item:
+			continue
+		
+		_menu_items.append(menus.create_item('title', item['name'], None, icon=item['icon'], item=item['uid']))
+		
+		for stored_item in [ITEMS[s] for s in item['storing']]:
+			_menu_items.append(menus.create_item('single', stored_item['name'], None, icon=stored_item['icon'], item=stored_item['uid']))
+	
+	if len(_menu_items)==1:
+		gfx.message('The %s is empty.' % items[0]['name'])
+		return False
+	
+	if not _menu_items:
+		gfx.message('There is nothing here to open.')
+		return False
+	
+	_i = menus.create_menu(title='Pick up',
+		menu=_menu_items,
+		padding=(1,1),
+		position=(1,1),
+		format_str='[$i] $k',
 		on_select=pick_up_item_from_ground_action)
 	
 	menus.activate_menu(_i)
@@ -1153,23 +1299,250 @@ def handle_options_menu(entry):
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+def handle_jobs_menu_action(entry):
+	if entry['key'] == 'Join':
+		jobs.join_job(entry['job_id'], SETTINGS['controlling'])
+		LIFE[SETTINGS['controlling']]['task'] = jobs.get_next_task(LIFE[SETTINGS['controlling']], entry['job_id'])
+	else:
+		jobs.leave_job(entry['job_id'], SETTINGS['controlling'])
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_jobs_menu(entry):
+	if 'job_id' in entry:
+		_menu_items = [menus.create_item('single', 'Join', None, job_id=entry['job_id'])]
+		_menu_items.append(menus.create_item('single', 'Decline', None, job_id=entry['job_id']))	
+	
+		_i = menus.create_menu(title='Action',
+			menu=_menu_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k',
+			on_select=handle_jobs_menu_action)
+		
+		menus.activate_menu(_i)
+
+def handle_tasks_menu(entry):
+	if entry['key'] == 'Quit':
+		jobs.leave_job(entry['job_id'], SETTINGS['controlling'], reject=True)
+		
+		menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_item_view(entry):
+	item = items.get_item_from_uid(entry['item'])
+	
+	if menus.get_menu_by_name('Examining...')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Equip'))
+	
+	_menu_items = []
+	
+	for key in item['examine_keys']:
+		_menu_items.append(menus.create_item('single', key, item[key]))	
+
+	_i = menus.create_menu(title='Examining...',
+        menu=_menu_items,
+        padding=(1,1),
+        position=(1,1),
+        format_str='$k: $v')
+	
+	#menus.activate_menu(_i)
+
+def create_jobs_menu():
+	if menus.get_menu_by_name('Jobs')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Jobs'))
+		return False
+	
+	_all_jobs = LIFE[SETTINGS['controlling']]['jobs']
+	if not _all_jobs:
+		gfx.message('You don\'t have any jobs.')
+		return False
+	
+	_jobs = [menus.create_item('title', 'Jobs', None)]
+	
+	for job in [jobs.get_job(j) for j in _all_jobs]:
+		_jobs.append(menus.create_item('single', job['name'], job['description'], job_id=job['id']))
+	
+	if _jobs:
+		_i = menus.create_menu(title='Jobs',
+	                           menu=_jobs,
+	                           padding=(1,1),
+	                           position=(1,1),
+	                           format_str='$k: $v',
+	                           on_select=handle_jobs_menu)
+	
+		menus.activate_menu(_i)
+
+def create_tasks_menu():
+	if menus.get_menu_by_name('Tasks')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Tasks'))
+		return False
+	
+	_life = LIFE[SETTINGS['controlling']]
+	_tasks = []
+	
+	for task_id in jobs.get_job(_life['job'])['tasks'].keys():
+		task = jobs.get_task(_life['job'], task_id)
+		
+		_tasks.append(menus.create_item('single',
+		                                task_id,
+		                                task['description'],
+		                                job_id=_life['job'],
+		                                task_id=task_id,
+		                                enabled=(task_id in jobs.get_free_tasks(_life['job'], local_completed=_life['completed_tasks']))))
+	
+	_tasks.append(menus.create_item('title', 'Job', ''))
+	_tasks.append(menus.create_item('single', 'Quit', '', job_id=_life['job']))
+	
+	if _tasks:
+		_i = menus.create_menu(title='Tasks',
+	                           menu=_tasks,
+	                           padding=(1,1),
+	                           position=(1,1),
+	                           format_str='$k: $v',
+		                       on_select=handle_tasks_menu)
+	
+		menus.activate_menu(_i)
+
+def announce_to(entry):
+	if entry['who'] == 'public':
+		_announce_to = LIFE.keys()
+		_announce_to.remove(SETTINGS['controlling'])
+	elif entry['who'] == 'trusted':
+		_announce_to = judgement.get_trusted(LIFE[SETTINGS['controlling']], visible=False)
+	elif entry['who'] == 'private':
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		menus.delete_menu(ACTIVE_MENU['menu'])
+		return False
+	
+	for life_id in _announce_to:
+		speech.communicate(LIFE[SETTINGS['controlling']],
+			           'job',
+			           msg='New group gather at xx,yy',
+			           matches=[{'id': life_id}],
+			           job_id=entry['job_id'],)
+	
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def create_announce_group_menu(**kwargs):
+	_phrases = []
+	_phrases.append(menus.create_item('single', 'Private', None, who='private'))
+	_phrases.append(menus.create_item('single', 'Public', None, gist='job', who='public', **kwargs))
+	_phrases.append(menus.create_item('single', 'Trusted', None, gist='job', who='trusted', **kwargs))
+	
+	_menu = menus.create_menu(title='Announce group to...',
+                              menu=_phrases,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k',
+                              on_select=announce_to)
+
+	menus.activate_menu(_menu)
+	
+def handle_create_job(entry):
+	for entry in entry['workers']:
+		print entry['key']
+
+def handle_select_workers(entry):
+	job = entry['key']
+	
+	_workers = []
+	for worker in [LIFE[w] for w in groups.get_group(LIFE[SETTINGS['controlling']]['group'])['members']]:
+		_workers.append(menus.create_item('list', ' '.join(worker['name']), ['Free', 'Assigned'], workers=_workers))
+	
+	_menu = menus.create_menu(title='Select Workers',
+                              menu=_workers,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k: $v',
+                              on_select=handle_create_job)
+	
+	menus.activate_menu(_menu)
+
+def talk_to(entry):
+	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+	menus.delete_menu(ACTIVE_MENU['menu'])
+
 def radio_menu(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	_phrases = []
 	_life = LIFE[SETTINGS['controlling']]
+	_pos = life.get_current_chunk(_life)['pos']
 	
 	if key == 'Distress':
 		#speech.announce(life, 'under_attack')
 		pass
+	elif key == 'Call':
+		_people = []
+		
+		for life_id in LIFE[SETTINGS['controlling']]['know']:
+			_people.append(menus.create_item('single',
+			                                 ' '.join(LIFE[life_id]['name']),
+			                                 None,
+			                                 target=life_id))
+		
+		if _people:
+			_menu = menus.create_menu(title='Talk to...',
+                              menu=_people,
+                              padding=(1,1),
+                              position=(1,1),
+                              format_str='$k',
+                              on_select=talk_to)
+			menus.activate_menu(_menu)
+			return True
+		
+	elif key == 'Create group':
+		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
+		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.', gist='create_group')
+		
+		jobs.add_task(_j, '0', 'move_to_chunk',
+		              action.make_small_script(function='find_target',
+		                                       kwargs={'target': SETTINGS['controlling'],
+		                                               'distance': 5}),
+		              delete_on_finish=False)
+		jobs.add_task(_j, '1', 'talk',
+		              action.make_small_script(function='start_dialog',
+		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
+		              requires=['0'],
+		              delete_on_finish=False)
+		
+		groups.flag(_g, 'job_gather', _j)
+		
+		return create_announce_group_menu(job_id=_j)
+	elif key == 'Announce group':
+		return create_announce_group_menu(job_id=groups.get_flag(LIFE[SETTINGS['controlling']]['group'], 'job_gather'))
 	elif key == 'Locate':
 		speech.communicate(_life,
 		                   'group_location',
 		                   msg='Where are you?',
 		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
 		                   group_id=_life['group'])
-	elif key == 'Suggest Location':
+	elif key == 'Shelter':
+		groups.find_and_announce_shelter(_life, _life['group'])
+	elif key == 'Manage Jobs':
+		_jobs = [menus.create_item('single', 'Free Roam', 'Scout out the area.', job='roam')]
+		_jobs.append(menus.create_item('single', 'Guard Area', 'Keep watch over a specific point.', job='guard_area'))
+		_jobs.append(menus.create_item('single', 'Guard Person', 'Protect a target.', job='guard_person'))
+		
+		_menu = menus.create_menu(title='Manage Jobs',
+		                          menu=_jobs,
+		                          padding=(1,1),
+		                          position=(1,1),
+		                          format_str='$k: $v',
+		                          on_select=handle_select_workers)
+		
+		return menus.activate_menu(_menu)
+	elif key == 'Suggest location':
 		pass
+	#TODO: Steve "Jobs" Jobbers
+	elif key == 'Jobs':
+		speech.communicate(_life,
+		                   'group_jobs',
+		                   msg='Do you have any jobs for me?',
+		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   group_id=_life['group'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -1177,10 +1550,25 @@ def create_radio_menu():
 	_phrases = []
 	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
 	
+	if LIFE[SETTINGS['controlling']]['know']:
+		_phrases.append(menus.create_item('single', 'Call', 'Contact someone.'))
+	
+	if not LIFE[SETTINGS['controlling']]['group'] or not groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+		_phrases.append(menus.create_item('single', 'Create group', 'Start a new group.'))
+	elif groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+		_phrases.append(menus.create_item('single', 'Announce group', 'Broadcast for more members.'))
+	
 	if LIFE[SETTINGS['controlling']]['group']:
-		_phrases.append(menus.create_item('title', 'Group', None))
-		_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
-		_phrases.append(menus.create_item('single', 'Suggest Location', 'Suggest shelter location.'))
+		if groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+			_phrases.append(menus.create_item('title', 'Group (Leader)', None))
+			_phrases.append(menus.create_item('single', 'Manage Jobs', 'Create and view jobs.'))
+			_phrases.append(menus.create_item('single', 'Shelter', 'Set this location as a shelter.'))
+		else:
+			_phrases.append(menus.create_item('title', 'Group (Member)', None))
+			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
+			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
+			if LIFE[SETTINGS['controlling']]['group']:
+				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(LIFE[SETTINGS['controlling']]['group'])['members'])>1))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

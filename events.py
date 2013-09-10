@@ -53,6 +53,9 @@ def process_event(event):
 	return True
 
 def accept(event, life_id):
+	if life_id in event['accepted']:
+		return False
+	
 	event['accepted'].append(life_id)
 	
 	logging.debug('%s has accepted event: %s' % (' '.join(LIFE[life_id]['name']), event['name']))

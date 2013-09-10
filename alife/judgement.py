@@ -80,8 +80,8 @@ def get_trust(life, target_id):
 	
 	return _trust
 
-def can_trust(life, target_id, low=0):
-	_knows = brain.knows_alife_by_id(life, target_id)
+def can_trust(life, life_id, low=0):
+	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	if _knows['trust']>=low:
 		return True
@@ -162,8 +162,8 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 			continue
 		
 		#TODO: Maybe the job calls for us to engage this target?
-		if jobs.alife_is_factor_of_any_job(target['life']):
-			continue
+		#if jobs.alife_is_factor_of_any_job(target['life']):
+		#	continue
 		
 		_passed_combat_targets.append(target['life']['id'])
 	
@@ -288,7 +288,7 @@ def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
 
 def judge_shelter(life, chunk_id):
-	chunk = CHUNK_MAP[chunk_id]
+	chunk = WORLD_INFO['chunk_map'][chunk_id]
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
@@ -322,7 +322,10 @@ def judge_shelter(life, chunk_id):
 	return True
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
-	chunk = CHUNK_MAP[chunk_id]
+	if lfe.ticker(life, 'judge_tick', 30):
+		return False
+	
+	chunk = maps.get_chunk(chunk_id)
 	_score = 0
 	
 	if not chunk_id in life['known_chunks']:
@@ -331,8 +334,11 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			'last_checked': -1,
 			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
-			'digest': chunk['digest'],
 			'life': []}
+	
+	_camp = chunks.get_global_flag(chunk_id, 'camp')
+	if _camp and not _camp in life['known_camps']:
+		camps.discover_camp(life, _camp)
 	
 	_known_chunk = life['known_chunks'][chunk_id]	
 	
@@ -379,15 +385,16 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
 	
-	for camp in life['known_camps'].values():
-		if not chunk_id in camp['reference']:
-			continue
+	#for camp in life['known_camps']:
+	#	if not chunk_id in camps.get_camp(camp)['reference']:
+	#		continue
 		
-		if not life['camp'] == camp['id']:
-			continue
+		
+		#if not life['camp'] == camp['id']:
+		#	continue
 	
-		if stats.desires_shelter(life):
-			_score += judge_camp(life, life['camp'])
+		#if stats.desires_shelter(life):
+		#	_score += judge_camp(life, life['camp'])
 	
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
@@ -400,7 +407,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 		if _item:
 			_score += _item['score']
 
-	maps.refresh_chunk(chunk_id)
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score
@@ -409,7 +415,7 @@ def judge_all_chunks(life):
 	logging.warning('%s is judging all chunks.' % (' '.join(life['name'])))
 	_stime = time.time()
 	
-	for chunk in CHUNK_MAP:
+	for chunk in WORLD_INFO['chunk_map']:
 		judge_chunk(life, chunk)
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
@@ -526,18 +532,57 @@ def judge_camp(life, camp, for_founding=False):
 	#print 'camp score:',(len(camp)*_percent_known),_score,(len(camp)*_percent_known)*_score
 	return (len(camp)*_percent_known)*_score
 
-def judge_job(life, job):
-	_score = 0
-	for factor in job['factors']:
-		if factor['type'] == 'alife':
-			_alife = brain.knows_alife_by_id(life, factor['value'])
-			
-			if not _alife:
+def judge_jobs(life):
+	_tier = 0
+	
+	if life['task']:
+		return life['job']
+	
+	_new_job = None
+	_old_job = life['job']
+	#life['job'] = None
+		
+	for job in [jobs.get_job(j) for j in life['jobs']]:
+		if not jobs.get_free_tasks(job['id']):
+			continue
+		
+		if life['group'] and job['gist'] == 'create_group':
+			if not stats.wants_to_abandon_group(life, life['group']):
+				jobs.reject_job(job['id'], life['id'])
 				continue
 			
-			_score += judge(life, _alife)
-
-	return _score
+			if life['group'] == jobs.get_flag(job['id'], 'group'):
+				print 'DUDE I HAVE THIS ALREADY WTF!!!!!!!!!' * 100
+				jobs.reject_job(job['id'], life['id'])
+				continue
+		
+		if job['id'] in life['completed_jobs'] or job['id'] in life['rejected_jobs']:
+			continue
+		
+		if job['tier'] >= _tier:
+			#jobs.join_job(job['id'], life['id'])
+			_new_job = job['id']
+			_tier = job['tier']
+	
+	if not _old_job == _new_job:
+		if _old_job:
+			jobs.leave_job(_old_job, life['id'])
+	
+		if _new_job:
+			print life['completed_jobs']
+			jobs.join_job(_new_job, life['id'])
+	
+	if life['job']:
+		life['task'] = jobs.get_next_task(life, life['job'])
+	
+	if not life['task']:
+		if life['job']:
+			jobs.leave_job(life['job'], life['id'], reject=True)
+	
+	if not life['job'] == _old_job:
+		life['completed_tasks'] = []
+	
+	return life['job']
 
 def judge_raid(life, raiders, camp):
 	# score >= 0: We can handle it
@@ -565,6 +610,9 @@ def judge_raid(life, raiders, camp):
 def judge_group(life, group_id):
 	_score = 0
 	for member in groups.get_group(group_id)['members']:
+		if member == life['id']:
+			continue
+		
 		_knows = brain.knows_alife_by_id(life, member)
 		if not _knows:
 			continue
@@ -660,3 +708,26 @@ def get_best_shelter(life):
 			_best_shelter['score'] = _score
 	
 	return _best_shelter['shelter']
+
+def update_camps(life):
+	for camp in life['known_camps'].values():
+		camp['snapshot']['life'] = []
+		camp['snapshot']['groups'] = {}
+	
+	for _target in life['know'].values():
+		for camp in life['known_camps'].values():
+			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
+				continue
+			
+			camp['snapshot']['life'].append(_target['life']['id'])
+			if _target['life']['group']:
+				if _target['life']['group'] in camp['snapshot']['groups']:
+					camp['snapshot']['groups'][_target['life']['group']] += 1
+				else:
+					camp['snapshot']['groups'][_target['life']['group']] = 1
+	
+	#for camp in life['known_camps'].values():
+	#	if not camp['snapshot']['life']:
+	#		continue
+	#	
+	#	print life['name'], camp['id'], camp['snapshot']['life']

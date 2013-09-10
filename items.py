@@ -7,6 +7,7 @@ import maputils
 import drawing
 import numbers
 import effects
+import timers
 import maps
 import life
 
@@ -19,11 +20,18 @@ except:
 	import json
 
 def load_item(item):
-	with open(os.path.join(ITEM_DIR,item+'.json'),'r') as e:
+	with open(os.path.join(ITEM_DIR, item),'r') as e:
 		try:
+			logging.debug('Caching item: %s' % item)
 			return json.loads(''.join(e.readlines()))
 		except ValueError,e:
 			raise Exception('Failed to load item: %s' % e)
+
+def initiate_all_items():
+	logging.debug('Loading all items...')
+	for (dirpath, dirname, filenames) in os.walk(ITEM_DIR):
+		for f in [f for f in filenames if f.count('.json')]:
+			initiate_item(f)
 
 def initiate_item(name):
 	"""Loads (and returns) new item type into memory."""
@@ -110,14 +118,6 @@ def initiate_item(name):
 	
 	return item
 
-def get_pos(item_uid):
-	item = ITEMS[item_uid]
-	
-	if 'parent_id' in item:
-		return LIFE[item['parent_id']]['pos']
-	
-	return item['pos']
-
 def create_item(name, position=[0,0,2], item=None):
 	"""Initiates and returns a copy of an item type."""
 	if not item:
@@ -139,6 +139,9 @@ def create_item(name, position=[0,0,2], item=None):
 	item['owner'] = None
 	item['aim_at_limb'] = None
 	
+	if not 'examine_keys' in item:
+		item['examine_keys'] = ['description']
+	
 	if 'speed' in item:
 		item['max_speed'] = item['speed']
 	else:
@@ -158,6 +161,11 @@ def delete_item(item):
 			
 			del life['know_items'][item['uid']]
 	
+	timers.remove_by_owner(item)
+	
+	if gfx.position_is_in_frame(item['pos']):
+		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
+	
 	del ITEMS[item['uid']]
 
 def save_all_items():
@@ -172,6 +180,14 @@ def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
 
+def get_pos(item_uid):
+	item = ITEMS[item_uid]
+	
+	if 'parent_id' in item:
+		return LIFE[item['parent_id']]['pos']
+	
+	return item['pos']
+
 def get_items_at(position):
 	"""Returns list of all items at a given position."""
 	_items = []
@@ -179,13 +195,10 @@ def get_items_at(position):
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('parent_id'):
+		if is_item_owned(_item):
 			continue
 		
-		if item.has_key('parent'):
-			continue
-		
-		if item['pos'] == position:
+		if tuple(item['pos']) == tuple(position):
 			_items.append(item)
 	
 	return _items
@@ -204,16 +217,26 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 	item['realpos'] = item['pos'][:]
 	
 	logging.debug('%s flies off in an arc! (%s)' % (get_name(item), item['velocity']))
-	print item['realpos'], item['pos'], item['uid']
+
+def is_item_owned(item_uid):
+	_item = get_item_from_uid(item_uid)
+	
+	if _item.has_key('parent_id'):
+		return True
+	
+	if _item.has_key('parent'):
+		return True
+	
+	if _item.has_key('stored_in'):
+		return True
+	
+	return False
 
 def draw_items():
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
-		if item.has_key('parent_id'):
-			continue
-		
-		if item.has_key('parent'):
+		if is_item_owned(item['uid']):
 			continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
@@ -232,6 +255,70 @@ def draw_items():
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+
+def update_container_capacity(container_uid):
+	"""Updates the current capacity of container. Returns nothing."""
+	_container = get_item_from_uid(container_uid)
+	_capacity = 0
+	
+	for item in _container['storing']:
+		_capacity += get_item_from_uid(item)['size']
+	
+	_container['capacity'] = _capacity
+
+def can_store_item_in(item_uid, container_uid):
+	_item = get_item_from_uid(item_uid)
+	_container = get_item_from_uid(container_uid)
+	
+	if 'max_capacity' in _container and _container['capacity']+_item['size'] < _container['max_capacity']:
+		return container_uid
+		
+	return False
+
+def store_item_in(item_uid, container_uid):
+	if not can_store_item_in(item_uid, container_uid):
+		print 'cannot store in'
+		return False
+	
+	_item = get_item_from_uid(item_uid)
+	
+	_container = get_item_from_uid(container_uid)
+	_container['storing'].append(item_uid)
+	_container['capacity'] += _item['size']
+	_item['stored_in'] = container_uid
+	
+	update_container_capacity(container_uid)
+	
+	return True
+
+def remove_item_from_any_storage(item_uid):
+	_item = get_item_from_uid(item_uid)
+	
+	_container = get_item_from_uid(_item['stored_in'])
+	_container['storing'].remove(item_uid)
+	update_container_capacity(_item['stored_in'])
+	del _item['stored_in']
+
+def explode(item):
+	if not item['type'] == 'explosive':
+		return False
+	
+	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
+	
+	if 'fire' in item['damage']:
+		for pos in drawing.draw_circle(item['pos'], item['radius']):
+			if not random.randint(0, 4):
+				effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+		
+			_dist = numbers.distance(item['pos'], pos)/2
+			if not random.randint(0, _dist) or not _dist:
+				effects.create_ash(pos)
+	
+			if gfx.position_is_in_frame(pos):
+				_render_pos = gfx.get_render_position(pos)
+				gfx.refresh_window_position(_render_pos[0], _render_pos[1])
+	
+	delete_item(item)
 
 def collision_with_solid(item, pos):
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
@@ -393,8 +480,8 @@ def tick_item(item_uid):
 		delete_item(ITEMS[item_uid])
 		return False
 			
-	elif _break:
-		maps.refresh_chunk(life.get_current_chunk_id(item))
+	#elif _break:
+	#	maps.refresh_chunk(life.get_current_chunk_id(item))
 
 	_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 	

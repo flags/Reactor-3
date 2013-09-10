@@ -1,11 +1,13 @@
 from globals import *
 
 import libtcodpy as tcod
+import graphics as gfx
 import life as lfe
 
 import historygen
 import profiles
 import effects
+import mapgen
 import logic
 import items
 import tiles
@@ -24,7 +26,9 @@ BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt',
               'leather backpack',
-              'radio']
+              'radio',
+              'frag grenade',
+              'molotov']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine']
 
 for i in range(10):
@@ -43,8 +47,16 @@ class Runner(threading.Thread):
 
 
 def draw_world_stats():
+	if not 'last_time' in WORLD_INFO:
+		WORLD_INFO['last_time'] = []
+	
+	WORLD_INFO['last_time'].append(WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime']))
+	
+	if len(WORLD_INFO['last_time'])>5:
+		WORLD_INFO['last_time'].pop(0)
+	
 	tcod.console_print(0, 0, 0, 'World Generation')
-	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], WORLD_INFO['ticks']/(time.time()-WORLD_INFO['inittime'])))
+	tcod.console_print(0, 0, 2, 'Simulating world: %s (%.2f t/s)' % (WORLD_INFO['ticks'], (sum(WORLD_INFO['last_time'])/len(WORLD_INFO['last_time']))))
 	tcod.console_print(0, 0, 3, 'Queued ALife actions: %s' % sum([len(alife['actions']) for alife in [LIFE[i] for i in LIFE]]))
 	tcod.console_print(0, 0, 4, 'Total ALife memories: %s' % sum([len(alife['memory']) for alife in [LIFE[i] for i in LIFE]]))
 	tcod.console_print(0, 0, 5, '%s %s' % (TICKER[int(WORLD_INFO['ticks'] % len(TICKER))], '=' * int((WORLD_INFO['ticks']/float(WORLD_INFO['start_age']))*10)))
@@ -65,25 +77,32 @@ def simulate_life(amount):
 def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
-	
-	randomize_item_spawns()
-	
 	WORLD_INFO['life_density'] = life_density
 	WORLD_INFO['wildlife_density'] = wildlife_density
+	WORLD_INFO['seed'] = time.time()
+	
+	random.seed(WORLD_INFO['seed'])
 	
 	if WORLD_INFO['life_density'] == 'Sparse':
-		WORLD_INFO['life_spawn_interval'] = [0, (770, 990)]
+		WORLD_INFO['life_spawn_interval'] = [0, (1000, 1200)]
 	elif WORLD_INFO['life_density'] == 'Medium':
-		WORLD_INFO['life_spawn_interval'] = [0, (550, 700)]
+		WORLD_INFO['life_spawn_interval'] = [0, (800, 999)]
+	elif WORLD_INFO['life_density'] == 'Heavy':
+		WORLD_INFO['life_spawn_interval'] = [0, (600, 799)]
 	else:
-		WORLD_INFO['life_spawn_interval'] = [0, (250, 445)]
+		WORLD_INFO['life_spawn_interval'] = [-1, (600, 799)]
 	
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (550, 700)]
-	else:
+	elif WORLD_INFO['wildlife_density'] == 'Heavy':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
+	else:
+		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
+	
+	randomize_item_spawns()
+	alife.camps.create_all_camps()
 	
 	if thread:
 		tcod.console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=tcod.BKGND_DEFAULT)
@@ -96,7 +115,6 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 			if not SETTINGS['running']:
 				return False
 	else:
-		print 'here'
 		simulate_life(simulate_ticks)
 	
 	create_player(source_map)
@@ -109,6 +127,8 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def load_world(world):
+	gfx.title('Loading...')
+	
 	WORLD_INFO['id'] = world
 	maps.load_map('map', base_dir=profiles.get_world(world))
 
@@ -131,9 +151,13 @@ def load_world(world):
 	lfe.load_all_life()
 	items.reload_all_items()
 	
+	#logging.debug('Rendering map slices...')
+	#maps.render_map_slices()
+	
 	logging.info('World loaded.')
 
 def save_world():
+	gfx.title('Saving...')
 	logging.debug('Offloading world...')
 	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
 	
@@ -165,6 +189,20 @@ def randomize_item_spawns():
 		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def get_spawn_point():
+	if WORLD_INFO['reference_map']['roads']:
+		_entry_road_keys = []
+		for road in WORLD_INFO['reference_map']['roads']:
+			for chunk_key in road:
+				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
+				
+				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:
+					_entry_road_keys.append(chunk_key)
+		
+		if _entry_road_keys:
+			_spawn_pos = random.choice(WORLD_INFO['chunk_map'][random.choice(_entry_road_keys)]['ground'])
+			
+			return [_spawn_pos[0], _spawn_pos[1], 2]
+
 	_start_seed = random.randint(0, 3)
 	
 	if not _start_seed:
@@ -205,6 +243,9 @@ def generate_life(amount=1):
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 	
+	if len(LIFE) == 1:
+		alife['stats']['is_leader'] = True
+	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(alife, items.create_item(item))
 	
@@ -215,7 +256,7 @@ def create_player(source_map):
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
 		map=source_map,
-		position=[10, 10, 2])
+		position=get_spawn_point())
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
 	

@@ -53,7 +53,7 @@ def init_libtcod(terraform=False):
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
-def start_of_frame():
+def start_of_frame(draw_char_buffer=True):
 	tcod.console_fill_background(MAP_WINDOW,
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
@@ -62,7 +62,9 @@ def start_of_frame():
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	tcod.console_fill_char(MAP_WINDOW,MAP_CHAR_BUFFER[0])
+	
+	if draw_char_buffer:
+		tcod.console_fill_char(MAP_WINDOW,MAP_CHAR_BUFFER[0])
 
 def start_of_frame_terraform():
 	tcod.console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
@@ -86,6 +88,11 @@ def refresh_window():
 	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+
+def blit_tile_to_console(console, x, y, tile):
+	_tile = get_raw_tile(tile)
+	
+	tcod.console_put_char_ex(console, x, y, _tile['icon'], _tile['color'][0], _tile['color'][1])
 
 def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	_tile = get_raw_tile(tile)
@@ -218,6 +225,8 @@ def draw_message_box():
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
 		elif msg['style'] == 'radio':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(225,245,169))
+		elif msg['style'] == 'good':
+			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.light_green)
 		elif msg['style'] == 'player_combat_good':
 			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
 		elif msg['style'] == 'player_combat_bad':
@@ -318,32 +327,50 @@ def message(text, style=None):
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
-def end_of_frame_terraform(editing_prefab=False):
+def title(text):
+	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
+	_center_y = WINDOW_SIZE[1]/2
+	tcod.console_print(0, _center_x, _center_y, text)
+	tcod.console_flush()
+
+def position_is_in_frame(pos):
+	if pos[0] >= CAMERA_POS[0] and pos[0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		return True
+	
+	return False
+
+def get_render_position(pos):
+	return [pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1]]
+
+def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
-	tcod.console_blit(PREFAB_WINDOW,
-		0,
-		0,
-		PREFAB_WINDOW_SIZE[0],
-		PREFAB_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		PREFAB_WINDOW_OFFSET[1])
-	tcod.console_blit(X_CUTOUT_WINDOW,
-		0,
-		0,
-		X_CUTOUT_WINDOW_SIZE[0],
-		X_CUTOUT_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		11)
-	tcod.console_blit(Y_CUTOUT_WINDOW,
-		0,
-		0,
-		Y_CUTOUT_WINDOW_SIZE[0],
-		Y_CUTOUT_WINDOW_SIZE[1],
-		0,
-		PREFAB_WINDOW_OFFSET[0],
-		22)
+	
+	if draw_cutouts:
+		tcod.console_blit(PREFAB_WINDOW,
+			0,
+			0,
+			PREFAB_WINDOW_SIZE[0],
+			PREFAB_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			PREFAB_WINDOW_OFFSET[1])
+		tcod.console_blit(X_CUTOUT_WINDOW,
+			0,
+			0,
+			X_CUTOUT_WINDOW_SIZE[0],
+			X_CUTOUT_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			11)
+		tcod.console_blit(Y_CUTOUT_WINDOW,
+			0,
+			0,
+			Y_CUTOUT_WINDOW_SIZE[0],
+			Y_CUTOUT_WINDOW_SIZE[1],
+			0,
+			PREFAB_WINDOW_OFFSET[0],
+			22)
 	
 	if editing_prefab:
 		tcod.console_set_default_foreground(0, tcod.white)
@@ -358,8 +385,9 @@ def end_of_frame_terraform(editing_prefab=False):
 def end_of_frame_reactor3():
 	tcod.console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 
-def end_of_frame():
-	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
+def end_of_frame(draw_map=True):
+	if not SETTINGS['map_slices'] and draw_map:
+		tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_encounter = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['encounters']:

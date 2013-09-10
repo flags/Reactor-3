@@ -14,6 +14,7 @@ import numbers
 import effects
 import random
 import damage
+import timers
 import logic
 import zones
 import alife
@@ -271,6 +272,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['pos'] = list(position)
 	_life['prev_pos'] = list(position)
 	_life['realpos'] = list(position)
+	_life['velocity'] = [0.0, 0.0, 0.0]
 	
 	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
 	
@@ -289,7 +291,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
 	_life['states'] = []
-	_life['gravity'] = 0
+	_life['gravity'] = 0.05
 	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
@@ -321,11 +323,16 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['memory'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
+	_life['known_groups'] = []
 	_life['camp'] = None
 	_life['tempstor2'] = {}
-	_life['job'] = {}
+	_life['job'] = None
+	_life['jobs'] = []
+	_life['task'] = None
+	_life['completed_tasks'] = []
+	_life['completed_jobs'] = []
+	_life['rejected_jobs'] = []
 	_life['group'] = None
-	_life['task'] = ''
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
 	_life['needs'] = []
@@ -351,6 +358,7 @@ def ticker(life, name, time):
 			life['tickers'][name] -= 1
 			return False
 		else:
+			del life['tickers'][name]
 			return True
 	else:
 		life['tickers'][name] = time
@@ -358,6 +366,8 @@ def ticker(life, name, time):
 
 def focus_on(life):
 	SETTINGS['following'] = life['id']
+	
+	LOS_BUFFER[0] = []
 
 def sanitize_heard(life):
 	del life['heard']
@@ -393,6 +403,10 @@ def post_save(life):
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
+	
+	#NOTE: This section is for updating life entities after keys have been added
+	if not 'known_groups' in life:
+		life['known_groups'] = []
 	
 	initiate_raw(life)
 
@@ -468,13 +482,6 @@ def tick_animation(life):
 				return life['icon']
 		
 	return life['animation']['images'][life['animation']['index']]
-
-def track_target(life, target_id):
-	_j = jobs.create_job(life, 'track target')
-	jobs.add_detail_to_job(_j, 'target', target_id)
-	jobs.add_job_task(_j, 'find target', callback=movement.find_alife, required=True)
-	jobs.add_job_candidate(_j, life)
-	jobs.process_job(_j)
 
 def get_current_camp(life):
 	return life['known_camps'][life['camp']]
@@ -713,8 +720,8 @@ def memory(life, gist, *args, **kvargs):
 
 def has_dialog(life):
 	for dialog in [d for d in life['dialogs'] if d['enabled']]:
-		if dialog['speaker'] == life['id']:
-			return True
+		#if dialog['speaker'] == life['id']:
+		return True
 	
 	return False
 
@@ -903,6 +910,52 @@ def can_walk_to(life, pos):
 	
 	return zones.can_path_to_zone(_z1, _z2)
 
+def push(life, direction, speed, friction=0.05, _velocity=0):
+	"""Sets new velocity for an entity. Returns nothing."""
+	velocity = numbers.velocity(direction, speed)
+	velocity[2] = _velocity
+	
+	life['friction'] = friction
+	life['velocity'] = velocity
+	life['realpos'] = life['pos'][:]
+	
+	logging.debug('%s flies off in an arc! (%s)' % (' '.join(life['name']), life['velocity']))
+
+def calculate_velocity(life):
+	if not sum([abs(i) for i in life['velocity']]):
+		return False
+	
+	_next_pos = (int(life['pos'][0]+life['velocity'][0]), int(life['pos'][1]+life['velocity'][1]))
+	_last_pos = life['pos'][:]
+	
+	for pos in drawing.diag_line(life['pos'], _next_pos):
+		life['velocity'][2] -= life['velocity'][2]*life['gravity']
+		
+		if items.collision_with_solid(life, (pos[0], pos[1], 0)):
+			life['velocity'] = [0, 0, 0]
+			return False
+		
+		life['pos'][0] = pos[0]
+		life['pos'][1] = pos[1]
+	
+		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = items.get_min_max_velocity(life)
+		
+		if 0<life['velocity'][0]<1 or -1<life['velocity'][0]<0:
+			life['velocity'][0] = 0
+		
+		if 0<life['velocity'][1]<1 or -1<life['velocity'][1]<0:
+			life['velocity'][1] = 0
+		
+		life['velocity'][0] -= numbers.clip(life['velocity'][0]*0.2, _min_x_vel, _max_x_vel)
+		life['velocity'][1] -= numbers.clip(life['velocity'][1]*0.2, _min_y_vel, _max_y_vel)
+		
+		if not sum([abs(i) for i in life['velocity']]):
+			return False
+	
+		print life['velocity']
+	
+	return True
+
 def walk_to(life, position):
 	clear_actions(life)
 	add_action(life,{'action': 'move',
@@ -923,6 +976,9 @@ def walk(life, to):
 	elif life['speed']<=0:
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
+		
+		if life['recoil'] < get_max_speed(life):
+			life['recoil'] = get_max_speed(life)
 	
 	_dest = path_dest(life)
 	
@@ -932,8 +988,8 @@ def walk(life, to):
 		_zone = can_walk_to(life, to)
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
-		else:
-			logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
+		#else:
+		#	logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
 		#print 'total',time.time()-_stime
 	
 	life['prev_pos'] = life['pos'][:]
@@ -941,7 +997,7 @@ def walk(life, to):
 
 def walk_path(life):
 	"""Walks and returns whether the path is finished or not."""
-	if life['gravity']:
+	if calculate_velocity(life):
 		return False
 	
 	if life['path']:
@@ -957,11 +1013,19 @@ def walk_path(life):
 		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
 			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		
+		_old_chunk = get_current_chunk_id(life)
 		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
+		_new_chunk = get_current_chunk_id(life)
+		
+		if not _old_chunk == _new_chunk:
+			maps.leave_chunk(_old_chunk, life['id'])
+		
+		maps.enter_chunk(_new_chunk, life['id'])
+		
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
-		if 'player' in life:
+		if SETTINGS['following'] == life['id']:
 			#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
 			LOS_BUFFER[0] = []
 		
@@ -989,17 +1053,17 @@ def perform_collisions(life):
 		
 		life['gravity'] = WORLD_INFO['world gravity']
 			
-	elif life['gravity']:
-		life['gravity'] = 0
-		
-		_fall_dist = life['falling_startzpos']-life['pos'][2]
-		
-		if not damage_from_fall(life,_fall_dist) and life.has_key('player'):
-			gfx.message('You land.')
+	#elif life['gravity']:
+	#	life['gravity'] = 0
+	#	
+	#	_fall_dist = life['falling_startzpos']-life['pos'][2]
+	#	
+	#	if not damage_from_fall(life,_fall_dist) and life.has_key('player'):
+	#		gfx.message('You land.')
 	
-	if life['gravity']:
-		life['realpos'][2] -= WORLD_INFO['world gravity']
-		life['pos'][2] = int(life['realpos'][2])
+	#if life['gravity']:
+	#	life['realpos'][2] -= WORLD_INFO['world gravity']
+	#	life['pos'][2] = int(life['realpos'][2])
 	
 	return False
 
@@ -1293,6 +1357,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'holditemthrow':
 		_dropped_item = drop_item(life,_action['item'])
+		print _dropped_item
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_action['hand']['holding'].append(_id)
 		
@@ -1379,7 +1444,10 @@ def kill(life, injury):
 	if isinstance(injury, str) or isinstance(injury, unicode):
 		life['cause_of_death'] = injury
 		
-		say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+		if 'player' in life:
+			gfx.message('You die from %s.' % life['cause_of_death'])
+		else:
+			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
@@ -1396,6 +1464,7 @@ def kill(life, injury):
 	
 	drop_all_items(life)
 	life['dead'] = True
+	timers.remove_by_owner(life)
 
 def can_die_via_critical_injury(life):
 	for limb in life['body']:
@@ -1507,6 +1576,9 @@ def tick(life, source_map):
 		brain.sight.look(life)
 		alife.sound.listen(life)
 		
+		if life['job']:
+			alife.jobs.work(life)
+		
 		for context in life['contexts'][:]:
 			context['time'] -= 1
 			
@@ -1552,26 +1624,17 @@ def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
 	return can_hold_item(life)
 
-def throw_item(life,id,target,speed):
+def throw_item(life, id, target, speed):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
-	_item = remove_item_from_inventory(life,id)
+	_item = items.get_item_from_uid(remove_item_from_inventory(life, id))
 	
-	direction = numbers.direction_to(life['pos'],target)
+	direction = numbers.direction_to(life['pos'], target)
+	items.move(_item, direction, speed)
 	
-	items.move(items.get_item_from_uid(_item), direction, speed)
-
-def update_container_capacity(life,container):
-	"""Updates the current capacity of container. Returns nothing."""
-	logging.warning('life.update_container_capacity(): This method is untested!')
-	_capacity = 0
-	
-	for item in container['storing']:
-		if item in life['inventory']:
-			_capacity += get_inventory_item(life,item)['size']
-		else:
-			_capacity += items.get_item_from_uid(item)['size']
-	
-	container['capacity'] = _capacity
+	if 'player' in life:
+		gfx.message('You throw %s.' % items.get_name(_item))
+	else:
+		say('@n throws %s.' % items.get_name(_item))
 
 def is_item_in_storage(life, item):
 	"""Returns True if item is in storage, else False."""
@@ -1591,7 +1654,7 @@ def can_put_item_in_storage(life,item_uid):
 		if _item['uid'] == item_uid:
 			continue
 		
-		if 'max_capacity' in _item and _item['capacity']+item['size'] < _item['max_capacity']:
+		if items.can_store_item_in(item_uid, _item['uid']):
 			return _item['uid']
 	
 	return False
@@ -1611,30 +1674,33 @@ def add_item_to_storage(life, item_uid, container=None):
 		print 'cannot store',_item['name']
 		return False
 	
-	_container = items.get_item_from_uid(container)
-	_container['storing'].append(_item['uid'])
-	_container['capacity'] += _item['size']
+	#_container = items.get_item_from_uid(container)
+	#_container['storing'].append(_item['uid'])
+	#_container['capacity'] += _item['size']
+	items.store_item_in(item_uid, container)
 	
 	brain.remember_item(life, _item)
 	
-	print repr(_item['uid'])
-	update_container_capacity(life, _container)
-	
 	return True
 
-def remove_item_in_storage(life,id):
+def remove_item_in_storage(life, item_uid):
 	"""Removes item from strorage. Returns storage container on success. Returns False on failure."""
-	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
-		if not 'max_capacity' in _container:
-			continue
-
-		if id in _container['storing']:
-			_container['storing'].remove(id)
-			_container['capacity'] -= get_inventory_item(life,id)['size']
-			logging.debug('Removed item #%s from %s' % (id,_container['name']))
-			
-			update_container_capacity(life, _container)
-			return _container
+	if 'stored_in' in items.get_item_from_uid(item_uid):
+		items.remove_item_from_any_storage(item_uid)
+	else:
+		print 'incorrect: item not stored'
+	
+	#for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
+	#	if not 'max_capacity' in _container:
+	#		continue
+	#
+	#	if id in _container['storing']:
+	#		_container['storing'].remove(id)
+	#		_container['capacity'] -= get_inventory_item(life,id)['size']
+	#		logging.debug('Removed item #%s from %s' % (id,_container['name']))
+	#		
+	#		update_container_capacity(_container['uid'])
+	#		return _container
 	
 	return False
 
@@ -1650,7 +1716,9 @@ def item_is_stored(life,id):
 	return False
 
 def item_is_worn(life, item):
-	if not 'parent_id' in item:
+	#if not 'parent_id' in item:
+	#	return False
+	if items.is_item_owned(item['uid']):
 		return False
 	
 	for limb in item['attaches_to']:
@@ -1798,9 +1866,11 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
 	item['parent_id'] = life['id']
-	life['inventory'].append(item_uid)
 	
-	maps.refresh_chunk(get_current_chunk_id(item))
+	if 'stored_in' in item:
+		items.remove_item_from_any_storage(item_uid)
+	
+	life['inventory'].append(item_uid)
 	
 	if 'max_capacity' in item:
 		logging.debug('Container found in direct_add')
@@ -1828,7 +1898,8 @@ def add_item_to_inventory(life, item_uid):
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
 	
-	maps.refresh_chunk(get_current_chunk_id(item))
+	if 'stored_in' in item:
+		items.remove_item_from_any_storage(item_uid)
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
@@ -1870,6 +1941,9 @@ def remove_item_from_inventory(life, item_id):
 	elif item_is_stored(life, item_id):
 		item['pos'] = life['pos'][:]
 		remove_item_in_storage(life, item_id)
+		print 'item is stored'
+	elif not item_is_stored(life, item_id):
+		print 'item is NOT stored'
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
@@ -1936,6 +2010,23 @@ def consume_item(life, item_id):
 			gfx.message('You finsh eating.')
 		else:
 			gfx.message('You finsh drinking.')
+
+def get_max_carry_size(life):
+	_greatest = 0
+	
+	for storage in [s for s in get_all_storage(life)]:
+		_capacity = storage['max_capacity']-storage['capacity']
+		
+		if _capacity > _greatest:
+			_greatest = _capacity
+	
+	return _greatest
+
+def can_carry_item(life, item_uid):
+	if items.get_item_from_uid(item_uid)['size'] < get_max_carry_size(life):
+		return True
+	
+	return False
 
 def _equip_clothing(life,id):
 	"""Private function. Equips clothing. See life.equip_item()."""
@@ -2023,7 +2114,7 @@ def drop_item(life, item_id):
 		if item_id in _hand['holding']:
 			_hand['holding'].remove(item_id)
 	
-	return item
+	return item['uid']
 
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
@@ -2165,15 +2256,6 @@ def get_all_life_at_position(life, position):
 		_life.append(alife['id'])
 	
 	return _life
-
-def show_life_info(life):
-	for key in life:
-		if key == 'body':
-			continue
-		
-		logging.debug('%s: %s' % (key,life[key]))
-	
-	return True
 	
 def draw_life_icon(life):
 	_icon = [tick_animation(life), tcod.white]
@@ -2210,14 +2292,15 @@ def draw_life():
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
-			if not LOS_BUFFER[0][_y,_x]:# and not life['id'] in LIFE[SETTINGS['controlling']]['know']:
-				continue
-			
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if not life['pos'] == life['prev_pos']:
-				gfx.refresh_window_position(_p_x, _p_y)
+			if 0<=_p_x<=MAP_WINDOW_SIZE[0] and 0<=_p_y<=MAP_WINDOW_SIZE[1]:
+				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
+					gfx.refresh_window_position(_p_x, _p_y)
+			
+			if not LOS_BUFFER[0][_y,_x]:
+				continue
 			
 			MAP_CHAR_BUFFER[1][_y,_x] = 0
 			gfx.blit_char(_x,
@@ -2500,6 +2583,17 @@ def is_target_of(life):
 	
 	return _targets
 
+def is_in_shelter(life):
+	if life['path']:
+		return False
+	
+	_chunk_key = get_current_chunk_id(life)
+	
+	if chunks.get_flag(life, _chunk_key, 'shelter') and list(life['pos'][:2]) in chunks.get_flag(life, _chunk_key, 'shelter_cover'):
+		return True
+	
+	return False
+
 def collapse(life):
 	if life['stance'] in ['standing','crouching']:
 		life['stance'] = 'crawling'
@@ -2748,9 +2842,6 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
-	
-	print 'CUT' * 50
-	print amount, _limb['size']
 	
 	if _limb['cut'] >= _limb['size']:
 		sever_limb(life, limb, impact_velocity)

@@ -158,6 +158,14 @@ def desires_to_join_camp(life, camp_id):
 	
 	return True
 
+def battle_cry(life):
+	_battle_cry = lfe.execute_raw(life, 'talk', 'battle_cry')
+	
+	if _battle_cry == 'action':
+		_battle_cry_action = lfe.execute_raw(life, 'talk', 'battle_cry_action')
+		
+		lfe.say(life, _battle_cry_action, action=True)
+
 def get_firearm_accuracy(life):
 	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
 
@@ -176,6 +184,18 @@ def get_minimum_group_score(life):
 def get_employability(life):
 	#TODO: Placeholder
 	return 50
+
+def get_group_motive(life):
+	if life['stats']['motive_for_crime'] >= 6:
+		if life['stats']['motive_for_wealth'] >= 5:
+			return 'wealth'
+		
+		return 'crime'
+	
+	if life['stats']['motive_for_wealth'] >= 5:
+		return 'wealth'
+	
+	return 'survival'
 
 def get_influence_from(life, life_id):
 	judgement._calculate_impressions(life, life_id)
@@ -363,6 +383,9 @@ def is_compatible_with(life, life_id):
 		return True
 	
 	return False
+
+def is_born_leader(life):
+	return life['stats']['is_leader']
 
 def has_attacked_trusted(life, life_id):
 	_trusted = judgement.get_trusted(life)

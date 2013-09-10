@@ -3,6 +3,7 @@ import life as lfe
 
 import references
 import judgement
+import logic
 import sight
 import maps
 
@@ -12,6 +13,10 @@ import random
 import time
 
 def get_flag(life, chunk_id, flag):
+	if not chunk_id in life['known_chunks']:
+		logging.warning('ALife \'%s\' does not know about chunk \'%s\'' % (' '.join(life['name']), chunk_id))
+		return False
+	
 	if flag in life['known_chunks'][chunk_id]['flags']:
 		return life['known_chunks'][chunk_id]['flags'][flag]
 	
@@ -23,11 +28,23 @@ def flag(life, chunk_id, flag, value):
 	
 	life['known_chunks'][chunk_id]['flags'][flag] = value
 
+def flag_global(chunk_key, flag, value):
+	maps.get_chunk(chunk_key)['flags'][flag] = value
+
+def get_global_flag(chunk_key, flag):
+	if flag in maps.get_chunk(chunk_key)['flags']:
+		return maps.get_chunk(chunk_key)['flags'][flag]
+	
+	return False
+
 def get_chunk_pos(chunk_id, center=False):
 	if center:
 		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]
 	
 	return [int(val) for val in chunk_id.split(',')]
+
+def get_chunk_key_at(pos):
+	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
 def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
@@ -115,8 +132,8 @@ def find_surrounding_unknown_chunks(life):
 	
 	return _unknown_chunks
 
-def is_in_chunk(life, chunk_id):
-	_chunk = maps.get_chunk(chunk_id)
+def is_in_chunk(life, chunk_key):
+	_chunk = maps.get_chunk(chunk_key)
 	
 	if life['pos'][0] >= _chunk['pos'][0] and life['pos'][0] <= _chunk['pos'][0]+WORLD_INFO['chunk_size']\
 		and life['pos'][1] >= _chunk['pos'][1] and life['pos'][1] <= _chunk['pos'][1]+WORLD_INFO['chunk_size']:
@@ -132,6 +149,16 @@ def position_is_in_chunk(position, chunk_id):
 			return True
 	
 	return False
+
+def get_alife_in_chunk_matching(chunk_key, matching):
+	_life = []
+	_chunk = maps.get_chunk(chunk_key)
+	
+	for alife in [LIFE[l] for l in _chunk['life']]:
+		if logic.matches(alife, matching):
+			_life.append(alife['id'])
+	
+	return _life
 
 def get_nearest_position_in_chunk(position, chunk_id):
 	_closest = {'pos': None, 'score': 0}
@@ -170,23 +197,35 @@ def _can_see_chunk_quick(life, chunk_id):
 	if not len(chunk['ground']):
 		return False
 	
-	for seg in [0, len(chunk['ground'])/2, len(chunk['ground'])-1]:
-		if sight.can_see_position(life, chunk['ground'][seg]):
-			return True
+	for pos in [(0, 0), (1, 0), (0, 1), (1, 1)]:
+		_x = pos[0]*WORLD_INFO['chunk_size']
+		_y = pos[1]*WORLD_INFO['chunk_size']
+		
+		if _x:
+			_x -= 1
+		if _y:
+			_y -= 1
+		
+		_can_see = sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y))
+		
+		if _can_see:
+			return _can_see
 	
 	return False
 
-def can_see_chunk(life, chunk_id):
+def can_see_chunk(life, chunk_id, distance=True):
 	_fast_see = _can_see_chunk_quick(life, chunk_id)
 	
 	if _fast_see:
-		return True
+		return _fast_see
 	
 	chunk = maps.get_chunk(chunk_id)
 	
 	for pos in chunk['ground']:
-		if sight.can_see_position(life, pos):
-			return True
+		_can_see = sight.can_see_position(life, pos, distance=distance)
+		
+		if _can_see:
+			return _can_see
 	
 	return False
 

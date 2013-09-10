@@ -8,12 +8,15 @@ import encounters
 import worldgen
 import effects
 import numbers
+import timers
 import menus
 import items
 import life
+import smp
 
 import logging
 import random
+import time
 
 def tick_all_objects(source_map):
 	if SETTINGS['paused']:
@@ -41,6 +44,9 @@ def tick_all_objects(source_map):
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['encounters']:
+			return False
+		
+		if MENUS:
 			return False
 		
 		#if menus.get_menu_by_name('Aim at...') > -1:
@@ -91,13 +97,19 @@ def tick_all_objects(source_map):
 	
 	effects.calculate_all_effects()
 	tick_world()
+	timers.tick()
 	items.tick_all_items(source_map)
+	
+	#if SETTINGS['smp']:
+	#	smp.scan_all_surroundings()
+	
 	life.tick_all_life(source_map)
 	
 	return True
 
 def tick_world():
 	WORLD_INFO['ticks'] += 1
+	alfe.groups.get_group_relationships()
 	
 	if WORLD_INFO['real_time_of_day'] < WORLD_INFO['length_of_day']:
 		WORLD_INFO['real_time_of_day'] += WORLD_INFO['time_scale']
@@ -116,18 +128,18 @@ def tick_world():
 		
 		WORLD_INFO['time_of_day'] = 'day'
 	
-	if WORLD_INFO['life_spawn_interval'][0]:
+	if WORLD_INFO['life_spawn_interval'][0]>0:
 		WORLD_INFO['life_spawn_interval'][0] -= 1
-	else:
+	elif not WORLD_INFO['life_spawn_interval'][0]:
 		worldgen.generate_life()
 			
 		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
 		
 		logging.info('Reset life spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
 	
-	if WORLD_INFO['wildlife_spawn_interval'][0]:
+	if WORLD_INFO['wildlife_spawn_interval'][0]>0:
 		WORLD_INFO['wildlife_spawn_interval'][0] -= 1
-	else:
+	elif not WORLD_INFO['wildlife_spawn_interval'][0]:
 		worldgen.generate_wildlife()
 			
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
@@ -167,9 +179,15 @@ def draw_event(event):
 		
 	else:
 		_lines = [event['text']]
+		
+	print _lines
 	
-	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
-		_lines = ['The most annoying error.']
+	for line in _lines:
+		if len(line)>=MAP_WINDOW_SIZE[0]-1:
+			_lines = ['The most annoying error.']
+			break
+	#if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
+	#	_lines = ['The most annoying error.']
 	
 	_i = 0
 	for line in _lines:

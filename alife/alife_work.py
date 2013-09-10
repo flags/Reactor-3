@@ -15,16 +15,25 @@ STATE = 'working'
 ENTRY_SCORE = -1
 TIER = TIER_WORK
 
+def get_tier(life):
+	if life['job']:
+		_job = jobs.get_job(life['job'])
+		return _job['tier']
+	
+	return TIER
+
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 
 	if not judgement.is_safe(life):
 		return False
+	
+	_job = jobs.alife_has_job(life)
 
 	_active_goals = goals.get_active_goals(life)
 	brain.store_in_memory(life, 'active_goals', value=_active_goals)
 	
-	if not _active_goals and not life['job'] and not jobs.alife_is_factor_of_any_job(life):
+	if not _active_goals and not life['job'] and not _job:
 		return False
 	
 	if not life['state'] == STATE:
@@ -37,12 +46,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		print 'ACTIVE GOAL' * 100
 		goals.perform_goal(life, judgement.get_best_goal(life))
 	else:
-		if jobs.alife_is_factor_of_any_job(life):
-			lfe.clear_actions(life)
-			return True
+		#if jobs.alife_has_job(life):
+		#	lfe.clear_actions(life)
+		#	return True
 		
-		if jobs.process_cancel_if(life, life['job']):
-			return False
-		
-		if life['task'] and life['task']['callback'](life):
-			jobs.complete_task(life)
+		jobs.work(life)
+		#if life['task'] and life['task']['callback'](life):
+		#	jobs.complete_task(life)

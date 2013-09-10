@@ -3,26 +3,28 @@ import os
 
 WINDOW_TITLE = 'Reactor 3 - Milestone 5'
 
-#Constants
 WINDOW_SIZE = (100,60)
 MAP_SIZE = [250, 250, 5]
-MAP_WINDOW_SIZE = (50, 50)
+MAP_WINDOW_SIZE = (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]-10)
 ITEM_WINDOW_SIZE = (40,1)
 CONSOLE_WINDOW_SIZE = (40,30)
 MESSAGE_WINDOW_SIZE = (100,10)
-PREFAB_WINDOW_SIZE = (40,40)
+PREFAB_WINDOW_SIZE = [40,40]
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
+PREFABS = {}
 TICKER = ['\\', '|', '/', '-']
 ENCOUNTER_ANIMATION_TIME = 30
+UPDATE_CAMP_RATE = 5
 
 #Map stuff
-CHUNK_MAP = {}
-CAMPS = {}
 WORLD_INFO = {'map': [],
+	'id': None,
+	'seed': 0,
+	'seed_state': None,
 	'time': 0,
 	'real_time_of_day': 6000,
 	'time_of_day': 'limbo',
@@ -39,16 +41,21 @@ WORLD_INFO = {'map': [],
 	'lifeid': 1,
 	'itemid': 1,
 	'groupid': 1,
+	'campid': 1,
 	'effectid': 1,
 	'zoneid': 1,
 	'memoryid': 1,
 	'goalid': 1,
-	'chunk_map': CHUNK_MAP,
+	'jobid': 1,
+	'chunk_map': {},
+	'camps': {},
 	'groups': {},
+	'jobs': {},
 	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5,
-	'lights': []}
+	'lights': [],
+	'timers': []}
 
 #Return values
 STATE_CHANGE = 2
@@ -103,6 +110,7 @@ DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
 TEXT_DIR = os.path.join(DATA_DIR,'text')
+PREFAB_DIR = os.path.join(DATA_DIR,'prefabs')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
@@ -128,38 +136,6 @@ PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
 DEFAULT_CONTEXT_TIME = 25
 
-GIST_MAP = {'how_are_you': 0,
-	'ignore': 0,
-	'ignore_rude': -1,
-	'inquire_about': 0,
-	'tell_about': 0,
-	'inquire_response_positive': 1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'inquire_response_knows_positive': 1,
-	'inquire_response_knows_neutral': 0,
-	'inquire_response_knows_negative': -1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'last_seen_target_at': 0,
-	'status_response_positive': 1,
-	'status_response': 0,
-	'status_response_neutral': 0,
-	'status_response_neutral_question': 0,
-	'irritated_neutral': 0,
-	'irritated_negative': -1,
-	'heard_of_camp': 0,
-	'inquire_about_camp_founder': 0,
-	'inquire_about_camp_population': 0,
-	'talk_about_camp': 0,
-	'never_heard_of_camp': 0,
-	'tell_about_camp_founder': 0,
-	'ignore_question': 0,
-	'ignore_question_negative': -1,
-	'inform_of_camp': 0,
-	'end': 0,
-	'nothing': 0}
-
 QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
 	'wants item': {'type': '*'}}
 
@@ -176,13 +152,16 @@ SETTINGS = {'running': True,
 	'draw console': False,
 	'draw z-levels above': True,
 	'draw z-levels below': False,
+	'draw visible chunks': False,
 	'progress bar max value': 25,
 	'action queue size': 4,
 	'los': 40,
 	'controlling': None,
 	'following': None,
 	'state history size': 5,
-	'fire burn rate': 0.04}
+	'fire burn rate': 0.04,
+	'smp': None,
+	'map_slices': []}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
@@ -197,7 +176,6 @@ BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
 SPLATTERS = []
-JOBS = {}
 SELECTED_TARGET = []
 EVENTS = []
 

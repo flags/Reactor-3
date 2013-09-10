@@ -51,7 +51,11 @@ def think(life, source_map):
 	sound.listen(life)
 	memory.process(life)
 	survival.process(life)
+	judgement.judge_jobs(life)
 	understand(life, source_map)
+	
+	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
+		judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
 	life['tempstor2'][key] = value
@@ -165,6 +169,9 @@ def knows_alife_by_id(life, alife_id):
 		print alife_id['name']
 		print alife_id.keys()
 		raise Exception('Not a valid ID.')
+	
+	if life['id'] == alife_id:
+		raise Exception('Life asking about itself (via ID). Stopping.')
 	
 	if alife_id in life['know']:
 		return life['know'][alife_id]

@@ -43,22 +43,12 @@ def score_hide(life,target,pos):
 	_life_dist = numbers.distance(life['pos'], pos)
 	_target_dist = numbers.distance(target['last_seen_at'], pos)
 	
-	#if sight.can_see_position(life, pos, distance=False):
-	#	return 20-_target_dist
-	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
 		return numbers.clip(300-_life_dist, 200, 300)
 	
 	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
 		return numbers.clip(200-_life_dist, 100, 200)
 	
-	#if _chunk['type'] == 'building':
-	#	if not sight._can_see_position(life['pos'], pos):
-	#		print 'CLOSE!'
-	#		return numbers.clip(49-_life_dist, 21, 49)
-	#	
-	#	print 'building'
-	#	return 89-_life_dist
 	if not sight._can_see_position(life['pos'], pos):
 		return 99-_target_dist
 	
@@ -86,12 +76,15 @@ def position_for_combat(life,target,position,source_map):
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
-		return False
+		return True
+	
+	if not numbers.distance(life['pos'], pos):
+		return True
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 	
-	return True
+	return False
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
@@ -237,48 +230,26 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 	
 	return False
 
-def _find_alife(life, target, distance=-1):
-	#Almost a 100% chance we know who this person is...
+def find_target(life, target, distance=5, follow=False):
 	_target = brain.knows_alife_by_id(life, target)
 	
-	#We'll try last_seen_at first
-	#TODO: In the future we should consider how long it's been since we've seen them
-	lfe.clear_actions(life)
-	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
-	
-	if sight.can_see_position(life, _target['life']['pos']):
-		if distance == -1 or numbers.distance(life['pos'], _target['last_seen_at'])<=distance:
+	_can_see = sight.can_see_target(life, target)
+	if _can_see and len(_can_see)<=distance:
+		if not follow:
 			return True
-	
-	return False
-
-def find_alife(life):
-	if _find_alife(life, jobs.get_job_detail(life['job'], 'target')):
+		
 		lfe.stop(life)
-		return True
+	
+	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
+		speech.communicate(life, 'call', matches=[{'id': target}])
+		return False
+	
+	lfe.clear_actions(life)
+	lfe.add_action(life,
+	               {'action': 'move','to': _target['last_seen_at'][:2]},
+	               200)
 	
 	return False
-
-#def find_alife_with_answer(life):
-	#_asked = jobs.get_job_detail(life['job'], 'asked')
-	
-	#for target in life['know']:
-	#	if target in _asked:
-	#		continue
-	#	
-	#	if _find_alife(life, target):
-	#		#_question = lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))
-	#		print life['name'],'SHOULD BE ASKING TARGET',_asked
-	#		_asked.append(target)
-	#	else:
-	#		print life['name'],'STILL LOOKING FOR TARGET!!!!!!!',_asked
-	#		break
-	#
-	#print jobs.get_job_detail(life['job'], 'question id')
-	#if lfe.get_memory_via_id(life, jobs.get_job_detail(life['job'], 'question id'))['answered']:
-	#	return True
-	#
-	#return False
 
 def follow_alife(life):
 	if _find_alife(life, jobs.get_job_detail(life['job'], 'target'), distance=7):
@@ -303,3 +274,8 @@ def _find_alife_and_say(life, target_id, say):
 #TODO: Put this in a new file
 def find_alife_and_say(life):	
 	return _find_alife_and_say(life, jobs.get_job_detail(life['job'], 'target'), jobs.get_job_detail(life['job'], 'target'))
+
+def raid(life):
+	jobs.add_job_candidate(_j, life)
+	jobs.announce_job(life, _j)
+	jobs.process_job(_j)

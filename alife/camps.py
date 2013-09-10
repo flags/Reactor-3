@@ -17,14 +17,11 @@ import jobs
 import logging
 import random
 
-def get_impressions(life, camp_id):
-	_score = 0
+def get_camp(camp_id):
+	if not camp_id in WORLD_INFO['camps']:
+		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)
 	
-	for flag in life['known_camps'][camp_id]['flags']:
-		if flag.count('impression'):
-			_score += life['known_camps'][camp_id]['flags'][flag]
-	
-	return _score
+	return WORLD_INFO['camps'][camp_id]
 
 def get_flag(life, camp_id, flag):
 	if flag in life['known_camps'][camp_id]['flags']:
@@ -40,63 +37,35 @@ def flag(life, camp_id, flag, value):
 	
 	logging.debug('%s flagged camp \'%s\' with %s.' % (' '.join(life['name']), camp_id, flag))
 
-#def investigate(life, camp_id, question_id):
-	#_j = jobs.create_job(life, 'investigate camp')
-	#jobs.cancel_if(_j, lfe.has_group)
-	#jobs.add_detail_to_job(_j, 'asked', [])
-	#jobs.add_detail_to_job(_j, 'question id', question_id)
-	#jobs.add_job_task(_j, 'investigate camp', callback=movement.find_alife_with_answer, required=True)
-	#jobs.add_job_candidate(_j, life)
-	#jobs.process_job(_j)
-
-def knows_founder(life, camp_id):
-	if CAMPS[camp_id]['founder'] == life['id']:
-		return life['id']
-	
-	_memories = lfe.get_memory(life, matches={'camp': camp_id, 'founder': '*'})
-	
-	if _memories:
-		_memory = _memories.pop()
-	else:
-		return None
-	
-	if brain.knows_alife_by_id(life, _memory['founder']):
-		return _memory['founder']
-	
-	return None
-
-def find_nearest_unfounded_camp(life):
-	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
-	_nearest_building = references.find_nearest_building(life, ignore_array=_founded_camps)
-	
-	return _nearest_building['reference']
-
-def find_best_unfounded_camp(life, ignore_fully_explored=False):
-	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
-	
-	_best_camp = {'camp': None, 'score': 0}
+def create_all_camps():
 	for camp in WORLD_INFO['reference_map']['buildings']:
-		if camp in _founded_camps:
-			continue
+		_camp_id = str(WORLD_INFO['campid'])
 		
-		if ignore_fully_explored and len(camp) == len(references.get_known_chunks_in_reference(life, camp)):
-			continue
+		for chunk_key in camp:
+			chunks.flag_global(chunk_key, 'camp', _camp_id)
+			
+		WORLD_INFO['camps'][_camp_id] = {'id': _camp_id,
+		                                                  'reference': camp,
+		                                                  'groups': {}}
+		WORLD_INFO['campid'] += 1
+
+def discover_camp(life, camp_id):
+	_camp = {'id': camp_id,
+	         'snapshot': {'time': -1, 'life': []}}
 	
-		_score = judgement.judge_camp(life, camp, for_founding=True)
-		if _score>_best_camp['score']:
-			_best_camp['camp'] = camp
-			_best_camp['score'] = _score
-	
-	return _best_camp
+	life['known_camps'][camp_id] = _camp
+
+#def find_nearest_unfounded_camp(life):
+#	_founded_camps = [CAMPS[camp]['reference'] for camp in CAMPS]
+#	_nearest_building = references.find_nearest_building(life, ignore_array=_founded_camps)
+#	
+#	return _nearest_building['reference']
 
 def _get_nearest_known_camp(life):
 	_nearest_camp = {'camp': None, 'score': -1}
 	
 	for camp in [life['known_camps'][i] for i in life['known_camps']]:
-		if lfe.get_memory(life, matches={'camp': camp, 'text': 'denied from camp'}):
-			continue
-		
-		_key = references.find_nearest_key_in_reference(life, camp['reference'])
+		_key = references.find_nearest_key_in_reference(life, get_camp(camp['id'])['reference'])
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		
 		_distance = numbers.distance(life['pos'], _center)
@@ -120,34 +89,6 @@ def get_camp_via_reference(reference):
 	
 	return None
 
-def get_camp(camp_id):
-	if not camp_id in CAMPS:
-		raise Exception('Camp with ID \'%s\' does not exist.' % camp_id)
-	
-	return CAMPS[camp_id]
-
-def found_camp(life, reference, announce=False):
-	_camp = {'id': len(CAMPS)+1,
-		'name': language.generate_place_name(),
-		'reference': reference,
-		'founder': life['id'],
-		'time_founded': WORLD_INFO['ticks'],
-		'info': {'population': 0},
-		'stats': {},
-		'raid': {}}
-	
-	if not life['known_camps']:
-		life['camp'] = _camp['id']
-	
-	CAMPS[_camp['id']] = _camp 
-	lfe.memory(life, 'founded camp', camp=_camp['id'])
-	logging.debug('%s founded camp #%s.' % (' '.join(life['name']), _camp['id']))
-	discover_camp(life, _camp)
-	speech.announce(life, 'share_camp_info', camp=_camp, founder=life['id'], public=False)
-
-def unfound_camp(life, camp):
-	pass
-
 def get_controlling_groups(camp_id):
 	_groups = {}
 	
@@ -162,80 +103,52 @@ def get_controlling_groups(camp_id):
 	
 	return _groups
 
-def get_controlling_group(camp_id):
+def get_controlling_group_global(camp_id):
 	_groups = get_controlling_groups(camp_id)
+	_groups_controlling = [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+	if _groups_controlling:
+		return _groups_controlling[0]
 	
-	return [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+	return None
+
+def get_controlling_group_according_to(life, camp_id):
+	_best_group = {'group': None, 'score': 0}
+	_camp = life['known_camps'][camp_id]
+	
+	for group in _camp['snapshot']['groups']:
+		if not _best_group['group'] or _camp['snapshot']['groups'][group] > _best_group['score']:
+			_best_group['group'] = group
+			_best_group['score'] = _best_group['score']
+	
+	return _best_group['group']		
 
 def get_all_alife_in_camp(camp_id):
-	return [life['id'] for life in LIFE.values() if is_in_camp(life, CAMPS[camp_id])]
-
-def has_discovered_camp(life, camp):
-	if camp in life['known_camps']:
-		return True
-	
-	return False
-
-def discover_camp(life, camp):
-	life['known_camps'][camp['id']] = camp.copy()
-	life['known_camps'][camp['id']]['time_discovered'] = WORLD_INFO['ticks']
-	life['known_camps'][camp['id']]['flags'] = {}
-
-	if camp['founder'] == life['id']:
-		judgement.judge_chunk(life, lfe.get_current_chunk_id(LIFE[camp['founder']]))
-	else:
-		logging.debug('%s discovered camp #%s.' % (' '.join(life['name']), camp['id']))
+	return [life['id'] for life in LIFE.values() if is_in_camp(life, WORLD_INFO['camps'][camp_id])]
 
 def is_in_camp(life, camp):
 	return references.life_is_in_reference(life, camp['reference'])
 
 def is_in_any_camp(position):
-	for camp in CAMPS.values():
+	for camp in WORLD_INFO['camps'].values():
 		if references.is_in_reference(position, camp['reference']):
 			return camp['id']
 	
-	return False		
+	return False
 
-def position_is_in_camp(position, camp):
-	return references.is_in_reference(position, camp['reference'])
+def position_is_in_camp(position, camp_id):
+	return references.is_in_reference(position, get_camp(camp_id)['reference'])
 
 def get_nearest_position_in_camp(life, camp):
-	_camp = CAMPS[camp]
+	_camp = WORLD_INFO['camps'][camp]
 	_key = references.find_nearest_key_in_reference_exact(life['pos'], _camp['reference'])
 	
 	return chunks.get_nearest_position_in_chunk(life['pos'], _key)
-
-def get_founded_camps(life):
-	return [CAMPS[i] for i in CAMPS if CAMPS[i]['founder'] == life['id']]
-
-def get_camp_info(life, camp):
-	_info = {'founder': -1,
-		'estimated_population': 0}
-	
-	if camp['id'] in [camp['id'] for camp in get_founded_camps(life)]:
-		_info['founder'] = life['id']
-	else:
-		for founder in lfe.get_memory(life, matches={'camp': camp['id'], 'text': 'heard about camp', 'founder': '*'}):
-			_info['founder'] = founder['founder']
-	
-	for _life in life['know'].values():
-		#TODO: 300?
-		if _life['last_seen_time']>=300:
-			continue
-		
-		if position_is_in_camp(_life['last_seen_at'], camp):
-			_info['estimated_population'] += 1
-	
-	return _info
-
-def register_camp_info(life, camp, info):
-	camp['info'].update(info)
 
 def guard_camp(life):
 	_delay = random.randint(25, jobs.get_job_detail(life['job'], 'pause'))
 	
 	if not life['path'] and not lfe.find_action(life, matches=[{'action': 'move'}]):
-		_chunk = CHUNK_MAP[references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
+		_chunk = WORLD_INFO['chunk_map'][references.find_least_populated_key_in_reference(life, CAMPS[life['camp']]['reference'])]
 		lfe.add_action(life,{'action': 'move',
 			'to': random.choice(_chunk['ground'])},
 			200,
@@ -243,19 +156,19 @@ def guard_camp(life):
 	
 	return False
 
-def get_camp_jobs(camp_id):
-	_jobs = []
-	camp = CAMPS[camp_id]
-	
-	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp', description='Guard the camp.')
-	jobs.add_detail_to_job(_j, 'camp', camp_id)
-	jobs.add_detail_to_job(_j, 'pause', 90)
-	jobs.add_job_task(_j, 'guard', callback=guard_camp, required=True)
-	_jobs.append(_j)
-	
-	#_j = jobs.create_job(LIFE[camp['founder']], 'scout', description='Scout the area.')
-	#jobs.add_detail_to_job(_j, 'camp', camp_id)
-	#jobs.add_job_task(_j, 'explore', callback=survival._job_explore_unknown_chunks, required=True)
-	#_jobs.append(_j)
-	
-	return _jobs
+#def get_camp_jobs(camp_id):
+#	_jobs = []
+#	camp = CAMPS[camp_id]
+#	
+#	_j = jobs.create_job(LIFE[camp['founder']], 'guard camp', description='Guard the camp.')
+#	jobs.add_detail_to_job(_j, 'camp', camp_id)
+#	jobs.add_detail_to_job(_j, 'pause', 90)
+#	jobs.add_job_task(_j, 'guard', callback=guard_camp, required=True)
+#	_jobs.append(_j)
+#	
+#	#_j = jobs.create_job(LIFE[camp['founder']], 'scout', description='Scout the area.')
+#	#jobs.add_detail_to_job(_j, 'camp', camp_id)
+#	#jobs.add_job_task(_j, 'explore', callback=survival._job_explore_unknown_chunks, required=True)
+#	#_jobs.append(_j)
+#	
+#	return _jobs

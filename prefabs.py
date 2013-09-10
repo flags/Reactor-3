@@ -1,9 +1,15 @@
 #Tools for generating buildings (prefabs)
-#from globals import *
+from globals import DATA_DIR
 from tiles import *
+
 import graphics as gfx
+
+import menus
+
 import logging
 import random
+import json
+import os
 
 def create_new_prefab(size):
 	if not len(size) == 3:
@@ -28,7 +34,25 @@ def create_new_prefab(size):
 	
 	return {'map': _prefab,'size': size}
 
-def draw_prefab(prefab):
+def cache_prefab(name, path):
+	with open(path, 'r') as f:
+		_prefab = json.loads(''.join(f.readlines()))
+		_prefab['name'] = name
+		
+		PREFABS[name] = _prefab
+		logging.debug('Prefab cached: %s' % name)
+
+def cache_all_prefabs():
+	logging.debug('Caching all prefabs...')
+	for (dirpath, dirname, filenames) in os.walk(PREFAB_DIR):
+		for f in [f for f in filenames if f.count('.json')]:
+			cache_prefab(f.partition('.')[0], os.path.join(PREFAB_DIR, f))
+
+def save(prefab):
+	with open(os.path.join(PREFAB_DIR, 'test.json'), 'w') as f:
+		f.write(json.dumps(prefab))
+
+def _draw_prefab(prefab):
 	_X_MAX = PREFAB_CAMERA_POS[0]+PREFAB_WINDOW_SIZE[0]
 	_Y_MAX = PREFAB_CAMERA_POS[1]+PREFAB_WINDOW_SIZE[1]
 	
@@ -86,3 +110,38 @@ def draw_prefab(prefab):
 					char_buffer=PREFAB_CHAR_BUFFER,
 					rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 					rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
+
+def draw_prefab_thumbnail(entry):
+	#VIEWS
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_prefab = PREFABS[key]
+	
+	PREFAB_TOP_VIEW_POS = (15, 1)
+	
+	for y in range(0, _prefab['size'][1]):
+		for x in range(0, _prefab['size'][0]):
+			for z in range(0, _prefab['size'][2]):
+				if not _prefab['map'][x][y][z]:
+					continue
+			
+				print _prefab['map'][x][y][z]
+			#tcod.console_put_char_(0, PREFAB_TOP_VIEW_POS[0]+x, PREFAB_TOP_VIEW_POS[1]+y, 
+
+def prefab_selected(entry):
+	pass
+
+def create_prefab_list():
+	tcod.console_clear(0)
+	tcod.console_clear(MAP_WINDOW)
+	_prefabs = []
+	for prefab in PREFABS.values():
+		_prefabs.append(menus.create_item('single', prefab['name'], None))
+	
+	return menus.create_menu(title='Prefabs',
+	                  menu=_prefabs,
+	                  padding=(0, 0),
+	                  position=(0, 0),
+	                  format_str='$k',
+	                  on_select=prefab_selected,
+	                  on_move=draw_prefab_thumbnail)

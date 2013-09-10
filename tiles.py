@@ -137,6 +137,108 @@ WHITE_TILE_2 = {'id':'white_tile_2',
 			 'type': 'building',
 			 'cost':-1}
 
+SMALL_TREE_STUMP_1 = {'id':'small_tree_stump_1',
+			 'icon':'o',
+			 'color':(tcod.brass, tcod.desaturated_sea),
+			 'burnable':True,
+			 'cost':-1}
+
+SMALL_TREE_STUMP_2 = {'id':'small_tree_stump_2',
+			 'icon':'o',
+			 'color':(tcod.brass, tcod.desaturated_green),
+			 'burnable':True,
+			 'cost':-1}
+
+WOOD_1 = {'id':'wood_1',
+			 'icon':'#',
+			 'color':(tcod.light_sepia, tcod.sepia),
+			 'burnable':True,
+			 'cost':-1}
+
+WOOD_2 = {'id':'wood_2',
+			 'icon':'#',
+			 'color':(tcod.sepia, tcod.dark_sepia),
+			 'burnable':True,
+			 'cost':-1}
+
+WOOD_3 = {'id':'wood_3',
+			 'icon':'#',
+			 'color':(tcod.sepia, tcod.dark_sepia),
+			 'burnable':True,
+			 'cost':-1}
+
+LEAF_1 = {'id': 'leaf_1',
+            'icon': '\'',
+            'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
+            'burnable': True}
+
+LEAF_2 = {'id': 'leaf_2',
+            'icon': '`',
+            'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
+            'burnable': True}
+
+ROOF_DARK = {'id': 'roof_dark',
+            'icon': '^',
+            'color': (tcod.dark_sepia, tcod.darker_sepia),
+            'burnable': True}
+
+ROOF_DARKER = {'id': 'roof_darker',
+            'icon': '^',
+            'color': (tcod.darker_sepia, tcod.darkest_sepia),
+            'burnable': True}
+
+ROOF_BRIGHT = {'id': 'roof_bright',
+            'icon': '^',
+            'color': (tcod.sepia, tcod.darker_sepia),
+            'burnable': True}
+
+ROOF_BRIGHTER = {'id': 'roof_brighter',
+            'icon': '^',
+            'color': (tcod.light_sepia, tcod.sepia),
+            'burnable': True}
+
+WALL_BLUE = {'id': 'wall_blue',
+           'icon': '#',
+           'color': (tcod.Color(47, 70, 94), tcod.Color(0, 20, 39)),
+           'type': 'building',
+           'burnable': False}
+
+FLOOR_BLUE_1 = {'id': 'floor_blue',
+           'icon': ',',
+           'color': (tcod.white, tcod.lightest_sky),
+           'type': 'building',
+           'burnable': False}
+
+FLOOR_BLUE_2 = {'id': 'floor_blue_2',
+           'icon': '.',
+           'color': (tcod.white, tcod.lightest_azure),
+           'type': 'building',
+           'burnable': False}
+
+FLOOR_DARK_BLUE_1 = {'id': 'floor_dark_blue_1',
+           'icon': '.',
+           'color': (tcod.darkest_sky, tcod.darker_azure),
+           'type': 'building',
+           'burnable': False}
+
+FLOOR_DARK_GREEN_1 = {'id': 'floor_dark_green_1',
+           'icon': '.',
+           'color': (tcod.darker_chartreuse, tcod.brass),
+           'type': 'building',
+           'burnable': False}
+
+WALL_BROWN = {'id': 'wall_brown',
+           'icon': '#',
+           'color': (tcod.lighter_sepia, tcod.light_sepia),
+           'type': 'building',
+           'burnable': False}
+
+FLOOR_BROWN_1 = {'id': 'floor_brown_1',
+           'icon': '.',
+           'color': (tcod.brass, tcod.Color(236, 200, 149)),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'type': 'building',
+           'burnable': False}
+
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
@@ -145,8 +247,7 @@ TEMP_TILES = [BLANK_TILE,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
 		RED_BRICK_2,
-		WHITE_TILE_1,
-		WHITE_TILE_2]
+		SMALL_TREE_STUMP_1]
 
 GRASS_TILES = [SHORT_GRASS_TILE,
 		GRASS_TILE,
@@ -155,6 +256,9 @@ GRASS_TILES = [SHORT_GRASS_TILE,
 DIRT_TILES = [DIRT_TILE_1,
 			DIRT_TILE_2,
 			DIRT_TILE_3]
+
+TREE_STUMPS = [SMALL_TREE_STUMP_1,
+               SMALL_TREE_STUMP_2]
 
 SAND_TILES = [SAND_TILE_1,
 			SAND_TILE_2]
@@ -165,11 +269,36 @@ CONCRETE_TILES = [CONCRETE_TILE_1,
 CONCRETE_FLOOR_TILES = [CONCRETE_FLOOR_1,
 			CONCRETE_FLOOR_2]
 
+ROAD_STRIPES = [ROAD_STRIPE_1,
+                ROAD_STRIPE_2]
+
 RED_BRICK_TILES = [RED_BRICK_1,
 			RED_BRICK_2]
 
 WHITE_TILE_TILES = [WHITE_TILE_1,
 			WHITE_TILE_2]
+
+WOOD_TILES = [WOOD_1,
+              WOOD_2,
+              WOOD_3]
+
+LEAF_TILES = [LEAF_1,
+              LEAF_2]
+
+ROOF_TILES = [ROOF_BRIGHTER,
+              ROOF_BRIGHT,
+              ROOF_DARK,
+              ROOF_DARKER]
+
+HOUSE_WALL_TILES = [WALL_BLUE, WALL_BROWN]
+
+BLUE_FLOOR_TILES = [FLOOR_BLUE_1, FLOOR_BLUE_2]
+
+DARK_BLUE_FLOOR_TILES = [FLOOR_DARK_BLUE_1]
+
+DARK_GREEN_FLOOR_TILES = [FLOOR_DARK_GREEN_1]
+
+BROWN_FLOOR_TILES = [FLOOR_BROWN_1]
 
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
@@ -179,6 +308,15 @@ def create_all_tiles():
 	TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(RED_BRICK_TILES)
 	TEMP_TILES.extend(WHITE_TILE_TILES)
+	TEMP_TILES.extend(TREE_STUMPS)
+	TEMP_TILES.extend(WOOD_TILES)
+	TEMP_TILES.extend(LEAF_TILES)
+	TEMP_TILES.extend(ROOF_TILES)
+	TEMP_TILES.extend(HOUSE_WALL_TILES)
+	TEMP_TILES.extend(BLUE_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_BLUE_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
+	TEMP_TILES.extend(BROWN_FLOOR_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

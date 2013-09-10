@@ -8,6 +8,7 @@ import combat
 import speech
 import camps
 import brain
+import stats
 import jobs
 
 import logging
@@ -21,9 +22,6 @@ def setup(life):
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not life['state'] == STATE:
-		RETURN_VALUE = STATE_CHANGE
-	
 	_all_targets = []
 	_combat_targets = judgement.get_targets(life)
 	
@@ -35,6 +33,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	if not lfe.execute_raw(life, 'combat', 'ranged') and not lfe.execute_raw(life, 'combat', 'melee'):
 		return False
+	
+	if not life['state'] == STATE:
+		stats.battle_cry(life)
+		#print 'monitor me', life['name']
+		RETURN_VALUE = STATE_CHANGE
 	
 	return RETURN_VALUE
 

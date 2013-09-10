@@ -4,12 +4,17 @@ import life as lfe
 
 import judgement
 import survival
+import movement
 import numbers
 import groups
 import combat
 import chunks
+import speech
+import items
 import stats
 import logic
+import sight
+import jobs
 
 import re
 
@@ -23,6 +28,7 @@ CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
+	'can_trust': judgement.can_trust,
 	'can_bite': stats.can_bite,
 	'can_scratch': stats.can_scratch,
 	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
@@ -41,9 +47,20 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_child': stats.is_child,
 	'is_parent': stats.is_parent,
 	'is_night': logic.is_night,
-	'is_born_leader': lambda life: life['stats']['is_leader'],
+	'is_born_leader': stats.is_born_leader,
 	'find_and_announce_shelter': groups.find_and_announce_shelter,
 	'desires_shelter': stats.desires_shelter,
+	'travel_to_position': movement.travel_to_position,
+	'find_target': movement.find_target,
+	'can_see_target': sight.can_see_target,
+	'wait': never,
+	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
+	'start_dialog': speech.start_dialog,
+	'announce_to_group': groups.announce,
+	'is_in_chunk': chunks.is_in_chunk,
+	'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
+	'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
+	'explode': items.explode,
 	'always': always,
 	'never': never}
 

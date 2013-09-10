@@ -98,7 +98,7 @@ def switch_to_main_menu():
 	menus.delete_active_menu()
 	
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Start', None, enabled=profiles.get_worlds()))
+	_menu_items.append(menus.create_item('single', 'Start', None, enabled=WORLD_INFO['id']))
 	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
 	_menu_items.append(menus.create_item('single', 'World Generation', None))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
@@ -139,7 +139,7 @@ def switch_to_select_world():
 	_menu_items = []
 	
 	for world in profiles.get_worlds():
-		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world))
+		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world, enabled=(not world == WORLD_INFO['id'])))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Select World',
@@ -176,9 +176,9 @@ def switch_to_spawn_point():
 def switch_to_world_gen():
 	_menu_items = []
 	_menu_items.append(menus.create_item('list', 'Map', profiles.get_maps()))
-	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks']))
-	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy']))
-	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy']))
+	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
+	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy', 'None']))
+	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy', 'None']))
 	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))
@@ -189,8 +189,7 @@ def switch_to_world_gen():
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		on_select=worldgen_menu_select,
-		on_change=clear)
+		on_select=worldgen_menu_select)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -212,9 +211,13 @@ def generate_world():
 	elif _settings['World Age'] == '1 Week':
 		_ticks = 1000#30000
 	elif _settings['World Age'] == '2 Weeks':
-		_ticks = 60000
+		_ticks = 2000
 	elif _settings['World Age'] == '3 Weeks':
-		_ticks = 90000
+		_ticks = 3000
+	elif _settings['World Age'] == '4 Weeks':
+		_ticks = 4000
+	elif _settings['World Age'] == '5 Weeks':
+		_ticks = 5000
 	
 	maps.load_map(_settings['Map'])
 	

@@ -6,6 +6,7 @@
 *.swp
 *.wpr
 *.patch
+*.lprof
 *.idea_wall
 
 .stats/*

@@ -70,6 +70,8 @@ def save_map(map_name, base_dir=DATA_DIR):
 		
 		if 'old_pos' in light:
 			del light['old_pos']
+	
+	WORLD_INFO['seed_state'] = random.getstate()
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
@@ -89,6 +91,10 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		try:
 			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
 			
+			if 'items' in WORLD_INFO:
+				ITEMS.update(WORLD_INFO['items'])
+				#del WORLD_INFO['items']
+			
 			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]
 			MAP_SIZE[1] = _map_size[1]
@@ -98,7 +104,7 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 				update_chunk_map()
 				smooth_chunk_map()
 			else:
-				CHUNK_MAP.update(WORLD_INFO['chunk_map'])
+				WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 			
 			if not WORLD_INFO['lights']:
 				logging.warning('World has no lights. Creating one manually.')
@@ -136,6 +142,10 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 					for key in TILE_STRUCT:
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
+		
+		if WORLD_INFO['seed_state']:
+			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
+			random.setstate(tuple(WORLD_INFO['seed_state']))
 		
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
@@ -181,7 +191,7 @@ def render_lights(source_map):
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map,(light['pos'][0],light['pos'][1]),top_left=_top_left)
+			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), 25, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -252,9 +262,9 @@ def diffuse_light(source_light):
 	
 	return (light.ravel(1), light.ravel(0))
 
-def _render_los(map,pos,cython=False):
+def _render_los(map, pos, size, cython=False, life=None):
 	if cython:
-		return cython_render_los.render_los(map,pos)
+		return cython_render_los.render_los(map, pos, size, life=life)
 	else:
 		return render_los(map,pos)
 
@@ -330,6 +340,24 @@ def render_map(map):
 			
 			if not _drawn:
 				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+
+def render_map_slices():
+	SETTINGS['map_slices'] = []
+	
+	for z in range(0, MAP_SIZE[2]):
+		SETTINGS['map_slices'].append(tcod.console_new(MAP_SIZE[0], MAP_SIZE[1]))
+		for x in range(0, MAP_SIZE[0]):
+			for y in range(0, MAP_SIZE[1]):
+				if not WORLD_INFO['map'][x][y][z]:
+					continue
+				
+				gfx.blit_tile_to_console(SETTINGS['map_slices'][z], x, y, WORLD_INFO['map'][x][y][z])
+
+def fast_draw_map():
+	_CAM_X = numbers.clip(CAMERA_POS[0], 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
+	_CAM_Y = numbers.clip(CAMERA_POS[1], 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
+	
+	tcod.console_blit(SETTINGS['map_slices'][2], _CAM_X, _CAM_Y, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW, 0, 0)
 
 #TODO: Put both of these into one function.
 def render_x_cutout(map,x_pos,y_pos):
@@ -419,47 +447,19 @@ def get_collision_map(map_array,start,end,mark=1):
 	return collision_map
 
 def get_chunk(chunk_id):
-	return CHUNK_MAP[chunk_id]
+	return WORLD_INFO['chunk_map'][chunk_id]
 
-def refresh_chunk(chunk_id):
-	chunk = get_chunk(chunk_id)
-	
-	if chunk['last_updated'] == WORLD_INFO['ticks']:
-		return False
-	
-	_life = []
-	for life in [LIFE[i] for i in LIFE]:
-		if alife.chunks.is_in_chunk(life, chunk_id):
-			_life.append(life['id'])
-	
-	_items = []
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
-		if item.has_key('id'):
-			continue
-		
-		if alife.chunks.is_in_chunk(item, chunk_id):
-			_items.append(_item)
-		
-	chunk['items'] = _items
-	chunk['life'] = _life
-	chunk['last_updated'] = WORLD_INFO['ticks']
-	chunk['digest'] = '%s-P=%s-I=%s' % ('%s,%s' % (chunk['pos'][0],chunk['pos'][1]), _life, len(_items))
-	broadcast_chunk_change(chunk_id)
+def enter_chunk(chunk_key, life_id):
+	chunk = get_chunk(chunk_key)
+    
+	if not life_id in chunk['life']:
+		chunk['life'].append(life_id)
 
-def broadcast_chunk_change(chunk_id):
-	for life in [LIFE[i] for i in LIFE]:
-		for known_chunk_key in life['known_chunks']:
-			_chunk = get_chunk(known_chunk_key)
-			_known_chunk = life['known_chunks'][known_chunk_key]
-			
-			if _chunk['digest'] == _known_chunk['digest']:
-				continue
-			
-			_known_chunk['digest'] = _chunk['digest']
-			
-			#logging.debug('%s got update for chunk #%s' % (' '.join(life['name']), '%s,%s' % (_chunk['pos'][0],_chunk['pos'][1])))
+def leave_chunk(chunk_key, life_id):
+	chunk = get_chunk(chunk_key)
+    
+	if life_id in chunk['life']:
+		chunk['life'].append(life_id)
 
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)
@@ -529,9 +529,10 @@ def update_chunk_map():
 				'items': [],
 				'control': {},
 				'neighbors': [],
+				'flags': {},
 				'reference': None,
 				'last_updated': None,
-				'digest': None}
+				'max_z': 0}
 			
 			_tiles = {}
 			for y2 in range(y1, y1+WORLD_INFO['chunk_size']):
@@ -543,6 +544,13 @@ def update_chunk_map():
 					if not WORLD_INFO['map'][x2][y2][4]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
 						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
+						
+						if not _tile:
+							continue
+					
+					for z in range(0, MAP_SIZE[2]):
+						if not WORLD_INFO['map'][x2][y2][z]:
+							_chunk_map[_chunk_key]['max_z'] = z-1
 					
 					if 'type' in _tile:
 						_type = _tile['type']
@@ -565,13 +573,13 @@ def update_chunk_map():
 			else:
 				_chunk_map[_chunk_key]['type'] = 'other'
 	
-	CHUNK_MAP.update(_chunk_map)
+	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 			
 def smooth_chunk_map():
 	_stime = time.time()
 	_runs = 0
-	_chunk_map = copy.deepcopy(CHUNK_MAP)
+	_chunk_map = copy.deepcopy(WORLD_INFO['chunk_map'])
 	_change = True
 	
 	while _change:
@@ -605,7 +613,7 @@ def smooth_chunk_map():
 				
 				_chunk_map[_current_chunk_key] = _current_chunk
 	
-	CHUNK_MAP.update(_chunk_map)	
+	WORLD_INFO['chunk_map'].update(_chunk_map)	
 	logging.info('Chunk map smoothing completed in %.2f seconds (%s runs).' % (time.time()-_stime, _runs))
 
 def find_all_linked_chunks(chunk_key, check=[]):

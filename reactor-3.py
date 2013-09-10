@@ -1,11 +1,21 @@
 """Reactor 3"""
 
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
+ch = logging.StreamHandler()
+ch.setFormatter(console_formatter)
+logger.addHandler(ch)
+
 from globals import *
 from inputs import *
 from player import *
 
 import libtcodpy as tcod
 import render_fast_los
+import render_map
 
 import graphics as gfx
 import traceback
@@ -17,7 +27,6 @@ import language
 import profiles
 import network
 import drawing
-import logging
 import weapons
 import effects
 import numbers
@@ -32,41 +41,10 @@ import items
 import life
 import time
 import maps
+import smp
 import sys
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')
-ch = logging.StreamHandler()
-ch.setFormatter(console_formatter)
-logger.addHandler(ch)
-
-#TODO: Replace with "module_sanity_check"
-#Optional Cython-compiled modules
-try:
-	import render_map
-	import render_los
-	
-	if render_map.VERSION == MAP_RENDER_VERSION:
-		CYTHON_ENABLED = True
-	else:
-		CYTHON_ENABLED = False
-		logging.error('[Cython] render_map is out of date!')
-		logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
-		sys.exit(1)
-	
-except ImportError, e:
-	CYTHON_ENABLED = False
-	logging.warning('[Cython] ImportError with module: %s' % e)
-	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
-	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
-
-gfx.log(WINDOW_TITLE)
-
-tiles.create_all_tiles()
-language.load_strings()
-
-gfx.init_libtcod()
+CYTHON_ENABLED = True
 
 def move_camera(pos,scroll=False):
 	_orig_pos = CAMERA_POS[:]
@@ -76,6 +54,11 @@ def move_camera(pos,scroll=False):
 	
 	if not _orig_pos == CAMERA_POS:
 		gfx.refresh_window()
+	elif SETTINGS['controlling'] and not alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'redraw') == pos:
+		gfx.refresh_window()
+	
+	if SETTINGS['controlling']:
+		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
 def draw_targeting():
 	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
@@ -83,67 +66,6 @@ def draw_targeting():
 		SELECTED_TILES[0] = []
 		for pos in drawing.diag_line(LIFE[SETTINGS['controlling']]['pos'],LIFE[SETTINGS['controlling']]['targeting']):
 			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
-
-SETTINGS['draw z-levels below'] = True
-SETTINGS['draw z-levels above'] = True
-
-life.initiate_life('human')
-life.initiate_life('dog')
-
-items.initiate_item('white_shirt')
-items.initiate_item('white_cloth')
-items.initiate_item('sneakers')
-items.initiate_item('leather_backpack')
-items.initiate_item('blue_jeans')
-items.initiate_item('glock')
-items.initiate_item('22_rifle')
-items.initiate_item('9x19mm_mag')
-items.initiate_item('9x19mm_round')
-items.initiate_item('radio')
-items.initiate_item('can_of_corn')
-items.initiate_item('soda')
-items.initiate_item('electric_lantern')
-items.initiate_item('burner')
-items.initiate_item('22_rifle')
-items.initiate_item('22_lr_mag')
-items.initiate_item('22_lr_cartridge')
-
-SETTINGS['running'] = 2
-
-if SETTINGS['running'] == 2:
-	for world in profiles.get_worlds():
-		worldgen.load_world(world)
-		break
-
-if not 'start_age' in WORLD_INFO:
-	SETTINGS['running'] = 1
-
-while SETTINGS['running'] in [-1, 1]:
-	if SETTINGS['running'] == -1:
-		mainmenu.draw_intro()
-	
-	if not MENUS:
-		mainmenu.switch_to_main_menu()
-	
-	get_input()
-	handle_input()
-	mainmenu.draw_main_menu()
-
-gfx.refresh_window()
-
-if not 'start_age' in WORLD_INFO:
-	worldgen.generate_world(WORLD_INFO['map'],
-		life_density='Heavy',
-		wildlife_density='Sparse',
-		simulate_ticks=100,
-		save=True,
-		thread=False)
-
-#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
-#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
-#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
-#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
 
 CURRENT_UPS = UPS
 
@@ -179,24 +101,41 @@ def main():
 	draw_targeting()
 	move_camera(LIFE[SETTINGS['following']]['pos'])
 	
-	if LOS_BUFFER[0] == []:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)	
+	if SELECTED_TILES[0]:
+		gfx.refresh_window()
 	
-	if CYTHON_ENABLED:
+	if LOS_BUFFER[0] == []:
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['following']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
+		                                 cython=True,
+		                                 life=LIFE[SETTINGS['following']])
+	
+	maps.render_lights(WORLD_INFO['map'])
+	
+	if not SETTINGS['map_slices']:
+		#if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
-	else:
-		maps.render_map(WORLD_INFO['map'])
+		#	print 'yes'
+		#else:
+		#	print 'no???'
+		#	maps.render_map(WORLD_INFO['map'])
 	
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
-	maps.render_lights(WORLD_INFO['map'])
 	
 	if LIFE[SETTINGS['controlling']]['encounters']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['controlling']]['pos'], cython=CYTHON_ENABLED)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['controlling']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
+		                                 cython=CYTHON_ENABLED)
 	
 	if not SETTINGS['controlling'] == SETTINGS['following']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+		                                 LIFE[SETTINGS['controlling']]['pos'],
+		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
+		                                 cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])
@@ -224,11 +163,15 @@ def main():
 	gfx.draw_message_box()
 	gfx.draw_status_line()
 	gfx.draw_console()
-	gfx.start_of_frame()
+	if SETTINGS['map_slices']:
+		maps.fast_draw_map()
+	else:
+		gfx.start_of_frame(draw_char_buffer=True)
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
-	#print tcod.sys_get_fps()
+	if '--fps' in sys.argv:
+		print tcod.sys_get_fps()
 
 def tick():
 	while SETTINGS['running']==2:
@@ -241,16 +184,111 @@ def tick():
 			if 'debug' in WORLD_INFO:
 				WORLD_INFO['debug'].quit()
 
-if '--debug' in sys.argv:
-	_debug_host = network.DebugHost()
-	_debug_host.start()
-	WORLD_INFO['debug'] = _debug_host
+if __name__ == '__main__':
+	#TODO: Replace with "module_sanity_check"
+	#Optional Cython-compiled modules
+	try:
+		import render_map
+		import render_los
+		
+		if render_map.VERSION == MAP_RENDER_VERSION:
+			CYTHON_ENABLED = True
+		else:
+			logging.error('[Cython] render_map is out of date!')
+			logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+			sys.exit(1)
+		
+	except ImportError, e:
+		CYTHON_ENABLED = False
+		logging.warning('[Cython] ImportError with module: %s' % e)
+		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
+		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
+	
+	gfx.log(WINDOW_TITLE)
+	
+	tiles.create_all_tiles()
+	language.load_strings()
+	
+	gfx.init_libtcod()
+	#smp.init()
 
-if '--profile' in sys.argv:
-	logging.info('Profiling. Exit when completed.')
-	cProfile.run('tick()','profile.dat')
-else:
-	tick()
+	SETTINGS['draw z-levels below'] = True
+	SETTINGS['draw z-levels above'] = True
+	
+	life.initiate_life('human')
+	life.initiate_life('dog')
+	
+	items.initiate_all_items()
+	#items.initiate_item('white_shirt')
+	#items.initiate_item('white_cloth')
+	#items.initiate_item('sneakers')
+	#items.initiate_item('leather_backpack')
+	#items.initiate_item('blue_jeans')
+	#items.initiate_item('glock')
+	#items.initiate_item('22_rifle')
+	#items.initiate_item('9x19mm_mag')
+	#items.initiate_item('9x19mm_round')
+	#items.initiate_item('radio')
+	#items.initiate_item('can_of_corn')
+	#items.initiate_item('soda')
+	#items.initiate_item('electric_lantern')
+	#items.initiate_item('burner')
+	#items.initiate_item('22_rifle')
+	#items.initiate_item('22_lr_mag')
+	#items.initiate_item('22_lr_cartridge')
+	#items.initiate_item('frag_grenade')
+	#items.initiate_item('molotov')
+	
+	SETTINGS['running'] = 2	
+	
+	if '--menu' in sys.argv:
+		SETTINGS['running'] = 1
+	
+	if SETTINGS['running'] == 2:
+		for world in profiles.get_worlds():
+			worldgen.load_world(world)
+			break
 
-if 'debug' in WORLD_INFO:
-	WORLD_INFO['debug'].quit()
+	if not 'start_age' in WORLD_INFO:
+		SETTINGS['running'] = 1
+	
+	while SETTINGS['running'] in [-1, 1]:
+		if SETTINGS['running'] == -1:
+			mainmenu.draw_intro()
+		
+		if not MENUS:
+			mainmenu.switch_to_main_menu()
+		
+		get_input()
+		handle_input()
+		mainmenu.draw_main_menu()
+	
+	gfx.refresh_window()
+	
+	if not 'start_age' in WORLD_INFO:
+		worldgen.generate_world(WORLD_INFO['map'],
+			life_density='Heavy',
+			wildlife_density='Sparse',
+			simulate_ticks=100,
+			save=True,
+			thread=False)
+	
+	if '--debug' in sys.argv:
+		_debug_host = network.DebugHost()
+		_debug_host.start()
+		WORLD_INFO['debug'] = _debug_host
+	
+	if '--profile' in sys.argv:
+		logging.info('Profiling. Exit when completed.')
+		cProfile.run('tick()','profile.dat')
+	else:
+		tick()
+	
+	if 'debug' in WORLD_INFO:
+		WORLD_INFO['debug'].quit()
+	
+	#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
+	#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
+	#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
+	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
+	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)

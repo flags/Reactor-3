@@ -4,6 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import judgement
+import dialog
 import action
 import groups
 import chunks
@@ -33,13 +34,7 @@ def listen(life):
 			
 			logging.info('%s learned about %s via listen.' % (' '.join(life['name']), ' '.join(event['from']['name'])))
 		
-		if event['gist'] == 'job':
-			if not jobs.alife_is_factor_of_job(life, event['job']):
-				print 'Got job:', event['job']['gist']
-				jobs.add_job_candidate(event['job'], life)
-				jobs.process_job(event['job'])
-		
-		elif event['gist'] == 'follow':
+		if event['gist'] == 'follow':
 			if stats.will_obey(life, event['from']['id']):
 				brain.add_impression(life, event['from']['id'], 'follow', {'influence': stats.get_influence_from(life, event['from']['id'])})
 		
@@ -105,7 +100,8 @@ def listen(life):
 			pass
 		
 		elif event['gist'] == 'looks_hostile':
-			speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
+			#speech.communicate(life, 'surrender', matches=[{'id': event['from']['id']}])
+			pass
 		
 		elif event['gist'] == 'camp_raid':
 			print '*' * 10
@@ -367,6 +363,29 @@ def listen(life):
 		
 		elif event['gist'] == 'answer_group_location_fail':
 			gfx.radio(event['from'], 'We don\'t have a camp yet. I\'ll let you know when we meet up.')
+		
+		elif event['gist'] == 'group_jobs':
+			if groups.is_leader(event['group_id'], life['id']):
+				_jobs = groups.get_jobs(event['group_id'])
+				
+				if _jobs:
+					gfx.radio(life, 'I\'ve got a few jobs for you...')
+					speech.start_dialog(event['from'], life['id'], 'jobs')
+		
+		elif event['gist'] == 'job':
+			groups.discover_group(life, event['from']['group'])
+			
+			if not jobs.is_candidate(event['job_id'], life['id']) and judgement.can_trust(life, event['from']['id']):
+				jobs.add_job_candidate(event['job_id'], life['id'])
+		
+		elif event['gist'] == 'call':
+			if judgement.can_trust(life, event['from']['id']):
+				#_dialog = {'type': 'dialog',
+				#           'from': SETTINGS['controlling'],
+				#           'enabled': True}
+					 
+				#event['from']['dialogs'].append(dialog.create_dialog_with(event['from'], life['id'], _dialog))
+				speech.start_dialog(life, event['from']['id'], 'call_accepted')
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

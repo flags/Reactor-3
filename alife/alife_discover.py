@@ -7,6 +7,7 @@ import survival
 import chunks
 import sight
 import brain
+import smp
 
 import logging
 
@@ -41,7 +42,11 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if not 'scanned_chunks' in life['state_flags']:
 					life['state_flags']['scanned_chunks'] = []
 				
+				#if SETTINGS['smp']:
+				#sight.scan_surroundings(life, _chunks=brain.get_flag(life, 'nearby_chunks'), ignore_chunks=life['state_flags']['scanned_chunks'])
+				#else:
 				sight.scan_surroundings(life, ignore_chunks=life['state_flags']['scanned_chunks'])
+				
 				_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True, lost_method=_lost_method, only_recent=True)
 				brain.store_in_memory(life, 'discovery_lock', True)
 				brain.store_in_memory(life, 'explore_chunk', _explore_chunk)

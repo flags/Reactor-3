@@ -57,3 +57,9 @@ def get_raiders(camp_id):
 
 def get_defenders(camp_id):
 	return camps.get_camp(camp_id)['raid']['defenders']
+
+def has_control(camp_id, group_id):
+	if group_id == camps.get_controlling_group_global(camp_id):
+		return True
+	
+	return False

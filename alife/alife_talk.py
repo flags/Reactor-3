@@ -37,7 +37,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['state'] in ['combat']:
 			break
 		
-		if jobs.alife_is_factor_of_any_job(ai['life']):
+		if jobs.alife_has_job(ai['life']):
 			break
 		
 		if not stats.can_talk_to(life, ai['life']['id']):
@@ -95,9 +95,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.start_dialog(life, target['id'], 'questions')
 			print life['name'],'questions', lfe.get_questions(life, target=target['id'])
 		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
-			print life['name'],'wants',LIFE[target['id']]['name']
 			brain.flag_alife(life, target['id'], 'invited_to_group')
-			speech.start_dialog(life, target['id'], 'invite_to_group')
+			speech.start_dialog(life, target['id'], 'ask_to_join_group')
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
