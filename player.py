@@ -1155,13 +1155,13 @@ def pick_up_item_from_ground(entry):
 	
 	_item = items.get_item_from_uid(entry['item'])
 	
-	if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
-		gfx.message('You can\'t lift the %s.' % _item['name'])
-		return False
-	
 	#TODO: Lowercase menu keys
 	if entry['key'] == 'Equip':
 		if entry['values'][entry['value']] == 'Wear':
+			if not life.can_wear_item(LIFE[SETTINGS['controlling']], _item['uid']):
+				gfx.message('You can\'t equip this item!')
+				return False
+			
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupequipitem',
@@ -1170,6 +1170,10 @@ def pick_up_item_from_ground(entry):
 				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
+			if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+				gfx.message('You can\'t lift the %s.' % _item['name'])
+				return False
+			
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupholditem',
@@ -1179,6 +1183,10 @@ def pick_up_item_from_ground(entry):
 				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
 		
 		return True
+	
+	if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+		gfx.message('You can\'t lift the %s.' % _item['name'])
+		return False
 	
 	gfx.message('You start to put %s in your %s.' %
 		(items.get_name(items.get_item_from_uid(entry['item'])), items.get_name(items.get_item_from_uid(entry['container']))))
