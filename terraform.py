@@ -176,6 +176,8 @@ def handle_input():
 			SETTINGS['view'] = 'chunk_map'
 		else:
 			SETTINGS['view'] = 'map'
+		
+		gfx.refresh_window()
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
@@ -453,16 +455,16 @@ def main():
 			gfx.draw_console()
 			gfx.draw_cursor(MAP_CURSOR,CAMERA_POS,PLACING_TILE)
 		
-			menus.draw_menus()
-			
-			gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
-			gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
-			
-			if menus.get_menu_by_name('Prefabs')==-1:
-				gfx.start_of_frame_terraform()
-			
-			gfx.end_of_frame_terraform(draw_cutouts=(not SETTINGS['view'] == 'prefab'))
-			gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
+		menus.draw_menus()
+		
+		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
+		gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
+		
+		if menus.get_menu_by_name('Prefabs')==-1:
+			gfx.start_of_frame_terraform()
+		
+		gfx.end_of_frame_terraform(draw_cutouts=(not SETTINGS['view'] == 'prefab'))
+		gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
 
 if '--profile' in sys.argv:
 	logging.info('Profiling. Exit when completed.')
