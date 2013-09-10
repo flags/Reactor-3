@@ -406,26 +406,29 @@ def place_town(map_gen):
 		if _skip:
 			continue
 		
-		map_gen['chunk_map'][chunk]['type'] = 'town'
-		_actual_town_chunks.append(chunk)
-		
-		if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>4:
+		if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>=len(ROOM_TYPES):
 			break
+		
+		map_gen['chunk_map'][chunk]['type'] = 'town'
+		
+		_actual_town_chunks.append(chunk)
 		
 		if len(_actual_town_chunks)>_max_size:
 			break
 	
 	for chunk_key in _actual_town_chunks[:]:
 		_added = True
+		_break = False
 		while _added:
 			_added = False
-			
-			if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>4:
-				break
 			
 			for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
 				#if neighbor_key in _actual_town_chunks:
 				#	continue
+				
+				if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>=len(ROOM_TYPES):
+					_break = True
+					break
 				
 				_skip = False
 				for _next_neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'town'):
@@ -445,6 +448,12 @@ def place_town(map_gen):
 				_actual_town_chunks.append(neighbor_key)
 				map_gen['chunk_map'][neighbor_key]['type'] = 'town'
 				_added = True
+		
+			if _break:
+				break
+		
+		if _break:
+			break
 	
 	_covered_houses = []
 	for chunk in _actual_town_chunks:
