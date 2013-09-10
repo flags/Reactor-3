@@ -409,6 +409,9 @@ def place_town(map_gen):
 		map_gen['chunk_map'][chunk]['type'] = 'town'
 		_actual_town_chunks.append(chunk)
 		
+		if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>4:
+			break
+		
 		if len(_actual_town_chunks)>_max_size:
 			break
 	
@@ -416,6 +419,10 @@ def place_town(map_gen):
 		_added = True
 		while _added:
 			_added = False
+			
+			if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>4:
+				break
+			
 			for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
 				#if neighbor_key in _actual_town_chunks:
 				#	continue
