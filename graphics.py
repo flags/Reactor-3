@@ -311,6 +311,10 @@ def draw_chunk_map():
 			else:
 				_fore_color = tcod.white
 			
+			if MAP_CURSOR[0]/WORLD_INFO['chunk_size'] == x/WORLD_INFO['chunk_size'] and MAP_CURSOR[1]/WORLD_INFO['chunk_size'] == y/WORLD_INFO['chunk_size']:
+				_fore_color = tcod.white
+				_tile = 'x'
+			
 			blit_char(x/WORLD_INFO['chunk_size'],
 			          y/WORLD_INFO['chunk_size'],
 			          _tile,

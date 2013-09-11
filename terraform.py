@@ -17,6 +17,7 @@ from tiles import *
 import graphics as gfx
 import cProfile
 import maputils
+import numbers
 import prefabs
 import random
 import items
@@ -67,33 +68,37 @@ SETTINGS['view'] = 'map'
 PLACING_TILE = WALL_TILE
 
 def handle_scrolling(cursor,camera,window_size,map_size,change):
+	cursor[0] = numbers.clip(cursor[0]+change[0], 0, MAP_SIZE[0]-1)
+	cursor[1] = numbers.clip(cursor[1]+change[1], 0, MAP_SIZE[1]-1)
+	
 	if change[0]>0:
-		if cursor[0]<map_size[0]-1:
-			cursor[0]+=change[0]
+		#if cursor[0]<map_size[0]-change[0]:
+		#	cursor[0]+=change[0]
 		
 		if cursor[0]-camera[0]/2>window_size[0]/2 and camera[0]+window_size[0]<map_size[0]:
 			camera[0]+=change[0]
+		#if cursor[0]+camera[0]
 	
 	elif change[0]<0:
-		if cursor[0]>0:
-			cursor[0]+=change[0]
+		#if cursor[0]>0:
+		#	cursor[0]+=change[0]
 		
 		if cursor[0]-camera[0]<window_size[0]/2 and camera[0]>0:
-			camera[0]-=1
+			camera[0]+=change[0]
 	
 	if change[1]>0:
-		if cursor[1]<map_size[1]-1:
-			cursor[1]+=change[1]
+		#if cursor[1]<map_size[1]-change[1]:
+		#	cursor[1]+=change[1]
 		
 		if cursor[1]-camera[1]/2>window_size[1]/2 and camera[1]+window_size[1]<map_size[1]:
 			camera[1]+=change[1]
 	
 	elif change[1]<0:
-		if cursor[1]>0:
-			cursor[1]+=change[1]
+		#if cursor[1]>0:
+		#	cursor[1]+=change[1]
 		
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
-			camera[1]-=1
+			camera[1]+=change[1]
 	
 	gfx.refresh_window()
 
@@ -134,34 +139,42 @@ def handle_input():
 		elif SETTINGS['view'] == 'prefab':
 			#TODO: Make this and everything in the `else` statement a function.
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,-1))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -1))
 
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0,1))
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0, 1))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,1))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, 1))
 
 	elif INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1,0))
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1, 0))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1,0))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1, 0))
 
 	elif INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1,0))
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1, 0))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1,0))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1, 0))
 
 	elif INPUT[' ']:
 		if SETTINGS['view'] == 'prefab':
@@ -209,6 +222,11 @@ def handle_input():
 			menus.activate_menu(IN_PREFAB_EDITOR)
 	
 	elif INPUT['q']:
+		if SETTINGS['view'] == 'chunk_map':
+			SETTINGS['view'] = 'map'
+			gfx.refresh_window()
+			return False
+		
 		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
 		
 		if _current_index<0:
