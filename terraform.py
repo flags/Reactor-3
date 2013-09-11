@@ -205,6 +205,9 @@ def handle_input():
 	
 	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
+			if SETTINGS['view'] == 'chunk_map':
+				SETTINGS['view'] = 'map'
+				gfx.refresh_window()
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
