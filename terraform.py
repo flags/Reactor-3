@@ -355,6 +355,9 @@ def menu_item_selected(entry):
 		zones.connect_ramps()
 		
 		logging.debug('Map compile took: %s' % (time.time()-_stime))
+	elif value == 'Generate chunk map':
+		maps.update_chunk_map()
+		
 	elif value == 'Exit':
 		SETTINGS['running'] = False
 
@@ -425,6 +428,7 @@ def create_options_menu():
 	_menu_items.append(menus.create_item('title','General',None,enabled=False))
 	_menu_items.append(menus.create_item('list','S','Save'))
 	_menu_items.append(menus.create_item('list','C','Compile'))
+	_menu_items.append(menus.create_item('list','CH','Generate chunk map'))
 	_menu_items.append(menus.create_item('list','L','Load'))
 	_menu_items.append(menus.create_item('list','E','Exit'))
 	

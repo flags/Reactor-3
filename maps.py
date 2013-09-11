@@ -540,12 +540,13 @@ def update_chunk_map():
 					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
-					if not WORLD_INFO['map'][x2][y2][4]:
+					if not WORLD_INFO['map'][x2][y2][3]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
-						
-						if not _tile:
-							continue
+					
+					_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
+					
+					if not _tile:
+						continue
 					
 					for z in range(0, MAP_SIZE[2]):
 						if not WORLD_INFO['map'][x2][y2][z]:
@@ -562,14 +563,9 @@ def update_chunk_map():
 						_tiles[_type] = 1
 			
 			_total_tiles = sum(_tiles.values())
-			#for tile in _tiles.keys():
-			#	if tile == 'building':
-			#		print 'before', tile, _tiles[tile]
-			#	_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
-			#	if tile == 'building':
-			#		print 'after', tile, _tiles[tile]
-			if _chunk_key == '145,35':
-				print 'pay attention',_tiles
+			for tile in _tiles.keys():
+				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
+			
 			if 'building' in _tiles:# and _tiles['building']>=9:
 				_chunk_map[_chunk_key]['type'] = 'building'
 			elif 'road' in _tiles and _tiles['road']>=15:
