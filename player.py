@@ -14,6 +14,7 @@ import menus
 import items
 import time
 import life
+import maps
 
 import logging
 
@@ -539,6 +540,7 @@ def handle_input():
 		_options.append(menus.create_item('single', 'Save', 'Offload game to disk'))
 		_options.append(menus.create_item('single', 'Load', 'Load game from disk'))
 		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
+		_options.append(menus.create_item('single', 'Update chunk map', 'Generates chunk map'))
 		_options.append(menus.create_item('title', 'World Info', None))
 		_options.append(menus.create_item('single', 'ALife', len(LIFE)))
 		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
@@ -1296,6 +1298,9 @@ def handle_options_menu(entry):
 		
 		logging.warning('Redrawing LOS.')
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
+	elif key == 'Update chunk map':
+		maps.update_chunk_map()
+		maps.smooth_chunk_map()
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

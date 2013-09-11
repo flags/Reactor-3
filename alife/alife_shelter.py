@@ -28,6 +28,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		return False
 	
 	if not [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
+		print life['name'], 'no known shelters'
 		return False
 	
 	return RETURN_VALUE

@@ -1068,73 +1068,73 @@ def construct_town(map_gen, town):
 					x = _chunk['pos'][0]+_x
 					
 					for i in range(3):
-						if i == 2000000000000000000000000000000000000000000000000000000000000000000000000000000:
-							pass
-							h_x = _half-(abs(_half-_x))
-							h_y = _half-(abs(_half-_y))
+						if i == 2:#000000000000000000000000000000000000000000000000000000000000000000000000000000:
+							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
+							#h_x = _half-(abs(_half-_x))
+							#h_y = _half-(abs(_half-_y))
 							
-							#if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-							if not _neighbor_dirs:
-								if _x < _half:
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
-								else:
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_BRIGHT)
-							elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-								if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+							##if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
+							#if not _neighbor_dirs:
+								#if _x < _half:
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+								#else:
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_BRIGHT)
+							#elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
+								#if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
 								
-								elif _y < h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y < h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y >= h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y >= h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 								
-								elif _y > _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 			
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#else:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 							
-							elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
-								if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+							#elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
+								#if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
 								
-								elif _y < h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y < h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y >= h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y >= h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 								
-								elif _y > _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 			
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#else:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 	
-							elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
-								if _y<=_half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
-								
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
-							
-							elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
-								if _y<=_half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
-								
-								else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+							#elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
+								#if _y<=_half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
 								#else:
-								#	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
-							elif len(_neighbor_dirs) == 4:
-								map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+							
+							#elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
+								#if _y<=_half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								
+								#else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+								
+								##else:
+								##	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+							#elif len(_neighbor_dirs) == 4:
+								#map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
 
 						elif _building[_y][_x] == '#':
 							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)

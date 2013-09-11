@@ -360,9 +360,18 @@ def message(text, style=None):
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
-def title(text):
+def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
 	_center_y = WINDOW_SIZE[1]/2
+	tcod.console_set_default_background(0, background_color)
+	tcod.console_set_default_foreground(0, text_color)
+	tcod.console_print_frame(0,
+	                         _center_x-padding,
+	                         _center_y-padding,
+	                         len(text)+padding*2,
+	                         1+padding*2,
+	                         flag=tcod.BKGND_SET,
+	                         clear=True)
 	tcod.console_print(0, _center_x, _center_y, text)
 	tcod.console_flush()
 

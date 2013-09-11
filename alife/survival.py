@@ -255,6 +255,7 @@ def explore_unknown_chunks(life):
 	
 	_walkable_area = chunks.get_walkable_areas(_chunk_key)
 	if not _walkable_area:
+		print 'no walkable area'
 		return False
 	
 	_closest_pos = {'pos': None, 'distance': -1}
@@ -273,3 +274,5 @@ def explore_unknown_chunks(life):
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)
+	
+	return True

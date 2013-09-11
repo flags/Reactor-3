@@ -69,8 +69,6 @@ def _find_best_unknown_reference(life, ref_type):
 			maps.get_chunk(find_nearest_key_in_reference(life, reference))['pos'])/WORLD_INFO['chunk_size']>10:
 			continue
 		
-		print 'here'
-		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
 			_best_reference['score'] = _score
 			_best_reference['reference'] = reference

@@ -293,6 +293,7 @@ def judge_shelter(life, chunk_id):
 	_score = 0
 	
 	if _known_chunk['life']:
+		print 'CHeck this!'
 		return 0
 	
 	if not chunk['type'] == 'building':
@@ -309,6 +310,7 @@ def judge_shelter(life, chunk_id):
 		
 		for pos in chunk['ground']:
 			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
+				WORLD_INFO['map'][pos[0]][pos[1]][z]
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
 		
@@ -320,6 +322,19 @@ def judge_shelter(life, chunk_id):
 	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
 	
 	return True
+
+def judge_chunk_visually(life, chunk_id):
+	if not chunk_id in life['known_chunks']:
+		life['known_chunks'][chunk_id] = {'last_visited': -1,
+			'last_seen': -1,
+			'last_checked': -1,
+			'discovered_at': WORLD_INFO['ticks'],
+			'flags': {},
+			'life': [],
+		     'score': 0}
+	
+	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
+		judge_shelter(life, chunk_id)
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	if lfe.ticker(life, 'judge_tick', 30):
