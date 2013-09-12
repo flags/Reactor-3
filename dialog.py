@@ -223,6 +223,9 @@ def get_all_relevant_gist_responses(life, target, gist):
 		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
 	elif gist == 'call_accepted':
 		_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
+	elif gist == 'encounter':
+		_topics.append({'text': 'Leave! I\'m not looking for company!', 'gist': 'encounter-leave', 'dislike': 1, 'danger': 3})
+		_topics.append({'text': 'What are you doing around here?', 'gist': 'encounter-question'})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -996,6 +999,12 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'I\'m in!', 'gist': 'end'})
 			else:
 				_responses.append({'text': 'No thanks.', 'gist': 'end'})
+	
+	elif chosen['gist'] == 'encounter-question':
+		#TODO: ALife logic
+		if 'player' in life:
+			_responses.append({'text': 'I\'m exploring.', 'gist': 'end'})
+			_responses.append({'text': 'I don\'t have to explain myself.', 'gist': 'end', 'dislike': 1, 'danger': 2})
 	
 	elif chosen['gist'] == 'call_topics':
 		_life = LIFE[dialog['listener']]

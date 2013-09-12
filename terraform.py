@@ -53,13 +53,14 @@ items.initiate_all_items()
 
 LOAD_MAP = 'test2.dat'
 
+gfx.init_libtcod(terraform=True)
+
+gfx.title('Loading...')
 try:
 	maps.load_map(LOAD_MAP)
 except IOError:
 	maps.create_map()
 	maps.save_map()
-
-gfx.init_libtcod(terraform=True)
 
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)

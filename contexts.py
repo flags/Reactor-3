@@ -34,8 +34,7 @@ def _create_context_from_phrase(life, phrase):
 	
 	elif phrase['gist'] == 'looks_hostile':
 		#encounters.create_encounter(life, phrase['from'])
-		alife.speech.start_dialog(phrase['from'], life['id'], 'call_accepted')
-		print 'yooooooooooooooooooooooooooo'
+		alife.speech.start_dialog(phrase['from'], life['id'], 'encounter')
 	
 	elif phrase['gist'] == 'surrender':
 		_reactions.append({'type': 'say','text': 'Stay still!',

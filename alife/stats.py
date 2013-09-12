@@ -382,7 +382,7 @@ def desires_to_follow(life, life_id):
 	return _know['trust']
 
 def is_compatible_with(life, life_id):
-	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
+	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
 	
 	#I don't trust modders with this
 	if not is_same_species(life, life_id):
@@ -390,6 +390,10 @@ def is_compatible_with(life, life_id):
 	
 	#print _diff, life['stats']['sociability']
 	if _diff <= life['stats']['sociability']:
+		return True
+	
+	#TODO: Hardcoded
+	if judgement.get_trust(life, life_id)>=5:
 		return True
 	
 	return False
