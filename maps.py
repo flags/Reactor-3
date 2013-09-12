@@ -540,13 +540,13 @@ def update_chunk_map():
 					if not WORLD_INFO['map'][x2][y2][2]:
 						continue
 					
-					_tile_type = None
-					if not WORLD_INFO['map'][x2][y2][4]:
+					if not WORLD_INFO['map'][x2][y2][3]:
 						_chunk_map[_chunk_key]['ground'].append((x2, y2))
-						_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
-						
-						if not _tile:
-							continue
+					
+					_tile = get_raw_tile(WORLD_INFO['map'][x2][y2][2])
+					
+					if not _tile:
+						continue
 					
 					for z in range(0, MAP_SIZE[2]):
 						if not WORLD_INFO['map'][x2][y2][z]:
@@ -566,7 +566,7 @@ def update_chunk_map():
 			for tile in _tiles.keys():
 				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'building' in _tiles and _tiles['building']>=15:
+			if 'building' in _tiles:# and _tiles['building']>=9:
 				_chunk_map[_chunk_key]['type'] = 'building'
 			elif 'road' in _tiles and _tiles['road']>=15:
 				_chunk_map[_chunk_key]['type'] = 'road'
@@ -577,6 +577,7 @@ def update_chunk_map():
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 			
 def smooth_chunk_map():
+	return False
 	_stime = time.time()
 	_runs = 0
 	_chunk_map = copy.deepcopy(WORLD_INFO['chunk_map'])

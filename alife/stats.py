@@ -302,7 +302,7 @@ def can_scratch(life):
 	return None
 
 def is_nervous(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'nervous', life_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'nervous', break_on_true=True, break_on_false=False, life_id=life_id):
 		return False
 	
 	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])
@@ -360,6 +360,16 @@ def is_parent(life, life_id):
 	
 	return False
 
+def is_safe_in_shelter(life, life_id):
+	if not lfe.is_in_shelter(life):
+		return True
+	
+	print life['name'], 'compwith', LIFE[life_id]['name'], is_compatible_with(life, life_id)
+	if not is_compatible_with(life, life_id):
+		return False
+	
+	return True
+
 def desires_to_follow(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 	
@@ -372,7 +382,7 @@ def desires_to_follow(life, life_id):
 	return _know['trust']
 
 def is_compatible_with(life, life_id):
-	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])
+	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
 	
 	#I don't trust modders with this
 	if not is_same_species(life, life_id):
@@ -380,6 +390,10 @@ def is_compatible_with(life, life_id):
 	
 	#print _diff, life['stats']['sociability']
 	if _diff <= life['stats']['sociability']:
+		return True
+	
+	#TODO: Hardcoded
+	if judgement.get_trust(life, life_id)>=5:
 		return True
 	
 	return False

@@ -136,7 +136,7 @@ def path_along_reference(life, ref_type):
 	_best_reference = _find_best_unknown_reference(life, ref_type)['reference']
 
 	if not _best_reference:
-		print 'NO BEST'
+		print 'NO BEST', ref_type
 		return False
 
 	_starting_chunk_key = find_nearest_key_in_reference(life, _best_reference)

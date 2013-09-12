@@ -24,11 +24,11 @@ def astar(life, start, end, zones):
 	         'segments': [],
 	         'map': []}
 
-	_path['fmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
-	_path['gmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
-	_path['hmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_path['fmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]), dtype=numpy.int16)
+	_path['gmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]), dtype=numpy.int16)
+	_path['hmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]), dtype=numpy.int16)
 	_path['pmap'] = []
-	_path['tmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_path['tmap'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]), dtype=numpy.int16)
 	
 	for x in range(MAP_SIZE[0]):
 		_path['pmap'].append([0] * MAP_SIZE[1])

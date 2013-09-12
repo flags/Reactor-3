@@ -1,6 +1,7 @@
 from globals import *
 
 import libtcodpy as tcod
+import graphics as gfx
 
 import smp
 
@@ -172,8 +173,7 @@ def create_zone_map():
 		smp.create_zone_maps()
 	else:
 		for z in range(MAP_SIZE[2]):
-			tcod.console_print(0, 0, 0, 'Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
-			tcod.console_flush()
+			gfx.title('Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
 			process_slice(z)
 	
 		tcod.console_print(0, 0, 0, '              ')
@@ -183,8 +183,8 @@ def connect_ramps():
 	
 	for _slice in WORLD_INFO['slices']:
 		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
-		tcod.console_print(0, 0, 0, 'Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
-		tcod.console_flush()
+		gfx.title('Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
+		
 		_i += 1
 		
 		for x,y,z in WORLD_INFO['slices'][_slice]['ramps']:

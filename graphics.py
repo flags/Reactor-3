@@ -23,12 +23,12 @@ def init_libtcod(terraform=False):
 		X_CUTOUT_WINDOW = tcod.console_new(X_CUTOUT_WINDOW_SIZE[0],X_CUTOUT_WINDOW_SIZE[1])
 		Y_CUTOUT_WINDOW = tcod.console_new(Y_CUTOUT_WINDOW_SIZE[0],Y_CUTOUT_WINDOW_SIZE[1])
 		
-		PREFAB_CHAR_BUFFER[0] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
-		PREFAB_CHAR_BUFFER[1] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
-		X_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
-		X_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
-		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
-		Y_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
+		PREFAB_CHAR_BUFFER[0] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
+		PREFAB_CHAR_BUFFER[1] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
+		X_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+		X_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+		Y_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
 	tcod.console_set_custom_font(FONT,FONT_LAYOUT)
 	tcod.console_set_keyboard_repeat(200, 0)
@@ -37,21 +37,21 @@ def init_libtcod(terraform=False):
 	for i in range(3):
 		MAP_RGB_BACK_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 		MAP_RGB_FORE_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-		RGB_LIGHT_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+		RGB_LIGHT_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 		
 		if terraform:
-			PREFAB_RGB_BACK_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
-			PREFAB_RGB_FORE_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]))
-			X_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
-			X_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]))
-			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
-			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]))
+			PREFAB_RGB_BACK_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
+			PREFAB_RGB_FORE_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
+			X_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+			X_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((X_CUTOUT_WINDOW_SIZE[1], X_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
+			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
 	LOS_BUFFER[0] = []
-	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
+	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
+	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
+	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 
 def start_of_frame(draw_char_buffer=True):
 	tcod.console_fill_background(MAP_WINDOW,
@@ -291,6 +291,39 @@ def draw_dijkstra_heatmap():
 			_light = numbers.clip(_score,0,150)
 			lighten_tile(x,y,_light)
 
+def draw_chunk_map():
+	for y in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
+		for x in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
+			_type = WORLD_INFO['chunk_map']['%s,%s' % (x, y)]['type']
+			_tile = str(_type[0])
+			
+			if _type == 'other':
+				_fore_color = tcod.Color(15, 15, 15)
+				_tile = '/'
+			elif _type == 'factory':
+				_fore_color = tcod.gray
+			elif _type == 'forest':
+				_fore_color = tcod.darker_green
+			elif _type == 'town':
+				_fore_color = tcod.brass
+			elif _type == 'road':
+				_fore_color = tcod.light_gray
+			else:
+				_fore_color = tcod.white
+			
+			if MAP_CURSOR[0]/WORLD_INFO['chunk_size'] == x/WORLD_INFO['chunk_size'] and MAP_CURSOR[1]/WORLD_INFO['chunk_size'] == y/WORLD_INFO['chunk_size']:
+				_fore_color = tcod.white
+				_tile = 'x'
+			
+			blit_char(x/WORLD_INFO['chunk_size'],
+			          y/WORLD_INFO['chunk_size'],
+			          _tile,
+			          char_buffer=MAP_CHAR_BUFFER,
+			          fore_color=_fore_color,
+			          back_color=tcod.black,
+			          rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
+			          rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+
 def draw_console():
 	if not SETTINGS['draw console']:
 		return False
@@ -327,9 +360,18 @@ def message(text, style=None):
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
-def title(text):
+def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
 	_center_y = WINDOW_SIZE[1]/2
+	tcod.console_set_default_background(0, background_color)
+	tcod.console_set_default_foreground(0, text_color)
+	tcod.console_print_frame(0,
+	                         _center_x-padding,
+	                         _center_y-padding,
+	                         len(text)+padding*2,
+	                         1+padding*2,
+	                         flag=tcod.BKGND_SET,
+	                         clear=True)
 	tcod.console_print(0, _center_x, _center_y, text)
 	tcod.console_flush()
 

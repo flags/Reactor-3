@@ -62,12 +62,29 @@ def judge_self(life):
 	
 	return _confidence+_limb_confidence
 
-def get_combat_rating(life):
+def get_ranged_combat_ready_score(life, consider_target_id=None):
 	_score = 0
 	
-	#TODO: CLose? Check equipped items only. Far away? Check inventory.
-	if lfe.get_held_items(life, matches=[{'type': 'gun'}]) or lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
-		_score += 10
+	if consider_target_id:
+		_target = brain.knows_alife_by_id(life, consider_target_id)
+		#TODO: Judge proper distance based on weapon equip time
+		if numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)/2:
+			if lfe.get_held_items(life, matches=[{'type': 'gun'}]):
+				_score += 1
+		elif lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
+			_score += 1
+	
+	return _score
+
+def get_observed_ranged_combat_rating_of_target(life, life_id):
+	_score = 0
+	#_target = brain.knows_alife_by_id(life, life_id)
+	
+	for item in [ITEMS[i] for i in lfe.get_all_visible_items(LIFE[life_id])]:
+		if not logic.matches(item, {'type': 'gun'}):
+			continue
+		
+		_score += 1
 	
 	return _score
 
@@ -89,9 +106,12 @@ def can_trust(life, life_id, low=0):
 	return False
 
 def parse_raw_judgements(life, target_id):
-	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id) * 100
+	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
 	if lfe.execute_raw(life, 'judge', 'break_trust', break_on_true=True, break_on_false=False, life_id=target_id):
 		brain.knows_alife_by_id(life, target_id)['trust'] = numbers.clip(brain.knows_alife_by_id(life, target_id)['trust'], -1000, -1)
+		return True
+	
+	return False
 
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
@@ -309,6 +329,7 @@ def judge_shelter(life, chunk_id):
 		
 		for pos in chunk['ground']:
 			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
+				WORLD_INFO['map'][pos[0]][pos[1]][z]
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
 		
@@ -320,6 +341,19 @@ def judge_shelter(life, chunk_id):
 	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
 	
 	return True
+
+def judge_chunk_visually(life, chunk_id):
+	if not chunk_id in life['known_chunks']:
+		life['known_chunks'][chunk_id] = {'last_visited': -1,
+			'last_seen': -1,
+			'last_checked': -1,
+			'discovered_at': WORLD_INFO['ticks'],
+			'flags': {},
+			'life': [],
+		     'score': 0}
+	
+	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
+		judge_shelter(life, chunk_id)
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	if lfe.ticker(life, 'judge_tick', 30):

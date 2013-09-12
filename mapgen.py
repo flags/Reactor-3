@@ -26,6 +26,10 @@ TOWN_SIZE = 160
 FOREST_DISTANCE = 25
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
+ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
+              'bathroom': {'required': True, 'floor_tiles': tiles.BLUE_FLOOR_TILES},
+              'kitchen': {'floor_tiles': tiles.BROWN_FLOOR_TILES},
+              'dining_room': {'floor_tiles': tiles.WHITE_TILE_TILES}}
 
 def create_building(buildings, building, chunk_size):
 	_top = False
@@ -91,7 +95,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -109,11 +113,11 @@ def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1,
 		'forests': forests,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': []},
+		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
-		'settings': {'back yards': False}}
+		'settings': {'back yards': False, 'town size': 15}}
 	
 	#logging.debug('Creating height map...')
 	#generate_height_map(map_gen)
@@ -121,8 +125,6 @@ def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1,
 	generate_chunk_map(map_gen)
 	logging.debug('Drawing outlines...')
 	generate_outlines(map_gen)	
-	
-	print_chunk_map_to_console(map_gen)
 	
 	logging.debug('Creating roads...')
 	for chunk_key in map_gen['refs']['roads']:
@@ -138,6 +140,11 @@ def generate_map(size=(250, 250, 10), detail=5, towns=2, factories=4, forests=1,
 	
 	#place_hills(map_gen)
 	#print_map_to_console(map_gen)
+	
+	clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
+	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
+	
+	print_chunk_map_to_console(map_gen)
 	
 	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
@@ -209,7 +216,7 @@ def generate_chunk_map(map_gen):
 				'type': 'other'}
 			
 def generate_outlines(map_gen):
-	logging.debug('Placing roads...')
+	logging.debug('Placing roads and towns...')
 	place_roads(map_gen)
 	
 	logging.debug('Placing factories...')
@@ -217,8 +224,8 @@ def generate_outlines(map_gen):
 		place_factory(map_gen)
 	
 	logging.debug('Placing towns...')
-	while len(map_gen['refs']['towns'])<map_gen['towns']:
-		place_town(map_gen)
+	for town_seed_chunk in map_gen['refs']['town_seeds']:
+		place_town(map_gen, start_chunk_key=town_seed_chunk)
 	
 	for chunk_key in clean_chunk_map(map_gen, 'town', minimum_chunks=1):
 		for town in map_gen['refs']['towns']:
@@ -242,6 +249,10 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 	
 	_pos = start_pos
 	_next_dir = next_dir
+	
+	if start_pos:
+		_chunk_key = '%s,%s' % ((start_pos[0]/map_gen['chunk_size'])*map_gen['chunk_size'],
+		                        (start_pos[1]/map_gen['chunk_size'])**map_gen['chunk_size'])
 	
 	if not _pos:
 		if not _start_edge:
@@ -298,6 +309,7 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 		while _max_turns and can_create:
 			_next_dir = random.choice(_possible_next_dirs)
 			_possible_next_dirs.remove(_next_dir)
+			map_gen['refs']['town_seeds'].append(_chunk_key)
 			
 			for _turn in _possible_next_dirs:
 				place_roads(map_gen, start_pos=_pos[:], next_dir=_turn, turns=random.randint(0, 3), can_create=False)
@@ -360,22 +372,34 @@ def place_factory(map_gen):
 		map_gen['refs']['factories'].append(_walked)
 		break
 
-def place_town(map_gen):
+def place_town(map_gen, start_chunk_key=None):
 	_avoid_chunk_keys = []
+	_chunks = []
+	_driveways = {}
 	
 	for town in map_gen['refs']['towns']:
 		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town])
 	
 	#Find some areas near roads...
+	if start_chunk_key:
+		_start_chunk = map_gen['chunk_map'][start_chunk_key]
+		for road_chunk_key in get_all_connected_chunks_of_type(map_gen, start_chunk_key, 'road'):
+			_road_chunk = map_gen['chunk_map'][road_chunk_key]
+			
+			if numbers.distance(_start_chunk['pos'], _road_chunk['pos'])<map_gen['settings']['town size']*WORLD_INFO['chunk_size']:
+				_chunks.append(_road_chunk)
+	else:
+		for road_chunk_key in map_gen['refs']['roads']:
+			_chunks.append(map_gen['chunk_map'][road_chunk_key])
+			
+	#print _chunks
 	_potential_chunks = []
-	_driveways = {}
-	for road_chunk_key in map_gen['refs']['roads']:
-		_chunk = map_gen['chunk_map'][road_chunk_key]
-		for chunk_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'other'):
+	for chunk in _chunks:
+		for chunk_key in get_neighbors_of_type(map_gen, chunk['pos'], 'other'):
 			_house_chunk = map_gen['chunk_map'][chunk_key]
-			_direction = direction_from_key_to_key(map_gen, road_chunk_key, chunk_key)
+			_direction = direction_from_key_to_key(map_gen, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]), chunk_key)
 			_next_chunk_key = '%s,%s' % ((_house_chunk['pos'][0]+(map_gen['chunk_size']*_direction[0])),
-			                             (_house_chunk['pos'][1]+(map_gen['chunk_size']*_direction[1])))
+		                                 (_house_chunk['pos'][1]+(map_gen['chunk_size']*_direction[1])))
 			
 			if not _next_chunk_key in map_gen['chunk_map']:
 				continue
@@ -388,15 +412,12 @@ def place_town(map_gen):
 			
 			if not _next_chunk_key in _potential_chunks:
 				_potential_chunks.append(_next_chunk_key)
-				_driveways[_next_chunk_key] = chunk_key
+				_driveways[_next_chunk_key] = chunk_key[:]
 	
 	_actual_town_chunks = []
 	_max_size = random.randint(30, 40)
-	_town_chunks = _potential_chunks[:random.randint(0, numbers.clip(len(_potential_chunks)-1, 0, 60))]
+	_town_chunks = _potential_chunks#[:random.randint(0, numbers.clip(len(_potential_chunks)-1, 0, 60))]
 	for chunk in _town_chunks:
-		if random.randint(0, 1):
-			continue
-		
 		_skip = False
 		for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk]['pos'], 'town', diagonal=True):
 			if not neighbor_key in _town_chunks:
@@ -406,7 +427,11 @@ def place_town(map_gen):
 		if _skip:
 			continue
 		
+		if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>=len(ROOM_TYPES):
+			continue
+		
 		map_gen['chunk_map'][chunk]['type'] = 'town'
+		
 		_actual_town_chunks.append(chunk)
 		
 		if len(_actual_town_chunks)>_max_size:
@@ -414,11 +439,17 @@ def place_town(map_gen):
 	
 	for chunk_key in _actual_town_chunks[:]:
 		_added = True
+		_break = False
 		while _added:
 			_added = False
+			
 			for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
 				#if neighbor_key in _actual_town_chunks:
 				#	continue
+				
+				if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>=len(ROOM_TYPES):
+					_break = True
+					break
 				
 				_skip = False
 				for _next_neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'town'):
@@ -438,6 +469,12 @@ def place_town(map_gen):
 				_actual_town_chunks.append(neighbor_key)
 				map_gen['chunk_map'][neighbor_key]['type'] = 'town'
 				_added = True
+		
+			if _break:
+				break
+		
+		if _break:
+			break
 	
 	_covered_houses = []
 	for chunk in _actual_town_chunks:
@@ -620,8 +657,10 @@ def clean_walker(map_gen, walker, kill_range=(-2, -1)):
 		if not _changed:
 			break
 
-def clean_chunk_map(map_gen, chunk_type, minimum_chunks=2, diagonal=False):
+def clean_chunk_map(map_gen, chunk_type, minimum_chunks=2, chunks_of_type=None, replace_with_type='other', diagonal=False):
 	_chunks = []
+	if not chunks_of_type:
+		chunks_of_type = chunk_type
 	for y in range(0, map_gen['size'][1], map_gen['chunk_size']):
 		for x in range(0, map_gen['size'][0], map_gen['chunk_size']):
 			_chunk = map_gen['chunk_map']['%s,%s' % (x, y)]
@@ -629,8 +668,8 @@ def clean_chunk_map(map_gen, chunk_type, minimum_chunks=2, diagonal=False):
 			if not _chunk['type'] == chunk_type:
 				continue
 			
-			if len(get_neighbors_of_type(map_gen, _chunk['pos'], chunk_type, diagonal=diagonal)) < minimum_chunks:
-				_chunk['type'] = 'other'
+			if len(get_neighbors_of_type(map_gen, _chunk['pos'], chunks_of_type, diagonal=diagonal)) < minimum_chunks:
+				_chunk['type'] = replace_with_type
 				_chunks.append('%s,%s' % (x, y))
 				    
 	return _chunks
@@ -1029,73 +1068,73 @@ def construct_town(map_gen, town):
 					x = _chunk['pos'][0]+_x
 					
 					for i in range(3):
-						if i == 2000000000000000000000000000000000000000000000000000000000000000000000000000000:
-							pass
-							h_x = _half-(abs(_half-_x))
-							h_y = _half-(abs(_half-_y))
+						if i == 2:#000000000000000000000000000000000000000000000000000000000000000000000000000000:
+							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
+							#h_x = _half-(abs(_half-_x))
+							#h_y = _half-(abs(_half-_y))
 							
-							#if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-							if not _neighbor_dirs:
-								if _x < _half:
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
-								else:
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_BRIGHT)
-							elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-								if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+							##if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
+							#if not _neighbor_dirs:
+								#if _x < _half:
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+								#else:
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_BRIGHT)
+							#elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
+								#if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
 								
-								elif _y < h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y < h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y >= h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y >= h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 								
-								elif _y > _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 			
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#else:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 							
-							elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
-								if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+							#elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
+								#if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
 								
-								elif _y < h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y < h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y >= h_x and _y < _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#elif _y >= h_x and _y < _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
-								elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 								
-								elif _y > _half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								#elif _y > _half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
 			
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#else:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 	
-							elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
-								if _y<=_half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
-								
-								else:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
-							
-							elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
-								if _y<=_half:
-									map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
-								
-								else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+							#elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
+								#if _y<=_half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
 								
 								#else:
-								#	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
-							elif len(_neighbor_dirs) == 4:
-								map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+							
+							#elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
+								#if _y<=_half:
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								
+								#else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
+									#map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+								
+								##else:
+								##	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+							#elif len(_neighbor_dirs) == 4:
+								#map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
 
 						elif _building[_y][_x] == '#':
 							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)

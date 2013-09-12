@@ -17,6 +17,7 @@ from tiles import *
 import graphics as gfx
 import cProfile
 import maputils
+import numbers
 import prefabs
 import random
 import items
@@ -52,53 +53,58 @@ items.initiate_all_items()
 
 LOAD_MAP = 'test2.dat'
 
+gfx.init_libtcod(terraform=True)
+
+gfx.title('Loading...')
 try:
 	maps.load_map(LOAD_MAP)
 except IOError:
 	maps.create_map()
 	maps.save_map()
 
-gfx.init_libtcod(terraform=True)
-
 console_set_keyboard_repeat(200, 30)
 sys_set_fps(FPS_TERRAFORM)
 
-IN_PREFAB_EDITOR = False
+SETTINGS['view'] = 'map'
 PLACING_TILE = WALL_TILE
 
 def handle_scrolling(cursor,camera,window_size,map_size,change):
+	cursor[0] = numbers.clip(cursor[0]+change[0], 0, MAP_SIZE[0]-1)
+	cursor[1] = numbers.clip(cursor[1]+change[1], 0, MAP_SIZE[1]-1)
+	
 	if change[0]>0:
-		if cursor[0]<map_size[0]-1:
-			cursor[0]+=change[0]
+		#if cursor[0]<map_size[0]-change[0]:
+		#	cursor[0]+=change[0]
 		
 		if cursor[0]-camera[0]/2>window_size[0]/2 and camera[0]+window_size[0]<map_size[0]:
 			camera[0]+=change[0]
+		#if cursor[0]+camera[0]
 	
 	elif change[0]<0:
-		if cursor[0]>0:
-			cursor[0]+=change[0]
+		#if cursor[0]>0:
+		#	cursor[0]+=change[0]
 		
 		if cursor[0]-camera[0]<window_size[0]/2 and camera[0]>0:
-			camera[0]-=1
+			camera[0]+=change[0]
 	
 	if change[1]>0:
-		if cursor[1]<map_size[1]-1:
-			cursor[1]+=change[1]
+		#if cursor[1]<map_size[1]-change[1]:
+		#	cursor[1]+=change[1]
 		
 		if cursor[1]-camera[1]/2>window_size[1]/2 and camera[1]+window_size[1]<map_size[1]:
 			camera[1]+=change[1]
 	
 	elif change[1]<0:
-		if cursor[1]>0:
-			cursor[1]+=change[1]
+		#if cursor[1]>0:
+		#	cursor[1]+=change[1]
 		
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
-			camera[1]-=1
+			camera[1]+=change[1]
 	
 	gfx.refresh_window()
 
 def handle_input():
-	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING,IN_PREFAB_EDITOR
+	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
 
 	if gfx.window_is_closed():
 		SETTINGS['running'] = False
@@ -131,40 +137,48 @@ def handle_input():
 		if not ACTIVE_MENU['menu'] == -1:
 			#MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
+		elif SETTINGS['view'] == 'prefab':
 			#TODO: Make this and everything in the `else` statement a function.
 			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,-1))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -1))
 
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0,1))
+		elif SETTINGS['view'] == 'prefab':
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0, 1))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0,1))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, 1))
 
 	elif INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1,0))
+		elif SETTINGS['view'] == 'prefab':
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1, 0))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1,0))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1, 0))
 
 	elif INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif IN_PREFAB_EDITOR:
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1,0))
+		elif SETTINGS['view'] == 'prefab':
+			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1, 0))
+		elif SETTINGS['view'] == 'chunk_map':
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1,0))
+			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1, 0))
 
 	elif INPUT[' ']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = \
 				create_tile(PLACING_TILE)
 		else:
@@ -172,8 +186,12 @@ def handle_input():
 				create_tile(PLACING_TILE)
 	
 	elif INPUT['m']:
-		SUN_POS[0] += 1
-		SUN_POS[1] += 1
+		if SETTINGS['view'] == 'map':
+			SETTINGS['view'] = 'chunk_map'
+		else:
+			SETTINGS['view'] = 'map'
+		
+		gfx.refresh_window()
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
@@ -188,13 +206,16 @@ def handle_input():
 	
 	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
+			if SETTINGS['view'] == 'chunk_map':
+				SETTINGS['view'] = 'map'
+				gfx.refresh_window()
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		ACTIVE_MENU['menu'] = -1
 	
 	elif INPUT['\t']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			MENUS.pop(IN_PREFAB_EDITOR)
 			ACTIVE_MENU['menu'] = -1
 			IN_PREFAB_EDITOR = None
@@ -205,6 +226,11 @@ def handle_input():
 			menus.activate_menu(IN_PREFAB_EDITOR)
 	
 	elif INPUT['q']:
+		if SETTINGS['view'] == 'chunk_map':
+			SETTINGS['view'] = 'map'
+			gfx.refresh_window()
+			return False
+		
 		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
 		
 		if _current_index<0:
@@ -233,7 +259,7 @@ def handle_input():
 				create_tile(random.choice(GRASS_TILES))
 
 	elif INPUT['d']:
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = None
 		else:
 			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
@@ -330,6 +356,9 @@ def menu_item_selected(entry):
 		zones.connect_ramps()
 		
 		logging.debug('Map compile took: %s' % (time.time()-_stime))
+	elif value == 'Generate chunk map':
+		maps.update_chunk_map()
+		
 	elif value == 'Exit':
 		SETTINGS['running'] = False
 
@@ -400,6 +429,7 @@ def create_options_menu():
 	_menu_items.append(menus.create_item('title','General',None,enabled=False))
 	_menu_items.append(menus.create_item('list','S','Save'))
 	_menu_items.append(menus.create_item('list','C','Compile'))
+	_menu_items.append(menus.create_item('list','CH','Generate chunk map'))
 	_menu_items.append(menus.create_item('list','L','Load'))
 	_menu_items.append(menus.create_item('list','E','Exit'))
 	
@@ -421,7 +451,7 @@ def main():
 		get_input()
 		handle_input()
 		
-		if IN_PREFAB_EDITOR:
+		if SETTINGS['view'] == 'prefab':
 			#prefabs.draw_prefab_editor()#(CURRENT_PREFAB)
 			gfx.draw_cursor(PREFAB_CURSOR,
 				PREFAB_CAMERA_POS,
@@ -429,6 +459,10 @@ def main():
 				char_buffer=PREFAB_CHAR_BUFFER,
 				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
 				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
+		
+		elif SETTINGS['view'] == 'chunk_map':
+			gfx.draw_chunk_map()
+			
 		else:
 			LOS_BUFFER[0] = numpy.ones((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
@@ -455,7 +489,7 @@ def main():
 		if menus.get_menu_by_name('Prefabs')==-1:
 			gfx.start_of_frame_terraform()
 		
-		gfx.end_of_frame_terraform(draw_cutouts=(not IN_PREFAB_EDITOR))#editing_prefab=IN_PREFAB_EDITOR)
+		gfx.end_of_frame_terraform(draw_cutouts=(not SETTINGS['view'] == 'prefab'))
 		gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
 
 if '--profile' in sys.argv:

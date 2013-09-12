@@ -39,6 +39,8 @@ def look(life):
 		ai['last_seen_time'] += 1
 	
 	for chunk in _chunks:
+		judgement.judge_chunk_visually(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
+		
 		for ai in [LIFE[i] for i in chunk['life']]:
 			if ai['id'] == life['id']:
 				continue
