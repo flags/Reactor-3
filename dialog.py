@@ -224,8 +224,8 @@ def get_all_relevant_gist_responses(life, target, gist):
 	elif gist == 'call_accepted':
 		_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
 	elif gist == 'encounter':
-		_topics.append({'text': 'Leave! I\'m not looking for company!', 'gist': 'encounter-leave', 'dislike': 1, 'danger': 3})
-		_topics.append({'text': 'What are you doing around here?', 'gist': 'encounter-question'})
+		_topics.append({'text': 'Leave! I\'m not looking for company!', 'gist': 'encounter_leave', 'dislike': 1, 'danger': 3})
+		_topics.append({'text': 'What are you doing around here?', 'gist': 'encounter_question'})
 	
 	if _topics and _topics[0]['gist'] == 'end':
 		_topics = []
@@ -1000,11 +1000,34 @@ def process_response(life, target, dialog, chosen):
 			else:
 				_responses.append({'text': 'No thanks.', 'gist': 'end'})
 	
-	elif chosen['gist'] == 'encounter-question':
+	elif chosen['gist'] == 'encounter_question':
 		#TODO: ALife logic
 		if 'player' in life:
 			_responses.append({'text': 'I\'m exploring.', 'gist': 'end'})
 			_responses.append({'text': 'I don\'t have to explain myself.', 'gist': 'end', 'dislike': 1, 'danger': 2})
+	
+	elif chosen['gist'] == 'encounter_leave':
+		if 'player' in life:
+			_responses.append({'text': 'What if I don\'t want to leave?', 'gist': 'encounter_response_intimidate', 'dislike': 1, 'danger': 2})
+			_responses.append({'text': 'I\'m out of here...', 'gist': 'encounter_response_neutral'})
+	
+	elif chosen['gist'] == 'encounter_response_intimidate':
+		#if 'player' in life:
+		#if alife.judgement.get_trust(life, target) <= -2
+		if alife.judgement.get_self_combat_rating(life, consider_target_id=target['id']):
+			_responses.append({'text': 'You\'re messing with the wrong guy!',
+			                   'gist': 'intimidation_reject'})
+		else:
+			_responses.append({'text': 'Okay, okay...',
+			                   'gist': 'intimidation_comply'})
+	
+	elif chosen['gist'] == 'intimidation_comply':
+		if 'player' in life:
+			_responses.append({'text': 'That\'s what I thought.', 'gist': 'okay'})
+	
+	elif chosen['gist'] == 'intimidation_reject':
+		if 'player' in life:
+			_responses.append({'text': 'Bad move, dude!', 'gist': 'okay'})
 	
 	elif chosen['gist'] == 'call_topics':
 		_life = LIFE[dialog['listener']]
