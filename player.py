@@ -991,12 +991,17 @@ def create_target_list():
 	return _menu_items
 
 def create_look_list():
+	if menus.get_menu_by_name('Look at...')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Look at...'))
+		menus.delete_menu(menus.get_menu_by_name('Examining...'))
+		return False
+	
 	_menu_items = []
 	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		if items.is_item_owned(item['uid']):
 			continue
 		
-		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid']))
+		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid'], icon=item['icon']))
 	
 	if not _menu_items:
 		gfx.message('There\'s nothing to look at.')
@@ -1008,7 +1013,7 @@ def create_look_list():
 	    position=(1,1),
 	    on_move=handle_item_view,
 	    on_close=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
-	    format_str='$k')
+	    format_str='[$i] $k')
 	
 	menus.activate_menu(_i)
 
@@ -1348,6 +1353,7 @@ def handle_item_view(entry):
 	if menus.get_menu_by_name('Examining...')>-1:
 		menus.delete_menu(menus.get_menu_by_name('Equip'))
 	
+	SELECTED_TILES[0] = [tuple(item['pos'])]
 	_menu_items = []
 	
 	for key in item['examine_keys']:
