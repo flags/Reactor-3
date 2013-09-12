@@ -1014,11 +1014,21 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'encounter_response_intimidate':
 		#if 'player' in life:
 		#if alife.judgement.get_trust(life, target) <= -2
-		if alife.judgement.get_self_combat_rating(life, consider_target_id=target['id']):
+		_observed_combat_score_of_target = alife.judgement.get_observed_ranged_combat_rating_of_target(life, target['id'])
+		_self_ranged_combat_ready_score = alife.judgement.get_ranged_combat_ready_score(life, consider_target_id=target['id'])
+		print life['name'],'scores target with', _observed_combat_score_of_target, 'has', _self_ranged_combat_ready_score
+		if _observed_combat_score_of_target<_self_ranged_combat_ready_score:
 			_responses.append({'text': 'You\'re messing with the wrong guy!',
 			                   'gist': 'intimidation_reject'})
-		else:
+		elif _observed_combat_score_of_target>_self_ranged_combat_ready_score:
 			_responses.append({'text': 'Okay, okay...',
+			                   'gist': 'intimidation_comply'})
+		elif _observed_combat_score_of_target == 0:
+			_responses.append({'text': 'I don\'t think you\'re in a position to do anything.',
+			                   'gist': 'intimidation_call_out'})
+		else:
+			#TODO: Standoff
+			_responses.append({'text': 'Let\'s just go our separate ways...',
 			                   'gist': 'intimidation_comply'})
 	
 	elif chosen['gist'] == 'intimidation_comply':
@@ -1028,6 +1038,11 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'intimidation_reject':
 		if 'player' in life:
 			_responses.append({'text': 'Bad move, dude!', 'gist': 'okay'})
+	
+	elif chosen['gist'] == 'intimidation_call_out':
+		if 'player' in life:
+			_responses.append({'text': 'Try me.', 'gist': 'okay', 'danger': 1, 'dislike': 1})
+			_responses.append({'text': 'You\'re right.', 'gist': 'okay'})
 	
 	elif chosen['gist'] == 'call_topics':
 		_life = LIFE[dialog['listener']]

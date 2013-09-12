@@ -62,7 +62,7 @@ def judge_self(life):
 	
 	return _confidence+_limb_confidence
 
-def get_self_combat_rating(life, consider_target_id=None):
+def get_ranged_combat_ready_score(life, consider_target_id=None):
 	_score = 0
 	
 	if consider_target_id:
@@ -76,7 +76,7 @@ def get_self_combat_rating(life, consider_target_id=None):
 	
 	return _score
 
-def get_observed_target_combat_rating(life, life_id):
+def get_observed_ranged_combat_rating_of_target(life, life_id):
 	_score = 0
 	#_target = brain.knows_alife_by_id(life, life_id)
 	
@@ -85,6 +85,8 @@ def get_observed_target_combat_rating(life, life_id):
 			continue
 		
 		_score += 1
+	
+	return _score
 
 def get_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)
