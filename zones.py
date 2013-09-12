@@ -1,7 +1,11 @@
 from globals import *
 
 import libtcodpy as tcod
+import graphics as gfx
 
+import smp
+
+import copy
 import time
 
 def create_map_array():
@@ -30,36 +34,50 @@ def get_unzoned(slice_map, z):
 	
 	return None
 
-def process_slice(z):
-	print 'Processing:',z
+#@profile
+def process_slice(z, world_info=None, start_id=0):
+	print 'Processing:', z
 	_runs = 0
 	_slice = create_map_array()
 	
+	if world_info:
+		WORLD_INFO.update(world_info)
+		
+	for x in range(MAP_SIZE[0]):
+		for y in range(MAP_SIZE[1]):
+			if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
+				if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+					_slice[x][y] = -2
+				else:
+					_slice[x][y] = -1
+	
 	while 1:
-		WORLD_INFO['zoneid'] += 1
-		_z_id = WORLD_INFO['zoneid']
+		if world_info:
+			start_id += 1
+			_z_id = start_id
+		else:
+			WORLD_INFO['zoneid'] += 1
+			_z_id = WORLD_INFO['zoneid']
+		
 		_ramps = []
 		_start_pos = get_unzoned(_slice, z)
 		
 		if not _start_pos:
-			print '\tRuns:',_runs,'Time:',
+			print '\tRuns for zone id %s: %s' % (_z_id, _runs)
 			break
+		else:
+			print '\tNew zone:', _z_id
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
 		
 		_changed = True
 		while _changed:
+			_per_run = time.time()
 			_runs += 1
 			_changed = False
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
-					if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
-						if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
-							pass
-						else:
-							_slice[x][y] = -1
-					
 					if not _slice[x][y] == _z_id:
 						continue
 					
@@ -70,7 +88,7 @@ def process_slice(z):
 						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 							continue
 						
-						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] == -1):
+						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
@@ -79,13 +97,28 @@ def process_slice(z):
 							if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
 								pass
 							else:
+								if (_x, _y, z+1) in _ramps:
+									#print 'panic (2)'
+									continue
+								
 								_ramps.append((_x, _y, z+1))
 								continue
 						
 						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+							if (_x, _y, z-1) in _ramps:
+								print 'panic'
+								continue
+							
 							_ramps.append((_x, _y, z-1))
+			
+			print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 	
-		WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': _slice, 'ramps': _ramps, 'neighbors': {}}
+		#NOTE: If stuff starts breaking, remove the condition:
+		if _ramps:
+			if world_info:
+				return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
+			else:
+				WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': copy.deepcopy(_slice), 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in get_slices_at_z(pos[2]):
@@ -94,12 +127,16 @@ def get_zone_at_coords(pos):
 	
 	return None
 
+def get_slice(zone_id):
+	zone_id = str(zone_id)
+	return WORLD_INFO['slices'][zone_id]
+
 def get_slices_at_z(z):
 	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
-		return True
+		return [z1]
 	
 	z1 = str(z1)
 	z2 = str(z2)
@@ -111,13 +148,20 @@ def can_path_to_zone(z1, z2):
 		_checking = _to_check.pop()
 		_checked.append(_checking)
 		
-		_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checked and not n in _checked])
+		if _checking:
+			return []
+		
+		try:
+			_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checking and not n in _checked])
+		except:
+			print _checking, _checked
+			raise Exception('Failed.')
 		
 		if z2 in _to_check:
 			_checked.append(z2)
-			return True
+			return _checked
 	
-	return False
+	return []
 
 def create_zone_map():
 	WORLD_INFO['slices'] = {}
@@ -125,20 +169,22 @@ def create_zone_map():
 	tcod.console_set_default_foreground(0, tcod.white)
 	tcod.console_flush()
 	
-	for z in range(MAP_SIZE[2]):
-		tcod.console_print(0, 0, 0, 'Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
-		tcod.console_flush()
-		process_slice(z)
+	if SETTINGS['smp']:
+		smp.create_zone_maps()
+	else:
+		for z in range(MAP_SIZE[2]):
+			gfx.title('Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
+			process_slice(z)
 	
-	tcod.console_print(0, 0, 0, '              ')
+		tcod.console_print(0, 0, 0, '              ')
 
 def connect_ramps():
 	_i = 1
 	
 	for _slice in WORLD_INFO['slices']:
 		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
-		tcod.console_print(0, 0, 0, 'Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
-		tcod.console_flush()
+		gfx.title('Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
+		
 		_i += 1
 		
 		for x,y,z in WORLD_INFO['slices'][_slice]['ramps']:

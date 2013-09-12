@@ -38,13 +38,10 @@ def score_escape(life,target,pos):
 	return _score
 
 def score_hide(life,target,pos):
-	_chunk_id = '%s,%s' % ((pos[0]/SETTINGS['chunk size'])*SETTINGS['chunk size'], (pos[1]/SETTINGS['chunk size'])*SETTINGS['chunk size'])
+	_chunk_id = '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	_chunk = maps.get_chunk(_chunk_id)
 	_life_dist = numbers.distance(life['pos'], pos)
 	_target_dist = numbers.distance(target['last_seen_at'], pos)
-	
-	#if sight.can_see_position(life, pos, distance=False):
-	#	return 20-_target_dist
 	
 	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
 		return numbers.clip(300-_life_dist, 200, 300)
@@ -52,13 +49,6 @@ def score_hide(life,target,pos):
 	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
 		return numbers.clip(200-_life_dist, 100, 200)
 	
-	#if _chunk['type'] == 'building':
-	#	if not sight._can_see_position(life['pos'], pos):
-	#		print 'CLOSE!'
-	#		return numbers.clip(49-_life_dist, 21, 49)
-	#	
-	#	print 'building'
-	#	return 89-_life_dist
 	if not sight._can_see_position(life['pos'], pos):
 		return 99-_target_dist
 	
@@ -86,12 +76,15 @@ def position_for_combat(life,target,position,source_map):
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
-		return False
+		return True
+	
+	if not numbers.distance(life['pos'], pos):
+		return True
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
 	
-	return True
+	return False
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
@@ -230,32 +223,31 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 			'hand': random.choice(_empty_hand)},
 			200,
 			delay=lfe.get_item_access_time(life, _highest['item']))
-		lfe.lock_item(life, _highest['item'])
+		lfe.lock_item(life, _highest['item']['uid'])
 	else:
 		lfe.clear_actions(life)
 		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
 	
 	return False
 
-def _find_alife(life, target, distance=-1):
-	#Almost a 100% chance we know who this person is...
+def find_target(life, target, distance=5, follow=False):
 	_target = brain.knows_alife_by_id(life, target)
 	
-	#We'll try last_seen_at first
-	#TODO: In the future we should consider how long it's been since we've seen them
-	lfe.clear_actions(life)
-	lfe.add_action(life, {'action': 'move','to': _target['last_seen_at'][:2]}, 900)
-	
-	if sight.can_see_position(life, _target['life']['pos']):
-		if distance == -1 or numbers.distance(life['pos'], _target['last_seen_at'])<=distance:
+	_can_see = sight.can_see_target(life, target)
+	if _can_see and len(_can_see)<=distance:
+		if not follow:
 			return True
-	
-	return False
-
-def find_alife(life):
-	if _find_alife(life, jobs.get_job_detail(life['job'], 'target')):
+		
 		lfe.stop(life)
-		return True
+	
+	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
+		speech.communicate(life, 'call', matches=[{'id': target}])
+		return False
+	
+	lfe.clear_actions(life)
+	lfe.add_action(life,
+	               {'action': 'move','to': _target['last_seen_at'][:2]},
+	               200)
 	
 	return False
 
@@ -266,13 +258,11 @@ def follow_alife(life):
 	
 	return False
 
-#TODO: Put this in a new file
-def find_alife_and_say(life):
-	_target = brain.knows_alife_by_id(life, jobs.get_job_detail(life['job'], 'target'))
+def _find_alife_and_say(life, target_id, say):
+	_target = brain.knows_alife_by_id(life, target_id)
 	
 	if _find_alife(life, _target['life']['id']):
-		_say = jobs.get_job_detail(life['job'], 'say')
-		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], camp=_say['camp'], founder=_say['founder'])
+		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], **say)
 		lfe.memory(life,
 			'told about founder',
 			camp=_say['camp'],
@@ -280,3 +270,12 @@ def find_alife_and_say(life):
 		return True
 	
 	return False
+
+#TODO: Put this in a new file
+def find_alife_and_say(life):	
+	return _find_alife_and_say(life, jobs.get_job_detail(life['job'], 'target'), jobs.get_job_detail(life['job'], 'target'))
+
+def raid(life):
+	jobs.add_job_candidate(_j, life)
+	jobs.announce_job(life, _j)
+	jobs.process_job(_j)

@@ -35,7 +35,7 @@ def create_tile(tile):
 	
 	return _ret_tile
 
-def get_tile(tile):
+def get_raw_tile(tile):
 	for _tile in TILES:
 		if _tile['id'] == tile['id']:
 			return _tile
@@ -67,7 +67,7 @@ for x in range(MAP_SIZE[0]):
 			if MAP[x][y][z]:
 				_top_tile = MAP[x][y][z]
 		
-		print get_tile(_top_tile)['icon'],
+		print get_raw_tile(_top_tile)['icon'],
 	
 	print
 
@@ -78,7 +78,7 @@ for x in range(MAP_SIZE[0]):
 	for y in range(MAP_SIZE[1]):
 		for z in range(MAP_SIZE[2]):
 			if MAP[x][y][z]:
-				get_tile(MAP[x][y][z])
+				get_raw_tile(MAP[x][y][z])
 print time.time()-_stime
 
 print MAP[3][3]

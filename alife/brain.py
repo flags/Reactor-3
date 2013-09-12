@@ -4,12 +4,11 @@ import life as lfe
 
 import alife_manage_targets
 import alife_manage_items
-import alife_manage_camp
 import alife_visit_camp
 import alife_find_camp
 import alife_discover
 import alife_explore
-import alife_impulse
+import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
@@ -38,24 +37,25 @@ MODULES = [alife_hide,
 	alife_talk,
 	alife_explore,
 	alife_discover,
-	alife_find_camp,
-	alife_visit_camp,
-	alife_camp,
 	alife_manage_items,
-	alife_manage_camp,
 	alife_manage_targets,
 	alife_combat,
 	alife_work,
 	alife_needs,
 	alife_group,
-	alife_impulse,
+	alife_shelter,
 	alife_search]
 
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
+	survival.process(life)
+	judgement.judge_jobs(life)
 	understand(life, source_map)
+	
+	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
+		judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
 	life['tempstor2'][key] = value
@@ -119,7 +119,7 @@ def get_item_flag(life, item, flag):
 def remember_item(life, item):
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
-		life['know_items'][item['uid']] = {'item': item,
+		life['know_items'][item['uid']] = {'item': item['uid'],
 			'score': judgement.judge_item(life,item),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
@@ -135,7 +135,7 @@ def remember_item_secondhand(life, target, item_memory):
 	_item['flags'] = []
 	_item['from'] = target['id']
 
-	life['know_items'][_item['item']['uid']] = _item
+	life['know_items'][_item['item']] = _item
 
 	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
@@ -169,6 +169,9 @@ def knows_alife_by_id(life, alife_id):
 		print alife_id['name']
 		print alife_id.keys()
 		raise Exception('Not a valid ID.')
+	
+	if life['id'] == alife_id:
+		raise Exception('Life asking about itself (via ID). Stopping.')
 	
 	if alife_id in life['know']:
 		return life['know'][alife_id]
@@ -207,8 +210,8 @@ def has_met_in_person(life, target):
 	
 	return True
 
-def get_remembered_item(life, item):
-	return life['know_items'][item['uid']]
+def get_remembered_item(life, item_id):
+	return life['know_items'][item_id]
 
 def get_matching_remembered_items(life, matches):
 	_matched_items = []
@@ -218,26 +221,26 @@ def get_matching_remembered_items(life, matches):
 	
 	return _matched_items
 
-def has_remembered_item(life, item):
-	if item['uid'] in life['know_items']:
+def has_remembered_item(life, item_id):
+	if item_id in life['know_items']:
 		return True
 	
 	return False
 
-def has_shared_item_with(life, target, item):
-	if target['id'] in life['know_items'][item['uid']]['shared_with']:
+def has_shared_item_with(life, target, item_id):
+	if target['id'] in life['know_items'][item_id]['shared_with']:
 		return True
 	
 	return False
 
-def share_item_with(life, target, item):
-	life['know_items'][item['uid']]['shared_with'].append(target['id'])
+def share_item_with(life, target, item_id):
+	life['know_items'][item_id]['shared_with'].append(target['id'])
 
-	logging.debug('%s shared item #%s (%s) with %s.' % (' '.join(life['name']), item['uid'], item['name'], ' '.join(target['name'])))
+	#logging.debug('%s shared item #%s (%s) with %s.' % (' '.join(life['name']), item['uid'], item['name'], ' '.join(target['name'])))
 
-def remember_known_item(life, item_uid):
-	if item_uid in life['know_items']:
-		return life['know_items'][item_uid]
+def remember_known_item(life, item_id):
+	if item_id in life['know_items']:
+		return life['know_items'][item_id]
 	
 	return False
 
@@ -279,23 +282,30 @@ def understand(life, source_map):
 	_times = []
 	for module in MODULES:
 		_stime = time.time()
-		_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 		
-		if _return == STATE_CHANGE:
-			lfe.change_state(life, module.STATE)
+		try:
+			_module_tier = module.get_tier(life)
+		except AttributeError:
+			_module_tier = module.TIER
 		
-		if _return:
-			module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+		if _module_tier <= life['state_tier'] or _module_tier == TIER_PASSIVE:
+			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
-			if _return == RETURN_SKIP:
-				continue
+			if _return == STATE_CHANGE:
+				lfe.change_state(life, module.STATE, _module_tier)
 			
-			_modules_run = True
+			if _return:
+				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+				
+				if _return == RETURN_SKIP:
+					continue
+				
+				_modules_run = True
 		
 		_times.append({'time': time.time()-_stime, 'module': module.STATE})
 	
 	if not _modules_run:
-		lfe.change_state(life, 'idle')
+		lfe.change_state(life, 'idle', TIER_IDLE)
 	
 	#print ' '.join(life['name'])
 	#for entry in _times:

@@ -3,50 +3,72 @@ import os
 
 WINDOW_TITLE = 'Reactor 3 - Milestone 5'
 
-#Constants
 WINDOW_SIZE = (100,60)
-MAP_SIZE = [500,500,5]
-MAP_WINDOW_SIZE = (50, 50)
+MAP_SIZE = [250, 250, 5]
+MAP_WINDOW_SIZE = (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]-10)
 ITEM_WINDOW_SIZE = (40,1)
 CONSOLE_WINDOW_SIZE = (40,30)
 MESSAGE_WINDOW_SIZE = (100,10)
-PREFAB_WINDOW_SIZE = (40,40)
+PREFAB_WINDOW_SIZE = [40,40]
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
+PREFABS = {}
 TICKER = ['\\', '|', '/', '-']
 ENCOUNTER_ANIMATION_TIME = 30
+UPDATE_CAMP_RATE = 5
 
 #Map stuff
-CHUNK_MAP = {}
-CAMPS = {}
 WORLD_INFO = {'map': [],
+	'id': None,
+	'seed': 0,
+	'seed_state': None,
 	'time': 0,
-	'time_of_day': 6000,
+	'real_time_of_day': 6000,
+	'time_of_day': 'limbo',
 	'time_scale': 1,
 	'length_of_day': 6000,
 	'day': 0,
 	'ticks': 0,
 	'tps': 0,
 	'tps_time': 0,
-	'pause_ticks': 0,
-	'in_combat': False,
+	'life_density': 'Sparse',
+	'life_spawn_interval': [0, (0, 0)],
+	'wildlife_spawn_interval': [0, (0, 0)],
 	'world gravity': 0.3,
 	'lifeid': 1,
 	'itemid': 1,
 	'groupid': 1,
+	'campid': 1,
 	'effectid': 1,
 	'zoneid': 1,
-    'chunk_map': CHUNK_MAP,
-    'reference_map': {'roads': [], 'buildings': []},
-    'slices': {}}
+	'memoryid': 1,
+	'goalid': 1,
+	'jobid': 1,
+	'chunk_map': {},
+	'camps': {},
+	'groups': {},
+	'jobs': {},
+	'reference_map': {'roads': [], 'buildings': []},
+	'slices': {},
+	'chunk_size': 5,
+	'lights': [],
+	'timers': []}
 
 #Return values
 STATE_CHANGE = 2
 STATE_UNCHANGED = 3
 RETURN_SKIP = 4
+
+#States
+TIER_COMBAT = 1
+TIER_SURVIVAL = 2
+TIER_EXPLORE = 3
+TIER_IDLE = 4
+TIER_WORK = 2.5
+TIER_PASSIVE = 333
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
@@ -78,7 +100,6 @@ MAP_CHAR_BUFFER = [[], []]
 PREFAB_CHAR_BUFFER = [[], []]
 X_CUTOUT_CHAR_BUFFER = [[], []]
 Y_CUTOUT_CHAR_BUFFER = [[], []]
-LIGHTS = []
 CONSOLE_HISTORY = []
 CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
@@ -89,6 +110,7 @@ DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
 TEXT_DIR = os.path.join(DATA_DIR,'text')
+PREFAB_DIR = os.path.join(DATA_DIR,'prefabs')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
@@ -114,38 +136,6 @@ PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
 DEFAULT_CONTEXT_TIME = 25
 
-GIST_MAP = {'how_are_you': 0,
-	'ignore': 0,
-	'ignore_rude': -1,
-	'inquire_about': 0,
-	'tell_about': 0,
-	'inquire_response_positive': 1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'inquire_response_knows_positive': 1,
-	'inquire_response_knows_neutral': 0,
-	'inquire_response_knows_negative': -1,
-	'inquire_response_neutral': 0,
-	'inquire_response_negative': -1,
-	'last_seen_target_at': 0,
-	'status_response_positive': 1,
-	'status_response': 0,
-	'status_response_neutral': 0,
-	'status_response_neutral_question': 0,
-	'irritated_neutral': 0,
-	'irritated_negative': -1,
-	'heard_of_camp': 0,
-	'inquire_about_camp_founder': 0,
-	'inquire_about_camp_population': 0,
-	'talk_about_camp': 0,
-	'never_heard_of_camp': 0,
-	'tell_about_camp_founder': 0,
-	'ignore_question': 0,
-	'ignore_question_negative': -1,
-	'inform_of_camp': 0,
-	'end': 0,
-	'nothing': 0}
-
 QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
 	'wants item': {'type': '*'}}
 
@@ -162,29 +152,32 @@ SETTINGS = {'running': True,
 	'draw console': False,
 	'draw z-levels above': True,
 	'draw z-levels below': False,
+	'draw visible chunks': False,
 	'progress bar max value': 25,
 	'action queue size': 4,
 	'los': 40,
 	'controlling': None,
 	'following': None,
 	'state history size': 5,
-	'chunk size': 5,
-	'fire burn rate': 0.04}
+	'fire burn rate': 0.04,
+	'smp': None,
+	'map_slices': []}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
+TILE_STRUCT = {'flags': {}}
+TILE_STRUCT_DEP = ['tiles']
 LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
-ITEM_TYPES = {}
 ITEMS = {}
+ITEM_TYPES = {}
 BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
 SPLATTERS = []
-JOBS = {}
 SELECTED_TARGET = []
-GROUPS = {}
+EVENTS = []
 
 #Consoles
 MAP_WINDOW = None
@@ -204,6 +197,7 @@ INPUT = {'up':False,
 		'left':False,
 		'right':False,
 		' ':False,
+    	'.':False,
 		'-':False,
 		',': False,
 		'?': False,

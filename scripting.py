@@ -21,12 +21,12 @@ def execute(script, **kvargs):
 			_i = items.create_item(_args[0], position=_args[1])
 			life.add_item_to_inventory(kvargs['owner'], _i)
 		elif function == 'DELETE':
-			_i = life.remove_item_from_inventory(kvargs['owner'], kvargs['item'])
+			_i = items.get_item_from_uid(life.remove_item_from_inventory(kvargs['owner'], kvargs['item']))
 			items.delete_item(_i)
 		elif function == 'LIGHT_FOLLOW':
 			_item = ITEMS[kvargs['item_uid']]
 			
-			LIGHTS.append({'pos': kvargs['owner']['pos'],
+			WORLD_INFO['lights'].append({'pos': kvargs['owner']['pos'],
 			               'follow_item': kvargs['item_uid'],
 			               'color': (255, 0, 255), 'brightness': _item['brightness'],
 			               'shake': _item['light_shake']})
@@ -61,7 +61,6 @@ def get_functions(owner, text):
 	_functions = {}
 
 	for func in text.split(':'):
-		print text
 		for function in re.findall('[a-zA-Z_]*\(.*\)', func):
 			_name,_args = function.split('(')
 			_functions[_name] = _args#parse_arguments(owner, _args)

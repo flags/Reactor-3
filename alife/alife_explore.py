@@ -13,12 +13,10 @@ import brain
 import logging
 
 STATE = 'exploring'
+TIER = TIER_EXPLORE-.2
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
-	
-	if life['state'] in ['combat', 'searching', 'looting', 'finding camp', 'camping', 'needs', 'working']:
-		return False
 	
 	if not judgement.is_safe(life):
 		return False
@@ -26,7 +24,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	_explore_chunk = chunks.find_best_known_chunk(life, ignore_starting=True, ignore_time=True)
+	_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True)
 	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
 	
 	if not _explore_chunk:

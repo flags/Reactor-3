@@ -26,15 +26,14 @@ def own_language(life, message):
 	return _ret_string
 
 def bullet_hit(life, bullet, limb):
-	_velos = sum([abs(i) for i in bullet['velocity']])
-	_falloff = numbers.clip(_velos, 0, bullet['max_speed'])/float(bullet['max_speed'])
-	#_falloff = max(bullet['velocity'])/float(bullet['max_speed'])
+	_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
 	_damage = 0
 	_cut = 0
 	_bruise = 0
 	_breaking = False
 	_lodged = False
 	_owner = LIFE[bullet['owner']]
+	_actual_limb = lfe.get_limb(life, limb)
 	
 	if 'player' in _owner:
 		if bullet['aim_at_limb'] == limb:
@@ -57,6 +56,7 @@ def bullet_hit(life, bullet, limb):
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
 		print 'cut',_cut
+		print 'falloff', _falloff
 	
 	if _cut:
 		_items_to_check = []
@@ -88,40 +88,40 @@ def bullet_hit(life, bullet, limb):
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append('is stopped by <own> %s' % _item['name'])
-					return ' '.join(_msg)
+					return own_language(life, _msg)+'.'
 			
-		#	elif _item['material'] == 'metal':
-		#		if _thickness and not _item['thickness']:
-		#			_msg.append('puncturing the %s' % _item['name'])
-		#		elif _tear<=-3:
-		#			_msg.append('denting the %s' % _item['name'])
-		#		elif _tear<=-2:
-		#			_msg.append('lightly denting the %s' % _item['name'])
-		#		elif _tear<=-1:
-		#			_msg.append('scraping the %s' % _item['name'])
-		#		
-		#		if _cut <= 0 and _item['thickness']:
-		#			_msg.append(', finally stopped by the %s' % _item['name'])
-		#			return ' '.join(_msg)
+			elif _item['material'] == 'metal':
+				if _thickness and not _item['thickness']:
+					_msg.append('puncturing the %s' % _item['name'])
+				elif _tear<=-3:
+					_msg.append('denting the %s' % _item['name'])
+				elif _tear<=-2:
+					_msg.append('lightly denting the %s' % _item['name'])
+				elif _tear<=-1:
+					_msg.append('scraping the %s' % _item['name'])
+				
+				if _cut <= 0 and _item['thickness']:
+					_msg.append(', finally stopped by the %s' % _item['name'])
+					return own_language(life, _msg)+'.'
 	
-		if not lfe.limb_is_cut(life, limb):
-			if _cut==1:
-				_msg.append(', cutting <own> %s' % limb)
-			elif _cut==2:
-				_msg.append(', tearing <own> %s' % limb)
-			elif _cut==3:
-				_msg.append(', ripping open <own> %s' % limb)
-			elif _cut==4:
-				_msg.append(', severing <own> %s!' % limb)
-				return ' '.join(_msg)
-			else:
-				_bruise = _cut
+		#if not lfe.limb_is_cut(life, limb):
+		_cut_percentage = _cut/float(_actual_limb['size'])
+		if _cut_percentage<=.25:
+			_msg.append(', cutting <own> %s' % limb)
+		elif _cut_percentage<=.5:
+			_msg.append(', tearing <own> %s' % limb)
+		elif _cut_percentage<=.75:
+			_msg.append(', ripping open <own> %s' % limb)
+		elif _cut_percentage<=1:
+			_msg.append(', severing <own> %s!' % limb)
+		else:
+			_bruise = _cut
+	
+		if _cut:
+			lfe.add_wound(life, limb, cut=_cut, impact_velocity=bullet['velocity'])
 		
-			if _cut:
-				lfe.add_wound(life, limb, cut=_cut, impact_velocity=bullet['velocity'])
-			
-			#TODO: How thick is skin?
-			_cut -= 1
+		#TODO: How thick is skin?
+		_cut -= 1
 		
 		if not _cut or not limb in life['body']:
 			return own_language(life, _msg)+'.'
@@ -175,7 +175,7 @@ def bite(life, target_id, limb):
 		
 		if _item['material'] == 'cloth':
 			if _thickness and not _item['thickness']:
-				graphics.message('teeth rip through %s\'s %s!' % (language.get_name(target), _item['name']))
+				_msg.append('rips through <own> %s' % _item['name'])
 			elif _tear<=-3:
 				_msg.append('rips <own> %s' % _item['name'])
 			elif _tear<=-2:

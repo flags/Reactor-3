@@ -1,11 +1,19 @@
 from globals import *
 
+import graphics as gfx
 import life as lfe
 
 import judgement
+import movement
+import action
 import combat
 import speech
+import events
+import chunks
+import camps
 import brain
+import stats
+import raids
 import jobs
 
 import logging
@@ -14,26 +22,60 @@ def create_group(life, add_creator=True):
 	_group = {'creator': life['id'],
 	    'leader': None,
 	    'members': [],
-	    'camp': None,
+	    'shelter': None,
+	    'events': {},
+	    'event_id': 1,
+	    'announce_event': None,
 	    'time_created': WORLD_INFO['ticks'],
-	    'last_updated': WORLD_INFO['ticks']}
+	    'last_updated': WORLD_INFO['ticks'],
+	    'flags': {},
+	    'claimed_motive': 'survival',
+	    'actual_motive': 'survival',
+	    'stats': {'kills': 0, 'murders': 0}}
 	
-	GROUPS[WORLD_INFO['groupid']] = _group
+	WORLD_INFO['groups'][str(WORLD_INFO['groupid'])] = _group
 	
-	lfe.memory(life, 'created group', group=WORLD_INFO['groupid'])
+	lfe.memory(life, 'created group', group=str(WORLD_INFO['groupid']))
 	logging.debug('%s created group: %s' % (' '.join(life['name']), WORLD_INFO['groupid']))
 	
 	if add_creator:
-		add_member(WORLD_INFO['groupid'], life['id'])
-		set_leader(WORLD_INFO['groupid'], life['id'])
+		add_member(str(WORLD_INFO['groupid']), life['id'])
+		set_leader(str(WORLD_INFO['groupid']), life['id'])
 	
 	WORLD_INFO['groupid'] += 1
+	
+	return str(WORLD_INFO['groupid']-1)
 
 def get_group(group_id):
-	if not group_id in GROUPS:
+	if not group_id in WORLD_INFO['groups']:
 		raise Exception('Group does not exist: %s' % group_id)
 	
-	return GROUPS[group_id]
+	return WORLD_INFO['groups'][group_id]
+
+def flag(group_id, flag, value):
+	get_group(group_id)['flags'][flag] = value
+
+def get_flag(group_id, flag):
+	if not flag in get_group(group_id)['flags']:
+		return None
+	
+	return get_group(group_id)['flags'][flag]
+
+def discover_group(life, group_id):
+	if not group_id in life['known_groups']:
+		life['known_groups'].append(group_id)
+		
+		if 'player' in life:
+			gfx.message('You learn about group %s.' % group_id)
+		return True
+	
+	return False
+
+def get_group_relationships():
+	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
+	
+	#for grp in _groups:
+	#	print _groups[grp]
 
 def add_member(group_id, life_id):
 	if is_member(group_id, life_id):
@@ -47,10 +89,21 @@ def add_member(group_id, life_id):
 	for member in _group['members']:
 		brain.meet_alife(LIFE[member], LIFE[life_id])
 	
+	if _group['shelter']:
+		LIFE[life_id]['shelter'] = _group['shelter']
+		lfe.memory(LIFE[life_id], 'shelter founder', shelter=_group['shelter'], founder=_group['leader'])
+	
+	discover_group(LIFE[life_id], group_id)
 	LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
-	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']-1))
+	if _group['leader'] and 'player' in LIFE[_group['leader']]:
+		gfx.message('%s has joined your group.' % ' '.join(LIFE[life_id]['name']), style='good')
+	
+	if SETTINGS['controlling'] == life_id:
+		gfx.message('You join group %s.' % group_id, style='good')
+	
+	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
 
 def remove_member(group_id, life_id):
 	_group = get_group(group_id)
@@ -104,28 +157,115 @@ def find_successor(group_id, assign=False):
 	return _highest['id']
 
 def assign_job(life, group_id, job):
-	_group = get_group(life['group'])
+	_group = get_group(group_id)
 	
 	for member in _group['members']:
 		jobs.add_job_candidate(job, LIFE[member])
 
-def distribute(life, message, **kvargs):
+def distribute(life, message, filter_by=[], **kvargs):
 	_group = get_group(life['group'])
 	
 	for member in _group['members']:
+		if member in filter_by:
+			continue
+		
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
 
-def get_camp(group_id):
-	return get_group(group_id)['camp']
+def add_event(group_id, event):
+	_group = get_group(group_id)
+	
+	_group['events'][str(_group['event_id'])] = event
+	_group['event_id'] += 1
+	
+	return str(_group['event_id']-1)
 
-def set_camp(group_id, camp_id):
-	get_group(group_id)['camp'] = camp_id
+def get_event(group_id, event_id):
+	return get_group(group_id)['events'][event_id]
+
+def process_events(group_id):
+	_group = get_group(group_id)
+	
+	for event in _group['events'].values():
+		events.process_event(event)
+
+def announce(life, group_id, gist, message, consider_motive=False, filter_if=[], **kwargs):
+	_group = get_group(group_id)
+	
+	if consider_motive:
+		if _group['claimed_motive'] == 'wealth':
+			_announce_to = LIFE.keys()
+			_announce_to.remove(life['id'])
+		elif _group['claimed_motive'] == 'crime':
+			_announce_to = judgement.get_trusted(life, visible=False)
+		elif _group['claimed_motive'] == 'survival':
+			_announce_to = LIFE.keys()
+			_announce_to.remove(life['id'])
+	else:
+		_announce_to = _group['members'][:]
+		_announce_to.remove(life['id'])
+	#TODO: Could have an option here to form an emergency "combat" group
+	
+	for filter_action in filter_if:
+		for entry in _announce_to[:]:
+			if action.execute_small_script(LIFE[entry], filter_action):
+				_announce_to.remove(entry)
+	
+	for life_id in _announce_to:
+		speech.communicate(life,
+	                      gist,
+	                      msg=message,
+	                      matches=[{'id': life_id}],
+	                      **kwargs)
+
+def get_shelter(group_id):
+	return get_group(group_id)['shelter']
+
+def find_shelter(life, group_id):
+	_group = get_group(group_id)
+	_group['shelter'] = judgement.get_best_shelter(life)
+	
+	if _group['shelter']:
+		print 'SET SHELTER' * 100
+		announce_shelter(group_id)
+
+def announce_shelter(group_id):
+	_group = get_group(group_id)
+	distribute(LIFE[_group['leader']],
+	           'group_set_shelter',
+	           filter_by=get_event(group_id, _group['announce_event'])['accepted'],
+	           chunk_id=_group['shelter'],
+	           event_id=_group['announce_event'])
+
+def find_and_announce_shelter(life, group_id):
+	if get_shelter(group_id):
+		announce_shelter(group_id)
+	else:
+		find_shelter(life, group_id)
+
+def setup_group_events(group_id):
+	_group = get_group(group_id)
+	
+	if stats.desires_shelter(LIFE[_group['leader']]) or 'player' in LIFE[_group['leader']]:
+		_group['announce_event'] = add_event(group_id, events.create('shelter',
+			action.make(return_function='find_and_announce_shelter'),
+			{'life': action.make(life=_group['leader'], return_key='life'),
+			 'group_id': group_id},
+			fail_callback=action.make(return_function='desires_shelter'),
+			fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
 
 def set_leader(group_id, life_id):
-	get_group(group_id)['leader'] = life_id
+	_group = get_group(group_id)
+	_group['leader'] = life_id
+	
+	set_motive(group_id, stats.get_group_motive(LIFE[life_id]))
+	
+	setup_group_events(group_id)
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
+
+def set_motive(group_id, motive):
+	get_group(group_id)['claimed_motive'] = motive
 
 def get_combat_score(group_id, potential=False):
 	_group = get_group(group_id)
@@ -169,16 +309,93 @@ def get_total_trust(group_id):
 def get_total_danger(group_id):
 	return get_status(group_id)[1]
 
-def is_ready_to_camp(group_id):
+def get_unwanted_members_with_perspective(life, group_id):
+	_group = get_group(group_id)
+	_untrusted = []
+	
+	for member in [m for m in _group['members'] if not life['id'] == m]:
+		if judgement.can_trust(life, member):
+			continue
+		
+		_untrusted.append(member)
+	
+	return _untrusted
+
+def is_ready_to_shelter(group_id):
 	_group = get_group(group_id)
 	
-	if get_total_trust(group_id) < 4:
+	if get_total_trust(group_id)<0:
 		return False
 		
 	if WORLD_INFO['ticks']-_group['last_updated'] >= len(_group['members'])*11:
 		return True
 	
 	return False
+
+def has_camp(group_id):
+	for camp in WORLD_INFO['camps']:
+		if camps.get_controlling_group_global(camp) == group_id:
+			return camp
+	
+	return None
+
+def get_jobs(group_id):
+	_group = get_group(group_id)
+	_jobs = []
+	_leader = LIFE[_group['leader']]
+	
+	if not has_camp(group_id):
+		_nearest_camp = camps.get_nearest_known_camp(_leader)
+		
+		if _leader['known_camps']:
+			_j = jobs.create_job(_leader, 'Raid', gist='start_raid', description='Raid camp %s.' % _nearest_camp['id'])
+			_pos = lfe.get_current_chunk(_leader)['pos']
+			_chunk_key = lfe.get_current_chunk_id(_leader)
+		
+			jobs.add_task(_j, '0', 'announce_to_group',
+			              action.make_small_script(function='announce_to_group',
+			                                       kwargs={'group_id': group_id,
+			                                               'gist': 'job',
+			                                               'message': jobs.get_job(_j)['description'],
+			                                               'job_id': _j}),
+			              player_action=action.make_small_script(function='always'),
+			              description='Gather group members.')
+			jobs.add_task(_j, '1', 'move_to_chunk',
+			              action.make_small_script(function='travel_to_position',
+			                                       kwargs={'pos': _pos}),
+			              player_action=action.make_small_script(function='is_in_chunk',
+	                                           kwargs={'chunk_key': _chunk_key}),
+			              description='Travel to position %s, %s' % (_pos[0], _pos[1]),
+				          delete_on_finish=False)
+			jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
+			              action.make_small_script(function='number_of_alife_in_chunk_matching',
+			                                       kwargs={'amount': 2,
+			                                               'chunk_key': _chunk_key,
+			                                               'matching': {'group': _leader['group']}}),
+			              description='Wait until everyone arrives.')
+			#jobs.add_task(_j, '3', 'talk',
+			#              action.make_small_script(function='travel_to_position',
+			#                                       kwargs={'pos': chunks.get_nearest_chunk_in_list(_leader['pos'], camps.get_camp(_nearest_camp['id'])['reference'])}),
+			#              requires=['1'],
+			#              delete_on_finish=False)
+			
+			_jobs.append(_j)
+	
+	if len(_leader['known_groups'])>1:
+		_lowest = {'score': 0, 'group': None}
+		for group_id in [g for g in _leader['known_groups'] if not g==_leader['group']]:
+			_score = judgement.judge_group(_leader, group_id)
+			
+			if not _lowest['group'] or _score < _lowest['score']:
+				_lowest['score'] = _score
+				_lowest['group'] = group_id
+			
+		
+		print 'RAID', _lowest
+	else:
+		print 'ony one'
+	
+	return _jobs
 
 def is_member(group_id, life_id):
 	_group = get_group(group_id)
@@ -195,6 +412,12 @@ def is_leader(group_id, life_id):
 		return True
 	
 	return False
+
+def is_leader_of_any_group(life):
+	if not life['group']:
+		return False
+	
+	return is_leader(life['group'], life['id'])
 	
 def delete_group(group_id):
 	for member in get_group(group_id)['members']:
@@ -204,4 +427,4 @@ def delete_group(group_id):
 	
 	logging.warning('Deleted group: %s' % group_id)
 	
-	del GROUPS[group_id]
+	del WORLD_INFO['groups'][group_id]

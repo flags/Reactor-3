@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import action
 import brain
 
 import logging
@@ -13,7 +14,8 @@ def process_questions(life):
 		
 		for match in question['answer_match']:
 			for memory in lfe.get_memory(life, matches=match):
-				if question['answer_callback'](life, match):
+				
+				if lfe.get_memory(life, match):
 					question['answered'].append(memory['id'])
 					_answered = True
 		

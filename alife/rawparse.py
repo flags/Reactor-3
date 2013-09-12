@@ -1,8 +1,20 @@
+from globals import *
+
+import life as lfe
+
 import judgement
 import survival
+import movement
 import numbers
+import groups
 import combat
+import chunks
+import speech
+import items
 import stats
+import logic
+import sight
+import jobs
 
 import re
 
@@ -12,22 +24,45 @@ def always(life):
 def never(life):
 	return False
 
-CURLY_Bspecies_MATCH = '{[\w+-\.,]*}'
+CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 FUNCTION_MAP = {'is_family': stats.is_family,
 	'is_same_species': stats.is_same_species,
 	'is_compatible_with': stats.is_compatible_with,
+	'can_trust': judgement.can_trust,
+	'is_dangerous': judgement.is_target_dangerous,
 	'can_bite': stats.can_bite,
 	'can_scratch': stats.can_scratch,
 	'weapon_equipped_and_ready': combat.weapon_equipped_and_ready,
 	'prepare_for_ranged': combat.prepare_for_ranged,
 	'explore_unknown_chunks': survival.explore_unknown_chunks,
 	'is_nervous': stats.is_nervous,
+	'is_aggravated': stats.is_aggravated,
 	'is_safe': judgement.is_safe,
 	'is_healthy': None,
 	'closest': None,
 	'kill': None,
 	'has_attacked_trusted': stats.has_attacked_trusted,
 	'distance_to_pos': stats.distance_from_pos_to_pos,
+	'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
+	'is_idle': lambda life: life['state'] == 'idle',
+	'is_child': stats.is_child,
+	'is_parent': stats.is_parent,
+	'is_night': logic.is_night,
+	'is_born_leader': stats.is_born_leader,
+	'is_safe_in_shelter': stats.is_safe_in_shelter,
+	'find_and_announce_shelter': groups.find_and_announce_shelter,
+	'desires_shelter': stats.desires_shelter,
+	'travel_to_position': movement.travel_to_position,
+	'find_target': movement.find_target,
+	'can_see_target': sight.can_see_target,
+	'wait': never,
+	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
+	'start_dialog': speech.start_dialog,
+	'announce_to_group': groups.announce,
+	'is_in_chunk': chunks.is_in_chunk,
+	'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
+	'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
+	'explode': items.explode,
 	'always': always,
 	'never': never}
 
@@ -46,15 +81,15 @@ def create_action(script, identifier, arguments):
 	for argument in arguments:
 		if argument.count('['):
 			bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
-			curly_bspecies_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_Bspecies_MATCH, argument)]
+			curly_BRACE_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
 			_args.append({'function': argument.split('[')[0]})
 		else:
-			curly_bspecies_data = re.findall(CURLY_Bspecies_MATCH, argument)
+			curly_BRACE_data = re.findall(CURLY_BRACE_MATCH, argument)
 			
-			if curly_bspecies_data:
-				argument = [argument.replace(entry, '') for entry in curly_bspecies_data][0]
-				curly_bspecies_data = [data.strip('{').strip('}') for data in curly_bspecies_data][0].split(',')
-				_arguments = curly_bspecies_data
+			if curly_BRACE_data:
+				argument = [argument.replace(entry, '') for entry in curly_BRACE_data][0]
+				curly_BRACE_data = [data.strip('{').strip('}') for data in curly_BRACE_data][0].split(',')
+				_arguments = curly_BRACE_data
 				_values = []
 				
 				for value in _arguments:
@@ -68,6 +103,8 @@ def create_action(script, identifier, arguments):
 							_arg['value'] = int(value.partition('+')[2])
 						elif value.count('-'):
 							_arg['value'] = -int(value.partition('-')[2])
+					elif value.count('='):
+						_arg['key'],_arg['value'] = value.split('=')
 					
 					_values.append(_arg)
 				
@@ -75,17 +112,37 @@ def create_action(script, identifier, arguments):
 				argument = argument.split('{')[0]
 				_values = []
 			
-			#print argument, curly_bspecies_data
-			
 			_true = True
-			if argument.startswith('!'):
+			_string = ''
+			_self_call = False
+			_no_args = False
+
+			if argument.startswith('*'):
+				argument = argument.replace('*', '')
+				_true = '*'			
+			
+			if argument.startswith('\"'):
+				argument = argument.replace('\"', '')
+				_string = argument
+			elif argument.startswith('%'):
+				argument = argument[1:]
+				_no_args = True
+			elif argument.startswith('!'):
 				argument = argument[1:]
 				_true = False
-			elif argument.startswith('*'):
+			elif argument.startswith('@'):
 				argument = argument[1:]
-				_true = '*'
+				_self_call = True
 			
-			_args.append({'function': translate(argument), 'values': _values, 'true': _true})
+			if _string:
+				_args.append({'string': _string})
+			else:
+				_args.append({'function': translate(argument),
+					'values': _values,
+					'true': _true,
+					'string': None,
+					'self_call': _self_call,
+					'no_args': _no_args})
 		
 	return {'id': identifier, 'arguments': _args}
 
@@ -94,7 +151,7 @@ def add_action(script, action):
 
 def parse(script, line, filename='', linenumber=0):
 	if not line.count('[') == line.count(']'):
-		raise Exception('Bspecies mismatch (%s, line %s): %s' % (filename, linenumber, line))
+		raise Exception('BRACE mismatch (%s, line %s): %s' % (filename, linenumber, line))
 	
 	bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', line)]
 	

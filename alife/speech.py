@@ -109,6 +109,20 @@ def start_dialog(life, target, gist):
 	
 	if _dialog:
 		life['dialogs'].append(_dialog)
+	
+	return True
+
+def start_dialog_with_question(life, target, question_id):
+	_question = lfe.get_memory_via_id(life, question_id)	
+	
+	_dialog = {'type': 'dialog',
+		'from': life,
+		'enabled': True,
+		'gist': None}
+	_dialog = dialog.create_dialog_with(life, target, _dialog, question=_question)
+	
+	if _dialog:
+		life['dialogs'].append(_dialog)
 		return True
 	
 	return False

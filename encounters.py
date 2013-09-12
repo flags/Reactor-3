@@ -33,25 +33,18 @@ def create_encounter(life, target, context=None):
 	if alife.brain.has_met_in_person(target, life) and _time_since_met<1000:
 		_text.append('You just met %s recently.' % target['name'][0])
 	
-	for _founded_camp in alife.camps.get_founded_camps(target):
-		if alife.camps.is_in_camp(target, _founded_camp):
-			_text.append('%s claims to be the founder of this camp.' % target['name'][0])
-			
-			if lfe.get_memory(life, matches={'camp': _founded_camp['id'],'target': target['id'], 'text': 'heard about camp', 'founder': True}):
-				_text.append('You heard this announced on the radio earlier.')
-	
 	_text.append('He appears to be %s towards you.' % _stance)
 	_text.append('_' * 38)
 	_text.append('<Shift>+f - Appear Friendly')
 	_text.append('<Shift>+h - Appear Hostile')
-	_text.append('<Shift>+s - Surrender')
-	_text.append('<Shift>+q - Ignore')
+	#_text.append('<Shift>+s - Surrender')
+	#_text.append('<Shift>+q - Ignore')
 	_text.append('_' * 38)
 	
 	_encounter['text'] = _text
 	_encounter['start_time'] = WORLD_INFO['ticks']
 	
-	SETTINGS['following'] = target
+	SETTINGS['following'] = target['id']
 	life['encounters'].append(_encounter)
 	logging.debug('%s created encounter.' % ' '.join(target['name']))
 	SETTINGS['encounter animation timer'] = ENCOUNTER_ANIMATION_TIME

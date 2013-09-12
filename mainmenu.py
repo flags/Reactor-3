@@ -6,6 +6,7 @@ import worldgen
 import profiles
 import numbers
 import menus
+import maps
 
 import random
 import time
@@ -76,8 +77,12 @@ def draw_intro():
 	
 	SETTINGS['running'] = 1
 
+def clear(entry=None):
+	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	console_flush()
+
 def draw_message():
-	_y = 10
+	_y = 25
 	for line in MESSAGE:
 		graphics.blit_string(1, _y, line)
 		_y += 1
@@ -93,9 +98,9 @@ def switch_to_main_menu():
 	menus.delete_active_menu()
 	
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Start', None))
-	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=False))#profiles.get_worlds()))
-	_menu_items.append(menus.create_item('single', 'World Generation', None, enabled=False))
+	_menu_items.append(menus.create_item('single', 'Start', None, enabled=WORLD_INFO['id']))
+	_menu_items.append(menus.create_item('single', 'Select World', None, enabled=profiles.get_worlds()))
+	_menu_items.append(menus.create_item('single', 'World Generation', None))
 	_menu_items.append(menus.create_item('single', 'Quit', None))
 	
 	_i = menus.create_menu(title='Reactor 3',
@@ -111,8 +116,9 @@ def switch_to_main_menu():
 
 def switch_to_start_game():
 	menus.delete_active_menu()
+	
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=False))
+	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=LIFE[SETTINGS['controlling']]))
 	_menu_items.append(menus.create_item('single', 'New Character', None))
 	_menu_items.append(menus.create_item('single', 'New Character (Advanced)', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
@@ -126,14 +132,14 @@ def switch_to_start_game():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_select_world():
 	menus.delete_active_menu()
 	_menu_items = []
 	
 	for world in profiles.get_worlds():
-		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world))
+		_menu_items.append(menus.create_item('single', 'World %s' % world, None, world=world, enabled=(not world == WORLD_INFO['id'])))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Select World',
@@ -145,7 +151,7 @@ def switch_to_select_world():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_spawn_point():
 	menus.delete_active_menu()
@@ -165,12 +171,14 @@ def switch_to_spawn_point():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_world_gen():
 	_menu_items = []
-	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks']))
-	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy']))
+	_menu_items.append(menus.create_item('list', 'Map', profiles.get_maps()))
+	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
+	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy', 'None']))
+	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy', 'None']))
 	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))
@@ -181,18 +189,14 @@ def switch_to_world_gen():
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		on_select=worldgen_menu_select,
-		on_change=refresh_screen)
+		on_select=worldgen_menu_select)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
-
-def refresh_screen(entry):
-	#TODO: Broken. Menus should be handling this anyway
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def start_game():
 	SETTINGS['running'] = 2
+	menus.delete_active_menu()
 	menus.delete_active_menu()
 
 def generate_world():
@@ -205,20 +209,24 @@ def generate_world():
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 100
 	elif _settings['World Age'] == '1 Week':
-		_ticks = 30000
+		_ticks = 1000#30000
 	elif _settings['World Age'] == '2 Weeks':
-		_ticks = 60000
+		_ticks = 2000
 	elif _settings['World Age'] == '3 Weeks':
-		_ticks = 90000
+		_ticks = 3000
+	elif _settings['World Age'] == '4 Weeks':
+		_ticks = 4000
+	elif _settings['World Age'] == '5 Weeks':
+		_ticks = 5000
 	
-	if _settings['Life Density'] == 'Sparse':
-		_life = 4
-	elif _settings['Life Density'] == 'Medium':
-		_life = 8
-	elif _settings['Life Density'] == 'Heavy':
-		_life = 12
+	maps.load_map(_settings['Map'])
 	
-	worldgen.generate_world(WORLD_INFO['map'], life=_life, simulate_ticks=_ticks)
+	worldgen.generate_world(WORLD_INFO['map'],
+		life_density=_settings['Life Density'],
+		wildlife_density=_settings['Wildlife Density'],
+		simulate_ticks=_ticks,
+	     save=True,
+		thread=True)
 
 def main_menu_select(entry):
 	key = entry['key']
@@ -238,6 +246,8 @@ def start_menu_select(entry):
 	
 	if key == 'New Character':
 		switch_to_spawn_point()
+	elif key == 'Existing Character':
+		start_game()
 	elif key == 'Back':
 		switch_to_main_menu()
 
@@ -263,6 +273,7 @@ def worldgen_menu_select(entry):
 	value = entry['values'][entry['value']]
 	
 	if key == 'Generate':
+		graphics.title('Setting up world...')
 		generate_world()
 	elif key == 'Back':
-		switch_to_start_game()
+		switch_to_main_menu()

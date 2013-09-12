@@ -1,6 +1,12 @@
+from globals import *
 from tiles import *
+
+import zones
+import maps
+
 import random
 import copy
+import sys
 
 def get_map_size(map):
 	return (len(map),len(map[0]),len(map[0][0]))
@@ -70,3 +76,17 @@ def resize_map(map,size):
 				_new_map[x1][y1].extend(_z1)
 	
 	return _new_map
+
+if __name__ == '__main__':
+	if '--create' in sys.argv:
+		create_all_tiles()
+		WORLD_INFO['map'] = maps.create_map()
+		maps.create_position_maps()
+		maps.update_chunk_map()
+		
+		zones.create_zone_map()
+		zones.connect_ramps()
+		
+		maps.save_map('temp_map.dat')
+		
+		print 'Created map: temp_map.dat'

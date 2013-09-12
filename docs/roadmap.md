@@ -419,7 +419,7 @@ Structure: dict
 Keys:
 	Start		...
 	End			...
-	path_type	['
+	path_type	['']
 
 Operation:
 	First a "chunk path" is generated. The chunk map sees if it can path to the destination chunk.
@@ -504,8 +504,12 @@ Crafting
 ---------
 Used for dismantling in this milestone.
 
-State Overrides
----------------
+The Big Fix
+============
+This is by no means the last major change to Reactor 3, but instead the first step in a series of moves towards fully-capable ALife. These ares the issues I am aiming to address:
+
+Issue #1: State Overrides
+------------------------
 Each ALife module has rules for modules it will not take over for (i.g., 'camping' will not take over for 'combat' if it is in effect.) While this works, each module has to explictly list what modules it will ignore. This provides the following disadvantages:
 
 	1) Adding new modules involves finding what modules will not be overridden and listing them.
@@ -515,6 +519,24 @@ Each ALife module has rules for modules it will not take over for (i.g., 'campin
 
 We now need a general structure to handle this.
 
-Alternative 1: Priority Levels
+Issue #2: Jobs and Doing Stuff
+-----------------------------
+While the jobs system works, it is very unflexible and relies on functions for operation. In addition, it's hard to get the ALife to do anything without explictly writing a module. This is, of course, an issue when it comes down to actions like finding a camp leader.
+
+How I would like it to work (finding a camp leader.):
+
+	[ALife is aware of a camp and does not know the founder.]
+	add_goal(life, 'learn about camp', camp=camp_id)
+	add_criteria_memory(camp=camp_id, founder='*')
+		with_criteria(can_trust, founder, required=True)
+	add_criteria_memory(camp=camp_id, group='*')
+		with_criteria(likes_group, group_id, required=True)
 	
-	
+Group Battles
+------------
+The last big issue we have to approach is the lack of any conflict in the Zone between groups. The reason for the current lack of conflict has to do with there being nothing to fight over.
+Proposing: Artifact fields. Areas of the map that generate a specifc kind of artifact, which change position after an established amount of time. Groups will be fighting for control of these areas.
+
+Camps v2
+--------
+While the old camp structure is no longer valid in the wake of "shelters", there is now a need to manage larger sections of land. The proposed solution is a concept similar to the "control point" mode of Team Fortress 2, where pre-determined parts of the map can be owned by one team (in this case a group) at a time.
