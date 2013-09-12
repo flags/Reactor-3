@@ -937,9 +937,17 @@ def inventory_fire_select_limb(entry, no_delete=False):
 	
 	_limbs = []
 	for limb in LIFE[entry['target']]['body']:
+		_held_items = []
+		
+		for held_item_id in LIFE[entry['target']]['body'][limb]['holding']:
+			_held_items.append(items.get_item_from_uid(held_item_id)['name'])
+		
+		if not _held_items:
+			_held_items = ['Exposed']
+			
 		_limbs.append(menus.create_item('single',
 			limb,
-			None,
+			', '.join(_held_items),
 			target=LIFE[entry['target']],
 			limb=limb))
 		
@@ -949,7 +957,7 @@ def inventory_fire_select_limb(entry, no_delete=False):
 		position=(1,1),
 		on_select=inventory_fire_action,
 		on_close=exit_target,
-		format_str='$k')
+		format_str='$k: $v')
 	
 	menus.activate_menu(_i)
 
