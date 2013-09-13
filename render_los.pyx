@@ -109,7 +109,8 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 			if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
 				HIDDEN_CHUNKS.append(chunk_key)
 	
-	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
+	if not POSITION[0]-X_CAMERA_POS<0 and not POSITION[0]-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POSITION[1]-Y_CAMERA_POS<0 and not POSITION[1]-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
+		los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
 	for _pos in draw_circle(POSITION[0], POSITION[1], size):
 		_dark = 0
