@@ -81,7 +81,7 @@ def calculate_impacts(life, target, topics):
 		if 'subtopic' in topic:
 			continue
 		
-		if 'negative' in topic['gist'] or 'lie' in topic and topic['lie'] or 'dislike' in topic:
+		if 'lie' in topic and topic['lie'] or 'dislike' in topic:
 			topic['impact'] = -1
 		elif 'positive' in topic['gist'] or 'like' in topic:
 			topic['impact'] = 1
@@ -676,12 +676,12 @@ def process_response(life, target, dialog, chosen):
 	if chosen['gist'] == 'how_are_you':
 		if get_freshness_of_gist(LIFE[dialog['listener']], dialog['speaker'], chosen['gist'])<0.5:
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
-			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
+			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative', 'dislike': 1})
 		else:
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral'})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
-			_responses.append({'text': 'Why do you care?', 'gist': 'status_response_negative'})
+			_responses.append({'text': 'Why do you care?', 'gist': 'status_response_negative', 'dislike': 1,})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
 		if 'player' in life:
@@ -767,12 +767,12 @@ def process_response(life, target, dialog, chosen):
 		if chosen['target'] == life['id']:
 			_responses.append({'text': 'That\'s me. Did you forget who I was?', 'gist': 'inquire_response_positive'})
 			_responses.append({'text': 'That\'s my name.', 'gist': 'inquire_response_neutral'})
-			_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative'})
+			_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative', 'dislike': 1,})
 		else:
 			if chosen['target'] in life['know']:
 				_responses.append({'text': 'Yes, I know him!', 'gist': 'inquire_response_knows_positive', 'target': chosen['target']})
 				_responses.append({'text': 'Sure.', 'gist': 'inquire_response_knows_neutral', 'target': chosen['target']})
-				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'dislike': 1, 'flags': ['CANBRIBE']})
 			else:
 				_responses.append({'text': 'I don\'t know who that is, sorry.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
 				_responses.append({'text': 'Sorry, I don\'t know who that is.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
@@ -780,8 +780,8 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'I don\'t.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'Never heard that name before.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'I don\'t recall hearing that name.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
-				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
-				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'dislike': 1, 'target': chosen['target'], 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'dislike': 1, 'target': chosen['target'], 'flags': ['CANBRIBE']})
 	elif chosen['gist'] == 'inquire_about_nearby_locations':
 		_responses.extend(get_known_locations(life, chosen))
 	elif chosen['gist'] == 'inquire_about_camp_founder':
@@ -966,16 +966,10 @@ def process_response(life, target, dialog, chosen):
 		elif alife.judgement.can_trust(LIFE[dialog['speaker']], chosen['who']):
 			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
 		else:
-			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
+			_responses.append({'text': 'I never trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
 	
 	elif chosen['gist'] == 'talk_about_trust':
 		lfe.memory(LIFE[dialog['listener']], 'target trusts target',
-			target=dialog['speaker'],
-			who=chosen['who'],
-			value=chosen['who'])
-	
-	elif chosen['gist'] == 'talk_about_trust_negative':
-		lfe.memory(LIFE[dialog['listener']], 'target doesn\'t trust target',
 			target=dialog['speaker'],
 			who=chosen['who'],
 			value=chosen['who'])

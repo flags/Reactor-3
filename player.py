@@ -990,6 +990,10 @@ def create_target_list():
 	
 	return _menu_items
 
+def delete_looK_list(entry):
+	menus.delete_menu(menus.get_menu_by_name('Examining...'))
+	SELECTED_TILES[0] = []
+
 def create_look_list():
 	if menus.get_menu_by_name('Look at...')>-1:
 		menus.delete_menu(menus.get_menu_by_name('Look at...'))
@@ -1012,7 +1016,7 @@ def create_look_list():
 	    padding=(1,1),
 	    position=(1,1),
 	    on_move=handle_item_view,
-	    on_close=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
+	    on_close=delete_looK_list,
 	    format_str='[$i] $k')
 	
 	menus.activate_menu(_i)

@@ -380,7 +380,7 @@ def sanitize_know(life):
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
 		
-		if not alife.brain.get_alife_flag(life, entry['life'], 'search_map') == False:
+		if alife.brain.alife_has_flag(life, entry['life'], 'search_map'):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):

@@ -92,6 +92,12 @@ def unflag_alife(life, target_id, flag):
 	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
 	del life['know'][target_id]['flags'][flag] 
 
+def alife_has_flag(life, target_id, flag):
+	if flag in life['know'][target_id]['flags']:
+		return True
+	
+	return False
+
 def get_alife_flag(life, target_id, flag):
 	if not flag in life['know'][target_id]['flags']:
 		return False
