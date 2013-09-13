@@ -990,9 +990,13 @@ def create_target_list():
 	
 	return _menu_items
 
-def delete_looK_list(entry):
+def delete_look_list(entry):
 	menus.delete_menu(menus.get_menu_by_name('Examining...'))
 	SELECTED_TILES[0] = []
+
+def handle_look_select(entry):
+	if 'target' in entry:
+		create_dialog(entry)
 
 def create_look_list():
 	if menus.get_menu_by_name('Look at...')>-1:
@@ -1007,6 +1011,9 @@ def create_look_list():
 		
 		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid'], icon=item['icon']))
 	
+	for target in [l for l in LIFE.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id'], icon=item['icon']))
+	
 	if not _menu_items:
 		gfx.message('There\'s nothing to look at.')
 		return False
@@ -1015,8 +1022,9 @@ def create_look_list():
 	    menu=_menu_items,
 	    padding=(1,1),
 	    position=(1,1),
-	    on_move=handle_item_view,
-	    on_close=delete_looK_list,
+	    on_select=handle_look_select,
+	    on_move=handle_view,
+	    on_close=delete_look_list,
 	    format_str='[$i] $k')
 	
 	menus.activate_menu(_i)
@@ -1351,6 +1359,13 @@ def handle_tasks_menu(entry):
 		
 		menus.delete_menu(ACTIVE_MENU['menu'])
 
+def handle_view(entry):
+	if 'item' in entry:
+		handle_item_view(entry)
+		return
+	
+	handle_life_view(entry)
+
 def handle_item_view(entry):
 	item = items.get_item_from_uid(entry['item'])
 	
@@ -1368,8 +1383,39 @@ def handle_item_view(entry):
         padding=(1,1),
         position=(1,1),
         format_str='$k: $v')
+
+def handle_life_view(entry):
+	target = LIFE[entry['target']]
 	
-	#menus.activate_menu(_i)
+	if menus.get_menu_by_name('Examining...')>-1:
+		menus.delete_menu(menus.get_menu_by_name('Equip'))
+	
+	SELECTED_TILES[0] = [tuple(target['pos'])]
+	_menu_items = []
+	
+	#for key in target['examine_keys']:
+	#	_menu_items.append(menus.create_item('single', key, item[key]))
+	for limb in LIFE[entry['target']]['body']:
+		_held_items = []
+		
+		for held_item_id in LIFE[entry['target']]['body'][limb]['holding']:
+			_held_items.append(items.get_item_from_uid(held_item_id)['name'])
+		
+		if not _held_items:
+			_held_items = ['Exposed']
+			
+		_menu_items.append(menus.create_item('single',
+			limb,
+			', '.join(_held_items),
+			target=LIFE[entry['target']],
+			limb=limb))
+
+	_i = menus.create_menu(title='Examining...',
+        menu=_menu_items,
+        padding=(1,1),
+        position=(1,1),
+        format_str='$k: $v',
+	   dim=False)
 
 def create_jobs_menu():
 	if menus.get_menu_by_name('Jobs')>-1:
