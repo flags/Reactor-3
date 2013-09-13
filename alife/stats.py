@@ -364,7 +364,6 @@ def is_safe_in_shelter(life, life_id):
 	if not lfe.is_in_shelter(life):
 		return True
 	
-	print life['name'], 'compwith', LIFE[life_id]['name'], is_compatible_with(life, life_id)
 	if not is_compatible_with(life, life_id):
 		return False
 	

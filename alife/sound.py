@@ -122,11 +122,15 @@ def listen(life):
 			if event['from']['camp'] and not camps.has_discovered_camp(life, event['from']['camp']):
 				camps.discover_camp(life, event['from']['known_camps'][event['from']['camp']])
 			
-			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.send(life, event['from'], 'friendly')
+			#if not speech.has_sent(life, event['from'], 'greeting'):
+			#	speech.send(life, event['from'], 'friendly')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
+				
+			speech.start_dialog(life, event['from']['id'], 'encounter')
+			
+			print 'HERE'*10
 		
 		elif event['gist'] == 'ask_about_recent_events':
 			_event = speech.determine_interesting_event(life, event['from'])

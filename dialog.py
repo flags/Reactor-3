@@ -1003,7 +1003,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'encounter_leave':
 		if 'player' in life:
 			_responses.append({'text': 'What if I don\'t want to leave?', 'gist': 'encounter_response_intimidate', 'dislike': 1, 'danger': 2})
-			_responses.append({'text': 'I\'m out of here...', 'gist': 'encounter_response_neutral'})
+			_responses.append({'text': 'I\'m out of here...', 'gist': 'encounter_response_neutral', 'like': 1})
 	
 	elif chosen['gist'] == 'encounter_response_intimidate':
 		#if 'player' in life:
