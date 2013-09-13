@@ -1,9 +1,9 @@
 import libtcodpy as tcod
 import os
 
-WINDOW_TITLE = 'Reactor 3 - Milestone 5'
-
-WINDOW_SIZE = (100,60)
+VERSION = '0.5.5-git'
+WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
+WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]
 MAP_WINDOW_SIZE = (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]-10)
 ITEM_WINDOW_SIZE = (40,1)

@@ -44,6 +44,7 @@ import maps
 import smp
 import sys
 
+logging.info(WINDOW_TITLE)
 CYTHON_ENABLED = True
 
 def move_camera(pos,scroll=False):

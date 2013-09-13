@@ -16,7 +16,9 @@ MESSAGE = ['Reactor 3 is still a prototype',
 	'You may experience slow performance and crashes',
 	'',
 	'Send any bug reports to:',
-	'https://github.com/flags/Reactor-3/issues']
+	'https://github.com/flags/Reactor-3/issues',
+     '',
+     'Version: %s' % VERSION]
 
 def draw_intro():
 	_stime = time.time()
