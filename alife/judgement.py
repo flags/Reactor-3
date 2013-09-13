@@ -62,12 +62,29 @@ def judge_self(life):
 	
 	return _confidence+_limb_confidence
 
-def get_combat_rating(life):
+def get_ranged_combat_ready_score(life, consider_target_id=None):
 	_score = 0
 	
-	#TODO: CLose? Check equipped items only. Far away? Check inventory.
-	if lfe.get_held_items(life, matches=[{'type': 'gun'}]) or lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
-		_score += 10
+	if consider_target_id:
+		_target = brain.knows_alife_by_id(life, consider_target_id)
+		#TODO: Judge proper distance based on weapon equip time
+		if numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)/2:
+			if lfe.get_held_items(life, matches=[{'type': 'gun'}]):
+				_score += 1
+		elif lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
+			_score += 1
+	
+	return _score
+
+def get_observed_ranged_combat_rating_of_target(life, life_id):
+	_score = 0
+	#_target = brain.knows_alife_by_id(life, life_id)
+	
+	for item in [ITEMS[i] for i in lfe.get_all_visible_items(LIFE[life_id])]:
+		if not logic.matches(item, {'type': 'gun'}):
+			continue
+		
+		_score += 1
 	
 	return _score
 

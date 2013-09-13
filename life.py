@@ -367,7 +367,11 @@ def ticker(life, name, time):
 def focus_on(life):
 	SETTINGS['following'] = life['id']
 	
-	#LOS_BUFFER[0] = []
+	LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
+	                                 LIFE[SETTINGS['following']]['pos'],
+	                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
+	                                 cython=True)
+	gfx.refresh_window()
 
 def sanitize_heard(life):
 	del life['heard']
