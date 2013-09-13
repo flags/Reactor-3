@@ -309,8 +309,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
-	_life['think_rate_max'] = random.randint(0, 1)
-	_life['think_rate'] = _life['think_rate_max']
+	_life['think_rate_max'] = 6
+	_life['think_rate'] = random.randint(0, _life['think_rate_max'])
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -736,7 +736,6 @@ def can_ask(life, target_id, question_id):
 		return False
 	
 	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:
-		print 'already talked about this'
 		return False
 	
 	return True
