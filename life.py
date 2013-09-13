@@ -384,7 +384,7 @@ def sanitize_know(life):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'needs', 'actions']
+	_delete_keys = ['raw', 'needs', 'actions', 'dialogs']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -404,6 +404,7 @@ def post_save(life):
 	life['needs'] = []
 	life['actions'] = []
 	life['path'] = []
+	life['dialogs'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]

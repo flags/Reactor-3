@@ -51,6 +51,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not speech.discussed(life, ai['life'], 'greeting'):
 				if stats.is_compatible_with(life, ai['life']['id']):
 					speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
+				
 				speech.send(life, ai['life'], 'greeting')
 	
 	_potential_talking_targets = []
