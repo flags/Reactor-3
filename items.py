@@ -307,6 +307,9 @@ def explode(item):
 	
 	if 'fire' in item['damage']:
 		for pos in drawing.draw_circle(item['pos'], item['radius']):
+			if not maps.position_is_in_map(pos):
+				continue
+			
 			if not random.randint(0, 4):
 				effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
 		

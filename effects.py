@@ -42,7 +42,7 @@ def calculate_fire(fire):
 	for x in range(-1, 2):
 		_x = fire['pos'][0]+x
 		
-		if -1>_x>MAP_SIZE[0]:
+		if _x<0 or _x>=MAP_SIZE[0]:
 			continue
 		
 		for y in range(-1, 2):
@@ -51,7 +51,7 @@ def calculate_fire(fire):
 			
 			_y = fire['pos'][1]+y
 			
-			if -1>_y>MAP_SIZE[1]:
+			if _y<0 or _y>=MAP_SIZE[1]:
 				continue
 			
 			_effects = [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']

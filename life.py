@@ -380,7 +380,7 @@ def sanitize_know(life):
 	for entry in life['know'].values():
 		entry['life'] = entry['life']['id']
 		
-		if alife.brain.get_alife_flag(life, entry['life'], 'search_map'):
+		if not alife.brain.get_alife_flag(life, entry['life'], 'search_map') == False:
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
@@ -422,9 +422,12 @@ def save_all_life():
 	for life in LIFE.values():
 		prepare_for_save(life)
 		
-		#for key in life.keys():
-		#	print key, life[key]
-		#	json.dumps(life[key])
+		for key in life.keys():
+			try:
+				json.dumps(life[key])
+			except:
+				logging.info(key)
+				raise Exception('key')
 	
 	_life = json.dumps(LIFE)
 	

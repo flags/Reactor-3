@@ -156,6 +156,12 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		#	logging.error('FATAL: Map not JSON serializable.')
 		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
+def position_is_in_map(pos):
+	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:
+		return True
+	
+	return False
+
 def reset_lights():
 	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))

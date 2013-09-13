@@ -376,8 +376,8 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	tcod.console_flush()
 
 def position_is_in_frame(pos):
-	if pos[0] >= CAMERA_POS[0] and pos[0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+	if pos[0] >= CAMERA_POS[0] and pos[0] <= numbers.clip(CAMERA_POS[0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] <= numbers.clip(CAMERA_POS[1]+MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]):
 		return True
 	
 	return False
