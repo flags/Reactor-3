@@ -137,7 +137,8 @@ def handle_input():
 	
 	if INPUT['h']:
 		_a = time.time()
-		zones.dijkstra_map([(230, 100)],
+		zones.dijkstra_map(LIFE[SETTINGS['controlling']]['pos'],
+		                   [(230, 20)],
 		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
 		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'])
 		print time.time()-_a
