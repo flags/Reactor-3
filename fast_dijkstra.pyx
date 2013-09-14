@@ -131,26 +131,28 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 				
 				_lowest_score = _old_map[x][y]
 				
-				#for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
-				for _n_y in range(-1, 2):
+				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:
+				#for _n_y in range(-1, 2):
+					#_y = y+_n_y
 					_y = y+_n_y
 					
 					if _y<0 or _y>=_dijkstra_map_size_y:
 						continue
 					
-					for _n_x in range(-1, 2):
-						_x = x+_n_x
-						
-						if _x<0 or _x>=_dijkstra_map_size_x:
-							continue
-						
-						if _old_map[_x][_y]<0:
-							continue
-						
-						_score = _old_map[_x][_y]
-						
-						if _score<_lowest_score:
-							_lowest_score = _score
+					#for _n_x in range(-1, 2):
+					#_x = x+_n_x
+					_x = x+_n_x
+					
+					if _x<0 or _x>=_dijkstra_map_size_x:
+						continue
+					
+					if _old_map[_x][_y]<0:
+						continue
+					
+					_score = _old_map[_x][_y]
+					
+					if _score<_lowest_score:
+						_lowest_score = _score
 					
 				if _old_map[x][y]-_lowest_score>=2:
 					_dijkstra_map[x][y] = _lowest_score+1
@@ -178,11 +180,15 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 				
 		#for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
 		for _n_y in range(-1, 2):
+			_y = _pos[1]+_n_y
+			
+			if _y<0 or _y>=_dijkstra_map_size_y:
+				continue
+			
 			for _n_x in range(-1, 2):
 				_x = _pos[0]+_n_x
-				_y = _pos[1]+_n_y
 				
-				if _x<0 or _x>=_dijkstra_map_size_x or _y<0 or _y>=_dijkstra_map_size_y:
+				if _x<0 or _x>=_dijkstra_map_size_x:
 					continue
 				
 				if _dijkstra_map[_x][_y]<0:
@@ -209,7 +215,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 	for y in range(0, _map_info['size'][1]):
 		for x in range(0, _map_info['size'][0]):
 			if _dijkstra_map[x][y]>0:
-				print numbers.clip(_dijkstra_map[x][y], 0, 9),
+				print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
 			else:
 			#	#elif _map_info['map'][x][y] == -3:
 				print '#',

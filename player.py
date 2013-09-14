@@ -137,7 +137,7 @@ def handle_input():
 	
 	if INPUT['h']:
 		_a = time.time()
-		zones.dijkstra_map(LIFE[SETTINGS['controlling']]['pos'],
+		SELECTED_TILES[0] = zones.dijkstra_map(LIFE[SETTINGS['controlling']]['pos'],
 		                   [(230, 20)],
 		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
 		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'])
