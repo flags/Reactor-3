@@ -3,18 +3,19 @@ from globals import *
 import libtcodpy as tcod
 import graphics as gfx
 
+import numbers
 import smp
 
 import copy
 import time
 
-def create_map_array():
+def create_map_array(val=0, size=MAP_SIZE):
 	_map = []
-	for x in range(MAP_SIZE[0]):
+	for x in range(size[0]):
 		_y = []
 		
-		for y in range(MAP_SIZE[1]):
-			_y.append(0)
+		for y in range(size[1]):
+			_y.append(val)
 		
 		_map.append(_y)
 	
@@ -194,3 +195,120 @@ def connect_ramps():
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]] = [(x, y)]
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
+
+def dijkstra_map(goals, zones):
+	_open_map = create_map_array(val=-3)
+	_chunk_keys = {}
+	_top_left = MAP_SIZE[:2]
+	_bot_right = [0, 0]
+	
+	#0: Banned
+	#1: Open
+	
+	for zone in [get_slice(z) for z in zones]:
+		for y in range(0, MAP_SIZE[1]-1):
+			for x in range(0, MAP_SIZE[0]-1):
+				if _open_map[x][y]>-3:
+					continue
+				
+				if not zone['map'][x][y] == zone['id'] or zone['map'][x][y] in [-2, -1]:
+					continue
+				
+				_open_map[x][y] = 1
+				
+				_chunk_key = '%s,%s' % ((x/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (y/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+				_chunk = WORLD_INFO['chunk_map'][_chunk_key]
+				
+				_pass = False
+				for goal in goals:
+					_goal_chunk_key = '%s,%s' % ((goal[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (goal[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+					_goal_chunk = WORLD_INFO['chunk_map'][_goal_chunk_key]
+					
+					if numbers.distance(_chunk['pos'], _goal_chunk['pos'])/WORLD_INFO['chunk_size']<10:
+						_pass = True
+						break
+				
+				if not _pass:
+					continue
+				
+				#Return open map...
+				if x<_top_left[0]:
+					_top_left[0] = x
+					
+				if y<_top_left[1]:
+					_top_left[1] = y
+				
+				if x>_bot_right[0]:
+					_bot_right[0] = x
+				
+				if y>_bot_right[1]:
+					_bot_right[1] = y
+				
+				_chunk_keys[_chunk_key] = zone['id']
+	
+	_map_info = {'open_map': _open_map,
+	             'size': (_bot_right[0]-_top_left[0], _bot_right[1]-_top_left[1]),
+	             'top_left': _top_left,
+	             'bot_right': _bot_right}
+	_map_info['map'] = create_map_array(size=_map_info['size'])
+	
+	for y in range(0, _map_info['size'][1]):
+		for x in range(0, _map_info['size'][0]):
+			_x = x+_map_info['top_left'][0]
+			_y = y+_map_info['top_left'][1]
+	
+			if _map_info['open_map'][x][y]<=0:
+				_map_info['map'][x][y] = -99999
+				#_map_info['map'][x][y] = _map_info['open_map'][_x][
+			else:
+				_map_info['map'][x][y] = 99999
+	
+	for goal in goals:
+		_x = goal[0]-_map_info['top_left'][0]
+		_y = goal[1]-_map_info['top_left'][1]
+		
+		_map_info['map'][x][y] = 0
+	
+	_changed = True
+	while _changed:
+		_changed = False
+		_old_map = copy.deepcopy(_map_info['map'])
+		
+		for y in range(0, _map_info['size'][1]-1):
+			for x in range(0, _map_info['size'][0]-1):
+				if _old_map[x][y]<=0:
+					continue
+				
+				_lowest_score = _old_map[x][y]
+				
+				for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
+					_x = x+pos[0]
+					_y = y+pos[1]
+					
+					if _x<0 or _x>_map_info['size'][0] or _y<0 or _y>_map_info['size'][1]:
+						continue
+					
+					if _old_map[_x][_y]<0:
+						continue
+					
+					_score = _old_map[_x][_y]
+					
+					if _score<_lowest_score:
+						_lowest_score = _score
+					
+				if _old_map[x][y]-_lowest_score>=2:
+					_map_info['map'][x][y] = _lowest_score+1
+					_changed=True
+				
+	
+	for y in range(0, _map_info['size'][1]-1):
+		for x in range(0, _map_info['size'][0]-1):
+			if _map_info['map'][x][y]>0:
+				print numbers.clip(_map_info['map'][x][y], 0, 9),
+			else:
+			#	#elif _map_info['map'][x][y] == -3:
+				print '#',
+				#else:
+				#print _map_info['map'][x][y],#'#',
+		
+		print

@@ -1,5 +1,7 @@
 from globals import *
 
+import pathfinding
+import zones
 import alife
 import life
 
@@ -31,6 +33,12 @@ def timescale(scale):
 def warp(x, y):
 	LIFE[SETTINGS['controlling']]['pos'][0] = x
 	LIFE[SETTINGS['controlling']]['pos'][1] = y
+	
+def d():
+	_pos = LIFE[SETTINGS['controlling']]['pos']
+	_next = [_pos[0], _pos[1]-10]
+	#print pathfinding.dijkstra_path(LIFE[SETTINGS['controlling']], _pos, _next, life.can_walk_to(LIFE[SETTINGS['controlling']], _next))
+	zones.dijkstra_map([], [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])])
 
 def toss():
 	life.push(LIFE[SETTINGS['controlling']], 0, 2)

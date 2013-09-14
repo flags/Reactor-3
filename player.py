@@ -9,6 +9,7 @@ import worldgen
 import weapons
 import dialog
 import timers
+import zones
 import logic
 import menus
 import items
@@ -133,6 +134,9 @@ def handle_input():
 			SETTINGS['paused'] = False
 		else:
 			SETTINGS['paused'] = True
+	
+	if INPUT['h']:
+		zones.dijkstra_map([(230, 100)], [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])])
 	
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:
