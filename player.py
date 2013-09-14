@@ -140,7 +140,8 @@ def handle_input():
 		SELECTED_TILES[0] = zones.dijkstra_map(LIFE[SETTINGS['controlling']]['pos'],
 		                   [(230, 20)],
 		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
-		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'])
+		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'],
+		                   rolldown=True)
 		print time.time()-_a
 	
 	if INPUT['i']:

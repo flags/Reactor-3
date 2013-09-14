@@ -191,8 +191,12 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 				if _x<0 or _x>=_dijkstra_map_size_x:
 					continue
 				
-				if _dijkstra_map[_x][_y]<0:
-					continue
+				if rolldown:
+					if _dijkstra_map[_x][_y]<0:
+						continue
+				else:
+					if _dijkstra_map[_x][_y]>=0 or _map_info['open_map'][_x+_top_left[0]][_y+_top_left[1]]==-3:
+						continue
 				
 				_score = _dijkstra_map[_x][_y]
 				
