@@ -136,7 +136,11 @@ def handle_input():
 			SETTINGS['paused'] = True
 	
 	if INPUT['h']:
-		zones.dijkstra_map([(230, 100)], [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])])
+		_a = time.time()
+		zones.dijkstra_map([(230, 100)],
+		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
+		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'])
+		print time.time()-_a
 	
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:

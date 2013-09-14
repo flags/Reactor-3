@@ -3,6 +3,7 @@ from globals import *
 import libtcodpy as tcod
 import graphics as gfx
 
+import fast_dijkstra
 import numbers
 import smp
 
@@ -196,7 +197,10 @@ def connect_ramps():
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
 
-def dijkstra_map(goals, zones):
+#@profile
+def dijkstra_map(goals, zones, max_chunk_distance=5):
+	return fast_dijkstra.dijkstra_map(goals, zones, max_chunk_distance=max_chunk_distance)
+
 	_open_map = create_map_array(val=-3)
 	_chunk_keys = {}
 	_top_left = MAP_SIZE[:2]
@@ -224,7 +228,7 @@ def dijkstra_map(goals, zones):
 					_goal_chunk_key = '%s,%s' % ((goal[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (goal[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 					_goal_chunk = WORLD_INFO['chunk_map'][_goal_chunk_key]
 					
-					if numbers.distance(_chunk['pos'], _goal_chunk['pos'])/WORLD_INFO['chunk_size']<10:
+					if numbers.distance(_chunk['pos'], _goal_chunk['pos'])/WORLD_INFO['chunk_size']<=max_chunk_distance:
 						_pass = True
 						break
 				
@@ -257,7 +261,7 @@ def dijkstra_map(goals, zones):
 			_x = x+_map_info['top_left'][0]
 			_y = y+_map_info['top_left'][1]
 	
-			if _map_info['open_map'][x][y]<=0:
+			if _map_info['open_map'][_x][_y]<=0:
 				_map_info['map'][x][y] = -99999
 				#_map_info['map'][x][y] = _map_info['open_map'][_x][
 			else:
@@ -267,15 +271,15 @@ def dijkstra_map(goals, zones):
 		_x = goal[0]-_map_info['top_left'][0]
 		_y = goal[1]-_map_info['top_left'][1]
 		
-		_map_info['map'][x][y] = 0
+		_map_info['map'][_x][_y] = 0
 	
 	_changed = True
 	while _changed:
 		_changed = False
 		_old_map = copy.deepcopy(_map_info['map'])
 		
-		for y in range(0, _map_info['size'][1]-1):
-			for x in range(0, _map_info['size'][0]-1):
+		for y in range(0, _map_info['size'][1]):
+			for x in range(0, _map_info['size'][0]):
 				if _old_map[x][y]<=0:
 					continue
 				
@@ -285,7 +289,7 @@ def dijkstra_map(goals, zones):
 					_x = x+pos[0]
 					_y = y+pos[1]
 					
-					if _x<0 or _x>_map_info['size'][0] or _y<0 or _y>_map_info['size'][1]:
+					if _x<0 or _x>=_map_info['size'][0] or _y<0 or _y>=_map_info['size'][1]:
 						continue
 					
 					if _old_map[_x][_y]<0:
@@ -299,16 +303,15 @@ def dijkstra_map(goals, zones):
 				if _old_map[x][y]-_lowest_score>=2:
 					_map_info['map'][x][y] = _lowest_score+1
 					_changed=True
-				
 	
-	for y in range(0, _map_info['size'][1]-1):
-		for x in range(0, _map_info['size'][0]-1):
-			if _map_info['map'][x][y]>0:
-				print numbers.clip(_map_info['map'][x][y], 0, 9),
-			else:
-			#	#elif _map_info['map'][x][y] == -3:
-				print '#',
-				#else:
-				#print _map_info['map'][x][y],#'#',
-		
-		print
+	#for y in range(0, _map_info['size'][1]):
+	#	for x in range(0, _map_info['size'][0]):
+	#		if _map_info['map'][x][y]>0:
+	#			print numbers.clip(_map_info['map'][x][y], 0, 9),
+	#		else:
+	#		#	#elif _map_info['map'][x][y] == -3:
+	#			print '#',
+	#			#else:
+	#			#print _map_info['map'][x][y],#'#',
+	#	
+	#	print
