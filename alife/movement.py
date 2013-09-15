@@ -141,22 +141,30 @@ def escape(life, target, source_map):
 	#You'll see in `score_escape` that we're not trying to find full cover, but instead
 	#just finding a way to get behind *something*.
 	#
-	_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
-	
-	if _escape:
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _escape['pos']},200)
-		return False
-	else:
-		if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
-			speech.communicate(life, 'surrender', target=target)
-			brain.flag(life, 'surrendered')
-			#print 'surrender'
-	
 	if lfe.path_dest(life):
 		return True
 	
-	return True
+	_knows = brain.knows_alife_by_id(life, target['life']['id'])
+	#_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
+	
+	#if _escape:
+	if not lfe.find_action(life, matches=[{'action': 'dijkstra_move'}]):
+		if not lfe.get_memory(life, matches={'text': 'fled from target at',
+		                                     'target': target['life']['id'],
+		                                     'goals': target['last_seen_at'][:]}):
+			lfe.clear_actions(life)
+			lfe.add_action(life, {'action': 'dijkstra_move',
+			                      'rolldown': False,
+			                      'goals': [_knows['last_seen_at']]},
+			               200)
+		print 'walkingggggggggggggggg'
+	#else:
+	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
+	#		speech.communicate(life, 'surrender', target=target)
+	#		brain.flag(life, 'surrendered')
+	#		#print 'surrender'
+	
+	#return True
 
 def hide(life, target_id):
 	_target = brain.knows_alife_by_id(life, target_id)

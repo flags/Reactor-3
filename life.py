@@ -969,7 +969,7 @@ def walk_to(life, position):
           'to': position},
           200)
 
-def walk(life, to):
+def walk(life, to=None, path=None):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
 	if life['speed']>0:
 		if life['stance'] == 'standing':
@@ -989,7 +989,9 @@ def walk(life, to):
 	
 	_dest = path_dest(life)
 	
-	if not _dest or not (_dest[0],_dest[1]) == tuple(to):
+	if path:
+		life['path'] = path
+	elif to and (not _dest or not (_dest[0],_dest[1]) == tuple(to)):
 		_stime = time.time()
 		
 		_zone = can_walk_to(life, to)
@@ -1175,8 +1177,22 @@ def perform_action(life):
 	_action = _action['action']
 	
 	if _action['action'] == 'move':
-		if tuple(_action['to']) == tuple(life['pos']) or walk(life,_action['to']):
+		if tuple(_action['to']) == tuple(life['pos']) or walk(life, to=_action['to']):
 			delete_action(life,action)
+			
+	elif _action['action'] == 'dijkstra_move':
+		_path = []
+		if not path_dest(life):
+			_path = zones.dijkstra_map(life['pos'],
+			                           _action['goals'],
+			                           [zones.get_zone_at_coords(life['pos'])],
+			                           rolldown=_action['rolldown'],
+			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'])
+		
+		if walk(life, path=_path):
+			delete_action(life,action)
+		else:
+			print 'still walking'
 	
 	elif _action['action'] == 'stand':
 		life['stance'] = 'standing'
