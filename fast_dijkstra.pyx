@@ -220,16 +220,19 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 		
 		_pos = list(_next_pos)
 	
-	#for y in range(0, _map_info['size'][1]):
-	#	for x in range(0, _map_info['size'][0]):
-	#		if _dijkstra_map[x][y]>0:
-	#			print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
-	#		else:
-	#		#	#elif _map_info['map'][x][y] == -3:
-	#			print '#',
-	#			#else:
-	#			#print _map_info['map'][x][y],#'#',
-	#	
-	#	print
+	for y in range(0, _map_info['size'][1]):
+		for x in range(0, _map_info['size'][0]):
+			if rolldown:
+				if _dijkstra_map[x][y]>0:
+					print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
+				else:
+					print '#',
+			else:
+				if _dijkstra_map[x][y]<0:
+					print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
+				else:
+					print '#',
+		
+		print
 
 	return _path

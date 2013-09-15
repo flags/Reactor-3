@@ -1103,6 +1103,7 @@ def clear_actions(life,matches=[]):
 		return True
 	else:
 		clear_actions_matching(life,matches=[{'action': 'move'}])
+		clear_actions_matching(life,matches=[{'action': 'dijkstra_move'}])
 		return True
 
 def find_action(life,matches=[{}]):
@@ -1196,12 +1197,10 @@ def perform_action(life):
 			                           rolldown=_action['rolldown'],
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 			                           avoid_positions=_avoid_positions)
-			print 'generating map'
+			SELECTED_TILES[0] = _path
 		
 		if walk(life, path=_path):
 			delete_action(life,action)
-		else:
-			print 'still walking'
 	
 	elif _action['action'] == 'stand':
 		life['stance'] = 'standing'

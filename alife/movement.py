@@ -140,31 +140,20 @@ def escape(life, target_id):
 	#With this function we're trying to get away from the target.
 	#You'll see in `score_escape` that we're not trying to find full cover, but instead
 	#just finding a way to get behind *something*.
-	#	
+	
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
+	print 'I AM ESCAPING'
 	
-	print _goals
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
-		print 'currently pathing'
+		print 'waiting...'
 		return True
 	
-	#_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
-	
-	#if _escape:
-	#if not lfe.find_action(life, matches=[{'action': 'dijkstra_move'}]):
-	lfe.clear_actions(life)
+	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': False,
-                          'goals': _goals},
+                          'goals': _goals[:]},
                    999)
-	#else:
-	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
-	#		speech.communicate(life, 'surrender', target=target)
-	#		brain.flag(life, 'surrendered')
-	#		#print 'surrender'
-	
-	#return True
 
 def hide(life, target_id):
 	#if lfe.path_dest(life):
@@ -173,10 +162,9 @@ def hide(life, target_id):
 	#	return True
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
-	print _goals
 	_avoid_positions = []
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals[:]}]):
 		print 'currently pathing'
 		return True
 	
@@ -186,10 +174,10 @@ def hide(life, target_id):
 		
 		_avoid_positions.extend(_chunk['ground'])
 	
-	lfe.clear_actions(life)
+	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': False,
-                          'goals': _goals,
+                          'goals': _goals[:],
 	                      'avoid_positions': _avoid_positions},
                    999)
 	#else:
