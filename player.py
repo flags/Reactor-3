@@ -141,7 +141,8 @@ def handle_input():
 		                   [(230, 20)],
 		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
 		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'],
-		                   rolldown=True)
+		                   rolldown=False,
+		                   visible_chunks=brain.get_flag(LIFE[SETTINGS['controlling']], 'visible_chunks'))
 		print time.time()-_a
 	
 	if INPUT['i']:

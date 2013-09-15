@@ -23,7 +23,7 @@ def create_map_array(val=0, size=MAP_SIZE):
 	return _map
 
 #@profile
-def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
+def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, visible_chunks=[]):
 	cdef int x, y, _x, _y, _n_x, _n_y
 	cdef double _score
 	cdef double _lowest_score
@@ -57,6 +57,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 				_open_map[x][y] = 1
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
+				
+				if visible_chunks and not _chunk_key in visible_chunks:
+					continue
+				
 				_chunk = WORLD_INFO['chunk_map'][_chunk_key]
 				
 				_pass = False
@@ -170,7 +174,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True):
 	_pos = [start_pos[0]-_top_left[0], start_pos[1]-_top_left[1]]
 	while 1:
 		if rolldown and _dijkstra_map[_pos[0]][_pos[1]]<=0:
-			print 'WOW break'
 			break
 		elif not rolldown and _dijkstra_map[_pos[0]][_pos[1]]>=0:
 			break
