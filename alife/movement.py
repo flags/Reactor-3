@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS, MAP_SIZE
+from globals import WORLD_INFO, SETTINGS, MAP_SIZE, LIFE
 
 import life as lfe
 
@@ -136,28 +136,28 @@ def explore(life,source_map):
 	#This is a bit different than the logic used for the other pathfinding functions
 	pass
 
-def escape(life, target, source_map):
+def escape(life, target_id):
 	#With this function we're trying to get away from the target.
 	#You'll see in `score_escape` that we're not trying to find full cover, but instead
 	#just finding a way to get behind *something*.
-	#
-	if lfe.path_dest(life):
+	#	
+	_target = brain.knows_alife_by_id(life, target_id)
+	_goals = [_target['last_seen_at'][:]]
+	
+	print _goals
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
+		print 'currently pathing'
 		return True
 	
-	_knows = brain.knows_alife_by_id(life, target['life']['id'])
 	#_escape = sight.generate_los(life, target, target['last_seen_at'], source_map, score_escape)
 	
 	#if _escape:
-	if not lfe.find_action(life, matches=[{'action': 'dijkstra_move'}]):
-		if not lfe.get_memory(life, matches={'text': 'fled from target at',
-		                                     'target': target['life']['id'],
-		                                     'goals': target['last_seen_at'][:]}):
-			lfe.clear_actions(life)
-			lfe.add_action(life, {'action': 'dijkstra_move',
-			                      'rolldown': False,
-			                      'goals': [_knows['last_seen_at']]},
-			               200)
-		print 'walkingggggggggggggggg'
+	#if not lfe.find_action(life, matches=[{'action': 'dijkstra_move'}]):
+	lfe.clear_actions(life)
+	lfe.add_action(life, {'action': 'dijkstra_move',
+                          'rolldown': False,
+                          'goals': _goals},
+                   999)
 	#else:
 	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
 	#		speech.communicate(life, 'surrender', target=target)
@@ -167,15 +167,38 @@ def escape(life, target, source_map):
 	#return True
 
 def hide(life, target_id):
+	#if lfe.path_dest(life):
+	#	return True
+	#if life['path_state'] == life['state'] and lfe.path_dest(life):
+	#	return True
 	_target = brain.knows_alife_by_id(life, target_id)
-	_cover = sight.generate_los(life, _target, _target['last_seen_at'], WORLD_INFO['map'], score_hide, ignore_starting=True)
+	_goals = [_target['last_seen_at'][:]]
+	print _goals
+	_avoid_positions = []
 	
-	if _cover:
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _cover['pos']},200)		
-		return False
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
+		print 'currently pathing'
+		return True
 	
-	return True
+	#TODO: replace with chunks_visible_from_position
+	for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
+		_chunk = WORLD_INFO['chunk_map'][chunk_key]
+		
+		_avoid_positions.extend(_chunk['ground'])
+	
+	lfe.clear_actions(life)
+	lfe.add_action(life, {'action': 'dijkstra_move',
+                          'rolldown': False,
+                          'goals': _goals,
+	                      'avoid_positions': _avoid_positions},
+                   999)
+	#else:
+	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
+	#		speech.communicate(life, 'surrender', target=target)
+	#		brain.flag(life, 'surrendered')
+	#		#print 'surrender'
+	
+	#return True
 
 def handle_hide(life,target,source_map):
 	_weapon = combat.get_best_weapon(life)	

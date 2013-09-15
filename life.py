@@ -278,6 +278,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	_life['animation'] = {}
 	_life['path'] = []
+	_life['path_state'] = None
 	_life['actions'] = []
 	_life['conversations'] = []
 	_life['contexts'] = [] #TODO: Make this exclusive to the player
@@ -991,12 +992,14 @@ def walk(life, to=None, path=None):
 	
 	if path:
 		life['path'] = path
+		life['path_state'] = life['state']
 	elif to and (not _dest or not (_dest[0],_dest[1]) == tuple(to)):
 		_stime = time.time()
 		
 		_zone = can_walk_to(life, to)
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
+			life['path_state'] = life['state']
 		#else:
 		#	logging.warning('%s: Can\'t walk there.' % ' '.join(life['name']))
 		#print 'total',time.time()-_stime
@@ -1183,11 +1186,17 @@ def perform_action(life):
 	elif _action['action'] == 'dijkstra_move':
 		_path = []
 		if not path_dest(life):
+			if 'avoid_positions' in _action:
+				_avoid_positions = _action['avoid_positions']
+			else:
+				_avoid_positions = []
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
 			                           [zones.get_zone_at_coords(life['pos'])],
 			                           rolldown=_action['rolldown'],
-			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'])
+			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
+			                           avoid_positions=_avoid_positions)
+			print 'generating map'
 		
 		if walk(life, path=_path):
 			delete_action(life,action)
