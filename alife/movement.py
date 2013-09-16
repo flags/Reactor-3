@@ -110,6 +110,7 @@ def escape(life, target_id):
 	#With this function we're trying to get away from the target.
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
+	_visible_chunks = brain.get_flag(LIFE[target_id], 'visible_chunks')
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
 		print 'waiting...'
@@ -118,7 +119,8 @@ def escape(life, target_id):
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': False,
-                          'goals': _goals[:]},
+                          'goals': _goals[:],
+	                     'visible_chunks': _visible_chunks},
                    999)
 
 def hide(life, target_id):

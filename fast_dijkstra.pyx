@@ -34,6 +34,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 	cdef int _chunk_size = WORLD_INFO['chunk_size']
 	cdef int *_top_left = <int *>malloc(2 * 2 * sizeof(int))
 	cdef int *_bot_right = <int *>malloc(2 * 2 * sizeof(int))
+	cdef int *_pos = <int *>malloc(2 * 2 * sizeof(int))
+	cdef int *_next_pos = <int *>malloc(2 * 2 * sizeof(int))
 	
 	_open_map = create_map_array(val=-3)
 	_chunk_keys = {}
@@ -174,7 +176,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 				_dijkstra_map[x][y] *= -1.2
 	
 	_path = []
-	_pos = [start_pos[0]-_top_left[0], start_pos[1]-_top_left[1]]
+	_pos[0] = start_pos[0]-_top_left[0]
+	_pos[1] = start_pos[1]-_top_left[1]
 	while 1:
 		if rolldown and _dijkstra_map[_pos[0]][_pos[1]]<=0:
 			break
@@ -182,7 +185,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 			break
 		
 		_lowest_score = _old_map[x][y]
-		_next_pos = None
+		_next_pos[0] = -1
+		_next_pos[1] = -1
 				
 		#for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
 		for _n_y in range(-1, 2):
@@ -208,17 +212,19 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 				
 				if _score<_lowest_score:
 					_lowest_score = _score
-					_next_pos = (_x, _y)
+					_next_pos[0] = _x
+					_next_pos[1] = _y
 		
-		if _next_pos:
-			_path.append((_next_pos[0]+_top_left[0], _next_pos[1]+_top_left[1], 2))
+		if _lowest_score == _old_map[x][y]:
+			break
 		else:
+			_path.append((_next_pos[0]+_top_left[0], _next_pos[1]+_top_left[1], 2))
+		
+		if (_next_pos[0], _next_pos[1]) == (_pos[0], _pos[1]):
 			break
 		
-		if _next_pos == tuple(_pos):
-			break
-		
-		_pos = list(_next_pos)
+		_pos[0] = _next_pos[0]
+		_pos[1] = _next_pos[1]
 	
 	#for y in range(0, _map_info['size'][1]):
 	#	for x in range(0, _map_info['size'][0]):
