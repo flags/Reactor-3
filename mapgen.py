@@ -23,7 +23,7 @@ import os
 
 TOWN_DISTANCE = 25
 TOWN_SIZE = 160
-FOREST_DISTANCE = 25
+FOREST_DISTANCE = 10
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
@@ -237,7 +237,7 @@ def generate_outlines(map_gen):
 	
 	logging.debug('Placing forests...')
 	while len(map_gen['refs']['forests'])<map_gen['forests']:
-		place_forest(map_gen)
+		map_gen['refs']['forests'].append(place_forest(map_gen))
 
 def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=True):
 	_start_edge = random.randint(0, 3)
@@ -1275,4 +1275,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(75, 75, 10), towns=0, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(200, 200, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

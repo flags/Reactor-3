@@ -25,8 +25,8 @@ def create_map_array(val=0, size=MAP_SIZE):
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, visible_chunks=[], avoid_positions=[]):
 	cdef int x, y, _x, _y, _n_x, _n_y
-	cdef double _score
-	cdef double _lowest_score
+	cdef float _score
+	cdef float _lowest_score
 	cdef int _world_map_size_x = MAP_SIZE[0]
 	cdef int _world_map_size_y = MAP_SIZE[1]
 	cdef int _dijkstra_map_size_x
@@ -100,8 +100,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 	#create_map_array(size=_map_info['size'])
 	_dijkstra_map_size_x = _map_info['size'][0]
 	_dijkstra_map_size_y = _map_info['size'][1]
-	cdef double _dijkstra_map[500][500]
-	cdef double _old_map[500][500]
+	cdef float _dijkstra_map[500][500]
+	cdef float _old_map[500][500]
 	
 	for y in range(0, _dijkstra_map_size_y):
 		for x in range(0, _dijkstra_map_size_x):
@@ -220,19 +220,19 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 		
 		_pos = list(_next_pos)
 	
-	for y in range(0, _map_info['size'][1]):
-		for x in range(0, _map_info['size'][0]):
-			if rolldown:
-				if _dijkstra_map[x][y]>0:
-					print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
-				else:
-					print '#',
-			else:
-				if _dijkstra_map[x][y]<0:
-					print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
-				else:
-					print '#',
-		
-		print
+	#for y in range(0, _map_info['size'][1]):
+	#	for x in range(0, _map_info['size'][0]):
+	#		if rolldown:
+	#			if _dijkstra_map[x][y]>0:
+	#				print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
+	#			else:
+	#				print '#',
+	#		else:
+	#			if _dijkstra_map[x][y]<0:
+	#				print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
+	#			else:
+	#				print '#',
+	#	
+	#	print
 
 	return _path
