@@ -23,7 +23,7 @@ def create_map_array(val=0, size=MAP_SIZE):
 	return _map
 
 #@profile
-def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, visible_chunks=[], avoid_positions=[]):
+def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[]):
 	cdef int x, y, _x, _y, _n_x, _n_y
 	cdef float _score
 	cdef float _lowest_score
@@ -63,7 +63,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, v
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
 				
-				if visible_chunks and not _chunk_key in visible_chunks:
+				if avoid_chunks and _chunk_key in avoid_chunks:
 					continue
 				
 				_chunk = WORLD_INFO['chunk_map'][_chunk_key]

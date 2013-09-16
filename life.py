@@ -1191,12 +1191,19 @@ def perform_action(life):
 				_avoid_positions = _action['avoid_positions']
 			else:
 				_avoid_positions = []
+			
+			if 'avoid_chunks' in _action:
+				_avoid_chunks = _action['avoid_chunks']
+			else:
+				_avoid_chunks = []
+			
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
 			                           [zones.get_zone_at_coords(life['pos'])],
 			                           rolldown=_action['rolldown'],
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
-			                           avoid_positions=_avoid_positions)
+			                           avoid_positions=_avoid_positions,
+			                           avoid_chunks=_avoid_chunks)
 			SELECTED_TILES[0] = _path
 		
 		if walk(life, path=_path):
