@@ -158,7 +158,7 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-def get_targets(life, must_be_known=False, escaped_only=False):
+def get_targets(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
 	_targets = []
 	_combat_targets = []
 	
@@ -166,8 +166,13 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	#	_targets.extend(raids.get_raiders(life['camp']))
 
 	for alife in life['know'].values():
-		if alife['life']['id'] in _targets:
+		if not escaped_only and ignore_escaped and alife['escaped']:
 			continue
+		elif escaped_only and not alife['escaped'] == 1:
+			continue
+		
+		#if alife['life']['id'] in _targets:
+		#	continue
 		
 		#TODO: Secrecy
 		if is_target_dangerous(life, alife['life']['id']):
@@ -175,7 +180,7 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	
 	_passed_combat_targets = []
 	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if not escaped_only and  target['escaped']:
+		if not escaped_only and ignore_escaped and target['escaped']:
 			continue
 		elif escaped_only and target['escaped'] == 1:
 			_targets.append(target['life']['id'])

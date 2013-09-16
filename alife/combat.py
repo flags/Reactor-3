@@ -193,12 +193,13 @@ def ranged_combat(life, target):
 	_pos_for_combat = movement.position_for_combat(life, target, target['last_seen_at'], WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:
+		print 'escaped...'
 		return False
 	elif _pos_for_combat:
 		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
-		print 'cant see target', target['last_seen_at'],target['life']['pos']
+		print 'cant see target', target['last_seen_at'],target['life']['pos'], target['escaped']
 		if not movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=True):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
@@ -207,8 +208,9 @@ def ranged_combat(life, target):
 					'target_missing',
 					target=target['life']['id'],
 					matches=[{'id': send_to}])
-			
-			target['escaped'] = 1
+		else:
+			if sight.can_see_position(life, target['last_seen_at']):
+				target['escaped'] = 1
 		
 		return False
 	

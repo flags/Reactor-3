@@ -48,9 +48,6 @@ def look(life):
 			if not can_see_target(life, ai['id']):
 				continue
 			
-			if ai['id'] in life['know']:
-				life['know'][ai['id']]['last_seen_time'] = 0
-			
 			life['seen'].append(ai['id'])
 			
 			if ai['id'] in life['know']:
