@@ -24,36 +24,6 @@ def score_shootcover(life,target,pos):
 	
 	return numbers.distance(life['pos'],pos)
 
-def score_escape(life,target,pos):
-	_target_distance_to_pos = numbers.distance(target['last_seen_at'], pos)
-	_score = numbers.distance(life['pos'],pos)
-	_score += 30-_target_distance_to_pos
-	
-	if not sight.can_see_position(target['life'], pos, distance=False):
-		_score -= _target_distance_to_pos
-	
-	if not sight.can_see_position(target['life'], pos, distance=False):
-		_score += _target_distance_to_pos/2
-	
-	return _score
-
-def score_hide(life,target,pos):
-	_chunk_id = '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
-	_chunk = maps.get_chunk(_chunk_id)
-	_life_dist = numbers.distance(life['pos'], pos)
-	_target_dist = numbers.distance(target['last_seen_at'], pos)
-	
-	if chunks.position_is_in_chunk(target['last_seen_at'], _chunk_id):
-		return numbers.clip(300-_life_dist, 200, 300)
-	
-	if _chunk['reference'] and references.is_in_reference(target['last_seen_at'], _chunk['reference']):
-		return numbers.clip(200-_life_dist, 100, 200)
-	
-	if not sight._can_see_position(life['pos'], pos):
-		return 99-_target_dist
-	
-	return 200
-
 def position_for_combat(life,target,position,source_map):
 	_cover = {'pos': None,'score': 9000}
 	
@@ -138,12 +108,8 @@ def explore(life,source_map):
 
 def escape(life, target_id):
 	#With this function we're trying to get away from the target.
-	#You'll see in `score_escape` that we're not trying to find full cover, but instead
-	#just finding a way to get behind *something*.
-	
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
-	print 'I AM ESCAPING'
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
 		print 'waiting...'

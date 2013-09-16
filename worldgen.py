@@ -74,12 +74,16 @@ def simulate_life(amount):
 		
 		amount -= 1
 
-def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, save=True, thread=True):
+def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, combat_test=False, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	WORLD_INFO['life_density'] = life_density
 	WORLD_INFO['wildlife_density'] = wildlife_density
 	WORLD_INFO['seed'] = time.time()
+	WORLD_INFO['combat_test'] = combat_test
+	
+	if combat_test:
+		WORLD_INFO['time_scale'] = 0
 	
 	random.seed(WORLD_INFO['seed'])
 	
@@ -100,8 +104,9 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
-	
+
 	randomize_item_spawns()
+	
 	alife.camps.create_all_camps()
 	
 	if thread:
@@ -242,6 +247,12 @@ def generate_life(amount=1):
 	_spawn = get_spawn_point()
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	
+	if WORLD_INFO['combat_test']:
+		if len(LIFE)%2:
+			WORLD_INFO['combat_team_1'].append(alife['id'])
+		else:
+			WORLD_INFO['combat_team_2'].append(alife['id'])
 	
 	if len(LIFE) == 1:
 		alife['stats']['is_leader'] = True

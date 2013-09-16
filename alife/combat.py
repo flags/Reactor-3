@@ -198,6 +198,7 @@ def ranged_combat(life, target):
 		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
+		print 'cant see target', target['last_seen_at'],target['life']['pos']
 		if not movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=True):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			

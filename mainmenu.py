@@ -185,6 +185,7 @@ def switch_to_world_gen():
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))
 	_menu_items.append(menus.create_item('single', 'Generate', None))
+	_menu_items.append(menus.create_item('single', 'Combat Test', None))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='World Generation',
@@ -201,7 +202,7 @@ def start_game():
 	menus.delete_active_menu()
 	menus.delete_active_menu()
 
-def generate_world():
+def generate_world(combat_test=False):
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]
 	_settings = {}
 	
@@ -227,8 +228,9 @@ def generate_world():
 		life_density=_settings['Life Density'],
 		wildlife_density=_settings['Wildlife Density'],
 		simulate_ticks=_ticks,
-	     save=True,
-		thread=True)
+	    save=True,
+		thread=True,
+	    combat_test=combat_test)
 
 def main_menu_select(entry):
 	key = entry['key']
@@ -277,5 +279,8 @@ def worldgen_menu_select(entry):
 	if key == 'Generate':
 		graphics.title('Setting up world...')
 		generate_world()
+	elif key == 'Combat Test':
+		graphics.title('Creating combat test...')
+		generate_world(combat_test=True)
 	elif key == 'Back':
 		switch_to_main_menu()
