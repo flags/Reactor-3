@@ -43,7 +43,7 @@ cdef create_map_array(val, size):
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[]):
 	_init_time = time.time()
-	cdef int x, y, _x, _y, _n_x, _n_y
+	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
 	cdef float _score
 	cdef float _lowest_score
 	cdef int _world_map_size_x = MAP_SIZE[0]
@@ -55,26 +55,39 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	cdef int *_bot_right = <int *>malloc(2 * 2 * sizeof(int))
 	cdef int *_pos = <int *>malloc(2 * 2 * sizeof(int))
 	cdef int *_next_pos = <int *>malloc(2 * 2 * sizeof(int))
+	cdef int *_goals_x = <int *>malloc(len(goals) * len(goals) * sizeof(int))
+	cdef int *_goals_y = <int *>malloc(len(goals) * len(goals) * sizeof(int))
 	
-	_open_map = create_map_array(-3, MAP_SIZE)
-	#cdef float _open_map[300][300]
-	
-	#for y in range(0, _world_map_size_y):
-	#	for x in range(0, _world_map_size_x):
-	#		_open_map[x][y] = -3.0
-	
+	_number_of_goals = len(goals)
 	_chunk_keys = {}
 	_top_left[0] = _world_map_size_x
 	_top_left[1] = _world_map_size_y
 	_bot_right[0] = 0
 	_bot_right[1] = 0
 	
-	#0: Banned
-	#1: Open
+	TEMP_SIZE = 20
+	
+	for _i in range(_number_of_goals):
+		_goals_x[_i] = goals[_i][0]
+		_goals_y[_i] = goals[_i][1]
+		
+		if goals[_i][0] < _top_left[0]:
+			_top_left[0] = numbers.clip(goals[_i][0]-TEMP_SIZE, 0, MAP_SIZE[0])
+		
+		if goals[_i][0] > _bot_right[0]:
+			_bot_right[0] = numbers.clip(goals[_i][0]+TEMP_SIZE, 0, MAP_SIZE[0])
+		
+		if goals[_i][1] < _top_left[1]:
+			_top_left[1] = numbers.clip(goals[_i][1]-TEMP_SIZE, 0, MAP_SIZE[1])
+		
+		if goals[_i][1] > _bot_right[1]:
+			_bot_right[1] = numbers.clip(goals[_i][1]+TEMP_SIZE, 0, MAP_SIZE[1])
+	
+	_open_map = create_map_array(-3, MAP_SIZE)
 	
 	for zone in [zon.get_slice(z) for z in zones]:
-		for y in range(0, _world_map_size_y-1):
-			for x in range(0, _world_map_size_x-1):
+		for y in range(_top_left[1], _bot_right[1]):
+			for x in range(_top_left[0], _bot_right[0]):
 				if (x, y) in avoid_positions:
 					continue
 				
@@ -94,8 +107,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_chunk = WORLD_INFO['chunk_map'][_chunk_key]
 				
 				_pass = False
-				for goal in goals:
-					_goal_chunk_key = '%s,%s' % ((goal[0]/_chunk_size)*_chunk_size, (goal[1]/_chunk_size)*_chunk_size)
+				for i in range(0, _number_of_goals):
+					_goal_chunk_key = '%s,%s' % ((_goals_x[i]/_chunk_size)*_chunk_size, (_goals_y[i]/_chunk_size)*_chunk_size)
 					_goal_chunk = WORLD_INFO['chunk_map'][_goal_chunk_key]
 					
 					if distance(_chunk['pos'], _goal_chunk['pos'])/_chunk_size<=max_chunk_distance:
@@ -105,25 +118,20 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if not _pass:
 					continue
 				
-				#Return open map...
-				if x<_top_left[0]:
-					_top_left[0] = x
+				#if x<_top_left[0]:
+				#	_top_left[0] = x
 					
-				if y<_top_left[1]:
-					_top_left[1] = y
+				#if y<_top_left[1]:
+				#	_top_left[1] = y
 				
-				if x>_bot_right[0]:
-					_bot_right[0] = x
+				#if x>_bot_right[0]:
+				#	_bot_right[0] = x
 				
-				if y>_bot_right[1]:
-					_bot_right[1] = y
+				#if y>_bot_right[1]:
+				#	_bot_right[1] = y
 				
 				_chunk_keys[_chunk_key] = zone['id']
 	
-	print 'init time', time.time()-_init_time
-	#_map_info['map'] = 
-	#cdef int *_dijkstra_map = <int *>malloc(_map_info['size'][0] * _map_info['size'][1] * sizeof(int))
-	#create_map_array(size=_map_info['size'])
 	_dijkstra_map_size_x = _bot_right[0]-_top_left[0]
 	_dijkstra_map_size_y = _bot_right[1]-_top_left[1]
 	cdef float _dijkstra_map[500][500]
@@ -149,6 +157,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	_changed = True
 	
+	_change_time = time.time()
 	while _changed:
 		_changed = False
 		
@@ -223,7 +232,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				if rolldown:
-					if _dijkstra_map[_x][_y]<=0:
+					if _dijkstra_map[_x][_y]<0:
 						continue
 				else:
 					if _dijkstra_map[_x][_y]>=0 or _open_map[_x+_top_left[0]][_y+_top_left[1]]==-3:
@@ -247,8 +256,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_pos[0] = _next_pos[0]
 		_pos[1] = _next_pos[1]
 	
-	#for y in range(0, _map_info['size'][1]):
-	#	for x in range(0, _map_info['size'][0]):
+	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+	#	for x in range(0, _bot_right[0]-_top_left[0]):
 	#		if rolldown:
 	#			if _dijkstra_map[x][y]>0:
 	#				print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
@@ -259,7 +268,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	#				print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
 	#			else:
 	#				print '#',
-	#	
+		
 	#	print
 
 	return _path
