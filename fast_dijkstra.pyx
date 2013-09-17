@@ -5,10 +5,28 @@ import zones as zon
 
 import numbers
 
-import numpy
+import time
 import copy
 
-def create_map_array(val=0, size=MAP_SIZE):
+cdef distance(pos1, pos2):
+	cdef int x_dist, y_dist
+	cdef int *_pos1 = <int *>malloc(2 * 2 * sizeof(int))
+	cdef int *_pos2 = <int *>malloc(2 * 2 * sizeof(int))
+	
+	_pos1[0] = pos1[0]
+	_pos1[1] = pos1[1]
+	_pos2[0] = pos2[0]
+	_pos2[1] = pos2[1]
+		
+	x_dist = abs(_pos1[0]-_pos2[0])
+	y_dist = abs(_pos1[1]-_pos2[1])
+	
+	if x_dist > y_dist:
+		return y_dist + (x_dist-y_dist)
+	else:
+		return x_dist + (y_dist-x_dist)
+
+cdef create_map_array(val, size):
 	cdef int x, y
 	
 	_map = []
@@ -24,6 +42,7 @@ def create_map_array(val=0, size=MAP_SIZE):
 
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[]):
+	_init_time = time.time()
 	cdef int x, y, _x, _y, _n_x, _n_y
 	cdef float _score
 	cdef float _lowest_score
@@ -37,7 +56,13 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	cdef int *_pos = <int *>malloc(2 * 2 * sizeof(int))
 	cdef int *_next_pos = <int *>malloc(2 * 2 * sizeof(int))
 	
-	_open_map = create_map_array(val=-3)
+	_open_map = create_map_array(-3, MAP_SIZE)
+	#cdef float _open_map[300][300]
+	
+	#for y in range(0, _world_map_size_y):
+	#	for x in range(0, _world_map_size_x):
+	#		_open_map[x][y] = -3.0
+	
 	_chunk_keys = {}
 	_top_left[0] = _world_map_size_x
 	_top_left[1] = _world_map_size_y
@@ -73,7 +98,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					_goal_chunk_key = '%s,%s' % ((goal[0]/_chunk_size)*_chunk_size, (goal[1]/_chunk_size)*_chunk_size)
 					_goal_chunk = WORLD_INFO['chunk_map'][_goal_chunk_key]
 					
-					if numbers.distance(_chunk['pos'], _goal_chunk['pos'])/_chunk_size<=max_chunk_distance:
+					if distance(_chunk['pos'], _goal_chunk['pos'])/_chunk_size<=max_chunk_distance:
 						_pass = True
 						break
 				
@@ -95,13 +120,12 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				
 				_chunk_keys[_chunk_key] = zone['id']
 	
-	_map_info = {'open_map': _open_map,
-	             'size': (_bot_right[0]-_top_left[0], _bot_right[1]-_top_left[1])}
+	print 'init time', time.time()-_init_time
 	#_map_info['map'] = 
 	#cdef int *_dijkstra_map = <int *>malloc(_map_info['size'][0] * _map_info['size'][1] * sizeof(int))
 	#create_map_array(size=_map_info['size'])
-	_dijkstra_map_size_x = _map_info['size'][0]
-	_dijkstra_map_size_y = _map_info['size'][1]
+	_dijkstra_map_size_x = _bot_right[0]-_top_left[0]
+	_dijkstra_map_size_y = _bot_right[1]-_top_left[1]
 	cdef float _dijkstra_map[500][500]
 	cdef float _old_map[500][500]
 	
@@ -110,7 +134,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 			_x = x+_top_left[0]
 			_y = y+_top_left[1]
 	
-			if _map_info['open_map'][_x][_y]<=0:
+			if _open_map[_x][_y]<=0:
 				_dijkstra_map[x][y] = -99999
 				_old_map[x][y] = -99999
 			else:
@@ -127,12 +151,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	while _changed:
 		_changed = False
-		#_old_map = copy.deepcopy(_map_info['map'])
-		#memcpy(_old_map, _dijkstra_map, sizeof(_dijkstra_map)) ;
 		
 		for y in range(0, _dijkstra_map_size_y):
 			for x in range(0, _dijkstra_map_size_x):
-			
 				if _old_map[x][y]<=0:
 					continue
 				
@@ -205,7 +226,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					if _dijkstra_map[_x][_y]<=0:
 						continue
 				else:
-					if _dijkstra_map[_x][_y]>=0 or _map_info['open_map'][_x+_top_left[0]][_y+_top_left[1]]==-3:
+					if _dijkstra_map[_x][_y]>=0 or _open_map[_x+_top_left[0]][_y+_top_left[1]]==-3:
 						continue
 				
 				_score = _dijkstra_map[_x][_y]
