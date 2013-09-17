@@ -908,12 +908,8 @@ def can_walk_to(life, pos):
 	if not _z2:
 		#TODO: Don't use this, dingus! Wow!
 		for z in [life['pos'][2]-1, life['pos'][2]+1]:
-			for mod in [(-1, -1), (0, -1), (1, 1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
-				_z2 = zones.get_zone_at_coords((pos[0]+mod[0], pos[1]+mod[1], z))
-				
-				if _z2:
-					break
-		
+			_z2 = zones.get_zone_at_coords((pos[0], pos[1], z))
+			
 			if _z2:
 				break
 	
@@ -2409,7 +2405,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				item['name'],
 				'Holding',
 				icon=item['icon'],
-				id=item['uid'])
+				id=item)
 		
 			_inventory_items += 1
 			_inventory.append(_menu_item)
