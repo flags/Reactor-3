@@ -261,9 +261,9 @@ def generate_needs(life):
 			flag(life, 'no_weapon')
 
 def understand(life, source_map):
-	#if life['think_rate']:
-	#	life['think_rate'] -= 1
-	#	return False
+	if life['think_rate']:
+		life['think_rate'] -= 1
+		return False
 	
 	life['think_rate'] = life['think_rate_max']
 	

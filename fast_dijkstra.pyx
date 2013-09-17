@@ -202,7 +202,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				if rolldown:
-					if _dijkstra_map[_x][_y]<0:
+					if _dijkstra_map[_x][_y]<=0:
 						continue
 				else:
 					if _dijkstra_map[_x][_y]>=0 or _map_info['open_map'][_x+_top_left[0]][_y+_top_left[1]]==-3:

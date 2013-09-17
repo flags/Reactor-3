@@ -558,6 +558,11 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 	_keys = []
 	_neighbors = 0
 	
+	if 'size' in map_gen:
+		_size = map_gen['size']
+	else:
+		_size = MAP_SIZE
+	
 	if diagonal:
 		_directions.extend([(-1, -1), (1, 1), (-1, 1), (1, 1)])
 	
@@ -565,7 +570,7 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 		_next_pos = [pos[0]+(_dir[0]*map_gen['chunk_size']), pos[1]+(_dir[1]*map_gen['chunk_size'])]
 		_next_key = '%s,%s' % (_next_pos[0], _next_pos[1])
 		
-		if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]:
+		if _next_pos[0]<0 or _next_pos[0]>=_size[0] or _next_pos[1]<0 or _next_pos[1]>=_size[1]:
 			continue
 		
 		if chunk_type == 'any' or map_gen['chunk_map'][_next_key]['type'] == chunk_type:

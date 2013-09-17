@@ -908,7 +908,11 @@ def can_walk_to(life, pos):
 	if not _z2:
 		#TODO: Don't use this, dingus! Wow!
 		for z in [life['pos'][2]-1, life['pos'][2]+1]:
-			_z2 = zones.get_zone_at_coords((pos[0], pos[1], z))
+			for mod in [(-1, -1), (0, -1), (1, 1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
+				_z2 = zones.get_zone_at_coords((pos[0]+mod[0], pos[1]+mod[1], z))
+				
+				if _z2:
+					break
 		
 			if _z2:
 				break
@@ -2613,7 +2617,9 @@ def draw_life_info():
 def is_target_of(life):
 	_targets = []
 	
-	#for ai in [LIFE[i] for i in LIFE]:
+	if not brain.get_flag(life, 'visible_chunks'):
+		return False
+	
 	for chunk_key in brain.get_flag(life, 'visible_chunks'):
 		for ai in  [LIFE[ai] for ai in maps.get_chunk(chunk_key)['life']]:
 			if life['id'] == ai['id'] or ai['dead']:

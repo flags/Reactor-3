@@ -248,11 +248,18 @@ def generate_life(amount=1):
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 	
-	if WORLD_INFO['combat_test']:
-		if len(LIFE)%2:
-			WORLD_INFO['combat_team_1'].append(alife['id'])
-		else:
-			WORLD_INFO['combat_team_2'].append(alife['id'])
+	#if WORLD_INFO['combat_test']:
+	#	if len(LIFE)%2:
+	#		WORLD_INFO['combat_team_1'].append(alife['id'])
+	#		
+	#		for opponent in WORLD_INFO['combat_team_2']:
+	#			lfe.memory(alife, 'enemy', target=opponent, danger=5, dislike=5)
+	#		
+	#	else:
+	#		WORLD_INFO['combat_team_2'].append(alife['id'])
+	#		
+	#		for opponent in WORLD_INFO['combat_team_2']:
+	#			lfe.memory(alife, 'enemy', target=opponent, danger=5, dislike=5)
 	
 	if len(LIFE) == 1:
 		alife['stats']['is_leader'] = True

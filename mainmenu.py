@@ -185,7 +185,7 @@ def switch_to_world_gen():
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))
 	_menu_items.append(menus.create_item('single', 'Generate', None))
-	_menu_items.append(menus.create_item('single', 'Combat Test', None))
+	_menu_items.append(menus.create_item('single', 'Combat Test', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='World Generation',

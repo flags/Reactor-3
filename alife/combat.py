@@ -25,7 +25,7 @@ def weapon_equipped_and_ready(life):
 		_feed_uid = weapons.get_feed(weapon)
 		
 		if _feed_uid and items.get_item_from_uid(_feed_uid)['rounds']:
-			_loaded_feed = items.get_item_from_uid(_feed_uid)
+			_loaded_feed = True #items.get_item_from_uid(_feed_uid)
 
 	if not _loaded_feed:
 		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
@@ -193,13 +193,11 @@ def ranged_combat(life, target):
 	_pos_for_combat = movement.position_for_combat(life, target, target['last_seen_at'], WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:
-		print 'escaped...'
 		return False
 	elif _pos_for_combat:
 		lfe.stop(life)
 	
 	if not sight.can_see_position(life,target['life']['pos']):
-		print 'cant see target', target['last_seen_at'],target['life']['pos'], target['escaped']
 		if not movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=True):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
