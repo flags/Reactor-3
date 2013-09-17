@@ -1197,9 +1197,14 @@ def perform_action(life):
 			else:
 				_avoid_chunks = []
 			
+			if 'zones' in _action:
+				_zones = _action['zones']
+			else:
+				_zones = [zones.get_zone_at_coords(life['pos'])]
+			
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
-			                           [zones.get_zone_at_coords(life['pos'])],
+			                           _zones,
 			                           rolldown=_action['rolldown'],
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 			                           avoid_positions=_avoid_positions,
@@ -1615,6 +1620,7 @@ def tick(life, source_map):
 		alife.sound.listen(life)
 		
 		if life['job']:
+			logging.warning('Should this be happening?')
 			alife.jobs.work(life)
 		
 		for context in life['contexts'][:]:
@@ -2607,17 +2613,19 @@ def draw_life_info():
 def is_target_of(life):
 	_targets = []
 	
-	for ai in [LIFE[i] for i in LIFE]:
-		if life['id'] == ai['id'] or ai['dead']:
-			continue
-		
-		if not alife.sight.can_see_position(life, ai['pos']):
-			continue
-		
-		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
-		if _targets and life['id'] in [l for l in _targets]:
-			_targets.append(ai)
-			break
+	#for ai in [LIFE[i] for i in LIFE]:
+	for chunk_key in brain.get_flag(life, 'visible_chunks'):
+		for ai in  [LIFE[ai] for ai in maps.get_chunk(chunk_key)['life']]:
+			if life['id'] == ai['id'] or ai['dead']:
+				continue
+			
+			if not alife.sight.can_see_position(life, ai['pos']):
+				continue
+			
+			_targets = brain.retrieve_from_memory(ai, 'combat_targets')
+			if _targets and life['id'] in [l for l in _targets]:
+				_targets.append(ai)
+				break
 	
 	return _targets
 
