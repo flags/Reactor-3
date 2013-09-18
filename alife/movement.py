@@ -144,7 +144,7 @@ def hide(life, target_id):
 		print 'currently pathing'
 		return True
 	
-	_goals.append(life['pos'][:])
+	#_goals.append(life['pos'][:])
 	
 	#TODO: replace with chunks_visible_from_position
 	for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):

@@ -231,8 +231,8 @@ def needs_cover(life):
 		if not _zone in _zones:
 			_zones.append(_zone)
 	
-	_distance_to_danger = zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True, rolldown=0)
-	
+	_distance_to_danger = zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True)
+	print life['name'], _distance_to_danger
 	#TODO: Un-hardcode
 	if _distance_to_danger<10:
 		print 'needs cover'*10
