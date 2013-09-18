@@ -41,7 +41,7 @@ cdef create_map_array(val, size):
 	return _map
 
 #@profile
-def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[]):
+def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False):
 	_init_time = time.time()
 	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
 	cdef float _score
@@ -170,7 +170,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				
 				_lowest_score = _old_map[x][y]
 				
-				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:
+				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:#, (-1, -1), (1, -1), (-1, 1), (1, 1)]:
 				#for _n_y in range(-1, 2):
 					#_y = y+_n_y
 					_y = y+_n_y
@@ -205,13 +205,31 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				
 				_dijkstra_map[x][y] *= -1.2
 	
+	if return_score:
+		#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+		#	for x in range(0, _bot_right[0]-_top_left[0]):
+		#		if rolldown:
+		#			if _dijkstra_map[x][y]>0:
+		#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+		#			else:
+		#				print '#',
+		#		else:
+		#			if _dijkstra_map[x][y]<0:
+		#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+		#			else:
+		#				print '#',
+		#	
+		#	print
+		
+		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
+	
 	_path = []
 	_pos[0] = start_pos[0]-_top_left[0]
 	_pos[1] = start_pos[1]-_top_left[1]
 	while 1:
 		if rolldown and _dijkstra_map[_pos[0]][_pos[1]]<=0:
 			break
-		elif not rolldown and _dijkstra_map[_pos[0]][_pos[1]]>=0:
+		elif not rolldown and _dijkstra_map[_pos[0]][_pos[1]]>0:
 			break
 		
 		_lowest_score = _old_map[x][y]

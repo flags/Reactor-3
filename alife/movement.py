@@ -115,14 +115,18 @@ def escape(life, target_id):
 	          zones.get_zone_at_coords(_target['last_seen_at'])]
 	_target_visible_chunks = brain.get_flag(LIFE[target_id], 'visible_chunks')
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals}]):
+	_orig_goals = _goals[:]
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):
 		print 'waiting...'
 		return True
+	
+	_goals.append(life['pos'][:])
 	
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': False,
 	                      'zones': _zones,
+	                      'orig_goals': _orig_goals,
                           'goals': _goals[:]},
                    999)
 
@@ -135,9 +139,12 @@ def hide(life, target_id):
 	_goals = [_target['last_seen_at'][:]]
 	_avoid_positions = []
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _goals[:]}]):
+	_orig_goals = _goals[:]
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):
 		print 'currently pathing'
 		return True
+	
+	_goals.append(life['pos'][:])
 	
 	#TODO: replace with chunks_visible_from_position
 	for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
@@ -149,7 +156,8 @@ def hide(life, target_id):
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': False,
                           'goals': _goals[:],
-	                      'avoid_positions': _avoid_positions},
+	                     'orig_goals': _orig_goals,
+	                     'avoid_positions': _avoid_positions},
                    999)
 	#else:
 	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):

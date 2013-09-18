@@ -6,6 +6,7 @@ import judgement
 import movement
 import weapons
 import speech
+import zones
 import items
 import sight
 import stats
@@ -220,108 +221,21 @@ def ranged_combat(life, target):
 			5000,
 			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 
-def wont_disarm(life):
-	jobs.cancel_job(life['job'])
-
-def disarm_completed(job):
-	_target = jobs.get_job_detail(job, 'target')
-	
-	for worker in [LIFE[i] for i in job['workers']]:
-		lfe.delete_memory(worker, matches={'target': _target, 'text': 'hostile'})
-
-def disarm_left(life):
-	print life['name'],'LEAVING DISARM'
-	_target = jobs.get_job_detail(life['job'], 'target')
-	
-	lfe.delete_memory(life, matches={'target': _target, 'text': 'hostile'})
-	
-	print _target
-
-def disarm(life):
-	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
-	
-	if not _targets:
-		return False
-	
-	target = _targets[0]['who']['life']
-	item = get_equipped_weapons(target)
-	
-	if not item:
-		_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
+def needs_cover(life):
+	_goals = []
+	_zones = []
+	for target in [brain.knows_alife_by_id(life, t) for t in judgement.get_targets(life)]:
+		_goals.append(target['last_seen_at'])
+		_zone = zones.get_zone_at_coords(target['last_seen_at'])
 		
-		speech.communicate(life,
-			'move_away_from_item',
-			matches=[{'id': target['id']}],
-			item=_weapon)
-		lfe.say(life, 'Now get out of here!')
+		if not _zone in _zones:
+			_zones.append(_zone)
+	
+	_distance_to_danger = zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True, rolldown=0)
+	
+	#TODO: Un-hardcode
+	if _distance_to_danger<10:
+		print 'needs cover'*10
 		return True
 	
-	item = item[0]
-	jobs.add_detail_to_job(life['job'], 'target', target['id'])
-	jobs.add_detail_to_job(life['job'], 'dropped_item', item['uid'])
-	
-	if sight.can_see_position(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=10:
-		lfe.clear_actions(life)
-		
-		if not speech.has_sent(life, target, 'demand_drop_item'):
-			speech.communicate(life,
-				'demand_drop_item',
-				matches=[{'id': target['id']}],
-				item=item['uid'])
-			speech.send(life, target, 'demand_drop_item')
-		
-		return False
-	else:
-		_target_pos = (target['pos'][0], target['pos'][1])
-		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
-		
-		return False
-
-def guard(life):
-	_targets = brain.retrieve_from_memory(life, 'neutral_combat_targets')
-	
-	if not _targets:
-		return False
-	
-	target = _targets[0]['who']['life']
-	
-	if sight.can_see_position(life, target['pos']) and numbers.distance(life['pos'], target['pos'])<=5:
-		lfe.clear_actions(life)
-	else:
-		_target_pos = (target['pos'][0], target['pos'][1])
-		lfe.add_action(life, {'action': 'move','to': _target_pos}, 200)
-	
-	_dropped = jobs.get_job_detail(life['job'], 'dropped_item')
-	if _dropped and not items.is_item_owned(_dropped):
-		jobs.add_detail_to_job(life['job'], 'confirmed_dropped_item', _dropped)
-		
-		if numbers.distance(ITEMS[_dropped]['pos'], target['pos'])>=5 or jobs.job_has_task(life['job'], 'fetch_item', is_open=True):
-			return True
-	
-	if _dropped and items.is_item_owned(_dropped) and jobs.get_job_detail(life['job'], 'confirmed_dropped_item'):
-		wont_disarm(life)
-
-def retrieve_weapon(life):
-	if not jobs.get_job_detail(life['job'], 'target') in LIFE:
-		print 'NONE'
-		return False
-	
-	_target = LIFE[jobs.get_job_detail(life['job'], 'target')]
-	_weapon = jobs.get_job_detail(life['job'], 'dropped_item')
-	_weapon_pos = ITEMS[_weapon]['pos']
-	lfe.clear_actions(life)
-	
-	if life['pos'] == _weapon_pos:
-		lfe.add_action(life,
-			{'action': 'pickupholditem',
-				'item': ITEMS[_weapon],
-				'hand': lfe.get_open_hands(life)[0]},
-			 200)
-		
-		lfe.memory(life, 'compliant', target=_target['id'])
-		lfe.delete_memory(life, matches={'target': _target['id'], 'text': 'hostile'})
-		jobs.cancel_job(life['job'], completed=True)
-	else:
-		lfe.add_action(life, {'action': 'move','to': _weapon_pos[:2]}, 200)
-		return False
-
+	return False

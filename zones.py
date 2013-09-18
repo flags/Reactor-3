@@ -198,14 +198,15 @@ def connect_ramps():
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
 
 #@profile
-def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[]):
+def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False):
 	return fast_dijkstra.dijkstra_map(start_pos,
 	                                  goals,
 	                                  zones,
 	                                  max_chunk_distance=max_chunk_distance,
 	                                  rolldown=rolldown,
 	                                  avoid_chunks=avoid_chunks,
-	                                  avoid_positions=avoid_positions)
+	                                  avoid_positions=avoid_positions,
+	                                  return_score=return_score)
 
 def slow_dijkstra_map(goals, zones, max_chunk_distance=5):
 	_open_map = create_map_array(val=-3)
