@@ -19,16 +19,17 @@ import random
 import time
 
 def tick_all_objects(source_map):
-	if SETTINGS['paused']:
-		return False
+	if SETTINGS['controlling'] and not EVENTS:
+		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions']:
+			return False
 	
 	if process_events():
 		return False
 	
-	if SETTINGS['controlling']:
-		if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
-			if not LIFE[SETTINGS['controlling']]['actions']:
-				return False
+	#if SETTINGS['controlling']:
+	#	if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
+	#		if not LIFE[SETTINGS['controlling']]['actions']:
+	#			return False
 	
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False

@@ -87,7 +87,7 @@ def main():
 			if life.is_target_of(LIFE[SETTINGS['controlling']]):
 				CURRENT_UPS = 1
 			else:
-				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
+				CURRENT_UPS = 2 #ticks to run while actions are in queue before breaking
 			
 			gfx.refresh_window()
 			break

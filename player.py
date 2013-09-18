@@ -121,9 +121,15 @@ def handle_input():
 	if not SETTINGS['controlling']:
 		return False
 	
-	if INPUT[' '] or INPUT['.'] or (SETTINGS['controlling'] and INPUT['5']):
+	if INPUT['.'] or (SETTINGS['controlling'] and INPUT['5']):
 		if not logic.show_next_event():
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
+	
+	if INPUT[' ']:
+		if SETTINGS['paused']:
+			SETTINGS['paused'] = False
+		else:
+			SETTINGS['paused'] = True
 	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)
