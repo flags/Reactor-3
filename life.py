@@ -1210,7 +1210,6 @@ def perform_action(life):
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 			                           avoid_positions=_avoid_positions,
 			                           avoid_chunks=_avoid_chunks)
-			SELECTED_TILES[0] = _path
 		
 		if walk(life, path=_path):
 			delete_action(life,action)
@@ -2306,7 +2305,8 @@ def draw_life_icon(life):
 	#if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
 	#	if time.time()%1>=0.5:
 	#		_icon[0] = '?'
-	if time.time()%1>=0.5 and life['state'] in STATE_ICONS:
+	
+	if time.time()%0.5>=0.25 and life['state'] in STATE_ICONS:
 		_icon[0] = STATE_ICONS[life['state']]
 	
 	if life['group'] and not life['id'] == SETTINGS['controlling']:

@@ -379,7 +379,7 @@ def order_drop_inventory_item(entry):
 	
 	lfe.drop_item(LIFE[_item['parent_id']], entry['id'])
 	
-	de
+	menus.delete_active_menu()
 
 def get_questions_for_camp(life, chosen):
 	_topics = []

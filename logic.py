@@ -181,7 +181,7 @@ def draw_event(event):
 	else:
 		_lines = [event['text']]
 		
-	print _lines
+	#print _lines
 	
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:

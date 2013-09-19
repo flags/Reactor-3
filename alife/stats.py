@@ -332,11 +332,7 @@ def is_incapacitated(life):
 	return False
 
 def is_intimidated_by(life, life_id):
-	#TODO: Other situations...
-	if not is_incapacitated(life):
-		return False
-	
-	if life_id in judgement.get_targets(life):
+	if lfe.execute_raw(life, 'safety', 'intimidated', life_id=life_id):
 		return True
 	
 	return False
