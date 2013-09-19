@@ -1,0 +1,9 @@
+New in version 0.5.5:
+	* ALife now use dijkstra maps to better calculate distance to targets
+		* They will also use dijkstra maps to escape somewhat intelligently
+	* Intimidation by force
+		* Can order ALife to give up items
+	* ALife will surrender under some conditions
+	* Moved more ALife functionality into rawscript
+	
+	
