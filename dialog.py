@@ -243,7 +243,6 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
-	_topics.append({'text': 'Intimidate', 'gist': 'intimidate_start', 'subtopics': intimidate_target})
 	
 	if life['group']:
 		if LIFE[target]['group'] == life['group']:
@@ -257,9 +256,7 @@ def get_all_relevant_target_topics(life, target):
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
-	if alife.stats.is_incapacitated(LIFE[target]):
-		if life['id'] in alife.judgement.get_visible_threats(LIFE[target]):
-			_topics.append({'text': 'Order...', 'gist': 'order_target', 'subtopics': get_target_orders, 'target': target})
+	_topics.append({'text': 'Intimidate...', 'gist': 'order_target', 'subtopics': get_target_orders, 'target': target})
 	
 	return _topics, _memories
 
@@ -362,9 +359,6 @@ def get_questions_for_group(life, chosen):
 		'group': chosen['group']})
 	
 	return _topics
-
-def intimidate_target(life, chosen):
-	return []
 
 def get_target_orders(life, chosen):
 	_topics = []
