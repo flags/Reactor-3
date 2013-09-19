@@ -374,6 +374,12 @@ def get_target_orders(life, chosen):
 	
 	return _topics
 
+def order_drop_inventory_item(entry):
+	print entry.keys()
+	_item = ITEMS[entry['id']]
+	
+	lfe.drop_item(LIFE[_item['parent_id']], entry['id'])
+
 def get_questions_for_camp(life, chosen):
 	_topics = []
 	
@@ -1094,12 +1100,12 @@ def process_response(life, target, dialog, chosen):
 		if 'player' in life:
 			_inventory = lfe.get_fancy_inventory_menu_items(target)
 			
-			_i = menus.create_menu(title='Inventory',
+			_i = menus.create_menu(title='%s\'s inventory' % target['name'][0],
 			                       menu=_inventory,
 			                       padding=(1,1),
 			                       position=(1,1),
 			                       format_str='[$i] $k: $v',
-			                       on_select=None)
+			                       on_select=order_drop_inventory_item)
 							   
 			menus.activate_menu(_i)
 		
@@ -1156,6 +1162,9 @@ def process_response(life, target, dialog, chosen):
 	alife_response(life, dialog)
 
 def draw_dialog():
+	if ACTIVE_MENU['menu'] > -1:
+		return False
+	
 	if not lfe.has_dialog(LIFE[SETTINGS['controlling']]):
 		return False
 	

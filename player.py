@@ -108,15 +108,14 @@ def handle_input():
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	
 	if INPUT['\r']:
+		if ACTIVE_MENU['menu'] > -1:
+			menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
+			return False
+			
 		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 			dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
 			return False
-		
-		if ACTIVE_MENU['menu'] == -1:
-			return False
-		
-		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 	
 	if not SETTINGS['controlling']:
 		return False
