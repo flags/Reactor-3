@@ -375,10 +375,11 @@ def get_target_orders(life, chosen):
 	return _topics
 
 def order_drop_inventory_item(entry):
-	print entry.keys()
 	_item = ITEMS[entry['id']]
 	
 	lfe.drop_item(LIFE[_item['parent_id']], entry['id'])
+	
+	de
 
 def get_questions_for_camp(life, chosen):
 	_topics = []
