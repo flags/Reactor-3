@@ -167,8 +167,12 @@ def light_exists_at(pos):
 	
 	return False
 
-def create_light(pos, color, brightness, shake, fade=0):
+def create_light(pos, color, brightness, shake, fade=0, follow_pos=None):
 	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
+	
+	if follow_pos:
+		_light['pos'] = follow_pos
+	
 	WORLD_INFO['lights'].append(_light)
 	
 	return _light

@@ -36,7 +36,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	if not life['state'] == STATE:
 		stats.battle_cry(life)
-		#print 'monitor me', life['name']
+		
 		RETURN_VALUE = STATE_CHANGE
 	
 	return RETURN_VALUE

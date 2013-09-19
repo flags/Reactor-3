@@ -222,6 +222,9 @@ def ranged_combat(life, target):
 			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 
 def needs_cover(life):
+	if not lfe.execute_raw(life, 'safety', 'needs_cover'):
+		return False
+	
 	_goals = []
 	_zones = []
 	for target in [brain.knows_alife_by_id(life, t) for t in judgement.get_targets(life)]:
