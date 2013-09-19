@@ -5,6 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import numbers
+import menus
 import logic
 import alife
 
@@ -242,6 +243,7 @@ def get_all_relevant_target_topics(life, target):
 	_topics.append({'text': 'What\'s new?', 'gist': 'how_are_you'})
 	_topics.append({'text': 'Can I help you with anything?', 'gist': 'offering_help'})
 	_topics.append({'text': 'Do you have any jobs?', 'gist': 'ask_for_jobs'})
+	_topics.append({'text': 'Intimidate', 'gist': 'intimidate_start', 'subtopics': intimidate_target})
 	
 	if life['group']:
 		if LIFE[target]['group'] == life['group']:
@@ -254,6 +256,10 @@ def get_all_relevant_target_topics(life, target):
 			_topics.append({'text': 'Recruit...', 'message': 'Are you looking for a squad?', 'gist': 'inquire_about_group_work', 'group': life['group']})
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
+	
+	if alife.stats.is_incapacitated(LIFE[target]):
+		if life['id'] in alife.judgement.get_visible_threats(LIFE[target]):
+			_topics.append({'text': 'Order...', 'gist': 'order_target', 'subtopics': get_target_orders, 'target': target})
 	
 	return _topics, _memories
 
@@ -354,6 +360,17 @@ def get_questions_for_group(life, chosen):
 	_topics.append({'text': 'Who is in charge of group %s?' % chosen['group'],
 		'gist': 'ask_about_group_founder',
 		'group': chosen['group']})
+	
+	return _topics
+
+def intimidate_target(life, chosen):
+	return []
+
+def get_target_orders(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Show me everything you have!',
+		'gist': 'order_to_show_inventory'})
 	
 	return _topics
 
@@ -1064,6 +1081,29 @@ def process_response(life, target, dialog, chosen):
 
 	elif chosen['gist'] == 'okay':
 		_responses.append({'text': 'Okay.', 'gist': 'end'})
+	
+	elif chosen['gist'] == 'order_to_show_inventory':
+		#_life = LIFE[dialog['listener']]
+		
+		if alife.stats.is_intimidated_by(life, target['id']):
+			_responses.append({'text': 'Okay, okay! Here...', 'gist': 'show_inventory'})
+		else:
+			_responses.append({'text': 'You really think I\'d let you do that?', 'gist': 'show_inventory_reject', 'danger': -1, 'dislike': 1})
+
+	elif chosen['gist'] == 'show_inventory':
+		if 'player' in life:
+			_inventory = lfe.get_fancy_inventory_menu_items(target)
+			
+			_i = menus.create_menu(title='Inventory',
+			                       menu=_inventory,
+			                       padding=(1,1),
+			                       position=(1,1),
+			                       format_str='[$i] $k: $v',
+			                       on_select=None)
+							   
+			menus.activate_menu(_i)
+		
+		#q_responses.append({'text': 'You really think I\'d let you do that?', 'gist': 'show_inventory_reject', 'danger': -1, 'dislike': 1})
 
 	#NOTE: NO DIALOG AFTER THIS POINT WILL WORK	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:

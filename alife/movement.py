@@ -120,7 +120,7 @@ def escape(life, target_id):
 		print 'waiting...'
 		return True
 	
-	_goals.append(life['pos'][:])
+	#_goals.append(life['pos'][:])
 	
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',

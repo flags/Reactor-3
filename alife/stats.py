@@ -318,6 +318,29 @@ def is_aggravated(life, life_id):
 	
 	return False
 
+def is_incapacitated(life):
+	_size = sum([lfe.get_limb(life, l)['size'] for l in lfe.get_legs(life)])
+	_count = 0
+	
+	for limb in lfe.get_legs(life):
+		_count += lfe.limb_is_cut(life, limb)
+		_count += lfe.limb_is_in_pain(life, limb)
+	
+	if (_count/float(_size))>=.50:
+		return True
+	
+	return False
+
+def is_intimidated_by(life, life_id):
+	#TODO: Other situations...
+	if not is_incapacitated(life):
+		return False
+	
+	if life_id in judgement.get_targets(life):
+		return True
+	
+	return False
+
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
 		return True

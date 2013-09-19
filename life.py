@@ -1599,8 +1599,6 @@ def tick(life, source_map):
 			
 			if 'player' in life:
 				gfx.message('The pain becomes too much.')
-			else:
-				say(life,'%s passes out.',action=True)
 			
 			pass_out(life)
 			
@@ -2305,9 +2303,11 @@ def get_all_life_at_position(life, position):
 def draw_life_icon(life):
 	_icon = [tick_animation(life), tcod.white]
 	
-	if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
-		if time.time()%1>=0.5:
-			_icon[0] = '?'
+	#if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
+	#	if time.time()%1>=0.5:
+	#		_icon[0] = '?'
+	if time.time()%1>=0.5 and life['state'] in STATE_ICONS:
+		_icon[0] = STATE_ICONS[life['state']]
 	
 	if life['group'] and not life['id'] == SETTINGS['controlling']:
 		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
@@ -2672,8 +2672,8 @@ def pass_out(life,length=None):
 def get_total_pain(life):
 	_pain = 0
 	
-	for limb in [life['body'][limb] for limb in life['body']]:
-		_pain += limb['pain']
+	for limb in life['body']:
+		_pain += limb_is_in_pain(life, limb)
 	
 	return _pain
 
@@ -2807,16 +2807,23 @@ def get_cut_limbs(life):
 	
 	return _cut
 
-def limb_is_cut(life,limb):
+def limb_is_cut(life, limb):
 	_limb = life['body'][limb]
 	
 	return _limb['cut']
 
-def limb_is_broken(life,limb):
+#TODO: Unused?
+def limb_is_broken(life, limb):
 	_limb = life['body'][limb]
 	
 	return _limb['broken']
 
+def limb_is_in_pain(life, limb):
+	_limb = life['body'][limb]
+	
+	return _limb['pain']
+
+#TODO: Unused?
 def artery_is_ruptured(life, limb):
 	_limb = life['body'][limb]
 	
@@ -2878,7 +2885,7 @@ def sever_limb(life, limb, impact_velocity):
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
 		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
-		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size'])
+		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size']*5)
 	
 	set_animation(life, ['X', '!'], speed=4)
 	
