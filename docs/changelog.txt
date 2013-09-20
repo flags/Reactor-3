@@ -5,5 +5,6 @@ New in version 0.5.5:
 		* Can order ALife to give up items
 	* ALife will surrender under some conditions
 	* Moved more ALife functionality into rawscript
-	
+	* Items can now have additional prefixes
+	* Burnable items now burn
 	

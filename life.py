@@ -1919,9 +1919,11 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 		
 		for uid in item['storing'][:]:
 			logging.debug('\tAdding uid %s' % uid)
+			
+			life['inventory'].append(uid)
 
 			#item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life, uid))
+			#item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
@@ -1956,8 +1958,8 @@ def add_item_to_inventory(life, item_uid):
 		for uid in item['storing'][:]:
 			_item = items.get_item_from_uid(uid)
 			
-			item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life, uid))
+			#item['storing'].remove(uid)
+			#item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	
@@ -1990,10 +1992,11 @@ def remove_item_from_inventory(life, item_id):
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
 		
-		for _item in item['storing'][:]:
+		for _item in item['storing']:
 			logging.debug('\tdropping %s' % _item)
-			item['storing'].remove(_item)
-			item['storing'].append(get_inventory_item(life,_item)['uid'])
+			
+			#item['storing'].remove(_item)
+			#item['storing'].append(get_inventory_item(life,_item)['uid'])
 			
 			life['inventory'].remove(_item)
 	
