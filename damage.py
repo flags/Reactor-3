@@ -7,6 +7,7 @@ import graphics
 import numbers
 import items
 
+import logging
 import random
 
 def own_language(life, message):
@@ -60,49 +61,74 @@ def bullet_hit(life, bullet, limb):
 	
 	if _cut:
 		_items_to_check = []
-		for _item in [lfe.get_inventory_item(life, i) for i in lfe.get_items_attached_to_limb(life, limb)]:
+		for _item in lfe.get_items_attached_to_limb(life, limb):
 			_items_to_check.append({'item': _item, 'visible': True})
+			_actual_item = items.get_item_from_uid(_item)
 			
-			if 'container' in _item:
-				for _item_in_container in _item['contains']:
-					_items_to_check.append({'item': _item_in_container, 'visible': False, 'inside': _item['name']})
+			if 'storing' in _actual_item:
+				for _item_in_container in _actual_item['storing']:
+					_items_to_check.append({'item': _item_in_container, 'visible': False})
+		
+		print 'Checking items: ', ' '.join([ITEMS[i['item']]['name'] for i in _items_to_check])
 		
 		for entry in _items_to_check:
-			_item = entry['item']
+			_item = items.get_item_from_uid(entry['item'])
+			print '***HIT***', _item['name']
+			
+			if not 'thickness' in _item:
+				logging.warning('Item \'%s\' has no set thickness. Guessing...' % _item['name'])
+				_item['thickness'] = _item['size']/2
+			
 			_thickness = _item['thickness']
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
-			_cut -= _thickness
 			_tear = _item['thickness']-_thickness
 			_limb_in_context = False
 			
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:
-					#_msg.append('penetrates the %s' % _item['name'])
-					graphics.message('%s\'s %s is destroyed!' % (language.get_introduction(life, posession=True), _item['name']))
+					if entry['visible']:
+						_msg.append(', destroying <own> %s' % _item['name'])
+					else:
+						_msg.append(', destroying something' % _item['name'])
 				elif _tear<=-3:
-					_msg.append(' rips <own> %s' % _item['name'])
+					if entry['visible']:
+						_msg.append(', ripping <own> %s' % _item['name'])
+					else:
+						_msg.append(', ripping something' % _item['name'])
 				elif _tear<=-2:
-					_msg.append(' tears <own> %s' % _item['name'])
+					if entry['visible']:
+						_msg.append(', tearing <own> %s' % _item['name'])
+					else:
+						_msg.append(', tearing something' % _item['name'])
 				elif _tear<=-1:
-					_msg.append(' slightly tears <own> %s' % _item['name'])
+					if entry['visible']:
+						_msg.append(', slightly tearing <own> %s' % _item['name'])
+					else:
+						_msg.append(', slightly ripping something' % _item['name'])
 				
-				if _cut <= 0 and _item['thickness']:
-					_msg.append('is stopped by <own> %s' % _item['name'])
-					return own_language(life, _msg)+'.'
+				#if _cut <= 0 and _item['thickness']:
+				#	#_msg.append(', is stopped by <own> %s' % _item['name'])
+				#	_cut = 0
+				
+				_cut -= _thickness/2
 			
 			elif _item['material'] == 'metal':
 				if _thickness and not _item['thickness']:
-					_msg.append(' puncturing the %s' % _item['name'])
+					_msg.append(', puncturing %s' % items.get_name(_item))
 				elif _tear<=-3:
-					_msg.append(' denting the %s' % _item['name'])
+					_msg.append(', denting %s' % items.get_name(_item))
 				elif _tear<=-2:
-					_msg.append(' lightly denting the %s' % _item['name'])
+					_msg.append(', lightly denting %s' % items.get_name(_item))
 				elif _tear<=-1:
-					_msg.append(' scraping the %s' % _item['name'])
+					_msg.append(', scraping %s' % items.get_name(_item))
 				
-				if _cut <= 0 and _item['thickness']:
-					_msg.append(', finally stopped by the %s' % _item['name'])
-					return own_language(life, _msg)+'.'
+				_cut -= _thickness
+				
+				#if _cut <= 0 and _item['thickness']:
+				#	_msg.append(', finally stopped by the %s' % _item['name'])
+	
+			if _cut <= 0:
+				return own_language(life, _msg)+'.'
 	
 		#if not lfe.limb_is_cut(life, limb):
 		_cut_percentage = _cut/float(_actual_limb['size'])
