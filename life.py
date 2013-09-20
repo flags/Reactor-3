@@ -1921,7 +1921,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 			logging.debug('\tAdding uid %s' % uid)
 
 			#item['storing'].remove(uid)
-			item['storing'].append(direct_add_item_to_inventory(life, item['uid']))
+			item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
