@@ -89,22 +89,22 @@ def bullet_hit(life, bullet, limb):
 					if entry['visible']:
 						_msg.append(', destroying <own> %s' % _item['name'])
 					else:
-						_msg.append(', destroying something' % _item['name'])
+						_msg.append(', destroying something')
 				elif _tear<=-3:
 					if entry['visible']:
 						_msg.append(', ripping <own> %s' % _item['name'])
 					else:
-						_msg.append(', ripping something' % _item['name'])
+						_msg.append(', ripping something')
 				elif _tear<=-2:
 					if entry['visible']:
 						_msg.append(', tearing <own> %s' % _item['name'])
 					else:
-						_msg.append(', tearing something' % _item['name'])
+						_msg.append(', tearing something')
 				elif _tear<=-1:
 					if entry['visible']:
 						_msg.append(', slightly tearing <own> %s' % _item['name'])
 					else:
-						_msg.append(', slightly ripping something' % _item['name'])
+						_msg.append(', slightly ripping something')
 				
 				#if _cut <= 0 and _item['thickness']:
 				#	#_msg.append(', is stopped by <own> %s' % _item['name'])
@@ -114,13 +114,25 @@ def bullet_hit(life, bullet, limb):
 			
 			elif _item['material'] == 'metal':
 				if _thickness and not _item['thickness']:
-					_msg.append(', puncturing %s' % items.get_name(_item))
+					if entry['visible']:
+						_msg.append(', puncturing %s' % items.get_name(_item))
+					else:
+						_msg.append(', puncturing something')
 				elif _tear<=-3:
-					_msg.append(', denting %s' % items.get_name(_item))
+					if entry['visible']:
+						_msg.append(', denting %s' % items.get_name(_item))
+					else:
+						_msg.append(', denting something')
 				elif _tear<=-2:
-					_msg.append(', lightly denting %s' % items.get_name(_item))
+					if entry['visible']:
+						_msg.append(', lightly denting %s' % items.get_name(_item))
+					else:
+						_msg.append(', lightly denting something')
 				elif _tear<=-1:
-					_msg.append(', scraping %s' % items.get_name(_item))
+					if entry['visible']:
+						_msg.append(', scraping %s' % items.get_name(_item))
+					else:
+						_msg.append(', scraping something')
 				
 				_cut -= _thickness
 				
