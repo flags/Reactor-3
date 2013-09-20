@@ -80,11 +80,11 @@ def bullet_hit(life, bullet, limb):
 					#_msg.append('penetrates the %s' % _item['name'])
 					graphics.message('%s\'s %s is destroyed!' % (language.get_introduction(life, posession=True), _item['name']))
 				elif _tear<=-3:
-					_msg.append('rips <own> %s' % _item['name'])
+					_msg.append(' rips <own> %s' % _item['name'])
 				elif _tear<=-2:
-					_msg.append('tears <own> %s' % _item['name'])
+					_msg.append(' tears <own> %s' % _item['name'])
 				elif _tear<=-1:
-					_msg.append('slightly tears <own> %s' % _item['name'])
+					_msg.append(' slightly tears <own> %s' % _item['name'])
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append('is stopped by <own> %s' % _item['name'])
@@ -92,13 +92,13 @@ def bullet_hit(life, bullet, limb):
 			
 			elif _item['material'] == 'metal':
 				if _thickness and not _item['thickness']:
-					_msg.append('puncturing the %s' % _item['name'])
+					_msg.append(' puncturing the %s' % _item['name'])
 				elif _tear<=-3:
-					_msg.append('denting the %s' % _item['name'])
+					_msg.append(' denting the %s' % _item['name'])
 				elif _tear<=-2:
-					_msg.append('lightly denting the %s' % _item['name'])
+					_msg.append(' lightly denting the %s' % _item['name'])
 				elif _tear<=-1:
-					_msg.append('scraping the %s' % _item['name'])
+					_msg.append(' scraping the %s' % _item['name'])
 				
 				if _cut <= 0 and _item['thickness']:
 					_msg.append(', finally stopped by the %s' % _item['name'])
