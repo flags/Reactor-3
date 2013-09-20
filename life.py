@@ -1010,9 +1010,6 @@ def walk(life, to=None, path=None):
 
 def walk_path(life):
 	"""Walks and returns whether the path is finished or not."""
-	if calculate_velocity(life):
-		return False
-	
 	if life['path']:
 		_pos = list(life['path'].pop(0))
 		_nfx = _pos[0]
@@ -1611,6 +1608,9 @@ def tick(life, source_map):
 	else:
 		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
 	
+	if calculate_velocity(life):
+		return False	
+	
 	if not 'player' in life:
 		brain.think(life, source_map)
 	else:
@@ -1921,9 +1921,6 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 			logging.debug('\tAdding uid %s' % uid)
 			
 			life['inventory'].append(uid)
-
-			#item['storing'].remove(uid)
-			#item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	#Warning: `container` refers directly to an item instead of an ID.
 	if container:
@@ -1957,9 +1954,6 @@ def add_item_to_inventory(life, item_uid):
 	if 'max_capacity' in item:
 		for uid in item['storing'][:]:
 			_item = items.get_item_from_uid(uid)
-			
-			#item['storing'].remove(uid)
-			#item['storing'].append(direct_add_item_to_inventory(life, uid))
 	
 	logging.debug('%s got \'%s\'.' % (life['name'][0],item['name']))
 	

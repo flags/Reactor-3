@@ -324,6 +324,18 @@ def explode(item):
 	
 	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
 	
+	#TODO: Dirty hack
+	for life_id in LIFE:
+		_force = numbers.clip((item['damage']['force']*2)-numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
+		print numbers.distance(LIFE[life_id]['pos'], item['pos'])
+		if not _force:
+			continue
+		
+		_direction = numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
+		life.push(LIFE[life_id], _direction, _force)
+		
+		print '*** PUSHED ***', _force
+	
 	if 'fire' in item['damage']:
 		for pos in drawing.draw_circle(item['pos'], item['radius']):
 			if not maps.position_is_in_map(pos):
