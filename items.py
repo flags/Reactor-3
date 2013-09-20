@@ -85,18 +85,22 @@ def initiate_item(name):
 			_ccount = flag.count(']')
 			
 			if _ocount > _ccount:
-				logging.error('Bspecies mismatch in item \'%s\': Expected \']\'' % name)
+				logging.error('Brace mismatch in item \'%s\': Expected \']\'' % name)
 				continue
 			elif _ocount < _ccount:
-				logging.error('Bspecies mismatch in item \'%s\': Expected \'[\'' % name)
+				logging.error('Brace mismatch in item \'%s\': Expected \'[\'' % name)
 				continue
 			
 			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)
 		else:
 			_flags[flag] = None
+		
+	if 'CAN_BURN' in _flags:
+		item['burning'] = 0
+		item['burnt'] = False
 	
 	item['flags'] = _flags
-	item['size'] = 	[int(c) for c in item['size'].split('x')]
+	item['size'] = [int(c) for c in item['size'].split('x')]
 	item['size'] = item['size'][0]*item['size'][1]
 	
 	for key in item:
@@ -205,7 +209,15 @@ def get_items_at(position):
 
 def get_name(item):
 	"""Returns the full name of an item."""
-	return '%s %s' % (item['prefix'],item['name'])		
+	_prefixes = [item['prefix']]
+	
+	if 'burning' in item:
+		if item['burning']:
+			_prefixes.append('burning')
+		elif item['burnt']:
+			_prefixes.append('burnt')
+	
+	return '%s %s' % (' '.join(_prefixes), item['name'])		
 
 def move(item, direction, speed, friction=0.05, _velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
@@ -298,6 +310,13 @@ def remove_item_from_any_storage(item_uid):
 	_container['storing'].remove(item_uid)
 	update_container_capacity(_item['stored_in'])
 	del _item['stored_in']
+
+def burn(item, amount):
+	if not 'CAN_BURN' in item['flags']:
+		return False
+	
+	item['burning'] += amount*.1
+	print item['burning']
 
 def explode(item):
 	if not item['type'] == 'explosive':

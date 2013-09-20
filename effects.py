@@ -79,6 +79,9 @@ def calculate_fire(fire):
 	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
 		lfe.burn(life, fire['intensity'])
 	
+	for item in items.get_items_at(fire['pos']):
+		items.burn(item, fire['intensity'])
+	
 	update_effect(fire)
 	
 	if fire['intensity'] <= 0.25:

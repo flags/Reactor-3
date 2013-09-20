@@ -5,6 +5,7 @@ import life as lfe
 import language
 import graphics
 import numbers
+import timers
 import items
 
 import logging
@@ -106,10 +107,6 @@ def bullet_hit(life, bullet, limb):
 					else:
 						_msg.append(', slightly ripping something')
 				
-				#if _cut <= 0 and _item['thickness']:
-				#	#_msg.append(', is stopped by <own> %s' % _item['name'])
-				#	_cut = 0
-				
 				_cut -= _thickness/2
 			
 			elif _item['material'] == 'metal':
@@ -118,6 +115,11 @@ def bullet_hit(life, bullet, limb):
 						_msg.append(', puncturing %s' % items.get_name(_item))
 					else:
 						_msg.append(', puncturing something')
+					
+					if item['type'] == 'explosive':
+						timers.create(_item, action.make_small_script(function='explode',
+	                                       item=_item['uid']),
+	              15+value)
 				elif _tear<=-3:
 					if entry['visible']:
 						_msg.append(', denting %s' % items.get_name(_item))
@@ -135,9 +137,6 @@ def bullet_hit(life, bullet, limb):
 						_msg.append(', scraping something')
 				
 				_cut -= _thickness
-				
-				#if _cut <= 0 and _item['thickness']:
-				#	_msg.append(', finally stopped by the %s' % _item['name'])
 	
 			if _cut <= 0:
 				return own_language(life, _msg)+'.'
