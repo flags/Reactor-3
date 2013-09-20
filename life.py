@@ -2306,7 +2306,7 @@ def draw_life_icon(life):
 	#	if time.time()%1>=0.5:
 	#		_icon[0] = '?'
 	
-	if time.time()%0.5>=0.25 and life['state'] in STATE_ICONS:
+	if not life['dead'] and time.time()%0.5>=0.25 and life['state'] in STATE_ICONS:
 		_icon[0] = STATE_ICONS[life['state']]
 	
 	if life['group'] and not life['id'] == SETTINGS['controlling']:

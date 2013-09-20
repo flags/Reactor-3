@@ -1089,7 +1089,10 @@ def process_response(life, target, dialog, chosen):
 		if alife.stats.is_intimidated_by(life, target['id']):
 			_responses.append({'text': 'Okay, okay! Here...', 'gist': 'show_inventory'})
 		else:
-			_responses.append({'text': 'You really think I\'d let you do that?', 'gist': 'show_inventory_reject', 'danger': -1, 'dislike': 1})
+			lfe.memory(life, 'failed_to_be_intimidated_by', target=target['id'], trust=-1)
+			_responses.append({'text': 'You really think I\'d let you do that?',
+			                   'gist': 'show_inventory_reject',
+			                   'danger': 1})
 
 	elif chosen['gist'] == 'show_inventory':
 		if 'player' in life:
