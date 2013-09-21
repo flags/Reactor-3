@@ -839,12 +839,12 @@ def inventory_eat(entry):
 def inventory_throw(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = life.get_inventory_item(LIFE[SETTINGS['controlling']],entry['id'])
+	item = ITEMS[entry['id']]
 	
-	_hand = life.is_holding(LIFE[SETTINGS['controlling']],entry['id'])
+	_hand = life.is_holding(LIFE[SETTINGS['controlling']], entry['id'])
 	if _hand:
 		LIFE[SETTINGS['controlling']]['targeting'] = LIFE[SETTINGS['controlling']]['pos'][:]
-		LIFE[SETTINGS['controlling']]['throwing'] = item
+		LIFE[SETTINGS['controlling']]['throwing'] = item['uid']
 		menus.delete_menu(ACTIVE_MENU['menu'])
 		
 		return True

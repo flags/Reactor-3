@@ -76,6 +76,7 @@ def main():
 	get_input()
 	handle_input()
 	_played_moved = False
+	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 
 	while life.get_highest_action(LIFE[SETTINGS['controlling']]) and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]):
 		logic.tick_all_objects(WORLD_INFO['map'])
@@ -100,14 +101,14 @@ def main():
 			logic.tick_all_objects(WORLD_INFO['map'])
 			
 	draw_targeting()
-	move_camera(LIFE[SETTINGS['following']]['pos'])
+	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
 		gfx.refresh_window()
 	
-	if LOS_BUFFER[0] == []:
+	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['following']]['pos'],
+		                                 SETTINGS['camera_track'],
 		                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
@@ -115,28 +116,11 @@ def main():
 	maps.render_lights(WORLD_INFO['map'])
 	
 	if not SETTINGS['map_slices']:
-		#if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
-		#	print 'yes'
-		#else:
-		#	print 'no???'
-		#	maps.render_map(WORLD_INFO['map'])
 	
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
-	
-	if LIFE[SETTINGS['controlling']]['encounters']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
-		                                 cython=CYTHON_ENABLED)
-	
-	if not SETTINGS['controlling'] == SETTINGS['following']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
-		                                 cython=True)
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
 		gfx.fade_to_white(FADE_TO_WHITE[0])

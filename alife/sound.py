@@ -389,6 +389,10 @@ def listen(life):
 				#event['from']['dialogs'].append(dialog.create_dialog_with(event['from'], life['id'], _dialog))
 				speech.start_dialog(life, event['from']['id'], 'call_accepted')
 		
+		elif event['gist'] == 'threw_an_item':
+			print 'CHECK THIS HERE' * 100
+			pass
+		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		

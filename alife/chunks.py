@@ -37,6 +37,9 @@ def get_global_flag(chunk_key, flag):
 	
 	return False
 
+def get_chunk(chunk_key):
+	return maps.get_chunk(chunk_key)
+
 def get_chunk_pos(chunk_id, center=False):
 	if center:
 		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]

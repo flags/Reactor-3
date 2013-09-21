@@ -8,6 +8,7 @@ import maputils
 import numbers
 import drawing
 import effects
+import logic
 import items
 import zones
 import alife
@@ -236,11 +237,12 @@ def render_lights(source_map):
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
 		
-		if light['fade']:
-			light['brightness'] -= light['fade']
-		
-		if light['brightness'] <= 0:
-			_remove_lights.append(light)
+		if logic.can_tick():
+			if light['fade']:
+				light['brightness'] -= light['fade']
+			
+			if light['brightness'] <= 0:
+				_remove_lights.append(light)
 	
 	for light in _remove_lights:
 		WORLD_INFO['lights'].remove(light)

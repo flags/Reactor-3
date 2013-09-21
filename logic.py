@@ -18,18 +18,16 @@ import logging
 import random
 import time
 
-def tick_all_objects(source_map):
+def can_tick(check=True):
 	if SETTINGS['controlling'] and not EVENTS:
 		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions']:
 			return False
 	
-	if process_events():
+	if not check:
+		if process_events():
+			return False
+	elif EVENTS:
 		return False
-	
-	#if SETTINGS['controlling']:
-	#	if 'player' in LIFE[SETTINGS['controlling']] and life.is_target_of(LIFE[SETTINGS['controlling']]):
-	#		if not LIFE[SETTINGS['controlling']]['actions']:
-	#			return False
 	
 	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
 		return False
@@ -50,14 +48,29 @@ def tick_all_objects(source_map):
 		if MENUS:
 			return False
 		
-		#if menus.get_menu_by_name('Aim at...') > -1:
-		#	return False
 		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
 		
 		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
 	
+	if not check:
+		WORLD_INFO['tps'] += 1
+		
+		if WORLD_INFO['ticks']-WORLD_INFO['tps_time']>=30:
+			WORLD_INFO['tps'] = 0
+			WORLD_INFO['tps_time'] = WORLD_INFO['ticks']
+	
+	if WORLD_INFO['tps'] > TPS:
+		return False
+	
+	return True
+
+def tick_all_objects(source_map):
+	if not can_tick(check=False):
+		return False
+	
+	if SETTINGS['controlling']:
 		_in_combat = False
 		for alife in [LIFE[i] for i in LIFE]:
 			if SETTINGS['controlling'] == alife['id']:
@@ -86,15 +99,6 @@ def tick_all_objects(source_map):
 			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
 			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
-	
-	WORLD_INFO['tps'] += 1
-	
-	if WORLD_INFO['ticks']-WORLD_INFO['tps_time']>=30:
-		WORLD_INFO['tps'] = 0
-		WORLD_INFO['tps_time'] = WORLD_INFO['ticks']
-	
-	if WORLD_INFO['tps'] > TPS:
-		return False
 	
 	effects.calculate_all_effects()
 	tick_world()
@@ -201,8 +205,17 @@ def draw_event(event):
 		
 		_i += 1
 
-def show_event(life, text, time=30):
-	EVENTS.append({'life': life['id'], 'text': text, 'time': time})
+def show_event(text, time=30, delay=0, life=None, item=None, pos=None):
+	_event = {'text': text, 'time': time, 'delay': delay}
+	
+	if life:
+		_event['pos'] = life['pos']
+	elif item:
+		_event['pos'] = item['pos']
+	elif pos:
+		_event['pos'] = pos
+	
+	EVENTS.append(_event)
 
 def show_next_event():
 	if not EVENTS:
@@ -221,10 +234,21 @@ def process_events():
 	if not EVENTS:
 		return False
 	
-	if EVENTS[0]['time']:
-		EVENTS[0]['time'] -= 1
-		life.focus_on(LIFE[EVENTS[0]['life']])
-		draw_event(EVENTS[0])
+	_event = None
+	for event in EVENTS:
+		if event['delay']:
+			event['delay'] -= 1
+		else:
+			_event = event
+			break
+	
+	if not _event:
+		return False
+	
+	if _event['time']:
+		_event['time'] -= 1
+		gfx.camera_track(_event['pos'])
+		draw_event(_event)
 		return True
 	
 	return show_next_event()

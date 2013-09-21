@@ -8,6 +8,8 @@ import drawing
 import numbers
 import effects
 import timers
+import alife
+import logic
 import maps
 import life
 
@@ -167,6 +169,8 @@ def delete_item(item):
 	
 	timers.remove_by_owner(item)
 	
+	maps.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))['items'].remove(item['uid'])
+	
 	if gfx.position_is_in_frame(item['pos']):
 		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
 	
@@ -324,17 +328,34 @@ def explode(item):
 	
 	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
 	
+	if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
+		logic.show_event('%s explodes!' % get_name(item), item=item, delay=0)
+	#elif numbers.distance(
+	
 	#TODO: Dirty hack
 	for life_id in LIFE:
 		_force = numbers.clip((item['damage']['force']*2)-numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
-		print numbers.distance(LIFE[life_id]['pos'], item['pos'])
+		
 		if not _force:
 			continue
 		
+		_known_item = alife.brain.remembers_item(LIFE[life_id], item)
 		_direction = numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
+		
+		#TODO: Intelligent(?) limb groups?
+		_limbs = random.sample(LIFE[life_id]['body'].keys(), _force/2)
+		
+		#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+		print 'known item', _known_item
+		if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
+			life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
+		
+		for _limb in _limbs:
+			life.add_wound(LIFE[life_id], _limb, force=_force)
+		
 		life.push(LIFE[life_id], _direction, _force)
 		
-		print '*** PUSHED ***', _force
+		life.say(LIFE[life_id], '@n is thrown by the explosion!', action=True)
 	
 	if 'fire' in item['damage']:
 		for pos in drawing.draw_circle(item['pos'], item['radius']):
@@ -495,6 +516,9 @@ def tick_item(item_uid):
 		
 		create_effects(item, pos, item['realpos'][2], _z_min)
 	
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
+	_chunk['items'].remove(item_uid)
+	
 	if _break:
 		item['pos'][0] = int(pos[0])
 		item['pos'][1] = int(pos[1])
@@ -503,6 +527,9 @@ def tick_item(item_uid):
 		item['pos'][0] = int(round(item['realpos'][0]))
 		item['pos'][1] = int(round(item['realpos'][1]))
 		item['pos'][2] = int(round(item['realpos'][2]))
+	
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
+	_chunk['items'].append(item_uid)
 	
 	_x = item['pos'][0]-CAMERA_POS[0]
 	_y = item['pos'][1]-CAMERA_POS[1]

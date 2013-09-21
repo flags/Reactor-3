@@ -150,7 +150,7 @@ def load_world(world):
 	for life in LIFE.values():
 		if 'player' in life:
 			SETTINGS['controlling'] = life['id']
-			SETTINGS['following'] = life['id']
+			lfe.focus_on(life)
 			break
 	
 	lfe.load_all_life()

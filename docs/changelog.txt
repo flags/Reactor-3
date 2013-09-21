@@ -8,4 +8,5 @@ New in version 0.5.5:
 	* Items can now have additional prefixes
 	* Burnable items now burn
 	* Fixed crash when adding items containing items to inventories
+	* Camera can now follow non-entities
 	* Explosions now push ALife

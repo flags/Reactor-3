@@ -389,6 +389,9 @@ def position_is_in_frame(pos):
 def get_render_position(pos):
 	return [pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1]]
 
+def camera_track(pos):
+	SETTINGS['camera_track'] = pos
+
 def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 	

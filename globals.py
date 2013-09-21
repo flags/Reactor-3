@@ -148,6 +148,8 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 #Non-constants
 SETTINGS = {'running': True,
 	'paused': False,
+	'camera_track': [0, 0, 0],
+	'last_camera_pos': [0, 0, 0],
 	'draw lights': True,
 	'diffuse light': False,
 	'debug host': '',

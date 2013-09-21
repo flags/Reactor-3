@@ -70,7 +70,9 @@ def look(life):
 			brain.meet_alife(life, ai)
 	
 		for item in [ITEMS[i] for i in chunk['items']]:
-			if item.has_key('parent') or item.has_key('parent_id') or item.has_key('stored_in'):
+			#item.has_key('parent') or item.has_key('parent_id') or 
+			
+			if item['owner'] and not lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
 				continue
 			
 			_can_see = can_see_position(life, item['pos'])
@@ -80,6 +82,9 @@ def look(life):
 				elif not life['know_items'][item['uid']]['last_seen_time']:
 					continue
 	
+				if item['owner']:
+					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
+				
 				life['know_items'][item['uid']]['last_seen_time'] = 0
 				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
 			elif item['uid'] in life['know_items']:

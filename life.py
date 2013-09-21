@@ -368,6 +368,7 @@ def ticker(life, name, time):
 def focus_on(life):
 	SETTINGS['following'] = life['id']
 	
+	gfx.camera_track(life['pos'])
 	gfx.refresh_window()
 	
 	LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
@@ -702,7 +703,7 @@ def say(life, text, action=False, volume=30, context=False):
 			gfx.message(text, style=_style)
 			
 			if action:
-				logic.show_event(life, text)
+				logic.show_event(text, life=life)
 
 def memory(life, gist, *args, **kvargs):
 	_entry = {'text': gist, 'id': WORLD_INFO['memoryid']}
@@ -1024,7 +1025,8 @@ def walk_path(life):
 			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		
 		_old_chunk = get_current_chunk_id(life)
-		life['pos'] = [_pos[0],_pos[1],life['pos'][2]]
+		life['pos'][0] = _pos[0]
+		life['pos'][1] = _pos[1]
 		_new_chunk = get_current_chunk_id(life)
 		
 		if not _old_chunk == _new_chunk:
@@ -1035,9 +1037,9 @@ def walk_path(life):
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
 		
-		if SETTINGS['following'] == life['id']:
-			#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
-			LOS_BUFFER[0] = []
+		#if SETTINGS['following'] == life['id']:
+		#	#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
+		#	gfx.redraw_los()
 		
 		if life['path']:
 			return False
@@ -1666,12 +1668,14 @@ def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
 	return can_hold_item(life)
 
-def throw_item(life, id, target, speed):
+def throw_item(life, item_uid, target, speed):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
-	_item = items.get_item_from_uid(remove_item_from_inventory(life, id))
+	_item = items.get_item_from_uid(remove_item_from_inventory(life, item_uid))
 	
 	direction = numbers.direction_to(life['pos'], target)
 	items.move(_item, direction, speed)
+	
+	speech.announce(life, 'threw_an_item', public=True, item=item_uid, target=life['id'])
 	
 	if 'player' in life:
 		gfx.message('You throw %s.' % items.get_name(_item))
@@ -2145,6 +2149,9 @@ def drop_item(life, item_id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = items.get_item_from_uid(remove_item_from_inventory(life, item_id))
 	item['pos'] = life['pos'][:]
+	_chunk = chunks.get_chunk(chunks.get_chunk_key_at(item['pos']))
+	
+	_chunk['items'].append(item_id)
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
@@ -2403,7 +2410,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				item['name'],
 				'Holding',
 				icon=item['icon'],
-				id=item)
+				id=item['uid'])
 		
 			_inventory_items += 1
 			_inventory.append(_menu_item)
@@ -2818,7 +2825,15 @@ def limb_is_broken(life, limb):
 def limb_is_in_pain(life, limb):
 	_limb = life['body'][limb]
 	
-	return _limb['pain']
+	_score = _limb['pain']
+	
+	if _limb['bruised']:
+		_score *= 1.5
+	
+	if _limb['broken']:
+		_score *= 2
+	
+	return _score
 
 #TODO: Unused?
 def artery_is_ruptured(life, limb):
@@ -2905,15 +2920,15 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	if life.has_key('player'):
 		gfx.message('Your %s is severely cut!' % limb,style='damage')
 
+def bruise_limb(life, limb):
+	_limb = life['body'][limb]
+	
+	_limb['bruised'] = True
+
 def break_limb(life,limb):
 	_limb = life['body'][limb]
 	
 	_limb['broken'] = True
-
-def bruise_limb(life,limb):
-	_limb = life['body'][limb]
-	
-	_limb['bruised'] = True
 
 def rupture_artery(life, limb):
 	_limb = life['body'][limb]
@@ -2942,13 +2957,22 @@ def burn(life, intensity):
 	
 	add_pain_to_limb(life, _burn_limb, amount=_burn_amount)
 
+def add_force_to_limb(life, limb, amount=0):
+	_limb = life['body'][limb]
+	
+	if not _limb['bruised']:
+		logging.debug('%s bruised their %s.' % (' '.join(life['name']), limb))
+		add_pain_to_limb(life, limb, amount=amount)
+		bruise_limb(life, limb)
+
 def add_pain_to_limb(life, limb, amount=1):
 	_limb = life['body'][limb]
 	
 	_limb['pain'] += amount
-	print 'Pain', _limb['pain']
+	
+	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
-def add_wound(life, limb, cut=0, pain=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
+def add_wound(life, limb, cut=0, pain=0, force=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	if cut:
@@ -2961,6 +2985,9 @@ def add_wound(life, limb, cut=0, pain=0, artery_ruptured=False, lodged_item=None
 	
 	if pain:
 		add_pain_to_limb(life, limb, amount=pain)
+	
+	if force:
+		add_force_to_limb(life, limb, amount=force)
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7
@@ -3094,7 +3121,7 @@ def damage_from_item(life,item,damage):
 	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
-		logic.show_event(life, _dam_message, time=35)
+		logic.show_event(_dam_message, time=35, life=life)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:

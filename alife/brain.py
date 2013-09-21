@@ -131,10 +131,17 @@ def remember_item(life, item):
 			'score': judgement.judge_item(life,item),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
+			'last_owned_by': item['owner'],
 			'shared_with': [],
 			'flags': {}}
 		
 		return True
+	
+	return True
+
+def remembers_item(life, item):
+	if item['uid'] in life['know_items']:
+		return life['know_items'][item['uid']]
 	
 	return False
 
