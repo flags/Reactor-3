@@ -41,7 +41,7 @@ cdef create_map_array(val, size):
 	return _map
 
 #@profile
-def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False):
+def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
 	_init_time = time.time()
 	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
 	cdef float _score
@@ -222,6 +222,15 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		#	print
 		
 		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
+	
+	if return_score_in_range:
+		_positions = []
+		for y in range(0, _bot_right[1]-_top_left[1]):
+			for x in range(0, _bot_right[0]-_top_left[0]):
+				if _dijkstra_map[x][y] in return_score_in_range:
+					_positions.append((_top_left[0]+x, _top_left[1]+y))
+		
+		return _positions
 	
 	_path = []
 	_pos[0] = start_pos[0]-_top_left[0]

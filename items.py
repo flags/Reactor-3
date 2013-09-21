@@ -10,6 +10,7 @@ import effects
 import timers
 import alife
 import logic
+import zones
 import maps
 import life
 
@@ -168,13 +169,24 @@ def delete_item(item):
 			del life['know_items'][item['uid']]
 	
 	timers.remove_by_owner(item)
-	
-	maps.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))['items'].remove(item['uid'])
+	remove_from_chunk(item)
 	
 	if gfx.position_is_in_frame(item['pos']):
 		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
 	
 	del ITEMS[item['uid']]
+
+def add_to_chunk(item):
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
+	
+	if not item['uid'] in _chunk['items']:
+		_chunk['items'].append(item['uid'])
+
+def remove_from_chunk(item):
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
+	
+	if item['uid'] in _chunk['items']:
+		_chunk['items'].remove(item['uid'])
 
 def save_all_items():
 	for item in ITEMS.values():
@@ -304,7 +316,7 @@ def store_item_in(item_uid, container_uid):
 	_item['stored_in'] = container_uid
 	
 	update_container_capacity(container_uid)
-	
+	add_to_chunk(_item)
 	return True
 
 def remove_item_from_any_storage(item_uid):
@@ -320,7 +332,12 @@ def burn(item, amount):
 		return False
 	
 	item['burning'] += amount*.1
-	print item['burning']
+
+	if item['owner']:
+		logging.debug('%s\'s %s catches fire!' % (' '.join(LIFE[item['owner']]['name']), item['name']))
+		
+		if 'player' in LIFE[item['owner']]:
+			gfx.message('Your %s catches fire!' % item['name'])
 
 def explode(item):
 	if not item['type'] == 'explosive':
@@ -355,12 +372,26 @@ def explode(item):
 		
 		life.push(LIFE[life_id], _direction, _force)
 		
-		life.say(LIFE[life_id], '@n is thrown by the explosion!', action=True)
+		if 'player' in LIFE[life_id]:
+			life.say(LIFE[life_id], '@n are thrown by the explosion!', action=True)
+		else:
+			life.say(LIFE[life_id], '@n is thrown by the explosion!', action=True)
 	
 	if 'fire' in item['damage']:
-		for pos in drawing.draw_circle(item['pos'], item['radius']):
+		_circle = drawing.draw_circle(item['pos'], item['radius'])
+		for pos in zones.dijkstra_map(item['pos'], [item['pos']], [zones.get_zone_at_coords(item['pos'])], return_score_in_range=range(0, item['damage']['fire'])):
+			if not pos in _circle:
+				continue
+			
 			if not maps.position_is_in_map(pos):
 				continue
+			
+			for life_id in LIFE_MAP[pos[0]][pos[1]]:
+				for _visible_item in [get_item_from_uid(i) for i in life.get_all_visible_items(LIFE[life_id])]:
+					if not 'CAN_BURN' in _visible_item['flags']:
+						continue
+					
+					burn(_visible_item, item['damage']['fire'])
 			
 			if not random.randint(0, 4):
 				effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
@@ -432,6 +463,9 @@ def get_min_max_velocity(item):
 def tick_item(item_uid):
 	item = ITEMS[item_uid]
 	
+	if 'CAN_BURN' in item['flags'] and item['burning'] and item['owner']:
+		life.burn(LIFE[item['owner']], item['burning'])
+	
 	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
 		return False
@@ -490,7 +524,9 @@ def tick_item(item_uid):
 					continue					
 				
 				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
+					remove_from_chunk(item)
 					item['pos'] = [pos[0],pos[1],_life['pos'][2]]
+					add_to_chunk(item)
 					life.damage_from_item(_life,item,60)
 					delete_item(ITEMS[item_uid])
 					return False
@@ -516,8 +552,7 @@ def tick_item(item_uid):
 		
 		create_effects(item, pos, item['realpos'][2], _z_min)
 	
-	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
-	_chunk['items'].remove(item_uid)
+	remove_from_chunk(item)
 	
 	if _break:
 		item['pos'][0] = int(pos[0])
@@ -528,8 +563,7 @@ def tick_item(item_uid):
 		item['pos'][1] = int(round(item['realpos'][1]))
 		item['pos'][2] = int(round(item['realpos'][2]))
 	
-	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
-	_chunk['items'].append(item_uid)
+	add_to_chunk(item)
 	
 	_x = item['pos'][0]-CAMERA_POS[0]
 	_y = item['pos'][1]-CAMERA_POS[1]

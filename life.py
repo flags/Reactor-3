@@ -1912,6 +1912,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
 	item['parent_id'] = life['id']
+	item['owner'] = life['id']
 	
 	if 'stored_in' in item:
 		items.remove_item_from_any_storage(item_uid)
@@ -1942,6 +1943,7 @@ def add_item_to_inventory(life, item_uid):
 	
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
+	item['owner'] = life['id']
 	
 	if 'stored_in' in item:
 		items.remove_item_from_any_storage(item_uid)
@@ -2007,6 +2009,7 @@ def remove_item_from_inventory(life, item_id):
 	
 	life['inventory'].remove(item['uid'])
 	del item['parent_id']
+	item['owner'] = None
 	
 	create_and_update_self_snapshot(life)
 	
@@ -2149,9 +2152,7 @@ def drop_item(life, item_id):
 	"""Helper function. Removes item from inventory and drops it. Returns item."""
 	item = items.get_item_from_uid(remove_item_from_inventory(life, item_id))
 	item['pos'] = life['pos'][:]
-	_chunk = chunks.get_chunk(chunks.get_chunk_key_at(item['pos']))
-	
-	_chunk['items'].append(item_id)
+	items.add_to_chunk(item)
 	
 	#TODO: Don't do this here/should probably be a function anyway.
 	for hand in life['hands']:
