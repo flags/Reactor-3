@@ -61,7 +61,7 @@ def astar(life, start, end, zones, dijkstra=False):
 				#mo.write(_line+'\n')
 		
 		#print 'end',zone['z']
-		_path['map'] = numpy.multiply(zone['rotmap'], _path['map'])
+		_path['map'] = numpy.add(zone['rotmap'], _path['map'])
 		#print time.time()-_t
 	
 	start = (start[0], start[1])
@@ -161,24 +161,24 @@ def getadj(path, pos, checkclist=True):
 	return adj
 
 def find_path(path):
-		if path['map'][path['end'][1], path['end'][0]] == -2:
-			return [[path['start'][0], path['start'][1],0]]
+	if path['map'][path['end'][1], path['end'][0]] == -2:
+		return [[path['start'][0], path['start'][1],0]]
 
-		node = path['pmap'][path['end'][0]][path['end'][1]]
-		_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
+	node = path['pmap'][path['end'][0]][path['end'][1]]
+	_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
 
-		_broken = False
-		while not tuple(node) == tuple(path['start']):
-			if not node:
-				_broken = True
-				break
-			else:
-				_path.insert(0,(node[0], node[1],int(path['map'][node[1], node[0]])))
+	_broken = False
+	while not tuple(node) == tuple(path['start']):
+		if not node:
+			_broken = True
+			break
+		else:
+			_path.insert(0,(node[0], node[1],int(path['map'][node[1], node[0]])))
 
-			path['tmap'][node[0]][node[1]] = 1
-			node = path['pmap'][node[0]][node[1]]
+		path['tmap'][node[0]][node[1]] = 1
+		node = path['pmap'][node[0]][node[1]]
 
-		return _path
+	return _path
 
 def short_path(life, start, end):
 	_s = time.time()
@@ -196,8 +196,8 @@ def short_path(life, start, end):
 	return _line
 
 def create_path(life, start, end, zones):
-	_shortpath = short_path(life, start, end)
-	if _shortpath:
-		return _shortpath
+	#_shortpath = short_path(life, start, end)
+	#if _shortpath:
+	#	return _shortpath
 	
 	return astar(life, start, end, zones)
