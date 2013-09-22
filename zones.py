@@ -199,7 +199,24 @@ def connect_ramps():
 
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
-	return fast_dijkstra.dijkstra_map(start_pos,
+	_map = {'start_pos': start_pos,
+	        'goals': goals,
+	        'zones': zones,
+	        'max_chunk_distance': max_chunk_distance,
+	        'rolldown': rolldown,
+	        'avoid_chunks': avoid_chunks,
+	        'avoid_positions': avoid_positions,
+	        'return_score': return_score,
+	        'return_score_in_range': return_score_in_range}
+	
+	_map_string = ''
+	for key in _map.keys():
+		_map_string += '%s:%s' % (key, _map[key])
+	
+	if _map_string in DIJKSTRA_CACHE:
+		return DIJKSTRA_CACHE[_map_string]['return']
+	
+	_map['return'] = fast_dijkstra.dijkstra_map(start_pos,
 	                                  goals,
 	                                  zones,
 	                                  max_chunk_distance=max_chunk_distance,
@@ -208,6 +225,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	                                  avoid_positions=avoid_positions,
 	                                  return_score=return_score,
 	                                  return_score_in_range=return_score_in_range)
+	
+	DIJKSTRA_CACHE[_map_string] = _map
+	
+	return _map['return']
 
 def slow_dijkstra_map(goals, zones, max_chunk_distance=5):
 	_open_map = create_map_array(val=-3)

@@ -34,6 +34,24 @@ def weapon_equipped_and_ready(life):
 	
 	return True
 
+def get_target_positions_and_zones(life, targets):
+	_target_positions = []
+	_zones = []
+	for _target in targets:
+		_known_target = brain.knows_alife_by_id(life, _target)
+		_target_positions.append(_known_target['last_seen_at'])
+		_zone = zones.get_zone_at_coords(_known_target['last_seen_at'])
+		
+		if not _zone in _zones:
+			_zones.append(_zone)
+	
+	_zone = zones.get_zone_at_coords(life['pos'])
+	
+	if not _zone in _zones:
+		_zones.append(_zone)
+		
+	return _target_positions, _zones
+
 def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'],'ammotype': weapon['ammotype']}])
 
@@ -191,7 +209,7 @@ def melee_combat(life, target):
 
 def ranged_combat(life, target):
 	target = brain.knows_alife_by_id(life, target)
-	_pos_for_combat = movement.position_for_combat(life, target, target['last_seen_at'], WORLD_INFO['map'])
+	_pos_for_combat = movement.position_for_combat(life, [target['life']['id']], target['last_seen_at'], WORLD_INFO['map'])
 	
 	if not target['escaped'] and not _pos_for_combat:
 		return False

@@ -6,7 +6,7 @@ New in version 0.5.5:
 	* ALife will surrender under some conditions
 	* Moved more ALife functionality into rawscript
 	* Items can now have additional prefixes
-	* Burnable items now burn
+	* Burnable items now burn and damage entities
 	* Fixed crash when adding items containing items to inventories
 	* Camera can now follow non-entities
 	* Explosions now push ALife

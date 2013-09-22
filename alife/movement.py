@@ -25,25 +25,60 @@ def score_shootcover(life,target,pos):
 	
 	return numbers.distance(life['pos'],pos)
 
-def position_for_combat(life,target,position,source_map):
-	_cover = {'pos': None,'score': 9000}
+def position_for_combat(life, targets, position, source_map):
+	_cover = {'pos': None, 'score': 9000}
 	
+	_target_positions, _zones = combat.get_target_positions_and_zones(life, targets)
+	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
+	print 'yo!!!!!!!!!!!!', _nearest_target_score
+	#We need cover
+	#TODO: Short or long-range weapon?
+	if _nearest_target_score <= sight.get_vision(life):
+		_visible_target_chunks = []
+		for target in targets:
+			_known_target = brain.knows_alife_by_id(life, target)
+			for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
+				if not chunk_key in _visible_target_chunks:
+					_visible_target_chunks.append(chunk_key)
+			
+		_cover = zones.dijkstra_map(life['pos'], _target_positions, _zones, avoid_chunks=_visible_target_chunks, return_score_in_range=[sight.get_vision(life), 100])
+		_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
+		
+		_zones = []
+		for pos in _cover:
+			_zone = zones.get_zone_at_coords(pos)
+			
+			if not _zone in _zones:
+				_zones.append(_zone)
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
+			lfe.add_action(life, {'action': 'dijkstra_move',
+				                  'rolldown': True,
+				                  'goals': _cover[:],
+				                  'orig_goals': _cover[:]},
+				           999)
+			print 'going'
+			return False
+		else:
+			print 'WAITING!'
+	
+	return True
 	#TODO: Eventually this should be written into the pathfinding logic
-	if sight.can_see_position(life, target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
-		if not sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
-			lfe.clear_actions(life)
-			return True
+	#if sight.can_see_position(life, target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
+	#	if not sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
+	#		lfe.clear_actions(life)
+	#		return True
 	
 	#What can the target see?
 	#TODO: Unchecked Cython flag
-	_attack_from = sight.generate_los(life,target,position,source_map,score_shootcover,invert=True)
+	#_attack_from = sight.generate_los(life,target,position,source_map,score_shootcover,invert=True)
 	
-	if _attack_from:
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _attack_from['pos']},200)
-		return False
+	#if _attack_from:
+	#	lfe.clear_actions(life)
+	#	lfe.add_action(life,{'action': 'move','to': _attack_from['pos']},200)
+	#	return False
 	
-	return True
+	#return True
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):

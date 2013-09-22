@@ -46,6 +46,21 @@ def get_chunk_pos(chunk_id, center=False):
 	
 	return [int(val) for val in chunk_id.split(',')]
 
+def get_visible_chunks_from(pos, vision):
+	_center_chunk_key = get_chunk_key_at(pos)
+	
+	_chunk_keys = []
+	for chunk_key in sight._scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], vision):
+		if not chunk_key in WORLD_INFO['chunk_map']:
+			continue
+		
+		if not can_see_chunk_from_pos(pos, chunk_key, vision=vision):
+			continue
+		
+		_chunk_keys.append(chunk_key)
+	
+	return _chunk_keys
+
 def get_chunk_key_at(pos):
 	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
@@ -194,7 +209,7 @@ def get_nearest_chunk_in_list(pos, chunks):
 def get_distance_to_hearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']
 
-def _can_see_chunk_quick(life, chunk_id):
+def _can_see_chunk_quick(start_pos, chunk_id, vision):
 	chunk = maps.get_chunk(chunk_id)
 	
 	if not len(chunk['ground']):
@@ -209,23 +224,40 @@ def _can_see_chunk_quick(life, chunk_id):
 		if _y:
 			_y -= 1
 		
-		_can_see = sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y))
+		_can_see = sight._can_see_position(start_pos, (chunk['pos'][0]+_x, chunk['pos'][1]+_y), max_length=vision)
 		
 		if _can_see:
 			return _can_see
 	
 	return False
 
-def can_see_chunk(life, chunk_id, distance=True):
-	_fast_see = _can_see_chunk_quick(life, chunk_id)
+def can_see_chunk(life, chunk_key, distance=True):
+	return can_see_chunk_from_pos(life['pos'], chunk_key, distance=distance, vision=sight.get_vision(life))
+	#_fast_see = _can_see_chunk_quick(life['pos'], chunk_id, sight.get_vision(life))
+	#
+	#if _fast_see:
+	#	return _fast_see
+	#
+	#chunk = maps.get_chunk(chunk_id)
+	#
+	#for pos in chunk['ground']:
+	#	_can_see = sight.can_see_position(life, pos, distance=distance)
+	#	
+	#	if _can_see:
+	#		return _can_see
+	#
+	#return False
+
+def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
+	_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
 	
 	if _fast_see:
 		return _fast_see
 	
-	chunk = maps.get_chunk(chunk_id)
+	chunk = maps.get_chunk(chunk_key)
 	
 	for pos in chunk['ground']:
-		_can_see = sight.can_see_position(life, pos, distance=distance)
+		_can_see = sight._can_see_position(pos1, pos, distance=distance)
 		
 		if _can_see:
 			return _can_see

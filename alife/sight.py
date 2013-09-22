@@ -105,26 +105,7 @@ def get_vision(life):
 	
 	return life['vision_max']
 
-def _can_see_position(pos1, pos2):
-	_line = render_los.draw_line(pos1[0],
-		pos1[1],
-		pos2[0],
-		pos2[1])
-		
-	if not _line:
-		_line = []
-	
-	for pos in _line:
-		if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
-			return False
-	
-	return _line
-
-def can_see_position(life, pos, distance=True, block_check=False):
-	"""Returns `true` if the life can see a certain position."""
-	if tuple(life['pos'][:2]) == tuple(pos[:2]):
-		return [pos]
-	
+def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=10):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:
@@ -132,25 +113,32 @@ def can_see_position(life, pos, distance=True, block_check=False):
 	
 	_ret_line = []
 	for _pos in _check:
-		_line = render_los.draw_line(life['pos'][0]+_pos[0],
-			life['pos'][1]+_pos[1],
-			pos[0],
-			pos[1])
-			
+		_line = render_los.draw_line(pos1[0],
+		                             pos1[1],
+		                             pos2[0],
+		                             pos2[1])
+										 
 		if not _line:
 			_line = []
 		
 		if _pos == (0, 0):
 			_ret_line = _line
 		
-		if len(_line) >= get_vision(life) and distance:
+		if len(_line) >= max_length and distance:
 			return False	
 		
 		for pos in _line:
-			if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+			if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
 				return False
 	
 	return _ret_line
+
+def can_see_position(life, pos, distance=True, block_check=False):
+	"""Returns `true` if the life can see a certain position."""
+	if tuple(life['pos'][:2]) == tuple(pos[:2]):
+		return [pos]
+	
+	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, distance=distance)
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:
