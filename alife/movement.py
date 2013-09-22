@@ -162,16 +162,17 @@ def escape(life, targets):
 			
 			_visible_target_chunks.append(chunk_key)
 	
-	print 'vis chunks',_visible_target_chunks
-	print life['name'],'can seen', brain.get_flag(life, 'visible_chunks')
-	
 	_cover = zones.dijkstra_map(life['pos'], _target_positions, _zones, avoid_chunks=_visible_target_chunks, return_score_in_range=[1, 100])
-	print 'cover', _cover
-	#_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
+	_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
 	
-	return []
+	_zones = [zones.get_zone_at_coords(life['pos'])]
+	for _pos in _cover:
+		_zone = zones.get_zone_at_coords(_pos)
+		
+		if not _zone in _zones:
+			_zones.append(_zone)
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
 		print 'waiting...'
 		return True
 	
@@ -181,15 +182,10 @@ def escape(life, targets):
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': True,
 	                      'zones': _zones,
-	                      'orig_goals': _cover[:],
                           'goals': _cover[:]},
                    999)
 
 def hide(life, target_id):
-	#if lfe.path_dest(life):
-	#	return True
-	#if life['path_state'] == life['state'] and lfe.path_dest(life):
-	#	return True
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
 	_avoid_positions = []

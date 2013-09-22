@@ -158,7 +158,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		
 		_dijkstra_map[_x][_y] = 0
 	
-	
 	_changed = True
 	
 	_change_time = time.time()
