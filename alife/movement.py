@@ -138,20 +138,40 @@ def search_for_target(life, target_id):
 	else:
 		_know['escaped'] = 2
 
-def explore(life,source_map):
+def explore(life, source_map):
 	#This is a bit different than the logic used for the other pathfinding functions
 	pass
 
-def escape(life, target_id):
+def escape(life, targets):
 	#With this function we're trying to get away from the target.
-	_target = brain.knows_alife_by_id(life, target_id)
-	_goals = [_target['last_seen_at'][:]]
-	_zones = [zones.get_zone_at_coords(life['pos']),
-	          zones.get_zone_at_coords(_target['last_seen_at'])]
-	_target_visible_chunks = brain.get_flag(LIFE[target_id], 'visible_chunks')
+	_target_positions = []
+	_visible_target_chunks = []
+	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	_orig_goals = _goals[:]
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):
+	for target_id in targets:
+		_target = brain.knows_alife_by_id(life, target_id)
+		_target_positions.append(_target['last_seen_at'][:])
+		_zone = zones.get_zone_at_coords(_target['last_seen_at'])
+		
+		if not _zone in _zones:
+			_zones.append(_zone)
+	
+		for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
+			if chunk_key in _visible_target_chunks:
+				continue
+			
+			_visible_target_chunks.append(chunk_key)
+	
+	print 'vis chunks',_visible_target_chunks
+	print life['name'],'can seen', brain.get_flag(life, 'visible_chunks')
+	
+	_cover = zones.dijkstra_map(life['pos'], _target_positions, _zones, avoid_chunks=_visible_target_chunks, return_score_in_range=[1, 100])
+	print 'cover', _cover
+	#_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
+	
+	return []
+	
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
 		print 'waiting...'
 		return True
 	
@@ -159,10 +179,10 @@ def escape(life, target_id):
 	
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
-                          'rolldown': False,
+                          'rolldown': True,
 	                      'zones': _zones,
-	                      'orig_goals': _orig_goals,
-                          'goals': _goals[:]},
+	                      'orig_goals': _cover[:],
+                          'goals': _cover[:]},
                    999)
 
 def hide(life, target_id):

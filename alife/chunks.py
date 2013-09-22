@@ -257,7 +257,7 @@ def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 	chunk = maps.get_chunk(chunk_key)
 	
 	for pos in chunk['ground']:
-		_can_see = sight._can_see_position(pos1, pos, distance=distance)
+		_can_see = sight._can_see_position(pos1, pos, distance=distance, max_length=vision)
 		
 		if _can_see:
 			return _can_see

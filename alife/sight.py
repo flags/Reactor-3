@@ -27,7 +27,7 @@ def look(life):
 	#	_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
 	#	brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	#else:
-	_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
+	_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 	#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 	_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 	brain.flag(life, 'visible_chunks', value=_visible_chunks)
@@ -124,7 +124,7 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=10)
 		if _pos == (0, 0):
 			_ret_line = _line
 		
-		if len(_line) >= max_length and distance:
+		if len(_line) > max_length and distance:
 			return False	
 		
 		for pos in _line:

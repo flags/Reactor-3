@@ -1186,6 +1186,7 @@ def perform_action(life):
 			
 	elif _action['action'] == 'dijkstra_move':
 		_path = []
+		print 'here!'
 		if not path_dest(life):
 			if 'avoid_positions' in _action:
 				_avoid_positions = _action['avoid_positions']
@@ -1194,8 +1195,10 @@ def perform_action(life):
 			
 			if 'avoid_chunks' in _action:
 				_avoid_chunks = _action['avoid_chunks']
+				print 'avoid these' * 1000
 			else:
 				_avoid_chunks = []
+				print 'oh nooooooooo' * 1000
 			
 			if 'zones' in _action:
 				_zones = _action['zones']

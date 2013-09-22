@@ -85,6 +85,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	_open_map = create_map_array(-3, MAP_SIZE)
 	
+	_avoid_goals = []
 	for zone in [zon.get_slice(z) for z in zones]:
 		for y in range(_top_left[1], _bot_right[1]):
 			for x in range(_top_left[0], _bot_right[0]):
@@ -97,12 +98,13 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if not zone['map'][x][y] == zone['id'] or zone['map'][x][y] in [-2, -1]:
 					continue
 				
-				_open_map[x][y] = 1
-				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
 				
 				if avoid_chunks and _chunk_key in avoid_chunks:
-					continue
+					_avoid_goals.append((x, y))
+					#continue
+					
+				_open_map[x][y] = 1
 				
 				_chunk = WORLD_INFO['chunk_map'][_chunk_key]
 				
@@ -149,11 +151,13 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_dijkstra_map[x][y] = 99999
 				_old_map[x][y] = 99999
 	
+	goals.extend(_avoid_goals)
 	for goal in goals:
 		_x = goal[0]-_top_left[0]
 		_y = goal[1]-_top_left[1]
 		
 		_dijkstra_map[_x][_y] = 0
+	
 	
 	_changed = True
 	
@@ -206,24 +210,23 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_dijkstra_map[x][y] *= -1.2
 	
 	if return_score:
-		#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-		#	for x in range(0, _bot_right[0]-_top_left[0]):
-		#		if rolldown:
-		#			if _dijkstra_map[x][y]>0:
-		#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
-		#			else:
-		#				print '#',
-		#		else:
-		#			if _dijkstra_map[x][y]<0:
-		#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
-		#			else:
-		#				print '#',
-		#	
-		#	print
-		
 		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
 	
 	if return_score_in_range:
+		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+			for x in range(0, _bot_right[0]-_top_left[0]):
+				if rolldown:
+					if _dijkstra_map[x][y]>0:
+						print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+					else:
+						print '#',
+				else:
+					if _dijkstra_map[x][y]<0:
+						print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+					else:
+						print '#',
+			
+			print
 		_positions = []
 		for y in range(0, _bot_right[1]-_top_left[1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
