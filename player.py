@@ -633,15 +633,17 @@ def handle_input():
 	
 	if INPUT['y']:
 		if int(SETTINGS['following'])>1:
-			SETTINGS['following'] = str(int(SETTINGS['following'])-1)
-			SETTINGS['controlling'] = str(int(SETTINGS['controlling'])-1)
+			#SETTINGS['following'] = str(int(SETTINGS['following'])-1)
+			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])-1)
+			life.focus_on(LIFE[str(int(SETTINGS['following'])-1)])
 			FADE_TO_WHITE[0] = 0
 			gfx.refresh_window()
 
 	if INPUT['u']:
 		if int(SETTINGS['following']) < len(LIFE.keys()):
-			SETTINGS['following'] = str(int(SETTINGS['following'])+1)
-			SETTINGS['controlling'] = str(int(SETTINGS['controlling'])+1)
+			#SETTINGS['following'] = str(int(SETTINGS['following'])+1)
+			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])+1)
+			life.focus_on(LIFE[str(int(SETTINGS['following'])+1)])
 			FADE_TO_WHITE[0] = 0
 			gfx.refresh_window()
 

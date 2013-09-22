@@ -1186,7 +1186,7 @@ def perform_action(life):
 			
 	elif _action['action'] == 'dijkstra_move':
 		_path = []
-		print 'here!'
+		
 		if not path_dest(life):
 			if 'avoid_positions' in _action:
 				_avoid_positions = _action['avoid_positions']

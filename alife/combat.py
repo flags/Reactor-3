@@ -37,6 +37,7 @@ def weapon_equipped_and_ready(life):
 def get_target_positions_and_zones(life, targets):
 	_target_positions = []
 	_zones = []
+	
 	for _target in targets:
 		_known_target = brain.knows_alife_by_id(life, _target)
 		_target_positions.append(_known_target['last_seen_at'])
@@ -46,6 +47,7 @@ def get_target_positions_and_zones(life, targets):
 			_zones.append(_zone)
 	
 	_zone = zones.get_zone_at_coords(life['pos'])
+	print 'my pos', life['pos'], _zone
 	
 	if not _zone in _zones:
 		_zones.append(_zone)

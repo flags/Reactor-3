@@ -199,6 +199,12 @@ def connect_ramps():
 
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
+	if not goals:
+		raise Exception('No goals set for dijkstra map.')
+	
+	if not zones:
+		raise Exception('No zones set for dijkstra map.')
+	
 	_map = {'start_pos': start_pos,
 	        'goals': goals,
 	        'zones': zones,

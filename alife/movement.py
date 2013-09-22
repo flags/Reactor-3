@@ -26,12 +26,11 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def position_for_combat(life, targets, position, source_map):
-	_cover = {'pos': None, 'score': 9000}
-	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, targets)
+	
+	#print _target_positions, _zones
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
-	print 'yo!!!!!!!!!!!!', _nearest_target_score
-	#We need cover
+	
 	#TODO: Short or long-range weapon?
 	if _nearest_target_score <= sight.get_vision(life):
 		_visible_target_chunks = []
@@ -40,8 +39,13 @@ def position_for_combat(life, targets, position, source_map):
 			for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
 				if not chunk_key in _visible_target_chunks:
 					_visible_target_chunks.append(chunk_key)
-			
-		_cover = zones.dijkstra_map(life['pos'], _target_positions, _zones, avoid_chunks=_visible_target_chunks, return_score_in_range=[sight.get_vision(life), 100])
+		
+		#TODO: For melee combat we'll want to get as close as possible
+		_cover = zones.dijkstra_map(life['pos'],
+		                            _target_positions,
+		                            _zones,
+		                            avoid_chunks=_visible_target_chunks,
+		                            return_score_in_range=[sight.get_vision(life), 100])
 		_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
 		
 		_zones = []
@@ -57,10 +61,10 @@ def position_for_combat(life, targets, position, source_map):
 				                  'goals': _cover[:],
 				                  'orig_goals': _cover[:]},
 				           999)
-			print 'going'
+			#print 'going'
 			return False
-		else:
-			print 'WAITING!'
+		#else:
+		#	print 'WAITING!'
 	
 	return True
 	#TODO: Eventually this should be written into the pathfinding logic
@@ -148,6 +152,8 @@ def escape(life, targets):
 	_visible_target_chunks = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
+	print 'ESCAPING!!!!!!!!'
+	
 	for target_id in targets:
 		_target = brain.knows_alife_by_id(life, target_id)
 		_target_positions.append(_target['last_seen_at'][:])
@@ -162,8 +168,17 @@ def escape(life, targets):
 			
 			_visible_target_chunks.append(chunk_key)
 	
-	_cover = zones.dijkstra_map(life['pos'], _target_positions, _zones, avoid_chunks=_visible_target_chunks, return_score_in_range=[1, 100])
+	#TODO: For lower limit in return_score_in_range, use range of weapon
+	_cover = zones.dijkstra_map(life['pos'],
+	                            _target_positions,
+	                            _zones,
+	                            avoid_chunks=_visible_target_chunks,
+	                            return_score_in_range=[5, 100])
 	_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
+	
+	if not _cover:
+		print 'NOWHERE TO ESCAPE'
+		return False
 	
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	for _pos in _cover:
@@ -189,6 +204,8 @@ def hide(life, target_id):
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
 	_avoid_positions = []
+	
+	print 'HIDING!!!!!!!!!'
 	
 	_orig_goals = _goals[:]
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):
