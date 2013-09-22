@@ -184,6 +184,9 @@ def short_path(life, start, end):
 	_s = time.time()
 	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
 	
+	if numbers.distance(start, end)>30:
+		return False
+	
 	if not _line:
 		return [start]
 	
@@ -196,8 +199,8 @@ def short_path(life, start, end):
 	return _line
 
 def create_path(life, start, end, zones):
-	#_shortpath = short_path(life, start, end)
-	#if _shortpath:
-	#	return _shortpath
+	_shortpath = short_path(life, start, end)
+	if _shortpath:
+		return _shortpath
 	
 	return astar(life, start, end, zones)

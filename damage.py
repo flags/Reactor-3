@@ -116,7 +116,7 @@ def bullet_hit(life, bullet, limb):
 					else:
 						_msg.append(', puncturing something')
 					
-					if item['type'] == 'explosive':
+					if _item['type'] == 'explosive':
 						timers.create(_item, action.make_small_script(function='explode',
 	                                       item=_item['uid']),
 	              15+value)

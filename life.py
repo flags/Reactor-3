@@ -928,6 +928,7 @@ def push(life, direction, speed, friction=0.05, _velocity=0):
 	life['friction'] = friction
 	life['velocity'] = velocity
 	life['realpos'] = life['pos'][:]
+	life['path'] = []
 	
 	logging.debug('%s flies off in an arc! (%s)' % (' '.join(life['name']), life['velocity']))
 
