@@ -2484,7 +2484,6 @@ def draw_life_info():
 	
 	_name_mods.append(life['stance'].title())
 	_name_mods.append(get_current_chunk(life)['type'])
-	_name_mods.append(str(len(get_current_chunk(life)['neighbors'])))
 	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
 	tcod.console_set_default_background(0, tcod.black)
@@ -2856,6 +2855,15 @@ def can_knock_over(life, limb):
 	return False
 
 def remove_limb(life, limb, no_children=False):
+	if limb in life['hands']:
+		life['hands'].remove(limb)
+	
+	if limb in life['legs']:
+		life['legs'].remove(limb)
+	
+	if limb in life['melee']:
+		life['melee'].remove(limb)	
+	
 	if not limb in life['body']:
 		return False
 	
@@ -2869,15 +2877,6 @@ def remove_limb(life, limb, no_children=False):
 			say(life, '%s falls over!' % language.get_introduction(life), action=True)
 		
 		collapse(life)
-	
-	if limb in life['hands']:
-		life['hands'].remove(limb)
-	
-	if limb in life['legs']:
-		life['legs'].remove(limb)
-	
-	if limb in life['melee']:
-		life['melee'].remove(limb)	
 	
 	if 'CRUCIAL' in life['body'][limb]['flags']:
 		if not life['dead']:

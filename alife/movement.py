@@ -26,13 +26,15 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def position_for_combat(life, targets, position, source_map):
-	_target_positions, _zones = combat.get_target_positions_and_zones(life, targets)
+	_target_positions, _zones = combat.get_target_positions_and_zones(life, targets, ignore_escaped=True)
 	
+	print 'target pos', _target_positions
 	#print _target_positions, _zones
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
 	if _nearest_target_score <= sight.get_vision(life):
+		print 'changing position for combat...'
 		_visible_target_chunks = []
 		for target in targets:
 			_known_target = brain.knows_alife_by_id(life, target)
@@ -45,12 +47,14 @@ def position_for_combat(life, targets, position, source_map):
 		                            _target_positions,
 		                            _zones,
 		                            avoid_chunks=_visible_target_chunks,
-		                            return_score_in_range=[sight.get_vision(life), 100])
+		                            return_score_in_range=[1, 100])
 		_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
 		
 		if not _cover:
 			print 'Nowhere to take cover during combat!'
 			return True
+		
+		#print _cover
 		
 		_zones = []
 		for pos in _cover:
@@ -166,7 +170,9 @@ def escape(life, targets):
 		if not _zone in _zones:
 			_zones.append(_zone)
 	
-		for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
+		#for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
+		print 'visible chunks at',_target['last_seen_at'],sight.get_vision(_target['life'])
+		for chunk_key in chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])):
 			if chunk_key in _visible_target_chunks:
 				continue
 			
@@ -177,7 +183,7 @@ def escape(life, targets):
 	                            _target_positions,
 	                            _zones,
 	                            avoid_chunks=_visible_target_chunks,
-	                            return_score_in_range=[5, 100])
+	                            return_score_in_range=[1, 100])
 	_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
 	
 	if not _cover:
@@ -200,7 +206,7 @@ def escape(life, targets):
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': True,
-	                      'zones': _zones,
+	                     'zones': _zones,
                           'goals': _cover[:]},
                    999)
 

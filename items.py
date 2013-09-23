@@ -325,6 +325,7 @@ def remove_item_from_any_storage(item_uid):
 	_container = get_item_from_uid(_item['stored_in'])
 	_container['storing'].remove(item_uid)
 	update_container_capacity(_item['stored_in'])
+	
 	del _item['stored_in']
 
 def burn(item, amount):
@@ -383,7 +384,7 @@ def explode(item):
 	
 	if 'fire' in item['damage']:
 		_circle = drawing.draw_circle(item['pos'], item['radius'])
-		for pos in zones.dijkstra_map(item['pos'], [item['pos']], [zones.get_zone_at_coords(item['pos'])], return_score_in_range=range(0, item['damage']['fire'])):
+		for pos in zones.dijkstra_map(item['pos'], [item['pos']], [zones.get_zone_at_coords(item['pos'])], return_score_in_range=[0, item['damage']['fire']]):
 			if not pos in _circle:
 				continue
 			

@@ -105,7 +105,7 @@ def get_vision(life):
 	
 	return life['vision_max']
 
-def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=10):
+def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=True):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:

@@ -46,11 +46,16 @@ def get_chunk_pos(chunk_id, center=False):
 	
 	return [int(val) for val in chunk_id.split(',')]
 
-def get_visible_chunks_from(pos, vision):
+def get_visible_chunks_from(pos, vision, center=True):
 	_center_chunk_key = get_chunk_key_at(pos)
 	
+	if center:
+		_pos = [int(i)+WORLD_INFO['chunk_size']/2 for i in _center_chunk_key.split(',')]
+		_pos.append(pos[2])
+		pos = _pos[:]
+	
 	_chunk_keys = []
-	for chunk_key in sight._scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], vision):
+	for chunk_key in sight._scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], vision, ignore_chunks=0):
 		if not chunk_key in WORLD_INFO['chunk_map']:
 			continue
 		

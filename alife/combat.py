@@ -34,12 +34,16 @@ def weapon_equipped_and_ready(life):
 	
 	return True
 
-def get_target_positions_and_zones(life, targets):
+def get_target_positions_and_zones(life, targets, ignore_escaped=False):
 	_target_positions = []
 	_zones = []
 	
 	for _target in targets:
 		_known_target = brain.knows_alife_by_id(life, _target)
+		
+		if ignore_escaped and _known_target['escaped']:
+			continue
+		
 		_target_positions.append(_known_target['last_seen_at'])
 		_zone = zones.get_zone_at_coords(_known_target['last_seen_at'])
 		
@@ -47,7 +51,6 @@ def get_target_positions_and_zones(life, targets):
 			_zones.append(_zone)
 	
 	_zone = zones.get_zone_at_coords(life['pos'])
-	print 'my pos', life['pos'], _zone
 	
 	if not _zone in _zones:
 		_zones.append(_zone)
@@ -212,9 +215,14 @@ def melee_combat(life, target):
 def ranged_combat(life, target):
 	target = brain.knows_alife_by_id(life, target)
 	_pos_for_combat = movement.position_for_combat(life, [target['life']['id']], target['last_seen_at'], WORLD_INFO['map'])
+	print _pos_for_combat
 	
 	if not target['escaped'] and not _pos_for_combat:
-		return False
+		if life['path']:
+			return False
+		else:
+			return movement.escape(life, [target['life']['id']])
+			
 	elif _pos_for_combat:
 		lfe.stop(life)
 	

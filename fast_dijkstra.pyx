@@ -212,42 +212,42 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
 	
 	if return_score_in_range:
-		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-			for x in range(0, _bot_right[0]-_top_left[0]):
-				if rolldown:
-					if _dijkstra_map[x][y]>0:
-						print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
-					else:
-						print '#',
-				else:
-					if _dijkstra_map[x][y]<0:
-						print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
-					else:
-						print '#',
-			
-			print
+		#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+		#	for x in range(0, _bot_right[0]-_top_left[0]):
+		#		if rolldown:
+		#			if _dijkstra_map[x][y]>0:
+		#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+		#			else:
+		#				print '#',
+		#		else:
+		#			if _dijkstra_map[x][y]<0:
+		#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+		#			else:
+		#				print '#',
+		#	
+		#	print
 		_positions = []
 		for y in range(0, _bot_right[1]-_top_left[1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
-				if _dijkstra_map[x][y] in return_score_in_range:
+				if _dijkstra_map[x][y] in range(return_score_in_range[0], return_score_in_range[1]):
 					_positions.append((_top_left[0]+x, _top_left[1]+y))
 		
 		return _positions
 	
-	for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-		for x in range(0, _bot_right[0]-_top_left[0]):
-			if rolldown:
-				if _dijkstra_map[x][y]>0:
-					print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
-				else:
-					print '#',
-			else:
-				if _dijkstra_map[x][y]<0:
-					print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
-				else:
-					print '#',
-		
-		print
+	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+	#	for x in range(0, _bot_right[0]-_top_left[0]):
+	#		if rolldown:
+	#			if _dijkstra_map[x][y]>0:
+	#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+	#			else:
+	#				print '#',
+	#		else:
+	#			if _dijkstra_map[x][y]<0:
+	#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+	#			else:
+	#				print '#',
+	#	
+	#	print
 	
 	_path = []
 	_pos[0] = start_pos[0]-_top_left[0]
@@ -300,7 +300,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_pos[0] = _next_pos[0]
 		_pos[1] = _next_pos[1]
 	
-	print _path
+	#print _path
 	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
 	#	for x in range(0, _bot_right[0]-_top_left[0]):
 	#		if rolldown:
