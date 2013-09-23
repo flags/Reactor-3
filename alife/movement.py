@@ -48,6 +48,10 @@ def position_for_combat(life, targets, position, source_map):
 		                            return_score_in_range=[sight.get_vision(life), 100])
 		_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
 		
+		if not _cover:
+			print 'Nowhere to take cover during combat!'
+			return True
+		
 		_zones = []
 		for pos in _cover:
 			_zone = zones.get_zone_at_coords(pos)

@@ -270,6 +270,14 @@ def generate_needs(life):
 			flag(life, 'no_weapon')
 
 def understand(life, source_map):
+	if life['state'] == 'combat' and life['think_rate_max'] == LIFE_THINK_RATE:
+		if life['think_rate'] > 2:
+			life['think_rate'] = 2
+		
+		life['think_rate_max'] = 2
+	else:
+		life['think_rate_max'] = LIFE_THINK_RATE
+	
 	if life['think_rate']:
 		life['think_rate'] -= 1
 		return False

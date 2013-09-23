@@ -119,6 +119,8 @@ def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1,
 		'map': maps.create_map(size=size),
 		'settings': {'back yards': False, 'town size': 15}}
 	
+	WORLD_INFO['chunk_map'] = map_gen['chunk_map']
+	
 	#logging.debug('Creating height map...')
 	#generate_height_map(map_gen)
 	logging.debug('Creating chunk map...')

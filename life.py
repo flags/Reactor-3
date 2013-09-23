@@ -310,7 +310,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['discover_direction_history'] = []
 	_life['discover_direction'] = 270
 	_life['tickers'] = {}
-	_life['think_rate_max'] = 6
+	_life['think_rate_max'] = LIFE_THINK_RATE
 	_life['think_rate'] = random.randint(0, _life['think_rate_max'])
 	
 	#Various icons...
@@ -2960,12 +2960,15 @@ def burn(life, intensity):
 	
 	add_pain_to_limb(life, _burn_limb, amount=_burn_amount)
 
-def add_force_to_limb(life, limb, amount=0):
+def add_force_to_limb(life, limb, impact_velocity):
 	_limb = life['body'][limb]
+	
+	if max(impact_velocity) >= _limb['size']:
+		return sever_limb(life, limb, impact_velocity)
 	
 	if not _limb['bruised']:
 		logging.debug('%s bruised their %s.' % (' '.join(life['name']), limb))
-		add_pain_to_limb(life, limb, amount=amount)
+		add_pain_to_limb(life, limb, amount=max(impact_velocity))
 		bruise_limb(life, limb)
 
 def add_pain_to_limb(life, limb, amount=1):
@@ -2975,7 +2978,7 @@ def add_pain_to_limb(life, limb, amount=1):
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
-def add_wound(life, limb, cut=0, pain=0, force=0, artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
+def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	
 	if cut:
@@ -2989,8 +2992,8 @@ def add_wound(life, limb, cut=0, pain=0, force=0, artery_ruptured=False, lodged_
 	if pain:
 		add_pain_to_limb(life, limb, amount=pain)
 	
-	if force:
-		add_force_to_limb(life, limb, amount=force)
+	if force_velocity:
+		add_force_to_limb(life, limb, force_velocity)
 	
 	if artery_ruptured:
 		#_limb['bleeding'] += 7

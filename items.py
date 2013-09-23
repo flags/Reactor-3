@@ -346,7 +346,9 @@ def explode(item):
 	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
 	
 	if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
+		gfx.message('%s explodes!' % get_name(item))
 		logic.show_event('%s explodes!' % get_name(item), item=item, delay=0)
+		
 	#elif numbers.distance(
 	
 	#TODO: Dirty hack
@@ -360,15 +362,17 @@ def explode(item):
 		_direction = numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
 		
 		#TODO: Intelligent(?) limb groups?
-		_limbs = random.sample(LIFE[life_id]['body'].keys(), _force/2)
+		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
+		#_limbs = random.sample(LIFE[life_id]['body'].keys(), _force-_distance)
+		_limb = random.choice(LIFE[life_id]['body'].keys())
 		
 		#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
 		print 'known item', _known_item
 		if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
 			life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
 		
-		for _limb in _limbs:
-			life.add_wound(LIFE[life_id], _limb, force=_force)
+		#for _limb in _limbs:
+		life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force))
 		
 		life.push(LIFE[life_id], _direction, _force)
 		

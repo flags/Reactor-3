@@ -134,6 +134,7 @@ TEXT_MAP = {}
 #Life constants
 LIFE_MAX_SPEED = 4
 LIFE_BLEED_RATE = .4 #Higher is faster
+LIFE_THINK_RATE = 6
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
@@ -149,7 +150,7 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 SETTINGS = {'running': True,
 	'paused': False,
 	'camera_track': [0, 0, 0],
-	'last_camera_pos': [0, 0, 0],
+	'last_camera_pos': [-1, -1, -1],
 	'draw lights': True,
 	'diffuse light': False,
 	'debug host': '',
