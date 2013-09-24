@@ -140,12 +140,17 @@ def main():
 			flicker=0)
 		FADE_TO_WHITE[0] += 0.9
 	
-	life.draw_life_info()
+	if SETTINGS['draw life info']:
+		life.draw_life_info()
+	
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
 	dialog.draw_dialog()
-	gfx.draw_message_box()
+	
+	if SETTINGS['draw message box']:
+		gfx.draw_message_box()
+	
 	gfx.draw_status_line()
 	gfx.draw_console()
 	if SETTINGS['map_slices']:

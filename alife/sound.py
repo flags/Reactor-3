@@ -270,16 +270,19 @@ def listen(life):
 				else:
 					lfe.memory(life, 'reject under_attack: attacker is trusted',
 						attacker=event['attacker'],
-						target=event['from']['id'])
-						
-					lfe.create_question(life,
-						'opinion_of_target',
-						{'target': event['from']['id'], 'who': event['attacker']},
-						[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
-					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']},
-					     {'text': 'target doesn\'t know target', 'target': event['from']['id'], 'who': event['attacker']}],
-						answer_all=True,
-						interest=10)
+						target=event['from']['id'],
+					    trust=-10,
+					    danger=10)
+					
+					#TODO: This could actually work for determining who to trust	
+					#lfe.create_question(life,
+					#	'opinion_of_target',
+					#	{'target': event['from']['id'], 'who': event['attacker']},
+					#	[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
+					#     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']},
+					#     {'text': 'target doesn\'t know target', 'target': event['from']['id'], 'who': event['attacker']}],
+					#	answer_all=True,
+					#	interest=10)
 			
 			#if _believes == event['from']['id']:
 			#	if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):

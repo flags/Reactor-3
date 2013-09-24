@@ -2313,8 +2313,13 @@ def draw_life_icon(life):
 	#	if time.time()%1>=0.5:
 	#		_icon[0] = '?'
 	
-	if not life['dead'] and time.time()%0.5>=0.25 and life['state'] in STATE_ICONS:
-		_icon[0] = STATE_ICONS[life['state']]
+	if not life['dead']:
+		_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
+		
+		if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
+			_icon[0] = STATE_ICONS[life['state']]
+		elif _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
+			_icon[0] = chr(3)
 	
 	if life['group'] and not life['id'] == SETTINGS['controlling']:
 		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
@@ -2903,9 +2908,13 @@ def sever_limb(life, limb, impact_velocity):
 	
 	set_animation(life, ['X', '!'], speed=4)
 	
-	effects.create_gib(life, '-', life['body'][limb]['size'], impact_velocity)
+	effects.create_gib(life, '-', life['body'][limb]['size'], limb, impact_velocity)
 	
 	remove_limb(life, limb)
+	
+	_total_blood = calculate_max_blood(life)
+	if life['blood'] > _total_blood:
+		life['blood'] = _total_blood
 
 def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]

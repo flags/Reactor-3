@@ -713,8 +713,8 @@ def believe_which_alife(life, alife):
 				_scores[_score] = [winner]
 		
 		return random.choice(_scores[max(_scores)])
-	else:
-		return _winners[0]
+	
+	return _winners[0]
 
 def get_best_goal(life):
 	for goal in brain.retrieve_from_memory(life, 'active_goals'):

@@ -2,12 +2,13 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True):
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True,alignment=''):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
 	    'on_move': on_move,
 		'on_close': on_close,
+		'alignment': alignment,
 		'index': 0,
 		'values':{}}
 		
@@ -125,6 +126,21 @@ def draw_menus():
 def align_menus():
 	for menu in MENUS:
 		if not MENUS.index(menu):
+			continue
+		
+		if not menu['alignment'] and menu['settings']['position'][1] > 1:
+			continue
+		
+		if not 'position_mod' in menu['settings']:
+			menu['settings']['position_mod'] = menu['settings']['position'][:]
+		
+		if menu['alignment'] == 'botleft':
+			menu['settings']['position'][0] = 1
+			menu['settings']['position'][1] = WINDOW_SIZE[1]-menu['settings']['size'][1]-1
+		
+		if menu['alignment']:
+			menu['settings']['position'][0] += menu['settings']['position_mod'][0]
+			menu['settings']['position'][1] += menu['settings']['position_mod'][1]
 			continue
 		
 		_prev_menu = MENUS[MENUS.index(menu)-1]

@@ -159,6 +159,8 @@ SETTINGS = {'running': True,
 	'draw z-levels above': True,
 	'draw z-levels below': False,
 	'draw visible chunks': False,
+	'draw life info': True,
+	'draw message box': True,
 	'progress bar max value': 25,
 	'action queue size': 4,
 	'los': 40,
@@ -190,6 +192,7 @@ DIJKSTRA_CACHE = {}
 MAP_WINDOW = None
 ITEM_WINDOW = None
 CONSOLE_WINDOW = None
+MESSAGE_WINDOW = None
 
 #Menus
 MENUS = []

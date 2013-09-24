@@ -1008,18 +1008,18 @@ def create_target_list():
 	return _menu_items
 
 def delete_look_list(entry):
-	menus.delete_menu(menus.get_menu_by_name('Examining...'))
 	SELECTED_TILES[0] = []
-
-def handle_look_select(entry):
-	if 'target' in entry:
-		create_dialog(entry)
+	menus.delete_menu(menus.get_menu_by_name('Examining...'))
+	
+	gfx.enable_panels()
 
 def create_look_list():
 	if menus.get_menu_by_name('Look at...')>-1:
 		menus.delete_menu(menus.get_menu_by_name('Look at...'))
 		menus.delete_menu(menus.get_menu_by_name('Examining...'))
 		return False
+	
+	gfx.disable_panels()
 	
 	_menu_items = []
 	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
@@ -1037,9 +1037,8 @@ def create_look_list():
 	
 	_i = menus.create_menu(title='Look at...',
 	    menu=_menu_items,
-	    padding=(1,1),
-	    position=(1,1),
-	    on_select=handle_look_select,
+	    padding=(1, 1),
+	    position=(MAP_WINDOW_SIZE[0], 1),
 	    on_move=handle_view,
 	    on_close=delete_look_list,
 	    format_str='[$i] $k')
@@ -1393,12 +1392,19 @@ def handle_item_view(entry):
 	_menu_items = []
 	
 	for key in item['examine_keys']:
-		_menu_items.append(menus.create_item('single', key, item[key]))	
+		_key = key
+		
+		if key == 'description':
+			_key = item['name']
+		
+		_menu_items.append(menus.create_item('single', _key, item[key]))	
 
 	_i = menus.create_menu(title='Examining...',
         menu=_menu_items,
-        padding=(1,1),
-        position=(1,1),
+        padding=(1, 1),
+        position=(-1, -4),
+	    alignment='botleft',
+	    on_select=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
         format_str='$k: $v')
 
 def handle_life_view(entry):
@@ -1429,8 +1435,9 @@ def handle_life_view(entry):
 
 	_i = menus.create_menu(title='Examining...',
         menu=_menu_items,
-        padding=(1,1),
-        position=(1,1),
+        padding=(1, 1),
+        position=(-1, 1),
+        alignment='botleft',
         format_str='$k: $v',
 	   dim=False)
 

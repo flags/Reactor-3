@@ -201,7 +201,21 @@ def draw_bottom_ui_terraform():
 		back_color=tcod.Color(0,0,0),
 		flicker=0)
 
-def draw_message_box():	
+def disable_panels():
+	tcod.console_clear(0)
+	tcod.console_clear(MESSAGE_WINDOW)
+	
+	SETTINGS['draw life info'] = False
+	SETTINGS['draw message box'] = False
+
+def enable_panels():
+	tcod.console_clear(0)
+	tcod.console_clear(MESSAGE_WINDOW)
+	
+	SETTINGS['draw life info'] = True
+	SETTINGS['draw message box'] = True
+
+def draw_message_box():
 	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(128,128,128))
 	tcod.console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
