@@ -87,7 +87,7 @@ Controls
 * `Z (Shift-z)` - Prone
 * `P (Shift-P)` - Pause
 * `l` - Look
-* `o` - Options
+* `O (Shift-o)` - Options
 * `-` - Debug console
 
 Tips

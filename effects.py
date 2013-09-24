@@ -140,6 +140,17 @@ def create_ash(pos):
 	
 	register_effect(_effect)
 
+#def create_particle(pos, color, velocity):
+#	_effect = {'type': 'particle',
+#	           'color': color,
+#	           'pos': pos,
+#	           'velocity': velocity,
+#	           'callback': calculate_particle,
+#	           'draw_callback': draw_particle,
+#	           'unregister_callback': delete_particle}
+#	
+#	register_effect(_effect)
+
 def calculate_all_effects():
 	for effect in EFFECTS.values():
 		effect['callback'](effect)

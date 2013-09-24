@@ -2565,6 +2565,10 @@ def draw_life_info():
 		if _targets and LIFE[SETTINGS['controlling']]['id'] in _targets:
 			tcod.console_set_default_foreground(0, tcod.red)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
+		elif brain.knows_alife(life, ai) and judgement.can_trust(life, ai['id'])>1:
+			_trust_level = (numbers.clip(judgement.can_trust(life, ai['id']), 0, 10)/10.0)*255
+			
+			tcod.console_set_default_foreground(0, tcod.Color(0, _trust_level, 0))
 		else:
 			tcod.console_set_default_foreground(0, tcod.white)
 		

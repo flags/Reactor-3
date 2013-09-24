@@ -10,6 +10,10 @@ import smp
 import copy
 import time
 
+def cache_zones():
+	for z in range(0, MAP_SIZE[2]):
+		ZONE_CACHE[z] = get_slices_at_z(z)
+
 def create_map_array(val=0, size=MAP_SIZE):
 	_map = []
 	for x in range(size[0]):
@@ -123,7 +127,7 @@ def process_slice(z, world_info=None, start_id=0):
 				WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': copy.deepcopy(_slice), 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
-	for _splice in get_slices_at_z(pos[2]):
+	for _splice in ZONE_CACHE[pos[2]]:
 		if _splice['map'][pos[0]][pos[1]]>0:
 			return _splice['map'][pos[0]][pos[1]]
 	

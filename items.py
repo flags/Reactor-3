@@ -194,7 +194,8 @@ def save_all_items():
 
 def reload_all_items():
 	for item in ITEMS.values():
-		item['icon'] = chr(item['icon'])
+		if not isinstance(item['icon'], unicode):
+			item['icon'] = chr(item['icon'])
 
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""

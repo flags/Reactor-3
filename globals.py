@@ -187,6 +187,7 @@ SPLATTERS = []
 SELECTED_TARGET = []
 EVENTS = []
 DIJKSTRA_CACHE = {}
+ZONE_CACHE = {}
 
 #Consoles
 MAP_WINDOW = None

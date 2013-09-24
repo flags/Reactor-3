@@ -148,6 +148,7 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
 			random.setstate(tuple(WORLD_INFO['seed_state']))
 		
+		zones.cache_zones()
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
 		gfx.log('Map \'%s\' loaded.' % map_name)
