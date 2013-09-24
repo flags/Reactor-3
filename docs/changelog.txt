@@ -9,4 +9,5 @@ New in version 0.5.5:
 	* Burnable items now burn and damage entities
 	* Fixed crash when adding items containing items to inventories
 	* Camera can now follow non-entities
-	* Explosions now push ALife
+	* Explosions now push entities
+	* Added caching layer to zone lookups and dijkstra maps

@@ -218,10 +218,10 @@ def ranged_combat(life, target):
 	print _pos_for_combat
 	
 	if not target['escaped'] and not _pos_for_combat:
-		if life['path']:
-			return False
-		else:
-			return movement.escape(life, [target['life']['id']])
+		#if life['path']:
+		return False
+		#else:
+		#	return movement.escape(life, [target['life']['id']])
 			
 	elif _pos_for_combat:
 		lfe.stop(life)

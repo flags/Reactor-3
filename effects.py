@@ -234,7 +234,7 @@ def create_gib(life, icon, size, limb, velocity):
 		'type': 'magazine',
 		'icon': icon,
 		'flags': ['BLOODY'],
-		'description': '%s\'s %s.' % (limb, ' '.join(life['name'])),
+		'description': '%s\'s %s.' % (' '.join(life['name']), limb),
 		'size': '%sx1' % size,
 		'material': 'flesh',
 		'thickness': size}

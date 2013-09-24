@@ -35,26 +35,35 @@ def position_for_combat(life, targets, position, source_map):
 	#TODO: Short or long-range weapon?
 	if _nearest_target_score <= sight.get_vision(life):
 		print 'changing position for combat...'
-		_visible_target_chunks = []
-		for target in targets:
-			_known_target = brain.knows_alife_by_id(life, target)
-			for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
-				if not chunk_key in _visible_target_chunks:
-					_visible_target_chunks.append(chunk_key)
+		#_visible_target_chunks = []
+		#for target in targets:
+		#	_known_target = brain.knows_alife_by_id(life, target)
+		#	for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
+		#		if not chunk_key in _visible_target_chunks:
+		#			_visible_target_chunks.append(chunk_key)
+		#
+		#for chunk_key in chunks.get_visible_chunks_from(life['pos'], sight.get_vision(life)):
+		#	if chunk_key in _visible_target_chunks:
+		#		_visible_target_chunks.remove(chunk_key)
+		#		print 'removing'
 		
+		#TODO: Scores should be between weapon's greatest and least effective range
 		#TODO: For melee combat we'll want to get as close as possible
-		_cover = zones.dijkstra_map(life['pos'],
-		                            _target_positions,
-		                            _zones,
-		                            avoid_chunks=_visible_target_chunks,
-		                            return_score_in_range=[1, 100])
-		_cover = [[c[0], c[1], life['pos'][2]] for c in _cover]
+		#_cover = zones.dijkstra_map(life['pos'],
+		#                            _target_positions,
+		#                            _zones,
+		#                            return_score_in_range=[10, 15])
+		#_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
+		#
+		#if tuple(life['pos']) in _cover:
+		#	print 'test'
 		
-		if not _cover:
-			print 'Nowhere to take cover during combat!'
-			return True
+		#if not _cover:
+		#	print 'Nowhere to take cover during combat!'
+		#	return True
 		
 		#print _cover
+		_cover = _target_positions
 		
 		_zones = []
 		for pos in _cover:
@@ -69,10 +78,10 @@ def position_for_combat(life, targets, position, source_map):
 				                  'goals': _cover[:],
 				                  'orig_goals': _cover[:]},
 				           999)
-			#print 'going'
+			
 			return False
-		#else:
-		#	print 'WAITING!'
+		else:
+			print 'WAITING!'
 	
 	return True
 	#TODO: Eventually this should be written into the pathfinding logic
@@ -171,7 +180,7 @@ def escape(life, targets):
 			_zones.append(_zone)
 	
 		#for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
-		print 'visible chunks at',_target['last_seen_at'],sight.get_vision(_target['life'])
+		print 'visible chunks at',_target['last_seen_at'],sight.get_vision(_target['life']), sight.can_see_position(life, _target['last_seen_at'])
 		for chunk_key in chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])):
 			if chunk_key in _visible_target_chunks:
 				continue

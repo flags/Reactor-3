@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, MAP_SIZE
+from globals import WORLD_INFO, MAP_SIZE, SETTINGS
 from libc.stdlib cimport malloc
 
 import zones as zon
@@ -300,20 +300,20 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_pos[0] = _next_pos[0]
 		_pos[1] = _next_pos[1]
 	
-	#print _path
-	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-	#	for x in range(0, _bot_right[0]-_top_left[0]):
-	#		if rolldown:
-	#			if _dijkstra_map[x][y]>0:
-	#				print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
-	#			else:
-	#				print '#',
-	#		else:
-	#			if _dijkstra_map[x][y]<0:
-	#				print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
-	#			else:
-	#				print '#',
-		
-	#	print
+	if SETTINGS['print dijkstra maps']:
+		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+			for x in range(0, _bot_right[0]-_top_left[0]):
+				if rolldown:
+					if _dijkstra_map[x][y]>0:
+						print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
+					else:
+						print '#',
+				else:
+					if _dijkstra_map[x][y]<0:
+						print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
+					else:
+						print '#',
+			
+			print
 
 	return _path
