@@ -1,4 +1,4 @@
-New in version 0.5.5:
+New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets
 		* They will also use dijkstra maps to escape somewhat intelligently
 	* Intimidation by force
@@ -10,4 +10,4 @@ New in version 0.5.5:
 	* Fixed crash when adding items containing items to inventories
 	* Camera can now follow non-entities
 	* Explosions now push entities
-	* Added caching layer to zone lookups and dijkstra maps
+	* Added caching layer to zone lookups, dijkstra maps, and reference maps

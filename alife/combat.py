@@ -215,7 +215,6 @@ def melee_combat(life, target):
 def ranged_combat(life, target):
 	target = brain.knows_alife_by_id(life, target)
 	_pos_for_combat = movement.position_for_combat(life, [target['life']['id']], target['last_seen_at'], WORLD_INFO['map'])
-	print _pos_for_combat
 	
 	if not target['escaped'] and not _pos_for_combat:
 		#if life['path']:

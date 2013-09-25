@@ -94,13 +94,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					              delete_on_finish=False)
 					
 					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
-			              action.make_small_script(function='number_of_alife_in_chunk_matching',
+			              action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,
-			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'reference_id': groups.get_shelter(life['group']),
 			                                               'matching': {'group': life['group']}}),
-					      player_action=action.make_small_script(function='number_of_alife_in_chunk_matching',
+					    player_action=action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,
-			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'reference_id': groups.get_shelter(life['group']),
 			                                               'matching': {'group': life['group']}}),
 			              description='Wait until everyone arrives.')
 				

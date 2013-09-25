@@ -1204,6 +1204,9 @@ def perform_action(life):
 			else:
 				_zones = [zones.get_zone_at_coords(life['pos'])]
 			
+			if 'debug' in _action and _action['debug']:
+				SETTINGS['print dijkstra maps'] = True
+			
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
 			                           _zones,
@@ -1211,6 +1214,9 @@ def perform_action(life):
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 			                           avoid_positions=_avoid_positions,
 			                           avoid_chunks=_avoid_chunks)
+			
+			if 'debug' in _action and _action['debug']:
+				SETTINGS['print dijkstra maps'] = False
 		
 		if walk(life, path=_path):
 			delete_action(life,action)

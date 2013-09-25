@@ -226,3 +226,10 @@ def find_nearest_road(position, skip_unknown=True, ignore_array=[]):
 
 def find_nearest_building(life, skip_unknown=True, ignore_array=[]):
 	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown, ignore_array=ignore_array)
+
+def get_alife_in_reference_matching(reference_id, matching):
+	_life = []
+	for chunk_key in get_reference(reference_id):
+		_life.extend(chunks.get_alife_in_chunk_matching(chunk_key, matching))
+	
+	return _life
