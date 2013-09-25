@@ -113,5 +113,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					                filter_if=[action.make_small_script(function='has_completed_job',
 					                                                   kwargs={'job_id': _job_id})])
 			else:
-				print 'READY FOR MORE COMMANDS',len(groups.get_group(life['group'])['members'])
+				print 'READY FOR MORE COMMANDS',life['name']
 	

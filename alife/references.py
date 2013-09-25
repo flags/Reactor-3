@@ -189,6 +189,12 @@ def path_along_reference(life, ref_type):
 	life['discover_direction'] = _best_dir['dir']
 	return _directions[_best_dir['dir']]['key']
 
+def chunk_is_in_reference(reference, chunk_key):
+	if chunk_key in reference:
+		return True
+	
+	return False
+
 def is_in_reference(position, reference):
 	for chunk_key in reference:
 		if chunks.position_is_in_chunk(position, chunk_key):
@@ -206,6 +212,14 @@ def is_in_any_reference(position):
 
 def life_is_in_reference(life, reference):
 	return is_in_reference(life['pos'], reference)
+
+def get_reference_at_chunk(chunk_key):
+	for r_type in WORLD_INFO['reference_map']:
+		for reference in WORLD_INFO['reference_map'][r_type]:
+			if chunk_is_in_reference(reference, chunk_key):
+				return reference
+			
+	return None
 
 def get_known_chunks_in_reference(life, reference):
 	_known_chunks = []

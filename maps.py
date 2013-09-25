@@ -657,6 +657,7 @@ def find_all_linked_chunks(chunk_key, check=[]):
 
 def generate_reference_maps():
 	_stime = time.time()
+	_ref_id = 1
 	
 	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
 		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
