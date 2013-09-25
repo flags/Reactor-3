@@ -74,7 +74,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if _j:
 					jobs.join_job(_j, life['id'])
 			
-			if len(groups.get_group(life['group'])['members'])<=3:
+			if len(groups.get_group(life['group'])['members'])<=3 and groups.get_shelter(life['group']):
 				_j = jobs.create_job(life, 'Meet with group %s.' % life['group'],
 					                 gist='stay_with_group',
 					                 description='Stay nearby group.',
@@ -93,6 +93,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						          description='Meet with group',
 					              delete_on_finish=False)
 					
+					print 'L@@K'*15,groups.get_shelter(life['group'])
 					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
 			              action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,
