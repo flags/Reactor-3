@@ -1217,6 +1217,7 @@ def perform_action(life):
 			
 			if 'debug' in _action and _action['debug']:
 				SETTINGS['print dijkstra maps'] = False
+				print _path
 		
 		if walk(life, path=_path):
 			delete_action(life,action)

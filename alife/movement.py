@@ -218,8 +218,7 @@ def escape(life, targets):
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': True,
 	                     'zones': _zones,
-                          'goals': _cover[:],
-	                     'debug': True},
+                          'goals': _cover[:]},
                    999)
 
 def hide(life, target_id):
