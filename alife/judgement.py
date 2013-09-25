@@ -459,13 +459,13 @@ def judge_all_chunks(life):
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
 
-def judge_reference(life, reference, reference_type, known_penalty=False):
+def judge_reference(life, reference_id, known_penalty=False):
 	#TODO: Length
 	_score = 0
 	_count = 0
 	_closest_chunk_key = {'key': None, 'distance': -1}
 	
-	for key in reference:
+	for key in references.get_reference(reference_id):
 		if known_penalty and key in life['known_chunks']:
 			continue
 		
@@ -729,12 +729,13 @@ def get_best_shelter(life):
 		_shelter = groups.get_shelter(life['group'])
 		
 		if _shelter:
-			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _shelter.split(',')]
+			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
+			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
 			_dist = numbers.distance(life['pos'], _shelter_center)
 			
 			if _dist <= logic.time_until_midnight()*life['speed_max']:
 				print life['name'],'can get to shelter in time'
-				return _shelter
+				return _nearest_chunk_key
 			else:
 				print life['name'],'cant get to shelter in time'
 	

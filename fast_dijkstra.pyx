@@ -207,6 +207,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				_dijkstra_map[x][y] *= -1.2
+				_old_map[x][y] *= -1.2
 	
 	if return_score:
 		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
@@ -258,7 +259,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		elif not rolldown and _dijkstra_map[_pos[0]][_pos[1]]>0:
 			break
 		
-		_lowest_score = _old_map[x][y]
+		_lowest_score = _old_map[_pos[0]][_pos[1]]
 		_next_pos[0] = -1
 		_next_pos[1] = -1
 				
@@ -270,6 +271,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				continue
 			
 			for _n_x in range(-1, 2):
+				if _n_x == 0 and _n_y == 0:
+					continue
+				
 				_x = _pos[0]+_n_x
 				
 				if _x<0 or _x>=_dijkstra_map_size_x:
@@ -289,7 +293,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					_next_pos[0] = _x
 					_next_pos[1] = _y
 		
-		if _lowest_score == _old_map[x][y]:
+		if _lowest_score == _old_map[_pos[0]][_pos[1]]:
 			break
 		else:
 			_path.append((_next_pos[0]+_top_left[0], _next_pos[1]+_top_left[1], 2))
@@ -303,7 +307,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	if SETTINGS['print dijkstra maps']:
 		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
-				if rolldown:
+				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:
+					print 'X',
+				elif rolldown:
 					if _dijkstra_map[x][y]>0:
 						print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
 					else:

@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import references
 import judgement
 import chunks
 import goals

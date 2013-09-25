@@ -1204,6 +1204,9 @@ def perform_action(life):
 			else:
 				_zones = [zones.get_zone_at_coords(life['pos'])]
 			
+			if 'debug' in _action and _action['debug']:
+				SETTINGS['print dijkstra maps'] = True
+			
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
 			                           _zones,
@@ -1211,6 +1214,10 @@ def perform_action(life):
 			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 			                           avoid_positions=_avoid_positions,
 			                           avoid_chunks=_avoid_chunks)
+			
+			if 'debug' in _action and _action['debug']:
+				SETTINGS['print dijkstra maps'] = False
+				print _path
 		
 		if walk(life, path=_path):
 			delete_action(life,action)
@@ -1979,15 +1986,15 @@ def remove_item_from_inventory(life, item_id):
 	elif item_is_equipped(life, item_id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
 	
-		for limb in item['attaches_to']:
-			remove_item_from_limb(life,item['uid'],limb)
+		if 'attaches_to' in item:
+			for limb in item['attaches_to']:
+				remove_item_from_limb(life,item['uid'],limb)
 		
 		item['pos'] = life['pos'][:]
 	
 	elif item_is_stored(life, item_id):
 		item['pos'] = life['pos'][:]
 		remove_item_in_storage(life, item_id)
-		print 'item is stored'
 	elif not item_is_stored(life, item_id):
 		print 'item is NOT stored'
 	
@@ -2321,16 +2328,18 @@ def draw_life_icon(life):
 		elif _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
 			_icon[0] = chr(3)
 	
-	if life['group'] and not life['id'] == SETTINGS['controlling']:
-		if alife.groups.is_member(life['group'], SETTINGS['controlling']):
-			_icon[1] = tcod.light_green
-		else:
-			_icon[1] = tcod.lighter_crimson
-	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	if _targets:
-		if SETTINGS['controlling'] in _targets:
-			_icon[1] = tcod.light_red
+	if _targets and SETTINGS['controlling'] in _targets:
+		_icon[1] = tcod.light_red
+	elif not life['id'] == SETTINGS['controlling']:
+		if life['group']:
+			if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+				_icon[1] = tcod.light_green
+			else:
+				_icon[1] = tcod.lighter_crimson
+		elif brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id']):
+			_trust = judgement.can_trust(LIFE[SETTINGS['controlling']], life['id'])
+			_icon[1] = tcod.Color(0, int(255*numbers.clip(_trust, 1, 17)/17.0), 0)
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray

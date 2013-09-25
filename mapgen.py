@@ -95,7 +95,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.

@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import references
 import judgement
 import survival
 import movement
@@ -62,6 +63,7 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
 	'wait': never,
 	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
+	'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
 	'start_dialog': speech.start_dialog,
 	'announce_to_group': groups.announce,
 	'is_in_chunk': chunks.is_in_chunk,

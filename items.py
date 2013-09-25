@@ -427,7 +427,7 @@ def collision_with_solid(item, pos):
 	
 	if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
-	elif not pos[0]+1 <= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
+	elif not pos[0]+1 >= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
 	
 	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:

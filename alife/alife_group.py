@@ -74,7 +74,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if _j:
 					jobs.join_job(_j, life['id'])
 			
-			if len(groups.get_group(life['group'])['members'])<=3:
+			if len(groups.get_group(life['group'])['members'])<=3 and groups.get_shelter(life['group']):
 				_j = jobs.create_job(life, 'Meet with group %s.' % life['group'],
 					                 gist='stay_with_group',
 					                 description='Stay nearby group.',
@@ -93,14 +93,15 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						          description='Meet with group',
 					              delete_on_finish=False)
 					
+					print 'L@@K'*15,groups.get_shelter(life['group'])
 					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
-			              action.make_small_script(function='number_of_alife_in_chunk_matching',
+			              action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,
-			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'reference_id': groups.get_shelter(life['group']),
 			                                               'matching': {'group': life['group']}}),
-					      player_action=action.make_small_script(function='number_of_alife_in_chunk_matching',
+					    player_action=action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,
-			                                               'chunk_key': lfe.get_current_chunk_id(life),
+			                                               'reference_id': groups.get_shelter(life['group']),
 			                                               'matching': {'group': life['group']}}),
 			              description='Wait until everyone arrives.')
 				
@@ -113,5 +114,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					                filter_if=[action.make_small_script(function='has_completed_job',
 					                                                   kwargs={'job_id': _job_id})])
 			else:
-				print 'READY FOR MORE COMMANDS',len(groups.get_group(life['group'])['members'])
+				print 'READY FOR MORE COMMANDS',life['name']
 	

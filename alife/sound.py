@@ -339,9 +339,9 @@ def listen(life):
 		
 		elif event['gist'] == 'group_set_shelter':
 			if 'player' in life:
-				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['chunk_id']))
+				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['reference_id']))
 			else:
-				judgement.judge_chunk(life, event['chunk_id'])
+				judgement.judge_reference(life, event['reference_id'])
 				
 				print 'GOT SHELTER INFO' * 100
 			

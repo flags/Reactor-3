@@ -38,14 +38,15 @@ def flag(life, camp_id, flag, value):
 	logging.debug('%s flagged camp \'%s\' with %s.' % (' '.join(life['name']), camp_id, flag))
 
 def create_all_camps():
-	for camp in WORLD_INFO['reference_map']['buildings']:
+	for camp_key in WORLD_INFO['reference_map']['buildings']:
 		_camp_id = str(WORLD_INFO['campid'])
 		
-		for chunk_key in camp:
+		_camp_reference = WORLD_INFO['references'][camp_key]
+		for chunk_key in _camp_reference:
 			chunks.flag_global(chunk_key, 'camp', _camp_id)
 			
 		WORLD_INFO['camps'][_camp_id] = {'id': _camp_id,
-		                                                  'reference': camp,
+		                                                  'reference': _camp_reference,
 		                                                  'groups': {}}
 		WORLD_INFO['campid'] += 1
 
