@@ -184,7 +184,7 @@ def save_world():
 
 def randomize_item_spawns():
 	for building in WORLD_INFO['reference_map']['buildings']:
-		_chunk_key = random.choice(building)
+		_chunk_key = random.choice(alife.references.get_reference(building))
 		_chunk = maps.get_chunk(_chunk_key)
 		
 		if not _chunk['ground']:
@@ -197,7 +197,7 @@ def get_spawn_point():
 	if WORLD_INFO['reference_map']['roads']:
 		_entry_road_keys = []
 		for road in WORLD_INFO['reference_map']['roads']:
-			for chunk_key in road:
+			for chunk_key in alife.references.get_reference(road):
 				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
 				
 				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:

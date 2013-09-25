@@ -586,7 +586,6 @@ def update_chunk_map():
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 			
 def smooth_chunk_map():
-	return False
 	_stime = time.time()
 	_runs = 0
 	_chunk_map = copy.deepcopy(WORLD_INFO['chunk_map'])
@@ -642,6 +641,7 @@ def find_all_linked_chunks(chunk_key, check=[]):
 		_linked_chunks.append(_current_chunk_key)
 		_current_chunk = get_chunk(_current_chunk_key)
 		
+		print _current_chunk['neighbors']
 		for neighbor_chunk_key in _current_chunk['neighbors']:
 			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
 				continue
@@ -657,6 +657,9 @@ def find_all_linked_chunks(chunk_key, check=[]):
 
 def generate_reference_maps():
 	_stime = time.time()
+	WORLD_INFO['references'] = {}
+	WORLD_INFO['reference_map']['roads'] = []
+	WORLD_INFO['reference_map']['buildings'] = []
 	_ref_id = 1
 	
 	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
@@ -664,17 +667,31 @@ def generate_reference_maps():
 			_current_chunk_key = '%s,%s' % (x1, y1)
 			_current_chunk = get_chunk(_current_chunk_key)
 			
+			if _current_chunk['reference']:
+				continue
+			
 			if _current_chunk['type'] == 'road':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['roads'])
+				print find_all_linked_chunks(_current_chunk_key)
+				print 'done\n'
+				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
-					WORLD_INFO['reference_map']['roads'].append(_ret)
-					_current_chunk['reference'] = _ret
+					WORLD_INFO['references'][str(_ref_id)] = _ret
+					WORLD_INFO['reference_map']['roads'].append(str(_ref_id))
+					
+					for _chunk_key in _ret:
+						get_chunk(_chunk_key)['reference'] = str(_ref_id)
 			elif _current_chunk['type'] == 'building':
-				_ret = find_all_linked_chunks(_current_chunk_key, check=WORLD_INFO['reference_map']['buildings'])
+				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
-					WORLD_INFO['reference_map']['buildings'].append(_ret)
-					_current_chunk['reference'] = _ret
+					WORLD_INFO['references'][str(_ref_id)] = _ret
+					WORLD_INFO['reference_map']['buildings'].append(str(_ref_id))
+					
+					for _chunk_key in _ret:
+						get_chunk(_chunk_key)['reference'] = str(_ref_id)
+			
+			_ref_id += 1
 	
-	logging.info('Reference map created in %.2f seconds.' % (time.time()-_stime))
-	logging.info('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
-	logging.info('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
+	logging.debug('Reference map created in %.2f seconds.' % (time.time()-_stime))
+	logging.debug('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
+	logging.debug('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
+	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))

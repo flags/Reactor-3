@@ -222,7 +222,7 @@ def get_shelter(group_id):
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	_group['shelter'] = judgement.get_best_shelter(life)
+	_group['shelter'] = chunks.get_chunk(judgement.get_best_shelter(life))['reference']
 	
 	if _group['shelter']:
 		print 'SET SHELTER' * 100
@@ -233,7 +233,7 @@ def announce_shelter(group_id):
 	distribute(LIFE[_group['leader']],
 	           'group_set_shelter',
 	           filter_by=get_event(group_id, _group['announce_event'])['accepted'],
-	           chunk_id=_group['shelter'],
+	           reference_id=_group['shelter'],
 	           event_id=_group['announce_event'])
 
 def find_and_announce_shelter(life, group_id):

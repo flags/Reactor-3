@@ -1987,7 +1987,6 @@ def remove_item_from_inventory(life, item_id):
 	elif item_is_stored(life, item_id):
 		item['pos'] = life['pos'][:]
 		remove_item_in_storage(life, item_id)
-		print 'item is stored'
 	elif not item_is_stored(life, item_id):
 		print 'item is NOT stored'
 	
