@@ -217,16 +217,31 @@ def ranged_combat(life, targets):
 	
 	#Are we still deciding? Who are we engaging?
 	#STEP 1: We know danger is nearby, but it is not visible
-	_visible_threats = judgement.get_visible_targets_in_list(life, targets)
+	#_visible_threats = judgement.get_visible_targets_in_list(life, targets)
 	
-	if not _visible_threats:
-		#We should move to cover for now
-		movement.escape(life, targets)
+	#if not _visible_threats:
+		#Find the nearnest target
+	_target_positions, _zones = get_target_positions_and_zones(life, targets)
+	print _target_positions
+	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
 	
-	_pos_for_combat = movement.position_for_combat(life, targets)
+	if _path_to_nearest:
+		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
+	else:
+		_target_pos = life['pos'][:]
+		_target_positions.append(_target_pos)
+	
+	target = None
+	
+	if _target_pos in _target_positions:
+		for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
+			if _target_pos == _target['last_seen_at']:
+				target = _target
+				break
+	
+	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
 	
 	if not target['escaped'] and not _pos_for_combat:
-		#if life['path']:
 		return False
 		#else:
 		#	return movement.escape(life, [target['life']['id']])

@@ -328,7 +328,6 @@ def understand(life, source_map):
 	
 	while _modules:
 		_score_tier = _modules.keys()[0]
-		print _modules[_score_tier]
 		module = _modules[_score_tier].pop(0)
 		
 		try:

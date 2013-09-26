@@ -25,8 +25,8 @@ def score_shootcover(life,target,pos):
 	
 	return numbers.distance(life['pos'],pos)
 
-def position_for_combat(life, targets):
-	_target_positions, _zones = combat.get_target_positions_and_zones(life, targets, ignore_escaped=True)
+def position_to_attack(life, target):
+	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target], ignore_escaped=True)
 	
 	print 'target pos', _target_positions
 	#print _target_positions, _zones

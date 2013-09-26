@@ -28,6 +28,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_threat = judgement.get_nearest_threat(life)
-	_knows = brain.knows_alife_by_id(life, _threat)
-	movement.escape(life, [_knows['life']['id']])
+	_threats = judgement.get_visible_threats(life)
+	#_knows = brain.knows_alife_by_id(life, _threat)
+	movement.escape(life, _threats)
