@@ -353,7 +353,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	return _life
 
-def ticker(life, name, time):
+def ticker(life, name, time, fire=False):
 	if name in life['tickers']:
 		if life['tickers'][name]:
 			life['tickers'][name] -= 1
@@ -363,7 +363,7 @@ def ticker(life, name, time):
 			return True
 	else:
 		life['tickers'][name] = time
-		return False
+		return fire
 
 def focus_on(life):
 	SETTINGS['following'] = life['id']

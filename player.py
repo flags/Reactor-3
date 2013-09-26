@@ -1017,6 +1017,7 @@ def create_look_list():
 	if menus.get_menu_by_name('Look at...')>-1:
 		menus.delete_menu(menus.get_menu_by_name('Look at...'))
 		menus.delete_menu(menus.get_menu_by_name('Examining...'))
+		gfx.enable_panels()
 		return False
 	
 	gfx.disable_panels()

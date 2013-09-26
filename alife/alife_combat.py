@@ -1,14 +1,17 @@
 from globals import *
 
+import graphics as gfx
 import life as lfe
 
 import judgement
 import numbers
 import combat
 import speech
+import sight
 import camps
 import brain
 import stats
+import logic
 import jobs
 
 import logging
@@ -36,6 +39,18 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	if not life['state'] == STATE:
 		stats.battle_cry(life)
+		
+		if gfx.position_is_in_frame(life['pos']):
+			_can_see = sight.can_see_position(LIFE[SETTINGS['controlling']], life['pos'])
+			
+			if _can_see:
+				_knows = brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id'])
+				
+				if _knows and judgement.can_trust(LIFE[SETTINGS['controlling']], life['id']):
+					if lfe.ticker(life, 'enter_combat_message', 3, fire=True):
+						logic.show_event('%s readies up.' % ' '.join(life['name']), life=life)
+				
+				#gfx.highlight_tiles(_can_see)
 		
 		RETURN_VALUE = STATE_CHANGE
 	
