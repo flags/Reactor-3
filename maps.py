@@ -468,7 +468,7 @@ def leave_chunk(chunk_key, life_id):
 	chunk = get_chunk(chunk_key)
     
 	if life_id in chunk['life']:
-		chunk['life'].append(life_id)
+		chunk['life'].remove(life_id)
 
 def get_open_position_in_chunk(source_map, chunk_id):
 	_chunk = get_chunk(chunk_id)

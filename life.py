@@ -2313,33 +2313,40 @@ def get_all_life_at_position(life, position):
 	
 	return _life
 	
-def draw_life_icon(life):
-	_icon = [tick_animation(life), tcod.white]
+def draw_life_icon(life, draw_alignment=False):
+	_icon = [tick_animation(life), tcod.white, None]
 	
-	#if life['id'] in [context['from']['id'] for context in LIFE[SETTINGS['following']]['contexts']]:
-	#	if time.time()%1>=0.5:
-	#		_icon[0] = '?'
+	if life['dead']:
+		_icon[1] = tcod.darker_gray
+		return _icon
 	
-	if not life['dead']:
-		_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
-		
-		if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
-			_icon[0] = STATE_ICONS[life['state']]
-		elif _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
-			_icon[0] = chr(3)
+	_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
 	
-	_targets = brain.retrieve_from_memory(life, 'combat_targets')
-	if _targets and SETTINGS['controlling'] in _targets:
-		_icon[1] = tcod.light_red
-	elif not life['id'] == SETTINGS['controlling']:
-		if life['group']:
-			if alife.groups.is_member(life['group'], SETTINGS['controlling']):
-				_icon[1] = tcod.light_green
-			else:
-				_icon[1] = tcod.lighter_crimson
-		elif brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id']):
-			_trust = judgement.can_trust(LIFE[SETTINGS['controlling']], life['id'])
-			_icon[1] = tcod.Color(0, int(255*numbers.clip(_trust, 1, 17)/17.0), 0)
+	if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
+		_icon[0] = STATE_ICONS[life['state']]
+	elif _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
+		_icon[0] = chr(3)
+	
+	if not life['id'] == SETTINGS['controlling']:
+		if draw_alignment:
+			_knows = brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id'])
+			
+			if _knows:
+				_color_map = tcod.color_gen_map([tcod.crimson, tcod.white, tcod.light_green], [0, 10, 20])
+				_icon[2] = _color_map[(numbers.clip(judgement.get_trust(LIFE[SETTINGS['controlling']], life['id']), -10, 10))+10]
+			
+		_targets = brain.retrieve_from_memory(life, 'combat_targets')	
+		if _targets and SETTINGS['controlling'] in _targets:
+			_icon[1] = tcod.light_red
+		elif not life['id'] == SETTINGS['controlling']:
+			if life['group']:
+				if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+					_icon[1] = tcod.light_green
+				else:
+					_icon[1] = tcod.lighter_crimson
+			elif brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id']):
+				_trust = judgement.get_trust(LIFE[SETTINGS['controlling']], life['id'])
+				_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.dark_green, numbers.clip(_trust, 1, 10)/10.0)
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
@@ -2351,7 +2358,7 @@ def draw_life_icon(life):
 
 def draw_life():
 	for life in [LIFE[i] for i in LIFE]:
-		_icon,_color = draw_life_icon(life)
+		_icon,_fore_color,_back_color = draw_life_icon(life)
 		
 		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0]-1 and\
 			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]-1:
@@ -2372,8 +2379,8 @@ def draw_life():
 			gfx.blit_char(_x,
 				_y,
 				_icon,
-				_color,
-				None,
+				_fore_color,
+				_back_color,
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
@@ -2481,6 +2488,10 @@ def draw_visual_inventory(life):
 
 #TODO: Since we are drawing in a blank area, we only need to do this once!
 def draw_life_info():
+	"""This code is garbage... I think it's one of the oldest parts of the game at this point (and it shows)
+	
+	Anyway, it'll be rewritten sooner or later :V
+	"""
 	life = LIFE[SETTINGS['following']]
 	_info = []
 	_name_mods = []
@@ -2554,36 +2565,37 @@ def draw_life_info():
 	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
 	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
 	tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
-	tcod.console_set_default_foreground(0, tcod.light_grey)
-	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  Modes Targets')
 	
-	_xmod = 8
+	_longest_state = 7
+	_visible_life = []
+	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+		_state_len = len(ai['state'])
+		
+		if _state_len > _longest_state:
+			_longest_state = _state_len
+	
 	_i = 5
-	for ai in [LIFE[i] for i in LIFE]:
-		if life['id'] == ai['id']:
-			continue
-		
-		if not alife.sight.can_see_position(LIFE[SETTINGS['controlling']], ai['pos']):
-			continue
-		
+	_xmod = _longest_state+3
+	
+	tcod.console_set_default_foreground(0, tcod.light_grey)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
+	
+	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		_icon = draw_life_icon(ai)
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
-		
-		_targets = brain.retrieve_from_memory(ai, 'combat_targets')
-		if _targets and LIFE[SETTINGS['controlling']]['id'] in _targets:
+
+		if ai['state'] == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+4, len(_info)+_i, 'C')
-		elif brain.knows_alife(life, ai) and judgement.can_trust(life, ai['id'])>1:
-			_trust_level = (numbers.clip(judgement.can_trust(life, ai['id']), 0, 10)/10.0)*255
-			
-			tcod.console_set_default_foreground(0, tcod.Color(0, _trust_level, 0))
 		else:
-			tcod.console_set_default_foreground(0, tcod.white)
+			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:
-			if time.time()%1>=0.5:
-				tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, ai['state'])
+		
+		tcod.console_set_default_foreground(0, tcod.white)
+		#if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:
+		#	if time.time()%1>=0.5:
+		#		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
 		if ai['dead']:
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(ai['name']), ai['cause_of_death']))

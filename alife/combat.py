@@ -222,8 +222,9 @@ def ranged_combat(life, targets):
 	#if not _visible_threats:
 		#Find the nearnest target
 	_target_positions, _zones = get_target_positions_and_zones(life, targets)
-	print _target_positions
 	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
+	
+	#print life['pos'], _target_positions, _path_to_nearest
 	
 	if _path_to_nearest:
 		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
@@ -239,7 +240,10 @@ def ranged_combat(life, targets):
 				target = _target
 				break
 	
-	print targets
+	if not target:
+		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+		return False
+	
 	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
 	
 	if not target['escaped'] and not _pos_for_combat:

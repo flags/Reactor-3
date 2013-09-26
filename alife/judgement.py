@@ -234,6 +234,28 @@ def get_visible_targets_in_list(life, targets):
 	
 	return _targets
 
+def get_all_visible_life(life):
+	_visible_chunks = brain.get_flag(life, 'visible_chunks')
+	
+	if not _visible_chunks:
+		return []
+	
+	_visible_life = []
+	
+	for chunk_key in _visible_chunks:
+		_chunk = maps.get_chunk(chunk_key)
+		
+		for life_id in _chunk['life']:
+			if life_id == life['id']:
+				continue
+			
+			if not sight.can_see_position(life, LIFE[life_id]['pos']):
+				continue
+			
+			_visible_life.append(life_id)
+			
+	return _visible_life
+
 def get_invisible_threats(life):
 	return get_visible_threats(life, _inverse=True)
 
