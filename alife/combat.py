@@ -212,16 +212,24 @@ def melee_combat(life, target):
 	else:
 		_target['escaped'] = 1
 
-def ranged_combat(life, target):
-	target = brain.knows_alife_by_id(life, target)
-	_pos_for_combat = movement.position_for_combat(life, [target['life']['id']], target['last_seen_at'], WORLD_INFO['map'])
+def ranged_combat(life, targets):
+	#target = brain.knows_alife_by_id(life, target)
+	
+	#Are we still deciding? Who are we engaging?
+	#STEP 1: We know danger is nearby, but it is not visible
+	_visible_threats = judgement.get_visible_targets_in_list(life, targets)
+	
+	if not _visible_threats:
+		#We should move to cover for now
+		movement.escape(life, targets)
+	
+	_pos_for_combat = movement.position_for_combat(life, targets)
 	
 	if not target['escaped'] and not _pos_for_combat:
 		#if life['path']:
 		return False
 		#else:
 		#	return movement.escape(life, [target['life']['id']])
-			
 	elif _pos_for_combat:
 		lfe.stop(life)
 	

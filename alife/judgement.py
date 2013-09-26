@@ -224,6 +224,16 @@ def get_nearest_threat(life):
 	
 	return _target['target']
 
+def get_visible_targets_in_list(life, targets):
+	_visible_targets = get_visible_threats(life)
+	_targets = []
+	
+	for target in targets:
+		if target in _visible_targets:
+			_targets.append(target)
+	
+	return _targets
+
 def get_invisible_threats(life):
 	return get_visible_threats(life, _inverse=True)
 

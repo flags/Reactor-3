@@ -48,6 +48,24 @@ MODULES = [alife_hide,
 	alife_search,
 	alife_surrender]
 
+def sort_modules(life):
+	global MODULES
+	
+	_scores = {}
+	
+	for module in MODULES:
+		try:
+			_module_tier = module.get_tier(life)
+		except AttributeError:
+			_module_tier = module.TIER
+		
+		if _module_tier in _scores:
+			_scores[_module_tier].append(module)
+		else:
+			_scores[_module_tier] = [module]
+	
+	return _scores
+
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
@@ -301,10 +319,17 @@ def understand(life, source_map):
 		except:
 			continue
 	
+	_modules = sort_modules(life)
 	_modules_run = False
 	_times = []
-	for module in MODULES:
-		_stime = time.time()
+	#_modules = []
+	#_modules = [_modules.extend(m) for m in _modules]
+	_stime = time.time()
+	
+	while _modules:
+		_score_tier = _modules.keys()[0]
+		print _modules[_score_tier]
+		module = _modules[_score_tier].pop(0)
 		
 		try:
 			_module_tier = module.get_tier(life)
@@ -321,11 +346,17 @@ def understand(life, source_map):
 				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 				
 				if _return == RETURN_SKIP:
+					if not _modules[_score_tier]:
+						del _modules[_score_tier]
 					continue
 				
 				_modules_run = True
+				break
 		
 		_times.append({'time': time.time()-_stime, 'module': module.STATE})
+		
+		if not _modules[_score_tier]:
+			del _modules[_score_tier]
 	
 	if not _modules_run:
 		lfe.change_state(life, 'idle', TIER_IDLE)

@@ -74,9 +74,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_all_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	
 	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
-		_closest_target = get_closest_target(life, _all_targets)
-		combat.ranged_combat(life, _closest_target)
+		#_closest_target = get_closest_target(life, _all_targets)
+		combat.ranged_combat(life, _all_targets)
 
 	if lfe.execute_raw(life, 'combat', 'melee_ready', break_on_true=True, break_on_false=False):
 		_closest_target = get_closest_target(life, _all_targets)
-		combat.melee_combat(life, _closest_target)
+		combat.melee_combat(life, _all_targets)
