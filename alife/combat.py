@@ -239,6 +239,7 @@ def ranged_combat(life, targets):
 				target = _target
 				break
 	
+	print targets
 	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
 	
 	if not target['escaped'] and not _pos_for_combat:

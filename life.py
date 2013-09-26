@@ -2325,7 +2325,7 @@ def draw_life_icon(life):
 		
 		if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
 			_icon[0] = STATE_ICONS[life['state']]
-		elif _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
+		elif _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
 			_icon[0] = chr(3)
 	
 	_targets = brain.retrieve_from_memory(life, 'combat_targets')
