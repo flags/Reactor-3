@@ -67,11 +67,11 @@ def sort_modules(life):
 	return _scores
 
 def think(life, source_map):
-	judgement.judge_life(life)
-	judgement.judge_jobs(life)
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
+	judgement.judge_life(life)
+	judgement.judge_jobs(life)
 	survival.process(life)
 	understand(life, source_map)
 	

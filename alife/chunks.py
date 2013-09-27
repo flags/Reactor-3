@@ -221,23 +221,32 @@ def _can_see_chunk_quick(start_pos, chunk_id, vision):
 		return False
 	
 	for pos in [(0, 0), (1, 0), (0, 1), (1, 1)]:
-		_x = pos[0]*WORLD_INFO['chunk_size']
-		_y = pos[1]*WORLD_INFO['chunk_size']
+		_x = pos[0]*WORLD_INFO['chunk_size']+1
+		_y = pos[1]*WORLD_INFO['chunk_size']+1
 		
-		if _x:
-			_x -= 1
-		if _y:
-			_y -= 1
+		#if _x:
+		#	_x -= 1
+		#if _y:
+		#	_y -= 1
 		
 		_can_see = sight._can_see_position(start_pos, (chunk['pos'][0]+_x, chunk['pos'][1]+_y), max_length=vision)
 		
 		if _can_see:
 			return _can_see
+		
+		#print 'cant fuckn see'
+		#return True
 	
 	return False
 
-def can_see_chunk(life, chunk_key, distance=True):
-	return can_see_chunk_from_pos(life['pos'], chunk_key, distance=distance, vision=sight.get_vision(life))
+def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
+	_pos = life['pos'][:]
+	
+	if center_chunk:
+		_pos[0] = ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
+		_pos[1] = ((_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
+	
+	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
 	#_fast_see = _can_see_chunk_quick(life['pos'], chunk_id, sight.get_vision(life))
 	#
 	#if _fast_see:

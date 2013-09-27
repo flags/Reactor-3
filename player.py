@@ -551,6 +551,8 @@ def handle_input():
 			return False
 		
 		_options = []
+		_options.append(menus.create_item('title', 'Testing', None))
+		_options.append(menus.create_item('list', 'Show visible chunks', ['off', 'on']))
 		_options.append(menus.create_item('title', 'Map Operations', None))
 		_options.append(menus.create_item('single', 'Save', 'Offload game to disk'))
 		_options.append(menus.create_item('single', 'Load', 'Load game from disk'))
@@ -566,7 +568,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='$k: $v',
-			on_select=handle_options_menu)
+			on_select=handle_options_menu,
+		     on_change=handle_options_menu_change)
 		
 		menus.activate_menu(_i)
 	
@@ -1345,6 +1348,13 @@ def handle_options_menu(entry):
 		maps.smooth_chunk_map()
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_options_menu_change(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if key == 'Show visible chunks':
+		SETTINGS['draw visible chunks'] = (value=='on')
 
 def handle_jobs_menu_action(entry):
 	if entry['key'] == 'Join':

@@ -126,11 +126,19 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=Tru
 			_ret_line = _line
 		
 		if len(_line) > max_length and distance:
-			return False	
+			_ret_line = []
+			continue
 		
 		for pos in _line:
-			if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
+			try:
+				if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+					_ret_line = []
+					continue
+			except:
+				print pos, pos1
+				raise Exception(pos1)
 	
 	return _ret_line
 
@@ -324,22 +332,30 @@ def find_known_items(life, matches={}, visible=True):
 	return _match
 
 def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], chunk_map=WORLD_INFO['chunk_map']):
+	_center_chunk_pos = maps.get_chunk(center_chunk_key)['pos']
+	#_center_chunk_pos[0] = ((_center_chunk_pos[0]/chunk_size)*chunk_size)+(chunk_size/2)
+	#_center_chunk_pos[1] = ((_center_chunk_pos[1]/chunk_size)*chunk_size)+(chunk_size/2)
 	_chunks = []
 	
-	for x_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
-		for y_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
-			_pos_mod = [x_mod*chunk_size, y_mod*chunk_size]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
-			
-			if not ignore_chunks==0 and _chunk_key in ignore_chunks:
-				continue
-			elif isinstance(ignore_chunks, list):
-				ignore_chunks.append(_chunk_key)
-			
-			if chunk_map and not _chunk_key in chunk_map:
-				continue
-			
-			_chunks.append(_chunk_key)
+	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
+	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
+	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*1.65)/chunk_size)):
+		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod/chunk_size)*chunk_size
+		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
+		#print x_mod, y_mod, _center_chunk_pos
+		
+		_pos_mod = [x_mod, y_mod]
+		_chunk_key = '%s,%s' % (x_mod, y_mod)#','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
+		
+		if not ignore_chunks==0 and _chunk_key in ignore_chunks:
+			continue
+		elif isinstance(ignore_chunks, list):
+			ignore_chunks.append(_chunk_key)
+		
+		if chunk_map and not _chunk_key in chunk_map:
+			continue
+		
+		_chunks.append(_chunk_key)
 	
 	return _chunks
 
@@ -359,6 +375,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	
 	for chunk_key in _chunks:
 		if visible_check and not chunks.can_see_chunk(life, chunk_key):
+			#print chunk_key, lfe.get_current_chunk_id(life)
 			continue
 		
 		if not chunk_key in WORLD_INFO['chunk_map']:
