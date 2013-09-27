@@ -21,10 +21,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	_lost_targets = judgement.get_targets(life, escaped_only=True)
+	_lost_targets = judgement.get_combat_targets(life, escaped_only=True)
 	brain.store_in_memory(life, 'lost_targets', _lost_targets)
 	
 	if not _lost_targets:
+		print life['name'], 'heh, no lost targets'
 		return False
 	else:
 		print life['name'], _lost_targets

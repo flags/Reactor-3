@@ -246,27 +246,34 @@ def ranged_combat(life, targets):
 	
 	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
 	
-	if not target['escaped'] and not _pos_for_combat:
-		return False
-		#else:
-		#	return movement.escape(life, [target['life']['id']])
-	elif _pos_for_combat:
-		lfe.stop(life)
+	#if not target['escaped'] and not _pos_for_combat:
+	#	return False
+	#	#else:
+	#	#	return movement.escape(life, [target['life']['id']])
+	#elif _pos_for_combat:
+	#	lfe.stop(life)
 	
-	if not sight.can_see_position(life,target['life']['pos']):
-		if not movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=True):
+	if sight.can_see_position(life,target['last_seen_at']):
+		if not sight.can_see_position(life, target['life']['pos']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
+			
+			target['escaped'] = 1
 			
 			for send_to in judgement.get_trusted(life):
 				speech.communicate(life,
 					'target_missing',
 					target=target['life']['id'],
 					matches=[{'id': send_to}])
-		else:
-			if sight.can_see_position(life, target['last_seen_at']):
-				target['escaped'] = 1
-		
+	else:
 		return False
+	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
+	#	return False
+	#	#else:
+	#	#	if sight.can_see_position(life, target['last_seen_at']):
+	#	#		target['escaped'] = 1
+		
+		
+	
 	
 	#TODO: Attach skill to delay
 	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):

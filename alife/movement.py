@@ -27,14 +27,11 @@ def score_shootcover(life,target,pos):
 
 def position_to_attack(life, target):
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target], ignore_escaped=True)
-	
-	print 'target pos', _target_positions
-	#print _target_positions, _zones
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
 	if _nearest_target_score <= sight.get_vision(life):
-		print 'changing position for combat...'
+		print life['name'], 'changing position for combat...'
 		#_visible_target_chunks = []
 		#for target in targets:
 		#	_known_target = brain.knows_alife_by_id(life, target)

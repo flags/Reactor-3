@@ -339,7 +339,7 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	
 	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
 	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
-	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*1.65)/chunk_size)):
+	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*2)/chunk_size)):
 		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod/chunk_size)*chunk_size
 		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
 		#print x_mod, y_mod, _center_chunk_pos
