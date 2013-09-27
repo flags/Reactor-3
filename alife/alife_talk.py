@@ -104,7 +104,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		dialog.tick(life, _dialog)	
 	
 	if not judgement.is_safe(life):
-		_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		_combat_targets = judgement.get_combat_targets(life)
 		
 		if _combat_targets:
 			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):

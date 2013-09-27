@@ -32,8 +32,9 @@ def look(life):
 	_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 	brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
-	if not _chunks:
-		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
+	#TODO: What?
+	#if not _chunks:
+	#	_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for ai in life['know'].values():
 		ai['last_seen_time'] += 1
@@ -353,7 +354,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	if _chunks:
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	else:
-		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life)/2, ignore_chunks=ignore_chunks)
+		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	
 	for chunk_key in _chunks:

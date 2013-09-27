@@ -2335,7 +2335,7 @@ def draw_life_icon(life, draw_alignment=False):
 				_color_map = tcod.color_gen_map([tcod.crimson, tcod.white, tcod.light_green], [0, 10, 20])
 				_icon[2] = _color_map[(numbers.clip(judgement.get_trust(LIFE[SETTINGS['controlling']], life['id']), -10, 10))+10]
 			
-		_targets = brain.retrieve_from_memory(life, 'combat_targets')	
+		_targets = judgement.get_combat_targets(life)
 		if _targets and SETTINGS['controlling'] in _targets:
 			_icon[1] = tcod.light_red
 		elif not life['id'] == SETTINGS['controlling']:
@@ -2661,7 +2661,7 @@ def is_target_of(life):
 			if not alife.sight.can_see_position(life, ai['pos']):
 				continue
 			
-			_targets = brain.retrieve_from_memory(ai, 'combat_targets')
+			_targets = judgement.get_combat_targets(ai)
 			if _targets and life['id'] in [l for l in _targets]:
 				_targets.append(ai)
 				break

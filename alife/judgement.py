@@ -138,7 +138,7 @@ def is_target_lost(life, target_id):
 	return False
 
 def is_safe(life):
-	if get_targets(life):
+	if get_combat_targets(life):
 		return False
 	
 	return True
@@ -158,7 +158,45 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-def get_targets(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
+def judge_life(life):
+	_combat_targets = []
+	_potential_combat_targets = []
+	
+	for alife_id in life['know']:
+		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
+		if is_target_dangerous(life, alife_id):
+			_combat_targets.append(alife_id)
+		else:
+			_potential_combat_targets.append(alife_id)
+	
+	brain.store_in_memory(life, 'combat_targets', _combat_targets)
+	brain.store_in_memory(life, 'targets', _potential_combat_targets)
+
+def _target_filter(life, target_list, escaped_only, ignore_escaped):
+	_targets = brain.retrieve_from_memory(life, target_list)
+	
+	if not _targets:
+		return []
+	
+	_return_targets = []
+	
+	for target in _targets:
+		_knows = brain.knows_alife_by_id(life, target)
+		
+		if (escaped_only and not _knows['escaped']) or ignore_escaped and _knows['escaped']:
+			continue
+	
+		_return_targets.append(target)
+	
+	return _return_targets
+	
+def get_targets(life, escaped_only=False, ignore_escaped=True):
+	return _target_filter(life, 'targets', escaped_only, ignore_escaped)
+
+def get_combat_targets(life, escaped_only=False, ignore_escaped=False):
+	return _target_filter(life, 'combat_targets', escaped_only, ignore_escaped)
+
+def get_targets_old(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
 	_targets = []
 	_combat_targets = []
 	
@@ -215,7 +253,7 @@ def get_nearest_threat(life):
 	#if not _combat_targets:
 	#	return False
 	
-	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life, must_be_known=True)]:
+	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life)]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
@@ -262,7 +300,7 @@ def get_invisible_threats(life):
 def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
-	for target in [LIFE[t] for t in get_targets(life, must_be_known=True)]:
+	for target in [LIFE[t] for t in get_targets(life)]:
 		if not sight.can_see_target(life, target['id']) == _inverse:
 			_targets.append(target['id'])
 	

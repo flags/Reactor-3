@@ -96,7 +96,7 @@ def tick_all_objects(source_map):
 			if not LOS_BUFFER[0][_y, _x]:
 				continue
 			
-			_targets = alfe.brain.retrieve_from_memory(alife, 'combat_targets')
+			_targets = alfe.judgement.get_combat_targets(LIFE[SETTINGS['controlling']])
 			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
 	

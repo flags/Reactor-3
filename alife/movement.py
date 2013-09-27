@@ -222,11 +222,13 @@ def escape(life, targets):
                    999)
 
 def hide(life, target_id):
+	return False
 	_target = brain.knows_alife_by_id(life, target_id)
 	_goals = [_target['last_seen_at'][:]]
 	_avoid_positions = []
 	
 	print 'HIDING!!!!!!!!!'
+	print _goals
 	
 	_orig_goals = _goals[:]
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):

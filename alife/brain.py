@@ -67,11 +67,12 @@ def sort_modules(life):
 	return _scores
 
 def think(life, source_map):
+	judgement.judge_life(life)
+	judgement.judge_jobs(life)
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
 	survival.process(life)
-	judgement.judge_jobs(life)
 	understand(life, source_map)
 	
 	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
