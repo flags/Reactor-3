@@ -101,14 +101,14 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 	POSITION[0] = position[0]
 	POSITION[1] = position[1]
 	
-	HIDDEN_CHUNKS = []
+	#SKIP_CHUNKS = []
 	VISIBLE_CHUNKS = []
 	if life and alife.brain.get_flag(life, 'visible_chunks'):
 		VISIBLE_CHUNKS = alife.brain.get_flag(life, 'visible_chunks')
-		#TODO: What is this?????
+		
 		#for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
 		#	if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
-		#		HIDDEN_CHUNKS.append(chunk_key)
+		#		SKIP_CHUNKS.append(chunk_key)
 	
 	if not POSITION[0]-X_CAMERA_POS<0 and not POSITION[0]-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POSITION[1]-Y_CAMERA_POS<0 and not POSITION[1]-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
 		los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1

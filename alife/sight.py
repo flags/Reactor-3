@@ -344,8 +344,10 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
 		#print x_mod, y_mod, _center_chunk_pos
 		
-		_pos_mod = [x_mod, y_mod]
-		_chunk_key = '%s,%s' % (x_mod, y_mod)#','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
+		_chunk_key = '%s,%s' % (x_mod, y_mod)
+		
+		if _chunk_key in _chunks:
+			continue
 		
 		if not ignore_chunks==0 and _chunk_key in ignore_chunks:
 			continue

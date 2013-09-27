@@ -558,8 +558,8 @@ def update_chunk_map():
 						continue
 					
 					for z in range(0, MAP_SIZE[2]):
-						if not WORLD_INFO['map'][x2][y2][z]:
-							_chunk_map[_chunk_key]['max_z'] = z-1
+						if WORLD_INFO['map'][x2][y2][z] and z>_chunk_map[_chunk_key]['max_z']:
+							_chunk_map[_chunk_key]['max_z'] = z
 					
 					if 'type' in _tile:
 						_type = _tile['type']
