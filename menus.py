@@ -2,7 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True,alignment=''):
+def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True,alignment='',action=None):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
@@ -10,7 +10,8 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 		'on_close': on_close,
 		'alignment': alignment,
 		'index': 0,
-		'values':{}}
+		'values':{},
+		'action':action}
 		
 	#TODO: Does this need to be copied?
 	_menu['menu'] = menu[:]
@@ -99,7 +100,7 @@ def draw_menus():
 					#TODO: Colors
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				elif not item['enabled']:
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.darker_grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.dark_sepia)
 				elif menu['settings']['dim']:
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
 				
@@ -109,7 +110,7 @@ def draw_menus():
 					#TODO: Colors
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
 				elif not item['enabled']:
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.darker_grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], tcod.dark_sepia)
 				elif menu['settings']['dim']:
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
 			

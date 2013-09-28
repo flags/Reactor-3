@@ -1770,17 +1770,17 @@ def item_is_stored(life,id):
 	
 	return False
 
-def item_is_worn(life, item):
-	#if not 'parent_id' in item:
-	#	return False
-	if items.is_item_owned(item['uid']):
+def item_is_worn(life, item_uid):
+	item = ITEMS[item_uid]
+	
+	if not 'owner' in item:
 		return False
 	
 	for limb in item['attaches_to']:
 		_limb = get_limb(life,limb)
 		
-		if item['uid'] in _limb['holding']:
-			return True
+		if item_uid in _limb['holding']:
+			return limb
 	
 	return False
 
@@ -1792,7 +1792,7 @@ def can_wear_item(life, item_uid):
 	if not 'CAN_WEAR' in item['flags']:
 		return False
 	
-	if item_is_worn(life, item):
+	if item_is_worn(life, item_uid):
 		return False
 	
 	for limb in item['attaches_to']:
@@ -2394,79 +2394,142 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 	"""
 	_inventory = []
 	_inventory_items = 0
+	_equipped_items = []
+	_storage = {}
 	
 	#TODO: Time it would take to remove
-	if show_equipped:
-		_title = menus.create_item('title', 'Equipped', None, enabled=False)
-		_inventory.append(_title)
-	
-		for entry in life['inventory']:
-			item = get_inventory_item(life,entry)
-			
-			if matches:
-				if not perform_match(item,matches):
-					continue					
-			
-			if item_is_equipped(life,entry,check_hands=check_hands):
-				_menu_item = menus.create_item('single',
-					item['name'],
-					'Equipped',
-					icon=item['icon'],
-					id=entry)
-			
-				_inventory_items += 1
-				_inventory.append(_menu_item)
-	elif check_hands:
-		_title = menus.create_item('title','Holding',None,enabled=False)
-		_inventory.append(_title)
-	
-		for hand in life['hands']:
-			if not life['body'][hand]['holding']:
-				continue
-				
-			item = get_inventory_item(life,life['body'][hand]['holding'][0])
-			
-			if matches:
-				if not perform_match(item,matches):
-					continue	
-			
-			_menu_item = menus.create_item('single',
-				item['name'],
-				'Holding',
-				icon=item['icon'],
-				id=item['uid'])
+	#_items.extend(life['inventory'].keys())
+	for item_uid in life['inventory']:
+		if show_equipped and item_is_equipped(life, item_uid):
+			_equipped_items.append(item_uid)
 		
-			_inventory_items += 1
+		if show_containers:
+			_item = get_inventory_item(life, item_uid)
+			
+			if 'storing' in _item:
+				if _item['storing']:
+					for stored_uid in _item['storing']:
+						if item_uid in _storage:
+							_storage[item_uid].append(stored_uid)
+						else:
+							_storage[item_uid] = [stored_uid]
+				else:
+					_storage[item_uid] = []
+	
+	if check_hands:
+		for hand in life['hands']:
+			for item_uid in life['body'][hand]['holding']:
+				if matches:
+					if not perform_match(ITEMS[item_uid], matches):
+						continue
+				
+				_equipped_items.append(item_uid)
+	
+	#STORAGE
+	#EQUIPPED
+	if _storage:
+		_inventory.append(menus.create_item('title', 'Storage', None))
+	
+		for storage_uid in _storage:
+			storage_item = get_inventory_item(life, storage_uid)
+		
+			_menu_item = menus.create_item('single',
+				                           storage_item['name'],
+				                           '%s items' % len(storage_item['storing']),
+				                           icon=storage_item['icon'],
+				                           id=storage_uid,
+				                           enabled=(len(storage_item['storing'])>0))
+			
 			_inventory.append(_menu_item)
 	
-	if show_containers:
-		for container in get_all_storage(life):
-			_title = menus.create_item('title',
-				'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
-				None,
-				enabled=False)
-			
-			_inventory.append(_title)
-			for _item in container['storing']:
-				if not _item in life['inventory']:
-					continue
-				
-				item = items.get_item_from_uid(_item)
-				
-				if matches:
-					if not perform_match(item,matches):
-						continue	
-				
-				_menu_item = menus.create_item('single',
-					item['name'],
-					'Not equipped',
-					icon=item['icon'],
-					id=_item)
-				
-				_inventory_items += 1
-				_inventory.append(_menu_item)
+	if _equipped_items:
+		_inventory.append(menus.create_item('title', 'Equipped', None))
 	
-	if not _inventory_items:
+		for item_uid in _equipped_items:
+			item = get_inventory_item(life, item_uid)
+		
+			_menu_item = menus.create_item('single',
+				                           '%s' % item['name'],
+				                           item_is_worn(life, item_uid),
+				                           icon=item['icon'],
+				                           id=item_uid,
+			                               is_item=True)
+			
+			_inventory.append(_menu_item)
+			
+	#if show_equipped:
+	#	
+	#	_title = menus.create_item('title', 'Equipped', None, enabled=False)
+		#_inventory.append(_title)
+	
+	
+		#for entry in life['inventory']:
+		#	item = get_inventory_item(life,entry)
+		#	
+		#	if matches:
+		#		if not perform_match(item,matches):
+		#			continue					
+		#	
+		#	if item_is_equipped(life,entry,check_hands=check_hands):
+		#		_menu_item = menus.create_item('single',
+		#			item['name'],
+		#			'Equipped',
+		#			icon=item['icon'],
+		#			id=entry)
+		#	
+		#		_inventory_items += 1
+		#		_inventory.append(_menu_item)
+	#elif check_hands:
+	#	_title = menus.create_item('title','Holding',None,enabled=False)
+	#	_inventory.append(_title)
+	#
+	#	for hand in life['hands']:
+	#		if not life['body'][hand]['holding']:
+	#			continue
+	#			
+	#		item = get_inventory_item(life,life['body'][hand]['holding'][0])
+	#		
+	#		if matches:
+	#			if not perform_match(item,matches):
+	#				continue	
+	#		
+	#		_menu_item = menus.create_item('single',
+	#			item['name'],
+	#			'Holding',
+	#			icon=item['icon'],
+	#			id=item['uid'])
+	#	
+	#		_inventory_items += 1
+	#		_inventory.append(_menu_item)
+	
+	#if show_containers:
+	#	for container in get_all_storage(life):
+	#		_title = menus.create_item('title',
+	#			'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
+	#			None,
+	#			enabled=False)
+	#		
+	#		_inventory.append(_title)
+	#		for _item in container['storing']:
+	#			if not _item in life['inventory']:
+	#				continue
+	#			
+	#			item = items.get_item_from_uid(_item)
+	#			
+	#			if matches:
+	#				if not perform_match(item,matches):
+	#					continue	
+	#			
+	#			_menu_item = menus.create_item('single',
+	#				item['name'],
+	#				'Not equipped',
+	#				icon=item['icon'],
+	#				id=_item)
+	#			
+	#			_inventory_items += 1
+	#			_inventory.append(_menu_item)
+	#
+	if not _inventory:
 		return []
 	
 	return _inventory

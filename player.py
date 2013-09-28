@@ -185,7 +185,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k',
-			on_select=inventory_equip)
+			on_select=inventory_select,
+		    action='Equip')
 		
 		menus.activate_menu(_i)
 	
@@ -194,7 +195,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=True,check_hands=True,show_containers=False)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=True,check_hands=True,show_containers=True)
 		
 		if not _inventory:
 			gfx.message('You have no items to unequip.')
@@ -205,7 +206,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k',
-			on_select=inventory_unequip_action)
+			on_select=inventory_select,
+		    action='Unequip')
 		
 		menus.activate_menu(_i)
 	
@@ -220,7 +222,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Drop'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],check_hands=True)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']], show_containers=True, check_hands=True)
 		
 		if not _inventory:
 			gfx.message('You have no items to drop.')
@@ -231,7 +233,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k: $v',
-			on_select=inventory_drop)
+			on_select=inventory_select,
+		    action='Drop')
 		
 		menus.activate_menu(_i)
 	
@@ -259,7 +262,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k: $v',
-			on_select=inventory_throw)
+			on_select=inventory_throw,
+		    action='Drop')
 		
 		menus.activate_menu(_i)
 	
@@ -722,19 +726,83 @@ def handle_input():
 def inventory_select(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
+	_item_uid = entry['id']
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
 	_menu_items = []
 	
-	for _key in ITEM_TYPES[key]:
-		_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
-	
-	_i = menus.create_menu(title=key,
-		menu=_menu_items,
-		padding=(1,1),
-		position=(1,1),
-		on_select=return_to_inventory,
-		dim=False)
+	if 'storing' in _item and not 'is_item' in entry:
+		_stored_items = []
+		for _stored_item_uid in _item['storing']:
+			_stored_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _stored_item_uid)
+			_i = menus.create_item('single',
+				_stored_item['name'],
+				None,
+				id=_stored_item_uid,
+			    action=MENUS[ACTIVE_MENU['menu']]['action'])
+			
+			_stored_items.append(_i)
 		
+		_i = menus.create_menu(title=items.get_name(_item),
+		                       menu=_stored_items,
+		                       padding=(1,1),
+		                       position=(1,1),
+		                       format_str='$k',
+		                       on_select=inventory_select)
+		menus.activate_menu(_i)
+	else:
+		handle_inventory_item_select(entry)
+	
+	#for _key in ITEM_TYPES[key]:
+	#	_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
+
+def handle_inventory_item_select(entry):
+	_item_uid = entry['id']
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
+	_menu_items = []
+	
+	if MENUS[ACTIVE_MENU['menu']]['action']:#'action' in entry and entry['action']:
+		entry['key'] = MENUS[ACTIVE_MENU['menu']]['action']
+		return handle_inventory_item_select_action(entry)
+	
+	if life.item_is_equipped(LIFE[SETTINGS['controlling']], _item_uid):
+		_menu_items.append(menus.create_item('single',
+			        'Unequip',
+			        None,
+			        id=_item_uid))
+	else:
+		_menu_items.append(menus.create_item('single',
+			        'Equip',
+			        None,
+			        id=_item_uid))
+	
+	_menu_items.append(menus.create_item('single',
+			        'Drop',
+			        None,
+			        id=_item_uid))
+	
+	_i = menus.create_menu(title='Action',
+		                       menu=_menu_items,
+		                       padding=(1,1),
+		                       position=(1,1),
+		                       format_str='$k',
+		                       on_select=handle_inventory_item_select_action)
 	menus.activate_menu(_i)
+	
+def handle_inventory_item_select_action(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	_item_uid = entry['id']
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
+	
+	if key == 'Equip':
+		inventory_equip(entry)
+	elif key == 'Unequip':
+		inventory_unequip(entry)
+	elif key == 'Drop':
+		inventory_drop(entry)
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
 
 def inventory_equip(entry):
 	key = entry['key']

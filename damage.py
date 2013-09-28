@@ -198,8 +198,8 @@ def bite(life, target_id, limb):
 	for _item in [lfe.get_inventory_item(target, i) for i in lfe.get_items_attached_to_limb(target, limb)]:
 		_items_to_check.append({'item': _item, 'visible': True})
 		
-		if 'container' in _item:
-			for _item_in_container in _item['contains']:
+		if 'storing' in _item:
+			for _item_in_container in _item['storing']:
 				_items_to_check.append({'item': _item_in_container, 'visible': False, 'inside': _item['name']})
 	
 	for entry in _items_to_check:
