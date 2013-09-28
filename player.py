@@ -252,7 +252,7 @@ def handle_input():
 			SELECTED_TILES[0] = []
 			return True
 		
-		_throwable = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=False,check_hands=True)
+		_throwable = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']], show_equipped=True, check_hands=True)
 		
 		if not _throwable:
 			return False
@@ -262,8 +262,8 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k: $v',
-			on_select=inventory_throw,
-		    action='Drop')
+			on_select=inventory_select,
+		    action='Throw')
 		
 		menus.activate_menu(_i)
 	
@@ -737,8 +737,7 @@ def inventory_select(entry):
 			_i = menus.create_item('single',
 				_stored_item['name'],
 				None,
-				id=_stored_item_uid,
-			    action=MENUS[ACTIVE_MENU['menu']]['action'])
+				id=_stored_item_uid)
 			
 			_stored_items.append(_i)
 		
@@ -747,7 +746,8 @@ def inventory_select(entry):
 		                       padding=(1,1),
 		                       position=(1,1),
 		                       format_str='$k',
-		                       on_select=inventory_select)
+		                       on_select=inventory_select,
+		                       action=MENUS[ACTIVE_MENU['menu']]['action'])
 		menus.activate_menu(_i)
 	else:
 		handle_inventory_item_select(entry)
@@ -780,6 +780,11 @@ def handle_inventory_item_select(entry):
 			        None,
 			        id=_item_uid))
 	
+	_menu_items.append(menus.create_item('single',
+			        'Throw',
+			        None,
+			        id=_item_uid))
+	
 	_i = menus.create_menu(title='Action',
 		                       menu=_menu_items,
 		                       padding=(1,1),
@@ -800,6 +805,8 @@ def handle_inventory_item_select_action(entry):
 		inventory_unequip(entry)
 	elif key == 'Drop':
 		inventory_drop(entry)
+	elif key == 'Throw':
+		inventory_throw(entry)
 	
 	menus.delete_active_menu()
 	menus.delete_active_menu()
