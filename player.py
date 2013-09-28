@@ -802,11 +802,11 @@ def handle_inventory_item_select_action(entry):
 	if key == 'Equip':
 		inventory_equip(entry)
 	elif key == 'Unequip':
-		inventory_unequip(entry)
+		return inventory_unequip_action(entry)
 	elif key == 'Drop':
 		inventory_drop(entry)
 	elif key == 'Throw':
-		inventory_throw(entry)
+		return inventory_throw(entry)
 	
 	menus.delete_active_menu()
 	menus.delete_active_menu()
@@ -870,6 +870,8 @@ def inventory_unequip_action(entry):
 			'%s/%s' % (container['capacity'],container['max_capacity']),
 			container=container['uid'],
 			item=_item))
+	
+	print _menu
 	
 	if not _menu:
 		gfx.message('You have nowhere to store this item!')
@@ -939,7 +941,7 @@ def inventory_throw(entry):
 	_stored = life.item_is_stored(LIFE[SETTINGS['controlling']], item['uid'])
 	if _stored:
 		_delay = 15
-		gfx.message('You start to remove %s from your %s.' % (item['name'],_stored['name']))
+		gfx.message('You start to remove %s from %s.' % (items.get_name(item), items.get_name(_stored)))
 	else:
 		_delay = 8
 	
@@ -947,8 +949,8 @@ def inventory_throw(entry):
 	
 	if item['type'] == 'explosive':
 		if 'player' in LIFE[SETTINGS['controlling']]:
+			menus.delete_menu(ACTIVE_MENU['menu'])
 			_items = [menus.create_item('list', 'Time', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], item=item['uid'])]
-	
 			_menu = menus.create_menu(title='Arm',
 					                  menu=_items,
 					                  padding=(1,1),
@@ -1306,7 +1308,7 @@ def pick_up_item_from_ground(entry):
 		gfx.message('You can\'t lift the %s.' % _item['name'])
 		return False
 	
-	gfx.message('You start to put %s in your %s.' %
+	gfx.message('You start to put %s in %s.' %
 		(items.get_name(items.get_item_from_uid(entry['item'])), items.get_name(items.get_item_from_uid(entry['container']))))
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupitem',

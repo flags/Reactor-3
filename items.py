@@ -234,6 +234,18 @@ def get_name(item):
 		elif item['burnt']:
 			_prefixes.append('burnt')
 	
+	if 'capacity' in item:
+		_score = item['capacity']/float(item['max_capacity'])
+		
+		if _score >= .75:
+			_prefixes.append('nearly full')
+		elif _score == 0:
+			_prefixes.append('empty')
+	
+	if len(_prefixes)>=2:
+		if _prefixes[0] == 'a' and _prefixes[1] in ['empty']:
+			_prefixes[0] = 'an'
+	
 	return '%s %s' % (' '.join(_prefixes), item['name'])		
 
 def move(item, direction, speed, friction=0.05, _velocity=0):

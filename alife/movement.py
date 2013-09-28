@@ -184,6 +184,9 @@ def escape(life, targets):
 			
 			_visible_target_chunks.append(chunk_key)
 	
+	if not _target_positions:
+		return False
+	
 	#TODO: For lower limit in return_score_in_range, use range of weapon
 	_cover = zones.dijkstra_map(life['pos'],
 	                            _target_positions,

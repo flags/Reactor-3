@@ -2459,80 +2459,8 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 			                               is_item=True)
 			
 			_inventory.append(_menu_item)
-			
-	#if show_equipped:
-	#	
-	#	_title = menus.create_item('title', 'Equipped', None, enabled=False)
-		#_inventory.append(_title)
-	
-	
-		#for entry in life['inventory']:
-		#	item = get_inventory_item(life,entry)
-		#	
-		#	if matches:
-		#		if not perform_match(item,matches):
-		#			continue					
-		#	
-		#	if item_is_equipped(life,entry,check_hands=check_hands):
-		#		_menu_item = menus.create_item('single',
-		#			item['name'],
-		#			'Equipped',
-		#			icon=item['icon'],
-		#			id=entry)
-		#	
-		#		_inventory_items += 1
-		#		_inventory.append(_menu_item)
-	#elif check_hands:
-	#	_title = menus.create_item('title','Holding',None,enabled=False)
-	#	_inventory.append(_title)
-	#
-	#	for hand in life['hands']:
-	#		if not life['body'][hand]['holding']:
-	#			continue
-	#			
-	#		item = get_inventory_item(life,life['body'][hand]['holding'][0])
-	#		
-	#		if matches:
-	#			if not perform_match(item,matches):
-	#				continue	
-	#		
-	#		_menu_item = menus.create_item('single',
-	#			item['name'],
-	#			'Holding',
-	#			icon=item['icon'],
-	#			id=item['uid'])
-	#	
-	#		_inventory_items += 1
-	#		_inventory.append(_menu_item)
-	
-	#if show_containers:
-	#	for container in get_all_storage(life):
-	#		_title = menus.create_item('title',
-	#			'%s - %s/%s' % (container['name'],container['capacity'],container['max_capacity']),
-	#			None,
-	#			enabled=False)
-	#		
-	#		_inventory.append(_title)
-	#		for _item in container['storing']:
-	#			if not _item in life['inventory']:
-	#				continue
-	#			
-	#			item = items.get_item_from_uid(_item)
-	#			
-	#			if matches:
-	#				if not perform_match(item,matches):
-	#					continue	
-	#			
-	#			_menu_item = menus.create_item('single',
-	#				item['name'],
-	#				'Not equipped',
-	#				icon=item['icon'],
-	#				id=_item)
-	#			
-	#			_inventory_items += 1
-	#			_inventory.append(_menu_item)
-	#
-	if not _inventory:
+
+	if not _equipped_items and not _storage:
 		return []
 	
 	return _inventory
@@ -2635,7 +2563,12 @@ def draw_life_info():
 	_longest_state = 7
 	_visible_life = []
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
-		_state_len = len(ai['state'])
+		if ai['dead']:
+			_state = 'dead'
+		else:
+			_state = ai['state']
+		
+		_state_len = len(_state)
 		
 		if _state_len > _longest_state:
 			_longest_state = _state_len
