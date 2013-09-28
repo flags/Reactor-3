@@ -1773,6 +1773,9 @@ def item_is_stored(life,id):
 def item_is_worn(life, item_uid):
 	item = ITEMS[item_uid]
 	
+	if not 'attaches_to' in item:
+		return False
+	
 	if not 'owner' in item:
 		return False
 	
@@ -1796,7 +1799,7 @@ def can_wear_item(life, item_uid):
 		return False
 	
 	for limb in item['attaches_to']:
-		_limb = get_limb(life,limb)
+		_limb = get_limb(life, limb)
 		
 		for _item in [items.get_item_from_uid(item_uid) for i in _limb['holding']]:
 			if item_uid == _item['uid']:
@@ -2626,7 +2629,7 @@ def draw_life_info():
 	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
 	_hunger_str = get_thirst(life)
 	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
-	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
 	tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
 	
 	_longest_state = 7
@@ -2648,12 +2651,17 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
 
-		if ai['state'] == 'combat':
+		if ai['dead']:
+			_state = 'dead'
+		else:
+			_state = ai['state']
+		
+		if _state == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, ai['state'])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, _state)
 		
 		tcod.console_set_default_foreground(0, tcod.white)
 		#if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:

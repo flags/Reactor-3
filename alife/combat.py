@@ -289,7 +289,7 @@ def needs_cover(life):
 	
 	_goals = []
 	_zones = []
-	for target in [brain.knows_alife_by_id(life, t) for t in judgement.get_targets(life)]:
+	for target in [brain.knows_alife_by_id(life, t) for t in judgement.get_combat_targets(life)]:
 		_goals.append(target['last_seen_at'])
 		_zone = zones.get_zone_at_coords(target['last_seen_at'])
 		

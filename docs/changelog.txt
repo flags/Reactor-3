@@ -11,3 +11,4 @@ New in version 0.6:
 	* Camera can now follow non-entities
 	* Explosions now push entities
 	* Added caching layer to zone lookups, dijkstra maps, and reference maps
+	* Inventory/item action menus redesigned for quicker access
