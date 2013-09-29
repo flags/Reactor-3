@@ -221,13 +221,13 @@ def _can_see_chunk_quick(start_pos, chunk_id, vision):
 		return False
 	
 	for pos in [(0, 0), (1, 0), (0, 1), (1, 1)]:
-		_x = pos[0]*WORLD_INFO['chunk_size']+1
-		_y = pos[1]*WORLD_INFO['chunk_size']+1
+		_x = pos[0]*WORLD_INFO['chunk_size']
+		_y = pos[1]*WORLD_INFO['chunk_size']
 		
-		#if _x:
-		#	_x -= 1
-		#if _y:
-		#	_y -= 1
+		if _x:
+			_x -= 1
+		if _y:
+			_y -= 1
 		
 		_can_see = sight._can_see_position(start_pos, (chunk['pos'][0]+_x, chunk['pos'][1]+_y), max_length=vision)
 		
@@ -247,20 +247,6 @@ def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
 		_pos[1] = ((_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
 	
 	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
-	#_fast_see = _can_see_chunk_quick(life['pos'], chunk_id, sight.get_vision(life))
-	#
-	#if _fast_see:
-	#	return _fast_see
-	#
-	#chunk = maps.get_chunk(chunk_id)
-	#
-	#for pos in chunk['ground']:
-	#	_can_see = sight.can_see_position(life, pos, distance=distance)
-	#	
-	#	if _can_see:
-	#		return _can_see
-	#
-	#return False
 
 def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 	_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
@@ -270,11 +256,14 @@ def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 	
 	chunk = maps.get_chunk(chunk_key)
 	
-	for pos in chunk['ground']:
-		_can_see = sight._can_see_position(pos1, pos, distance=distance, max_length=vision)
+	#for pos in chunk['ground']:
+	for y in range(chunk['pos'][1], chunk['pos'][1]+WORLD_INFO['chunk_size']):
+		for x in range(chunk['pos'][0], chunk['pos'][0]+WORLD_INFO['chunk_size']):
+			if (x-chunk['pos'][0] == 0 or x-chunk['pos'][0] == WORLD_INFO['chunk_size']-1) and (x-chunk['pos'][1] == 0 or y-chunk['pos'][1] == WORLD_INFO['chunk_size']-1):
+				_can_see = sight._can_see_position(pos1, (x, y), distance=distance, max_length=vision)
 		
-		if _can_see:
-			return _can_see
+				if _can_see:
+					return _can_see
 	
 	return False
 

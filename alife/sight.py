@@ -27,10 +27,11 @@ def look(life):
 	#	_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
 	#	brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	#else:
-	_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
-	#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
-	_chunks = [maps.get_chunk(c) for c in _visible_chunks]
-	brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	
+	if not life['speed'] or life['path']:
+		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	
 	#TODO: What?
 	#if not _chunks:
@@ -386,10 +387,6 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		if get_chunks:
 			_current_chunk = maps.get_chunk(chunk_key)
 			_visible_chunks.append(chunk_key)
-			
-			_current_chunk_pos = (_current_chunk['pos'][0]/WORLD_INFO['chunk_size'], _current_chunk['pos'][1]/WORLD_INFO['chunk_size'])
-			_center_chunk_pos = (_center_chunk['pos'][0]/WORLD_INFO['chunk_size'], _center_chunk['pos'][1]/WORLD_INFO['chunk_size'])
-			_direction = (_current_chunk_pos[0]-_center_chunk_pos[0], _current_chunk_pos[1]-_center_chunk_pos[1])
 		
 		if judge:
 			if initial:
