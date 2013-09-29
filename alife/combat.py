@@ -282,25 +282,3 @@ def ranged_combat(life, targets):
 			'limb': 'chest'},
 			5000,
 			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
-
-def needs_cover(life):
-	if not lfe.execute_raw(life, 'safety', 'needs_cover'):
-		return False
-	
-	_goals = []
-	_zones = []
-	for target in [brain.knows_alife_by_id(life, t) for t in judgement.get_combat_targets(life)]:
-		_goals.append(target['last_seen_at'])
-		_zone = zones.get_zone_at_coords(target['last_seen_at'])
-		
-		if not _zone in _zones:
-			_zones.append(_zone)
-	
-	_distance_to_danger = zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True)
-	print life['name'], _distance_to_danger
-	#TODO: Un-hardcode
-	if _distance_to_danger<10:
-		print 'needs cover'*10
-		return True
-	
-	return False

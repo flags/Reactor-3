@@ -58,10 +58,10 @@ FUNCTION_MAP = {'is_family': stats.is_family,
 	'travel_to_position': movement.travel_to_position,
 	'find_target': movement.find_target,
 	'can_see_target': sight.can_see_target,
-	'needs_cover': combat.needs_cover,
 	'has_targets': lambda life: len(judgement.get_targets(life))>0,
 	'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
 	'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
+    'danger_close': stats.is_combat_target_too_close,
 	'wait': never,
 	'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 	'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
@@ -125,22 +125,26 @@ def create_action(script, identifier, arguments):
 			_self_call = False
 			_no_args = False
 
-			if argument.startswith('*'):
-				argument = argument.replace('*', '')
-				_true = '*'			
-			
-			if argument.startswith('\"'):
-				argument = argument.replace('\"', '')
-				_string = argument
-			elif argument.startswith('%'):
-				argument = argument[1:]
-				_no_args = True
-			elif argument.startswith('!'):
-				argument = argument[1:]
-				_true = False
-			elif argument.startswith('@'):
-				argument = argument[1:]
-				_self_call = True
+			while 1:
+				if argument.startswith('*'):
+					argument = argument.replace('*', '')
+					_true = '*'
+				elif argument.startswith('\"'):
+					argument = argument.replace('\"', '')
+					_string = argument
+				elif argument.startswith('%'):
+					argument = argument[1:]
+					_no_args = True
+				elif argument.startswith('!'):
+					argument = argument[1:]
+					_true = False
+				elif argument.startswith('@'):
+					argument = argument[1:]
+					_self_call = True
+				else:
+					break
+				
+				continue
 			
 			if _string:
 				_args.append({'string': _string})

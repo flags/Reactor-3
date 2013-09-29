@@ -337,6 +337,16 @@ def is_intimidated_by(life, life_id):
 	
 	return False
 
+def is_combat_target_too_close(life):
+	_nearest_combat_target = judgement.get_nearest_combat_target(life)
+	
+	#TODO: Unhardcode
+	if _nearest_combat_target['distance'] <= 10:
+		print _nearest_combat_target['distance']
+		return True
+	
+	return False
+
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
 		return True

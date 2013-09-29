@@ -7,6 +7,7 @@ import weapons
 import chunks
 import combat
 import groups
+import zones
 import stats
 import brain
 import raids
@@ -253,7 +254,7 @@ def get_nearest_threat(life):
 	#if not _combat_targets:
 	#	return False
 	
-	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life)]:
+	for target in [brain.knows_alife_by_id(life, t) for t in get_combat_targets(life)]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
@@ -305,6 +306,32 @@ def get_visible_threats(life, _inverse=False):
 			_targets.append(target['id'])
 	
 	return _targets
+
+def get_distance_to_target(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	_goals = [target['last_seen_at']]
+	_zones = [zones.get_zone_at_coords(target['last_seen_at'])]
+	
+	_zone = zones.get_zone_at_coords(life['pos'])
+	if not _zone in _zones:
+		_zones.append(_zone)
+	
+	return zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True)
+
+def get_nearest_target_in_list(life, target_list):
+	_nearest_target = {'distance': 9999, 'target_id': None}
+
+	for target_id in target_list:
+		_distance = get_distance_to_target(life, target_id)
+		
+		if _distance < _nearest_target['distance'] or not _nearest_target['target_id']:
+			_nearest_target['distance'] = _distance
+			_nearest_target['target_id'] = target_id
+	
+	return _nearest_target
+
+def get_nearest_combat_target(life):
+	return get_nearest_target_in_list(life, get_combat_targets(life))
 
 def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)

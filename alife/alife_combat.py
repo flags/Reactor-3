@@ -32,12 +32,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		stats.battle_cry(life)
 		
 		if gfx.position_is_in_frame(life['pos']):
-			_can_see = sight.can_see_position(LIFE[SETTINGS['controlling']], life['pos'])
+			_can_see = sight.can_see_position(life, LIFE[SETTINGS['controlling']]['pos'])
 			
 			if _can_see:
-				_knows = brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id'])
+				_knows = brain.knows_alife_by_id(life, SETTINGS['controlling'])
 				
-				if _knows and judgement.can_trust(LIFE[SETTINGS['controlling']], life['id']):
+				if _knows and judgement.can_trust(life, SETTINGS['controlling']):
 					if lfe.ticker(life, 'enter_combat_message', 3, fire=True):
 						logic.show_event('%s readies up.' % ' '.join(life['name']), life=life)
 				

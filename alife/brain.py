@@ -13,6 +13,7 @@ import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
+import alife_cover
 import alife_group
 import alife_needs
 import alife_camp
@@ -46,7 +47,8 @@ MODULES = [alife_hide,
 	alife_group,
 	alife_shelter,
 	alife_search,
-	alife_surrender]
+	alife_surrender,
+    alife_cover]
 
 def sort_modules(life):
 	global MODULES
@@ -320,15 +322,16 @@ def understand(life, source_map):
 		except:
 			continue
 	
+	_stime = time.time()
 	_modules = sort_modules(life)
 	_modules_run = False
 	_times = []
-	#_modules = []
-	#_modules = [_modules.extend(m) for m in _modules]
-	_stime = time.time()
+	
+	_sorted_modules = _modules.keys()
+	_sorted_modules.sort()
 	
 	while _modules:
-		_score_tier = _modules.keys()[0]
+		_score_tier = _sorted_modules[0]
 		module = _modules[_score_tier].pop(0)
 		
 		try:
@@ -357,6 +360,7 @@ def understand(life, source_map):
 		
 		if not _modules[_score_tier]:
 			del _modules[_score_tier]
+			_sorted_modules.remove(_score_tier)
 	
 	if not _modules_run:
 		lfe.change_state(life, 'idle', TIER_IDLE)
