@@ -233,9 +233,6 @@ def _can_see_chunk_quick(start_pos, chunk_id, vision):
 		
 		if _can_see:
 			return _can_see
-		
-		#print 'cant fuckn see'
-		#return True
 	
 	return False
 
@@ -256,11 +253,14 @@ def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 	
 	chunk = maps.get_chunk(chunk_key)
 	
-	#for pos in chunk['ground']:
 	for y in range(chunk['pos'][1], chunk['pos'][1]+WORLD_INFO['chunk_size']):
 		for x in range(chunk['pos'][0], chunk['pos'][0]+WORLD_INFO['chunk_size']):
-			if (x-chunk['pos'][0] == 0 or x-chunk['pos'][0] == WORLD_INFO['chunk_size']-1) and (x-chunk['pos'][1] == 0 or y-chunk['pos'][1] == WORLD_INFO['chunk_size']-1):
+			if ((x-chunk['pos'][0] >= 0 and x-chunk['pos'][0] <= WORLD_INFO['chunk_size']-1) and y-chunk['pos'][1] in [0, WORLD_INFO['chunk_size']-1]) or\
+			   ((y-chunk['pos'][1] >= 0 and y-chunk['pos'][1] <= WORLD_INFO['chunk_size']-1) and x-chunk['pos'][0] in [0, WORLD_INFO['chunk_size']-1]):
 				_can_see = sight._can_see_position(pos1, (x, y), distance=distance, max_length=vision)
+				
+				if not get_chunk_key_at((x, y)) == chunk_key:
+					raise Exception('failed')
 		
 				if _can_see:
 					return _can_see

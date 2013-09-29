@@ -1109,7 +1109,7 @@ def create_look_list():
 		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid'], icon=item['icon']))
 	
 	for target in [l for l in LIFE.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
-		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id'], icon=item['icon']))
+		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id'], icon=target['icon']))
 	
 	if not _menu_items:
 		gfx.message('There\'s nothing to look at.')
@@ -1836,7 +1836,7 @@ def heal_wound(entry):
 		
 		wound[injury] -= item['thickness']
 		LIFE[SETTINGS['controlling']]['body'][limb][injury] -= item['thickness']
-		print wound
+		
 		_remove = True
 		for key in wound:
 			if key == 'limb':
@@ -1871,7 +1871,7 @@ def wound_examine(entry):
 			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['uid']))
 	
 	if not _entries:
-		gfx.message('You have nothing to treat the %s.' % injury)
+		gfx.message('You have nothing to treat the %s with.' % injury)
 		return False
 	
 	_menu = menus.create_menu(title='Heal',
