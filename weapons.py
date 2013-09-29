@@ -39,18 +39,14 @@ def get_recoil(life):
 	
 	return _recoil
 
-def get_max_accuracy(weapon):
-	return weapon['accuracy'][0]*weapon['accuracy'][1]
-
-def get_accuracy(life, weapon, limb=None):
-	#_accuracy = weapon['accuracy']
-	
-	_accuracy = get_max_accuracy(weapon)
+def get_accuracy(life, weapon_uid, limb=None):
+	weapon = ITEMS[weapon_uid]
+	_accuracy = weapon['accuracy']
 	_accuracy *= alife.stats.get_firearm_accuracy(life)
 	
 	if limb:
 		_stability = lfe.get_limb_stability(life, limb)
-		_accuracy *=  _stability
+		_accuracy *= _stability
 		
 		if 'player' in life:
 			if _stability <= 0:
@@ -72,21 +68,17 @@ def get_accuracy(life, weapon, limb=None):
 	elif life['stance'] == 'crawling':
 		_accuracy *= 1
 	
-	print 'Accuracy', _accuracy
-	
 	return _accuracy
 
-def get_impact_accuracy(life, bullet):
-	_travel_distance = numbers.distance(bullet['start_pos'], bullet['pos'])
-	_bullet_sway = _travel_distance*bullet['scatter_rate']
+def get_bullet_scatter_to(life, position, bullet_uid):
+	bullet = ITEMS[bullet_uid]
+	
+	_travel_distance = numbers.distance(bullet['pos'], position)
 	
 	if _travel_distance <= 2:
 		return 0
 	
-	#_accuracy = bullet['needed_accuracy']*alife.stats.get_firearm_accuracy(life)
-	_accuracy = _bullet_sway
-	
-	return _accuracy
+	return _travel_distance*bullet['scatter_rate']
 
 def fire(life, target, limb=None):
 	#TODO: Don't breathe this!
@@ -152,7 +144,6 @@ def fire(life, target, limb=None):
 		_bullet['start_pos'] = life['pos'][:]
 		_bullet['owner'] = life['id']
 		_bullet['aim_at_limb'] = limb
-		_bullet['time_shot'] = WORLD_INFO['ticks']
 		
 		items.add_to_chunk(_bullet)
 		
@@ -160,8 +151,7 @@ def fire(life, target, limb=None):
 			effects.create_light(life['pos'], tcod.yellow, 2, 0, fade=0.8)
 			effects.create_light(_bullet['pos'], tcod.yellow, 1, 0, fade=0.65, follow_pos=_bullet['pos'])
 		
-		_bullet['needed_accuracy'] = get_max_accuracy(weapon)
-		_bullet['accuracy'] = int(round(get_accuracy(life, weapon, limb=_aim_with_limb)))
+		_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 		del _bullet['parent']
 		items.move(_bullet, direction, _bullet['max_speed'])
 		_bullet['start_velocity'] = _bullet['velocity'][:]

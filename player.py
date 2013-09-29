@@ -358,7 +358,6 @@ def handle_input():
 				
 				menus.activate_menu(_i)
 			elif _alife_menu:
-				#print _alife_menu
 				inventory_fire_select_limb(_alife_menu[0], no_delete=True)
 			
 			return True
@@ -375,7 +374,7 @@ def handle_input():
 			if _item['type'] == 'gun':
 				_weapons.append(menus.create_item('single',
 					_item['name'],
-					'Temp',
+					'(Range: temp)',
 					icon=_item['icon'],
 					id=_item['uid']))
 		

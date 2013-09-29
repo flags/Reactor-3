@@ -3119,14 +3119,17 @@ def damage_from_fall(life,dist):
 	
 	return True
 
-def damage_from_item(life,item,damage):
-	#TODO: I'll randomize this for now, but in the future I'll crunch the numbers
-	#Here, have some help :)
-	#print item['velocity']
-	_hit_type = False
+def difficulty_of_hitting_limb(life, limb, item_uid):
+	_scatter = weapons.get_bullet_scatter_to(life, life['pos'], item_uid)
+	_scatter *= 1+((10-numbers.clip(get_limb(life, limb)['size'], 1, 10))/10)
 	
-	#We'll probably want to randomly select a limb out of a group of limbs right now...
-	if item['aim_at_limb'] and item['accuracy']>=weapons.get_impact_accuracy(life, item):
+	return _scatter
+
+def damage_from_item(life, item, damage):
+	#Step 1: If we are aiming at something, what are the chances of hitting it?
+	#Limbs:
+	print item['accuracy'], difficulty_of_hitting_limb(LIFE[item['owner']], item['aim_at_limb'], item['uid'])
+	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(LIFE[item['owner']], item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]
