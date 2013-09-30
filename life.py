@@ -2320,7 +2320,7 @@ def draw_life_icon(life, draw_alignment=False):
 	_icon = [tick_animation(life), tcod.white, None]
 	
 	if life['dead']:
-		_icon[1] = tcod.darker_gray
+		_icon[1] = tcod.darkest_gray
 		return _icon
 	
 	_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
