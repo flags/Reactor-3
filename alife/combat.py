@@ -199,18 +199,24 @@ def get_best_weapon(life):
 def melee_combat(life, targets):
 	_target = brain.knows_alife_by_id(life, targets[0])
 	
-	if numbers.distance(life['pos'], _target['last_seen_at']) > 1:
+	if not _target['escaped']:
 		movement.travel_to_position(life, _target['last_seen_at'])
-	elif sight.can_see_position(life, _target['life']['pos']):
-		lfe.clear_actions(life, matches=[{'action': 'move'}])
+		if sight.can_see_position(life, _target['life']['pos']):
+			lfe.clear_actions(life, matches=[{'action': 'move'}])
+			
+			lfe.add_action(life,{'action': 'bite',
+				'target': _target['life']['id'],
+				'limb': random.choice(_target['life']['body'].keys())},
+				5000,
+				delay=0)
+		elif sight.can_see_position(life, _target['last_seen_at']):
+			_target['escaped'] = 1
 		
-		lfe.add_action(life,{'action': 'bite',
-			'target': _target['life']['id'],
-			'limb': random.choice(_target['life']['body'].keys())},
-			5000,
-			delay=0)
-	else:
-		_target['escaped'] = 1
+			for send_to in judgement.get_trusted(life):
+				speech.communicate(life,
+					'target_missing',
+					target=_target['life']['id'],
+					matches=[{'id': send_to}])
 
 def ranged_combat(life, targets):
 	#target = brain.knows_alife_by_id(life, target)
