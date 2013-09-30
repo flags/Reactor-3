@@ -70,9 +70,10 @@ def render_map(map):
 						else:
 							blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
 							
-							if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-								effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
-								effects.draw_effect((x, y))
+							if SETTINGS['draw effects']:
+								if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+									effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
+									effects.draw_effect((x, y))
 						
 						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
 							darken_tile(_RENDER_X, _RENDER_Y, 30)

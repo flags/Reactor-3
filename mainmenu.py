@@ -5,6 +5,7 @@ import graphics
 import worldgen
 import profiles
 import numbers
+import mapgen
 import menus
 import maps
 
@@ -19,6 +20,7 @@ MESSAGE = ['Reactor 3 is still a prototype',
 	'https://github.com/flags/Reactor-3/issues',
      '',
      'Version: %s' % VERSION]
+FLOOD_POINTS = []
 
 def draw_intro():
 	_stime = time.time()
@@ -79,8 +81,19 @@ def draw_intro():
 	
 	SETTINGS['running'] = 1
 
-def clear(entry=None):
+def clear():
 	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	
+	for y in range(WINDOW_SIZE[1]):
+		for x in range(WINDOW_SIZE[0]):
+			if not time.time()%0.1:
+				continue
+			
+			_mod = random.randint(0, 10)
+			tcod.console_put_char_ex(0, x, y, chr(random.randint(0, 125)),
+			                         tcod.Color(25+_mod, 25+_mod, 25+_mod),
+			                         tcod.Color(15+_mod, 15+_mod, 15+_mod))
+	
 	console_flush()
 
 def draw_message():
@@ -92,12 +105,14 @@ def draw_message():
 	graphics.start_of_frame()
 
 def draw_main_menu():
+	menus.align_menus()
 	menus.draw_menus()
-	draw_message()
-	graphics.end_of_frame()
+	#draw_message()
+	graphics.end_of_frame(draw_map=False)
 
 def switch_to_main_menu():
-	menus.delete_active_menu()
+	while MENUS:
+		MENUS.pop(0)
 	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Start', None, enabled=WORLD_INFO['id']))
@@ -114,11 +129,9 @@ def switch_to_main_menu():
 		on_change=None)
 	
 	menus.activate_menu(_i)
-	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	clear()
 
 def switch_to_start_game():
-	menus.delete_active_menu()
-	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=LIFE[SETTINGS['controlling']]))
 	_menu_items.append(menus.create_item('single', 'New Character', None))
@@ -137,7 +150,6 @@ def switch_to_start_game():
 	clear()
 
 def switch_to_select_world():
-	menus.delete_active_menu()
 	_menu_items = []
 	
 	for world in profiles.get_worlds():
@@ -156,8 +168,6 @@ def switch_to_select_world():
 	clear()
 
 def switch_to_spawn_point():
-	menus.delete_active_menu()
-	
 	#TODO: List of camps
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp'))
@@ -176,8 +186,11 @@ def switch_to_spawn_point():
 	clear()
 
 def switch_to_world_gen():
+	_maps = ['Generate Map']
+	_maps.extend(profiles.get_maps())
+	
 	_menu_items = []
-	_menu_items.append(menus.create_item('list', 'Map', profiles.get_maps()))
+	_menu_items.append(menus.create_item('list', 'Map', _maps))
 	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
 	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy', 'None']))
 	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy', 'None']))
@@ -209,6 +222,9 @@ def generate_world(combat_test=False):
 	for entry in _menu['menu']:
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
+	if _settings['Map'] == 'Generate Map':
+		_settings['Map'] = mapgen.generate_map()['name']
+	
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 100
 	elif _settings['World Age'] == '1 Week':
@@ -228,7 +244,7 @@ def generate_world(combat_test=False):
 		life_density=_settings['Life Density'],
 		wildlife_density=_settings['Wildlife Density'],
 		simulate_ticks=_ticks,
-	    save=True,
+		save=True,
 		thread=True,
 	    combat_test=combat_test)
 

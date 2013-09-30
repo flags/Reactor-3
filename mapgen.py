@@ -17,6 +17,7 @@ import cProfile
 import logging
 import random
 import numpy
+import time
 import copy
 import sys
 import os
@@ -106,7 +107,8 @@ def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1,
 	
 	#smp.init()
 	
-	map_gen = {'size': size,
+	map_gen = {'name': '%s.dat' % time.time(),
+		'size': size,
 		'chunk_size': detail,
 		'towns': towns,
 		'factories': factories,
@@ -168,7 +170,7 @@ def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1,
 		maps.smooth_chunk_map()
 		maps.generate_reference_maps()
 	
-	maps.save_map('test2.dat')
+	maps.save_map(map_gen['name'])
 	
 	return map_gen
 

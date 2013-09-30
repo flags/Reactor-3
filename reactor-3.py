@@ -76,7 +76,6 @@ def main():
 	get_input()
 	handle_input()
 	_played_moved = False
-	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 
 	while life.get_highest_action(LIFE[SETTINGS['controlling']]) and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]):
 		logic.tick_all_objects(WORLD_INFO['map'])
@@ -113,6 +112,7 @@ def main():
 		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
+	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights(WORLD_INFO['map'])
 	
