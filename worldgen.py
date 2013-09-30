@@ -122,7 +122,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		simulate_life(simulate_ticks)
 	
-	create_player(source_map)
+	lfe.focus_on(create_player(source_map))
 	WORLD_INFO['id'] = 0
 	
 	if save:
@@ -295,6 +295,8 @@ def create_player(source_map):
 	
 	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
 	items.move(_i, 180, 3)
+	
+	return PLAYER
 	
 	#for x in range(-10, 11):
 	#	for y in range(-10, 11):
