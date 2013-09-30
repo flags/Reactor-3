@@ -196,8 +196,8 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def melee_combat(life, target):
-	_target = brain.knows_alife_by_id(life, target)
+def melee_combat(life, targets):
+	_target = brain.knows_alife_by_id(life, targets[0])
 	
 	if numbers.distance(life['pos'], _target['last_seen_at']) > 1:
 		movement.travel_to_position(life, _target['last_seen_at'])
