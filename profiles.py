@@ -11,10 +11,12 @@ def has_reactor3():
 	_worlds_directory = os.path.join(_config_directory, 'worlds')
 	
 	try:
-		os.mkdir(_config_directory)
+		os.makedirs(_config_directory)
 		logging.info('Created config directory: %s' % _config_directory)
 	except OSError:
-		pass
+		if not os.path.exists(_config_directory):
+			logging.exception('Could not create config directory at \'%s\'' % _config_directory)
+			raise Exception('Could not create config directory.')
 	
 	try:
 		os.mkdir(_worlds_directory)
