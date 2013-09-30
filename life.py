@@ -3128,8 +3128,8 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 def damage_from_item(life, item, damage):
 	#Step 1: If we are aiming at something, what are the chances of hitting it?
 	#Limbs:
-	print item['accuracy'], difficulty_of_hitting_limb(LIFE[item['owner']], item['aim_at_limb'], item['uid'])
-	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(LIFE[item['owner']], item['aim_at_limb'], item['uid']):
+	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
+	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]

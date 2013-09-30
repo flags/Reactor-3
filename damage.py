@@ -70,8 +70,6 @@ def bullet_hit(life, bullet, limb):
 				for _item_in_container in _actual_item['storing']:
 					_items_to_check.append({'item': _item_in_container, 'visible': False})
 		
-		print 'Checking items: ', ' '.join([ITEMS[i['item']]['name'] for i in _items_to_check])
-		
 		for entry in _items_to_check:
 			_item = items.get_item_from_uid(entry['item'])
 			print '***HIT***', _item['name']
@@ -195,15 +193,17 @@ def bite(life, target_id, limb):
 		return ' '.join(_msg)+'.'
 	
 	_items_to_check = []
-	for _item in [lfe.get_inventory_item(target, i) for i in lfe.get_items_attached_to_limb(target, limb)]:
+	
+	for _item in lfe.get_items_attached_to_limb(target, limb):
 		_items_to_check.append({'item': _item, 'visible': True})
+		_actual_item = items.get_item_from_uid(_item)
 		
-		if 'storing' in _item:
-			for _item_in_container in _item['storing']:
-				_items_to_check.append({'item': _item_in_container, 'visible': False, 'inside': _item['name']})
+		if 'storing' in _actual_item:
+			for _item_in_container in _actual_item['storing']:
+				_items_to_check.append({'item': _item_in_container, 'visible': False})
 	
 	for entry in _items_to_check:
-		_item = entry['item']
+		_item = items.get_item_from_uid(entry['item'])
 		_thickness = _item['thickness']
 		_item['thickness'] = numbers.clip(_item['thickness']-_bite_strength, 0, 100)
 		_bite_strength -= _thickness
