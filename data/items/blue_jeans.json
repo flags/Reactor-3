@@ -2,6 +2,7 @@
 "prefix": "a pair of",
 "type": "clothing",
 "icon": "H",
+"color": [[255, 255, 255], null],
 "description": "A sturdy pair of blue jeans.",
 "attaches_to": "hip|rthigh|lthigh|lknee|rknee|llowerleg|rlowerleg",
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",

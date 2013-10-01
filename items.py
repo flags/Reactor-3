@@ -54,6 +54,20 @@ def initiate_item(name):
 	elif isinstance(item['icon'], int):
 		item['icon'] = chr(item['icon'])
 	
+	if not 'color' in item:
+		item['color'] = (tcod.white, None)
+	else:
+		_fore = None
+		_back = None
+		
+		if item['color'][0]:
+			_fore = tcod.Color(item['color'][0][0], item['color'][0][1], item['color'][0][2])
+		
+		if item['color'][1]:
+			_back = tcod.Color(item['color'][1][0], item['color'][1][1], item['color'][1][2])
+		
+		item['color'] = (_fore, _back)
+	
 	if not 'flags' in item:
 		logging.error('No flags set for item type \'%s\'. Errors may occur.' % name)
 		item['flags'] = ''
@@ -191,6 +205,10 @@ def remove_from_chunk(item):
 def save_all_items():
 	for item in ITEMS.values():
 		item['icon'] = ord(item['icon'])
+		_fore = (item['color'][0].r, item['color'][0].g, item['color'][0].b)
+		_back = (item['color'][1].r, item['color'][1].g, item['color'][1].b)
+		
+		item['color'] = (_fore, _back)
 
 def reload_all_items():
 	for item in ITEMS.values():
@@ -291,8 +309,8 @@ def draw_items():
 			gfx.blit_char(_x,
 				_y,
 				item['icon'],
-				tcod.white,
-				None,
+				item['color'][0],
+				item['color'][1],
 				char_buffer=MAP_CHAR_BUFFER,
 				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
 				rgb_back_buffer=MAP_RGB_BACK_BUFFER)

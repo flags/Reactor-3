@@ -2441,7 +2441,8 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				                           '%s items' % len(storage_item['storing']),
 				                           icon=storage_item['icon'],
 				                           id=storage_uid,
-				                           enabled=(len(storage_item['storing'])>0))
+				                           enabled=(len(storage_item['storing'])>0),
+			                               color=(tcod.sepia, tcod.white))
 			
 			_inventory.append(_menu_item)
 	

@@ -2,7 +2,8 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padding=MENU_PADDING,on_select=None,on_change=None,on_close=None,on_move=None,dim=True,alignment='',action=None):
+def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', padding=MENU_PADDING,
+                on_select=None, on_change=None, on_close=None, on_move=None, dim=True, alignment='', action=None):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
@@ -35,7 +36,7 @@ def create_menu(menu=[],position=[0,0],title='Untitled',format_str='$k: $v',padd
 	
 	return MENUS.index(_menu)
 
-def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
+def create_item(item_type,key,values,icon=' ',enabled=True, color=(tcod.gray, tcod.white), **kwargs):
 	if not isinstance(values,list):
 		values = [values]
 	
@@ -43,6 +44,7 @@ def create_item(item_type,key,values,icon=' ',enabled=True,**kwargs):
 		'key': key,
 		'enabled': enabled,
 		'icon': icon,
+		'color': color,
 		'values': values,
 		'value': 0}
 	
@@ -98,21 +100,21 @@ def draw_menus():
 				#TODO: Input check?
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
+					tcod.console_set_default_foreground(menu['settings']['console'], item['color'][1])
 				elif not item['enabled']:
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.dark_sepia)
 				elif menu['settings']['dim']:
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], item['color'][0])
 				
 				_line = format_entry(menu['settings']['format'],item)
 			else:
 				if MENUS.index(menu) == ACTIVE_MENU['menu'] and menu['menu'].index(item) == menu['index'] and item['enabled']:
 					#TODO: Colors
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.white)
+					tcod.console_set_default_foreground(menu['settings']['console'], item['color'][1])
 				elif not item['enabled']:
 					tcod.console_set_default_foreground(menu['settings']['console'], tcod.dark_sepia)
 				elif menu['settings']['dim']:
-					tcod.console_set_default_foreground(menu['settings']['console'], tcod.grey)
+					tcod.console_set_default_foreground(menu['settings']['console'], item['color'][0])
 			
 				#TODO: Per-item formats here
 				_line = format_entry(menu['settings']['format'],item)
