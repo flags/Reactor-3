@@ -204,16 +204,36 @@ def remove_from_chunk(item):
 
 def save_all_items():
 	for item in ITEMS.values():
-		item['icon'] = ord(item['icon'])
-		_fore = (item['color'][0].r, item['color'][0].g, item['color'][0].b)
-		_back = (item['color'][1].r, item['color'][1].g, item['color'][1].b)
+		if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
+			item['icon'] = ord(item['icon'][0])
+		
+		_fore = None
+		_back = None
+		
+		if item['color'][0]:
+			_fore = (item['color'][0][0], item['color'][0][1], item['color'][0][2])
+		
+		if item['color'][1]:
+			_back = (item['color'][1][0], item['color'][1][1], item['color'][1][2])
 		
 		item['color'] = (_fore, _back)
 
 def reload_all_items():
 	for item in ITEMS.values():
-		if not isinstance(item['icon'], unicode):
+		if not isinstance(item['icon'], unicode) and not isinstance(item['icon'], str):
 			item['icon'] = chr(item['icon'])
+		
+		if item['color'][0]:
+			_fore = tcod.Color(item['color'][0][0], item['color'][0][1], item['color'][0][2])
+		else:
+			_fore = tcod.white
+		
+		if item['color'][1]:
+			_back = tcod.Color(item['color'][1][0], item['color'][1][1], item['color'][1][2])
+		else:
+			_back = None
+		
+		item['color'] = (_fore, _back)
 
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""

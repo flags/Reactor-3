@@ -223,7 +223,7 @@ def generate_world(combat_test=False):
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
 	if _settings['Map'] == 'Generate Map':
-		_settings['Map'] = mapgen.generate_map()['name']
+		_settings['Map'] = mapgen.generate_map(factories=1)['name']
 	
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 100
@@ -295,8 +295,10 @@ def worldgen_menu_select(entry):
 	if key == 'Generate':
 		graphics.title('Setting up world...')
 		generate_world()
+		switch_to_main_menu()
 	elif key == 'Combat Test':
 		graphics.title('Creating combat test...')
 		generate_world(combat_test=True)
+		switch_to_main_menu()
 	elif key == 'Back':
 		switch_to_main_menu()

@@ -170,7 +170,11 @@ def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1,
 		maps.smooth_chunk_map()
 		maps.generate_reference_maps()
 	
+	items.save_all_items()
+	
 	maps.save_map(map_gen['name'])
+	
+	items.reload_all_items()
 	
 	return map_gen
 
@@ -273,7 +277,7 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 			_next_dir = (1, 0)
 	
 	while 1:
-		for i in range(40, 40+random.randint(0, 20)):
+		for i in range(40, 40+random.randint(1, 20)):
 			_pos[0] += _next_dir[0]
 			_pos[1] += _next_dir[1]
 			

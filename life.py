@@ -2457,7 +2457,8 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				                           item_is_worn(life, item_uid),
 				                           icon=item['icon'],
 				                           id=item_uid,
-			                               is_item=True)
+			                               is_item=True,
+			                               color=(item['color'][0], tcod.white))
 			
 			_inventory.append(_menu_item)
 
