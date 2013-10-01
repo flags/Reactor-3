@@ -9,6 +9,7 @@ import groups
 import camps
 import sight
 import brain
+import zones
 
 import numbers
 import logging
@@ -319,14 +320,14 @@ def is_aggravated(life, life_id):
 	return False
 
 def is_incapacitated(life):
-	_size = sum([lfe.get_limb(life, l)['size'] for l in lfe.get_legs(life)])
+	_size = sum([lfe.get_limb(life, l)['size'] for l in life['body']])
 	_count = 0
 	
-	for limb in lfe.get_legs(life):
+	for limb in life['body']:
 		_count += lfe.limb_is_cut(life, limb)
 		_count += lfe.limb_is_in_pain(life, limb)
 	
-	if (_count/float(_size))>=.50:
+	if (_count/float(_size))>=.25:
 		return True
 	
 	return False
@@ -343,6 +344,60 @@ def is_intimidated(life):
 			return True
 	
 	return False
+
+def is_confident(life):
+	#First we'll take a look at the environment
+	#Friendlies should be in some state of combat to be a positive influence
+	#Enemies will be looked at in terms of their observed health
+	_friendlies = []
+	_targets = []
+	_total_friendly_score = 0
+	_total_enemy_score = 0
+	
+	#Who do we like? Where are they?
+	#Let's find these and then generate a "safety map"
+	for target_id in judgement.get_trusted(life, visible=False):
+		_knows = brain.knows_alife_by_id(life, target_id)
+		
+		if _knows:
+			if _knows['last_seen_time'] > 100:
+				continue
+			
+			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
+				_friendlies.append(target_id)
+				
+				_zones = [zones.get_zone_at_coords(life['pos'])]
+				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				
+				if not _z in _zones:
+					_zones.append(_z)
+				
+				_distance = zones.dijkstra_map(life['pos'], [_knows['last_seen_at']], _zones, return_score=True)
+				_distance = numbers.clip(_distance, 0, 100)
+				
+				_combat_rating = judgement.get_observed_ranged_combat_rating_of_target(life, target_id)
+				if _knows['last_seen_time']:
+					_distance = numbers.clip(_distance+_knows['last_seen_time'], 0, 100)
+					
+				_score = _combat_rating*((100-_distance+_combat_rating)/100.0)
+				
+				_total_friendly_score += numbers.clip(_score, 0, _combat_rating)
+	
+	for target_id in judgement.get_combat_targets(life):
+		_knows = brain.knows_alife_by_id(life, target_id)
+		
+		if _knows and _knows['last_seen_time'] <= 200:
+			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
+				_targets.append(target_id)
+				
+				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				if not _z in _f_zones:
+					_f_zones.append(_z)
+	
+	if not _friendlies:
+		return False
+	
+	return _total_friendly_score
 
 def is_combat_target_too_close(life):
 	_nearest_combat_target = judgement.get_nearest_combat_target(life)

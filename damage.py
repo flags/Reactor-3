@@ -204,6 +204,11 @@ def bite(life, target_id, limb):
 	
 	for entry in _items_to_check:
 		_item = items.get_item_from_uid(entry['item'])
+
+		if not 'thickness' in _item:
+			logging.warning('Item \'%s\' has no set thickness. Guessing...' % _item['name'])
+			_item['thickness'] = _item['size']/2
+		
 		_thickness = _item['thickness']
 		_item['thickness'] = numbers.clip(_item['thickness']-_bite_strength, 0, 100)
 		_bite_strength -= _thickness

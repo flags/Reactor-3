@@ -79,13 +79,12 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 
 def get_observed_ranged_combat_rating_of_target(life, life_id):
 	_score = 0
-	#_target = brain.knows_alife_by_id(life, life_id)
 	
 	for item in [ITEMS[i] for i in lfe.get_all_visible_items(LIFE[life_id])]:
 		if not logic.matches(item, {'type': 'gun'}):
 			continue
 		
-		_score += 1
+		_score += item['accuracy']
 	
 	return _score
 
@@ -174,14 +173,12 @@ def judge_life(life):
 	brain.store_in_memory(life, 'targets', _potential_combat_targets)
 
 def _target_filter(life, target_list, escaped_only, ignore_escaped):
-	_targets = brain.retrieve_from_memory(life, target_list)
-	
-	if not _targets:
+	if not target_list:
 		return []
 	
 	_return_targets = []
 	
-	for target in _targets:
+	for target in target_list:
 		_knows = brain.knows_alife_by_id(life, target)
 		
 		if (escaped_only and not _knows['escaped']) or ignore_escaped and _knows['escaped']:
@@ -192,10 +189,10 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped):
 	return _return_targets
 	
 def get_targets(life, escaped_only=False, ignore_escaped=True):
-	return _target_filter(life, 'targets', escaped_only, ignore_escaped)
+	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped)
 
 def get_combat_targets(life, escaped_only=False, ignore_escaped=False):
-	return _target_filter(life, 'combat_targets', escaped_only, ignore_escaped)
+	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
 
 def get_targets_old(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
 	_targets = []

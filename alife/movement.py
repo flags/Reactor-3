@@ -166,8 +166,6 @@ def escape(life, targets):
 	_visible_target_chunks = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	print life['name'],'ESCAPING!!!!!!!!'
-	
 	for target_id in targets:
 		_target = brain.knows_alife_by_id(life, target_id)
 		_target_positions.append(_target['last_seen_at'][:])
@@ -175,9 +173,7 @@ def escape(life, targets):
 		
 		if not _zone in _zones:
 			_zones.append(_zone)
-	
-		#for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
-		print 'visible chunks at',_target['last_seen_at'], len(chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])))
+		
 		for chunk_key in chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])):
 			if chunk_key in _visible_target_chunks:
 				continue
@@ -196,10 +192,7 @@ def escape(life, targets):
 	_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
 	
 	if not _cover:
-		print 'NOWHERE TO ESCAPE'
 		return False
-	
-	print 'take cover at', len(_cover)
 	
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	for _pos in _cover:
@@ -209,7 +202,6 @@ def escape(life, targets):
 			_zones.append(_zone)
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
-		print 'waiting...'
 		return True
 	
 	#_goals.append(life['pos'][:])
