@@ -1262,7 +1262,7 @@ def perform_action(life):
 			if _action.has_key('container'):
 				_item = items.get_item_from_uid(_action['item'])
 				_container = items.get_item_from_uid(_action['container'])
-				gfx.message('You store %s in your %s.'
+				gfx.message('You store %s in %s.'
 					% (items.get_name(_item), items.get_name(_container)))
 	
 	elif _action['action'] == 'dropitem':
@@ -1279,7 +1279,7 @@ def perform_action(life):
 			_item = get_inventory_item(life,_action['item'])
 			
 			if life.has_key('player'):
-				gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+				gfx.message('You remove %s from %s.' % (_name,_stored['name']))
 			else:
 				say(life,'@n takes off %s.' % _name,action=True)
 		
@@ -2458,7 +2458,7 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 				                           icon=item['icon'],
 				                           id=item_uid,
 			                               is_item=True,
-			                               color=(item['color'][0], tcod.white))
+			                               color=(tcod.color_lerp(tcod.gray, item['color'][0], 0.30), tcod.white))
 			
 			_inventory.append(_menu_item)
 
