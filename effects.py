@@ -228,7 +228,7 @@ def draw_splatter(position, render_at):
 	
 	gfx.tint_tile(render_at[0],render_at[1],_has_splatter['color'],_has_splatter['coef'])
 
-def create_gib(life, icon, size, limb, velocity):
+def create_gib(life, icon, size, limb, velocity, color=(tcod.white, None)):
 	_gib = {'name': 'gib',
 		'prefix': 'a',
 		'type': 'magazine',
@@ -237,7 +237,8 @@ def create_gib(life, icon, size, limb, velocity):
 		'description': '%s\'s %s.' % (' '.join(life['name']), limb),
 		'size': '%sx1' % size,
 		'material': 'flesh',
-		'thickness': size}
+		'thickness': size,
+		'color': color}
 	
 	_i = items.get_item_from_uid(items.create_item('gib', position=life['pos'][:], item=_gib))
 	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]

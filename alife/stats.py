@@ -337,6 +337,13 @@ def is_intimidated_by(life, life_id):
 	
 	return False
 
+def is_intimidated(life):
+	for target_id in judgement.get_combat_targets(life, ignore_escaped=True):
+		if is_intimidated_by(life, target_id):
+			return True
+	
+	return False
+
 def is_combat_target_too_close(life):
 	_nearest_combat_target = judgement.get_nearest_combat_target(life)
 	
