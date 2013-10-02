@@ -22,8 +22,6 @@ TIER = TIER_COMBAT-.4
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	print stats.is_confident(life)
-	
 	if not judgement.get_combat_targets(life, ignore_escaped=True):
 		return False
 	

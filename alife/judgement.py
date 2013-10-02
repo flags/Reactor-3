@@ -77,16 +77,28 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	
 	return _score
 
-def get_observed_ranged_combat_rating_of_target(life, life_id):
+def get_ranged_combat_rating_of_target(life, life_id):
+	target = LIFE[life_id]
 	_score = 0
 	
-	for item in [ITEMS[i] for i in lfe.get_all_visible_items(LIFE[life_id])]:
+	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target)]:
 		if not logic.matches(item, {'type': 'gun'}):
 			continue
 		
-		_score += item['accuracy']
+		if numbers.distance(life['pos'], target['pos']) > sight.get_vision(life)/2:
+			_score += item['accuracy']/2
+		else:
+			_score += item['accuracy']
+	
+	if target['state'] in ['cover', 'hiding', 'hidden']:
+		_score /= 2
+	elif target['state'] == 'combat':
+		_score *= 1.2
 	
 	return _score
+
+def get_ranged_combat_rating_of_self(life):
+	return get_ranged_combat_rating_of_target(life, life['id'])
 
 def get_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)

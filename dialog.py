@@ -1026,7 +1026,7 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'encounter_response_intimidate':
 		#if 'player' in life:
 		#if alife.judgement.get_trust(life, target) <= -2
-		_observed_combat_score_of_target = alife.judgement.get_observed_ranged_combat_rating_of_target(life, target['id'])
+		_observed_combat_score_of_target = alife.judgement.get_ranged_combat_rating_of_target(life, target['id'])
 		_self_ranged_combat_ready_score = alife.judgement.get_ranged_combat_ready_score(life, consider_target_id=target['id'])
 		print life['name'],'scores target with', _observed_combat_score_of_target, 'has', _self_ranged_combat_ready_score
 		if _observed_combat_score_of_target<_self_ranged_combat_ready_score:
