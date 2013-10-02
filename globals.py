@@ -173,6 +173,7 @@ SETTINGS = {'running': True,
 	'fire burn rate': 0.04,
 	'smp': None,
 	'map_slices': []}
+FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}

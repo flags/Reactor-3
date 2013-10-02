@@ -35,6 +35,9 @@ def look(life):
 	for target_id in life['know']:
 		life['know'][target_id]['last_seen_time'] += 1
 	
+	for item_uid in life['know_items']:
+		life['know_items'][item_uid]['last_seen_time'] += 1
+	
 	for chunk in _chunks:
 		judgement.judge_chunk_visually(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
 		
@@ -67,12 +70,19 @@ def look(life):
 			brain.meet_alife(life, ai)
 	
 		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
-			#item.has_key('parent') or item.has_key('parent_id') or 
+			_pos = item['pos']
 			
-			if item['owner'] and not lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
-				continue
+			if item['uid'] in life['know_items']:
+				life['know_items'][item['uid']]['last_owned_by'] = item['owner']
 			
-			_can_see = can_see_position(life, item['pos'])
+			if item['owner']:
+				#TODO: This doesn't work because we are specifically checking chunks
+				if lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
+					_pos = LIFE[item['owner']]['pos']
+				else:
+					continue
+			
+			_can_see = can_see_position(life, _pos)
 			if _can_see:
 				if not item['uid'] in life['know_items']:
 					brain.remember_item(life, item)
@@ -84,8 +94,6 @@ def look(life):
 				
 				life['know_items'][item['uid']]['last_seen_time'] = 0
 				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
-			elif item['uid'] in life['know_items']:
-				life['know_items'][item['uid']]['last_seen_time'] += 1
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
@@ -94,11 +102,12 @@ def get_vision(life):
 	#TODO: Fog? Smoke? Light?
 	#if logic.is_night():
 	#	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500:
-	#		_time = WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500)
+	#		_time = 1500-(WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500))
 	#	else:
 	#		_time = WORLD_INFO['real_time_of_day']
 	#	
-	#	return int(life['vision_max']*(_time/1500.0))
+	#	_vision = numbers.clip(int(round(life['vision_max']*(_time/1500.0))), 5, life['vision_max'])
+	#	return _vision
 	
 	return life['vision_max']
 

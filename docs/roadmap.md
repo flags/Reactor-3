@@ -540,3 +540,11 @@ Proposing: Artifact fields. Areas of the map that generate a specifc kind of art
 Camps v2
 --------
 While the old camp structure is no longer valid in the wake of "shelters", there is now a need to manage larger sections of land. The proposed solution is a concept similar to the "control point" mode of Team Fortress 2, where pre-determined parts of the map can be owned by one team (in this case a group) at a time.
+
+Needs v2 (v3?)
+--------------
+Lost track of how many times I've looked into the needs logic for ALife, but everything *should* be in working condition from the way I left it last time. iirc I was looking for a way to work needs into the external life structure, which was impossible at the time, but we have rawscript now to cover that. If anything, we should just give the ALife some vague info on when certain items are needed, and the `alife_needs` module should take over and satisfy it. The ALife can't really do all that much with items at the moment, so that should also be put on the list somewhere so it gets addressed in 0.6.
+
+There's a potential issue with getting NPCs to manage inventory space correctly. This time around I'm probably just going to do a bare-bones version of what I want things to eventually look like so I don't end up spending more than a few days on this, so I'll just have them check storage capacity and work from there (at some point they need to consider access times and score storage options.)
+
+The biggest problem is making groups aware of specific item needs - as a proof of concept we should being working towards moving groups around the map to loot things, which introduces a bunch of new code so we can bridge jobs with needs. At this stage we could just mask group item needs under the guise of jobs - I don't think it matters that each ALife maintain an understanding of what items the group needs as long as the leader is parsing that info and sending it out to everyone (as jobs.)

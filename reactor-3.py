@@ -199,6 +199,7 @@ if __name__ == '__main__':
 	
 	tiles.create_all_tiles()
 	language.load_strings()
+	alife.rawparse.create_function_map()
 	
 	gfx.init_libtcod()
 	#smp.init()

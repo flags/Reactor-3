@@ -17,12 +17,18 @@ def setup(life):
 		if not survival.needs_to_satisfy(life, need):
 			continue
 		
+		if not survival.can_satisfy(life, need) and not survival.can_potentially_satisfy(life, need):
+			print life['name'],'waiting for hint'
+			continue
+		
 		_needs_to_meet.append(need)
+
+	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
 
 	if not _needs_to_meet:
 		return False
-	
-	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
+	else:
+		print life['name'], 'has needs'
 
 def get_tier(life):
 	if lfe.execute_raw(life, 'state', 'needs'):
@@ -51,5 +57,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	
 	for need in _needs_to_meet:
-		if survival.satisfy(life, need):
-			return True
+		print survival.can_satisfy(life, need)
+		if survival.can_satisfy(life, need):
+			if survival.satisfy(life, need):
+				return True
+		else:
+			print 'looking'

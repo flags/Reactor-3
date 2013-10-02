@@ -116,12 +116,13 @@ def initiate_needs(life):
 	
 	alife.survival.add_needed_item(life,
 	                               {'type': 'drink'},
-	                               satisfy_if=lambda life: brain.get_flag(life, 'thirsty'),
-	                               satisfy_callback=consume)
-	alife.survival.add_needed_item(life,
-	                               {'type': 'food'},
-	                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
-	                               satisfy_callback=consume)
+	                               satisfy_if=action.make_small_script(function='retrieve_from_memory',
+	                                                                   args={'key': 'thirsty'}),
+	                               satisfy_callback=action.make_small_script(function='consume'))
+	#alife.survival.add_needed_item(life,
+	#                               {'type': 'food'},
+	#                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
+	#                               satisfy_callback=consume)
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -387,7 +388,7 @@ def sanitize_know(life):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'needs', 'actions', 'dialogs']
+	_delete_keys = ['raw', 'actions', 'dialogs']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -402,9 +403,7 @@ def prepare_for_save(life):
 
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
-	#TODO: Don't need this any more...
 	life['heard'] = []
-	life['needs'] = []
 	life['actions'] = []
 	life['path'] = []
 	life['dialogs'] = []
@@ -430,8 +429,8 @@ def save_all_life():
 			try:
 				json.dumps(life[key])
 			except:
-				logging.info(key)
-				raise Exception('key')
+				logging.critical('Life key cannot be offloaded: %s' % key)
+				raise Exception(key)
 	
 	_life = json.dumps(LIFE)
 	

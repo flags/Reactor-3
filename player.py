@@ -140,15 +140,7 @@ def handle_input():
 		else:
 			SETTINGS['paused'] = True
 	
-	if INPUT['h']:
-		_a = time.time()
-		SELECTED_TILES[0] = zones.dijkstra_map(LIFE[SETTINGS['controlling']]['pos'],
-		                   [(100, 50)],
-		                   [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])],
-		                   sight.get_vision(LIFE[SETTINGS['controlling']])/WORLD_INFO['chunk_size'],
-		                   rolldown=0)
-		print time.time()-_a
-	
+
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Inventory'))
@@ -391,30 +383,6 @@ def handle_input():
 		
 		#LIFE[SETTINGS['controlling']]['shoot_timer'] = LIFE[SETTINGS['controlling']]['shoot_timer_max']
 		menus.activate_menu(_i)
-	
-	if INPUT['F']:
-		if not LIFE[SETTINGS['controlling']]['encounters']:
-			return False
-		
-		SETTINGS['following'] = LIFE[SETTINGS['controlling']]['id']
-		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
-		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
-		
-		speech.communicate(LIFE[SETTINGS['controlling']], 'appear_friendly', matches=[{'id': _target['id']}])
-		
-		logging.debug('** APPEARING FRIENDLY **')
-	
-	if INPUT['H']:
-		if not LIFE[SETTINGS['controlling']]['encounters']:
-			return False
-		
-		life.focus_on(LIFE[SETTINGS['controlling']])
-		_target = LIFE[SETTINGS['controlling']]['encounters'].pop(0)['target']
-		LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
-		
-		speech.communicate(LIFE[SETTINGS['controlling']], 'appear_hostile', matches=[{'id': _target['id']}])
-		
-		logging.debug('** APPEARING HOSTILE **')
 	
 	if INPUT['r']:
 		if menus.get_menu_by_name('Reload')>-1:

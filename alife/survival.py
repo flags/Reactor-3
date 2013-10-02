@@ -4,17 +4,18 @@ import life as lfe
 import references
 import judgement
 import movement
+import action
 import chunks
 import speech
+import combat
+import brain
+import items
+import sight
+import maps
 
 import logging
 import numbers
 import random
-import combat
-import items
-import brain
-import sight
-import maps
 import time
 
 def _get_need_amount(life, need):
@@ -27,7 +28,8 @@ def _get_need_amount(life, need):
 def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
 	life['needs'].append({'type': 'item',
 	                      'match': item_match,
-	                      'met': False,
+	                      'meet_with': [],
+	                      'could_meet_with': [],
 	                      'amount': amount,
 	                      'amount_callback': amount_callback,
 	                      'satisfy_if': satisfy_if,
@@ -38,71 +40,60 @@ def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if
 def process(life):
 	for need in life['needs']:
 		if need['type'] == 'item':
-			_has_items = lfe.get_all_inventory_items(life, matches=[need['match']])
+			_has_items = []
+			_potential_items = []
+			
+			for item_uid in brain.get_matching_remembered_items(life, need['match'], no_owner=True):
+				if item_uid in life['inventory']:
+					_has_items.append(item_uid)
+				else:
+					_potential_items.append(item_uid)
 			
 			if len(_has_items) >= _get_need_amount(life, need):
-				need['met'] = [i['uid'] for i in _has_items]
+				need['meet_with'] = _has_items
+			elif _potential_items:
+				need['could_meet_with'] = _potential_items
 			else:
-				need['met'] = False
+				need['meet_with'] = []
+				need['could_meet_with'] = []
 
 def is_need_met(life, need):
-	return need['met']
+	if need['meet_with']:
+		return True
 
 def needs_to_satisfy(life, need):
 	if not need['satisfy_if']:
 		return False
 	
-	if not is_need_met(life, need):
+	if is_need_met(life, need):
 		return False
 	
-	return need['satisfy_if'](life)
+	return (not action.execute_small_script(life, need['satisfy_if']))
 
-def satisfy(life, need):
+def can_satisfy(life, need):
 	if not need['satisfy_if']:
 		return False
 	
 	if not is_need_met(life, need):
 		return False
 	
-	if need['satisfy_if'](life):
+	return True
+
+def can_potentially_satisfy(life, need):
+	return need['could_meet_with']
+
+def satisfy(life, need):
+	if not can_satisfy(life, need):
+		return False
+	
+	if not action.execute_small_script(life, need['satisfy_if']):
 		if need['type'] == 'item':
-				need['satisfy_callback'](life, need['met'][0])
-				return True
+			need['satisfy_callback'](life, need['meet_with'][0])
+			return True
 	
 	return False
 
-#def create_need(life, need, need_callback, can_meet_callback, satisfy_callback, min_matches=1, cancel_if_flag=None):
-#	life['needs'].append({'need': need,
-#		'need_callback': need_callback,
-#	    'can_meet_callback': can_meet_callback,
-#	    'satisfy_callback': satisfy_callback,
-#		'min_matches': min_matches,
-#		'matches': [],
-#	    'can_meet_with': [],
-#	    'memory_location': None,
-#		'num_above_needed': False,
-#	    'cancel_if_flag': cancel_if_flag})
-
-def can_meet_need(life, need):
-	_matches = []
-	
-	for meet_callback in need['can_meet_callback']:
-		print meet_callback(life, matches=need['need'])
-		_matches.extend(meet_callback(life, matches=need['need']))
-	
-	need['can_meet_with'] = _matches
-	
-	return _matches
-
-def is_need_active(life, need):
-	if not need['cancel_if_flag']:
-		return True
-	
-	if brain.get_flag(life, need['cancel_if_flag'][0]) == need['cancel_if_flag'][1]:
-		return False
-	
-	return True
-
+#TODO: Remove reference from dialog and delete
 def is_in_need_matches(life, match):
 	_matches = []
 	

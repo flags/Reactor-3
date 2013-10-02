@@ -27,6 +27,7 @@ import movement
 import memory
 import speech
 import combat
+import logic
 import sight
 import sound
 
@@ -87,7 +88,7 @@ def retrieve_from_memory(life, key):
 	if key in life['tempstor2']:
 		return life['tempstor2'][key]
 	
-	return None
+	return False
 
 def flag(life, flag, value=True):
 	life['flags'][flag] = value
@@ -146,6 +147,7 @@ def get_item_flag(life, item, flag):
 	return False
 
 def remember_item(life, item):
+	print life['name'], 'learned about', item['name']
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item['uid'],
@@ -249,11 +251,14 @@ def has_met_in_person(life, target):
 def get_remembered_item(life, item_id):
 	return life['know_items'][item_id]
 
-def get_matching_remembered_items(life, matches):
+def get_matching_remembered_items(life, matches, no_owner=False):
 	_matched_items = []
-	for item in [i['item'] for i in life['know_items'].values()]:
-		if logic.matches(item, matches):
-			_matched_items.append(item['uid'])
+	for item in [i for i in life['know_items'].values()]:
+		if no_owner and item['last_owned_by']:
+			continue
+		
+		if logic.matches(ITEMS[item['item']], matches):
+			_matched_items.append(item['item'])
 	
 	return _matched_items
 
