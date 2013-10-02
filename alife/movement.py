@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS, MAP_SIZE, LIFE
+from globals import WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
 
 import life as lfe
 
@@ -250,37 +250,19 @@ def hide(life, target_id):
 	
 	#return True
 
-def handle_hide(life,target,source_map):
-	_weapon = combat.get_best_weapon(life)	
-	_feed = None
-	
-	if _weapon:
-		_feed = weapons.get_feed(_weapon['weapon'])		
-	
-	#TODO: Can we merge this into get_best_weapon()?
-	_has_loaded_ammo = False
-	if _feed:
-		if _feed['rounds']:
-			_has_loaded_ammo = True
-	
-	if _weapon and _weapon['weapon'] and (_weapon['rounds'] or _has_loaded_ammo):
-		return escape(life,target,source_map)
-	elif not _weapon and sight.find_known_items(life,matches={'type': 'weapon'},visible=True):
-		return collect_nearby_wanted_items(life)
-	else:
-		return escape(life,target,source_map)
-
-def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
+def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
-	_nearby = sight.find_known_items(life, matches=matches, visible=visible)
+	_nearby = sight.find_known_items(life, matches=matches, only_visible=only_visible)
 	
 	for item in _nearby:
-		_score = item['score']
-		_score -= numbers.distance(life['pos'], item['item']['pos'])
+		print item
+		_item = brain.get_remembered_item(life, item)
+		_score = _item['score']
+		_score -= numbers.distance(life['pos'], ITEMS[item]['pos'])
 		
 		if not _highest['item'] or _score > _highest['score']:
 			_highest['score'] = _score
-			_highest['item'] = item['item']
+			_highest['item'] = ITEMS[item]
 	
 	if not _highest['item']:
 		return True
@@ -300,7 +282,7 @@ def collect_nearby_wanted_items(life, visible=True, matches={'type': 'gun'}):
 			return False
 		
 		lfe.add_action(life,{'action': 'pickupholditem',
-			'item': _highest['item'],
+			'item': _highest['item']['uid'],
 			'hand': random.choice(_empty_hand)},
 			200,
 			delay=lfe.get_item_access_time(life, _highest['item']))

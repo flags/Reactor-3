@@ -57,9 +57,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	
 	for need in _needs_to_meet:
-		print survival.can_satisfy(life, need)
 		if survival.can_satisfy(life, need):
 			if survival.satisfy(life, need):
 				return True
 		else:
-			print 'looking'
+			movement.collect_nearby_wanted_items(life, matches=need['match'], only_visible=False)

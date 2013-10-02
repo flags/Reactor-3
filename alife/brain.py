@@ -156,6 +156,7 @@ def remember_item(life, item):
 			'last_seen_time': 0,
 			'last_owned_by': item['owner'],
 			'shared_with': [],
+			'lost': False,
 			'flags': {}}
 		
 		return True
@@ -225,7 +226,7 @@ def meet_alife(life, target):
 	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,
-	    'danger': 0,
+		'danger': 0,
 		'trust': 0,
 		'influence': 0,
 		'likes': copy.deepcopy(target['likes']),

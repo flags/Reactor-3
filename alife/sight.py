@@ -6,6 +6,7 @@ import judgement
 import chunks
 import brain
 import logic
+import items
 import maps
 
 import render_fast_los
@@ -94,6 +95,7 @@ def look(life):
 				
 				life['know_items'][item['uid']]['last_seen_time'] = 0
 				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
+				life['know_items'][item['uid']]['lost'] = False
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
@@ -304,35 +306,32 @@ def handle_lost_los(life):
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
-def find_known_items(life, matches={}, visible=True):
+def find_known_items(life, matches={}, only_visible=True):
 	_match = []
 	
-	for item in [life['know_items'][item] for item in life['know_items']]:
-		if not item['item']['uid'] in ITEMS:
+	for item in life['know_items'].values():
+		#TODO: Offload?
+		if not item['item'] in ITEMS:
 			continue
 		
-		if visible and not can_see_position(life, item['item']['pos']):
+		_item = ITEMS[item['item']]
+		
+		if only_visible and not can_see_position(life, _item['pos']):
 			continue
 		
-		if 'parent' in item['item'] or 'parent_id' in item['item']:
+		if items.is_item_owned(item['item']):
 			continue
 		
-		if 'demand_drop' in item['flags']:
+		if 'demand_drop' in _item['flags']:
 			continue
 		
-		if item['item']['lock']:
+		if _item['lock']:
 			continue
 		
-		_break = False
-		for key in matches:
-			if not item['item'].has_key(key) or not item['item'][key] == matches[key]:
-				_break = True
-				break
-		
-		if _break:
+		if not logic.matches(_item, matches):
 			continue
 		
-		_match.append(item)
+		_match.append(item['item'])
 	
 	return _match
 
