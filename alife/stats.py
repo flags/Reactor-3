@@ -390,9 +390,9 @@ def is_confident(life):
 			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
 				_targets.append(target_id)
 				
-				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
-				if not _z in _f_zones:
-					_f_zones.append(_z)
+				#_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				#if not _z in _f_zones:
+				#	_f_zones.append(_z)
 	
 	if not _friendlies:
 		return False

@@ -66,7 +66,7 @@ def look(life):
 			
 			brain.meet_alife(life, ai)
 	
-		for item in [ITEMS[i] for i in chunk['items']]:
+		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
 			#item.has_key('parent') or item.has_key('parent_id') or 
 			
 			if item['owner'] and not lfe.item_is_equipped(LIFE[item['owner']], item['uid']):

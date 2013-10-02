@@ -2954,6 +2954,10 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb['cut'] += amount
 	
 	if _limb['cut'] >= _limb['size']:
+		if 'CRUCIAL' in life['body'][limb]['flags']:
+			kill(life, 'a critical blow to the %s' % limb)
+			return True
+		
 		sever_limb(life, limb, impact_velocity)
 		return True
 	
