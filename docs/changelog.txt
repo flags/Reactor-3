@@ -13,3 +13,4 @@ New in version 0.6:
 	* Added caching layer to zone lookups, dijkstra maps, and reference maps
 	* Inventory/item action menus redesigned for quicker access
 	* New rules for weapon accuracy
+	* ALife will now properly find and collect wanted items

@@ -119,10 +119,11 @@ def initiate_needs(life):
 	                               satisfy_if=action.make_small_script(function='retrieve_from_memory',
 	                                                                   args={'key': 'thirsty'}),
 	                               satisfy_callback=action.make_small_script(function='consume'))
-	#alife.survival.add_needed_item(life,
-	#                               {'type': 'food'},
-	#                               satisfy_if=lambda life: brain.get_flag(life, 'hungry'),
-	#                               satisfy_callback=consume)
+	alife.survival.add_needed_item(life,
+	                               {'type': 'food'},
+	                               satisfy_if=action.make_small_script(function='retrieve_from_memory',
+	                                                                   args={'key': 'hungry'}),
+	                               satisfy_callback=action.make_small_script(function='consume'))
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
