@@ -112,7 +112,7 @@ def initiate_raw(life):
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
 
 def initiate_needs(life):
-	life['needs'] = []
+	life['needs'] = {}
 	
 	alife.survival.add_needed_item(life,
 	                               {'type': 'drink'},
@@ -123,6 +123,11 @@ def initiate_needs(life):
 	                               {'type': 'food'},
 	                               satisfy_if=action.make_small_script(function='get_flag',
 	                                                                   args={'flag': 'hungry'}),
+	                               satisfy_callback=action.make_small_script(return_function='consume'))
+	alife.survival.add_needed_item(life,
+	                               {'type': 'gun'},
+	                               satisfy_if=action.make_small_script(function='get_flag',
+	                                                                   args={'flag': 'no_weapon'}),
 	                               satisfy_callback=action.make_small_script(return_function='consume'))
 
 def initiate_life(name):
@@ -338,7 +343,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['group'] = None
 	_life['likes'] = generate_likes(_life)
 	_life['dislikes'] = {}
-	_life['needs'] = []
+	_life['needs'] = {}
+	_life['need_id'] = 1
 	_life['goals'] = {}
 	
 	_life['stats'] = {}
@@ -1336,9 +1342,10 @@ def perform_action(life):
 	
 	elif _action['action'] == 'consumeitem':
 		_item = get_inventory_item(life, _action['item'])
-		consume_item(life, _action['item'])
-		set_animation(life, [';', 'e'], speed=6)
-		items.delete_item(_item)
+		
+		if consume_item(life, _action['item']):
+			set_animation(life, [';', 'e'], speed=6)
+		
 		delete_action(life, action)
 	
 	elif _action['action'] == 'pickupequipitem':
@@ -1612,6 +1619,7 @@ def tick(life, source_map):
 			return False
 	
 	perform_collisions(life)
+	alife.survival.generate_needs(life)
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
@@ -2060,6 +2068,8 @@ def consume_item(life, item_id):
 	
 	life['eaten'].append(item)
 	remove_item_from_inventory(life, item_id)
+	items.delete_item(ITEMS[item_id])
+	
 	alife.speech.announce(life, 'consume_item', public=True)
 	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
 
@@ -2198,6 +2208,17 @@ def pick_up_item_from_ground(life,uid):
 
 	raise Exception('Item \'%s\' does not exist at (%s,%s,%s).'
 		% (item,life['pos'][0],life['pos'][1],life['pos'][2]))
+
+def pick_up_and_hold_item(life, item_uid):
+	if not get_open_hands(life):
+		logging.error('%s cannot pick up item: both hands are full' % ' '.join(life['name']))
+		return False
+	
+	life.add_action(life, {'action': 'pickupholditem',
+	                       'item': item_uid,
+	                       'hand': get_open_hands(life)[0]},
+				200,
+				delay=get_item_access_time(life, item_uid))
 
 def get_melee_limbs(life):
 	if 'melee' in life:

@@ -287,16 +287,6 @@ def remember_known_item(life, item_id):
 	
 	return False
 
-def generate_needs(life):
-	#TODO: We don't generate all of our needs here, so this is a bit misleading
-	#Needs can be created anywhere in the ALife loop just so long as you do it early/before brain.think()
-	
-	if 'USES_FIREARMS' in life:
-		if combat.has_weapon(life):
-			unflag(life, 'no_weapon')
-		else:
-			flag(life, 'no_weapon')
-
 def understand(life, source_map):
 	_modules = sort_modules(life)
 	
@@ -326,8 +316,6 @@ def understand(life, source_map):
 	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
 			judgement.judge(life, target['life']['id'])
-	
-	generate_needs(life)
 	
 	for module in MODULES:	
 		try:		

@@ -247,20 +247,6 @@ def generate_life(amount=1):
 	_spawn = get_spawn_point()
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	
-	#if WORLD_INFO['combat_test']:
-	#	if len(LIFE)%2:
-	#		WORLD_INFO['combat_team_1'].append(alife['id'])
-	#		
-	#		for opponent in WORLD_INFO['combat_team_2']:
-	#			lfe.memory(alife, 'enemy', target=opponent, danger=5, dislike=5)
-	#		
-	#	else:
-	#		WORLD_INFO['combat_team_2'].append(alife['id'])
-	#		
-	#		for opponent in WORLD_INFO['combat_team_2']:
-	#			lfe.memory(alife, 'enemy', target=opponent, danger=5, dislike=5)
-	
 	alife['thirst'] = random.randint(alife['thirst_max']/4, alife['thirst_max']/3)
 	
 	if len(LIFE) == 1:
@@ -270,8 +256,8 @@ def generate_life(amount=1):
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(alife, items.create_item(item))
 	
-	for item in RECRUIT_ITEMS:
-		life.add_item_to_inventory(alife, items.create_item(item))
+	#for item in RECRUIT_ITEMS:
+	#	life.add_item_to_inventory(alife, items.create_item(item))
 
 def create_player(source_map):
 	PLAYER = life.create_life('human',

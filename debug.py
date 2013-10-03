@@ -40,6 +40,9 @@ def warp(x, y):
 	LIFE[SETTINGS['controlling']]['pos'][1] = y
 
 def food():
+	items.create_item('corn', position=LIFE[SETTINGS['controlling']]['pos'])
+
+def drink():
 	items.create_item('soda', position=LIFE[SETTINGS['controlling']]['pos'])
 
 def toss():

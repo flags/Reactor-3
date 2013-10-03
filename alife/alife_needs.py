@@ -15,7 +15,7 @@ def setup(life):
 	_needs_to_meet = []
 	_needs_to_satisfy = []
 	
-	for need in life['needs']:
+	for need in life['needs'].values():
 		if not survival.needs_to_satisfy(life, need):
 			continue
 		

@@ -151,7 +151,7 @@ def prepare_for_ranged(life):
 def get_equipped_weapons(life):
 	return [lfe.get_inventory_item(life, _wep) for _wep in lfe.get_held_items(life,matches=[{'type': 'gun'}])]
 
-def has_weapon(life):
+def get_weapons(life):
 	return lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
 
 def has_usable_weapon(life):

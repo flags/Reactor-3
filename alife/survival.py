@@ -11,6 +11,7 @@ import combat
 import brain
 import items
 import sight
+import stats
 import maps
 
 import logging
@@ -26,19 +27,27 @@ def _get_need_amount(life, need):
 		return need['amount']
 
 def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
-	life['needs'].append({'type': 'item',
+	life['needs'][str(life['need_id'])] = {'type': 'item',
 	                      'match': item_match,
 	                      'meet_with': [],
 	                      'could_meet_with': [],
 	                      'amount': amount,
 	                      'amount_callback': amount_callback,
 	                      'satisfy_if': satisfy_if,
-	                      'satisfy_callback': satisfy_callback})
+	                      'satisfy_callback': satisfy_callback}
 	
 	logging.debug('Added item need: %s' % item_match)
+	
+	life['need_id'] += 1
+	return str(life['need_id']-1)
+
+def delete_needed_item(life, need_id):
+	del life['needs'][need_id]
+	
+	logging.debug('Remove item need: %s' % need_id)
 
 def process(life):
-	for need in life['needs']:
+	for need in life['needs'].values():
 		if need['type'] == 'item':
 			_has_items = []
 			_potential_items = []
@@ -64,9 +73,6 @@ def is_need_met(life, need):
 	return False
 
 def needs_to_satisfy(life, need):
-	#if is_need_met(life, need):
-	#	return False
-	
 	return action.execute_small_script(life, need['satisfy_if'])
 
 def can_satisfy(life, need):
@@ -147,6 +153,23 @@ def need_is_met(life, need):
 	#logging.info('%s is not meeting a need: %s' % (' '.join(life['name']), need['need']))
 	need['num_above_needed'] = 0
 	return False
+
+def generate_needs(life):
+	if stats.desires_weapon(life):
+		brain.flag(life, 'no_weapon')
+	else:
+		brain.unflag(life, 'no_weapon')
+	
+	if combat.get_weapons(life):
+		if not combat.has_usable_weapon(life):
+			if not brain.get_flag(life, 'needs_ammo'):
+				_n = add_needed_item(life,
+				                     {'type': 'bullet', 'owner': None},
+				                     satisfy_if=action.make_small_script(function='get_flag',
+				                                                         args={'flag': 'needs_ammo'}),
+				                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+				brain.flag(life, 'needs_ammo', value=_n)
+		
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:

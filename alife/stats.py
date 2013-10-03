@@ -6,6 +6,7 @@ import historygen
 import judgement
 import survival
 import groups
+import combat
 import camps
 import sight
 import brain
@@ -158,6 +159,13 @@ def desires_to_join_camp(life, camp_id):
 		return False
 	
 	return True
+
+def desires_weapon(life):
+	if not combat.get_weapons(life):
+		return True
+	
+	#if life['stats']['firearms'] >= 5:
+	return False
 
 def battle_cry(life):
 	_battle_cry = lfe.execute_raw(life, 'talk', 'battle_cry')

@@ -83,6 +83,7 @@ def draw_intro():
 
 def clear():
 	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
+	_c = random.choice([tcod.sepia, tcod.brass, tcod.gray])
 	
 	for y in range(WINDOW_SIZE[1]):
 		for x in range(WINDOW_SIZE[0]):
@@ -91,8 +92,10 @@ def clear():
 			
 			_mod = random.randint(0, 10)
 			tcod.console_put_char_ex(0, x, y, chr(random.randint(0, 125)),
-			                         tcod.Color(25+_mod, 25+_mod, 25+_mod),
-			                         tcod.Color(15+_mod, 15+_mod, 15+_mod))
+			                         tcod.Color(numbers.clip(_c.r+_mod, 0, 255),
+			                                    numbers.clip(_c.g+_mod, 0, 255),
+			                                    numbers.clip(_c.b+_mod, 0, 255)),
+			                         tcod.Color(_c.r+_mod, _c.g+_mod, _c.b+_mod))
 	
 	console_flush()
 

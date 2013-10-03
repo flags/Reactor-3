@@ -270,7 +270,11 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	
 	if not _empty_hand:
 		print 'No open hands, managing....'
-		
+		for item_uid in lfe.get_held_items(life):
+			lfe.add_action(life, {'action': 'storeitem',
+				'item': item_uid},
+				200,
+				delay=lfe.get_item_access_time(life, item_uid))
 		return False
 	
 	if life['pos'] == _highest['item']['pos']:
