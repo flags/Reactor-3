@@ -13,22 +13,31 @@ TIER = TIER_SURVIVAL
 
 def setup(life):
 	_needs_to_meet = []
+	_needs_to_satisfy = []
+	
 	for need in life['needs']:
+		if survival.can_satisfy(life, need):
+			#print 'CAN MEET!!!!!!!!!!!!!!'
+			_needs_to_satisfy.append(need)
+		#else:
+			#print 'huh?'
+		
 		if not survival.needs_to_satisfy(life, need):
+			print 'donnt need to do this'
 			continue
+		else:
+			print 'needs to meet'
 		
 		if not survival.can_satisfy(life, need) and not survival.can_potentially_satisfy(life, need):
-			print life['name'],'waiting for hint'
 			continue
 		
 		_needs_to_meet.append(need)
 
 	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
+	brain.store_in_memory(life, 'needs_to_satisfy', _needs_to_satisfy)
 
-	if not _needs_to_meet:
+	if not _needs_to_meet and not _needs_to_satisfy:
 		return False
-	else:
-		print life['name'], 'has needs'
 
 def get_tier(life):
 	if lfe.execute_raw(life, 'state', 'needs'):
@@ -62,3 +71,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				return True
 		else:
 			movement.collect_nearby_wanted_items(life, matches=need['match'], only_visible=False)
+	
+	_needs_to_satisfy = brain.retrieve_from_memory(life, 'needs_to_satisfy')

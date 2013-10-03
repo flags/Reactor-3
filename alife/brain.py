@@ -147,7 +147,8 @@ def get_item_flag(life, item, flag):
 	return False
 
 def remember_item(life, item):
-	print life['name'], 'learned about', item['name']
+	logging.debug('%s learned about %s (%s)' % (' '.join(life['name']), item['name'], item['uid']))
+	
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item['uid'],

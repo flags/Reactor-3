@@ -261,7 +261,10 @@ def generate_life(amount=1):
 	#		for opponent in WORLD_INFO['combat_team_2']:
 	#			lfe.memory(alife, 'enemy', target=opponent, danger=5, dislike=5)
 	
+	alife['thirst'] = random.randint(alife['thirst_max']/4, alife['thirst_max']/3)
+	
 	if len(LIFE) == 1:
+		logging.warning('No leaders. Creating one manually...')
 		alife['stats']['is_leader'] = True
 	
 	for item in BASE_ITEMS:

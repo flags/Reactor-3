@@ -168,6 +168,7 @@ def create_item(name, position=[0,0,2], item=None):
 	else:
 		item['max_speed'] = 2
 	
+	add_to_chunk(item)
 	ITEMS[item['uid']] = item
 	
 	WORLD_INFO['itemid'] += 1

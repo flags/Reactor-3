@@ -255,7 +255,6 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	_nearby = sight.find_known_items(life, matches=matches, only_visible=only_visible)
 	
 	for item in _nearby:
-		print item
 		_item = brain.get_remembered_item(life, item)
 		_score = _item['score']
 		_score -= numbers.distance(life['pos'], ITEMS[item]['pos'])

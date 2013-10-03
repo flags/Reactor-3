@@ -64,6 +64,8 @@ def execute_small_script(life, action):
 			else:
 				_kw_args[key] = action['kwargs'][key]
 		
+		print '\nfucn call:', rawparse.translate(action['function']), _args, _kw_args
+		print 'call:', rawparse.translate(action['function'])(life, *_args,  **_kw_args)
 		return rawparse.translate(action['function'])(life, *_args,  **_kw_args)
 
 def _execute(action):
