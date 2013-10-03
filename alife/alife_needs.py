@@ -23,10 +23,7 @@ def setup(life):
 			#print 'huh?'
 		
 		if not survival.needs_to_satisfy(life, need):
-			print 'donnt need to do this'
 			continue
-		else:
-			print 'needs to meet'
 		
 		if not survival.can_satisfy(life, need) and not survival.can_potentially_satisfy(life, need):
 			continue
@@ -51,7 +48,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not judgement.is_safe(life):
 		return False
 
-	if not brain.retrieve_from_memory(life, 'needs_to_meet'):
+	if not brain.retrieve_from_memory(life, 'needs_to_meet') and not brain.retrieve_from_memory(life, 'needs_to_satisfy'):
 		return False
 
 	if not life['state'] == STATE:
@@ -66,10 +63,10 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	
 	for need in _needs_to_meet:
-		if survival.can_satisfy(life, need):
-			if survival.satisfy(life, need):
-				return True
-		else:
-			movement.collect_nearby_wanted_items(life, matches=need['match'], only_visible=False)
+		movement.collect_nearby_wanted_items(life, matches=need['match'], only_visible=False)
 	
 	_needs_to_satisfy = brain.retrieve_from_memory(life, 'needs_to_satisfy')
+	
+	for need in _needs_to_satisfy:
+		if survival.satisfy(life, need):
+			return True

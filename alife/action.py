@@ -43,6 +43,9 @@ def make_small_script(*args, **kwargs):
 	
 	if 'function' in kwargs:
 		_struct['function'] = kwargs['function']
+	
+	if 'return_function' in kwargs:
+		_struct['return_function'] = kwargs['return_function']
 	#	kwargs['function'](**_struct['arguments'])
 	
 	return _struct
@@ -64,9 +67,11 @@ def execute_small_script(life, action):
 			else:
 				_kw_args[key] = action['kwargs'][key]
 		
-		print '\nfucn call:', rawparse.translate(action['function']), _args, _kw_args
-		print 'call:', rawparse.translate(action['function'])(life, *_args,  **_kw_args)
-		return rawparse.translate(action['function'])(life, *_args,  **_kw_args)
+		_kw_args.update(_args)
+		
+		return rawparse.translate(action['function'])(life, **_kw_args)
+	elif 'return_function' in action:
+		return rawparse.translate(action['return_function'])
 
 def _execute(action):
 	_struct = {}

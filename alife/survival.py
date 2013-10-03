@@ -43,11 +43,11 @@ def process(life):
 			_has_items = []
 			_potential_items = []
 			
-			for item_uid in brain.get_matching_remembered_items(life, need['match'], no_owner=True):
-				if item_uid in life['inventory']:
-					_has_items.append(item_uid)
-				else:
-					_potential_items.append(item_uid)
+			for item in brain.get_matching_remembered_items(life, need['match'], no_owner=True):
+				_potential_items.append(item)
+				
+			for item in lfe.get_all_inventory_items(life, matches=[need['match']]):
+				_has_items.append(item['uid'])
 			
 			if len(_has_items) >= _get_need_amount(life, need):
 				need['meet_with'] = _has_items
@@ -64,20 +64,14 @@ def is_need_met(life, need):
 	return False
 
 def needs_to_satisfy(life, need):
-	#if not need['satisfy_if']:
-	#	return False
-	
 	if is_need_met(life, need):
 		return False
 	
-	print action.execute_small_script(life, need['satisfy_if'])
+	_callback = action.execute_small_script(life, need['satisfy_if'])
 	
-	return action.execute_small_script(life, need['satisfy_if'])
+	return _callback
 
 def can_satisfy(life, need):
-	if not need['satisfy_if']:
-		return False
-	
 	if not is_need_met(life, need):
 		return False
 	
@@ -87,15 +81,13 @@ def can_potentially_satisfy(life, need):
 	return need['could_meet_with']
 
 def satisfy(life, need):
-	if can_satisfy(life, need):
+	if not can_satisfy(life, need):
 		return False
-
-	print 'here???????????'
 	
-	if not action.execute_small_script(life, need['satisfy_if']):
+	if action.execute_small_script(life, need['satisfy_if']):
 		if need['type'] == 'item':
-			#need['satisfy_callback'](life, need['meet_with'][0])
-			action.execute_small_script(life, need['satisfy_callback'])
+			_callback = action.execute_small_script(life, need['satisfy_callback'])
+			_callback(life, need['meet_with'][0])
 			return True
 	
 	return False
@@ -267,8 +259,6 @@ def explore_unknown_chunks(life):
 		if not _closest_pos['pos'] or _distance<_closest_pos['distance']:
 			_closest_pos['pos'] = pos
 			_closest_pos['distance'] = _distance
-	
-	#print _chunk_key, _closest_pos['pos']
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _closest_pos['pos']},200)
