@@ -8,3 +8,4 @@ copy SDL.dll dist
 copy terminal.png dist
 copy license.txt dist
 copy readme.md dist\readme.txt
+git log --pretty=format:"%%h" -n 1 > dist\git-version.txt

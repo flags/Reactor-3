@@ -216,7 +216,7 @@ def get_spawn_point():
 		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
 	elif _start_seed == 2:
 		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
-	elif _start_seed == 3:
+	else:
 		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
 	
 	return _spawn

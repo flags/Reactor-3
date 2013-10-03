@@ -44,7 +44,6 @@ import maps
 import smp
 import sys
 
-logging.info(WINDOW_TITLE)
 CYTHON_ENABLED = True
 
 def move_camera(pos,scroll=False):
@@ -195,7 +194,12 @@ if __name__ == '__main__':
 		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 	
+	logging.info(WINDOW_TITLE)
 	gfx.log(WINDOW_TITLE)
+	
+	if os.path.exists('git-version.txt'):
+		with open('git-version.txt', 'r') as ver:
+			logging.info('Build %s' % ver.readline().strip())
 	
 	tiles.create_all_tiles()
 	language.load_strings()
@@ -211,25 +215,6 @@ if __name__ == '__main__':
 	life.initiate_life('dog')
 	
 	items.initiate_all_items()
-	#items.initiate_item('white_shirt')
-	#items.initiate_item('white_cloth')
-	#items.initiate_item('sneakers')
-	#items.initiate_item('leather_backpack')
-	#items.initiate_item('blue_jeans')
-	#items.initiate_item('glock')
-	#items.initiate_item('22_rifle')
-	#items.initiate_item('9x19mm_mag')
-	#items.initiate_item('9x19mm_round')
-	#items.initiate_item('radio')
-	#items.initiate_item('can_of_corn')
-	#items.initiate_item('soda')
-	#items.initiate_item('electric_lantern')
-	#items.initiate_item('burner')
-	#items.initiate_item('22_rifle')
-	#items.initiate_item('22_lr_mag')
-	#items.initiate_item('22_lr_cartridge')
-	#items.initiate_item('frag_grenade')
-	#items.initiate_item('molotov')
 	
 	SETTINGS['running'] = 2	
 	
