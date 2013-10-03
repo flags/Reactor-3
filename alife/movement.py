@@ -271,8 +271,11 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	if not _empty_hand:
 		print 'No open hands, managing....'
 		for item_uid in lfe.get_held_items(life):
+			_container = lfe.can_put_item_in_storage(life, item_uid)
+			
 			lfe.add_action(life, {'action': 'storeitem',
-				'item': item_uid},
+				'item': item_uid,
+			     'container': _container},
 				200,
 				delay=lfe.get_item_access_time(life, item_uid))
 		return False

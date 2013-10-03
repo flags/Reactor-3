@@ -1337,6 +1337,8 @@ def perform_action(life):
 		else:
 			say(life,'@n stores %s in %s.' % (_item_to_store_name,_container_name),action=True)
 		
+		logging.debug('%s put %s into %s' % (' '.join(life['name']), _item_to_store_name, _container_name))
+		
 		set_animation(life, [';', 'p'], speed=6)
 		delete_action(life,action)
 	
