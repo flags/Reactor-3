@@ -64,12 +64,10 @@ def is_need_met(life, need):
 	return False
 
 def needs_to_satisfy(life, need):
-	if is_need_met(life, need):
-		return False
+	#if is_need_met(life, need):
+	#	return False
 	
-	_callback = action.execute_small_script(life, need['satisfy_if'])
-	
-	return _callback
+	return action.execute_small_script(life, need['satisfy_if'])
 
 def can_satisfy(life, need):
 	if not is_need_met(life, need):
@@ -81,9 +79,6 @@ def can_potentially_satisfy(life, need):
 	return need['could_meet_with']
 
 def satisfy(life, need):
-	if not can_satisfy(life, need):
-		return False
-	
 	if action.execute_small_script(life, need['satisfy_if']):
 		if need['type'] == 'item':
 			_callback = action.execute_small_script(life, need['satisfy_callback'])

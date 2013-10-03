@@ -29,7 +29,7 @@ BASE_ITEMS = ['sneakers',
               'radio',
               'frag grenade',
               'molotov']
-RECRUIT_ITEMS = ['glock', '9x19mm magazine']
+RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')

@@ -14,6 +14,10 @@ def kill(life_id):
 
 def make_hungry(life_id):
 	LIFE[life_id]['hunger'] = 500
+	
+def world_hunger():
+	for l in LIFE.values():
+		l['hunger'] = 500
 
 def make_thirsty(life_id):
 	LIFE[life_id]['thirst'] = 500

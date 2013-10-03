@@ -16,14 +16,11 @@ def setup(life):
 	_needs_to_satisfy = []
 	
 	for need in life['needs']:
-		if survival.can_satisfy(life, need):
-			#print 'CAN MEET!!!!!!!!!!!!!!'
-			_needs_to_satisfy.append(need)
-		#else:
-			#print 'huh?'
-		
 		if not survival.needs_to_satisfy(life, need):
 			continue
+		
+		if survival.can_satisfy(life, need):
+			_needs_to_satisfy.append(need)
 		
 		if not survival.can_satisfy(life, need) and not survival.can_potentially_satisfy(life, need):
 			continue
@@ -68,5 +65,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_satisfy = brain.retrieve_from_memory(life, 'needs_to_satisfy')
 	
 	for need in _needs_to_satisfy:
-		if survival.satisfy(life, need):
-			return True
+		print 'need to be'
+		print survival.satisfy(life, need)
