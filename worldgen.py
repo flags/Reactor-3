@@ -190,8 +190,9 @@ def randomize_item_spawns():
 		if not _chunk['ground']:
 			continue
 		
-		_rand_pos = random.choice(_chunk['ground'])
-		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
+		for i in range(0, 1+random.randint(0, 3)):
+			_rand_pos = random.choice(_chunk['ground'])
+			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def get_spawn_point():
 	if WORLD_INFO['reference_map']['roads']:
