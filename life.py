@@ -281,7 +281,11 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['realpos'] = list(position)
 	_life['velocity'] = [0.0, 0.0, 0.0]
 	
-	LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
+	try:
+		LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
+	except:
+		logging.critical('Failed to add life at position %s, %s to LIFE_MAP.' % (_life['pos'][0], _life['pos'][1]))
+		raise Exception('Unrecoverable error. See previous log entry.')
 	
 	_life['animation'] = {}
 	_life['path'] = []
