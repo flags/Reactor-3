@@ -201,6 +201,8 @@ if __name__ == '__main__':
 		with open('git-version.txt', 'r') as ver:
 			logging.info('Build %s' % ver.readline().strip())
 	
+	logging.debug('Renderer: %s' % tcod.sys_get_renderer())
+	
 	tiles.create_all_tiles()
 	language.load_strings()
 	alife.rawparse.create_function_map()
