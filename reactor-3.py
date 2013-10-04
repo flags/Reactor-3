@@ -76,7 +76,9 @@ def main():
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(LIFE[SETTINGS['controlling']]) and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]):
+	while (life.get_highest_action(LIFE[SETTINGS['controlling']])\
+	       and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]))\
+	      or LIFE[SETTINGS['controlling']]['asleep']:
 		logic.tick_all_objects(WORLD_INFO['map'])
 		_played_moved = True
 		

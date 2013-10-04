@@ -1,6 +1,6 @@
 from globals import *
 
-import pathfinding
+import situations
 import zones
 import alife
 import items
@@ -39,11 +39,17 @@ def warp(x, y):
 	LIFE[SETTINGS['controlling']]['pos'][0] = x
 	LIFE[SETTINGS['controlling']]['pos'][1] = y
 
+def camps():
+	alife.camps.debug_camps()
+
 def food():
 	items.create_item('corn', position=LIFE[SETTINGS['controlling']]['pos'])
 
 def drink():
 	items.create_item('soda', position=LIFE[SETTINGS['controlling']]['pos'])
+
+def drop():
+	situations.drop_cache(['soda', 'corn'])
 
 def toss():
 	life.push(LIFE[SETTINGS['controlling']], 0, 2)

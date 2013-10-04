@@ -9,6 +9,7 @@ import worldgen
 import weapons
 import dialog
 import timers
+import debug
 import zones
 import logic
 import menus
@@ -523,6 +524,8 @@ def handle_input():
 		
 		_options = []
 		_options.append(menus.create_item('title', 'Testing', None))
+		_options.append(menus.create_item('list', 'Show camp ownership', str(len(WORLD_INFO['camps']))))
+		_options.append(menus.create_item('list', 'Drop cache', 'Create cache drop'))
 		_options.append(menus.create_item('list', 'Show visible chunks', ['off', 'on']))
 		_options.append(menus.create_item('title', 'Map Operations', None))
 		_options.append(menus.create_item('single', 'Save', 'Offload game to disk'))
@@ -543,6 +546,9 @@ def handle_input():
 		     on_change=handle_options_menu_change)
 		
 		menus.activate_menu(_i)
+	
+	if INPUT['z']:
+		life.pass_out(LIFE[SETTINGS['controlling']], length=500)
 	
 	if INPUT['Z']:
 		life.crawl(LIFE[SETTINGS['controlling']])
@@ -1376,7 +1382,7 @@ def handle_options_menu(entry):
 	
 	if key == 'Save':
 		worldgen.save_world()
-	if key == 'Load':
+	elif key == 'Load':
 		worldgen.load_world(WORLD_INFO['id'])
 	elif key == 'Reload map':
 		logging.warning('Map reloading is not well tested!')
@@ -1390,6 +1396,10 @@ def handle_options_menu(entry):
 	elif key == 'Update chunk map':
 		maps.update_chunk_map()
 		maps.smooth_chunk_map()
+	elif key == 'Show camp ownership':
+		camps.debug_camps()
+	elif key == 'Drop cache':
+		debug.drop()
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

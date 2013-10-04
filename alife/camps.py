@@ -10,6 +10,7 @@ import movement
 import numbers
 import speech
 import chunks
+import groups
 import brain
 import stats
 import jobs
@@ -46,8 +47,8 @@ def create_all_camps():
 			chunks.flag_global(chunk_key, 'camp', _camp_id)
 			
 		WORLD_INFO['camps'][_camp_id] = {'id': _camp_id,
-		                                                  'reference': _camp_reference,
-		                                                  'groups': {}}
+		                                 'reference': _camp_reference,
+		                                 'groups': {}}
 		WORLD_INFO['campid'] += 1
 
 def discover_camp(life, camp_id):
@@ -156,6 +157,16 @@ def guard_camp(life):
 			delay=_delay)
 	
 	return False
+
+def debug_camps():
+	for camp_id in WORLD_INFO['camps']:
+		_group = get_controlling_group_global(camp_id)
+		if not _group:
+			continue
+		
+		print camp_id, 'is controlled by', _group
+		_actual_group = groups.get_group(_group)
+		print '\t%s member(s)' % len(_actual_group['members'])
 
 #def get_camp_jobs(camp_id):
 #	_jobs = []

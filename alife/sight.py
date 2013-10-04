@@ -64,7 +64,7 @@ def look(life):
 					brain.unflag_alife(life, ai['id'], 'search_map')
 				
 				_chunk_id = lfe.get_current_chunk_id(ai)
-				judgement.judge_chunk(life, _chunk_id)
+				judgement.judge_chunk(life, _chunk_id, seen=True)
 				
 				continue
 			

@@ -360,7 +360,7 @@ def draw_console():
 		while len(line):
 			tcod.console_print(CONSOLE_WINDOW,_xoffset,_i,line[:CONSOLE_WINDOW_SIZE[0]])
 			line = line[CONSOLE_WINDOW_SIZE[0]:]
-			_xoffset += 1
+			_xoffset = 1
 			_i += 1
 			
 	tcod.console_print(CONSOLE_WINDOW,0,CONSOLE_WINDOW_SIZE[1]-1,'#'+KEYBOARD_STRING[0])

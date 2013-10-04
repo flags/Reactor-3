@@ -46,7 +46,7 @@ def create_function_map():
 		'is_intimidated': stats.is_intimidated,
 		'is_confident': stats.is_confident,
 		'closest': None,
-		'kill': None,
+		'kill': lambda life: lfe.kill(life, 'their own dumb self'),
 		'has_attacked_trusted': stats.has_attacked_trusted,
 		'distance_to_pos': stats.distance_from_pos_to_pos,
 		'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
@@ -206,6 +206,12 @@ def read(filename):
 
 def raw_has_section(life, section):
 	if section in life['raw']['sections']:
+		return True
+	
+	return False
+
+def raw_section_has_identifier(life, section, identifier):
+	if identifier in life['raw']['sections'][section]:
 		return True
 	
 	return False

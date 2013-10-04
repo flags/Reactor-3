@@ -466,7 +466,7 @@ def judge_chunk_visually(life, chunk_id):
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
 
-def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
+def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investigate=False):
 	if lfe.ticker(life, 'judge_tick', 30):
 		return False
 	
@@ -530,6 +530,12 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
 	
+	if investigate:
+		chunks.flag(life, chunk_id, 'investigate', True)
+	
+	if chunks.get_flag(life, chunk_id, 'investigate'):
+		_score += 5
+	
 	#for camp in life['known_camps']:
 	#	if not chunk_id in camps.get_camp(camp)['reference']:
 	#		continue
@@ -547,10 +553,11 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	#if stats.desires_interaction(life):
 	#	_score += _trusted
 	
-	for item in chunk['items']:
-		_item = brain.remember_known_item(life, item)
-		if _item:
-			_score += _item['score']
+	if seen:
+		for item in chunk['items']:
+			_item = brain.remember_known_item(life, item)
+			if _item:
+				_score += _item['score']
 
 	life['known_chunks'][chunk_id]['score'] = _score
 	

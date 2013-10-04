@@ -188,7 +188,7 @@ def initiate_limbs(life):
 			body[body[limb]['parent']]['children'].append(str(limb))
 
 def get_raw(life, section, identifier):
-	if not alife.rawparse.raw_has_section(life, section):
+	if not alife.rawparse.raw_has_section(life, section) or not alife.rawparse.raw_section_has_identifier(life, section, identifier):
 		return []
 	
 	return life['raw']['sections'][section][identifier]
@@ -333,6 +333,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['know'] = {}
 	_life['know_items'] = {}
 	_life['memory'] = []
+	_life['unchecked_memories'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
 	_life['known_groups'] = []
@@ -418,6 +419,9 @@ def post_save(life):
 	life['actions'] = []
 	life['path'] = []
 	life['dialogs'] = []
+	
+	if not 'unchecked_memories' in life:
+		life['unchecked_memories'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
@@ -732,6 +736,7 @@ def memory(life, gist, *args, **kvargs):
 		#_entry['last_asked'] = -1000
 	
 	life['memory'].append(_entry)
+	life['unchecked_memories'].append(_entry['id'])
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
@@ -1526,6 +1531,9 @@ def kill(life, injury):
 		if alife.sight.can_see_position(ai, life['pos']):
 			memory(ai, 'death', target=life['id'])
 	
+	if life['group']:
+		groups.remove_member(life['group'], life['id'])
+	
 	drop_all_items(life)
 	life['dead'] = True
 	timers.remove_by_owner(life)
@@ -1629,9 +1637,9 @@ def tick(life, source_map):
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
-		judgement.judge_chunk(life, _current_known_chunk_id, visited=True)
+		judgement.judge_chunk(life, _current_known_chunk_id, visited=True, seen=True)
 	else:
-		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True)
+		judgement.judge_chunk(life, get_current_chunk_id(life), visited=True, seen=True)
 	
 	if calculate_velocity(life):
 		return False	
