@@ -4,6 +4,7 @@ import life as lfe
 import references
 import judgement
 import movement
+import rawparse
 import action
 import chunks
 import speech
@@ -188,10 +189,16 @@ def generate_needs(life):
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
+		judgement.judge_item(life, item['uid'])
+		_known_item = brain.get_remembered_item(life, item['uid'])
+		
+		if _known_item['score']:
+			continue
+		
 		_equip_action = {'action': 'equipitem',
 				'item': item['uid']}
 		
-		if len(lfe.find_action(life,matches=[_equip_action])):
+		if len(lfe.find_action(life, matches=[_equip_action])):
 			continue
 		
 		if lfe.can_wear_item(life, item['uid']):
@@ -213,19 +220,53 @@ def manage_hands(life):
 				delay=lfe.get_item_access_time(life, item['uid']))
 
 def manage_inventory(life):
-	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life, check_hands=False)]:
-		_equip_action = {'action': 'equipitem',
-				'item': item['uid']}
+	if not lfe.get_open_hands(life):
+		return manage_hands(life)
+	
+	for weapon_uid in combat.get_equipped_weapons(life):
+		if not combat.weapon_is_working(life, weapon_uid):
+			if not combat.reload_weapon(life, weapon_uid):
+				return True
+	
+	_item_to_wear = {'score': 0, 'item_uid': None}
+	_item_to_equip = {'score': 0, 'item_uid': None}
 		
-		if len(lfe.find_action(life,matches=[_equip_action])):
-			continue
+	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_all_unequipped_items(life)]:
+		judgement.judge_item(life, item['uid'])
+		_known_item = brain.get_remembered_item(life, item['uid'])
 		
-		if lfe.can_wear_item(life, item):
-			lfe.add_action(life,
-				_equip_action,
-				401,
-				delay=lfe.get_item_access_time(life, item))
-			continue
+		if _known_item['score']:
+			if lfe.can_wear_item(life, item['uid']):
+				if _known_item['score'] > _item_to_wear['score']:
+					_item_to_wear['score'] = _known_item['score']
+					_item_to_wear['item_uid'] = item['uid']
+			else:
+				if rawparse.raw_has_section(life, 'items') and rawparse.raw_section_has_identifier(life, 'items', item['type']):
+					_action = lfe.execute_raw(life, 'items', item['type'])
+					
+					if _action == 'equip':
+						if _known_item['score'] > _item_to_equip['score']:
+							_item_to_equip['score'] = _known_item['score']
+							_item_to_equip['item_uid'] = item['uid']
+	
+	_item = None
+	if _item_to_wear['score'] > _item_to_equip['score']:
+		_item = _item_to_wear['item_uid']
+	elif _item_to_equip['item_uid']:
+		_item = _item_to_equip['item_uid']
+	
+	if _item:
+		_equip_action = {'action': 'equipitem', 'item': _item}
+		
+		if len(lfe.find_action(life, matches=[_equip_action])):
+			return False
+		
+		lfe.focus_on(life)
+		
+		lfe.add_action(life,
+			_equip_action,
+			401,
+			delay=lfe.get_item_access_time(life, _item))
 
 def explore_known_chunks(life):
 	#Our first order of business is to figure out exactly what we're looking for.

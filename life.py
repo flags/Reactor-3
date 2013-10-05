@@ -1801,13 +1801,13 @@ def remove_item_in_storage(life, item_uid):
 	
 	return False
 
-def item_is_stored(life,id):
+def item_is_stored(life, item_uid):
 	"""Returns the container of an item. Returns False on failure."""
 	for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 		if not 'max_capacity' in _container:
 			continue
 
-		if id in _container['storing']:
+		if item_uid in _container['storing']:
 			return _container
 	
 	return False
@@ -1893,7 +1893,7 @@ def get_all_unequipped_items(life, check_hands=True, matches=[], invert=False):
 			if not perform_match(item, matches):
 				continue					
 		
-		if item_is_equipped(life,entry,check_hands=check_hands) == invert:
+		if item_is_equipped(life,entry, check_hands=check_hands) == invert:
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
@@ -2330,7 +2330,7 @@ def get_held_items(life, matches=None):
 			_item = get_inventory_item(life,_limb['holding'][0])
 			
 			if matches:
-				if not perform_match(_item,matches):
+				if not perform_match(_item, matches):
 					continue
 							
 			_holding.append(_limb['holding'][0])

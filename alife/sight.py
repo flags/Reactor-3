@@ -94,7 +94,7 @@ def look(life):
 					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
 				
 				life['know_items'][item['uid']]['last_seen_time'] = 0
-				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
+				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
 				life['know_items'][item['uid']]['lost'] = False
 
 def get_vision(life):

@@ -22,11 +22,16 @@ import random
 import maps
 import time
 
-def judge_item(life, item):
+def judge_item(life, item_uid):
+	_item = ITEMS[item_uid]
 	_score = 0
 	
-	if brain.get_flag(life, 'no_weapon') and item['type'] == 'gun':
-		_score += 1
+	if brain.get_flag(life, 'no_weapon') or not combat.has_ready_weapon(life):
+		if _item['type'] == 'gun':
+			if combat.weapon_is_working(life, item_uid):
+				_score += _item['accuracy']
+			else:
+				_score += _item['accuracy']/2
 	
 	return _score
 

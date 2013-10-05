@@ -78,6 +78,7 @@ def create_function_map():
 		'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 		'retrieve_from_memory': brain.retrieve_from_memory,
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
+		'has_usable_weapon': combat.has_usable_weapon,
 		'get_flag': brain.get_flag,
 		'consume': lfe.consume,
 		'explode': items.explode,
