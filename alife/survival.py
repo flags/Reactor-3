@@ -5,6 +5,7 @@ import references
 import judgement
 import movement
 import rawparse
+import weapons
 import action
 import chunks
 import speech
@@ -163,29 +164,49 @@ def generate_needs(life):
 	
 	if combat.get_weapons(life):
 		if combat.has_usable_weapon(life):
-			_needed_ammo = brain.get_flag(life, 'needs_ammo')
-			
-			if _needed_ammo:
-				for _needed_ammo in _needed_ammo:
-					delete_needed_item(life, _needed_ammo)
-		else:
 			for weapon in combat.get_weapons(life):
 				_weapon_uid = weapon['uid']
-				_flag_name = '%s_needs_ammo' % _weapon_uid
 				
-				if not brain.get_flag(life, _flag_name):
-					_n1 = add_needed_item(life,
-						                {'type': 'bullet', 'owner': None, 'ammotype': weapon['ammotype']},
-						                satisfy_if=action.make_small_script(function='get_flag',
-						                                                    args={'flag': _flag_name}),
-						                satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
-					_n2 = add_needed_item(life,
-						                {'type': weapon['feed'], 'owner': None, 'ammotype': weapon['ammotype']},
-						                satisfy_if=action.make_small_script(function='get_flag',
-						                                                    args={'flag': _flag_name}),
-						                satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
-					brain.flag(life, _flag_name, value=[_n1, _n2])
-		
+				for _flag in ['ammo', 'feed']:
+					_flag_name = '%s_needs_%s' % (_weapon_uid, _flag)
+					
+					if not brain.get_flag(life, _flag_name):
+						continue
+					
+					_need = brain.get_flag(life, _flag_name)
+					
+					if _need:
+						delete_needed_item(life, _need)
+		else:
+			_weapon_with_feed = None
+			for weapon in combat.get_weapons(life):
+				if weapons.get_feed(weapon):
+					_weapon_with_feed = weapon['uid']
+					break
+			
+			if _weapon_with_feed:
+				_weapon_uid = weapon['uid']
+				_flag_name = '%s_needs_ammo' % _weapon_uid
+				_n = add_needed_item(life,
+				                     {'type': 'bullet', 'owner': None, 'ammotype': weapon['ammotype']},
+				                     satisfy_if=action.make_small_script(function='get_flag',
+				                                                         args={'flag': _flag_name}),
+				                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+				
+				brain.flag(life, _flag_name, value=_n)
+			else:
+				for weapon in combat.get_weapons(life):
+					_weapon_uid = weapon['uid']
+					_flag_name = '%s_needs_feed' % _weapon_uid
+					
+					if not brain.get_flag(life, _flag_name):
+						_n = add_needed_item(life,
+						                     {'type': weapon['feed'], 'owner': None, 'ammotype': weapon['ammotype']},
+						                     satisfy_if=action.make_small_script(function='get_flag',
+						                                                         args={'flag': _flag_name}),
+						                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+
+						brain.flag(life, _flag_name, value=_n)
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
