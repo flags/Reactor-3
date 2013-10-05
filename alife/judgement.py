@@ -530,8 +530,10 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
 	
-	if investigate:
+	if investigate and not visited:
 		chunks.flag(life, chunk_id, 'investigate', True)
+	elif visited and chunks.get_flag(life, chunk_id, 'investigate'):
+		chunks.unflag(life, chunk_id, 'investigate')
 	
 	if chunks.get_flag(life, chunk_id, 'investigate'):
 		_score += 5

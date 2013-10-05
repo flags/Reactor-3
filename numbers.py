@@ -34,8 +34,8 @@ def velocity(direction,speed):
 	
 	return [velocity[0],-velocity[1],0]
 
-def direction_to(pos1,pos2):
-	theta = atan2((pos1[1]-pos2[1]),-(pos1[0]-pos2[0]))
+def direction_to(pos1, pos2):
+	theta = atan2((pos1[1]-pos2[1]), -(pos1[0]-pos2[0]))
 		
 	if theta < 0:
 		theta += 2 * pi

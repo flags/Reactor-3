@@ -22,6 +22,9 @@ def get_flag(life, chunk_id, flag):
 	
 	return False
 
+def unflag(life, chunk_id, flag):
+	del life['known_chunks'][chunk_id]['flags'][flag]
+
 def flag(life, chunk_id, flag, value):
 	#if not flag in life['known_chunks'][chunk_id]['flags']:
 	#	logging.debug('%s flagged chunk \'%s\' with %s.' % (' '.join(life['name']), chunk_id, flag))
