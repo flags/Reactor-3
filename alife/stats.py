@@ -349,6 +349,10 @@ def is_intimidated_by(life, life_id):
 	return False
 
 def is_intimidated(life):
+	for target_id in judgement.get_targets(life, ignore_escaped=True):
+		if is_intimidated_by(life, target_id):
+			return True
+	
 	for target_id in judgement.get_combat_targets(life, ignore_escaped=True):
 		if is_intimidated_by(life, target_id):
 			return True
@@ -429,6 +433,10 @@ def is_combat_target_too_close(life):
 	_nearest_combat_target = judgement.get_nearest_combat_target(life)
 	
 	_knows = brain.knows_alife_by_id(life, _nearest_combat_target['target_id'])
+	
+	if not _nearest_combat_target['target_id']:
+		return False
+	
 	if _knows['last_seen_time'] >= 100:
 		return False
 	

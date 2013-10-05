@@ -201,42 +201,49 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	the rest do not need to be checked and True is returned.
 	
 	"""
-	for rule in get_raw(life, section, identifier):
-		if rule['string']:
-			return rule['string'].lower()
-		
-		_func_args = {}
-		for value in rule['values']:
-			if 'key' in value:
-				_func_args[value['key']] = value['value']
-		
-		if rule['no_args']:
-			if _func_args:
-				_func = rule['function'](**_func_args)
-			else:
-				_func = rule['function']()
-		elif rule['self_call']:
-			if _func_args:
-				_func = rule['function'](life, **_func_args)
-			else:
-				_func = rule['function'](life)
-		else:
-			_func = rule['function'](life, **kwargs)
-		
-		if rule['true'] == '*' or _func == rule['true']:
-			for value in rule['values']:
-				if 'flag' in value:
-					brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
+	_broke_on_false = 0
+	
+	for rule_group in get_raw(life, section, identifier):
+		for rule in rule_group:
+			if rule['string']:
+				return rule['string'].lower()
 			
-			if break_on_true:
-				if _func:
-					return _func
+			_func_args = {}
+			for value in rule['values']:
+				if 'key' in value:
+					_func_args[value['key']] = value['value']
+			
+			if rule['no_args']:
+				if _func_args:
+					_func = rule['function'](**_func_args)
+				else:
+					_func = rule['function']()
+			elif rule['self_call']:
+				if _func_args:
+					_func = rule['function'](life, **_func_args)
+				else:
+					_func = rule['function'](life)
+			else:
+				_func = rule['function'](life, **kwargs)
+			
+			if rule['true'] == '*' or _func == rule['true']:
+				for value in rule['values']:
+					if 'flag' in value:
+						brain.knows_alife_by_id(life, kwargs['life_id'])[value['flag']] += value['value']
 				
-				return True
-		elif break_on_false:
-			return False
+				if break_on_true:
+					if _func:
+						return _func
+					
+					return True
+			else:
+				_broke_on_false += 1
+				break
 	
 	if break_on_true:
+		return False
+	
+	if break_on_false and _broke_on_false==len(get_raw(life, section, identifier)):
 		return False
 	
 	return True

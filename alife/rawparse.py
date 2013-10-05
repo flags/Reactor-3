@@ -58,6 +58,7 @@ def create_function_map():
 		'is_safe_in_shelter': stats.is_safe_in_shelter,
 		'is_incapacitated': stats.is_incapacitated,
 		'is_target': lambda life, life_id: life_id in judgement.get_targets(life) or life_id in judgement.get_combat_targets(life),
+	    'is_combat_target': lambda life, life_id: life_id in judgement.get_combat_targets(life),
 		'find_and_announce_shelter': groups.find_and_announce_shelter,
 		'desires_shelter': stats.desires_shelter,
 		'travel_to_position': movement.travel_to_position,
@@ -92,80 +93,85 @@ def create_section(script, section):
 def set_active_section(script, section):
 	script['section'] = section
 
-def create_action(script, identifier, arguments):
-	_args = []
+def create_action(script, identifier, argument_groups):
+	_arg_groups = []
 	
-	for argument in arguments:
-		if argument.count('['):
-			bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
-			curly_BRACE_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
-			_args.append({'function': argument.split('[')[0]})
-		else:
-			curly_BRACE_data = re.findall(CURLY_BRACE_MATCH, argument)
-			
-			if curly_BRACE_data:
-				argument = [argument.replace(entry, '') for entry in curly_BRACE_data][0]
-				curly_BRACE_data = [data.strip('{').strip('}') for data in curly_BRACE_data][0].split(',')
-				_arguments = curly_BRACE_data
-				_values = []
-				
-				for value in _arguments:
-					_arg = {}
-					
-					if value.count('.'):
-						_arg['target'] = value.partition('.')[0]
-						_arg['flag'] = value.partition('.')[2].partition('+')[0].partition('-')[0]
-						
-						if value.count('+'):
-							_arg['value'] = int(value.partition('+')[2])
-						elif value.count('-'):
-							_arg['value'] = -int(value.partition('-')[2])
-					elif value.count('='):
-						_arg['key'],_arg['value'] = value.split('=')
-					
-					_values.append(_arg)
-				
-			else:
-				argument = argument.split('{')[0]
-				_values = []
-			
-			_true = True
-			_string = ''
-			_self_call = False
-			_no_args = False
-
-			while 1:
-				if argument.startswith('*'):
-					argument = argument.replace('*', '')
-					_true = '*'
-				elif argument.startswith('\"'):
-					argument = argument.replace('\"', '')
-					_string = argument
-				elif argument.startswith('%'):
-					argument = argument[1:]
-					_no_args = True
-				elif argument.startswith('!'):
-					argument = argument[1:]
-					_true = False
-				elif argument.startswith('@'):
-					argument = argument[1:]
-					_self_call = True
-				else:
-					break
-				
-				continue
-			
-			if _string:
-				_args.append({'string': _string})
-			else:
-				_args.append({'function': translate(argument),
-					'values': _values,
-					'true': _true,
-					'string': None,
-					'self_call': _self_call,
-					'no_args': _no_args})
+	for arguments in argument_groups:
+		_args = []
 		
-	return {'id': identifier, 'arguments': _args}
+		for argument in arguments:
+			if argument.count('['):
+				bracket_data = [entry.strip('[').strip(']') for entry in re.findall('\[[\w]*\]', argument)]
+				curly_BRACE_data = [entry.strip('{').strip('}') for entry in re.findall(CURLY_BRACE_MATCH, argument)]
+				_args.append({'function': argument.split('[')[0]})
+			else:
+				curly_BRACE_data = re.findall(CURLY_BRACE_MATCH, argument)
+				
+				if curly_BRACE_data:
+					argument = [argument.replace(entry, '') for entry in curly_BRACE_data][0]
+					curly_BRACE_data = [data.strip('{').strip('}') for data in curly_BRACE_data][0].split(',')
+					_arguments = curly_BRACE_data
+					_values = []
+					
+					for value in _arguments:
+						_arg = {}
+						
+						if value.count('.'):
+							_arg['target'] = value.partition('.')[0]
+							_arg['flag'] = value.partition('.')[2].partition('+')[0].partition('-')[0]
+							
+							if value.count('+'):
+								_arg['value'] = int(value.partition('+')[2])
+							elif value.count('-'):
+								_arg['value'] = -int(value.partition('-')[2])
+						elif value.count('='):
+							_arg['key'],_arg['value'] = value.split('=')
+						
+						_values.append(_arg)
+					
+				else:
+					argument = argument.split('{')[0]
+					_values = []
+				
+				_true = True
+				_string = ''
+				_self_call = False
+				_no_args = False
+	
+				while 1:
+					if argument.startswith('*'):
+						argument = argument.replace('*', '')
+						_true = '*'
+					elif argument.startswith('\"'):
+						argument = argument.replace('\"', '')
+						_string = argument
+					elif argument.startswith('%'):
+						argument = argument[1:]
+						_no_args = True
+					elif argument.startswith('!'):
+						argument = argument[1:]
+						_true = False
+					elif argument.startswith('@'):
+						argument = argument[1:]
+						_self_call = True
+					else:
+						break
+					
+					continue
+				
+				if _string:
+					_args.append({'string': _string})
+				else:
+					_args.append({'function': translate(argument),
+						'values': _values,
+						'true': _true,
+						'string': None,
+						'self_call': _self_call,
+						'no_args': _no_args})
+		
+		_arg_groups.append(_args)
+		
+	return {'id': identifier, 'arguments': _arg_groups}
 
 def add_action(script, action):
 	script['sections'][script['section']][action['id']] = action['arguments']
@@ -183,11 +189,13 @@ def parse(script, line, filename='', linenumber=0):
 	elif script['section'] and line.count(':'):
 		_split = line.split(':')
 		identifier = _split[0]
+		arguments = []
 		
-		if _split[1].rpartition('{')[2].rpartition('}')[0].count(','):
-			arguments = [_split[1]]
-		else:
-			arguments = _split[1].split(',')
+		for _argument_group in _split[1].split('|'):
+			if _argument_group.rpartition('{')[2].rpartition('}')[0].count(','):
+				arguments.append([_argument_group])
+			else:
+				arguments.append(_argument_group.split(','))
 		
 		add_action(script, create_action(script, identifier, arguments))
 
