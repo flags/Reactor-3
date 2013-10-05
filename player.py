@@ -240,7 +240,7 @@ def handle_input():
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['targeting']:
-			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing'], LIFE[SETTINGS['controlling']]['targeting'], 2)
+			life.throw_item(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['throwing'], LIFE[SETTINGS['controlling']]['targeting'])
 			LIFE[SETTINGS['controlling']]['targeting'] = None
 			SELECTED_TILES[0] = []
 			return True

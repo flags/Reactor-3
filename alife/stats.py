@@ -335,8 +335,6 @@ def is_incapacitated(life):
 		_count += lfe.limb_is_cut(life, limb)
 		_count += lfe.limb_is_in_pain(life, limb)
 	
-	print 'pain', (_count/float(_size))
-	
 	if (_count/float(_size))>=.35:
 		return True
 	

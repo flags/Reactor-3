@@ -1707,13 +1707,25 @@ def can_throw(life):
 	"""Helper function for use where life.can_hold_item() is out of place. See referenced function."""
 	return can_hold_item(life)
 
-def throw_item(life, item_uid, target, speed):
+def throw_item(life, item_uid, target):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
 	_item = items.get_item_from_uid(remove_item_from_inventory(life, item_uid))
 	
-	direction = numbers.direction_to(life['pos'], target)
-	items.move(_item, direction, speed)
+	if 'drag' in _item:
+		_drag = _item['drag']
+	else:
+		_drag = _item['gravity']	
 	
+	_direction = numbers.direction_to(life['pos'], target)
+	_distance = numbers.distance(_item['pos'], target)
+	
+	#TODO: TOSS OVER WALL? THROW FASTER?
+	_z_velocity = _distance/_distance*(1-_item['gravity'])
+	
+	_speed = _distance/_distance*(1-_drag)
+	print 'speed',numbers.distance(_item['pos'], target), _drag
+	
+	items.move(_item, _direction, _speed, _velocity=_z_velocity)
 	speech.announce(life, 'threw_an_item', public=True, item=item_uid, target=life['id'])
 	
 	if 'player' in life:

@@ -436,30 +436,33 @@ def explode(item):
 	
 	if 'fire' in item['damage']:
 		_circle = drawing.draw_circle(item['pos'], item['radius'])
-		for pos in zones.dijkstra_map(item['pos'], [item['pos']], [zones.get_zone_at_coords(item['pos'])], return_score_in_range=[0, item['damage']['fire']]):
-			if not pos in _circle:
-				continue
-			
-			if not maps.position_is_in_map(pos):
-				continue
-			
-			for life_id in LIFE_MAP[pos[0]][pos[1]]:
-				for _visible_item in [get_item_from_uid(i) for i in life.get_all_visible_items(LIFE[life_id])]:
-					if not 'CAN_BURN' in _visible_item['flags']:
-						continue
-					
-					burn(_visible_item, item['damage']['fire'])
-			
-			if not random.randint(0, 4):
-				effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+		_zone = zones.get_zone_at_coords(item['pos'])
 		
-			_dist = numbers.distance(item['pos'], pos)/2
-			if not random.randint(0, _dist) or not _dist:
-				effects.create_ash(pos)
-	
-			if gfx.position_is_in_frame(pos):
-				_render_pos = gfx.get_render_position(pos)
-				gfx.refresh_window_position(_render_pos[0], _render_pos[1])
+		if _zone:	
+			for pos in zones.dijkstra_map(item['pos'], [item['pos']], [_zone], return_score_in_range=[0, item['damage']['fire']]):
+				if not pos in _circle:
+					continue
+				
+				if not maps.position_is_in_map(pos):
+					continue
+				
+				for life_id in LIFE_MAP[pos[0]][pos[1]]:
+					for _visible_item in [get_item_from_uid(i) for i in life.get_all_visible_items(LIFE[life_id])]:
+						if not 'CAN_BURN' in _visible_item['flags']:
+							continue
+						
+						burn(_visible_item, item['damage']['fire'])
+				
+				if not random.randint(0, 4):
+					effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+			
+				_dist = numbers.distance(item['pos'], pos)/2
+				if not random.randint(0, _dist) or not _dist:
+					effects.create_ash(pos)
+		
+				if gfx.position_is_in_frame(pos):
+					_render_pos = gfx.get_render_position(pos)
+					gfx.refresh_window_position(_render_pos[0], _render_pos[1])
 	
 	delete_item(item)
 
