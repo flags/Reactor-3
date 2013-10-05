@@ -554,10 +554,12 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 	#	_score += _trusted
 	
 	if seen:
-		for item in chunk['items']:
-			_item = brain.remember_known_item(life, item)
-			if _item:
-				_score += _item['score']
+		pass
+		#TODO: Still a good idea... maybe use for shelter?
+		#for item in chunk['items']:
+		#	_item = brain.remember_known_item(life, item)
+		#	if _item:
+		#		_score += _item['score']
 
 	life['known_chunks'][chunk_id]['score'] = _score
 	

@@ -12,7 +12,7 @@ import life
 def init_libtcod(terraform=False):
 	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
-	tcod.console_set_custom_font(FONT,FONT_LAYOUT)	
+	tcod.console_set_custom_font(FONT, FONT_LAYOUT)	
 	
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = tcod.console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])

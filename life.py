@@ -710,7 +710,8 @@ def say(life, text, action=False, volume=30, context=False):
 		_style = 'speech'
 	
 	if SETTINGS['following']:
-		if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
+		#if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
+		if alife.sound.can_hear(life, SETTINGS['following']):
 			if context:
 				_style = 'important'
 			

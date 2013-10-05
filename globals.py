@@ -83,7 +83,9 @@ FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
 TPS = 30
-FONT = 'terminal.png'
+# 'terminal.png - tcod.FONT_LAYOUT_ASCII_INCOL'
+# 'greyscale_8x8_tcod_font.png' - tcod.FONT_LAYOUT_ASCII_INROW | tcod.FONT_TYPE_GREYSCALE'
+FONT = 'terminal8x8_gs_as.png'#, 'terminal.png'
 FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]

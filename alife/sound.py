@@ -11,6 +11,7 @@ import chunks
 import speech
 import combat
 import events
+import sight
 import raids
 import brain
 import camps
@@ -19,6 +20,10 @@ import maps
 import jobs
 
 import logging
+
+def can_hear(life, target_id):
+	#TODO: Walls, etc
+	return sight.can_see_target(life, target_id)
 
 def listen(life):
 	for event in life['heard'][:]:
