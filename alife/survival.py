@@ -48,6 +48,14 @@ def delete_needed_item(life, need_id):
 	
 	logging.debug('Remove item need: %s' % need_id)
 
+def remove_item_from_needs(life, item_uid):
+	for need in life['needs'].values():
+		if item_uid in need['meet_with']:
+			need['meet_with'].remove(item_uid)
+		
+		if item_uid in need['could_meet_with']:
+			need['could_meet_with'].remove(item_uid)
+
 def process(life):
 	for need in life['needs'].values():
 		if need['type'] == 'item':
@@ -163,50 +171,73 @@ def generate_needs(life):
 		brain.unflag(life, 'no_weapon')
 	
 	if combat.get_weapons(life):
-		if combat.has_usable_weapon(life):
-			for weapon in combat.get_weapons(life):
-				_weapon_uid = weapon['uid']
-				
-				for _flag in ['ammo', 'feed']:
-					_flag_name = '%s_needs_%s' % (_weapon_uid, _flag)
-					
-					if not brain.get_flag(life, _flag_name):
-						continue
-					
-					_need = brain.get_flag(life, _flag_name)
-					
-					if _need:
-						delete_needed_item(life, _need)
-		else:
-			_weapon_with_feed = None
-			for weapon in combat.get_weapons(life):
-				if weapons.get_feed(weapon):
-					_weapon_with_feed = weapon['uid']
-					break
+		for weapon in combat.get_weapons(life):
+			_weapon_uid = weapon['uid']
 			
-			if _weapon_with_feed:
-				_weapon_uid = weapon['uid']
+			#for _flag in ['ammo', 'feed']:
+			if len(combat.get_all_ammo_for_weapon(life, _weapon_uid))>=5:
 				_flag_name = '%s_needs_ammo' % _weapon_uid
-				_n = add_needed_item(life,
-				                     {'type': 'bullet', 'owner': None, 'ammotype': weapon['ammotype']},
-				                     satisfy_if=action.make_small_script(function='get_flag',
-				                                                         args={'flag': _flag_name}),
-				                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
 				
-				brain.flag(life, _flag_name, value=_n)
-			else:
-				for weapon in combat.get_weapons(life):
-					_weapon_uid = weapon['uid']
-					_flag_name = '%s_needs_feed' % _weapon_uid
-					
-					if not brain.get_flag(life, _flag_name):
-						_n = add_needed_item(life,
-						                     {'type': weapon['feed'], 'owner': None, 'ammotype': weapon['ammotype']},
-						                     satisfy_if=action.make_small_script(function='get_flag',
-						                                                         args={'flag': _flag_name}),
-						                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+				_need = brain.get_flag(life, _flag_name)
+				
+				if _need:
+					delete_needed_item(life, _need)
+					brain.unflag(life, _flag_name)
+			
+			if combat.get_feeds_for_weapon(life, _weapon_uid):
+				_flag_name = '%s_needs_feed' % _weapon_uid
+				
+				_need = brain.get_flag(life, _flag_name)
+				
+				if _need:
+					delete_needed_item(life, _need)
+					brain.unflag(life, _flag_name)
+		
+		if not combat.has_potentially_usable_weapon(life) and not combat.has_ready_weapon(life):
+			#_weapon_with_feed = None
+			#for weapon in combat.get_weapons(life):
+			#	if weapons.get_feed(weapon):
+			#		_weapon_with_feed = weapon['uid']
+			#		break
+			
+			#if _weapon_with_feed:
+			#	_weapon_uid = weapon['uid']
+			#	_flag_name = '%s_needs_ammo' % _weapon_uid
+			#	_n = add_needed_item(life,
+			#	                     {'type': 'bullet', 'owner': None, 'ammotype': weapon['ammotype']},
+			#	                     satisfy_if=action.make_small_script(function='get_flag',
+			#	                                                         args={'flag': _flag_name}),
+			#	                     satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+			#	
+			#	brain.flag(life, _flag_name, value=_n)
+			
+			for weapon in combat.get_weapons(life):
+				_weapon_uid = weapon['uid']
+				_flag_name = '%s_needs_feed' % _weapon_uid
+				if combat.have_feed_and_ammo_for_weapon(life, _weapon_uid):
+					continue
+				
+				#print 'feeds?', combat.get_feeds_for_weapon(life, _weapon_uid), [ITEMS[i]['name'] for i in lfe.get_held_items(life)]
+				
+				if not combat.get_feeds_for_weapon(life, _weapon_uid) and not brain.get_flag(life, _flag_name):
+					_n = add_needed_item(life,
+				                         {'type': weapon['feed'], 'owner': None, 'ammotype': weapon['ammotype']},
+				                         satisfy_if=action.make_small_script(function='get_flag',
+				                                                             args={'flag': _flag_name}),
+				                         satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
 
-						brain.flag(life, _flag_name, value=_n)
+					brain.flag(life, _flag_name, value=_n)
+			
+				_flag_name = '%s_needs_ammo' % _weapon_uid
+				
+				if len(combat.get_all_ammo_for_weapon(life, _weapon_uid))<5 and not brain.get_flag(life, _flag_name):
+					_n = add_needed_item(life,
+						                 {'type': 'bullet', 'owner': None, 'ammotype': weapon['ammotype']},
+						                 satisfy_if=action.make_small_script(function='get_flag',
+						                                                     args={'flag': _flag_name}),
+						                 satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
+					
+					brain.flag(life, _flag_name, value=_n)
 
 def manage_hands(life):
 	for item in [lfe.get_inventory_item(life, item) for item in lfe.get_held_items(life)]:
@@ -220,18 +251,19 @@ def manage_hands(life):
 				'item': item['uid']}
 		
 		if len(lfe.find_action(life, matches=[_equip_action])):
-			continue
+			return True
 		
 		if lfe.can_wear_item(life, item['uid']):
 			lfe.add_action(life, _equip_action,
 				401,
 				delay=lfe.get_item_access_time(life, item['uid']))
-			continue
+			return True
 		
-		if not 'CAN_WEAR' in item['flags'] and lfe.get_all_storage(life):
+		_storage = lfe.can_put_item_in_storage(life, item['uid'])
+		if not 'CAN_WEAR' in item['flags'] and _storage:
 			_store_action = {'action': 'storeitem',
 				'item': item['uid'],
-				'container': lfe.get_all_storage(life)[0]['uid']}
+				'container': _storage}
 			
 			if len(lfe.find_action(life, matches=[_store_action])):
 				continue
@@ -239,15 +271,18 @@ def manage_hands(life):
 			lfe.add_action(life,_store_action,
 				401,
 				delay=lfe.get_item_access_time(life, item['uid']))
+			return True
+	
+	return False
 
 def manage_inventory(life):
-	if not lfe.get_open_hands(life):
-		return manage_hands(life)
+	if manage_hands(life):
+		return False
 	
 	for weapon_uid in combat.get_equipped_weapons(life):
 		if not combat.weapon_is_working(life, weapon_uid):
-			if not combat.reload_weapon(life, weapon_uid):
-				return True
+			combat.reload_weapon(life, weapon_uid)
+			return True
 	
 	_item_to_wear = {'score': 0, 'item_uid': None}
 	_item_to_equip = {'score': 0, 'item_uid': None}

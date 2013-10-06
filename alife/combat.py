@@ -36,11 +36,11 @@ def weapon_equipped_and_ready(life):
 			_loaded_feed = True
 			break
 
-	if not _loaded_feed:
+	if _loaded_feed:
 		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
-		return False
+		return True
 	
-	return True
+	return False
 
 def get_target_positions_and_zones(life, targets, ignore_escaped=False):
 	_target_positions = []
@@ -73,11 +73,11 @@ def reload_weapon(life, weapon_uid):
 		logging.error('No feed for weapon, but trying to reload anyway.')
 		return False
 	
-	if _refill_feed(life, _feed):
-		if load_feed(life, weapon_uid, _feed['uid']):
-			lfe.say(life, '@ reloads!', action=True)
+	_refill = _refill_feed(life, _feed)
+	if _refill:
+		load_feed(life, weapon_uid, _feed['uid'])
 	
-	print 'yeah'
+	print 'yeah', _refill
 	
 	return weapons.get_feed(_weapon)
 
@@ -86,7 +86,7 @@ def load_feed(life, weapon_uid, feed_uid):
 	                'weapon': ITEMS[weapon_uid],
 	                'ammo': ITEMS[feed_uid]}
 	
-	if not lfe.find_action(life, matches=[_load_action]):
+	if lfe.find_action(life, matches=[_load_action]):
 		return False
 	
 	lfe.add_action(life, _load_action, 200, delay=0)
@@ -94,7 +94,7 @@ def load_feed(life, weapon_uid, feed_uid):
 	return True
 
 def _get_feed(life, weapon):
-	_feeds = lfe.get_all_inventory_items(life,matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}])
+	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=True)
 
 	_highest_feed = {'rounds': -1, 'feed': None}
 	for feed in [lfe.get_inventory_item(life, _feed['uid']) for _feed in _feeds]:
@@ -111,7 +111,6 @@ def _refill_feed(life, feed):
 		return False
 	
 	#TODO: Actual programming
-	print feed['name']
 	#if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]) and (lfe.item_is_stored(life, feed['uid']) or feed['uid'] in life['inventory']) and lfe.find_action(life, matches=[{'action': 'removeandholditem'}]):
 	#	_hold = lfe.add_action(life,{'action': 'removeandholditem',
 	#		'item': feed['uid']},
@@ -119,8 +118,6 @@ def _refill_feed(life, feed):
 	#		delay=0)
 	#	return False
 
-	print 'STORED IN',feed['stored_in']
-	print lfe.item_is_stored(life, feed['uid'])
 	if not lfe.get_held_items(life, matches=[{'id': feed['uid']}]) and lfe.item_is_stored(life, feed['uid']) and not lfe.find_action(life, matches=[{'action': 'removeandholditem'}]):
 		lfe.add_action(life,{'action': 'removeandholditem',
 			'item': feed['uid']},
@@ -133,8 +130,12 @@ def _refill_feed(life, feed):
 	
 	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
 	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
+		#TODO: What?
 		if not _loading_rounds:
+			print 'we not loadin'
 			return True
+		print 'false?', lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])
+		
 		return False
 	
 	if len(lfe.find_action(life,matches=[{'action': 'refillammo'}])):
@@ -157,6 +158,8 @@ def _refill_feed(life, feed):
 			delay=3)
 		
 		_rounds += 1
+	
+	return False
 
 def _equip_weapon(life, weapon_uid, feed_uid):
 	_weapon = ITEMS[weapon_uid]
@@ -180,9 +183,7 @@ def _equip_weapon(life, weapon_uid, feed_uid):
 	return True
 
 def is_any_weapon_equipped(life):
-	_weapon = lfe.get_held_items(life, matches=[{'type': 'gun'}])
-	
-	if _weapon:
+	if lfe.get_held_items(life, matches=[{'type': 'gun'}]):
 		return True
 	
 	return False
@@ -197,11 +198,43 @@ def get_equipped_weapons(life):
 	return lfe.get_held_items(life, matches=[{'type': 'gun'}])
 
 def get_weapons(life):
-	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}])
+	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=True)
 
-def has_usable_weapon(life):
+def get_loose_ammo_for_weapon(life, weapon_uid):
+	_weapon = ITEMS[weapon_uid]
+	
+	return lfe.get_all_inventory_items(life, matches=[{'type': 'bullet', 'ammotype': _weapon['ammotype']}], ignore_actions=True)
+
+def get_all_ammo_for_weapon(life, weapon_uid):
+	_ammo = get_loose_ammo_for_weapon(life, weapon_uid)
+	
+	for feed in get_feeds_for_weapon(life, weapon_uid):
+		_ammo.extend([ITEMS[r] for r in feed['rounds']])
+	
+	return _ammo
+
+def get_feeds_for_weapon(life, weapon_uid):
+	_weapon = ITEMS[weapon_uid]
+	
+	return lfe.get_all_inventory_items(life, matches=[{'type': _weapon['feed'], 'ammotype': _weapon['ammotype']}], ignore_actions=True)
+
+def have_feed_and_ammo_for_weapon(life, weapon_uid):
+	_weapon = ITEMS[weapon_uid]
+	
+	_feed = get_feeds_for_weapon(life, weapon_uid)
+	_ammo = get_all_ammo_for_weapon(life, weapon_uid)
+	
+	if _feed and _ammo:
+		return True
+	
+	return False
+
+def has_potentially_usable_weapon(life):
 	for weapon in get_weapons(life):
-		if lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}]):
+		if weapon_is_working(life, weapon['uid']):
+			return True
+		
+		if have_feed_and_ammo_for_weapon(life, weapon['uid']):
 			return True
 	
 	return False
@@ -214,7 +247,7 @@ def has_ready_weapon(life):
 	return False
 
 def get_best_weapon(life):
-	_weapons = lfe.get_all_inventory_items(life,matches=[{'type': 'gun'}])
+	_weapons = lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=True)
 	
 	_best_wep = {'weapon': None, 'feed': None, 'rounds': 0}
 	for _wep in _weapons:

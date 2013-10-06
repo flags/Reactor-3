@@ -32,6 +32,9 @@ def judge_item(life, item_uid):
 				_score += _item['accuracy']
 			else:
 				_score += _item['accuracy']/2
+		
+		if _item['type'] in ['magazine', 'clip']:
+			_score += 1
 	
 	return _score
 
@@ -136,7 +139,7 @@ def is_target_dangerous(life, target_id):
 	if target['life']['dead']:
 		return False
 	
-	if target['danger']:
+	if target['danger']>=3:
 		if can_trust(life, target_id):
 			return False
 		
@@ -351,6 +354,12 @@ def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
 	return target['fondness']
+
+def target_is_combat_ready(life, life_id):
+	if combat.get_equipped_weapons(LIFE[life_id]):
+		return True
+	
+	return False
 
 def _get_impressions(life, target):
 	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):

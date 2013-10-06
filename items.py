@@ -350,7 +350,7 @@ def can_store_item_in(item_uid, container_uid):
 	_item = get_item_from_uid(item_uid)
 	_container = get_item_from_uid(container_uid)
 	
-	if 'max_capacity' in _container and _container['capacity']+_item['size'] < _container['max_capacity']:
+	if 'max_capacity' in _container and _container['capacity']+_item['size'] <= _container['max_capacity']:
 		return container_uid
 		
 	return False
@@ -358,7 +358,7 @@ def can_store_item_in(item_uid, container_uid):
 def store_item_in(item_uid, container_uid):
 	if not can_store_item_in(item_uid, container_uid):
 		print 'cannot store in'
-		return False
+		raise Exception('Cant store item %s in container %s: %s is full.' % (item_uid, container_uid, ITEMS[container_uid]['name']))
 	
 	_item = get_item_from_uid(item_uid)
 	

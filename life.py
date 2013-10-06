@@ -128,7 +128,7 @@ def initiate_needs(life):
 	                               {'type': 'gun'},
 	                               satisfy_if=action.make_small_script(function='get_flag',
 	                                                                   args={'flag': 'no_weapon'}),
-	                               satisfy_callback=action.make_small_script(return_function='consume'))
+	                               satisfy_callback=action.make_small_script(return_function='pick_up_and_hold_item'))
 
 def initiate_life(name):
 	"""Loads (and returns) new life type into memory."""
@@ -716,9 +716,9 @@ def say(life, text, action=False, volume=30, context=False):
 		text = '%s: %s' % (' '.join(life['name']),text)
 		_style = 'speech'
 	
-	if SETTINGS['following']:
+	if SETTINGS['controlling']:
 		#if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
-		if alife.sound.can_hear(life, SETTINGS['following']):
+		if alife.sound.can_hear(life, SETTINGS['controlling']):
 			if context:
 				_style = 'important'
 			
@@ -1434,7 +1434,6 @@ def perform_action(life):
 	
 	elif _action['action'] == 'holditemthrow':
 		_dropped_item = drop_item(life,_action['item'])
-		print _dropped_item
 		_id = direct_add_item_to_inventory(life,_dropped_item)
 		_action['hand']['holding'].append(_id)
 		
@@ -1450,6 +1449,8 @@ def perform_action(life):
 		
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
+		else:
+			say(life, '@n reloads %s.' % items.get_name(_action['weapon']), action=True)
 		
 		set_animation(life, [';', 'r'], speed=6)
 		delete_action(life,action)
@@ -1861,7 +1862,7 @@ def get_inventory_item(life, item_id):
 	
 	return items.get_item_from_uid(item_id)
 
-def get_all_inventory_items(life,matches=None):
+def get_all_inventory_items(life, matches=None, ignore_actions=False):
 	"""Returns list of all inventory items.
 	
 	`matches` can be a list of dictionaries with criteria the item must meet. Only one needs to match.
@@ -1872,7 +1873,7 @@ def get_all_inventory_items(life,matches=None):
 	for item_id in life['inventory']:
 		_item = items.get_item_from_uid(item_id)
 		
-		if find_action(life, matches=[{'item': item_id}]):
+		if not ignore_actions and find_action(life, matches=[{'item': item_id}]):
 			continue
 		
 		if matches:
@@ -1972,6 +1973,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 		items.remove_item_from_any_storage(item_uid)
 	
 	life['inventory'].append(item_uid)
+	logging.debug('Added item to inventory: %s' % item['name'])
 	
 	if 'max_capacity' in item:
 		logging.debug('Container found in direct_add')
