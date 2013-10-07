@@ -318,8 +318,6 @@ def manage_inventory(life):
 		if len(lfe.find_action(life, matches=[_equip_action])):
 			return False
 		
-		lfe.focus_on(life)
-		
 		lfe.add_action(life,
 			_equip_action,
 			401,

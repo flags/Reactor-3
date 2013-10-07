@@ -128,8 +128,10 @@ def handle_input():
 	if INPUT[' ']:
 		if SETTINGS['paused']:
 			SETTINGS['paused'] = False
+			gfx.refresh_window()
 		else:
 			SETTINGS['paused'] = True
+			gfx.refresh_window()
 	
 	if INPUT['?']:
 		pix = tcod.image_from_console(0)

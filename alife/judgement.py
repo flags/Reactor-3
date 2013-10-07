@@ -458,6 +458,9 @@ def judge_shelter(life, chunk_id):
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
 		
+		if not _cover:
+			return 0
+		
 		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
 	
 	#if chunks.get_flag(life, chunk_id, 'shelter'):
