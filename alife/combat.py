@@ -42,6 +42,9 @@ def weapon_equipped_and_ready(life):
 	
 	return False
 
+def weapon_is_in_preferred_working_condition(life, item_uid):
+	return len(get_all_ammo_for_weapon(life, item_uid))>=5
+
 def get_target_positions_and_zones(life, targets, ignore_escaped=False):
 	_target_positions = []
 	_zones = []
@@ -231,11 +234,15 @@ def have_feed_and_ammo_for_weapon(life, weapon_uid):
 
 def has_potentially_usable_weapon(life):
 	for weapon in get_weapons(life):
+		if get_feeds_for_weapon(life, weapon['uid']):
+			if len(get_all_ammo_for_weapon(life, weapon['uid']))>=5:
+				return True
+		
 		if weapon_is_working(life, weapon['uid']):
 			return True
 		
-		if have_feed_and_ammo_for_weapon(life, weapon['uid']):
-			return True
+		#if not have_feed_and_ammo_for_weapon(life, weapon['uid']):
+		#	continue
 	
 	return False
 

@@ -139,7 +139,7 @@ def is_target_dangerous(life, target_id):
 	if target['life']['dead']:
 		return False
 	
-	if target['danger']>=3:
+	if target['danger']>=3 or (target['danger'] and combat.has_ready_weapon(life)):
 		if can_trust(life, target_id):
 			return False
 		

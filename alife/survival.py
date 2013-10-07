@@ -281,8 +281,9 @@ def manage_inventory(life):
 	
 	for weapon_uid in combat.get_equipped_weapons(life):
 		if not combat.weapon_is_working(life, weapon_uid):
-			combat.reload_weapon(life, weapon_uid)
-			return True
+			if combat.weapon_is_in_preferred_working_condition(life, weapon_uid):
+				combat.reload_weapon(life, weapon_uid)
+				return True
 	
 	_item_to_wear = {'score': 0, 'item_uid': None}
 	_item_to_equip = {'score': 0, 'item_uid': None}
