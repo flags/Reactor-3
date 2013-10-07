@@ -137,7 +137,6 @@ def _refill_feed(life, feed):
 		if not _loading_rounds:
 			print 'we not loadin'
 			return True
-		print 'false?', lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])
 		
 		return False
 	

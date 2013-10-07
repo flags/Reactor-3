@@ -440,7 +440,6 @@ def is_combat_target_too_close(life):
 	
 	#TODO: Unhardcode
 	if _nearest_combat_target['distance'] <= 10:
-		print _nearest_combat_target['distance']
 		return True
 	
 	return False

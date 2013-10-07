@@ -258,30 +258,29 @@ def draw_message_box():
 		_y_mod += 1
 
 def draw_status_line():
-	_flashing_text = ''
-	_non_flashing_text = ''
+	_flashing_text = []
+	_non_flashing_text = []
 	
 	if LIFE[SETTINGS['following']]['targeting']:
-		_flashing_text += 'Firing'
+		_flashing_text.append('Firing')
 	
 	if LIFE[SETTINGS['following']]['strafing']:
-		_non_flashing_text += 'Strafing'
+		_non_flashing_text.append('Strafing')
 	
-	#if life.is_target_of(LIFE[SETTINGS['following']]):
 	if SETTINGS['paused']:
 		if life.is_target_of(LIFE[SETTINGS['following']]):
-			_flashing_text += 'Combat'
+			_non_flashing_text.append('Combat')
 		else:
-			_flashing_text += 'Paused'
+			_non_flashing_text.append('Paused')
 	
 	blit_string(0,
 		MAP_WINDOW_SIZE[1]-1,
-		_non_flashing_text)
+		' '.join(_non_flashing_text))
 	
 	if time.time()%1>=0.5:
 		blit_string(len(_non_flashing_text)+1,
 			MAP_WINDOW_SIZE[1]-1,
-			_flashing_text)
+			' '.join(_flashing_text))
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:

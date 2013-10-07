@@ -706,7 +706,7 @@ def react(reaction):
 
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
-def say(life, text, action=False, volume=30, context=False):
+def say(life, text, action=False, volume=30, context=False, event=True):
 	if action:
 		set_animation(life, ['\\', '|', '/', '-'])
 		text = text.replace('@n', language.get_introduction(life))
@@ -724,7 +724,7 @@ def say(life, text, action=False, volume=30, context=False):
 			
 			gfx.message(text, style=_style)
 			
-			if action:
+			if action and event:
 				logic.show_event(text, life=life)
 
 def memory(life, gist, *args, **kvargs):
@@ -1352,7 +1352,7 @@ def perform_action(life):
 		if life.has_key('player'):
 			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
 		else:
-			say(life,'@n stores %s in %s.' % (_item_to_store_name,_container_name),action=True)
+			say(life,'@n stores %s in %s.' % (_item_to_store_name,_container_name), action=True, event=False)
 		
 		logging.debug('%s put %s into %s' % (' '.join(life['name']), _item_to_store_name, _container_name))
 		
@@ -1660,7 +1660,6 @@ def tick(life, source_map):
 		alife.sound.listen(life)
 		
 		if life['job']:
-			logging.warning('Should this be happening?')
 			alife.jobs.work(life)
 		
 		for context in life['contexts'][:]:

@@ -179,9 +179,10 @@ def delete_item(item):
 	
 	for life in [LIFE[i] for i in LIFE]:
 		if item['uid'] in life['know_items']:
-			logging.debug('\tDeleted reference in life #%s' % life['id'])
-			
+			alife.survival.remove_item_from_needs(life, item['uid'])
 			del life['know_items'][item['uid']]
+			
+			logging.debug('\tDeleted reference in life #%s' % life['id'])
 	
 	timers.remove_by_owner(item)
 	remove_from_chunk(item)
