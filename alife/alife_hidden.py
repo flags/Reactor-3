@@ -16,10 +16,7 @@ TIER = TIER_COMBAT-.3
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 
-	if judgement.is_safe(life):
-		return False
-	
-	if judgement.get_visible_threats(life):
+	if not lfe.execute_raw(life, 'state', 'hidden'):
 		return False
 	
 	if not life['state'] == STATE:

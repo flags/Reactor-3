@@ -233,6 +233,11 @@ def get_targets(life, escaped_only=False, ignore_escaped=True):
 def get_combat_targets(life, escaped_only=False, ignore_escaped=False):
 	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
 
+def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
+	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
+	
+	return [t for t in _targets if target_is_combat_ready(life, t)]
+
 def get_targets_old(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
 	_targets = []
 	_combat_targets = []
