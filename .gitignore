@@ -1,3 +1,4 @@
+*.pyd
 *.pyc
 *.c
 *.so
@@ -8,13 +9,25 @@
 *.patch
 *.lprof
 *.idea_wall
+*.html
+*.prof
+*.png
+*.zip
+*_simple_*
+*.dll
+*.wpu
 
 .stats/*
+.idea/*
+art/txt/*
 build/*
 tests/*
+dist/*
 docs/devjournal.md
 docs/shortlist.md
 docs/talks/*
 
 profile.dat
 profile.txt
+diffout.txt
+data/text/wikiscrape.py
