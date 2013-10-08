@@ -237,8 +237,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 					
 					return True
 			else:
-				_broke_on_false += 1
-				break
+				if break_on_false:
+					_broke_on_false += 1
+					break
 	
 	if break_on_true:
 		return False
