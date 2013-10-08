@@ -113,7 +113,8 @@ def clear():
 def draw_message():
 	_y = 25
 	for line in MESSAGE:
-		graphics.blit_string(1, _y, line)
+		#graphics.blit_string(1, _y, line)
+		console_print(0, 1, _y, line)
 		_y += 1
 	
 	graphics.start_of_frame()
@@ -121,7 +122,7 @@ def draw_message():
 def draw_main_menu():
 	menus.align_menus()
 	menus.draw_menus()
-	#draw_message()
+	draw_message()
 	graphics.end_of_frame(draw_map=False)
 
 def switch_to_main_menu():

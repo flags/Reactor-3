@@ -23,6 +23,7 @@ art/txt/*
 build/*
 tests/*
 dist/*
+data/maps*
 docs/devjournal.md
 docs/shortlist.md
 docs/talks/*
