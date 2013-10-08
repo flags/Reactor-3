@@ -76,7 +76,9 @@ def main():
 	handle_input()
 	_played_moved = False
 
-	while life.get_highest_action(LIFE[SETTINGS['controlling']]) and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]):
+	while (life.get_highest_action(LIFE[SETTINGS['controlling']])\
+	       and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]))\
+	      or LIFE[SETTINGS['controlling']]['asleep']:
 		logic.tick_all_objects(WORLD_INFO['map'])
 		_played_moved = True
 		
@@ -86,7 +88,7 @@ def main():
 			if life.is_target_of(LIFE[SETTINGS['controlling']]):
 				CURRENT_UPS = 1
 			else:
-				CURRENT_UPS = 3 #ticks to run while actions are in queue before breaking
+				CURRENT_UPS = 2 #ticks to run while actions are in queue before breaking
 			
 			gfx.refresh_window()
 			break
@@ -99,50 +101,41 @@ def main():
 			logic.tick_all_objects(WORLD_INFO['map'])
 			
 	draw_targeting()
-	move_camera(LIFE[SETTINGS['following']]['pos'])
+	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
 		gfx.refresh_window()
 	
-	if LOS_BUFFER[0] == []:
+	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
+		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)
+		
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['following']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
+		                                 SETTINGS['camera_track'],
+		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
+	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights(WORLD_INFO['map'])
 	
 	if not SETTINGS['map_slices']:
-		#if CYTHON_ENABLED:
 		render_map.render_map(WORLD_INFO['map'])
-		#	print 'yes'
-		#else:
-		#	print 'no???'
-		#	maps.render_map(WORLD_INFO['map'])
 	
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
 	
-	if LIFE[SETTINGS['controlling']]['encounters']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
-		                                 cython=CYTHON_ENABLED)
-	
-	if not SETTINGS['controlling'] == SETTINGS['following']:
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 LIFE[SETTINGS['controlling']]['pos'],
-		                                 alife.sight.get_vision(LIFE[SETTINGS['controlling']])*2,
-		                                 cython=True)
-	
-	if LIFE[SETTINGS['controlling']]['dead']:
-		gfx.fade_to_white(FADE_TO_WHITE[0])
-		_col = 255-int(round(FADE_TO_WHITE[0]))*2
+	if LIFE[SETTINGS['controlling']]['dead'] and not EVENTS:
+		#TODO: Awful hack
+		if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
+			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
-		if _col<0:
-			_col = 0
+		#gfx.fade_to_white(FADE_TO_WHITE[0])
+		#_col = 255-int(round(FADE_TO_WHITE[0]))*2
+		
+		#if _col<0:
+		#	_col = 0
+		_col = 0
 		
 		_string = 'You die.'
 		
@@ -153,36 +146,52 @@ def main():
 			fore_color=tcod.Color(255,_col,_col),
 			back_color=tcod.Color(255-_col,255-_col,255-_col),
 			flicker=0)
-		FADE_TO_WHITE[0] += 0.9
+		#FADE_TO_WHITE[0] += 0.9
+		
+		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
+			worldgen.save_world()
+			SETTINGS['running'] = 1
+			return False
 	
-	life.draw_life_info()
+	if SETTINGS['draw life info']:
+		life.draw_life_info()
+	
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
 	dialog.draw_dialog()
-	gfx.draw_message_box()
+	
+	if SETTINGS['draw message box']:
+		gfx.draw_message_box()
+	
 	gfx.draw_status_line()
 	gfx.draw_console()
+	
+	#TODO: Experimental map rendering, disabled for now
 	if SETTINGS['map_slices']:
 		maps.fast_draw_map()
 	else:
 		gfx.start_of_frame(draw_char_buffer=True)
+		
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 
-def tick():
-	while SETTINGS['running']==2:
-		try:
+def loop():
+	while SETTINGS['running']:
+		if SETTINGS['running'] == 1:
+			if not MENUS:
+				mainmenu.switch_to_main_menu()
+		
+			get_input()
+			handle_input()
+			mainmenu.draw_main_menu()
+		elif SETTINGS['running'] == 2:
 			main()
-		except Exception, e:
-			traceback.print_exc(file=sys.stdout)
-			SETTINGS['running'] = False
-			
-			if 'debug' in WORLD_INFO:
-				WORLD_INFO['debug'].quit()
+		elif SETTINGS['running'] == 3:
+			mainmenu.draw_intro()	
 
 if __name__ == '__main__':
 	#TODO: Replace with "module_sanity_check"
@@ -204,10 +213,18 @@ if __name__ == '__main__':
 		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 	
+	logging.info(WINDOW_TITLE)
 	gfx.log(WINDOW_TITLE)
+	
+	if os.path.exists('git-version.txt'):
+		with open('git-version.txt', 'r') as ver:
+			logging.info('Build %s' % ver.readline().strip())
+	
+	logging.debug('Renderer: %s' % tcod.sys_get_renderer())
 	
 	tiles.create_all_tiles()
 	language.load_strings()
+	alife.rawparse.create_function_map()
 	
 	gfx.init_libtcod()
 	#smp.init()
@@ -219,59 +236,18 @@ if __name__ == '__main__':
 	life.initiate_life('dog')
 	
 	items.initiate_all_items()
-	#items.initiate_item('white_shirt')
-	#items.initiate_item('white_cloth')
-	#items.initiate_item('sneakers')
-	#items.initiate_item('leather_backpack')
-	#items.initiate_item('blue_jeans')
-	#items.initiate_item('glock')
-	#items.initiate_item('22_rifle')
-	#items.initiate_item('9x19mm_mag')
-	#items.initiate_item('9x19mm_round')
-	#items.initiate_item('radio')
-	#items.initiate_item('can_of_corn')
-	#items.initiate_item('soda')
-	#items.initiate_item('electric_lantern')
-	#items.initiate_item('burner')
-	#items.initiate_item('22_rifle')
-	#items.initiate_item('22_lr_mag')
-	#items.initiate_item('22_lr_cartridge')
-	#items.initiate_item('frag_grenade')
-	#items.initiate_item('molotov')
 	
-	SETTINGS['running'] = 2	
+	SETTINGS['running'] = 3
 	
 	if '--menu' in sys.argv:
 		SETTINGS['running'] = 1
-	
-	if SETTINGS['running'] == 2:
+	elif '--quick' in sys.argv:
 		for world in profiles.get_worlds():
 			worldgen.load_world(world)
 			break
-
-	if not 'start_age' in WORLD_INFO:
-		SETTINGS['running'] = 1
-	
-	while SETTINGS['running'] in [-1, 1]:
-		if SETTINGS['running'] == -1:
-			mainmenu.draw_intro()
 		
-		if not MENUS:
-			mainmenu.switch_to_main_menu()
-		
-		get_input()
-		handle_input()
-		mainmenu.draw_main_menu()
-	
-	gfx.refresh_window()
-	
-	if not 'start_age' in WORLD_INFO:
-		worldgen.generate_world(WORLD_INFO['map'],
-			life_density='Heavy',
-			wildlife_density='Sparse',
-			simulate_ticks=100,
-			save=True,
-			thread=False)
+		if LIFE:
+			SETTINGS['running'] = 2
 	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()
@@ -280,15 +256,17 @@ if __name__ == '__main__':
 	
 	if '--profile' in sys.argv:
 		logging.info('Profiling. Exit when completed.')
-		cProfile.run('tick()','profile.dat')
-	else:
-		tick()
+		cProfile.run('look()','profile.dat')
+		sys.exit()
+	
+	try:
+		loop()
+	except Exception, e:
+		traceback.print_exc(file=sys.stdout)
+		SETTINGS['running'] = False
+		
+		if 'debug' in WORLD_INFO:
+			WORLD_INFO['debug'].quit()
 	
 	if 'debug' in WORLD_INFO:
 		WORLD_INFO['debug'].quit()
-	
-	#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
-	#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
-	#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)

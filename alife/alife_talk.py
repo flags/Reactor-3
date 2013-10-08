@@ -33,6 +33,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#if not alife_seen:
 	#	return False
 	
+	if brain.retrieve_from_memory(life, 'tension_spike') >= 1:
+		lfe.say(life, '@n panics!', action=True)
+	
 	for ai in alife_seen:
 		if life['state'] in ['combat']:
 			break
@@ -49,7 +52,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				speech.send(life, ai['life'], 'looks_hostile')
 		else:
 			if not speech.discussed(life, ai['life'], 'greeting'):
-				speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
+				if stats.is_compatible_with(life, ai['life']['id']):
+					speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
+				
 				speech.send(life, ai['life'], 'greeting')
 	
 	_potential_talking_targets = []
@@ -93,7 +98,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
 				speech.start_dialog(life, target['id'], 'questions')
-			print life['name'],'questions', lfe.get_questions(life, target=target['id'])
 		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
 			brain.flag_alife(life, target['id'], 'invited_to_group')
 			speech.start_dialog(life, target['id'], 'ask_to_join_group')
@@ -103,7 +107,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		dialog.tick(life, _dialog)	
 	
 	if not judgement.is_safe(life):
-		_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
+		_combat_targets = judgement.get_combat_targets(life)
 		
 		if _combat_targets:
 			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):

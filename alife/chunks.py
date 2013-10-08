@@ -13,14 +13,17 @@ import random
 import time
 
 def get_flag(life, chunk_id, flag):
-	if not chunk_id in life['known_chunks']:
-		logging.warning('ALife \'%s\' does not know about chunk \'%s\'' % (' '.join(life['name']), chunk_id))
-		return False
+	#if not chunk_id in life['known_chunks']:
+	#	logging.warning('ALife \'%s\' does not know about chunk \'%s\'' % (' '.join(life['name']), chunk_id))
+	#	return False
 	
 	if flag in life['known_chunks'][chunk_id]['flags']:
 		return life['known_chunks'][chunk_id]['flags'][flag]
 	
 	return False
+
+def unflag(life, chunk_id, flag):
+	del life['known_chunks'][chunk_id]['flags'][flag]
 
 def flag(life, chunk_id, flag, value):
 	#if not flag in life['known_chunks'][chunk_id]['flags']:
@@ -37,11 +40,34 @@ def get_global_flag(chunk_key, flag):
 	
 	return False
 
+def get_chunk(chunk_key):
+	return maps.get_chunk(chunk_key)
+
 def get_chunk_pos(chunk_id, center=False):
 	if center:
 		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]
 	
 	return [int(val) for val in chunk_id.split(',')]
+
+def get_visible_chunks_from(pos, vision, center=True):
+	_center_chunk_key = get_chunk_key_at(pos)
+	
+	if center:
+		_pos = [int(i)+WORLD_INFO['chunk_size']/2 for i in _center_chunk_key.split(',')]
+		_pos.append(pos[2])
+		pos = _pos[:]
+	
+	_chunk_keys = []
+	for chunk_key in sight._scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], vision, ignore_chunks=0):
+		if not chunk_key in WORLD_INFO['chunk_map']:
+			continue
+		
+		if not can_see_chunk_from_pos(pos, chunk_key, vision=vision):
+			continue
+		
+		_chunk_keys.append(chunk_key)
+	
+	return _chunk_keys
 
 def get_chunk_key_at(pos):
 	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
@@ -191,7 +217,7 @@ def get_nearest_chunk_in_list(pos, chunks):
 def get_distance_to_hearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']
 
-def _can_see_chunk_quick(life, chunk_id):
+def _can_see_chunk_quick(start_pos, chunk_id, vision):
 	chunk = maps.get_chunk(chunk_id)
 	
 	if not len(chunk['ground']):
@@ -206,26 +232,41 @@ def _can_see_chunk_quick(life, chunk_id):
 		if _y:
 			_y -= 1
 		
-		_can_see = sight.can_see_position(life, (chunk['pos'][0]+_x, chunk['pos'][1]+_y))
+		_can_see = sight._can_see_position(start_pos, (chunk['pos'][0]+_x, chunk['pos'][1]+_y), max_length=vision)
 		
 		if _can_see:
 			return _can_see
 	
 	return False
 
-def can_see_chunk(life, chunk_id, distance=True):
-	_fast_see = _can_see_chunk_quick(life, chunk_id)
+def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
+	_pos = life['pos'][:]
+	
+	if center_chunk:
+		_pos[0] = ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
+		_pos[1] = ((_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
+	
+	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
+
+def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
+	_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
 	
 	if _fast_see:
 		return _fast_see
 	
-	chunk = maps.get_chunk(chunk_id)
+	chunk = maps.get_chunk(chunk_key)
 	
-	for pos in chunk['ground']:
-		_can_see = sight.can_see_position(life, pos, distance=distance)
+	for y in range(chunk['pos'][1], chunk['pos'][1]+WORLD_INFO['chunk_size']):
+		for x in range(chunk['pos'][0], chunk['pos'][0]+WORLD_INFO['chunk_size']):
+			if ((x-chunk['pos'][0] >= 0 and x-chunk['pos'][0] <= WORLD_INFO['chunk_size']-1) and y-chunk['pos'][1] in [0, WORLD_INFO['chunk_size']-1]) or\
+			   ((y-chunk['pos'][1] >= 0 and y-chunk['pos'][1] <= WORLD_INFO['chunk_size']-1) and x-chunk['pos'][0] in [0, WORLD_INFO['chunk_size']-1]):
+				_can_see = sight._can_see_position(pos1, (x, y), distance=distance, max_length=vision)
+				
+				if not get_chunk_key_at((x, y)) == chunk_key:
+					raise Exception('failed')
 		
-		if _can_see:
-			return _can_see
+				if _can_see:
+					return _can_see
 	
 	return False
 

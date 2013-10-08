@@ -6,9 +6,11 @@ import historygen
 import judgement
 import survival
 import groups
+import combat
 import camps
 import sight
 import brain
+import zones
 
 import numbers
 import logging
@@ -158,6 +160,13 @@ def desires_to_join_camp(life, camp_id):
 	
 	return True
 
+def desires_weapon(life):
+	if not combat.get_weapons(life):
+		return True
+	
+	#if life['stats']['firearms'] >= 5:
+	return False
+
 def battle_cry(life):
 	_battle_cry = lfe.execute_raw(life, 'talk', 'battle_cry')
 	
@@ -167,7 +176,7 @@ def battle_cry(life):
 		lfe.say(life, _battle_cry_action, action=True)
 
 def get_firearm_accuracy(life):
-	return numbers.clip((10-life['stats']['firearms'])/float(10.0), 0.1, 1)
+	return numbers.clip((life['stats']['firearms'])/10.0, 0.1, 1)
 
 def get_recoil_recovery_rate(life):
 	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)
@@ -318,6 +327,123 @@ def is_aggravated(life, life_id):
 	
 	return False
 
+def is_incapacitated(life):
+	_size = sum([lfe.get_limb(life, l)['size'] for l in life['body']])
+	_count = 0
+	
+	for limb in life['body']:
+		_count += lfe.limb_is_cut(life, limb)
+		_count += lfe.limb_is_in_pain(life, limb)
+	
+	if (_count/float(_size))>=.35:
+		return True
+	
+	return False
+
+def is_intimidated_by(life, life_id):
+	if lfe.execute_raw(life, 'safety', 'intimidated', life_id=life_id):
+		return True
+	
+	return False
+
+def is_intimidated(life):
+	for target_id in judgement.get_targets(life, ignore_escaped=True):
+		if is_intimidated_by(life, target_id):
+			return True
+	
+	for target_id in judgement.get_combat_targets(life, ignore_escaped=True):
+		if is_intimidated_by(life, target_id):
+			return True
+	
+	return False
+
+def is_confident(life):
+	#First we'll take a look at the environment
+	#Friendlies should be in some state of combat to be a positive influence
+	#Enemies will be looked at in terms of their observed health
+	_friendlies = []
+	_targets = []
+	_total_friendly_score = judgement.get_ranged_combat_rating_of_self(life)
+	_total_enemy_score = 0
+	
+	#Who do we like? Where are they?
+	#Let's find these and then generate a "safety map"
+	for target_id in judgement.get_trusted(life, visible=False):
+		_knows = brain.knows_alife_by_id(life, target_id)
+		
+		if _knows:
+			if _knows['last_seen_time'] > 100:
+				continue
+			
+			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
+				_friendlies.append(target_id)
+				
+				_zones = [zones.get_zone_at_coords(life['pos'])]
+				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				
+				if not _z in _zones:
+					_zones.append(_z)
+				
+				_distance = zones.dijkstra_map(life['pos'], [_knows['last_seen_at']], _zones, return_score=True)
+				_distance = numbers.clip(_distance, 0, 100)
+				
+				_combat_rating = judgement.get_ranged_combat_rating_of_target(life, target_id)
+				if _knows['last_seen_time']:
+					_distance = numbers.clip(_distance+_knows['last_seen_time'], 0, 100)
+					
+				_score = _combat_rating*((100-_distance+_combat_rating)/100.0)
+				
+				_total_friendly_score += numbers.clip(_score, 0, _combat_rating)
+	
+	for target_id in judgement.get_combat_targets(life):
+		_knows = brain.knows_alife_by_id(life, target_id)
+		
+		if _knows and _knows['last_seen_time'] <= 200:
+			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
+				_targets.append(target_id)
+				
+				_zones = [zones.get_zone_at_coords(life['pos'])]
+				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				
+				if not _z in _zones:
+					_zones.append(_z)
+				
+				_distance = zones.dijkstra_map(life['pos'], [_knows['last_seen_at']], _zones, return_score=True)
+				_distance = numbers.clip(_distance, 0, 100)
+				
+				_combat_rating = judgement.get_ranged_combat_rating_of_target(life, target_id)
+				if _knows['last_seen_time']:
+					_distance = numbers.clip(_distance+_knows['last_seen_time'], 0, 100)
+					
+				_score = _combat_rating*((100-_distance+_combat_rating)/100.0)
+				
+				_total_enemy_score += numbers.clip(_score, 0, _combat_rating)
+				#_z = zones.get_zone_at_coords(_knows['last_seen_at'])
+				#if not _z in _f_zones:
+				#	_f_zones.append(_z)
+	
+	if _total_friendly_score>_total_enemy_score:
+		return True
+	
+	return False
+
+def is_combat_target_too_close(life):
+	_nearest_combat_target = judgement.get_nearest_combat_target(life)
+	
+	_knows = brain.knows_alife_by_id(life, _nearest_combat_target['target_id'])
+	
+	if not _nearest_combat_target['target_id']:
+		return False
+	
+	if _knows['last_seen_time'] >= 100:
+		return False
+	
+	#TODO: Unhardcode
+	if _nearest_combat_target['distance'] <= 10:
+		return True
+	
+	return False
+
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
 		return True
@@ -364,7 +490,6 @@ def is_safe_in_shelter(life, life_id):
 	if not lfe.is_in_shelter(life):
 		return True
 	
-	print life['name'], 'compwith', LIFE[life_id]['name'], is_compatible_with(life, life_id)
 	if not is_compatible_with(life, life_id):
 		return False
 	

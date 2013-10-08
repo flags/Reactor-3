@@ -6,12 +6,14 @@ import alife_manage_targets
 import alife_manage_items
 import alife_visit_camp
 import alife_find_camp
+import alife_surrender
 import alife_discover
 import alife_explore
 import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
+import alife_cover
 import alife_group
 import alife_needs
 import alife_camp
@@ -25,6 +27,7 @@ import movement
 import memory
 import speech
 import combat
+import logic
 import sight
 import sound
 
@@ -44,14 +47,35 @@ MODULES = [alife_hide,
 	alife_needs,
 	alife_group,
 	alife_shelter,
-	alife_search]
+	alife_search,
+	alife_surrender,
+    alife_cover]
+
+def sort_modules(life):
+	global MODULES
+	
+	_scores = {}
+	
+	for module in MODULES:
+		try:
+			_module_tier = module.get_tier(life)
+		except AttributeError:
+			_module_tier = module.TIER
+		
+		if _module_tier in _scores:
+			_scores[_module_tier].append(module)
+		else:
+			_scores[_module_tier] = [module]
+	
+	return _scores
 
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
-	survival.process(life)
+	judgement.judge_life(life)
 	judgement.judge_jobs(life)
+	survival.process(life)
 	understand(life, source_map)
 	
 	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
@@ -64,7 +88,7 @@ def retrieve_from_memory(life, key):
 	if key in life['tempstor2']:
 		return life['tempstor2'][key]
 	
-	return None
+	return False
 
 def flag(life, flag, value=True):
 	life['flags'][flag] = value
@@ -92,6 +116,12 @@ def unflag_alife(life, target_id, flag):
 	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
 	del life['know'][target_id]['flags'][flag] 
 
+def alife_has_flag(life, target_id, flag):
+	if flag in life['know'][target_id]['flags']:
+		return True
+	
+	return False
+
 def get_alife_flag(life, target_id, flag):
 	if not flag in life['know'][target_id]['flags']:
 		return False
@@ -117,16 +147,26 @@ def get_item_flag(life, item, flag):
 	return False
 
 def remember_item(life, item):
+	#logging.debug('%s learned about %s (%s)' % (' '.join(life['name']), item['name'], item['uid']))
+	
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item['uid'],
-			'score': judgement.judge_item(life,item),
+			'score': judgement.judge_item(life, item['uid']),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
+			'last_owned_by': item['owner'],
 			'shared_with': [],
+			'lost': False,
 			'flags': {}}
 		
 		return True
+	
+	return True
+
+def remembers_item(life, item):
+	if item['uid'] in life['know_items']:
+		return life['know_items'][item['uid']]
 	
 	return False
 
@@ -187,7 +227,7 @@ def meet_alife(life, target):
 	
 	life['know'][target['id']] = {'life': target,
 		'fondness': 0,
-	    'danger': 0,
+		'danger': 0,
 		'trust': 0,
 		'influence': 0,
 		'likes': copy.deepcopy(target['likes']),
@@ -213,11 +253,14 @@ def has_met_in_person(life, target):
 def get_remembered_item(life, item_id):
 	return life['know_items'][item_id]
 
-def get_matching_remembered_items(life, matches):
+def get_matching_remembered_items(life, matches, no_owner=False):
 	_matched_items = []
-	for item in [i['item'] for i in life['know_items'].values()]:
-		if logic.matches(item, matches):
-			_matched_items.append(item['uid'])
+	for item in [i for i in life['know_items'].values()]:
+		if no_owner and item['last_owned_by']:
+			continue
+		
+		if logic.matches(ITEMS[item['item']], matches):
+			_matched_items.append(item['item'])
 	
 	return _matched_items
 
@@ -244,17 +287,21 @@ def remember_known_item(life, item_id):
 	
 	return False
 
-def generate_needs(life):
-	#TODO: We don't generate all of our needs here, so this is a bit misleading
-	#Needs can be created anywhere in the ALife loop just so long as you do it early/before brain.think()
-	
-	if 'USES_FIREARMS' in life:
-		if combat.has_weapon(life):
-			unflag(life, 'no_weapon')
-		else:
-			flag(life, 'no_weapon')
-
 def understand(life, source_map):
+	_modules = sort_modules(life)
+	
+	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
+		life['think_rate'] = 0
+	elif life['state'] == 'combat' and life['think_rate_max'] == LIFE_THINK_RATE:
+		if life['think_rate'] > 2:
+			life['think_rate'] = 2
+		
+		life['think_rate_max'] = 2
+	else:
+		life['think_rate_max'] = LIFE_THINK_RATE
+	
+	life['_last_module'] = _modules.keys()[0]
+	
 	if life['think_rate']:
 		life['think_rate'] -= 1
 		return False
@@ -270,25 +317,31 @@ def understand(life, source_map):
 		if snapshots.process_snapshot(life, target['life']):
 			judgement.judge(life, target['life']['id'])
 	
-	generate_needs(life)
-	
 	for module in MODULES:	
 		try:		
 			module.setup(life)
 		except:
 			continue
 	
+	_stime = time.time()
+	_passive_only = False
+	
 	_modules_run = False
 	_times = []
-	for module in MODULES:
-		_stime = time.time()
+	
+	_sorted_modules = _modules.keys()
+	_sorted_modules.sort()
+	
+	while _modules:
+		_score_tier = _sorted_modules[0]
+		module = _modules[_score_tier].pop(0)
 		
 		try:
 			_module_tier = module.get_tier(life)
 		except AttributeError:
 			_module_tier = module.TIER
 		
-		if _module_tier <= life['state_tier'] or _module_tier == TIER_PASSIVE:
+		if (_module_tier <= life['state_tier'] and not _passive_only) or _module_tier == TIER_PASSIVE:
 			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == STATE_CHANGE:
@@ -298,11 +351,19 @@ def understand(life, source_map):
 				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 				
 				if _return == RETURN_SKIP:
+					if not _modules[_score_tier]:
+						del _modules[_score_tier]
 					continue
 				
 				_modules_run = True
+				if not _module_tier == TIER_PASSIVE:
+					_passive_only = True
 		
 		_times.append({'time': time.time()-_stime, 'module': module.STATE})
+		
+		if not _modules[_score_tier]:
+			del _modules[_score_tier]
+			_sorted_modules.remove(_score_tier)
 	
 	if not _modules_run:
 		lfe.change_state(life, 'idle', TIER_IDLE)

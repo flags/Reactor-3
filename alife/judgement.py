@@ -7,6 +7,7 @@ import weapons
 import chunks
 import combat
 import groups
+import zones
 import stats
 import brain
 import raids
@@ -21,11 +22,19 @@ import random
 import maps
 import time
 
-def judge_item(life, item):
+def judge_item(life, item_uid):
+	_item = ITEMS[item_uid]
 	_score = 0
 	
-	if brain.get_flag(life, 'no_weapon') and item['type'] == 'gun':
-		_score += 30
+	if brain.get_flag(life, 'no_weapon') or not combat.has_ready_weapon(life):
+		if _item['type'] == 'gun':
+			if combat.weapon_is_working(life, item_uid):
+				_score += _item['accuracy']
+			else:
+				_score += _item['accuracy']/2
+		
+		if _item['type'] in ['magazine', 'clip']:
+			_score += 1
 	
 	return _score
 
@@ -76,17 +85,28 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	
 	return _score
 
-def get_observed_ranged_combat_rating_of_target(life, life_id):
+def get_ranged_combat_rating_of_target(life, life_id):
+	target = LIFE[life_id]
 	_score = 0
-	#_target = brain.knows_alife_by_id(life, life_id)
 	
-	for item in [ITEMS[i] for i in lfe.get_all_visible_items(LIFE[life_id])]:
+	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target)]:
 		if not logic.matches(item, {'type': 'gun'}):
 			continue
 		
-		_score += 1
+		if numbers.distance(life['pos'], target['pos']) > sight.get_vision(life)/2:
+			_score += item['accuracy']/2
+		else:
+			_score += item['accuracy']
+	
+	if target['state'] in ['cover', 'hiding', 'hidden']:
+		_score /= 2
+	elif target['state'] == 'combat':
+		_score *= 1.2
 	
 	return _score
+
+def get_ranged_combat_rating_of_self(life):
+	return get_ranged_combat_rating_of_target(life, life['id'])
 
 def get_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)
@@ -105,8 +125,24 @@ def can_trust(life, life_id, low=0):
 	
 	return False
 
+def get_tension(life):
+	return brain.retrieve_from_memory(life, 'tension')
+
+def get_tension_with(life, life_id):
+	if can_trust(life, life_id):
+		return 0
+	
+	_target = brain.knows_alife_by_id(life, life_id)
+	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
+	_score = abs(numbers.clip(get_trust(life, life_id), -10, 0))
+	
+	_score += get_ranged_combat_rating_of_target(life, life_id)
+	
+	return abs(((15-_distance)/15.0)*_score)
+
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
+	
 	if lfe.execute_raw(life, 'judge', 'break_trust', break_on_true=True, break_on_false=False, life_id=target_id):
 		brain.knows_alife_by_id(life, target_id)['trust'] = numbers.clip(brain.knows_alife_by_id(life, target_id)['trust'], -1000, -1)
 		return True
@@ -119,7 +155,7 @@ def is_target_dangerous(life, target_id):
 	if target['life']['dead']:
 		return False
 	
-	if target['danger']:
+	if target['danger']>=3 or (target['danger'] and combat.has_ready_weapon(life)):
 		if can_trust(life, target_id):
 			return False
 		
@@ -138,7 +174,7 @@ def is_target_lost(life, target_id):
 	return False
 
 def is_safe(life):
-	if get_targets(life):
+	if get_combat_targets(life):
 		return False
 	
 	return True
@@ -158,7 +194,53 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-def get_targets(life, must_be_known=False, escaped_only=False):
+def judge_life(life):
+	_combat_targets = []
+	_potential_combat_targets = []
+	_tension = 0
+	
+	for alife_id in life['know']:
+		_tension += get_tension_with(life, alife_id)
+		
+		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
+		if is_target_dangerous(life, alife_id):
+			_combat_targets.append(alife_id)
+		else:
+			_potential_combat_targets.append(alife_id)
+	
+	brain.store_in_memory(life, 'combat_targets', _combat_targets)
+	brain.store_in_memory(life, 'targets', _potential_combat_targets)
+	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
+	brain.store_in_memory(life, 'tension', _tension)
+
+def _target_filter(life, target_list, escaped_only, ignore_escaped):
+	if not target_list:
+		return []
+	
+	_return_targets = []
+	
+	for target in target_list:
+		_knows = brain.knows_alife_by_id(life, target)
+		
+		if (escaped_only and not _knows['escaped']) or ignore_escaped and _knows['escaped']:
+			continue
+	
+		_return_targets.append(target)
+	
+	return _return_targets
+	
+def get_targets(life, escaped_only=False, ignore_escaped=True):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped)
+
+def get_combat_targets(life, escaped_only=False, ignore_escaped=False):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
+
+def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
+	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
+	
+	return [t for t in _targets if target_is_combat_ready(life, t)]
+
+def get_targets_old(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
 	_targets = []
 	_combat_targets = []
 	
@@ -166,8 +248,13 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	#	_targets.extend(raids.get_raiders(life['camp']))
 
 	for alife in life['know'].values():
-		if alife['life']['id'] in _targets:
+		if not escaped_only and ignore_escaped and alife['escaped']:
 			continue
+		elif escaped_only and not alife['escaped'] == 1:
+			continue
+		
+		#if alife['life']['id'] in _targets:
+		#	continue
 		
 		#TODO: Secrecy
 		if is_target_dangerous(life, alife['life']['id']):
@@ -175,7 +262,7 @@ def get_targets(life, must_be_known=False, escaped_only=False):
 	
 	_passed_combat_targets = []
 	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if not escaped_only and  target['escaped']:
+		if not escaped_only and ignore_escaped and target['escaped']:
 			continue
 		elif escaped_only and target['escaped'] == 1:
 			_targets.append(target['life']['id'])
@@ -210,7 +297,7 @@ def get_nearest_threat(life):
 	#if not _combat_targets:
 	#	return False
 	
-	for target in [brain.knows_alife_by_id(life, t) for t in get_targets(life, must_be_known=True)]:
+	for target in [brain.knows_alife_by_id(life, t) for t in get_combat_targets(life)]:
 		_score = numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
@@ -219,22 +306,86 @@ def get_nearest_threat(life):
 	
 	return _target['target']
 
+def get_visible_targets_in_list(life, targets):
+	_visible_targets = get_visible_threats(life)
+	_targets = []
+	
+	for target in targets:
+		if target in _visible_targets:
+			_targets.append(target)
+	
+	return _targets
+
+def get_all_visible_life(life):
+	_visible_chunks = brain.get_flag(life, 'visible_chunks')
+	
+	if not _visible_chunks:
+		return []
+	
+	_visible_life = []
+	
+	for chunk_key in _visible_chunks:
+		_chunk = maps.get_chunk(chunk_key)
+		
+		for life_id in _chunk['life']:
+			if life_id == life['id']:
+				continue
+			
+			if not sight.can_see_position(life, LIFE[life_id]['pos']):
+				continue
+			
+			_visible_life.append(life_id)
+			
+	return _visible_life
+
 def get_invisible_threats(life):
 	return get_visible_threats(life, _inverse=True)
 
 def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
-	for target in [LIFE[t] for t in get_targets(life, must_be_known=True)]:
+	for target in [LIFE[t] for t in get_combat_targets(life)]:
 		if not sight.can_see_target(life, target['id']) == _inverse:
 			_targets.append(target['id'])
 	
 	return _targets
 
+def get_distance_to_target(life, target_id):
+	target = brain.knows_alife_by_id(life, target_id)
+	_goals = [target['last_seen_at']]
+	_zones = [zones.get_zone_at_coords(target['last_seen_at'])]
+	
+	_zone = zones.get_zone_at_coords(life['pos'])
+	if not _zone in _zones:
+		_zones.append(_zone)
+	
+	return zones.dijkstra_map(life['pos'], _goals, _zones, return_score=True)
+
+def get_nearest_target_in_list(life, target_list):
+	_nearest_target = {'distance': 9999, 'target_id': None}
+
+	for target_id in target_list:
+		_distance = get_distance_to_target(life, target_id)
+		
+		if _distance < _nearest_target['distance'] or not _nearest_target['target_id']:
+			_nearest_target['distance'] = _distance
+			_nearest_target['target_id'] = target_id
+	
+	return _nearest_target
+
+def get_nearest_combat_target(life):
+	return get_nearest_target_in_list(life, get_combat_targets(life))
+
 def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
 	return target['fondness']
+
+def target_is_combat_ready(life, life_id):
+	if combat.get_equipped_weapons(LIFE[life_id]):
+		return True
+	
+	return False
 
 def _get_impressions(life, target):
 	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):
@@ -333,6 +484,9 @@ def judge_shelter(life, chunk_id):
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
 		
+		if not _cover:
+			return 0
+		
 		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
 	
 	#if chunks.get_flag(life, chunk_id, 'shelter'):
@@ -355,7 +509,7 @@ def judge_chunk_visually(life, chunk_id):
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
 
-def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
+def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investigate=False):
 	if lfe.ticker(life, 'judge_tick', 30):
 		return False
 	
@@ -419,6 +573,14 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
 	
+	if investigate and not visited:
+		chunks.flag(life, chunk_id, 'investigate', True)
+	elif visited and chunks.get_flag(life, chunk_id, 'investigate'):
+		chunks.unflag(life, chunk_id, 'investigate')
+	
+	if chunks.get_flag(life, chunk_id, 'investigate'):
+		_score += 5
+	
 	#for camp in life['known_camps']:
 	#	if not chunk_id in camps.get_camp(camp)['reference']:
 	#		continue
@@ -436,10 +598,13 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True):
 	#if stats.desires_interaction(life):
 	#	_score += _trusted
 	
-	for item in chunk['items']:
-		_item = brain.remember_known_item(life, item)
-		if _item:
-			_score += _item['score']
+	if seen:
+		pass
+		#TODO: Still a good idea... maybe use for shelter?
+		#for item in chunk['items']:
+		#	_item = brain.remember_known_item(life, item)
+		#	if _item:
+		#		_score += _item['score']
 
 	life['known_chunks'][chunk_id]['score'] = _score
 	
@@ -454,13 +619,13 @@ def judge_all_chunks(life):
 	
 	logging.warning('%s completed judging all chunks (took %s.)' % (' '.join(life['name']), time.time()-_stime))
 
-def judge_reference(life, reference, reference_type, known_penalty=False):
+def judge_reference(life, reference_id, known_penalty=False):
 	#TODO: Length
 	_score = 0
 	_count = 0
 	_closest_chunk_key = {'key': None, 'distance': -1}
 	
-	for key in reference:
+	for key in references.get_reference(reference_id):
 		if known_penalty and key in life['known_chunks']:
 			continue
 		
@@ -708,8 +873,8 @@ def believe_which_alife(life, alife):
 				_scores[_score] = [winner]
 		
 		return random.choice(_scores[max(_scores)])
-	else:
-		return _winners[0]
+	
+	return _winners[0]
 
 def get_best_goal(life):
 	for goal in brain.retrieve_from_memory(life, 'active_goals'):
@@ -724,12 +889,13 @@ def get_best_shelter(life):
 		_shelter = groups.get_shelter(life['group'])
 		
 		if _shelter:
-			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _shelter.split(',')]
+			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
+			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
 			_dist = numbers.distance(life['pos'], _shelter_center)
 			
 			if _dist <= logic.time_until_midnight()*life['speed_max']:
 				print life['name'],'can get to shelter in time'
-				return _shelter
+				return _nearest_chunk_key
 			else:
 				print life['name'],'cant get to shelter in time'
 	

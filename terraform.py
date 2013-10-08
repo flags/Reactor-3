@@ -358,6 +358,8 @@ def menu_item_selected(entry):
 		logging.debug('Map compile took: %s' % (time.time()-_stime))
 	elif value == 'Generate chunk map':
 		maps.update_chunk_map()
+		maps.smooth_chunk_map()
+		maps.generate_reference_maps()
 		
 	elif value == 'Exit':
 		SETTINGS['running'] = False

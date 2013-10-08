@@ -8,6 +8,9 @@ import maps
 
 import numbers
 
+def get_reference(reference_id):
+	return WORLD_INFO['references'][reference_id]
+
 def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False, skip_unknown=False, ignore_array=[]):
 	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
 	
@@ -59,7 +62,7 @@ def _find_best_unknown_reference(life, ref_type):
 	_best_reference = {'reference': None, 'score': -1}
 	
 	for reference in WORLD_INFO['reference_map'][ref_type]:
-		_score = judgement.judge_reference(life, reference, ref_type, known_penalty=True)
+		_score = judgement.judge_reference(life, reference, known_penalty=True)
 		
 		if not _score:
 			continue
@@ -75,10 +78,10 @@ def _find_best_unknown_reference(life, ref_type):
 	
 	return _best_reference
 
-def find_nearest_key_in_reference(life, reference, unknown=False, ignore_current=False):
+def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False):
 	_lowest = {'chunk_key': None, 'distance': 9000}
 
-	for _key in reference:
+	for _key in get_reference(reference_id):
 		if unknown and _key in life['known_chunks']:
 			continue
 		
@@ -223,3 +226,10 @@ def find_nearest_road(position, skip_unknown=True, ignore_array=[]):
 
 def find_nearest_building(life, skip_unknown=True, ignore_array=[]):
 	return _find_nearest_reference(life, 'buildings', skip_unknown=skip_unknown, ignore_array=ignore_array)
+
+def get_alife_in_reference_matching(reference_id, matching):
+	_life = []
+	for chunk_key in get_reference(reference_id):
+		_life.extend(chunks.get_alife_in_chunk_matching(chunk_key, matching))
+	
+	return _life

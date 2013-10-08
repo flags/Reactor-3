@@ -27,7 +27,7 @@ def make(*args, **kwargs):
 	return {'_action': True, 'args': args, 'kwargs': kwargs}
 
 def make_small_script(*args, **kwargs):
-	_struct = {'args': [], 'kwargs': {}}
+	_struct = {'args': {}, 'kwargs': {}}
 	
 	#if 'return' in args:
 	#	_struct['args'].append('return')
@@ -35,11 +35,17 @@ def make_small_script(*args, **kwargs):
 	#if 'return' in args and 'life_id' in args:
 	#	return LIFE[kwargs['life_id']]
 	
+	if 'args' in kwargs:
+		_struct['args'].update(kwargs['args'])
+	
 	if 'kwargs' in kwargs:
 		_struct['kwargs'].update(kwargs['kwargs'])
 	
 	if 'function' in kwargs:
 		_struct['function'] = kwargs['function']
+	
+	if 'return_function' in kwargs:
+		_struct['return_function'] = kwargs['return_function']
 	#	kwargs['function'](**_struct['arguments'])
 	
 	return _struct
@@ -47,13 +53,25 @@ def make_small_script(*args, **kwargs):
 def execute_small_script(life, action):
 	if 'function' in action:
 		_args = {}
+		_kw_args = {}
+		
+		for key in action['args']:
+			if isinstance(action['args'][key], dict) and 'args' in action['args'][key] and 'return' in action['args'][key]['args']:
+				_args[key] = execute_small_script(action['args'][key])
+			else:
+				_args[key] = action['args'][key]
+		
 		for key in action['kwargs']:
 			if isinstance(action['kwargs'][key], dict) and 'args' in action['kwargs'][key] and 'return' in action['kwargs'][key]['args']:
-				_args[key] = execute_small_script(action['kwargs'][key])
+				_kw_args[key] = execute_small_script(action['kwargs'][key])
 			else:
-				_args[key] = action['kwargs'][key]
+				_kw_args[key] = action['kwargs'][key]
 		
-		return rawparse.translate(action['function'])(life, **action['kwargs'])
+		_kw_args.update(_args)
+		
+		return rawparse.translate(action['function'])(life, **_kw_args)
+	elif 'return_function' in action:
+		return rawparse.translate(action['return_function'])
 
 def _execute(action):
 	_struct = {}

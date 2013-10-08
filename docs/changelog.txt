@@ -1,0 +1,16 @@
+New in version 0.6:
+	* ALife now use dijkstra maps to better calculate distance to targets
+		* They will also use dijkstra maps to escape somewhat intelligently
+	* Intimidation by force
+		* Can order ALife to give up items
+	* ALife will surrender under some conditions
+	* Moved more ALife functionality into rawscript
+	* Items can now have additional prefixes
+	* Burnable items now burn and damage entities
+	* Fixed crash when adding items containing items to inventories
+	* Camera can now follow non-entities
+	* Explosions now push entities
+	* Added caching layer to zone lookups, dijkstra maps, and reference maps
+	* Inventory/item action menus redesigned for quicker access
+	* New rules for weapon accuracy
+	* ALife will now properly find and collect wanted items

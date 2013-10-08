@@ -2,6 +2,7 @@
 "prefix": "a",
 "type": "backpack",
 "icon": "B",
+"color": [[94, 75, 47], null],
 "description": "As the name suggests, it is a backpack made of quality leather.",
 "attaches_to": "chest",
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",

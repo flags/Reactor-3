@@ -12,6 +12,13 @@ import life
 def init_libtcod(terraform=False):
 	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
+	_font_file = os.path.join(DATA_DIR, 'tiles', FONT)
+	
+	if '_incol' in FONT:
+		_layout = tcod.FONT_LAYOUT_ASCII_INCOL
+	
+	tcod.console_set_custom_font(_font_file, _layout)
+	
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	MAP_WINDOW = tcod.console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
 	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
@@ -30,7 +37,6 @@ def init_libtcod(terraform=False):
 		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 		Y_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
-	tcod.console_set_custom_font(FONT,FONT_LAYOUT)
 	tcod.console_set_keyboard_repeat(200, 0)
 	tcod.sys_set_fps(FPS)
 
@@ -201,7 +207,21 @@ def draw_bottom_ui_terraform():
 		back_color=tcod.Color(0,0,0),
 		flicker=0)
 
-def draw_message_box():	
+def disable_panels():
+	tcod.console_clear(0)
+	tcod.console_clear(MESSAGE_WINDOW)
+	
+	SETTINGS['draw life info'] = False
+	SETTINGS['draw message box'] = False
+
+def enable_panels():
+	tcod.console_clear(0)
+	tcod.console_clear(MESSAGE_WINDOW)
+	
+	SETTINGS['draw life info'] = True
+	SETTINGS['draw message box'] = True
+
+def draw_message_box():
 	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(128,128,128))
 	tcod.console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
@@ -238,26 +258,29 @@ def draw_message_box():
 		_y_mod += 1
 
 def draw_status_line():
-	_flashing_text = ''
-	_non_flashing_text = ''
+	_flashing_text = []
+	_non_flashing_text = []
 	
 	if LIFE[SETTINGS['following']]['targeting']:
-		_flashing_text += 'Firing'
+		_flashing_text.append('Firing')
 	
 	if LIFE[SETTINGS['following']]['strafing']:
-		_non_flashing_text += 'Strafing'
+		_non_flashing_text.append('Strafing')
 	
-	if life.is_target_of(LIFE[SETTINGS['following']]):
-		_flashing_text += 'Combat'
+	if SETTINGS['paused']:
+		if life.is_target_of(LIFE[SETTINGS['following']]):
+			_non_flashing_text.append('Combat')
+		else:
+			_non_flashing_text.append('Paused')
 	
 	blit_string(0,
 		MAP_WINDOW_SIZE[1]-1,
-		_non_flashing_text)
+		' '.join(_non_flashing_text))
 	
 	if time.time()%1>=0.5:
 		blit_string(len(_non_flashing_text)+1,
 			MAP_WINDOW_SIZE[1]-1,
-			_flashing_text)
+			' '.join(_flashing_text))
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
@@ -342,7 +365,7 @@ def draw_console():
 		while len(line):
 			tcod.console_print(CONSOLE_WINDOW,_xoffset,_i,line[:CONSOLE_WINDOW_SIZE[0]])
 			line = line[CONSOLE_WINDOW_SIZE[0]:]
-			_xoffset += 1
+			_xoffset = 1
 			_i += 1
 			
 	tcod.console_print(CONSOLE_WINDOW,0,CONSOLE_WINDOW_SIZE[1]-1,'#'+KEYBOARD_STRING[0])
@@ -376,14 +399,17 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	tcod.console_flush()
 
 def position_is_in_frame(pos):
-	if pos[0] >= CAMERA_POS[0] and pos[0] <= CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] <= CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+	if pos[0] >= CAMERA_POS[0] and pos[0] <= numbers.clip(CAMERA_POS[0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] <= numbers.clip(CAMERA_POS[1]+MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]):
 		return True
 	
 	return False
 
 def get_render_position(pos):
 	return [pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1]]
+
+def camera_track(pos):
+	SETTINGS['camera_track'] = pos
 
 def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_blit(ITEM_WINDOW,0,0,ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])

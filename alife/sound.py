@@ -11,6 +11,7 @@ import chunks
 import speech
 import combat
 import events
+import sight
 import raids
 import brain
 import camps
@@ -19,6 +20,10 @@ import maps
 import jobs
 
 import logging
+
+def can_hear(life, target_id):
+	#TODO: Walls, etc
+	return sight.can_see_target(life, target_id)
 
 def listen(life):
 	for event in life['heard'][:]:
@@ -122,11 +127,13 @@ def listen(life):
 			if event['from']['camp'] and not camps.has_discovered_camp(life, event['from']['camp']):
 				camps.discover_camp(life, event['from']['known_camps'][event['from']['camp']])
 			
-			if not speech.has_sent(life, event['from'], 'greeting'):
-				speech.send(life, event['from'], 'friendly')
+			#if not speech.has_sent(life, event['from'], 'greeting'):
+			#	speech.send(life, event['from'], 'friendly')
 			
 			if not speech.has_received(life, event['from'], 'greeting'):
 				speech.receive(life, event['from'], 'greeting')
+				
+			speech.start_dialog(life, event['from']['id'], 'encounter')
 		
 		elif event['gist'] == 'ask_about_recent_events':
 			_event = speech.determine_interesting_event(life, event['from'])
@@ -268,16 +275,19 @@ def listen(life):
 				else:
 					lfe.memory(life, 'reject under_attack: attacker is trusted',
 						attacker=event['attacker'],
-						target=event['from']['id'])
-						
-					lfe.create_question(life,
-						'opinion_of_target',
-						{'target': event['from']['id'], 'who': event['attacker']},
-						[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
-					     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']},
-					     {'text': 'target doesn\'t know target', 'target': event['from']['id'], 'who': event['attacker']}],
-						answer_all=True,
-						interest=10)
+						target=event['from']['id'],
+					    trust=-10,
+					    danger=10)
+					
+					#TODO: This could actually work for determining who to trust	
+					#lfe.create_question(life,
+					#	'opinion_of_target',
+					#	{'target': event['from']['id'], 'who': event['attacker']},
+					#	[{'text': 'target trusts target', 'target': event['from']['id'], 'who': event['attacker']},
+					#     {'text': 'target doesn\'t trust target', 'target': event['from']['id'], 'who': event['attacker']},
+					#     {'text': 'target doesn\'t know target', 'target': event['from']['id'], 'who': event['attacker']}],
+					#	answer_all=True,
+					#	interest=10)
 			
 			#if _believes == event['from']['id']:
 			#	if lfe.get_memory(life, matches={'target': event['attacker']['id'], 'text': 'friendly'}):
@@ -334,9 +344,9 @@ def listen(life):
 		
 		elif event['gist'] == 'group_set_shelter':
 			if 'player' in life:
-				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['chunk_id']))
+				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['reference_id']))
 			else:
-				judgement.judge_chunk(life, event['chunk_id'])
+				judgement.judge_reference(life, event['reference_id'])
 				
 				print 'GOT SHELTER INFO' * 100
 			
@@ -386,6 +396,10 @@ def listen(life):
 					 
 				#event['from']['dialogs'].append(dialog.create_dialog_with(event['from'], life['id'], _dialog))
 				speech.start_dialog(life, event['from']['id'], 'call_accepted')
+		
+		elif event['gist'] == 'threw_an_item':
+			print 'CHECK THIS HERE' * 100
+			pass
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

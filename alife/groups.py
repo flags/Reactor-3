@@ -46,8 +46,11 @@ def create_group(life, add_creator=True):
 	
 	return str(WORLD_INFO['groupid']-1)
 
+def group_exists(group_id):
+	return (group_id in WORLD_INFO['groups'])
+
 def get_group(group_id):
-	if not group_id in WORLD_INFO['groups']:
+	if not group_exists(group_id):
 		raise Exception('Group does not exist: %s' % group_id)
 	
 	return WORLD_INFO['groups'][group_id]
@@ -193,13 +196,31 @@ def announce(life, group_id, gist, message, consider_motive=False, filter_if=[],
 	
 	if consider_motive:
 		if _group['claimed_motive'] == 'wealth':
-			_announce_to = LIFE.keys()
-			_announce_to.remove(life['id'])
+			_announce_to = []
+			
+			for life_id in LIFE.keys():
+				if life_id == life['id']:
+					continue
+				
+				if stats.is_same_species(life, life_id):
+					_announce_to.append(life_id)
 		elif _group['claimed_motive'] == 'crime':
 			_announce_to = judgement.get_trusted(life, visible=False)
+
+			for life_id in _announce_to[:]:
+				if not stats.is_same_species(life, life_id):
+					_announce_to.remove(life_id)
+			
 		elif _group['claimed_motive'] == 'survival':
-			_announce_to = LIFE.keys()
-			_announce_to.remove(life['id'])
+			_announce_to = []
+			
+			for life_id in LIFE.keys():
+				if life_id == life['id']:
+					continue
+				
+				if stats.is_same_species(life, life_id):
+					_announce_to.append(life_id)
+			
 	else:
 		_announce_to = _group['members'][:]
 		_announce_to.remove(life['id'])
@@ -222,7 +243,7 @@ def get_shelter(group_id):
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	_group['shelter'] = judgement.get_best_shelter(life)
+	_group['shelter'] = chunks.get_chunk(judgement.get_best_shelter(life))['reference']
 	
 	if _group['shelter']:
 		print 'SET SHELTER' * 100
@@ -233,7 +254,7 @@ def announce_shelter(group_id):
 	distribute(LIFE[_group['leader']],
 	           'group_set_shelter',
 	           filter_by=get_event(group_id, _group['announce_event'])['accepted'],
-	           chunk_id=_group['shelter'],
+	           reference_id=_group['shelter'],
 	           event_id=_group['announce_event'])
 
 def find_and_announce_shelter(life, group_id):

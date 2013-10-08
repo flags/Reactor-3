@@ -5,6 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import numbers
+import menus
 import logic
 import alife
 
@@ -81,7 +82,7 @@ def calculate_impacts(life, target, topics):
 		if 'subtopic' in topic:
 			continue
 		
-		if 'negative' in topic['gist'] or 'lie' in topic and topic['lie'] or 'dislike' in topic:
+		if 'lie' in topic and topic['lie'] or 'dislike' in topic:
 			topic['impact'] = -1
 		elif 'positive' in topic['gist'] or 'like' in topic:
 			topic['impact'] = 1
@@ -255,6 +256,8 @@ def get_all_relevant_target_topics(life, target):
 	
 	_memories.extend([memory for memory in lfe.get_memory(life, matches={'target': target})])
 	
+	_topics.append({'text': 'Intimidate...', 'gist': 'order_target', 'subtopics': get_target_orders, 'target': target})
+	
 	return _topics, _memories
 
 def get_all_irrelevant_target_topics(life, target):
@@ -356,6 +359,21 @@ def get_questions_for_group(life, chosen):
 		'group': chosen['group']})
 	
 	return _topics
+
+def get_target_orders(life, chosen):
+	_topics = []
+	
+	_topics.append({'text': 'Show me everything you have!',
+		'gist': 'order_to_show_inventory'})
+	
+	return _topics
+
+def order_drop_inventory_item(entry):
+	_item = ITEMS[entry['id']]
+	
+	lfe.drop_item(LIFE[_item['parent_id']], entry['id'])
+	
+	menus.delete_active_menu()
 
 def get_questions_for_camp(life, chosen):
 	_topics = []
@@ -676,12 +694,12 @@ def process_response(life, target, dialog, chosen):
 	if chosen['gist'] == 'how_are_you':
 		if get_freshness_of_gist(LIFE[dialog['listener']], dialog['speaker'], chosen['gist'])<0.5:
 			_responses.append({'text': 'Why do you keep asking me that?', 'gist': 'irritated_neutral'})
-			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative'})
+			_responses.append({'text': 'Stop asking me that.', 'gist': 'irritated_negative', 'dislike': 1})
 		else:
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_positive', 'like': 1})
 			_responses.append({'text': 'I\'m doing fine.', 'gist': 'status_response_neutral'})
 			_responses.append({'text': 'I\'m doing fine, you?', 'gist': 'status_response_neutral_question', 'like': 1})
-			_responses.append({'text': 'Why do you care?', 'gist': 'status_response_negative'})
+			_responses.append({'text': 'Why do you care?', 'gist': 'status_response_negative', 'dislike': 1,})
 		lfe.memory(LIFE[dialog['speaker']], 'met', target=dialog['listener'])
 	elif chosen['gist'] == 'introduction_negative':
 		if 'player' in life:
@@ -767,12 +785,12 @@ def process_response(life, target, dialog, chosen):
 		if chosen['target'] == life['id']:
 			_responses.append({'text': 'That\'s me. Did you forget who I was?', 'gist': 'inquire_response_positive'})
 			_responses.append({'text': 'That\'s my name.', 'gist': 'inquire_response_neutral'})
-			_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative'})
+			_responses.append({'text': 'Who do you think you\'re talking to?', 'gist': 'inquire_response_negative', 'dislike': 1,})
 		else:
 			if chosen['target'] in life['know']:
 				_responses.append({'text': 'Yes, I know him!', 'gist': 'inquire_response_knows_positive', 'target': chosen['target']})
 				_responses.append({'text': 'Sure.', 'gist': 'inquire_response_knows_neutral', 'target': chosen['target']})
-				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Maybe.', 'gist': 'inquire_response_knows_negative', 'dislike': 1, 'flags': ['CANBRIBE']})
 			else:
 				_responses.append({'text': 'I don\'t know who that is, sorry.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
 				_responses.append({'text': 'Sorry, I don\'t know who that is.', 'gist': 'inquire_response_unknown_positive', 'target': chosen['target']})
@@ -780,8 +798,8 @@ def process_response(life, target, dialog, chosen):
 				_responses.append({'text': 'I don\'t.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'Never heard that name before.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
 				_responses.append({'text': 'I don\'t recall hearing that name.', 'gist': 'inquire_response_unknown_neutral', 'target': chosen['target']})
-				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
-				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'target': chosen['target'], 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'If I did, why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'dislike': 1, 'target': chosen['target'], 'flags': ['CANBRIBE']})
+				_responses.append({'text': 'Why would I tell you?', 'gist': 'inquire_response_unknown_negative', 'dislike': 1, 'target': chosen['target'], 'flags': ['CANBRIBE']})
 	elif chosen['gist'] == 'inquire_about_nearby_locations':
 		_responses.extend(get_known_locations(life, chosen))
 	elif chosen['gist'] == 'inquire_about_camp_founder':
@@ -861,17 +879,20 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'We don\'t have a space yet.', 'gist': 'end', 'like': 1})
 
 	elif chosen['gist'] == 'ask_about_group':
-		#TODO: Change LIKE to DISLIKE depending on views
-		if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+		if LIFE[dialog['listener']]['group']:
+			#TODO: Change LIKE to DISLIKE depending on views
+			if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
+				_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+			else:
+				_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+			
+				_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group_wrong_motive', 'group': LIFE[dialog['listener']]['group']})
 		else:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-		
-			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group_wrong_motive', 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'I don\'t know what you\'re talking about.', 'gist': 'end'})
 	
 	elif chosen['gist'] == 'ask_about_group_founder':
 		if LIFE[dialog['listener']]['group'] == chosen['group']:
@@ -966,16 +987,10 @@ def process_response(life, target, dialog, chosen):
 		elif alife.judgement.can_trust(LIFE[dialog['speaker']], chosen['who']):
 			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust', 'who': chosen['who'], 'value': _know['trust']})
 		else:
-			_responses.append({'text': 'I trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
+			_responses.append({'text': 'I never trusted them.', 'gist': 'talk_about_trust_negative', 'who': chosen['who'], 'value': _know['trust']})
 	
 	elif chosen['gist'] == 'talk_about_trust':
 		lfe.memory(LIFE[dialog['listener']], 'target trusts target',
-			target=dialog['speaker'],
-			who=chosen['who'],
-			value=chosen['who'])
-	
-	elif chosen['gist'] == 'talk_about_trust_negative':
-		lfe.memory(LIFE[dialog['listener']], 'target doesn\'t trust target',
 			target=dialog['speaker'],
 			who=chosen['who'],
 			value=chosen['who'])
@@ -1009,12 +1024,12 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'encounter_leave':
 		if 'player' in life:
 			_responses.append({'text': 'What if I don\'t want to leave?', 'gist': 'encounter_response_intimidate', 'dislike': 1, 'danger': 2})
-			_responses.append({'text': 'I\'m out of here...', 'gist': 'encounter_response_neutral'})
+			_responses.append({'text': 'I\'m out of here...', 'gist': 'encounter_response_neutral', 'like': 1})
 	
 	elif chosen['gist'] == 'encounter_response_intimidate':
 		#if 'player' in life:
 		#if alife.judgement.get_trust(life, target) <= -2
-		_observed_combat_score_of_target = alife.judgement.get_observed_ranged_combat_rating_of_target(life, target['id'])
+		_observed_combat_score_of_target = alife.judgement.get_ranged_combat_rating_of_target(life, target['id'])
 		_self_ranged_combat_ready_score = alife.judgement.get_ranged_combat_ready_score(life, consider_target_id=target['id'])
 		print life['name'],'scores target with', _observed_combat_score_of_target, 'has', _self_ranged_combat_ready_score
 		if _observed_combat_score_of_target<_self_ranged_combat_ready_score:
@@ -1070,6 +1085,32 @@ def process_response(life, target, dialog, chosen):
 
 	elif chosen['gist'] == 'okay':
 		_responses.append({'text': 'Okay.', 'gist': 'end'})
+	
+	elif chosen['gist'] == 'order_to_show_inventory':
+		#_life = LIFE[dialog['listener']]
+		
+		if alife.stats.is_intimidated_by(life, target['id']):
+			_responses.append({'text': 'Okay, okay! Here...', 'gist': 'show_inventory'})
+		else:
+			lfe.memory(life, 'failed_to_be_intimidated_by', target=target['id'], trust=-1)
+			_responses.append({'text': 'You really think I\'d let you do that?',
+			                   'gist': 'show_inventory_reject',
+			                   'danger': 1})
+
+	elif chosen['gist'] == 'show_inventory':
+		if 'player' in life:
+			_inventory = lfe.get_fancy_inventory_menu_items(target)
+			
+			_i = menus.create_menu(title='%s\'s inventory' % target['name'][0],
+			                       menu=_inventory,
+			                       padding=(1,1),
+			                       position=(1,1),
+			                       format_str='[$i] $k: $v',
+			                       on_select=order_drop_inventory_item)
+							   
+			menus.activate_menu(_i)
+		
+		#q_responses.append({'text': 'You really think I\'d let you do that?', 'gist': 'show_inventory_reject', 'danger': -1, 'dislike': 1})
 
 	#NOTE: NO DIALOG AFTER THIS POINT WILL WORK	
 	elif not chosen['gist'] in ['nothing', 'end', 'ignore_question']:
@@ -1122,6 +1163,9 @@ def process_response(life, target, dialog, chosen):
 	alife_response(life, dialog)
 
 def draw_dialog():
+	if ACTIVE_MENU['menu'] > -1:
+		return False
+	
 	if not lfe.has_dialog(LIFE[SETTINGS['controlling']]):
 		return False
 	

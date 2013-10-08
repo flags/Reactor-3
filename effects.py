@@ -42,7 +42,7 @@ def calculate_fire(fire):
 	for x in range(-1, 2):
 		_x = fire['pos'][0]+x
 		
-		if -1>_x>MAP_SIZE[0]:
+		if _x<0 or _x>=MAP_SIZE[0]:
 			continue
 		
 		for y in range(-1, 2):
@@ -51,7 +51,7 @@ def calculate_fire(fire):
 			
 			_y = fire['pos'][1]+y
 			
-			if -1>_y>MAP_SIZE[1]:
+			if _y<0 or _y>=MAP_SIZE[1]:
 				continue
 			
 			_effects = [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']
@@ -78,6 +78,9 @@ def calculate_fire(fire):
 	
 	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
 		lfe.burn(life, fire['intensity'])
+	
+	for item in items.get_items_at(fire['pos']):
+		items.burn(item, fire['intensity'])
 	
 	update_effect(fire)
 	
@@ -137,6 +140,17 @@ def create_ash(pos):
 	
 	register_effect(_effect)
 
+#def create_particle(pos, color, velocity):
+#	_effect = {'type': 'particle',
+#	           'color': color,
+#	           'pos': pos,
+#	           'velocity': velocity,
+#	           'callback': calculate_particle,
+#	           'draw_callback': draw_particle,
+#	           'unregister_callback': delete_particle}
+#	
+#	register_effect(_effect)
+
 def calculate_all_effects():
 	for effect in EFFECTS.values():
 		effect['callback'](effect)
@@ -167,8 +181,12 @@ def light_exists_at(pos):
 	
 	return False
 
-def create_light(pos, color, brightness, shake, fade=0):
+def create_light(pos, color, brightness, shake, fade=0, follow_pos=None):
 	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
+	
+	if follow_pos:
+		_light['pos'] = follow_pos
+	
 	WORLD_INFO['lights'].append(_light)
 	
 	return _light
@@ -210,16 +228,17 @@ def draw_splatter(position, render_at):
 	
 	gfx.tint_tile(render_at[0],render_at[1],_has_splatter['color'],_has_splatter['coef'])
 
-def create_gib(life, icon, size, velocity):
+def create_gib(life, icon, size, limb, velocity, color=(tcod.white, None)):
 	_gib = {'name': 'gib',
 		'prefix': 'a',
 		'type': 'magazine',
 		'icon': icon,
 		'flags': ['BLOODY'],
-		'description': '%s\'s limb.' % ' '.join(life['name']),
+		'description': '%s\'s %s.' % (' '.join(life['name']), limb),
 		'size': '%sx1' % size,
 		'material': 'flesh',
-		'thickness': size}
+		'thickness': size,
+		'color': color}
 	
 	_i = items.get_item_from_uid(items.create_item('gib', position=life['pos'][:], item=_gib))
 	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]

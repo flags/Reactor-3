@@ -1,6 +1,9 @@
 from globals import *
 
+import situations
+import zones
 import alife
+import items
 import life
 
 def suicide():
@@ -11,6 +14,10 @@ def kill(life_id):
 
 def make_hungry(life_id):
 	LIFE[life_id]['hunger'] = 500
+	
+def world_hunger():
+	for l in LIFE.values():
+		l['hunger'] = 500
 
 def make_thirsty(life_id):
 	LIFE[life_id]['thirst'] = 500
@@ -31,6 +38,18 @@ def timescale(scale):
 def warp(x, y):
 	LIFE[SETTINGS['controlling']]['pos'][0] = x
 	LIFE[SETTINGS['controlling']]['pos'][1] = y
+
+def camps():
+	alife.camps.debug_camps()
+
+def food():
+	items.create_item('corn', position=LIFE[SETTINGS['controlling']]['pos'])
+
+def drink():
+	items.create_item('soda', position=LIFE[SETTINGS['controlling']]['pos'])
+
+def drop():
+	situations.drop_cache(['soda', 'corn'])
 
 def toss():
 	life.push(LIFE[SETTINGS['controlling']], 0, 2)

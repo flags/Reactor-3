@@ -6,6 +6,7 @@ import judgement
 import chunks
 import brain
 import logic
+import items
 import maps
 
 import render_fast_los
@@ -21,22 +22,22 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	_chunks = []
-	#if SETTINGS['smp']:
-	#	_visible_chunks = [c for c in brain.get_flag(life, 'nearby_chunks') if c in WORLD_INFO['chunk_map']]
-	#	_chunks = [maps.get_chunk(c) for c in scan_surroundings(life, _chunks=_visible_chunks, judge=False, ignore_chunks=0, get_chunks=True)]
-	#	brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	#else:
-	_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0, visible_check=False)
-	#_visible_chunks = fast_scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
-	_chunks = [maps.get_chunk(c) for c in _visible_chunks]
-	brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	
-	if not _chunks:
+	if not life['speed'] or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+		brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	else:
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
-	for ai in life['know'].values():
-		ai['last_seen_time'] += 1
+	#TODO: What?
+	#if not _chunks:
+	#	_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
+	
+	for target_id in life['know']:
+		life['know'][target_id]['last_seen_time'] += 1
+	
+	for item_uid in life['know_items']:
+		life['know_items'][item_uid]['last_seen_time'] += 1
 	
 	for chunk in _chunks:
 		judgement.judge_chunk_visually(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
@@ -47,9 +48,6 @@ def look(life):
 			
 			if not can_see_target(life, ai['id']):
 				continue
-			
-			if ai['id'] in life['know']:
-				life['know'][ai['id']]['last_seen_time'] = 0
 			
 			life['seen'].append(ai['id'])
 			
@@ -66,27 +64,38 @@ def look(life):
 					brain.unflag_alife(life, ai['id'], 'search_map')
 				
 				_chunk_id = lfe.get_current_chunk_id(ai)
-				judgement.judge_chunk(life, _chunk_id)
+				judgement.judge_chunk(life, _chunk_id, seen=True)
 				
 				continue
 			
 			brain.meet_alife(life, ai)
 	
-		for item in [ITEMS[i] for i in chunk['items']]:
-			if item.has_key('parent') or item.has_key('parent_id') or item.has_key('stored_in'):
-				continue
+		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
+			_pos = item['pos']
 			
-			_can_see = can_see_position(life, item['pos'])
+			if item['uid'] in life['know_items']:
+				life['know_items'][item['uid']]['last_owned_by'] = item['owner']
+			
+			if item['owner']:
+				#TODO: This doesn't work because we are specifically checking chunks
+				if lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
+					_pos = LIFE[item['owner']]['pos']
+				else:
+					continue
+			
+			_can_see = can_see_position(life, _pos)
 			if _can_see:
 				if not item['uid'] in life['know_items']:
 					brain.remember_item(life, item)
 				elif not life['know_items'][item['uid']]['last_seen_time']:
 					continue
 	
+				if item['owner']:
+					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
+				
 				life['know_items'][item['uid']]['last_seen_time'] = 0
-				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item)
-			elif item['uid'] in life['know_items']:
-				life['know_items'][item['uid']]['last_seen_time'] += 1
+				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
+				life['know_items'][item['uid']]['lost'] = False
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
@@ -95,34 +104,16 @@ def get_vision(life):
 	#TODO: Fog? Smoke? Light?
 	#if logic.is_night():
 	#	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500:
-	#		_time = WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500)
+	#		_time = 1500-(WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500))
 	#	else:
 	#		_time = WORLD_INFO['real_time_of_day']
 	#	
-	#	return int(life['vision_max']*(_time/1500.0))
+	#	_vision = numbers.clip(int(round(life['vision_max']*(_time/1500.0))), 5, life['vision_max'])
+	#	return _vision
 	
 	return life['vision_max']
 
-def _can_see_position(pos1, pos2):
-	_line = render_los.draw_line(pos1[0],
-		pos1[1],
-		pos2[0],
-		pos2[1])
-		
-	if not _line:
-		_line = []
-	
-	for pos in _line:
-		if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
-			return False
-	
-	return _line
-
-def can_see_position(life, pos, distance=True, block_check=False):
-	"""Returns `true` if the life can see a certain position."""
-	if tuple(life['pos'][:2]) == tuple(pos[:2]):
-		return [pos]
-	
+def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=True):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:
@@ -130,25 +121,40 @@ def can_see_position(life, pos, distance=True, block_check=False):
 	
 	_ret_line = []
 	for _pos in _check:
-		_line = render_los.draw_line(life['pos'][0]+_pos[0],
-			life['pos'][1]+_pos[1],
-			pos[0],
-			pos[1])
-			
+		_line = render_los.draw_line(pos1[0],
+		                             pos1[1],
+		                             pos2[0],
+		                             pos2[1])
+										 
 		if not _line:
 			_line = []
 		
 		if _pos == (0, 0):
 			_ret_line = _line
 		
-		if len(_line) >= get_vision(life) and distance:
-			return False	
+		if len(_line) > max_length and distance:
+			_ret_line = []
+			continue
 		
 		for pos in _line:
-			if WORLD_INFO['map'][pos[0]][pos[1]][life['pos'][2]+1]:
+			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
+			try:
+				if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+					_ret_line = []
+					continue
+			except:
+				print pos, pos1
+				raise Exception(pos1)
 	
 	return _ret_line
+
+def can_see_position(life, pos, distance=True, block_check=False):
+	"""Returns `true` if the life can see a certain position."""
+	if tuple(life['pos'][:2]) == tuple(pos[:2]):
+		return [pos]
+	
+	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, distance=distance)
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:
@@ -300,55 +306,62 @@ def handle_lost_los(life):
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
-def find_known_items(life, matches={}, visible=True):
+def find_known_items(life, matches={}, only_visible=True):
 	_match = []
 	
-	for item in [life['know_items'][item] for item in life['know_items']]:
-		if not item['item']['uid'] in ITEMS:
+	for item in life['know_items'].values():
+		#TODO: Offload?
+		if not item['item'] in ITEMS:
 			continue
 		
-		if visible and not can_see_position(life, item['item']['pos']):
+		_item = ITEMS[item['item']]
+		
+		if only_visible and not can_see_position(life, _item['pos']):
 			continue
 		
-		if 'parent' in item['item'] or 'parent_id' in item['item']:
+		if items.is_item_owned(item['item']):
 			continue
 		
-		if 'demand_drop' in item['flags']:
+		if 'demand_drop' in _item['flags']:
 			continue
 		
-		if item['item']['lock']:
+		if _item['lock']:
 			continue
 		
-		_break = False
-		for key in matches:
-			if not item['item'].has_key(key) or not item['item'][key] == matches[key]:
-				_break = True
-				break
-		
-		if _break:
+		if not logic.matches(_item, matches):
 			continue
 		
-		_match.append(item)
+		_match.append(item['item'])
 	
 	return _match
 
 def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], chunk_map=WORLD_INFO['chunk_map']):
+	_center_chunk_pos = maps.get_chunk(center_chunk_key)['pos']
+	#_center_chunk_pos[0] = ((_center_chunk_pos[0]/chunk_size)*chunk_size)+(chunk_size/2)
+	#_center_chunk_pos[1] = ((_center_chunk_pos[1]/chunk_size)*chunk_size)+(chunk_size/2)
 	_chunks = []
 	
-	for x_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
-		for y_mod in range((-vision/chunk_size)+1, (vision/chunk_size)+1):
-			_pos_mod = [x_mod*chunk_size, y_mod*chunk_size]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in center_chunk_key.split(',')])
-			
-			if not ignore_chunks==0 and _chunk_key in ignore_chunks:
-				continue
-			elif isinstance(ignore_chunks, list):
-				ignore_chunks.append(_chunk_key)
-			
-			if chunk_map and not _chunk_key in chunk_map:
-				continue
-			
-			_chunks.append(_chunk_key)
+	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
+	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
+	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*2)/chunk_size)):
+		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod/chunk_size)*chunk_size
+		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
+		#print x_mod, y_mod, _center_chunk_pos
+		
+		_chunk_key = '%s,%s' % (x_mod, y_mod)
+		
+		if _chunk_key in _chunks:
+			continue
+		
+		if not ignore_chunks==0 and _chunk_key in ignore_chunks:
+			continue
+		elif isinstance(ignore_chunks, list):
+			ignore_chunks.append(_chunk_key)
+		
+		if chunk_map and not _chunk_key in chunk_map:
+			continue
+		
+		_chunks.append(_chunk_key)
 	
 	return _chunks
 
@@ -363,11 +376,12 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	if _chunks:
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	else:
-		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life)/2, ignore_chunks=ignore_chunks)
+		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	
 	for chunk_key in _chunks:
 		if visible_check and not chunks.can_see_chunk(life, chunk_key):
+			#print chunk_key, lfe.get_current_chunk_id(life)
 			continue
 		
 		if not chunk_key in WORLD_INFO['chunk_map']:
@@ -376,10 +390,6 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		if get_chunks:
 			_current_chunk = maps.get_chunk(chunk_key)
 			_visible_chunks.append(chunk_key)
-			
-			_current_chunk_pos = (_current_chunk['pos'][0]/WORLD_INFO['chunk_size'], _current_chunk['pos'][1]/WORLD_INFO['chunk_size'])
-			_center_chunk_pos = (_center_chunk['pos'][0]/WORLD_INFO['chunk_size'], _center_chunk['pos'][1]/WORLD_INFO['chunk_size'])
-			_direction = (_current_chunk_pos[0]-_center_chunk_pos[0], _current_chunk_pos[1]-_center_chunk_pos[1])
 		
 		if judge:
 			if initial:

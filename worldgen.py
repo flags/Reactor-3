@@ -29,7 +29,7 @@ BASE_ITEMS = ['sneakers',
               'radio',
               'frag grenade',
               'molotov']
-RECRUIT_ITEMS = ['glock', '9x19mm magazine']
+RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
@@ -74,12 +74,16 @@ def simulate_life(amount):
 		
 		amount -= 1
 
-def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, save=True, thread=True):
+def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, combat_test=False, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
 	WORLD_INFO['life_density'] = life_density
 	WORLD_INFO['wildlife_density'] = wildlife_density
 	WORLD_INFO['seed'] = time.time()
+	WORLD_INFO['combat_test'] = combat_test
+	
+	if combat_test:
+		WORLD_INFO['time_scale'] = 0
 	
 	random.seed(WORLD_INFO['seed'])
 	
@@ -95,13 +99,14 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
-		WORLD_INFO['wildlife_spawn_interval'] = [0, (550, 700)]
+		WORLD_INFO['wildlife_spawn_interval'] = [3500, (550, 700)]
 	elif WORLD_INFO['wildlife_density'] == 'Heavy':
-		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
+		WORLD_INFO['wildlife_spawn_interval'] = [3500, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
-	
+
 	randomize_item_spawns()
+	
 	alife.camps.create_all_camps()
 	
 	if thread:
@@ -117,7 +122,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		simulate_life(simulate_ticks)
 	
-	create_player(source_map)
+	lfe.focus_on(create_player(source_map))
 	WORLD_INFO['id'] = 0
 	
 	if save:
@@ -145,7 +150,7 @@ def load_world(world):
 	for life in LIFE.values():
 		if 'player' in life:
 			SETTINGS['controlling'] = life['id']
-			SETTINGS['following'] = life['id']
+			lfe.focus_on(life)
 			break
 	
 	lfe.load_all_life()
@@ -159,6 +164,10 @@ def load_world(world):
 def save_world():
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+
+	logging.debug('Saving items...')
+	items.save_all_items()	
+	
 	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
@@ -166,9 +175,6 @@ def save_world():
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
 		e.write(_life)
-	
-	logging.debug('Saving items...')
-	items.save_all_items()
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
 		e.write(json.dumps(ITEMS))
@@ -179,20 +185,21 @@ def save_world():
 
 def randomize_item_spawns():
 	for building in WORLD_INFO['reference_map']['buildings']:
-		_chunk_key = random.choice(building)
+		_chunk_key = random.choice(alife.references.get_reference(building))
 		_chunk = maps.get_chunk(_chunk_key)
 		
 		if not _chunk['ground']:
 			continue
 		
-		_rand_pos = random.choice(_chunk['ground'])
-		items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
+		for i in range(0, 1+random.randint(0, 3)):
+			_rand_pos = random.choice(_chunk['ground'])
+			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def get_spawn_point():
 	if WORLD_INFO['reference_map']['roads']:
 		_entry_road_keys = []
 		for road in WORLD_INFO['reference_map']['roads']:
-			for chunk_key in road:
+			for chunk_key in alife.references.get_reference(road):
 				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
 				
 				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:
@@ -211,7 +218,7 @@ def get_spawn_point():
 		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
 	elif _start_seed == 2:
 		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
-	elif _start_seed == 3:
+	else:
 		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
 	
 	return _spawn
@@ -242,15 +249,17 @@ def generate_life(amount=1):
 	_spawn = get_spawn_point()
 	
 	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	alife['thirst'] = random.randint(alife['thirst_max']/4, alife['thirst_max']/3)
 	
 	if len(LIFE) == 1:
+		logging.warning('No leaders. Creating one manually...')
 		alife['stats']['is_leader'] = True
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(alife, items.create_item(item))
 	
-	for item in RECRUIT_ITEMS:
-		life.add_item_to_inventory(alife, items.create_item(item))
+	#for item in RECRUIT_ITEMS:
+	#	life.add_item_to_inventory(alife, items.create_item(item))
 
 def create_player(source_map):
 	PLAYER = life.create_life('human',
@@ -277,6 +286,8 @@ def create_player(source_map):
 	
 	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
 	items.move(_i, 180, 3)
+	
+	return PLAYER
 	
 	#for x in range(-10, 11):
 	#	for y in range(-10, 11):
