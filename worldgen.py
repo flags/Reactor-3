@@ -164,6 +164,10 @@ def load_world(world):
 def save_world():
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+
+	logging.debug('Saving items...')
+	items.save_all_items()	
+	
 	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
@@ -171,9 +175,6 @@ def save_world():
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
 		e.write(_life)
-	
-	logging.debug('Saving items...')
-	items.save_all_items()
 	
 	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
 		e.write(json.dumps(ITEMS))
