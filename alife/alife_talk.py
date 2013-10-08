@@ -33,7 +33,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#if not alife_seen:
 	#	return False
 	
-	if brain.retrieve_from_memory(life, 'tension_spike') >= 20:
+	if brain.retrieve_from_memory(life, 'tension_spike') >= 1:
 		lfe.say(life, '@n panics!', action=True)
 	
 	for ai in alife_seen:

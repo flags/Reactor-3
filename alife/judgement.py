@@ -133,10 +133,12 @@ def get_tension_with(life, life_id):
 		return 0
 	
 	_target = brain.knows_alife_by_id(life, life_id)
-	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 10)
-	_trust = get_trust(life, life_id)
+	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
+	_score = abs(numbers.clip(get_trust(life, life_id), -10, 0))
 	
-	return abs((10-_distance)*_trust)
+	_score += get_ranged_combat_rating_of_target(life, life_id)
+	
+	return abs(((15-_distance)/15.0)*_score)
 
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
