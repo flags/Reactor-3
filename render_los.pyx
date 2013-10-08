@@ -101,15 +101,17 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 	POSITION[0] = position[0]
 	POSITION[1] = position[1]
 	
-	HIDDEN_CHUNKS = []
+	#SKIP_CHUNKS = []
 	VISIBLE_CHUNKS = []
 	if life and alife.brain.get_flag(life, 'visible_chunks'):
 		VISIBLE_CHUNKS = alife.brain.get_flag(life, 'visible_chunks')
-		for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
-			if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
-				HIDDEN_CHUNKS.append(chunk_key)
+		
+		#for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
+		#	if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
+		#		SKIP_CHUNKS.append(chunk_key)
 	
-	los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
+	if not POSITION[0]-X_CAMERA_POS<0 and not POSITION[0]-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POSITION[1]-Y_CAMERA_POS<0 and not POSITION[1]-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
+		los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
 	
 	for _pos in draw_circle(POSITION[0], POSITION[1], size):
 		_dark = 0
@@ -117,8 +119,8 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 		_chunk_key = '%s,%s' % ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
 			(_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 			
-		if _chunk_key in HIDDEN_CHUNKS:
-			continue
+		#if _chunk_key in HIDDEN_CHUNKS:
+		#	continue
 		
 		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS

@@ -1,9 +1,9 @@
 import libtcodpy as tcod
 import os
 
-WINDOW_TITLE = 'Reactor 3 - Milestone 5'
-
-WINDOW_SIZE = (100,60)
+VERSION = '0.6'
+WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
+WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]
 MAP_WINDOW_SIZE = (WINDOW_SIZE[0]/2, WINDOW_SIZE[1]-10)
 ITEM_WINDOW_SIZE = (40,1)
@@ -51,7 +51,8 @@ WORLD_INFO = {'map': [],
 	'camps': {},
 	'groups': {},
 	'jobs': {},
-	'reference_map': {'roads': [], 'buildings': []},
+	'references': {},
+     'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5,
 	'lights': [],
@@ -62,6 +63,8 @@ STATE_CHANGE = 2
 STATE_UNCHANGED = 3
 RETURN_SKIP = 4
 
+STATE_ICONS = {}
+
 #States
 TIER_COMBAT = 1
 TIER_SURVIVAL = 2
@@ -69,6 +72,7 @@ TIER_EXPLORE = 3
 TIER_IDLE = 4
 TIER_WORK = 2.5
 TIER_PASSIVE = 333
+TIER_SUBMIT = 0.1
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
@@ -79,8 +83,7 @@ FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
 TPS = 30
-FONT = 'terminal12x12_gs_ro.png'
-FONT_LAYOUT = tcod.FONT_LAYOUT_ASCII_INCOL
+FONT = 'terminal8x8_gs_as_incol.png'
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]
 LIGHT_BUFFER = [[]]
@@ -131,6 +134,7 @@ TEXT_MAP = {}
 #Life constants
 LIFE_MAX_SPEED = 4
 LIFE_BLEED_RATE = .4 #Higher is faster
+LIFE_THINK_RATE = 6
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
 ENCOUNTER_TIME_LIMIT = 150
@@ -145,6 +149,8 @@ POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
 #Non-constants
 SETTINGS = {'running': True,
 	'paused': False,
+	'camera_track': [0, 0, 0],
+	'last_camera_pos': [-1, -1, -1],
 	'draw lights': True,
 	'diffuse light': False,
 	'debug host': '',
@@ -153,6 +159,10 @@ SETTINGS = {'running': True,
 	'draw z-levels above': True,
 	'draw z-levels below': False,
 	'draw visible chunks': False,
+	'draw life info': True,
+	'draw message box': True,
+	'draw effects': True,
+	'print dijkstra maps': False,
 	'progress bar max value': 25,
 	'action queue size': 4,
 	'los': 40,
@@ -162,6 +172,7 @@ SETTINGS = {'running': True,
 	'fire burn rate': 0.04,
 	'smp': None,
 	'map_slices': []}
+FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
 TILES = {}
@@ -178,11 +189,14 @@ EFFECT_MAP = []
 SPLATTERS = []
 SELECTED_TARGET = []
 EVENTS = []
+DIJKSTRA_CACHE = {}
+ZONE_CACHE = {}
 
 #Consoles
 MAP_WINDOW = None
 ITEM_WINDOW = None
 CONSOLE_WINDOW = None
+MESSAGE_WINDOW = None
 
 #Menus
 MENUS = []

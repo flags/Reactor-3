@@ -14,7 +14,7 @@ import logging
 import time
 import sys
 
-def astar(life, start, end, zones):
+def astar(life, start, end, zones, dijkstra=False):
 	_stime = time.time()
 	
 	_path = {'start': tuple(start),
@@ -66,7 +66,11 @@ def astar(life, start, end, zones):
 	
 	start = (start[0], start[1])
 	
-	_path['hmap'][start[1], start[0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
+	if dijkstra:
+		_path['hmap'][start[1], start[0]] = 0
+	else:
+		_path['hmap'][start[1], start[0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
+	
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]
 
 	#init time 0.00857901573181
@@ -75,9 +79,12 @@ def astar(life, start, end, zones):
 	#print 'init time',time.time()-_stime
 	
 	#print 'init:',time.time()-_stime
-	return walk_path({}, _path)
+	return walk_path({}, _path, dijkstra=dijkstra)
 
-def walk_path(life, path):
+def dijkstra_path(life, start, end, zones):
+	return astar(life, start, end, zones, dijkstra=True)
+
+def walk_path(life, path, dijkstra=False):
 	if path['map'][path['end'][1], path['end'][0]] == -2:
 		logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
 		#print path['map'][path['end'][1]][path['end'][0]]
@@ -113,9 +120,11 @@ def walk_path(life, path):
 				xDistance = abs(adj[0]-path['end'][0])
 				yDistance = abs(adj[1]-path['end'][1])
 				if xDistance > yDistance:
-					_hmap[adj[1],adj[0]] = 14*yDistance + 10*(xDistance-yDistance)
+					if not dijkstra:
+						_hmap[adj[1],adj[0]] = 14*yDistance + 10*(xDistance-yDistance)
 				else:
-					_hmap[adj[1],adj[0]] = 14*xDistance + 10*(yDistance-xDistance)
+					if not dijkstra:
+						_hmap[adj[1],adj[0]] = 14*xDistance + 10*(yDistance-xDistance)
 
 				_fmap[adj[1],adj[0]] = _gmap[adj[1],adj[0]]+_hmap[adj[1],adj[0]]
 				_pmap[adj[0]][adj[1]] = node
@@ -152,28 +161,31 @@ def getadj(path, pos, checkclist=True):
 	return adj
 
 def find_path(path):
-		if path['map'][path['end'][1], path['end'][0]] == -2:
-			return [[path['start'][0], path['start'][1],0]]
+	if path['map'][path['end'][1], path['end'][0]] == -2:
+		return [[path['start'][0], path['start'][1],0]]
 
-		node = path['pmap'][path['end'][0]][path['end'][1]]
-		_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
+	node = path['pmap'][path['end'][0]][path['end'][1]]
+	_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
 
-		_broken = False
-		while not tuple(node) == tuple(path['start']):
-			if not node:
-				_broken = True
-				break
-			else:
-				_path.insert(0,(node[0], node[1],int(path['map'][node[1], node[0]])))
+	_broken = False
+	while not tuple(node) == tuple(path['start']):
+		if not node:
+			_broken = True
+			break
+		else:
+			_path.insert(0,(node[0], node[1],int(path['map'][node[1], node[0]])))
 
-			path['tmap'][node[0]][node[1]] = 1
-			node = path['pmap'][node[0]][node[1]]
+		path['tmap'][node[0]][node[1]] = 1
+		node = path['pmap'][node[0]][node[1]]
 
-		return _path
+	return _path
 
 def short_path(life, start, end):
 	_s = time.time()
 	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
+	
+	if numbers.distance(start, end)>30:
+		return False
 	
 	if not _line:
 		return [start]

@@ -3,7 +3,7 @@ from globals import WORLD_INFO, ITEMS, LIFE
 import alife
 
 def is_life(entity):
-	_life = (not 'material' in entity)
+	_life = (not 'prefix' in entity)
 	
 	if _life:
 		_id_key = 'id'
@@ -35,7 +35,7 @@ def remove_by_owner(entity):
 
 	_remove = []
 	for timer in WORLD_INFO['timers']:
-		if _life:
+		if timer['owner'] in LIFE:
 			if LIFE[timer['owner']] == entity:
 				_remove.append(timer)
 		else:

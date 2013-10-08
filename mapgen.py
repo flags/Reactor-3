@@ -17,13 +17,14 @@ import cProfile
 import logging
 import random
 import numpy
+import time
 import copy
 import sys
 import os
 
 TOWN_DISTANCE = 25
 TOWN_SIZE = 160
-FOREST_DISTANCE = 25
+FOREST_DISTANCE = 10
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
@@ -95,7 +96,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -106,7 +107,8 @@ def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1,
 	
 	#smp.init()
 	
-	map_gen = {'size': size,
+	map_gen = {'name': '%s.dat' % time.time(),
+		'size': size,
 		'chunk_size': detail,
 		'towns': towns,
 		'factories': factories,
@@ -118,6 +120,8 @@ def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1,
 		'flags': {},
 		'map': maps.create_map(size=size),
 		'settings': {'back yards': False, 'town size': 15}}
+	
+	WORLD_INFO['chunk_map'] = map_gen['chunk_map']
 	
 	#logging.debug('Creating height map...')
 	#generate_height_map(map_gen)
@@ -166,7 +170,11 @@ def generate_map(size=(250, 250, 10), detail=5, towns=4, factories=4, forests=1,
 		maps.smooth_chunk_map()
 		maps.generate_reference_maps()
 	
-	maps.save_map('test2.dat')
+	items.save_all_items()
+	
+	maps.save_map(map_gen['name'])
+	
+	items.reload_all_items()
 	
 	return map_gen
 
@@ -236,8 +244,8 @@ def generate_outlines(map_gen):
 	decorate_world(map_gen)
 	
 	logging.debug('Placing forests...')
-	#while len(map_gen['refs']['forests'])<map_gen['forests']:
-	place_forest(map_gen)
+	while len(map_gen['refs']['forests'])<map_gen['forests']:
+		map_gen['refs']['forests'].append(place_forest(map_gen))
 
 def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=True):
 	_start_edge = random.randint(0, 3)
@@ -269,7 +277,7 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 			_next_dir = (1, 0)
 	
 	while 1:
-		for i in range(40, 40+random.randint(0, 20)):
+		for i in range(40, 40+random.randint(1, 20)):
 			_pos[0] += _next_dir[0]
 			_pos[1] += _next_dir[1]
 			
@@ -558,6 +566,11 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 	_keys = []
 	_neighbors = 0
 	
+	if 'size' in map_gen:
+		_size = map_gen['size']
+	else:
+		_size = MAP_SIZE
+	
 	if diagonal:
 		_directions.extend([(-1, -1), (1, 1), (-1, 1), (1, 1)])
 	
@@ -565,7 +578,7 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 		_next_pos = [pos[0]+(_dir[0]*map_gen['chunk_size']), pos[1]+(_dir[1]*map_gen['chunk_size'])]
 		_next_key = '%s,%s' % (_next_pos[0], _next_pos[1])
 		
-		if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]:
+		if _next_pos[0]<0 or _next_pos[0]>=_size[0] or _next_pos[1]<0 or _next_pos[1]>=_size[1]:
 			continue
 		
 		if chunk_type == 'any' or map_gen['chunk_map'][_next_key]['type'] == chunk_type:
@@ -1275,4 +1288,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(200, 200, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

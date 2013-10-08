@@ -25,7 +25,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		
 		print life['name'],'lost'
 	
-	if not judgement.is_safe(life):
+	if not lfe.execute_raw(life, 'state', 'discover'):
 		brain.store_in_memory(life, 'discovery_lock', False)
 		return False
 	
