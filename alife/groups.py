@@ -196,13 +196,31 @@ def announce(life, group_id, gist, message, consider_motive=False, filter_if=[],
 	
 	if consider_motive:
 		if _group['claimed_motive'] == 'wealth':
-			_announce_to = LIFE.keys()
-			_announce_to.remove(life['id'])
+			_announce_to = []
+			
+			for life_id in LIFE.keys():
+				if life_id == life['id']:
+					continue
+				
+				if stats.is_same_species(life, life_id):
+					_announce_to.append(life_id)
 		elif _group['claimed_motive'] == 'crime':
 			_announce_to = judgement.get_trusted(life, visible=False)
+
+			for life_id in _announce_to[:]:
+				if not stats.is_same_species(life, life_id):
+					_announce_to.remove(life_id)
+			
 		elif _group['claimed_motive'] == 'survival':
-			_announce_to = LIFE.keys()
-			_announce_to.remove(life['id'])
+			_announce_to = []
+			
+			for life_id in LIFE.keys():
+				if life_id == life['id']:
+					continue
+				
+				if stats.is_same_species(life, life_id):
+					_announce_to.append(life_id)
+			
 	else:
 		_announce_to = _group['members'][:]
 		_announce_to.remove(life['id'])
