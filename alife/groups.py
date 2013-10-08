@@ -46,8 +46,11 @@ def create_group(life, add_creator=True):
 	
 	return str(WORLD_INFO['groupid']-1)
 
+def group_exists(group_id):
+	return (group_id in WORLD_INFO['groups'])
+
 def get_group(group_id):
-	if not group_id in WORLD_INFO['groups']:
+	if not group_exists(group_id):
 		raise Exception('Group does not exist: %s' % group_id)
 	
 	return WORLD_INFO['groups'][group_id]

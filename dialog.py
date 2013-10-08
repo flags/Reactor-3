@@ -879,17 +879,20 @@ def process_response(life, target, dialog, chosen):
 			_responses.append({'text': 'We don\'t have a space yet.', 'gist': 'end', 'like': 1})
 
 	elif chosen['gist'] == 'ask_about_group':
-		#TODO: Change LIKE to DISLIKE depending on views
-		if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+		if LIFE[dialog['listener']]['group']:
+			#TODO: Change LIKE to DISLIKE depending on views
+			if LIFE[dialog['speaker']]['stats']['firearms'] >= 7:
+				_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+			else:
+				_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+				_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
+			
+				_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group_wrong_motive', 'group': LIFE[dialog['listener']]['group']})
 		else:
-			_responses.append({'text': 'We want to make an impact on the Zone.', 'gist': 'decline_invite_to_group_wrong_motive', 'dislike': 1, 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re just trying to survive peacefully.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-			_responses.append({'text': 'We\'re looking to make some money.', 'gist': 'invite_to_group', 'group': LIFE[dialog['listener']]['group']})
-		
-			_responses.append({'text': 'No thanks.', 'gist': 'decline_invite_to_group_wrong_motive', 'group': LIFE[dialog['listener']]['group']})
+			_responses.append({'text': 'I don\'t know what you\'re talking about.', 'gist': 'end'})
 	
 	elif chosen['gist'] == 'ask_about_group_founder':
 		if LIFE[dialog['listener']]['group'] == chosen['group']:
