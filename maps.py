@@ -74,9 +74,13 @@ def save_map(map_name, base_dir=DATA_DIR):
 	
 	WORLD_INFO['seed_state'] = random.getstate()
 
-	for key in WORLD_INFO:
-		print key
-		json.dumps(WORLD_INFO[key])
+	#for key in WORLD_INFO:
+	#	print key
+	#	json.dumps(WORLD_INFO[key])
+	for item in WORLD_INFO['items']:
+		print item
+		print WORLD_INFO['items'][item]
+		json.dumps(WORLD_INFO['items'][item])
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:

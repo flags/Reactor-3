@@ -29,9 +29,9 @@ def draw_intro():
 	_sub_mod = 0
 	_sub_time = 0
 	_shadow = 50
-	_burn = 1
+	_burn = 8.0
 	
-	while time.time()-_stime<=7:
+	while time.time()-_stime<=5:
 		_text = INTRO
 		
 		if time.time()-_stime<=1:
@@ -46,9 +46,9 @@ def draw_intro():
 				#_sub_time += .042
 				_title_time += .044
 			
-			if 6>time.time()-_stime>=2.0:
+			if 4.0>time.time()-_stime:
 				_burn *= 1.035
-			elif time.time()-_stime>=6:
+			elif time.time()-_stime>=4.0:
 				_burn *= .88
 			
 			_text = INTRO
@@ -63,13 +63,13 @@ def draw_intro():
 			if _sub_time:
 				_delta = numbers.clip((time.time()-_sub_time)*6.0, 0, len(_sub_line)*2)
 				_upper = numbers.clip(255-(abs(_i-_delta))*_shadow, 0, 255)
-				_sub_mod = int(round(_upper*numbers.clip((time.time()-_sub_time)*2, 0, 1)))
+				#_sub_mod = int(round(_upper*numbers.clip((time.time()-_sub_time)*2, 0, 1)))
 			
-				if _sub_mod < 1 and _i-_delta<0:
-					_sub_mod = numbers.clip(_sub_mod, 1, 255)
-					_r = numbers.clip(numbers.clip(int(round(_sub_mod*_burn)), 0, 255)-random.randint(0, 75), 0, 255)
-				else:
-					_r = _sub_mod
+				#if _sub_mod < 1 and _i-_delta<0:
+				#_sub_mod = numbers.clip(_sub_mod, 1, 255)
+				_r = numbers.clip(numbers.clip(int(round(_burn)), 0, 255)-random.randint(0, 75), 0, 255)
+				#else:
+				#	_r = _sub_mod
 			else:
 				_r = _sub_mod
 			

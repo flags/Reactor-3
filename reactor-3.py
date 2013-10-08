@@ -125,11 +125,16 @@ def main():
 	life.draw_life()
 	
 	if LIFE[SETTINGS['controlling']]['dead']:
-		gfx.fade_to_white(FADE_TO_WHITE[0])
-		_col = 255-int(round(FADE_TO_WHITE[0]))*2
+		#TODO: Awful hack
+		if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
+			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
-		if _col<0:
-			_col = 0
+		#gfx.fade_to_white(FADE_TO_WHITE[0])
+		#_col = 255-int(round(FADE_TO_WHITE[0]))*2
+		
+		#if _col<0:
+		#	_col = 0
+		_col = 0
 		
 		_string = 'You die.'
 		
@@ -140,7 +145,12 @@ def main():
 			fore_color=tcod.Color(255,_col,_col),
 			back_color=tcod.Color(255-_col,255-_col,255-_col),
 			flicker=0)
-		FADE_TO_WHITE[0] += 0.9
+		#FADE_TO_WHITE[0] += 0.9
+		
+		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
+			worldgen.save_world()
+			SETTINGS['running'] = 1
+			return False
 	
 	if SETTINGS['draw life info']:
 		life.draw_life_info()
@@ -166,15 +176,27 @@ def main():
 		print tcod.sys_get_fps()
 
 def tick():
-	while SETTINGS['running']==2:
-		try:
-			main()
-		except Exception, e:
-			traceback.print_exc(file=sys.stdout)
-			SETTINGS['running'] = False
-			
-			if 'debug' in WORLD_INFO:
-				WORLD_INFO['debug'].quit()
+	while SETTINGS['running']:
+		if SETTINGS['running']==2:
+			try:
+				main()
+			except Exception, e:
+				traceback.print_exc(file=sys.stdout)
+				SETTINGS['running'] = False
+				
+				if 'debug' in WORLD_INFO:
+					WORLD_INFO['debug'].quit()
+		
+		elif SETTINGS['running'] == -1:
+			mainmenu.draw_intro()
+		
+		elif SETTINGS['running'] == 1:
+			if not MENUS:
+				mainmenu.switch_to_main_menu()
+		
+			get_input()
+			handle_input()
+			mainmenu.draw_main_menu()
 
 if __name__ == '__main__':
 	#TODO: Replace with "module_sanity_check"
@@ -220,7 +242,7 @@ if __name__ == '__main__':
 	
 	items.initiate_all_items()
 	
-	SETTINGS['running'] = 2	
+	SETTINGS['running'] = -1
 	
 	if '--menu' in sys.argv:
 		SETTINGS['running'] = 1
@@ -229,30 +251,8 @@ if __name__ == '__main__':
 		for world in profiles.get_worlds():
 			worldgen.load_world(world)
 			break
-
-	if not 'start_age' in WORLD_INFO:
-		SETTINGS['running'] = 1
 	
-	while SETTINGS['running'] in [-1, 1]:
-		if SETTINGS['running'] == -1:
-			mainmenu.draw_intro()
-		
-		if not MENUS:
-			mainmenu.switch_to_main_menu()
-		
-		get_input()
-		handle_input()
-		mainmenu.draw_main_menu()
-	
-	gfx.refresh_window()
-	
-	if not 'start_age' in WORLD_INFO:
-		worldgen.generate_world(WORLD_INFO['map'],
-			life_density='Heavy',
-			wildlife_density='Sparse',
-			simulate_ticks=100,
-			save=True,
-			thread=False)
+	#gfx.refresh_window()
 	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()

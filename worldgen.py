@@ -99,9 +99,9 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
-		WORLD_INFO['wildlife_spawn_interval'] = [0, (550, 700)]
+		WORLD_INFO['wildlife_spawn_interval'] = [3500, (550, 700)]
 	elif WORLD_INFO['wildlife_density'] == 'Heavy':
-		WORLD_INFO['wildlife_spawn_interval'] = [0, (250, 445)]
+		WORLD_INFO['wildlife_spawn_interval'] = [3500, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
