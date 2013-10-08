@@ -25,7 +25,9 @@ FLOOD_POINTS = []
 def draw_intro():
 	_stime = time.time()
 	_title_time = time.time()
+	_warning_time = None
 	_sub_line = 'Reactor 3'
+	_warning_message = 'ver. '+VERSION
 	_sub_mod = 0
 	_sub_time = 0
 	_shadow = 50
@@ -57,6 +59,15 @@ def draw_intro():
 		
 		console_set_default_foreground(0, Color(_mod, _mod, _mod))
 		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, (WINDOW_SIZE[1]/2)-2, _text)
+		
+		if time.time()-_stime>=1:
+			if not _warning_time:
+				_warning_time = time.time()
+			
+			_mod = int(round(255*numbers.clip(time.time()-_warning_time, 0, 1)))
+		
+			console_set_default_foreground(0, Color(_mod/2, _mod/2, _mod/2))
+			console_print(0, 0, WINDOW_SIZE[1]-1, _warning_message)
 		
 		_i = 0
 		for c in _sub_line:

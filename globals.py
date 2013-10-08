@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.5.5-git'
+VERSION = '0.6-git'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]

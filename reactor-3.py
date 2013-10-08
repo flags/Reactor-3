@@ -108,6 +108,7 @@ def main():
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
 		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)
+		
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 SETTINGS['camera_track'],
 		                                 _sight_distance,
@@ -124,7 +125,7 @@ def main():
 	bullets.draw_bullets()
 	life.draw_life()
 	
-	if LIFE[SETTINGS['controlling']]['dead']:
+	if LIFE[SETTINGS['controlling']]['dead'] and not EVENTS:
 		#TODO: Awful hack
 		if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
 			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
@@ -165,38 +166,32 @@ def main():
 	
 	gfx.draw_status_line()
 	gfx.draw_console()
+	
+	#TODO: Experimental map rendering, disabled for now
 	if SETTINGS['map_slices']:
 		maps.fast_draw_map()
 	else:
 		gfx.start_of_frame(draw_char_buffer=True)
+		
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 
-def tick():
+def loop():
 	while SETTINGS['running']:
-		if SETTINGS['running']==2:
-			try:
-				main()
-			except Exception, e:
-				traceback.print_exc(file=sys.stdout)
-				SETTINGS['running'] = False
-				
-				if 'debug' in WORLD_INFO:
-					WORLD_INFO['debug'].quit()
-		
-		elif SETTINGS['running'] == -1:
-			mainmenu.draw_intro()
-		
-		elif SETTINGS['running'] == 1:
+		if SETTINGS['running'] == 1:
 			if not MENUS:
 				mainmenu.switch_to_main_menu()
 		
 			get_input()
 			handle_input()
 			mainmenu.draw_main_menu()
+		elif SETTINGS['running'] == 2:
+			main()
+		elif SETTINGS['running'] == 3:
+			mainmenu.draw_intro()	
 
 if __name__ == '__main__':
 	#TODO: Replace with "module_sanity_check"
@@ -242,7 +237,7 @@ if __name__ == '__main__':
 	
 	items.initiate_all_items()
 	
-	SETTINGS['running'] = -1
+	SETTINGS['running'] = 3
 	
 	if '--menu' in sys.argv:
 		SETTINGS['running'] = 1
@@ -252,8 +247,6 @@ if __name__ == '__main__':
 			worldgen.load_world(world)
 			break
 	
-	#gfx.refresh_window()
-	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()
 		_debug_host.start()
@@ -261,15 +254,17 @@ if __name__ == '__main__':
 	
 	if '--profile' in sys.argv:
 		logging.info('Profiling. Exit when completed.')
-		cProfile.run('tick()','profile.dat')
-	else:
-		tick()
+		cProfile.run('look()','profile.dat')
+		sys.exit()
+	
+	try:
+		loop()
+	except Exception, e:
+		traceback.print_exc(file=sys.stdout)
+		SETTINGS['running'] = False
+		
+		if 'debug' in WORLD_INFO:
+			WORLD_INFO['debug'].quit()
 	
 	if 'debug' in WORLD_INFO:
 		WORLD_INFO['debug'].quit()
-	
-	#effects.create_light((14, 72, 2), (255, 0, 255), 2, 0.1)
-	#effects.create_light((12, 76, 2), (255, 0, 255), 7, 0.1)
-	#effects.create_light((52, 61, 2), (255, 0, 255), 1, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
-	#effects.create_light((73, 76, 2), (255, 0, 255), 5, 0.1)
