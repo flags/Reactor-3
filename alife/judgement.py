@@ -125,6 +125,19 @@ def can_trust(life, life_id, low=0):
 	
 	return False
 
+def get_tension(life):
+	return brain.retrieve_from_memory(life, 'tension')
+
+def get_tension_with(life, life_id):
+	if can_trust(life, life_id):
+		return 0
+	
+	_target = brain.knows_alife_by_id(life, life_id)
+	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 10)
+	_trust = get_trust(life, life_id)
+	
+	return abs((10-_distance)*_trust)
+
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
 	
@@ -182,8 +195,11 @@ def get_untrusted(life, visible=True):
 def judge_life(life):
 	_combat_targets = []
 	_potential_combat_targets = []
+	_tension = 0
 	
 	for alife_id in life['know']:
+		_tension += get_tension_with(life, alife_id)
+		
 		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
 		if is_target_dangerous(life, alife_id):
 			_combat_targets.append(alife_id)
@@ -192,6 +208,8 @@ def judge_life(life):
 	
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)
 	brain.store_in_memory(life, 'targets', _potential_combat_targets)
+	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
+	brain.store_in_memory(life, 'tension', _tension)
 
 def _target_filter(life, target_list, escaped_only, ignore_escaped):
 	if not target_list:

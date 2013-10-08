@@ -324,6 +324,7 @@ def understand(life, source_map):
 			continue
 	
 	_stime = time.time()
+	_passive_only = False
 	
 	_modules_run = False
 	_times = []
@@ -340,7 +341,7 @@ def understand(life, source_map):
 		except AttributeError:
 			_module_tier = module.TIER
 		
-		if _module_tier <= life['state_tier'] or _module_tier == TIER_PASSIVE:
+		if (_module_tier <= life['state_tier'] and not _passive_only) or _module_tier == TIER_PASSIVE:
 			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
 			
 			if _return == STATE_CHANGE:
@@ -355,7 +356,8 @@ def understand(life, source_map):
 					continue
 				
 				_modules_run = True
-				break
+				if not _module_tier == TIER_PASSIVE:
+					_passive_only = True
 		
 		_times.append({'time': time.time()-_stime, 'module': module.STATE})
 		

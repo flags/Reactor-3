@@ -241,11 +241,13 @@ if __name__ == '__main__':
 	
 	if '--menu' in sys.argv:
 		SETTINGS['running'] = 1
-	
-	if SETTINGS['running'] == 2:
+	elif '--quick' in sys.argv:
 		for world in profiles.get_worlds():
 			worldgen.load_world(world)
 			break
+		
+		if LIFE:
+			SETTINGS['running'] = 2
 	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()
