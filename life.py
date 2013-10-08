@@ -1721,9 +1721,12 @@ def throw_item(life, item_uid, target):
 	_distance = numbers.distance(_item['pos'], target)
 	
 	#TODO: TOSS OVER WALL? THROW FASTER?
-	_z_velocity = _distance/_distance*(1-_item['gravity'])
+	#_z_velocity = _distance/_distance*(1-_item['gravity'])
+	_z_velocity = 0
 	
-	_speed = _distance/_distance*(1-_drag)
+	#TODO: The following works:
+	#_speed = _distance/_distance*(1-_drag)
+	_speed = 2
 	print 'speed',numbers.distance(_item['pos'], target), _drag
 	
 	items.move(_item, _direction, _speed, _velocity=_z_velocity)
