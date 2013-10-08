@@ -1058,7 +1058,12 @@ def create_target_list():
 		if not _menu_items:
 			SETTINGS['following'] = target['id']
 		
-		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id']))
+		_color = life.draw_life_icon(target)[1]
+		_menu_items.append(menus.create_item('single',
+		                                     ' '.join(target['name']),
+		                                     None,
+		                                     target=target['id'],
+		                                     color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
 	
 	return _menu_items
 
