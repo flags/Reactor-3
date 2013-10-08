@@ -175,7 +175,7 @@ def _equip_weapon(life, weapon_uid, feed_uid):
 	else:
 		print 'should be equippan?'
 		lfe.add_action(life,{'action': 'equipitem',
-			'item': weapon['uid']},
+			'item': weapon_uid},
 			300,
 			delay=0)
 		

@@ -27,7 +27,7 @@ def draw_intro():
 	_title_time = time.time()
 	_warning_time = None
 	_sub_line = 'Reactor 3'
-	_warning_message = 'ver. '+VERSION
+	_warning_message = VERSION
 	_sub_mod = 0
 	_sub_time = 0
 	_shadow = 50
@@ -207,7 +207,7 @@ def switch_to_world_gen():
 	_menu_items.append(menus.create_item('list', 'Map', _maps))
 	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
 	_menu_items.append(menus.create_item('list', 'Life Density', ['Sparse', 'Medium', 'Heavy', 'None']))
-	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['Sparse', 'Medium', 'Heavy', 'None']))
+	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['None', 'Sparse', 'Medium', 'Heavy']))
 	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
 	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
 	_menu_items.append(menus.create_item('spacer', '-', None))
