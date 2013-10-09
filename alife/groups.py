@@ -427,6 +427,24 @@ def get_jobs(group_id):
 	
 	return _jobs
 
+def manage_resources(life, group_id):
+	_group = get_group(group_id)
+	_last_resource_check = get_flag(group_id, 'last_resource_count')
+	
+	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check>=100:
+		return True
+	
+	_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
+	
+	flag(group_id, 'last_resource_count', WORLD_INFO['ticks'])
+	flag(group_id, 'resource_count', _count)
+
+def get_resources(group_id):
+	return get_flag(group_id, 'resource_count')
+
+def needs_resources(group_id):
+	return get_resources(group_id)<=5
+
 def is_member(group_id, life_id):
 	_group = get_group(group_id)
 	
@@ -434,6 +452,35 @@ def is_member(group_id, life_id):
 		return True
 	
 	return False
+
+def order_to_loot(life, group_id):
+	_group = get_group(group_id)
+	
+	_j = jobs.create_job(life, 'Loot for group %s.' % life['group'],
+	                     gist='loot_for_group',
+	                     description='Collect loot for group.',
+	                     group=life['group'])
+	
+	if _j:
+		jobs.add_task(_j, '0', 'loot_for_group',
+		              action.make_small_script(function='create_item_need',
+		                                       kwargs={'matching': {'type': 'drink'},
+		                                               'satisfy_if': action.make_small_script(function='group_needs_resources',
+		                                                                                      args={'group_id': group_id})}),
+	                   player_action=action.make_small_script(function='can_see_target',
+		                                                     kwargs={'target_id': life['id']}),
+		              description='I\'M THIRSTY. GET ME SOMETHING TO DRINK',
+	                   delete_on_finish=False)
+		
+		flag(group_id, 'loot', _j)
+	
+	_job_id = get_flag(group_id, 'loot')
+	announce(life, life['group'],
+	         'job',
+	         'We need more resources.',
+	         job_id=_job_id,
+	         filter_if=[action.make_small_script(function='has_completed_job',
+	                                            kwargs={'job_id': _job_id})])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)

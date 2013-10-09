@@ -7,6 +7,7 @@ import movement
 import groups
 import speech
 import action
+import events
 import brain
 import stats
 import jobs
@@ -76,7 +77,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				if _j:
 					jobs.join_job(_j, life['id'])
 			
-			if len(groups.get_group(life['group'])['members'])<=3 and groups.get_shelter(life['group']):
+			#TODO: Raise the amount of members needed
+			if len(groups.get_group(life['group'])['members'])<2 and groups.get_shelter(life['group']):
 				_j = jobs.create_job(life, 'Meet with group %s.' % life['group'],
 					                 gist='stay_with_group',
 					                 description='Stay nearby group.',
@@ -115,5 +117,16 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					                filter_if=[action.make_small_script(function='has_completed_job',
 					                                                   kwargs={'job_id': _job_id})])
 			else:
-				print 'READY FOR MORE COMMANDS',life['name']
+				groups.manage_resources(life, life['group'])
+				
+				if groups.needs_resources(life['group']):
+					print 'yeah'
+					groups.order_to_loot(life, life['group'])
+				#groups.add_event(life['group'], events.create('shelter',
+				#                                              action.make(return_function='find_and_announce_shelter'),
+				#                                              {'life': action.make(life=life['id'], return_key='life'),
+				#                                               'group_id': life['group']},
+				#                                              fail_callback=action.make(return_function='get_group_flag'),
+				#                                              fail_arguments={'group_id': life['group'],
+				#                                                              'flag': }))
 	
