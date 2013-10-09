@@ -82,6 +82,7 @@ def create_function_map():
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
 		'has_usable_weapon': combat.has_potentially_usable_weapon,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
+		'is_group_leader': lambda life: (groups.is_leader_of_any_group(life)==True),
 		'get_flag': brain.get_flag,
 		'consume': lfe.consume,
 		'explode': items.explode,

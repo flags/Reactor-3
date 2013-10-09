@@ -131,6 +131,7 @@ def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
 		return False
 	
+	#TODO: Why?
 	if life['state'] == 'needs':
 		return False
 	

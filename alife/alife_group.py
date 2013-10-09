@@ -53,12 +53,14 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=_j)
 	
 	if groups.is_leader(life['group'], life['id']):
+		groups.setup_group_events(life['group'])
+		groups.process_events(life['group'])
+		
 		if stats.wants_to_abandon_group(life, life['group']):
 			print 'ABANDONING ON THESE TERMS' * 10
 			return False
 		
-		if life['state'] == 'idle' or lfe.is_in_shelter(life):
-			groups.process_events(life['group'])
+		if not life['state'] == 'combat' or lfe.is_in_shelter(life):
 			#TODO: Re-announce group from time to time LOGICALLY
 			if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
 				_job_id = groups.get_flag(life['group'], 'job_gather')
@@ -93,7 +95,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						          description='Meet with group',
 					              delete_on_finish=False)
 					
-					print 'L@@K'*15,groups.get_shelter(life['group'])
 					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',
 			              action.make_small_script(function='number_of_alife_in_reference_matching',
 			                                       kwargs={'amount': 3,

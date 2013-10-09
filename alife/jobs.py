@@ -199,6 +199,12 @@ def get_next_task(life, job_id):
 		
 	return None
 
+def has_completed_or_rejected_job(life, job_id):
+	if job_id in life['completed_jobs'] or job_id in life['rejected_jobs']:
+		return True
+	
+	return False
+
 def is_candidate(job_id, life_id):
 	if job_id in LIFE[life_id]['jobs']:
 		return True

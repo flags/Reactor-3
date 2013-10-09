@@ -23,6 +23,7 @@ def create_group(life, add_creator=True):
 	    'leader': None,
 	    'members': [],
 	    'shelter': None,
+	    'jobs': [],
 	    'events': {},
 	    'event_id': 1,
 	    'announce_event': None,
@@ -159,12 +160,6 @@ def find_successor(group_id, assign=False):
 	
 	return _highest['id']
 
-def assign_job(life, group_id, job):
-	_group = get_group(group_id)
-	
-	for member in _group['members']:
-		jobs.add_job_candidate(job, LIFE[member])
-
 def distribute(life, message, filter_by=[], **kvargs):
 	_group = get_group(life['group'])
 	
@@ -173,6 +168,17 @@ def distribute(life, message, filter_by=[], **kvargs):
 			continue
 		
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
+
+def add_job(group_id, job_id):
+	_group = get_group(group_id)
+	
+	#TODO: Remove
+	if not 'jobs' in _group:
+		_group['jobs'] = []
+	
+	_group['jobs'].append(job_id)
+	
+	logging.debug('Registered job %s with group %s' % (job_id, group_id))
 
 def add_event(group_id, event):
 	_group = get_group(group_id)
@@ -246,7 +252,6 @@ def find_shelter(life, group_id):
 	_group['shelter'] = chunks.get_chunk(judgement.get_best_shelter(life))['reference']
 	
 	if _group['shelter']:
-		print 'SET SHELTER' * 100
 		announce_shelter(group_id)
 
 def announce_shelter(group_id):
@@ -265,6 +270,8 @@ def find_and_announce_shelter(life, group_id):
 
 def setup_group_events(group_id):
 	_group = get_group(group_id)
+	if _group['announce_event']:
+		return False
 	
 	if stats.desires_shelter(LIFE[_group['leader']]) or 'player' in LIFE[_group['leader']]:
 		_group['announce_event'] = add_event(group_id, events.create('shelter',
@@ -273,14 +280,16 @@ def setup_group_events(group_id):
 			 'group_id': group_id},
 			fail_callback=action.make(return_function='desires_shelter'),
 			fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
+	
+		return True
+	
+	return False
 
 def set_leader(group_id, life_id):
 	_group = get_group(group_id)
 	_group['leader'] = life_id
 	
 	set_motive(group_id, stats.get_group_motive(LIFE[life_id]))
-	
-	setup_group_events(group_id)
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))

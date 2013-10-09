@@ -548,3 +548,56 @@ Lost track of how many times I've looked into the needs logic for ALife, but eve
 There's a potential issue with getting NPCs to manage inventory space correctly. This time around I'm probably just going to do a bare-bones version of what I want things to eventually look like so I don't end up spending more than a few days on this, so I'll just have them check storage capacity and work from there (at some point they need to consider access times and score storage options.)
 
 The biggest problem is making groups aware of specific item needs - as a proof of concept we should being working towards moving groups around the map to loot things, which introduces a bunch of new code so we can bridge jobs with needs. At this stage we could just mask group item needs under the guise of jobs - I don't think it matters that each ALife maintain an understanding of what items the group needs as long as the leader is parsing that info and sending it out to everyone (as jobs.)
+
+Version 0.6.5
+=============
+With 0.6 in the wild, it's time to take all existing frameworks/systems and begin using them to create content. We'll also be extending the ALife as much as possible, and implementing the last (?) round of behavioral changes.
+
+What needs to be done
+------------------
+The laundry list of issues currently logged should be checked over for errors or missed fixes along the way that weren't marked as fixed. Most of these should be avoided and put off for bugfix days.
+
+We will focus now on getting content working in a reasonable manner, and make any changes needed to support more early-game tasks (group formation, etc.) Before we do any of this, the content that exists currently should be examined and reconsidered.
+
+Issue #1: It's Boring
+------------------
+First: Currently people enter the Zone one by one. Whle this is an accurate way to simulate a Zone where all ALife are interacting naturally, for the interest of time it is slow and boring for the player to watch and participate in. A better way to go about this is currently displayed by Wildlife, who sometimes enter the Zone with one or two additional "pack members" who have a natural bond. This bond is justified by the idea of Mother<->Father<->Child relationships. For the sake of time, we should implement this for people also.
+
+Issue #1.1: Are we abandoning the "true" Zone?
+----------------------------------------
+By introducing pre-exisiting groups, there could potentially be issues with meshing "natural" ALife (i.e., those entering the Zone by themselves) with ALife who enter the Zone with a pre-existing bond.
+
+Issue #2: The Trust Problem
+------------------------
+Trust is currently implemented in the worst way possible. The values that modify trust are random and unjustified, and are usually marked with "#TODO: Hardcoded". It would be in our best interest to cover this first, before we get into pre-existing bonds.
+
+What is trust?
+
+The criteria:
+* We must be able to measure the ALife's exact trust in another ALife quickly
+* Trust should not just consist of random values. There should be a certain amount of "obvious trust" and "earned trust", combined to calculate the total trust.
+* A violation of a certain trust should not just be a negative value against the total, but instead something that can potentially swing the entirety of the trust variable into the negatives.
+
+In addition, when do we "trust" someone? How can we measure how much trust is needed for a bond to form?
+
+* Solution 1: Trust "tiers". Each ALife could maintain its own idea of who is a true friend vs. someone they know/work with.
+
+Are there any issues with this solution? I can foresee a problem with the differing ideas of who is a friend/not friend introducing some behaviors where one person treats the other as a friend, while the "friend" sees the person differently. While this is the way it works in the world, it does not translate well to this format.
+
+Solution for Solution 1: Issue 1: Rejections
+--------------------------------------
+If the above situation occurs, we can implement some form of "awareness", i.e., exposing the ALife to the idea that their level of trust is not mutual, limiting it as a result. There is also the possiblity for reactions to this - is the ALife opposed to the idea of not having mutual trust?
+
+Where do we need to make changes in trust logic?
+------------------------------------------
+A heavy amount (all?) of the trust modifiers should be in `dialog.py`. We can begin by either disabling  the `modify_trust` function so we don't have to sort through each reference to `like` and `dislike` (misnomer for trust and distrust.)
+
+What determines trust?
+-------------------
+Hard trust: Trust that is implied. Present in Parent<->child relationships and groups
+Dynamic trust: Combination of dialog choices and other interactions
+
+Using these two types of trust
+--------------------------
+Hard trust is all that should be needed for people to "get along," like in groups. Dynamic trust is used everywhere else.
+
