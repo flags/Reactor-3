@@ -108,14 +108,28 @@ def get_ranged_combat_rating_of_target(life, life_id):
 def get_ranged_combat_rating_of_self(life):
 	return get_ranged_combat_rating_of_target(life, life['id'])
 
-def get_trust(life, target_id):
+def _calculate_trust(life, target_id):
 	_knows = brain.knows_alife_by_id(life, target_id)
-	_trust = 0
+	_hard_trust = 0
+	_soft_trust = 0
+	
+	if life['group'] and groups.is_member(life['group'], target_id):
+		_hard_trust += 1
 	
 	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
-		_trust += memory['trust']
+		_soft_trust += memory['trust']
 	
-	return _trust
+	_total_trust = _hard_trust+_soft_trust	
+	
+	if _hard_trust:
+		_total_trust = numbers.clip(_total_trust, _hard_trust, 10)
+	
+	return _total_trust
+
+def get_trust(life, target_id):
+	_knows = brain.knows_alife_by_id(life, target_id)
+	
+	return _knows['trust']
 
 def can_trust(life, life_id, low=0):
 	_knows = brain.knows_alife_by_id(life, life_id)
@@ -402,15 +416,6 @@ def _calculate_impressions(life, target_id):
 			
 			_target[key] += _target['impressions'][impression]['modifiers'][key]
 
-def _calculate_fondness(life, target):
-	_fondness = 0
-	
-	for memory in lfe.get_memory(life, matches={'target': target['life']['id']}):
-		if memory['text'] == 'friendly':
-			_fondness += 1
-	
-	return _fondness
-
 def _calculate_danger(life, target):
 	if target['life']['asleep']:
 		return 0
@@ -430,9 +435,8 @@ def judge(life, target_id):
 	_old_trust = target['trust']
 	
 	_get_impressions(life, target)
-	target['fondness'] = _calculate_fondness(life, target)
 	target['danger'] = _calculate_danger(life, target)
-	target['trust'] = get_trust(life, target_id)
+	target['trust'] = _calculate_trust(life, target_id)
 	
 	parse_raw_judgements(life, target_id)
 	_calculate_impressions(life, target_id)
@@ -755,7 +759,7 @@ def judge_jobs(life):
 				jobs.reject_job(job['id'], life['id'])
 				continue
 		
-		if job['id'] in life['completed_jobs'] or job['id'] in life['rejected_jobs']:
+		if jobs.has_completed_or_rejected_job(life, job['id']):
 			continue
 		
 		if job['tier'] >= _tier:
@@ -768,7 +772,6 @@ def judge_jobs(life):
 			jobs.leave_job(_old_job, life['id'])
 	
 		if _new_job:
-			print life['completed_jobs']
 			jobs.join_job(_new_job, life['id'])
 	
 	if life['job']:
@@ -905,7 +908,7 @@ def get_best_shelter(life):
 		
 		if not _best_shelter['shelter'] or _score<_best_shelter['distance']:
 			_best_shelter['shelter'] = chunk_key
-			_best_shelter['score'] = _score
+			_best_shelter['distance'] = _score
 	
 	return _best_shelter['shelter']
 
