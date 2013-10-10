@@ -30,7 +30,7 @@ def get_task(job_id, task_id):
 def get_creator(job_id):
 	return get_job(job_id)['creator']
 
-def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', ignore_dupe=False, **kwargs):
+def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', ignore_dupe=False, requirements=[], **kwargs):
 	if not ignore_dupe and get_job_via_name(name):
 		return False
 	
@@ -46,6 +46,7 @@ def create_job(creator, name, gist='', tier=TIER_WORK, description='Job descript
 	_job['completed'] = False
 	_job['flags'] = kwargs
 	_job['cancel_on'] = []
+	_job['requirements'] = requirements
 	
 	WORLD_INFO['jobid'] += 1
 	WORLD_INFO['jobs'][_job['id']] = _job
@@ -131,6 +132,7 @@ def complete_task(life, job_id, task_id):
 			life['completed_jobs'].append(job_id)
 			leave_job(job_id, life['id'])
 
+		print 'HOLYYYYYYYYYY SHITTTTTTTTTTTTTTTTTTTTTTTTT' * 100
 		logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))	
 		return False
 	
@@ -144,6 +146,7 @@ def complete_task(life, job_id, task_id):
 	for worker in _job['workers']:
 		remove_worker_from_task(job_id, task_id, worker)
 	
+	print 'HOLYYYYYYYYYY SHITTTTTTTTTTTTTTTTTTTTTTTTT' * 100
 	logging.debug('Task \'%s\' of job \'%s\' completed by %s.' % (task_id, job_id, ' '.join(life['name'])))
 
 def get_workers_on_task(job_id, task_id):
@@ -254,6 +257,13 @@ def reject_job(job_id, life_id):
 
 def alife_has_job(life):
 	return life['job']
+
+def meets_job_requirements(life, job_id):
+	for requirement in get_job(job_id):
+		if not action.execute_small_script(life, requirement):
+			return False
+	
+	return True
 
 def _work(life):
 	if not life['task']:

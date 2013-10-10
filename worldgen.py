@@ -245,18 +245,41 @@ def generate_wildlife():
 			alife.brain.flag_alife(_p, _c['id'], 'son')
 			alife.brain.flag_alife(_c, _p['id'], 'father')
 
-def generate_life(amount=1):
+def generate_life():
 	_spawn = get_spawn_point()
 	
-	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	alife['thirst'] = random.randint(alife['thirst_max']/4, alife['thirst_max']/3)
+	if WORLD_INFO['groups']:
+		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
+		
+		if len(LIFE) == 1:
+			logging.warning('No leaders. Creating one manually...')
+			_alife['stats']['is_leader'] = True
+		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
+		return True
 	
-	if len(LIFE) == 1:
-		logging.warning('No leaders. Creating one manually...')
-		alife['stats']['is_leader'] = True
+	_group_members = []
 	
-	for item in BASE_ITEMS:
-		life.add_item_to_inventory(alife, items.create_item(item))
+	for i in range(3):
+		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
+		if not _group_members:
+			_alife['stats']['is_leader'] = True
+			_group = alife.groups.create_group(_alife)
+		
+		_group_members.append(_alife)
+	
+	for m1 in _group_members:
+		if m1['id'] == _group_members[0]['id']:
+			continue
+		
+		alife.groups.add_member(_group, m1['id'])
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))

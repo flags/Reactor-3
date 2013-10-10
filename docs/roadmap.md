@@ -601,3 +601,7 @@ Using these two types of trust
 --------------------------
 Hard trust is all that should be needed for people to "get along," like in groups. Dynamic trust is used everywhere else.
 
+Issue #2: Job Issue
+-----------------
+Starting on group jobs has made me realize just how much work is involved with getting the ALife to perform cycles. For example, I can give them the need to collect items for their group, but when it comes down to returning to the camp and storing the items it completely fails. It's the weird mix of needs and jobs that cause the issue, because iirc jobs have a higher priority than needs, so the ALife in question will become aware of the job to return the items regardless of whether they have them or not.
+

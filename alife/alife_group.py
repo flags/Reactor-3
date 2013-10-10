@@ -80,21 +80,21 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			#TODO: Raise the amount of members needed
 			if len(groups.get_group(life['group'])['members'])<2 and groups.get_shelter(life['group']):
 				_j = jobs.create_job(life, 'Meet with group %s.' % life['group'],
-					                 gist='stay_with_group',
-					                 description='Stay nearby group.',
-					                 group=life['group'])
+				                     gist='stay_with_group',
+				                     description='Stay nearby group.',
+				                     group=life['group'])
 				
 				if _j:
 					groups.flag(life['group'], 'meet_with_group', _j)
 					
 					jobs.add_task(_j, '0', 'meet_with_group',
-						          action.make_small_script(function='find_target',
+					              action.make_small_script(function='find_target',
 						                                   kwargs={'target': life['id'],
 						                                           'distance': 5,
 						                                           'follow': False}),
 					              player_action=action.make_small_script(function='can_see_target',
 	                                           kwargs={'target_id': life['id']}),
-						          description='Meet with group',
+					              description='Meet with group',
 					              delete_on_finish=False)
 					
 					jobs.add_task(_j, '2', 'wait_for_number_of_group_members_in_chunk',

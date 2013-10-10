@@ -749,6 +749,9 @@ def judge_jobs(life):
 		if not jobs.get_free_tasks(job['id']):
 			continue
 		
+		if not jobs.meets_job_requirements(life, job['id']):
+			continue
+		
 		if life['group'] and job['gist'] == 'create_group':
 			if not stats.wants_to_abandon_group(life, life['group']):
 				jobs.reject_job(job['id'], life['id'])

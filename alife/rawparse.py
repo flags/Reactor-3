@@ -87,9 +87,12 @@ def create_function_map():
 		'get_flag': brain.get_flag,
 		'create_item_need': survival.add_needed_item,
 		'group_needs_resources': lambda life, group_id: groups.needs_resources(group_id),
+		'has_needs_to_satisfy': lambda life: brain.retrieve_from_memory(life, 'needs_to_meet') and len(brain.retrieve_from_memory(life, 'needs_to_meet'))>0,
+		'has_number_of_items_matching': lambda life, matching, amount: len(lfe.get_all_inventory_items(life, matches=matching))>=amount,
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'always': always,
+		'pass': lambda life, *a, **k: True,
 		'never': never})
 
 def create_rawlangscript():

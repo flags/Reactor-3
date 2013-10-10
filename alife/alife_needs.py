@@ -61,6 +61,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	for need in _needs_to_meet:
 		movement.collect_nearby_wanted_items(life, matches=need['match'], only_visible=False)
+		break
 	
 	_needs_to_satisfy = brain.retrieve_from_memory(life, 'needs_to_satisfy')
 	

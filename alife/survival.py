@@ -28,17 +28,18 @@ def _get_need_amount(life, need):
 	if need['amount']:
 		return need['amount']
 
-def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
+def add_needed_item(life, matching, amount=1, amount_callback=None, pass_if=[], satisfy_if=None, satisfy_callback=None):
 	life['needs'][str(life['need_id'])] = {'type': 'item',
-	                      'match': item_match,
+	                      'match': matching,
 	                      'meet_with': [],
 	                      'could_meet_with': [],
 	                      'amount': amount,
 	                      'amount_callback': amount_callback,
+	                      'pass_if': pass_if,
 	                      'satisfy_if': satisfy_if,
 	                      'satisfy_callback': satisfy_callback}
 	
-	logging.debug('Added item need: %s' % item_match)
+	logging.debug('Added item need: %s' % matching)
 	
 	life['need_id'] += 1
 	return str(life['need_id']-1)
@@ -83,6 +84,13 @@ def is_need_met(life, need):
 	return False
 
 def needs_to_satisfy(life, need):
+	for requirement in need['pass_if']:
+		if action.execute_small_script(life, requirement):
+			print 'pass', requirement
+			return False
+		else:
+			print 'fail', requirement
+	
 	return action.execute_small_script(life, need['satisfy_if'])
 
 def can_satisfy(life, need):

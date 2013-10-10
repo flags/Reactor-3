@@ -5,6 +5,7 @@ import life as lfe
 
 import judgement
 import movement
+import survival
 import action
 import combat
 import speech
@@ -458,25 +459,36 @@ def is_member(group_id, life_id):
 	
 	return False
 
-def order_to_loot(life, group_id):
+def order_to_loot(life, group_id, add_leader=False):
+	#TODO: We should really consider moving the needs portion of this code outside of this function
+	#Because this function really only does something on the first run, rendering it into just another
+	#announce loop...
+	
 	_group = get_group(group_id)
+	
+	_requirements = [action.make_small_script(function='has_number_of_items_matching',
+	                                          args={'matching': [{'type': 'drink'}], 'amount': 1})]
 	
 	_j = jobs.create_job(life, 'Loot for group %s.' % life['group'],
 	                     gist='loot_for_group',
 	                     description='Collect loot for group.',
-	                     group=life['group'])
+	                     group=life['group'],
+	                     requirements=_requirements)
 	
 	if _j:
-		jobs.add_task(_j, '0', 'loot_for_group',
-		              action.make_small_script(function='create_item_need',
-		                                       kwargs={'matching': {'type': 'drink'},
-		                                               'satisfy_if': action.make_small_script(function='group_needs_resources',
-		                                                                                      args={'group_id': group_id})}),
-		              player_action=action.make_small_script(function='never'),
-		              description='I\'M THIRSTY. GET ME SOMETHING TO DRINK',
-		              delete_on_finish=False)
+		for member in _group['members']:
+			if member == _group['leader'] and not add_leader:
+				continue
+			
+			survival.add_needed_item(LIFE[member],
+				                    {'type': 'drink'},
+				                    amount=1,
+			                         pass_if=_requirements,
+				                    satisfy_if=action.make_small_script(function='group_needs_resources',
+				                                                        args={'group_id': group_id}),
+				                    satisfy_callback=action.make_small_script(return_function='pass'))
 		
-		jobs.add_task(_j, '1', 'meet_with_group',
+		jobs.add_task(_j, '0', 'meet_with_group',
 		              action.make_small_script(function='find_target',
 		                                       kwargs={'target': _group['leader'],
 		                                               'distance': 5,
@@ -488,7 +500,6 @@ def order_to_loot(life, group_id):
 		
 		flag(group_id, 'loot', _j)
 	
-	
 	if lfe.ticker(life, 'resource_announce', 10):
 		_job_id = get_flag(group_id, 'loot')
 		
@@ -496,8 +507,7 @@ def order_to_loot(life, group_id):
 			     'job',
 			     'We need more resources.',
 			     job_id=_job_id,
-			     filter_if=[action.make_small_script(function='has_completed_job',
-		                                              kwargs={'job_id': _job_id})])
+			     filter_if=[action.make_small_script(function='has_needs_to_satisfy')])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)
