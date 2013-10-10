@@ -64,6 +64,9 @@ def process(life):
 			_potential_items = []
 			
 			for item in brain.get_matching_remembered_items(life, need['match'], no_owner=True):
+				if brain.get_item_flag(life, ITEMS[item], 'ignore'):
+					continue
+				
 				_potential_items.append(item)
 				
 			for item in lfe.get_all_inventory_items(life, matches=[need['match']]):
@@ -86,10 +89,7 @@ def is_need_met(life, need):
 def needs_to_satisfy(life, need):
 	for requirement in need['pass_if']:
 		if action.execute_small_script(life, requirement):
-			print 'pass', requirement
 			return False
-		else:
-			print 'fail', requirement
 	
 	return action.execute_small_script(life, need['satisfy_if'])
 

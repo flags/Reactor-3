@@ -262,6 +262,9 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 	_matched_items = []
 	
 	for item in [i for i in life['know_items'].values()]:
+		if get_item_flag(life, ITEMS[item['item']], 'ignore'):
+			continue
+		
 		if active and 'offloaded' in item:
 			continue
 		

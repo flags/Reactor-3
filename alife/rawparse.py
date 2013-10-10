@@ -89,6 +89,8 @@ def create_function_map():
 		'group_needs_resources': lambda life, group_id: groups.needs_resources(group_id),
 		'has_needs_to_satisfy': lambda life: brain.retrieve_from_memory(life, 'needs_to_meet') and len(brain.retrieve_from_memory(life, 'needs_to_meet'))>0,
 		'has_number_of_items_matching': lambda life, matching, amount: len(lfe.get_all_inventory_items(life, matches=matching))>=amount,
+	     'flag_item_matching': lambda life, matching, flag: brain.flag_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0], flag)>0,
+		'drop_item_matching': lambda life, matching: lfe.drop_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0]['uid'])>0,
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'always': always,
