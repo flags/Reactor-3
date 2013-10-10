@@ -115,6 +115,7 @@ def remove_member(group_id, life_id):
 	if not is_member(group_id, life_id):
 		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
+	LIFE[life_id]['group'] = None
 	_group['members'].remove(life_id)
 	
 	reconfigure_group(group_id)
@@ -249,7 +250,11 @@ def get_shelter(group_id):
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	_group['shelter'] = chunks.get_chunk(judgement.get_best_shelter(life))['reference']
+	
+	_shelter = judgement.get_best_shelter(life)
+	
+	if _shelter:
+		_group['shelter'] = chunks.get_chunk(_shelter)['reference']
 	
 	if _group['shelter']:
 		announce_shelter(group_id)

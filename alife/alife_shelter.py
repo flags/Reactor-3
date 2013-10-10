@@ -37,6 +37,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if not 'shelter' in life['state_flags']:
 		life['state_flags']['shelter'] = judgement.get_best_shelter(life)
 	
+	if not life['state_flags']['shelter'] in life['known_chunks']:
+		judgement.judge_chunk(life, life['state_flags']['shelter'])
+	
 	if not chunks.get_flag(life, life['state_flags']['shelter'], 'shelter_cover'):
 		return False
 	

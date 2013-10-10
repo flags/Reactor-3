@@ -179,6 +179,11 @@ def remember_item_secondhand(life, target, item_memory):
 
 	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
+def offload_remembered_item(life, item_uid):
+	_item_memory = get_remembered_item(life, item_uid)
+	
+	_item_memory['offloaded'] = WORLD_INFO['ticks']
+
 def add_impression(life, target_id, gist, modifiers):
 	life['know'][target_id]['impressions'][gist] = {'modifiers': modifiers, 'happened_at': WORLD_INFO['ticks']}
 	
@@ -253,9 +258,13 @@ def has_met_in_person(life, target):
 def get_remembered_item(life, item_id):
 	return life['know_items'][item_id]
 
-def get_matching_remembered_items(life, matches, no_owner=False):
+def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 	_matched_items = []
+	
 	for item in [i for i in life['know_items'].values()]:
+		if active and 'offloaded' in item:
+			continue
+		
 		if no_owner and item['last_owned_by']:
 			continue
 		

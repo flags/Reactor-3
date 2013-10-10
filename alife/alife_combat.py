@@ -31,7 +31,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		stats.battle_cry(life)
 		
-		if gfx.position_is_in_frame(life['pos']):
+		if gfx.position_is_in_frame(life['pos']) and SETTINGS['controlling']:
 			_can_see = sight.can_see_position(life, LIFE[SETTINGS['controlling']]['pos'])
 			
 			if _can_see:
