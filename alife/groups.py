@@ -479,13 +479,14 @@ def order_to_loot(life, group_id):
 		
 		flag(group_id, 'loot', _j)
 	
-	_job_id = get_flag(group_id, 'loot')
-	announce(life, life['group'],
-	         'job',
-	         'We need more resources.',
-	         job_id=_job_id,
-	         filter_if=[action.make_small_script(function='has_completed_job',
-	                                            kwargs={'job_id': _job_id})])
+	if lfe.ticker(life, 'resource_announce', 10):
+		_job_id = get_flag(group_id, 'loot')
+		announce(life, life['group'],
+			     'job',
+			     'We need more resources.',
+			     job_id=_job_id,
+			     filter_if=[action.make_small_script(function='has_completed_job',
+			                                        kwargs={'job_id': _job_id})])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)
