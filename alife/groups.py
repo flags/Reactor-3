@@ -448,7 +448,7 @@ def get_resources(group_id):
 	return get_flag(group_id, 'resource_count')
 
 def needs_resources(group_id):
-	return get_resources(group_id)<=5
+	return get_resources(group_id)<=2
 
 def is_member(group_id, life_id):
 	_group = get_group(group_id)
@@ -472,21 +472,32 @@ def order_to_loot(life, group_id):
 		                                       kwargs={'matching': {'type': 'drink'},
 		                                               'satisfy_if': action.make_small_script(function='group_needs_resources',
 		                                                                                      args={'group_id': group_id})}),
-	                   player_action=action.make_small_script(function='can_see_target',
-		                                                     kwargs={'target_id': life['id']}),
+		              player_action=action.make_small_script(function='never'),
 		              description='I\'M THIRSTY. GET ME SOMETHING TO DRINK',
-	                   delete_on_finish=False)
+		              delete_on_finish=False)
+		
+		jobs.add_task(_j, '1', 'meet_with_group',
+		              action.make_small_script(function='find_target',
+		                                       kwargs={'target': _group['leader'],
+		                                               'distance': 5,
+		                                               'follow': False}),
+		              player_action=action.make_small_script(function='can_see_target',
+		                                                     kwargs={'target_id': _group['leader']}),
+		              description='Meet with group',
+		              delete_on_finish=False)
 		
 		flag(group_id, 'loot', _j)
 	
+	
 	if lfe.ticker(life, 'resource_announce', 10):
 		_job_id = get_flag(group_id, 'loot')
+		
 		announce(life, life['group'],
 			     'job',
 			     'We need more resources.',
 			     job_id=_job_id,
 			     filter_if=[action.make_small_script(function='has_completed_job',
-			                                        kwargs={'job_id': _job_id})])
+		                                              kwargs={'job_id': _job_id})])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)

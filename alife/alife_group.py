@@ -120,7 +120,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				groups.manage_resources(life, life['group'])
 				
 				if groups.needs_resources(life['group']):
-					print 'yeah'
 					groups.order_to_loot(life, life['group'])
 				#groups.add_event(life['group'], events.create('shelter',
 				#                                              action.make(return_function='find_and_announce_shelter'),
