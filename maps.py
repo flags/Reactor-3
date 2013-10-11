@@ -85,7 +85,8 @@ def save_map(map_name, base_dir=DATA_DIR):
 
 	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
 		try:
-			_map_file.write(json.dumps(WORLD_INFO))
+			_save_string = json.dumps(WORLD_INFO)
+			_map_file.write(_save_string)
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
 		except TypeError:

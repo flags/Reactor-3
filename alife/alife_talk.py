@@ -165,5 +165,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			brain.share_item_with(life, ai['life'], item['item'])
 			speech.communicate(life,
 				'share_item_info',
-				item=brain.get_remembered_item(life, item['item']),
+				item=item['item'],
 				matches=[{'id': ai['life']['id']}])

@@ -33,25 +33,26 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	                         description='Group %s: Looking for new members.' % _group_id,
 	                         group=life['group'])
 	
-		jobs.add_task(_j, '0', 'find_target',
-	                  action.make_small_script(function='find_target',
-	                                           kwargs={'target': life['id'],
-	                                                   'distance': 5}),
-	                  player_action=action.make_small_script(function='can_see_target',
-	                                           kwargs={'target_id': life['id']}),
-	                  description='Find %s.' % ' '.join(life['name']),
-	                  delete_on_finish=False)
-		jobs.add_task(_j, '1', 'talk',
-	                  action.make_small_script(function='start_dialog',
-	                                           kwargs={'target': life['id'], 'gist': 'form_group'}),
-	                  player_action=action.make_small_script(function='always'),
-	                  description='Talk to %s.' % (' '.join(life['name'])),
-	                  requires=['0'],
-	                  delete_on_finish=False)
+		if _j:
+			jobs.add_task(_j, '0', 'find_target',
+				        action.make_small_script(function='find_target',
+				                                 kwargs={'target': life['id'],
+				                                         'distance': 5}),
+				        player_action=action.make_small_script(function='can_see_target',
+				                                 kwargs={'target_id': life['id']}),
+				        description='Find %s.' % ' '.join(life['name']),
+				        delete_on_finish=False)
+			jobs.add_task(_j, '1', 'talk',
+				        action.make_small_script(function='start_dialog',
+				                                 kwargs={'target': life['id'], 'gist': 'form_group'}),
+				        player_action=action.make_small_script(function='always'),
+				        description='Talk to %s.' % (' '.join(life['name'])),
+				        requires=['0'],
+				        delete_on_finish=False)
+			
+			groups.flag(_group_id, 'job_gather', _j)
 		
-		groups.flag(_group_id, 'job_gather', _j)
-		
-		groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=_j)
+		groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=groups.get_flag(life['group'], 'job_gather'))
 	
 	if groups.is_leader(life['group'], life['id']):
 		groups.setup_group_events(life['group'])

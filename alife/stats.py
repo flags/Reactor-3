@@ -102,7 +102,7 @@ def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 			_top_group['id'] = memory['group']
 			_top_group['score'] = _score
 		
-	if _top_group:
+	if _top_group['score']:
 		if judgement.judge_group(life, _top_group['id'])>get_minimum_group_score(life):
 			return True
 	

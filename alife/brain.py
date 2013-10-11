@@ -133,6 +133,7 @@ def flag_item(life, item, flag, value=True):
 		remember_item(life, item)
 	
 	if not flag in life['know_items'][item['uid']]['flags']:
+		print life['know_items'][item['uid']]
 		life['know_items'][item['uid']]['flags'][flag] = value
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
 		
@@ -169,15 +170,6 @@ def remembers_item(life, item):
 		return life['know_items'][item['uid']]
 	
 	return False
-
-def remember_item_secondhand(life, target, item_memory):
-	_item = item_memory.copy()
-	_item['flags'] = []
-	_item['from'] = target['id']
-
-	life['know_items'][_item['item']] = _item
-
-	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
 
 def offload_remembered_item(life, item_uid):
 	_item_memory = get_remembered_item(life, item_uid)
