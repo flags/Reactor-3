@@ -16,6 +16,8 @@ def init_libtcod(terraform=False):
 	
 	if '_incol' in FONT:
 		_layout = tcod.FONT_LAYOUT_ASCII_INCOL
+	elif '_inrow' in FONT:
+		_layout = tcod.FONT_LAYOUT_ASCII_INROW
 	
 	tcod.console_set_custom_font(_font_file, _layout)
 	

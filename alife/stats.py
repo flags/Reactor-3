@@ -423,7 +423,7 @@ def is_confident(life):
 				#if not _z in _f_zones:
 				#	_f_zones.append(_z)
 	
-	if _total_friendly_score>_total_enemy_score:
+	if _total_friendly_score>=_total_enemy_score:
 		return True
 	
 	return False

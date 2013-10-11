@@ -48,6 +48,9 @@ def food():
 def drink():
 	items.create_item('soda', position=LIFE[SETTINGS['controlling']]['pos'])
 
+def give(item):
+	items.create_item(item, position=LIFE[SETTINGS['controlling']]['pos'])
+
 def drop():
 	situations.drop_cache(['soda', 'corn'])
 
