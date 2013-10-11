@@ -52,7 +52,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			
 			groups.flag(_group_id, 'job_gather', _j)
 		
-		groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=groups.get_flag(life['group'], 'job_gather'))
+		if groups.get_flag(life['group'], 'job_gather'):
+			groups.announce(life, _group_id, 'job', 'New group gathering.', consider_motive=True, job_id=groups.get_flag(life['group'], 'job_gather'))
 	
 	if groups.is_leader(life['group'], life['id']):
 		groups.setup_group_events(life['group'])
@@ -66,7 +67,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			#TODO: Re-announce group from time to time LOGICALLY
 			if groups.get_group(life['group'])['claimed_motive'] == 'survival' and lfe.ticker(life, 'announce_group', 200):
 				_job_id = groups.get_flag(life['group'], 'job_gather')
-				groups.announce(life, life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
+				
+				if _job_id:
+					groups.announce(life, life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
 			
 			for member in groups.get_unwanted_members_with_perspective(life, life['group']):
 				_j = jobs.create_job(life, 'Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),

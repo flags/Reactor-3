@@ -225,7 +225,7 @@ def show_next_event():
 	gfx.refresh_window()
 	
 	if not EVENTS:
-		life.focus_on(LIFE[SETTINGS['controlling']])
+		life.focus_on(LIFE[SETTINGS['following']])
 		return False
 	
 	return True
