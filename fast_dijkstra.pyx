@@ -1,5 +1,5 @@
 from globals import WORLD_INFO, MAP_SIZE, SETTINGS
-from libc.stdlib cimport malloc
+from libc.stdlib cimport malloc, free
 
 import zones as zon
 
@@ -20,6 +20,9 @@ cdef distance(pos1, pos2):
 		
 	x_dist = abs(_pos1[0]-_pos2[0])
 	y_dist = abs(_pos1[1]-_pos2[1])
+	
+	free(_pos1)
+	free(_pos2)
 	
 	if x_dist > y_dist:
 		return y_dist + (x_dist-y_dist)
@@ -207,7 +210,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				_dijkstra_map[x][y] *= -1.2
-				_old_map[x][y] *= -1.2
+				_old_map[x][y] *= -1.2	
 	
 	if return_score:
 		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
