@@ -78,6 +78,42 @@ def get_keyboard_input():
 		
 		INPUT[_key] = False
 
+def set_mouse_click_callback(button, function):
+	if button == 1:
+		MOUSE_CALLBACKS['m1_click'] = function
+	else:
+		MOUSE_CALLBACKS['m2_click'] = function
+
+def set_mouse_move_callback(function):
+	MOUSE_CALLBACKS['move'] = function
+	
+def get_mouse_location():
+	return CAMERA_POS[0]+MOUSE_POS[0], CAMERA_POS[1]+MOUSE_POS[1]
+
 def get_mouse_input():
 	#TODO: I can't get mouse input to work properly...
-	pass
+	_mouse = tcod.mouse_get_status()
+	_old_x, _old_y = MOUSE_POS
+	
+	MOUSE_POS[0] = _mouse.cx
+	MOUSE_POS[1] = _mouse.cy
+	
+	if not [_old_x, _old_y] == MOUSE_POS:
+		if MOUSE_CALLBACKS['move']:
+			MOUSE_CALLBACKS['move']()
+	
+	if not INPUT['m1'] and _mouse.lbutton_pressed:
+		if MOUSE_CALLBACKS['m1_click']:
+			MOUSE_CALLBACKS['m1_click']()
+		
+		INPUT['m1'] = True
+	else:
+		INPUT['m1'] = False
+	
+	if not INPUT['m2'] and _mouse.rbutton_pressed:
+		if MOUSE_CALLBACKS['m2_click']:
+			MOUSE_CALLBACKS['m2_click']()
+		
+		INPUT['m2'] = True
+	else:
+		INPUT['m2'] = False

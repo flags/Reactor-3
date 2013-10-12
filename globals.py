@@ -206,6 +206,8 @@ MENU_PADDING = (1,1)
 #Controls
 KEY = tcod.Key()
 MOUSE = tcod.Mouse()
+MOUSE_POS = [0, 0]
+MOUSE_CALLBACKS = {'m1_click': None, 'm2_click': None, 'move': None}
 INPUT = {'up':False,
 		'down':False,
 		'left':False,
@@ -262,7 +264,9 @@ INPUT = {'up':False,
 		'7':False,
 		'8':False,
 		'9':False,
-		'0':False}
+		'0':False,
+		'm1': False,
+		'm2': False}
 		
 #Colors
 GREEN_ALT = tcod.Color(0,130,0)

@@ -9,6 +9,7 @@ import worldgen
 import weapons
 import dialog
 import timers
+import inputs
 import debug
 import zones
 import logic
@@ -1067,6 +1068,22 @@ def create_target_list():
 	
 	return _menu_items
 
+def mouse_select_item_at():
+	_m_x, _m_y = inputs.get_mouse_location()
+	
+	_items = items.get_items_at((_m_x, _m_y, 2))
+	
+	if not _items:
+		return False
+	
+	_index = menus.get_menu_index_by_flag(ACTIVE_MENU['menu'], 'item', _items[0]['uid'])
+	
+	if _index == -1:
+		return False
+	
+	menus.go_to_menu_index(ACTIVE_MENU['menu'], _index)
+	#print _m_x, _m_y
+
 def delete_look_list(entry):
 	SELECTED_TILES[0] = []
 	menus.delete_menu(menus.get_menu_by_name('Examining...'))
@@ -1074,9 +1091,14 @@ def delete_look_list(entry):
 	gfx.enable_panels()
 
 def create_look_list():
+	#inputs.set_mouse_click_callback(1, mouse_select_item_at)
+	inputs.set_mouse_move_callback(mouse_select_item_at)
+	
 	if menus.get_menu_by_name('Look at...')>-1:
+		SELECTED_TILES[0] = []
 		menus.delete_menu(menus.get_menu_by_name('Look at...'))
 		menus.delete_menu(menus.get_menu_by_name('Examining...'))
+		inputs.set_mouse_move_callback(None)
 		gfx.enable_panels()
 		return False
 	

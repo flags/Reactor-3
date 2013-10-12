@@ -205,6 +205,37 @@ def find_item_after(menu,index=-1):
 	
 	return find_item_after(menu)
 
+def get_menu_index_by_key(menu, key):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry['key'] == key:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def get_menu_index_by_flag(menu, flag, value):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry[flag] == value:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def go_to_menu_index(menu, index):
+	get_menu(menu)['index'] = index
+	
+	if get_menu(menu)['on_move']:
+		_entry = get_selected_item(menu, index)
+		return get_menu(menu)['on_move'](_entry)
+
 def move_up(menu, index):
 	menu['index'] = find_item_before(menu, index=index)
 	
