@@ -131,7 +131,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						
 					groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
 		
-		for target in judgement.get_targets(life):
+		for target in judgement.get_combat_targets(life):
 			_last_seen_at = None
 			_know = brain.knows_alife_by_id(life, target)
 			

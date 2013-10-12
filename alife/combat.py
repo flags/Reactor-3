@@ -332,6 +332,7 @@ def ranged_combat(life, targets):
 	target = None
 	
 	if _target_pos in _target_positions:
+		print _target_pos, _target_positions, _path_to_nearest
 		for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
 			if _target_pos == _target['last_seen_at']:
 				target = _target
@@ -354,7 +355,7 @@ def ranged_combat(life, targets):
 		if not sight.can_see_position(life, target['life']['pos']):
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
-			target['escaped'] = 1
+			target['escaped'] = 2
 			
 			for send_to in judgement.get_trusted(life):
 				speech.communicate(life,

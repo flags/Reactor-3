@@ -1406,9 +1406,9 @@ def perform_action(life):
 		_hand['holding'].append(_id)
 		
 		if 'player' in life:
-			gfx.message('You hold %s in your %s.' % (items.get_name(_item) ,_action['hand']))
+			gfx.message('You hold %s in your %s.' % (items.get_name(_item), _action['hand']))
 		else:
-			say(life,'@n holds %s in their %s.' % (items.get_name(_item),_action['hand']),action=True)
+			say(life,'@n holds %s in their %s.' % (items.get_name(_item),_action['hand']), action=True, event=False)
 		
 		set_animation(life, [',', ';'], speed=6)
 		delete_action(life,action)

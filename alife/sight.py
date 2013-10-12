@@ -287,22 +287,6 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	
 	return _cover
 
-def handle_lost_los(life):
-	#TODO: Take the original score and subtract/add stuff from there...
-	_nearest_target = {'target': None,'score': 0}
-	for entry in life['know']:
-		_target = life['know'][entry]
-		_score = judgement.judge(life,_target)
-		
-		if _target['escaped']:
-			_score += (_target['last_seen_time']/2)
-		
-		if _score < _nearest_target['score']:
-			_nearest_target['target'] = _target
-			_nearest_target['score'] = _score
-	
-	return _nearest_target
-
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 

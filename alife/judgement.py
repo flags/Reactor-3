@@ -174,7 +174,7 @@ def get_tension_with(life, life_id):
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
 	
-	if lfe.execute_raw(life, 'judge', 'break_trust', break_on_true=True, break_on_false=False, life_id=target_id):
+	if lfe.execute_raw(life, 'judge', 'break_trust', life_id=target_id):
 		brain.knows_alife_by_id(life, target_id)['trust'] = numbers.clip(brain.knows_alife_by_id(life, target_id)['trust'], -1000, -1)
 		return True
 	
@@ -253,7 +253,7 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped):
 	for target in target_list:
 		_knows = brain.knows_alife_by_id(life, target)
 		
-		if (escaped_only and not _knows['escaped']) or ignore_escaped and _knows['escaped']:
+		if (escaped_only and not _knows['escaped']==1) or ignore_escaped and _knows['escaped']==1:
 			continue
 	
 		_return_targets.append(target)
@@ -270,56 +270,6 @@ def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
 	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
-
-def get_targets_old(life, must_be_known=False, escaped_only=False, ignore_escaped=True):
-	_targets = []
-	_combat_targets = []
-	
-	#if life['camp'] and raids.camp_has_raid(life['camp']):
-	#	_targets.extend(raids.get_raiders(life['camp']))
-
-	for alife in life['know'].values():
-		if not escaped_only and ignore_escaped and alife['escaped']:
-			continue
-		elif escaped_only and not alife['escaped'] == 1:
-			continue
-		
-		#if alife['life']['id'] in _targets:
-		#	continue
-		
-		#TODO: Secrecy
-		if is_target_dangerous(life, alife['life']['id']):
-			_combat_targets.append(alife['life']['id'])
-	
-	_passed_combat_targets = []
-	for target in [brain.knows_alife_by_id(life, i) for i in _combat_targets]:
-		if not escaped_only and ignore_escaped and target['escaped']:
-			continue
-		elif escaped_only and target['escaped'] == 1:
-			_targets.append(target['life']['id'])
-			continue
-		
-		#TODO: Maybe the job calls for us to engage this target?
-		#if jobs.alife_is_factor_of_any_job(target['life']):
-		#	continue
-		
-		_passed_combat_targets.append(target['life']['id'])
-	
-	if escaped_only:
-		return _targets
-	
-	brain.store_in_memory(life, 'combat_targets', _passed_combat_targets)
-	_targets.extend(_passed_combat_targets)
-	
-	#for target in _targets:
-	#	print 'TARGET:',type(target),len(_targets)
-	
-	if must_be_known:
-		for _target in _targets[:]:
-			if not brain.knows_alife_by_id(life, _target):
-				_targets.remove(_target)
-	
-	return _targets
 
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
@@ -840,9 +790,9 @@ def judge_group(life, group_id):
 			continue
 		
 		if is_target_dangerous(life, member):
-			_score += get_trust(life, member)#_knows['trust']
+			_score += get_trust(life, member)
 		else:
-			_score -= get_trust(life, member)
+			_score += get_trust(life, member)
 	
 	return _score
 
