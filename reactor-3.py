@@ -130,12 +130,12 @@ def main():
 		if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
 			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
-		#gfx.fade_to_white(FADE_TO_WHITE[0])
-		#_col = 255-int(round(FADE_TO_WHITE[0]))*2
+		gfx.fade_to_white(FADE_TO_WHITE[0])
+		_col = 255-int(round(FADE_TO_WHITE[0]))*2
 		
-		#if _col<0:
-		#	_col = 0
-		_col = 0
+		if _col<0:
+			_col = 0
+		#_col = 0
 		
 		_string = 'You die.'
 		
@@ -143,10 +143,10 @@ def main():
 			MAP_WINDOW_SIZE[1]/2,
 			_string,
 			console=MAP_WINDOW,
-			fore_color=tcod.Color(255,_col,_col),
+			fore_color=tcod.Color(_col, _col, _col),
 			back_color=tcod.Color(255-_col,255-_col,255-_col),
 			flicker=0)
-		#FADE_TO_WHITE[0] += 0.9
+		FADE_TO_WHITE[0] += 0.9
 		
 		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
 			worldgen.save_world()
