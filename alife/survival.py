@@ -252,7 +252,7 @@ def manage_hands(life):
 		judgement.judge_item(life, item['uid'])
 		_known_item = brain.get_remembered_item(life, item['uid'])
 		
-		if _known_item['score']:
+		if _known_item['score']:#judgement.get_score_of_highest_scoring_item(life):
 			continue
 		
 		_equip_action = {'action': 'equipitem',

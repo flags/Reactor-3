@@ -524,6 +524,27 @@ def is_compatible_with(life, life_id):
 	
 	return False
 
+def is_target_group_friendly(life, life_id):
+	_target = LIFE[life_id]
+	
+	#Different groups
+	if _target['group'] and not _target['group'] == life['group']:
+		if life['group']:
+			_motive = groups.get_motive(life['group'])
+			
+			if _motive == 'crime':
+				return False
+			
+			if _motive == 'survival' and judgement.is_group_hostile(life, _target['group']):
+				return False
+		else:
+			if judgement.is_group_hostile(life, _target['group']):
+				return False
+		
+	return True
+	#if life['group']:
+	#((life['group'] and groups.is_member(life['group'], life_id)) or (not LIFE[life_id]['group'] or not life['group']))==True
+
 def is_born_leader(life):
 	return life['stats']['is_leader']
 

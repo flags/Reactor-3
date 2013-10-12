@@ -199,6 +199,9 @@ def process_events(group_id):
 	for event in _group['events'].values():
 		events.process_event(event)
 
+def get_motive(group_id):
+	return get_group(group_id)['claimed_motive']
+
 def announce(life, group_id, gist, message, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(group_id)
 	

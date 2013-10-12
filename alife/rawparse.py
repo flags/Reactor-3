@@ -83,7 +83,7 @@ def create_function_map():
 		'has_usable_weapon': combat.has_potentially_usable_weapon,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
 		'is_group_leader': lambda life: (groups.is_leader_of_any_group(life)==True),
-		'is_target_group_friendly': lambda life, life_id: ((life['group'] and groups.is_member(life['group'], life_id)) or (not LIFE[life_id]['group'] or not life['group']))==True,
+		'is_target_group_friendly': stats.is_target_group_friendly,
 		'get_group_flag': groups.get_flag,
 		'get_flag': brain.get_flag,
 		'create_item_need': survival.add_needed_item,

@@ -38,6 +38,23 @@ def judge_item(life, item_uid):
 	
 	return _score
 
+def _get_highest_scoring_item(life):
+	_highest = {'score': 0, 'uid': -1}
+	for item_uid in life['inventory']:
+		_score = judge_item(life, item_uid)
+	
+		if _highest['uid'] == -1 or _score>_highest['score']:
+			_highest['uid'] = item_uid
+			_highest['score'] = _score
+	
+	return _highest
+
+def get_highest_scoring_item(life):
+	return _get_highest_scoring_item(life)['uid']
+
+def get_score_of_highest_scoring_item(life):
+	return _get_highest_scoring_item(life)['score']
+
 def judge_self(life):
 	_confidence = 0
 	_limb_confidence = 0
@@ -822,17 +839,12 @@ def judge_group(life, group_id):
 		if not _knows:
 			continue
 		
-		if can_trust(life, member):
-			_score += _knows['trust']
+		if is_target_dangerous(life, member):
+			_score += get_trust(life, member)#_knows['trust']
 		else:
-			_score -= _knows['danger']
+			_score -= get_trust(life, member)
 	
 	return _score
-
-#def get_best_goal(life):
-#	for goal in life['goal'].values():
-#		if 'investigate'
-		
 
 def group_judge_group(group_id, target_group_id):
 	_group1 = groups.get_group(group_id)
