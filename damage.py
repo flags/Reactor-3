@@ -171,7 +171,7 @@ def bullet_hit(life, bullet, limb):
 		
 		if random.randint(0, 9)>=9-(_cut*2):
 			_msg.append('. It is lodged!')
-			lfe.add_wound(life, limb, lodged_item=bullet, impact_velocity=bullet['velocity'])
+			lfe.add_wound(life, limb, lodged_item=bullet['uid'], impact_velocity=bullet['velocity'])
 		else:
 			lfe.add_wound(life, limb, cut=_cut/2, impact_velocity=bullet['velocity'])
 	

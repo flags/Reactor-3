@@ -32,8 +32,12 @@ try:
 except:
 	CYTHON_RENDER_LOS = False
 
-def load_life(life):
-	with open(os.path.join(LIFE_DIR,life+'.json'),'r') as e:
+def load_life(name):
+	"""Returns life (`name`) structure from disk."""
+	if not '.json' in name:
+		name += '.json'
+	
+	with open(os.path.join(LIFE_DIR, name), 'r') as e:
 		return json.loads(''.join(e.readlines()))
 
 def calculate_base_stats(life):
@@ -109,9 +113,11 @@ def get_max_speed(life):
 	return numbers.clip(_speed, 0, 255)
 
 def initiate_raw(life):
+	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
 
 def initiate_needs(life):
+	"""Creates innate needs for `life`."""
 	life['needs'] = {}
 	
 	alife.survival.add_needed_item(life,
@@ -3105,8 +3111,8 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
 	
 	if lodged_item:
-		if 'sharp' in lodged_item['damage']:
-			add_pain_to_limb(life, limb, amount=lodged_item['damage']['sharp']*2)
+		if 'sharp' in ITEMS[lodged_item['damage']]:
+			add_pain_to_limb(life, limb, amount=ITEMS[lodged_item['damage']]['sharp']*2)
 		else:
 			add_pain_to_limb(life, limb, amount=2)
 	
