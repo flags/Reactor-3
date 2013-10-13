@@ -45,6 +45,10 @@ cdef create_map_array(val, size):
 
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
+	#Some notes before we begin:
+	#	* You can't get cython-created arrays out of this function
+	#	* I haven't found a way to create proper dynamically-sized arrays. I've locked them out at 500x500
+	#	* 
 	_init_time = time.time()
 	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
 	cdef float _score
@@ -139,7 +143,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	_dijkstra_map_size_x = _bot_right[0]-_top_left[0]
 	_dijkstra_map_size_y = _bot_right[1]-_top_left[1]
-	cdef float _dijkstra_map[500][500]
+	#cdef float _dijkstra_map[500][500]
+	cdef float *_dijkstra_map = <float *>malloc(500 * 500 * sizeof(float))
 	cdef float _old_map[500][500]
 	
 	for y in range(0, _dijkstra_map_size_y):
@@ -148,10 +153,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 			_y = y+_top_left[1]
 	
 			if _open_map[_x][_y]<=0:
-				_dijkstra_map[x][y] = -99999
+				_dijkstra_map[x + y * 500] = -99999
 				_old_map[x][y] = -99999
 			else:
-				_dijkstra_map[x][y] = 99999
+				_dijkstra_map[x + y * 500] = 99999
 				_old_map[x][y] = 99999
 	
 	goals.extend(_avoid_goals)
@@ -159,7 +164,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_x = goal[0]-_top_left[0]
 		_y = goal[1]-_top_left[1]
 		
-		_dijkstra_map[_x][_y] = 0
+		_dijkstra_map[_x + _y * 500] = 0
 	
 	_changed = True
 	
@@ -172,7 +177,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if _old_map[x][y]<=0:
 					continue
 				
-				_old_map[x][y] = _dijkstra_map[x][y]
+				_old_map[x][y] = _dijkstra_map[x + y * 500]
 				
 				_lowest_score = _old_map[x][y]
 				
@@ -200,32 +205,34 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 						_lowest_score = _score
 					
 				if _old_map[x][y]-_lowest_score>=2:
-					_dijkstra_map[x][y] = _lowest_score+1
+					_dijkstra_map[x + y * 500] = _lowest_score+1
 					_changed=True
 	
 	if not rolldown:
 		for y in range(0, _dijkstra_map_size_y):
 			for x in range(0, _dijkstra_map_size_x):
-				if _dijkstra_map[x][y]<=0:
+				if _dijkstra_map[x + y * 500]<=0:
 					continue
 				
-				_dijkstra_map[x][y] *= -1.2
+				_dijkstra_map[x + y * 500] *= -1.2
 				_old_map[x][y] *= -1.2	
 	
 	if return_score:
-		return _dijkstra_map[start_pos[0]-_top_left[0]][start_pos[1]-_top_left[1]]
+		_score = _dijkstra_map[(start_pos[0]-_top_left[0]) + (start_pos[1]-_top_left[1]) * 500]
+		free(_dijkstra_map)
+		return _score
 	
 	if return_score_in_range:
 		#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
 		#	for x in range(0, _bot_right[0]-_top_left[0]):
 		#		if rolldown:
-		#			if _dijkstra_map[x][y]>0:
-		#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+		#			if _dijkstra_map[x + y * 500]>0:
+		#				print int(round(numbers.clip(_dijkstra_map[x + y * 500], 0, 9))),
 		#			else:
 		#				print '#',
 		#		else:
-		#			if _dijkstra_map[x][y]<0:
-		#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+		#			if _dijkstra_map[x + y * 500]<0:
+		#				print int(round(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9))),
 		#			else:
 		#				print '#',
 		#	
@@ -233,21 +240,23 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_positions = []
 		for y in range(0, _bot_right[1]-_top_left[1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
-				if _dijkstra_map[x][y] in range(return_score_in_range[0], return_score_in_range[1]):
+				if _dijkstra_map[x + y * 500] in range(return_score_in_range[0], return_score_in_range[1]):
 					_positions.append((_top_left[0]+x, _top_left[1]+y))
+		
+		free(_dijkstra_map)
 		
 		return _positions
 	
 	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
 	#	for x in range(0, _bot_right[0]-_top_left[0]):
 	#		if rolldown:
-	#			if _dijkstra_map[x][y]>0:
-	#				print int(round(numbers.clip(_dijkstra_map[x][y], 0, 9))),
+	#			if _dijkstra_map[x + y * 500]>0:
+	#				print int(round(numbers.clip(_dijkstra_map[x + y * 500], 0, 9))),
 	#			else:
 	#				print '#',
 	#		else:
-	#			if _dijkstra_map[x][y]<0:
-	#				print int(round(numbers.clip(-_dijkstra_map[x][y], 0, 9))),
+	#			if _dijkstra_map[x + y * 500]<0:
+	#				print int(round(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9))),
 	#			else:
 	#				print '#',
 	#	
@@ -257,9 +266,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	_pos[0] = start_pos[0]-_top_left[0]
 	_pos[1] = start_pos[1]-_top_left[1]
 	while 1:
-		if rolldown and _dijkstra_map[_pos[0]][_pos[1]]<=0:
+		if rolldown and _dijkstra_map[_pos[0] + _pos[1] * 500]<=0:
 			break
-		elif not rolldown and _dijkstra_map[_pos[0]][_pos[1]]>0:
+		elif not rolldown and _dijkstra_map[_pos[0] + _pos[1] * 500]>0:
 			break
 		
 		_lowest_score = _old_map[_pos[0]][_pos[1]]
@@ -283,13 +292,13 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				if rolldown:
-					if _dijkstra_map[_x][_y]<0:
+					if _dijkstra_map[_x + _y * 500]<0:
 						continue
 				else:
-					if _dijkstra_map[_x][_y]>=0 or _open_map[_x+_top_left[0]][_y+_top_left[1]]==-3:
+					if _dijkstra_map[_x + _y * 500]>=0 or _open_map[_x+_top_left[0]][_y+_top_left[1]]==-3:
 						continue
 				
-				_score = _dijkstra_map[_x][_y]
+				_score = _dijkstra_map[_x + _y * 500]
 				
 				if _score<_lowest_score:
 					_lowest_score = _score
@@ -313,16 +322,18 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:
 					print 'X',
 				elif rolldown:
-					if _dijkstra_map[x][y]>0:
-						print int(numbers.clip(_dijkstra_map[x][y], 0, 9)),
+					if _dijkstra_map[x + y * 500]>0:
+						print int(numbers.clip(_dijkstra_map[x + y * 500], 0, 9)),
 					else:
 						print '#',
 				else:
-					if _dijkstra_map[x][y]<0:
-						print int(numbers.clip(-_dijkstra_map[x][y], 0, 9)),
+					if _dijkstra_map[x + y * 500]<0:
+						print int(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9)),
 					else:
 						print '#',
 			
 			print
+
+	free(_dijkstra_map)
 
 	return _path
