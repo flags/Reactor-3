@@ -145,7 +145,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	_dijkstra_map_size_y = _bot_right[1]-_top_left[1]
 	#cdef float _dijkstra_map[500][500]
 	cdef float *_dijkstra_map = <float *>malloc(500 * 500 * sizeof(float))
-	cdef float _old_map[500][500]
+	cdef float *_old_map = <float *>malloc(500 * 500 * sizeof(float))
 	
 	for y in range(0, _dijkstra_map_size_y):
 		for x in range(0, _dijkstra_map_size_x):
@@ -154,10 +154,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 			if _open_map[_x][_y]<=0:
 				_dijkstra_map[x + y * 500] = -99999
-				_old_map[x][y] = -99999
+				_old_map[x + y * 500] = -99999
 			else:
 				_dijkstra_map[x + y * 500] = 99999
-				_old_map[x][y] = 99999
+				_old_map[x + y * 500] = 99999
 	
 	goals.extend(_avoid_goals)
 	for goal in goals:
@@ -174,12 +174,12 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		
 		for y in range(0, _dijkstra_map_size_y):
 			for x in range(0, _dijkstra_map_size_x):
-				if _old_map[x][y]<=0:
+				if _old_map[x + y * 500]<=0:
 					continue
 				
-				_old_map[x][y] = _dijkstra_map[x + y * 500]
+				_old_map[x + y * 500] = _dijkstra_map[x + y * 500]
 				
-				_lowest_score = _old_map[x][y]
+				_lowest_score = _old_map[x + y * 500]
 				
 				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:#, (-1, -1), (1, -1), (-1, 1), (1, 1)]:
 				#for _n_y in range(-1, 2):
@@ -196,15 +196,15 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					if _x<0 or _x>=_dijkstra_map_size_x:
 						continue
 					
-					if _old_map[_x][_y]<0:
+					if _old_map[_x + _y * 500]<0:
 						continue
 					
-					_score = _old_map[_x][_y]
+					_score = _old_map[_x + _y * 500]
 					
 					if _score<_lowest_score:
 						_lowest_score = _score
 					
-				if _old_map[x][y]-_lowest_score>=2:
+				if _old_map[x + y * 500]-_lowest_score>=2:
 					_dijkstra_map[x + y * 500] = _lowest_score+1
 					_changed=True
 	
@@ -215,10 +215,11 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				_dijkstra_map[x + y * 500] *= -1.2
-				_old_map[x][y] *= -1.2	
+				_old_map[x + y * 500] *= -1.2	
 	
 	if return_score:
 		_score = _dijkstra_map[(start_pos[0]-_top_left[0]) + (start_pos[1]-_top_left[1]) * 500]
+		free(_old_map)
 		free(_dijkstra_map)
 		return _score
 	
@@ -243,6 +244,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if _dijkstra_map[x + y * 500] in range(return_score_in_range[0], return_score_in_range[1]):
 					_positions.append((_top_left[0]+x, _top_left[1]+y))
 		
+		free(_old_map)
 		free(_dijkstra_map)
 		
 		return _positions
@@ -271,7 +273,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		elif not rolldown and _dijkstra_map[_pos[0] + _pos[1] * 500]>0:
 			break
 		
-		_lowest_score = _old_map[_pos[0]][_pos[1]]
+		_lowest_score = _old_map[_pos[0] + _pos[1] * 500]
 		_next_pos[0] = -1
 		_next_pos[1] = -1
 				
@@ -305,7 +307,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					_next_pos[0] = _x
 					_next_pos[1] = _y
 		
-		if _lowest_score == _old_map[_pos[0]][_pos[1]]:
+		if _lowest_score == _old_map[_pos[0] + _pos[1] * 500]:
 			break
 		else:
 			_path.append((_next_pos[0]+_top_left[0], _next_pos[1]+_top_left[1], 2))
@@ -334,6 +336,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 			
 			print
 
+	free(_old_map)
 	free(_dijkstra_map)
 
 	return _path
