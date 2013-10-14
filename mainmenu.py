@@ -111,6 +111,7 @@ def clear():
 	console_flush()
 
 def draw_message():
+	console_set_default_foreground(0, tcod.white)
 	_y = 25
 	for line in MESSAGE:
 		#graphics.blit_string(1, _y, line)
