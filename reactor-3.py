@@ -256,7 +256,7 @@ if __name__ == '__main__':
 	
 	if '--profile' in sys.argv:
 		logging.info('Profiling. Exit when completed.')
-		cProfile.run('look()','profile.dat')
+		cProfile.run('loop()','profile.dat')
 		sys.exit()
 	
 	try:

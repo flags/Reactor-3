@@ -1,6 +1,8 @@
 New in version 0.6.1:
 	* Enhanced groups
 		* Groups will now gather resources and engage in combat with other groups
+	* Mouse look
+		* The mouse can now be used to select items in look mode.
 
 New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets

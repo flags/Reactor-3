@@ -2437,7 +2437,7 @@ def draw_life():
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if 0<=_p_x<=MAP_WINDOW_SIZE[0] and 0<=_p_y<=MAP_WINDOW_SIZE[1]:
+			if 0<=_p_x<=MAP_WINDOW_SIZE[0]-1 and 0<=_p_y<=MAP_WINDOW_SIZE[1]-1:
 				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
 					gfx.refresh_window_position(_p_x, _p_y)
 			

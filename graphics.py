@@ -459,19 +459,6 @@ def end_of_frame(draw_map=True):
 	if not SETTINGS['map_slices'] and draw_map:
 		tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
-	_encounter = None
-	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['encounters']:
-		_encounter = LIFE[SETTINGS['controlling']]['encounters'][0]
-	
-	if _encounter and 'console' in _encounter:
-		tcod.console_blit(_encounter['console'], 0, 0,
-			40,
-			40,
-			0,
-			0,
-			0,
-			1, 0.5)
-	
 	_dialog = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:
 		_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]

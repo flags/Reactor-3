@@ -71,7 +71,7 @@ def handle_input():
 
 			if _dialog['index']:
 				_dialog['index'] -= 1
-		else:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]>0:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
 
@@ -85,7 +85,7 @@ def handle_input():
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
 				_dialog['index'] += 1
-		else:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
 
@@ -95,7 +95,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]+=1
-		else:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 
@@ -105,7 +105,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]-=1
-		else:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]>0:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	
