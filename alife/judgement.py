@@ -205,7 +205,7 @@ def is_target_lost(life, target_id):
 	return False
 
 def is_safe(life):
-	if get_combat_targets(life):
+	if get_combat_targets(life, recent_only=True):
 		return False
 	
 	return True
@@ -244,7 +244,7 @@ def judge_life(life):
 	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
 	brain.store_in_memory(life, 'tension', _tension)
 
-def _target_filter(life, target_list, escaped_only, ignore_escaped):
+def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=False):
 	if not target_list:
 		return []
 	
@@ -255,6 +255,9 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped):
 		
 		if (escaped_only and not _knows['escaped']==1) or ignore_escaped and _knows['escaped']==1:
 			continue
+		
+		if recent_only and _knows['last_seen_time'] >= 150:
+			continue
 	
 		_return_targets.append(target)
 	
@@ -263,8 +266,8 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped):
 def get_targets(life, escaped_only=False, ignore_escaped=True):
 	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped)
 
-def get_combat_targets(life, escaped_only=False, ignore_escaped=False):
-	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
+def get_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only)
 
 def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
 	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)

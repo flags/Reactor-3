@@ -1087,6 +1087,7 @@ def mouse_select_item_at():
 def delete_look_list(entry):
 	SELECTED_TILES[0] = []
 	menus.delete_menu(menus.get_menu_by_name('Examining...'))
+	inputs.set_mouse_move_callback(None)
 	
 	gfx.enable_panels()
 

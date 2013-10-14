@@ -3111,8 +3111,8 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		add_pain_to_limb(life, limb, amount=3*float(_limb['damage_mod']))
 	
 	if lodged_item:
-		if 'sharp' in ITEMS[lodged_item['damage']]:
-			add_pain_to_limb(life, limb, amount=ITEMS[lodged_item['damage']]['sharp']*2)
+		if 'sharp' in ITEMS[lodged_item]['damage']:
+			add_pain_to_limb(life, limb, amount=ITEMS[lodged_item]['damage']['sharp']*2)
 		else:
 			add_pain_to_limb(life, limb, amount=2)
 	
