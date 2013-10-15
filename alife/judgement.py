@@ -500,7 +500,7 @@ def judge_chunk_visually(life, chunk_id):
 			'discovered_at': WORLD_INFO['ticks'],
 			'flags': {},
 			'life': [],
-		     'score': 0}
+			'score': 0}
 	
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
@@ -621,6 +621,7 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 		#	if _item:
 		#		_score += _item['score']
 
+	chunks.flag(life, chunk_id, 'last_updated', WORLD_INFO['ticks'])
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score

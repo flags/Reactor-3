@@ -30,7 +30,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 		_known = brain.knows_alife_by_id(life, _leading_target)
 		judgement.judge_chunk(life, chunks.get_chunk_key_at(_known['last_seen_at']))
 	
-	_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True)
+	_explore_chunk = chunks.find_best_chunk(life, only_recent_updates=True)
 	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
 	
 	if not _explore_chunk:
