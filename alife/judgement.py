@@ -210,12 +210,15 @@ def is_safe(life):
 	
 	return True
 
-def get_trusted(life, visible=True, invert=False):
+def get_trusted(life, visible=True, invert=False, only_recent=False):
 	_trusted = []
 	
 	for target in life['know'].values():
 		if not can_trust(life, target['life']['id']) == invert:
-			if visible and sight.can_see_target(life, target['life']['id']):
+			if only_recent and target['last_seen_time']>=150:
+				continue
+			
+			if visible and not sight.can_see_target(life, target['life']['id']):
 				continue
 			
 			_trusted.append(target['life']['id'])
@@ -273,6 +276,25 @@ def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
 	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
+
+def get_leading_target(life):
+	_highest = {'id': None, 'score': 1}
+	
+	for target_id in get_trusted(life, only_recent=True):
+		_score = 0
+		_known_target = brain.knows_alife_by_id(life, target_id)
+		
+		if _known_target['trust'] >= 3:
+			_score += 1
+			
+		if life['group'] and groups.is_leader(life['group'], target_id):
+			_score += 1
+	
+		if _score >= _highest['score']:
+			_highest['id'] = target_id
+			_highest['score'] = _score
+	
+	return _highest['id']
 
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
@@ -482,6 +504,25 @@ def judge_chunk_visually(life, chunk_id):
 	
 	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
 		judge_shelter(life, chunk_id)
+
+def judge_chunk_life(life, chunk_id):
+	if lfe.ticker(life, 'judge_chunk_life_tick', 30):
+		return False
+	
+	_score = 0
+	for life_id in life['known_chunks'][chunk_id]['life']:
+		_target = brain.knows_alife_by_id(life, life_id)
+		_is_here = False
+		_actually_here = False
+		
+		if not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
+			continue
+		
+		if life_id == get_leading_target(life):
+			print life['name'],'LEADER' * 10
+			_score += 10
+	
+	return _score 
 
 def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investigate=False):
 	if lfe.ticker(life, 'judge_tick', 30):

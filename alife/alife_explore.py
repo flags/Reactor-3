@@ -18,11 +18,17 @@ TIER = TIER_EXPLORE-.2
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not judgement.is_safe(life):
+	if not lfe.execute_raw(life, 'state', 'explore'):
 		return False
 	
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
+	
+	_leading_target = judgement.get_leading_target(life)
+	if _leading_target:
+		print 'LEADINGGGGGGGGGGGGGGGg'
+		_known = brain.knows_alife_by_id(life, _leading_target)
+		judgement.judge_chunk(life, chunks.get_chunk_key_at(_known['last_seen_at']))
 	
 	_explore_chunk = chunks.find_best_chunk(life, ignore_starting=True, ignore_time=True)
 	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
