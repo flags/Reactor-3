@@ -73,7 +73,7 @@ def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
-	judgement.judge_life(life)
+	judgement.judge(life)
 	judgement.judge_jobs(life)
 	survival.process(life)
 	understand(life, source_map)
@@ -319,7 +319,7 @@ def understand(life, source_map):
 	
 	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
-			judgement.judge(life, target['life']['id'])
+			judgement.judge_life(life, target['life']['id'])
 	
 	for module in MODULES:	
 		try:		

@@ -142,7 +142,7 @@ def give_menu_response(life, dialog):
 def alife_response(life, dialog):
 	_target = dialog['listener']
 	_knows = alife.brain.knows_alife_by_id(life, _target)
-	_score = alife.judgement.judge(life, _knows['life']['id'])
+	_score = alife.judgement.judge_life(life, _knows['life']['id'])
 	_choices = [r for r in dialog['topics']]
 		
 	for _choice in _choices[:]:

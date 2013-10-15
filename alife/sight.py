@@ -54,7 +54,7 @@ def look(life):
 			if ai['id'] in life['know']:
 				if life['think_rate'] == life['think_rate_max']:
 					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
-					judgement.judge(life, ai['id'])
+					judgement.judge_life(life, ai['id'])
 				
 				life['know'][ai['id']]['last_seen_time'] = 0
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]

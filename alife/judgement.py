@@ -225,7 +225,7 @@ def get_trusted(life, visible=True, invert=False):
 def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
-def judge_life(life):
+def judge(life):
 	_combat_targets = []
 	_potential_combat_targets = []
 	_tension = 0
@@ -397,7 +397,7 @@ def _calculate_danger(life, target):
 	
 	return _danger
 
-def judge(life, target_id):
+def judge_life(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
 	_old_fondness = target['fondness']
@@ -773,7 +773,7 @@ def judge_raid(life, raiders, camp):
 		#TODO: Find a better way to do this
 		#TODO: This has to be broken: _knows['life']
 		if not brain.get_alife_flag(life, raider, 'combat_score'):
-			judge(life, raider)
+			judge_life(life, raider)
 		
 		if brain.get_alife_flag(life, raider, 'combat_score'):
 			_score += _knows['flags']['combat_score']
