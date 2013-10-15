@@ -230,7 +230,11 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 				else:
 					_func = rule['function'](life)
 			else:
-				_func = rule['function'](life, **kwargs)
+				try:
+					_func = rule['function'](life, **kwargs)
+				except Exception as e:
+					logging.critical('Function \'%s\' got invalid argument.' % rule['function'])
+					raise e
 			
 			if rule['true'] == '*' or _func == rule['true']:
 				for value in rule['values']:

@@ -525,7 +525,7 @@ def order_to_loot(life, group_id, add_leader=False):
 			     'job',
 			     'We need more resources.',
 			     job_id=_job_id,
-			     filter_if=[action.make_small_script(function='has_needs_to_satisfy')])
+			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)

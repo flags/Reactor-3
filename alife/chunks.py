@@ -72,16 +72,13 @@ def get_visible_chunks_from(pos, vision, center=True):
 def get_chunk_key_at(pos):
 	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
-def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent_updates=False, only_recent=False):
+def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
 	
 	for chunk_key in life['known_chunks']:
 		_chunk = life['known_chunks'][chunk_key]
 		
-		if only_recent_updates and WORLD_INFO['ticks']-get_flag(life, chunk_key, 'last_updated')<=150:
-			print WORLD_INFO['ticks']-get_flag(life, chunk_key, 'last_updated')
-			_interesting_chunks[chunk_key] = life['known_chunks'][chunk_key]
-		elif not ignore_time and (_chunk['last_visited'] == -1 or time.time()-_chunk['last_visited']<=900):
+		if not ignore_time and (_chunk['last_visited'] == -1 or time.time()-_chunk['last_visited']<=400):
 			if only_unvisted and not _chunk['last_visited'] == -1:
 				continue
 			

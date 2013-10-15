@@ -281,6 +281,9 @@ def get_leading_target(life):
 	_highest = {'id': None, 'score': 1}
 	
 	for target_id in get_trusted(life, only_recent=True):
+		if not lfe.execute_raw(life, 'explore', 'follow_target_if', life_id=target_id):
+			continue
+		                       
 		_score = 0
 		_known_target = brain.knows_alife_by_id(life, target_id)
 		
@@ -519,7 +522,6 @@ def judge_chunk_life(life, chunk_id):
 			continue
 		
 		if life_id == get_leading_target(life):
-			print life['name'],'LEADER' * 10
 			_score += 10
 	
 	return _score 

@@ -54,5 +54,11 @@ def give(item):
 def drop():
 	situations.drop_cache(['soda', 'corn'])
 
+def day():
+	WORLD_INFO['real_time_of_day'] = 1500
+
+def night():
+	WORLD_INFO['real_time_of_day'] = 0
+
 def toss():
 	life.push(LIFE[SETTINGS['controlling']], 0, 2)
