@@ -1082,6 +1082,10 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'call_get_location':
 		_life = LIFE[dialog['listener']]
 		_responses.append({'text': 'I am near %s, %s.' % (_life['pos'][0], _life['pos'][1]), 'gist': 'okay'})
+		
+		_target = LIFE[dialog['speaker']]
+		_knows = alife.brain.knows_alife_by_id(_target, dialog['listener'])
+		_knows['last_seen_at'] = _life['pos'][:]
 
 	elif chosen['gist'] == 'okay':
 		_responses.append({'text': 'Okay.', 'gist': 'end'})
