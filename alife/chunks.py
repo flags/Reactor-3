@@ -250,10 +250,10 @@ def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
 	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
 
 def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
-	_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
+	#_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
 	
-	if _fast_see:
-		return _fast_see
+	#if _fast_see:
+	#	return _fast_see
 	
 	chunk = maps.get_chunk(chunk_key)
 	
@@ -263,9 +263,6 @@ def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 			   ((y-chunk['pos'][1] >= 0 and y-chunk['pos'][1] <= WORLD_INFO['chunk_size']-1) and x-chunk['pos'][0] in [0, WORLD_INFO['chunk_size']-1]):
 				_can_see = sight._can_see_position(pos1, (x, y), distance=distance, max_length=vision)
 				
-				if not get_chunk_key_at((x, y)) == chunk_key:
-					raise Exception('failed')
-		
 				if _can_see:
 					return _can_see
 	

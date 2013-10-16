@@ -15,7 +15,6 @@ import numbers
 import logging
 import time
 
-#@profile
 def look(life):
 	life['seen'] = []
 	
@@ -350,6 +349,7 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	
 	return _chunks
 
+#@profile
 def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False, visible_check=True):
 	_center_chunk_key = lfe.get_current_chunk_id(life)
 	
@@ -364,7 +364,47 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
 		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
 	
+	#Find chunks furthest away
+	if visible_check:
+		_outline_chunks = {'distance': 0, 'chunks': []}
+		for chunk_key in _chunks:
+			_current_chunk = maps.get_chunk(chunk_key)
+			_chunk_x = _current_chunk['pos'][0]+WORLD_INFO['chunk_size']/2
+			_chunk_y = _current_chunk['pos'][1]+WORLD_INFO['chunk_size']/2
+			_dist = numbers.distance(life['pos'], (_chunk_x, _chunk_y))
+			
+			if abs(_dist-_outline_chunks['distance'])>WORLD_INFO['chunk_size']:
+				_outline_chunks['distance'] = _dist
+				_outline_chunks['chunks'] = [chunk_key]
+			else:
+				_outline_chunks['chunks'].append(chunk_key)
+		
+		for outline_chunk_key in _outline_chunks['chunks']:
+			if outline_chunk_key in _visible_chunks:
+				continue
+			
+			_can_see = chunks.can_see_chunk(life, outline_chunk_key)
+			
+			if _can_see:
+				_skip = 0
+				for pos in _can_see:
+					if _skip:
+						_skip-=1
+						continue
+					
+					if _can_see.index(pos)<len(_can_see)-6 and not _skip:
+						_skip = 5
+					
+					_chunk_key = chunks.get_chunk_key_at(pos)
+					if not _chunk_key in _visible_chunks:
+						_visible_chunks.append(_chunk_key)
+			else:
+				_chunks.remove(outline_chunk_key)
+	
 	for chunk_key in _chunks:
+		if chunk_key in _visible_chunks:
+			continue
+		
 		if visible_check and not chunks.can_see_chunk(life, chunk_key):
 			#print chunk_key, lfe.get_current_chunk_id(life)
 			continue
