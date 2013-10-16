@@ -22,7 +22,7 @@ TIER = TIER_COMBAT-.4
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not judgement.get_combat_targets(life, ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if'))):
+	if not judgement.get_combat_targets(life, ignore_escaped=True):
 		return False
 	
 	if not lfe.execute_raw(life, 'combat', 'ranged') and not lfe.execute_raw(life, 'combat', 'melee'):

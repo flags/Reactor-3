@@ -349,16 +349,24 @@ def ranged_combat(life, targets):
 	#	lfe.stop(life)
 	
 	if sight.can_see_position(life,target['last_seen_at']):
-		if not sight.can_see_position(life, target['life']['pos']):
+		if sight.can_see_position(life, target['life']['pos']):
+			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
+				lfe.add_action(life,{'action': 'shoot',
+					'target': target['life']['pos'][:],
+					'limb': 'chest'},
+					5000,
+					delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
+		else:
+			print 'WENT MISSING!!!!!!!!!!'*100
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
-			target['escaped'] = 2
+			target['escaped'] = 1
 			
 			for send_to in judgement.get_trusted(life):
 				speech.communicate(life,
-					'target_missing',
-					target=target['life']['id'],
-					matches=[{'id': send_to}])
+			        'target_missing',
+			        target=target['life']['id'],
+			        matches=[{'id': send_to}])
 	else:
 		return False
 	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
@@ -366,14 +374,3 @@ def ranged_combat(life, targets):
 	#	#else:
 	#	#	if sight.can_see_position(life, target['last_seen_at']):
 	#	#		target['escaped'] = 1
-		
-		
-	
-	
-	#TODO: Attach skill to delay
-	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
-		lfe.add_action(life,{'action': 'shoot',
-			'target': target['life']['pos'][:],
-			'limb': 'chest'},
-			5000,
-			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))

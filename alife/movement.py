@@ -55,22 +55,6 @@ def position_to_attack(life, target):
 			return False
 	
 	return True
-	#TODO: Eventually this should be written into the pathfinding logic
-	#if sight.can_see_position(life, target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
-	#	if not sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
-	#		lfe.clear_actions(life)
-	#		return True
-	
-	#What can the target see?
-	#TODO: Unchecked Cython flag
-	#_attack_from = sight.generate_los(life,target,position,source_map,score_shootcover,invert=True)
-	
-	#if _attack_from:
-	#	lfe.clear_actions(life)
-	#	lfe.add_action(life,{'action': 'move','to': _attack_from['pos']},200)
-	#	return False
-	
-	#return True
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
