@@ -320,27 +320,24 @@ def ranged_combat(life, targets):
 		#Find the nearnest target
 	_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
-	
 	#print life['pos'], _target_positions, _path_to_nearest
 	
-	if _path_to_nearest:
-		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
-	else:
-		_target_pos = life['pos'][:]
-		_target_positions.append(_target_pos)
+	if not _path_to_nearest:
+		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+		return False
+	
+	_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
+	#else:
+	#	_target_pos = life['pos'][:]
+	#	_target_positions.append(_target_pos)
 	
 	target = None
 	
 	if _target_pos in _target_positions:
-		print _target_pos, _target_positions, _path_to_nearest
 		for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
 			if _target_pos == _target['last_seen_at']:
 				target = _target
 				break
-	
-	if not target:
-		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
-		return False
 	
 	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
 	

@@ -30,36 +30,9 @@ def position_to_attack(life, target):
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
-	if _nearest_target_score <= sight.get_vision(life):
+	if _nearest_target_score >= sight.get_vision(life):
 		print life['name'], 'changing position for combat...'
-		#_visible_target_chunks = []
-		#for target in targets:
-		#	_known_target = brain.knows_alife_by_id(life, target)
-		#	for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
-		#		if not chunk_key in _visible_target_chunks:
-		#			_visible_target_chunks.append(chunk_key)
-		#
-		#for chunk_key in chunks.get_visible_chunks_from(life['pos'], sight.get_vision(life)):
-		#	if chunk_key in _visible_target_chunks:
-		#		_visible_target_chunks.remove(chunk_key)
-		#		print 'removing'
-		
-		#TODO: Scores should be between weapon's greatest and least effective range
-		#TODO: For melee combat we'll want to get as close as possible
-		#_cover = zones.dijkstra_map(life['pos'],
-		#                            _target_positions,
-		#                            _zones,
-		#                            return_score_in_range=[10, 15])
-		#_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-		#
-		#if tuple(life['pos']) in _cover:
-		#	print 'test'
-		
-		#if not _cover:
-		#	print 'Nowhere to take cover during combat!'
-		#	return True
-		
-		#print _cover
+
 		_cover = _target_positions
 		
 		_zones = []
@@ -70,6 +43,7 @@ def position_to_attack(life, target):
 				_zones.append(_zone)
 		
 		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
+			lfe.stop(life)
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
@@ -78,7 +52,7 @@ def position_to_attack(life, target):
 			
 			return False
 		else:
-			print 'WAITING!'
+			return False
 	
 	return True
 	#TODO: Eventually this should be written into the pathfinding logic

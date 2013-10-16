@@ -80,15 +80,23 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		
 		if goals[_i][0] < _top_left[0]:
 			_top_left[0] = numbers.clip(goals[_i][0]-TEMP_SIZE, 0, MAP_SIZE[0])
-		
-		if goals[_i][0] > _bot_right[0]:
+		elif goals[_i][0] > _bot_right[0]:
 			_bot_right[0] = numbers.clip(goals[_i][0]+TEMP_SIZE, 0, MAP_SIZE[0])
 		
 		if goals[_i][1] < _top_left[1]:
 			_top_left[1] = numbers.clip(goals[_i][1]-TEMP_SIZE, 0, MAP_SIZE[1])
-		
-		if goals[_i][1] > _bot_right[1]:
+		elif goals[_i][1] > _bot_right[1]:
 			_bot_right[1] = numbers.clip(goals[_i][1]+TEMP_SIZE, 0, MAP_SIZE[1])
+	
+	if start_pos[0]<_top_left[0]:
+		_top_left[0] = numbers.clip(start_pos[0]-TEMP_SIZE, 0, MAP_SIZE[0])
+	elif start_pos[0]>_bot_right[0]:
+		_bot_right[0] = numbers.clip(start_pos[0]+TEMP_SIZE, 0, MAP_SIZE[0])
+	
+	if start_pos[1]<_top_left[1]:
+		_top_left[1] = numbers.clip(start_pos[1]-TEMP_SIZE, 0, MAP_SIZE[1])
+	elif start_pos[1]>_bot_right[1]:
+		_bot_right[1] = numbers.clip(start_pos[1]+TEMP_SIZE, 0, MAP_SIZE[1])
 	
 	_open_map = create_map_array(-3, MAP_SIZE)
 	

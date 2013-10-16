@@ -191,7 +191,7 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Equip'))
 			return False
 		
-		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=True,check_hands=True,show_containers=True)
+		_inventory = life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']],show_equipped=True,check_hands=True,show_containers=False)
 		
 		if not _inventory:
 			gfx.message('You have no items to unequip.')
