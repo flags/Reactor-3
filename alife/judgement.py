@@ -505,8 +505,9 @@ def judge_chunk_visually(life, chunk_id):
 			'life': [],
 			'score': 0}
 	
-	if lfe.execute_raw(life, 'discover', 'remember_shelter'):
-		judge_shelter(life, chunk_id)
+	if lfe.ticker(life, 'judge_shelters', 5):
+		if lfe.execute_raw(life, 'discover', 'remember_shelter'):
+			judge_shelter(life, chunk_id)
 
 def judge_chunk_life(life, chunk_id):
 	if lfe.ticker(life, 'judge_chunk_life_tick', 30):

@@ -18,6 +18,9 @@ def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
 
+def change_fire_mode(weapon, mode):
+	weapon['firemode'] = mode
+
 def get_stance_recoil_mod(life):
 	if life['stance'] == 'standing':
 		return 1

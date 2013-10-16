@@ -388,6 +388,34 @@ def handle_input():
 		#LIFE[SETTINGS['controlling']]['shoot_timer'] = LIFE[SETTINGS['controlling']]['shoot_timer_max']
 		menus.activate_menu(_i)
 	
+	if INPUT['F']:
+		if menus.get_menu_by_name('Fire Rate')>-1:
+			return False
+		
+		_weapons = life.get_held_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'gun'}])
+		
+		if not _weapons:
+			gfx.message('You aren\'t holding any weapons.')
+			return False
+		
+		_menu = []
+		for _item in _weapons:
+			_weapon = ITEMS[_item]
+			_menu.append(menus.create_item('single',
+			                                  _weapon['name'],
+			                                  weapons.get_fire_mode(_weapon),
+			                                  icon=_weapon['icon'],
+			                                  item=_weapon['uid']))
+		
+		_i = menus.create_menu(title='Fire Rate',
+			menu=_menu,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k: $v',
+			on_select=inventory_change_fire_rate)
+		
+		menus.activate_menu(_i)
+	
 	if INPUT['r']:
 		if menus.get_menu_by_name('Reload')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Reload'))
@@ -1050,6 +1078,38 @@ def inventory_fire_action(entry):
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def inventory_change_fire_rate(entry):
+	key = entry['key']
+	weapon = ITEMS[entry['item']]
+	
+	_fire_modes = []
+	
+	for fire_mode in weapon['firemodes']:
+		_fire_modes.append(menus.create_item('single',
+			     fire_mode,
+			     None,
+			     item=entry['item']))
+	
+	_i = menus.create_menu(title='Change to...',
+		menu=_fire_modes,
+		padding=(1,1),
+		position=(1,1),
+		on_select=inventory_change_fire_rate_action,
+		format_str='$k')
+	
+	menus.activate_menu(_i)
+
+def inventory_change_fire_rate_action(entry):
+	key = entry['key']
+	weapon = ITEMS[entry['item']]
+	firemode = weapon['firemodes'].index(key)
+	
+	weapons.change_fire_mode(weapon, firemode)
+	gfx.message('Changed fire rate for %s: %s' % (weapon['name'], key))
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
 
 def create_target_list():
 	_menu_items = []
