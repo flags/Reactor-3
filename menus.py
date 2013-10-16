@@ -23,8 +23,8 @@ def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', p
 		entry['uid'] = _uid
 		_uid+=1
 		
-		for value in entry['values']:
-			_line = format_entry(_menu['settings']['format'],entry)
+		for value in range(len(entry['values'])):
+			_line = format_entry(_menu['settings']['format'], entry, value=value)
 			
 			if len(_line) > _size[0]:
 				_size[0] = len(_line)
@@ -69,9 +69,12 @@ def remove_item_from_menus(matching):
 			if _match:
 				menu['menu'].remove(item)
 
-def format_entry(format_str,entry):
+def format_entry(format_str, entry, value=-1):
+	if value == -1:
+		value = entry['value']
+	
 	return format_str.replace('$k', str(entry['key']))\
-		.replace('$v', str(entry['values'][entry['value']]))\
+		.replace('$v', str(entry['values'][value]))\
 		.replace('$i', str(entry['icon']))
 
 def redraw_menu(menu):
