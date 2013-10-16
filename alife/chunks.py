@@ -130,7 +130,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 			_best_chunk['score'] = _score
 			_best_chunk['chunk_key'] = chunk_key
 		
-	if not _best_chunk['chunk_key']:
+	if not _best_chunk['chunk_key'] or not _best_chunk['score']:
 		return False
 	
 	return _best_chunk['chunk_key']

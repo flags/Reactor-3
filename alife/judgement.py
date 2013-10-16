@@ -280,10 +280,10 @@ def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
 def get_leading_target(life):
 	_highest = {'id': None, 'score': 1}
 	
-	for target_id in get_trusted(life, only_recent=True):
+	for target_id in get_trusted(life, visible=False, only_recent=False):
 		if not lfe.execute_raw(life, 'explore', 'follow_target_if', life_id=target_id):
 			continue
-		                       
+		
 		_score = 0
 		_known_target = brain.knows_alife_by_id(life, target_id)
 		
