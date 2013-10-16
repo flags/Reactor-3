@@ -299,10 +299,8 @@ def handle_input():
 				return False
 	
 	if INPUT['V']:
-		if not LIFE[SETTINGS['controlling']]['contexts']:
+		if menus.get_menu_by_name('Radio')==-1:
 			return create_radio_menu()
-		
-		menus.activate_menu(_i)
 	
 	if INPUT['f']:
 		if menus.get_menu_by_name('Select Limb')>-1:
@@ -344,7 +342,7 @@ def handle_input():
 		
 		_weapons = []
 		for hand in LIFE[SETTINGS['controlling']]['hands']:
-			_limb = life.get_limb(LIFE[SETTINGS['controlling']],hand)
+			_limb = life.get_limb(LIFE[SETTINGS['controlling']], hand)
 			
 			if not _limb['holding']:
 				continue
@@ -1676,7 +1674,8 @@ def create_announce_group_menu(**kwargs):
 	
 def handle_create_job(entry):
 	for entry in entry['workers']:
-		print entry['key']
+		_assigned = entry['values'][entry['value']]=='Assigned'
+		print entry['key'], _assigned
 
 def handle_select_workers(entry):
 	job = entry['key']
