@@ -351,11 +351,12 @@ def ranged_combat(life, targets):
 	if sight.can_see_position(life,target['last_seen_at']):
 		if sight.can_see_position(life, target['life']['pos']):
 			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
-				lfe.add_action(life,{'action': 'shoot',
-					'target': target['life']['pos'][:],
-					'limb': 'chest'},
-					5000,
-					delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
+				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
+					lfe.add_action(life,{'action': 'shoot',
+						'target': target['life']['pos'][:],
+						'limb': 'chest'},
+						5000,
+						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 		else:
 			print 'WENT MISSING!!!!!!!!!!'*100
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])

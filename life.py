@@ -1174,12 +1174,14 @@ def add_action(life,action,score,delay=0):
 	_tmp_action = {'action': action,'score': score}
 	
 	if _tmp_action in life['actions']:
+		print 'ALREADY EXISTS'
 		return False
 	
 	_tmp_action['delay'] = delay
 	_tmp_action['delay_max'] = delay
 	
 	if _tmp_action in life['actions']:
+		print 'ALREADY EXISTS'
 		return False
 	
 	_index = 0

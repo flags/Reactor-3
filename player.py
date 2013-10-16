@@ -6,6 +6,7 @@ import graphics as gfx
 
 import crafting
 import worldgen
+import numbers
 import weapons
 import dialog
 import timers
@@ -298,25 +299,8 @@ def handle_input():
 				return False
 	
 	if INPUT['V']:
-		if LIFE[SETTINGS['controlling']]['dialogs']:
-			_dialog = LIFE[SETTINGS['controlling']]['dialogs'].pop()
-			LIFE[SETTINGS['controlling']]['dialogs'].append(dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _dialog['from'], _dialog))
-			return True
-		
 		if not LIFE[SETTINGS['controlling']]['contexts']:
 			return create_radio_menu()
-		
-		if LIFE[SETTINGS['controlling']]['encounters']:
-			SETTINGS['following'] = SETTINGS['controlling']
-			LIFE[SETTINGS['controlling']]['encounters'].pop(0)
-		
-		_i = menus.create_menu(title='React',
-			menu=LIFE[SETTINGS['controlling']]['contexts'].pop()['items'],
-			padding=(1,1),
-			position=(1,1),
-			format_str='$k: $v',
-			on_select=life.react,
-			on_close=life.avoid_react)
 		
 		menus.activate_menu(_i)
 	
@@ -1067,12 +1051,13 @@ def inventory_fire_action(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
-	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'shoot',
-	    'target': entry['target']['pos'][:],
-	    'limb': entry['limb']},
-		5000,
-		delay=0)
-	
+	for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(LIFE[SETTINGS['controlling']]))):
+		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'shoot',
+		    'target': entry['target']['pos'][:],
+		    'limb': entry['limb']},
+			5000-i,
+		     delay=numbers.clip(i, 0, 1)*3)
+		
 	LIFE[SETTINGS['controlling']]['targeting'] = None
 	SETTINGS['following'] = SETTINGS['controlling']
 	SELECTED_TILES[0] = []
