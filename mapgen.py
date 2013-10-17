@@ -532,10 +532,18 @@ def create_tree(map_gen, position, height):
 def place_forest(map_gen):
 	SMALLEST_FOREST = (80, 80)
 	
-	_top_left = (random.randint(0, numbers.clip(map_gen['size'][0]-SMALLEST_FOREST[0], SMALLEST_FOREST[0], map_gen['size'][0]-SMALLEST_FOREST[0])),
-	             random.randint(0, map_gen['size'][1]-SMALLEST_FOREST[1]))
-	_bot_right = (random.randint(_top_left[0]+SMALLEST_FOREST[0], _top_left[0]+(map_gen['size'][0]-_top_left[0])),
-	              random.randint(_top_left[1]+SMALLEST_FOREST[1], _top_left[1]+(map_gen['size'][1]-_top_left[1])))
+	while 1:
+		_top_left = (random.randint(0, numbers.clip(map_gen['size'][0]-SMALLEST_FOREST[0], SMALLEST_FOREST[0], map_gen['size'][0]-SMALLEST_FOREST[0])),
+			         random.randint(0, map_gen['size'][1]-SMALLEST_FOREST[1]))
+		
+		if not (_top_left[0]+SMALLEST_FOREST[0])-(_top_left[0]+(map_gen['size'][0]-_top_left[0])) or\
+		   not (_top_left[1]+SMALLEST_FOREST[1])-(_top_left[1]+(map_gen['size'][1]-_top_left[1])):
+			continue
+		
+		_bot_right = (random.randint(_top_left[0]+SMALLEST_FOREST[0], _top_left[0]+(map_gen['size'][0]-_top_left[0])),
+			          random.randint(_top_left[1]+SMALLEST_FOREST[1], _top_left[1]+(map_gen['size'][1]-_top_left[1])))
+		
+		break
 	
 	_size = (map_gen['size'][0], map_gen['size'][1], 5)
 	_top_left = (0, 0)
