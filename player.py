@@ -1051,7 +1051,7 @@ def inventory_fire_action(entry):
 	
 	for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(LIFE[SETTINGS['controlling']]))):
 		life.add_action(LIFE[SETTINGS['controlling']],{'action': 'shoot',
-		    'target': entry['target']['pos'][:],
+		    'target': entry['target']['pos'],
 		    'limb': entry['limb']},
 			5000-i,
 		     delay=numbers.clip(i, 0, 1)*3)

@@ -462,6 +462,7 @@ def save_all_life():
 			try:
 				json.dumps(life[key])
 			except:
+				print life[key]
 				logging.critical('Life key cannot be offloaded: %s' % key)
 				raise Exception(key)
 	
@@ -1544,6 +1545,7 @@ def kill(life, injury):
 		
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
+			del life['player']
 		else:
 			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
 		

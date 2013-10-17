@@ -353,7 +353,7 @@ def ranged_combat(life, targets):
 			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
 				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
 					lfe.add_action(life,{'action': 'shoot',
-						'target': target['life']['pos'][:],
+						'target': target['last_seen_at'],
 						'limb': 'chest'},
 						5000,
 						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))

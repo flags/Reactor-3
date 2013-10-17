@@ -122,7 +122,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		simulate_life(simulate_ticks)
 	
-	lfe.focus_on(create_player(source_map))
+	lfe.focus_on(create_player())
 	WORLD_INFO['id'] = 0
 	
 	if save:
@@ -148,6 +148,9 @@ def load_world(world):
 	SETTINGS['controlling'] = None
 	SETTINGS['following'] = None
 	for life in LIFE.values():
+		if life['dead']:
+			continue
+		
 		if 'player' in life:
 			SETTINGS['controlling'] = life['id']
 			lfe.focus_on(life)
@@ -182,6 +185,12 @@ def save_world():
 	items.reload_all_items()
 	
 	logging.info('World saved.')
+
+def reset_world():
+	SETTINGS['following'] = None
+	SETTINGS['controlling'] = None
+	
+	logging.debug('World reset.')
 
 def randomize_item_spawns():
 	for building in WORLD_INFO['reference_map']['buildings']:
@@ -299,10 +308,9 @@ def generate_life():
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))
 
-def create_player(source_map):
+def create_player():
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
-		map=source_map,
 		position=get_spawn_point())
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
@@ -310,17 +318,18 @@ def create_player(source_map):
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('.22 rifle'))
-	life.add_item_to_inventory(PLAYER, items.create_item('.22 LR magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
+	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
 	
 	for i in range(10):
-		life.add_item_to_inventory(PLAYER, items.create_item('.22 LR cartridge'))
+		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER['id']
-	SETTINGS['following'] = PLAYER['id']
+	
+	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
 	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
 	items.move(_i, 180, 3)

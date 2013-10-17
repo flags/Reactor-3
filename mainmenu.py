@@ -149,7 +149,7 @@ def switch_to_main_menu():
 
 def switch_to_start_game():
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=LIFE[SETTINGS['controlling']]))
+	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=SETTINGS['controlling']))
 	_menu_items.append(menus.create_item('single', 'New Character', None))
 	_menu_items.append(menus.create_item('single', 'New Character (Advanced)', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
@@ -228,8 +228,9 @@ def switch_to_world_gen():
 
 def start_game():
 	SETTINGS['running'] = 2
-	menus.delete_active_menu()
-	menus.delete_active_menu()
+	
+	while MENUS:
+		menus.delete_active_menu()
 
 def generate_world(combat_test=False):
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]
@@ -300,6 +301,7 @@ def spawn_menu_select(entry):
 	key = entry['key']
 	
 	if key == 'Zone Entry Point':
+		worldgen.create_player()
 		start_game()
 	elif key == 'Back':
 		switch_to_start_game()
