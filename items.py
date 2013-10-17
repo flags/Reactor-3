@@ -469,6 +469,9 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
+	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+		return True
+	
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
@@ -546,6 +549,10 @@ def tick_item(item_uid):
 		item['velocity'][2] -= item['gravity']
 		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 		item['pos'][2] = int(round(item['realpos'][2]))
+		
+		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
+			delete_item(ITEMS[item_uid])
+			return False
 		
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 		if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
