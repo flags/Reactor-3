@@ -356,13 +356,13 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	if get_chunks:
 		_center_chunk = maps.get_chunk(_center_chunk_key)
 	
-	_visible_chunks = []
+	_visible_chunks = set()
 	
 	if _chunks:
-		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
+		_chunks = set([c for c in _chunks if c in WORLD_INFO['chunk_map']])
 	else:
 		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
-		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
+		_chunks = set([c for c in _chunks if c in WORLD_INFO['chunk_map']])
 	
 	#Find chunks furthest away
 	if visible_check:
@@ -397,7 +397,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 					
 					_chunk_key = chunks.get_chunk_key_at(pos)
 					if not _chunk_key in _visible_chunks:
-						_visible_chunks.append(_chunk_key)
+						_visible_chunks.add(_chunk_key)
 			else:
 				_chunks.remove(outline_chunk_key)
 	
@@ -414,7 +414,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		
 		if get_chunks:
 			_current_chunk = maps.get_chunk(chunk_key)
-			_visible_chunks.append(chunk_key)
+			_visible_chunks.add(chunk_key)
 		
 		if judge:
 			if initial:
