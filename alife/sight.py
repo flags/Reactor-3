@@ -397,14 +397,18 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 					
 					_chunk_key = chunks.get_chunk_key_at(pos)
 					if not _chunk_key in _visible_chunks:
+						if judge:
+							if initial:
+								judgement.judge_chunk(life, _chunk_key, seen=True)
+							else:
+								judgement.judge_chunk(life, _chunk_key)
+						
 						_visible_chunks.add(_chunk_key)
+						_chunks.remove(_chunk_key)
 			else:
 				_chunks.remove(outline_chunk_key)
 	
 	for chunk_key in _chunks:
-		if chunk_key in _visible_chunks:
-			continue
-		
 		if visible_check and not chunks.can_see_chunk(life, chunk_key):
 			#print chunk_key, lfe.get_current_chunk_id(life)
 			continue
@@ -413,7 +417,6 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 				continue
 		
 		if get_chunks:
-			_current_chunk = maps.get_chunk(chunk_key)
 			_visible_chunks.add(chunk_key)
 		
 		if judge:
