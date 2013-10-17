@@ -106,7 +106,7 @@ def get_ranged_combat_rating_of_target(life, life_id):
 	target = LIFE[life_id]
 	_score = 0
 	
-	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target)]:
+	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target) if i in ITEMS]:
 		if not logic.matches(item, {'type': 'gun'}):
 			continue
 		

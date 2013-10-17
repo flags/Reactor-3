@@ -5,6 +5,11 @@ New in version 0.6.1:
 		* The mouse can now be used to select items in look mode.
 	* ALife take more factors into consideration when deciding if they are safe
 	* Worlds are initially seeded with one group of a random motive.
+	
+	Bugfixes:
+		* Forest placement no longer crashes mapgen.
+		* Numerous out-of-bounds issues solved.
+		* 
 
 New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets

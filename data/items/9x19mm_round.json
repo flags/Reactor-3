@@ -3,7 +3,7 @@
 "type": "bullet",
 "icon": ".",
 "description": "Pistol round effective at short to mid-range combat.",
-"speed": 28,
+"speed": 30,
 "drag": 0.1,
 "scatter_rate": 0.3,
 "flags": "",
