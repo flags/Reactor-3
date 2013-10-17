@@ -1558,8 +1558,14 @@ def kill(life, injury):
 	if life['group']:
 		groups.remove_member(life['group'], life['id'])
 	
+	life['actions'] = []
+	if not life['pos'] == life['prev_pos']:
+		_walk_direction = numbers.direction_to(life['prev_pos'], life['pos'])
+		push(life, _walk_direction, 2)
+	
 	drop_all_items(life)
 	life['dead'] = True
+	life['stance'] = 'crawling'
 	timers.remove_by_owner(life)
 
 def can_die_via_critical_injury(life):
@@ -1595,6 +1601,8 @@ def tick(life, source_map):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 
 	if life['dead']:
+		perform_collisions(life)
+		calculate_velocity(life)
 		return False
 	
 	if calculate_blood(life)<=0:
@@ -2241,8 +2249,11 @@ def drop_item(life, item_id):
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
 	
-	for item in [item['uid'] for item in [get_inventory_item(life, item) for item in life['inventory']] if not 'max_capacity' in item and not is_item_in_storage(life, item['uid'])]:
-		drop_item(life, item)
+	for item in get_all_storage(life):
+		drop_item(life, item['uid'])
+	
+	for item_uid in get_all_equipped_items(life):
+		drop_item(life, item_uid)
 
 def lock_item(life, item_uid):
 	items.get_item_from_uid(item_uid)['lock'] = life

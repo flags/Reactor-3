@@ -245,8 +245,11 @@ if __name__ == '__main__':
 			worldgen.load_world(world)
 			break
 		
-		if LIFE:
+		if SETTINGS['controlling']:
 			SETTINGS['running'] = 2
+		else:
+			logging.debug('No active player found. Going back to menu.')
+			SETTINGS['running'] = 1
 	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()
