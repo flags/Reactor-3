@@ -423,7 +423,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 				judgement.judge_chunk(life, chunk_key)
 	
 	if get_chunks:
-		return _visible_chunks
+		return list(_visible_chunks)
 
 def fast_scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
 	_vision = get_vision(life)/2
