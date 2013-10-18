@@ -404,7 +404,9 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 								judgement.judge_chunk(life, _chunk_key)
 						
 						_visible_chunks.add(_chunk_key)
-						_chunks.remove(_chunk_key)
+						
+						if _chunk_key in _chunks:
+							_chunks.remove(_chunk_key)
 			else:
 				_chunks.remove(outline_chunk_key)
 	

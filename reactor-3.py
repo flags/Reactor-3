@@ -190,7 +190,9 @@ def loop():
 		elif SETTINGS['running'] == 2:
 			main()
 		elif SETTINGS['running'] == 3:
-			mainmenu.draw_intro()	
+			mainmenu.draw_intro()
+	
+	worldgen.cleanup()
 
 if __name__ == '__main__':
 	#TODO: Replace with "module_sanity_check"

@@ -62,3 +62,6 @@ def night():
 
 def toss():
 	life.push(LIFE[SETTINGS['controlling']], 0, 2)
+
+def soldier():
+	LIFE[SETTINGS['following']]['stats']['firearms'] = 10

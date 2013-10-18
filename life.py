@@ -2127,7 +2127,7 @@ def consume_item(life, item_id):
 	if not can_consume(life, item_id):
 		return False
 	
-	life['eaten'].append(item)
+	life['eaten'].append(item_id)
 	remove_item_from_inventory(life, item_id)
 	items.delete_item(ITEMS[item_id])
 	
@@ -2806,7 +2806,8 @@ def get_total_pain(life):
 
 def calculate_hunger(life):
 	_remove = []
-	for _food in life['eaten']:
+	
+	for _food in [items.fetch_item(i) for i in life['eaten']]:
 		if _food['sustenance']:
 			_food['sustenance'] -= 1
 			
@@ -2830,7 +2831,7 @@ def calculate_hunger(life):
 			_remove.append(_food)
 	
 	for _item in _remove:
-		life['eaten'].remove(_item)
+		life['eaten'].remove(_item['uid'])
 	
 	if get_hunger(life) == 'Satiated':
 		brain.unflag(life, 'hungry')
@@ -2888,6 +2889,9 @@ def calculate_blood(life):
 			_blood += limb['bleeding']
 	
 	life['blood'] -= _blood*LIFE_BLEED_RATE
+	
+	if not life['asleep'] and _blood*LIFE_BLEED_RATE>=1.2:
+		pass_out(life)
 	
 	return life['blood']
 

@@ -11,6 +11,7 @@ import timers
 import alife
 import logic
 import zones
+import cache
 import maps
 import life
 
@@ -191,6 +192,8 @@ def delete_item(item):
 	if gfx.position_is_in_frame(item['pos']):
 		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
 	
+	cache.offload_item(item)
+	
 	del ITEMS[item['uid']]
 
 def add_to_chunk(item):
@@ -205,21 +208,24 @@ def remove_from_chunk(item):
 	if item['uid'] in _chunk['items']:
 		_chunk['items'].remove(item['uid'])
 
-def save_all_items():
-	for item in ITEMS.values():
-		if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
+def clean_item_for_save(item):
+	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
 			item['icon'] = ord(item['icon'][0])
 		
-		_fore = None
-		_back = None
-		
-		if item['color'][0]:
-			_fore = (item['color'][0][0], item['color'][0][1], item['color'][0][2])
-		
-		if item['color'][1]:
-			_back = (item['color'][1][0], item['color'][1][1], item['color'][1][2])
-		
-		item['color'] = (_fore, _back)
+	_fore = None
+	_back = None
+	
+	if item['color'][0]:
+		_fore = (item['color'][0][0], item['color'][0][1], item['color'][0][2])
+	
+	if item['color'][1]:
+		_back = (item['color'][1][0], item['color'][1][1], item['color'][1][2])
+	
+	item['color'] = (_fore, _back)
+
+def save_all_items():
+	for item in ITEMS.values():
+		clean_item_for_save(item)
 
 def reload_all_items():
 	for item in ITEMS.values():
@@ -241,6 +247,13 @@ def reload_all_items():
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
+
+def fetch_item(item_uid):
+	if item_uid in ITEMS:
+		return ITEMS[item_uid]
+	
+	#Fetch from history now (sometimes offloaded)
+	return cache.retrieve_item(item_uid)
 
 def get_pos(item_uid):
 	item = ITEMS[item_uid]

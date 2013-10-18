@@ -9,6 +9,7 @@ import worldgen
 import effects
 import numbers
 import timers
+import cache
 import menus
 import items
 import life
@@ -150,6 +151,8 @@ def tick_world():
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+	cache.scan_cache()
 	
 def is_night():
 	if WORLD_INFO['time_of_day'] == 'night':

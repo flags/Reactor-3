@@ -8,6 +8,7 @@ import historygen
 import profiles
 import effects
 import mapgen
+import cache
 import logic
 import items
 import tiles
@@ -135,15 +136,19 @@ def load_world(world):
 	gfx.title('Loading...')
 	
 	WORLD_INFO['id'] = world
-	maps.load_map('map', base_dir=profiles.get_world(world))
+	maps.load_map('map', base_dir=profiles.get_world_directory(world))
 
 	logging.debug('Loading life from disk...')
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'r') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'life.dat'), 'r') as e:
 		LIFE.update(json.loads(e.readline()))
 
 	logging.debug('Loading items from disk...')
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'r') as e:
-		ITEMS.update(json.loads(e.readline()))	
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items.dat'), 'r') as e:
+		ITEMS.update(json.loads(e.readline()))
+	
+	logging.debug('Loading historic items...')
+	#with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items_history.dat'), 'r') as e:
+	#	ITEMS_HISTORY.update(json.loads(''.join(e.readlines())))
 	
 	SETTINGS['controlling'] = None
 	SETTINGS['following'] = None
@@ -171,20 +176,30 @@ def save_world():
 	logging.debug('Saving items...')
 	items.save_all_items()	
 	
-	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
+	maps.save_map('map', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
 	_life = life.save_all_life()
 	
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'life.dat'), 'w') as e:
 		e.write(_life)
 	
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items.dat'), 'w') as e:
 		e.write(json.dumps(ITEMS))
+	
+	cache.commit_cache('items')
+	cache.save_cache('items')
 	
 	items.reload_all_items()
 	
 	logging.info('World saved.')
+
+def cleanup():
+	if not WORLD_INFO['id']:
+		return False
+	
+	gfx.title('Saving cache...')
+	cache.save_cache('items')
 
 def reset_world():
 	SETTINGS['following'] = None

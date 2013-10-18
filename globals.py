@@ -182,6 +182,7 @@ LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
+ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 BULLETS = []
 EFFECTS = {}
