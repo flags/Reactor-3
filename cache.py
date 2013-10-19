@@ -38,7 +38,11 @@ def save_cache(cache_name):
 		_cache = f.readlines()
 
 		for line in _cache:
-			_historic_item = json.loads(line.strip())
+			if line.endswith('\n'):
+				line.rstrip()
+			
+			print repr(line)
+			_historic_item = json.loads(line)
 			
 			if not _historic_item['_allow_dump']:
 				continue
@@ -61,6 +65,7 @@ def commit_cache(cache_name):
 		_cache = f.readlines()
 
 		for line in _cache:
+			print repr(line)
 			_historic_item = json.loads(line.strip())
 			_historic_item['_allow_dump'] = True
 			_write_cache.append(json.dumps(_historic_item))
