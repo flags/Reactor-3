@@ -148,7 +148,6 @@ def fire(life, target, limb=None):
 		return False
 	
 	direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
-	life['recoil'] = (weapon['recoil'] * get_stance_recoil_mod(life))
 	
 	#TODO: Clean this up...
 	_bullet = items.get_item_from_uid(_feed['rounds'].pop())
@@ -156,6 +155,8 @@ def fire(life, target, limb=None):
 	_bullet['start_pos'] = life['pos'][:]
 	_bullet['owner'] = life['id']
 	_bullet['aim_at_limb'] = limb
+	
+	life['recoil'] += _bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life))
 	
 	items.add_to_chunk(_bullet)
 	

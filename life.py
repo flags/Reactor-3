@@ -2699,7 +2699,7 @@ def draw_life_info():
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
 		tcod.console_set_default_foreground(0, tcod.yellow)
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
 	
 	#Drawing the action queue
 	_y_mod = 1
@@ -3215,15 +3215,15 @@ def damage_from_fall(life,dist):
 	return True
 
 def difficulty_of_hitting_limb(life, limb, item_uid):
+	if not limb in life['body']:
+		return 9999
+	
 	_scatter = weapons.get_bullet_scatter_to(life, life['pos'], item_uid)
 	_scatter *= 1+((10-numbers.clip(get_limb(life, limb)['size'], 1, 10))/10)
 	
 	return _scatter
 
 def damage_from_item(life, item, damage):
-	#Step 1: If we are aiming at something, what are the chances of hitting it?
-	#Limbs:
-	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
