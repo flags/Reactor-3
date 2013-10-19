@@ -9,7 +9,7 @@ import brain
 
 STATE = 'needs'
 
-TIER = TIER_SURVIVAL
+TIER = TIER_SURVIVAL-.2
 
 def setup(life):
 	_needs_to_meet = []
@@ -33,14 +33,11 @@ def setup(life):
 	if not _needs_to_meet and not _needs_to_satisfy:
 		return False
 
-def get_tier(life):
-	if lfe.execute_raw(life, 'state', 'needs'):
-		return TIER_SURVIVAL-.2
-	
-	return TIER
-
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
+
+	if not lfe.execute_raw(life, 'state', 'needs'):
+		return False
 
 	if not judgement.is_safe(life):
 		return False

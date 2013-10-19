@@ -76,7 +76,7 @@ def main():
 	handle_input()
 	_played_moved = False
 
-	while LIFE[SETTINGS['controlling']]['asleep']:
+	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
 		logic.tick_all_objects(WORLD_INFO['map'])
 		_played_moved = True
 		
@@ -235,6 +235,7 @@ if __name__ == '__main__':
 	
 	life.initiate_life('human')
 	life.initiate_life('dog')
+	life.initiate_life('night_terror')
 	
 	items.initiate_all_items()
 	

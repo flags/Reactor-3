@@ -234,8 +234,8 @@ def randomize_item_spawns():
 			_rand_pos = random.choice(_chunk['ground'])
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
-def get_spawn_point():
-	if WORLD_INFO['reference_map']['roads']:
+def get_spawn_point(randomize=False):
+	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
 		for road in WORLD_INFO['reference_map']['roads']:
 			for chunk_key in alife.references.get_reference(road):
@@ -245,6 +245,7 @@ def get_spawn_point():
 					_entry_road_keys.append(chunk_key)
 		
 		if _entry_road_keys:
+			
 			_spawn_pos = random.choice(WORLD_INFO['chunk_map'][random.choice(_entry_road_keys)]['ground'])
 			
 			return [_spawn_pos[0], _spawn_pos[1], 2]
@@ -264,7 +265,7 @@ def get_spawn_point():
 
 def generate_wildlife():
 	for i in range(1, 3):
-		_spawn = get_spawn_point()
+		_spawn = get_spawn_point(randomize=True)
 		
 		_p = life.create_life('dog',
 			name=['Wild', 'Dog%s' % i],
@@ -283,6 +284,13 @@ def generate_wildlife():
 			
 			alife.brain.flag_alife(_p, _c['id'], 'son')
 			alife.brain.flag_alife(_c, _p['id'], 'father')
+		
+		_spawn = get_spawn_point(randomize=True)
+		
+		for i in range(4):
+			_p = life.create_life('night_terror',
+				map=WORLD_INFO['map'],
+				position=[_spawn[0], _spawn[1], 2])
 
 def generate_life():
 	_spawn = get_spawn_point()

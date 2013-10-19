@@ -288,8 +288,12 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	
 	if not name and _life['name'] == '$FIRST_AND_LAST_NAME_FROM_SPECIES':
 		_life['name'] = language.generate_first_and_last_name_from_species(_life['species'])
-	elif name:
+	elif isinstance(name, list):
 		_life['name'] = name
+	elif name:
+		_life['name'] = name.split(' ')
+	elif not name:
+		_life['name'] = LIFE_TYPES[type]['name'].split(' ')
 	
 	_life['id'] = str(WORLD_INFO['lifeid'])
 	
@@ -1514,6 +1518,8 @@ def perform_action(life):
 	
 	elif _action['action'] == 'bite':
 		damage.bite(life, _action['target'], _action['limb'])
+		
+		speech.announce(life, 'bit', public=True, target=_action['target'])
 		
 		delete_action(life,action)
 	
