@@ -92,7 +92,7 @@ def draw_intro():
 	
 	SETTINGS['running'] = 1
 
-def clear():
+def clear(*args):
 	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
 	_c = random.choice([tcod.sepia, tcod.brass, tcod.gray])
 	
@@ -142,7 +142,8 @@ def switch_to_main_menu():
 		position=(0,0),
 		format_str='$k',
 		on_select=main_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -160,7 +161,8 @@ def switch_to_start_game():
 		position=(0,0),
 		format_str='$k',
 		on_select=start_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -178,7 +180,8 @@ def switch_to_select_world():
 		position=(0,0),
 		format_str='$k',
 		on_select=world_select_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -196,7 +199,8 @@ def switch_to_spawn_point():
 		position=(0,0),
 		format_str='$k ($v)',
 		on_select=spawn_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -221,7 +225,8 @@ def switch_to_world_gen():
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		on_select=worldgen_menu_select)
+		on_select=worldgen_menu_select,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
