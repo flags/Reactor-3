@@ -651,7 +651,6 @@ def find_all_linked_chunks(chunk_key, check=[]):
 		_linked_chunks.append(_current_chunk_key)
 		_current_chunk = get_chunk(_current_chunk_key)
 		
-		print _current_chunk['neighbors']
 		for neighbor_chunk_key in _current_chunk['neighbors']:
 			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
 				continue
@@ -681,8 +680,6 @@ def generate_reference_maps():
 				continue
 			
 			if _current_chunk['type'] == 'road':
-				print find_all_linked_chunks(_current_chunk_key)
-				print 'done\n'
 				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
 					WORLD_INFO['references'][str(_ref_id)] = _ret

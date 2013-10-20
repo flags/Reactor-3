@@ -51,7 +51,7 @@ gfx.log(WINDOW_TITLE)
 create_all_tiles()
 items.initiate_all_items()
 
-LOAD_MAP = 'test2.dat'
+LOAD_MAP = '1382307134.84.dat'
 
 gfx.init_libtcod(terraform=True)
 
@@ -477,7 +477,7 @@ def main():
 			maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			
-			items.draw_items()
+			#items.draw_items()
 			gfx.draw_all_tiles()
 			gfx.draw_bottom_ui_terraform()
 			gfx.draw_console()

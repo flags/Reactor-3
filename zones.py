@@ -81,6 +81,7 @@ def process_slice(z, world_info=None, start_id=0):
 			_per_run = time.time()
 			_runs += 1
 			_changed = False
+			print _ramps
 			
 			for x in range(MAP_SIZE[0]):
 				for y in range(MAP_SIZE[1]):
@@ -104,7 +105,7 @@ def process_slice(z, world_info=None, start_id=0):
 								pass
 							else:
 								if (_x, _y, z+1) in _ramps:
-									#print 'panic (2)'
+									print 'panic (2)'
 									continue
 								
 								_ramps.append((_x, _y, z+1))
@@ -160,7 +161,6 @@ def can_path_to_zone(z1, z2):
 		try:
 			_to_check.extend([n for n in WORLD_INFO['slices'][_checking]['neighbors'] if _checking and not n in _checked])
 		except:
-			print _checking, _checked
 			raise Exception('Failed.')
 		
 		if z2 in _to_check:
@@ -175,6 +175,7 @@ def create_zone_map():
 	tcod.console_set_default_foreground(0, tcod.white)
 	tcod.console_flush()
 	
+	_t = time.time()
 	if SETTINGS['smp']:
 		smp.create_zone_maps()
 	else:
@@ -183,6 +184,7 @@ def create_zone_map():
 			process_slice(z)
 	
 		tcod.console_print(0, 0, 0, '              ')
+	print 'Zone gen took',time.time()-_t
 
 def connect_ramps():
 	_i = 1

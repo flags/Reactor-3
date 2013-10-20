@@ -96,7 +96,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(600, 600, 10), detail=5, towns=2, factories=1, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -134,16 +134,16 @@ def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1,
 	for chunk_key in map_gen['refs']['roads']:
 		create_road(map_gen, chunk_key)
 	
-	logging.debug('Building factories...')
-	for _factory in map_gen['refs']['factories']:
-		construct_factory(map_gen, _factory)
+	#logging.debug('Building factories...')
+	#for _factory in map_gen['refs']['factories']:
+		#construct_factory(map_gen, _factory)
 	
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
 	
-	#place_hills(map_gen)
-	#print_map_to_console(map_gen)
+	##place_hills(map_gen)
+	##print_map_to_console(map_gen)
 	
 	clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
 	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
@@ -171,9 +171,7 @@ def generate_map(size=(150, 150, 10), detail=5, towns=4, factories=4, forests=1,
 		maps.generate_reference_maps()
 	
 	items.save_all_items()
-	
 	maps.save_map(map_gen['name'])
-	
 	items.reload_all_items()
 	
 	return map_gen
@@ -225,11 +223,11 @@ def generate_chunk_map(map_gen):
 			
 def generate_outlines(map_gen):
 	logging.debug('Placing roads and towns...')
-	place_roads(map_gen)
+	place_road(map_gen, turnoffs=map_gen['towns']-1, length=(15*map_gen['towns'], 35*map_gen['towns']), width=2)
 	
-	logging.debug('Placing factories...')
-	while len(map_gen['refs']['factories'])<map_gen['factories']:
-		place_factory(map_gen)
+	#logging.debug('Placing factories...')
+	#while len(map_gen['refs']['factories'])<map_gen['factories']:
+	#	place_factory(map_gen)
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -247,7 +245,7 @@ def generate_outlines(map_gen):
 	while len(map_gen['refs']['forests'])<map_gen['forests']:
 		map_gen['refs']['forests'].append(place_forest(map_gen))
 
-def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=True):
+def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs=1, turns=-1, width=1, can_create=0):
 	_start_edge = random.randint(0, 3)
 	
 	if turns == -1:
@@ -255,16 +253,22 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 	else:
 		_max_turns = turns
 	
+	_road_segments = range(random.randint(length[0], length[1]))
+	_town_segments = []
+	for i in range(turnoffs):
+		_segment = random.randint(int(len(_road_segments)*(i/float(turnoffs))), int(len(_road_segments)*(i+1/float(turnoffs))))
+		_town_segments.append(_segment)
+	
 	_pos = start_pos
 	_next_dir = next_dir
 	
 	if start_pos:
 		_chunk_key = '%s,%s' % ((start_pos[0]/map_gen['chunk_size'])*map_gen['chunk_size'],
-		                        (start_pos[1]/map_gen['chunk_size'])**map_gen['chunk_size'])
+		                        (start_pos[1]/map_gen['chunk_size'])*map_gen['chunk_size'])
 	
 	if not _pos:
 		if not _start_edge:
-			_pos = [random.randint(0, map_gen['size'][0]/map_gen['chunk_size']), 0]
+			_pos = [random.randint(0, map_gen['size'][0]/map_gen['chunk_size']), -1]
 			_next_dir = (0, 1)
 		elif _start_edge == 1:
 			_pos = [map_gen['size'][0]/map_gen['chunk_size'], random.randint(0, map_gen['size'][1]/map_gen['chunk_size'])]
@@ -273,11 +277,11 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 			_pos = [random.randint(0, map_gen['size'][0]/map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
 			_next_dir = (0, -1)
 		elif _start_edge == 3:
-			_pos = [0, random.randint(0, map_gen['size'][1]/map_gen['chunk_size'])]
+			_pos = [-1, random.randint(0, map_gen['size'][1]/map_gen['chunk_size'])]
 			_next_dir = (1, 0)
 	
 	while 1:
-		for i in range(40, 40+random.randint(1, 20)):
+		for i in _road_segments:
 			_pos[0] += _next_dir[0]
 			_pos[1] += _next_dir[1]
 			
@@ -293,40 +297,64 @@ def place_roads(map_gen, start_pos=None, next_dir=None, turns=-1, can_create=Tru
 			if _pos[1] < 0:
 				return False
 		
-			_chunk_key = '%s,%s' % (_pos[0]*map_gen['chunk_size'], _pos[1]*map_gen['chunk_size'])
-			map_gen['chunk_map'][_chunk_key]['type'] = 'road'
-			map_gen['refs']['roads'].append(_chunk_key)
-		
-		_possible_next_dirs = []
-		if _pos[0]+1<map_gen['size'][0]/map_gen['chunk_size']:
-			_possible_next_dirs.append((1, 0))
-		
-		if _pos[0]-1>0:
-			_possible_next_dirs.append((-1, 0))
-		
-		if _pos[1]+1<map_gen['size'][1]/map_gen['chunk_size']:
-			_possible_next_dirs.append((0, 1))
-		
-		if _pos[1]-1>0:
-			_possible_next_dirs.append((0, -1))
-		
-		for _possible in _possible_next_dirs[:]:
-			if not _next_dir[0]+_possible[0] or not _next_dir[1]+_possible[1]:
-				_possible_next_dirs.remove(_possible)
-		
-		while _max_turns and can_create:
-			_next_dir = random.choice(_possible_next_dirs)
-			_possible_next_dirs.remove(_next_dir)
-			map_gen['refs']['town_seeds'].append(_chunk_key)
+			for _i in range(1, 1+width):
+				_x = 0
+				_y = 0
+				if _next_dir[0]:
+					_y = _i-1
+				elif _next_dir[1]:
+					_x = _i-1
+					
+				_chunk_key = '%s,%s' % ((_pos[0]+_x)*map_gen['chunk_size'], (_pos[1]+_y)*map_gen['chunk_size'])
+				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
+				map_gen['refs']['roads'].append(_chunk_key)
 			
-			for _turn in _possible_next_dirs:
-				place_roads(map_gen, start_pos=_pos[:], next_dir=_turn, turns=random.randint(0, 3), can_create=False)
-			
-			break
+			if i in _town_segments:
+				_possible_next_dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+				_possible_next_dirs.remove(_next_dir)
+				
+				place_road(map_gen, start_pos=_pos[:], turnoffs=0, length=(10, 20), next_dir=random.choice(_possible_next_dirs), turns=3, can_create=3, width=1)
 		
 		if _max_turns:
+			_possible_next_dirs = []
+			if _pos[0]+1<map_gen['size'][0]/map_gen['chunk_size']:
+				_possible_next_dirs.append((1, 0))
+			
+			if _pos[0]-1>0:
+				_possible_next_dirs.append((-1, 0))
+			
+			if _pos[1]+1<map_gen['size'][1]/map_gen['chunk_size']:
+				_possible_next_dirs.append((0, 1))
+			
+			if _pos[1]-1>0:
+				_possible_next_dirs.append((0, -1))
+			
+			for _possible in _possible_next_dirs[:]:
+				if not _next_dir[0]+_possible[0] or not _next_dir[1]+_possible[1]:
+					_possible_next_dirs.remove(_possible)
+			
+			_next_dir = random.choice(_possible_next_dirs)
+			
+			if can_create:
+				
+				map_gen['refs']['town_seeds'].append(_chunk_key)
+				
+				if can_create>1:
+					place_road(map_gen, start_pos=_pos[:], turnoffs=0, length=(5, 10), next_dir=random.choice(_possible_next_dirs), turns=can_create-1, can_create=can_create-1, width=1)
+				
+				can_create -= 1
+				
+				#if _max_turns:
+				#	print 'possible', _possible_next_dirs
+			
+				#_possible_next_dirs.remove(_next_dir)
+					
+				#_turn = random.choice(_possible_next_dirs)
+				#	place_road(map_gen, start_pos=_pos[:], next_dir=_turn, turns=3, can_create=True, width=1)
+			
 			_max_turns -= 1
-			continue
+		else:
+			break
 		
 		#take rest of _possible_next_dirs and make intersection?
 
@@ -1296,4 +1324,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(200, 200, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(200, 200, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

@@ -605,3 +605,25 @@ Issue #2: Job Issue
 -----------------
 Starting on group jobs has made me realize just how much work is involved with getting the ALife to perform cycles. For example, I can give them the need to collect items for their group, but when it comes down to returning to the camp and storing the items it completely fails. It's the weird mix of needs and jobs that cause the issue, because iirc jobs have a higher priority than needs, so the ALife in question will become aware of the job to return the items regardless of whether they have them or not.
 
+MapGen: Version 2
+=================
+Now that the current map generator is stable, it's time to write the second iteration of it. We'll work on it in 3 stages, but first, a few notes:
+
+* We need larger maps - at least 2x/3x larger than the current ones
+* Each map should have a number of unique landmarks in addition to areas that need to be on every map
+* Generated maps should have a clear progression, i.e., going from peaceful to hostile
+
+The following should be on every map, in order:
+
+* Town(s)
+* Factories
+* Army Warehouses
+* Labs
+* Reactor
+
+Cycle 1: Towns
+------------
+The current town size is fine, but the actual layout needs to be much more detailed. Buildings should not be constricted to tetris blocks and need to span multiple z-levels.
+
+First, we need to generate a road leading into the Zone. It should NOT go deeper than factories and must cross through the main town.
+
