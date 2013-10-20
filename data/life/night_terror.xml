@@ -1,5 +1,5 @@
 <name>Night Terror</name>
-<species>night_terror</species>
+<species>Night Terror</species>
 <type>mutant</animal>
 
 <flags>LEGS[blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]</flags>

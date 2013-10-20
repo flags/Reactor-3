@@ -75,6 +75,7 @@ def commit_cache(cache_name):
 			if line == '\n' or not line:
 				continue
 			
+			print repr(line)
 			_historic_item = json.loads(line)
 			_historic_item['_allow_dump'] = True
 			_write_cache.append(json.dumps(_historic_item))
@@ -88,10 +89,6 @@ def commit_cache(cache_name):
 			_historic_item['_allow_dump'] = True
 
 	with open(_path, 'w') as f:
-		print '*'*10
-		print 'commit'
-		print _write_cache
-		print '*'*10
 		f.write('\n'.join(_write_cache))
 
 	logging.debug('Cache: Committed.')
