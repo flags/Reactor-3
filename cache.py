@@ -41,13 +41,20 @@ def save_cache(cache_name):
 			if line.endswith('\n'):
 				line.rstrip()
 			
-			print repr(line)
+			if line == '\n':
+				continue
+			
 			_historic_item = json.loads(line)
 			
 			if not _historic_item['_allow_dump']:
 				continue
 			
-			_write_cache.append(json.dumps(_historic_item))
+			if _write_cache:
+				_dump_string = '\n'+json.dumps(_historic_item)
+			else:
+				_dump_string = json.dumps(_historic_item)
+			
+			_write_cache.append(_dump_string)
 
 	with open(_path, 'w') as f:
 		f.write('\n'.join(_write_cache))

@@ -2,15 +2,23 @@ New in version 0.6.1:
 	* Enhanced groups
 		* Groups will now gather resources and engage in combat with other groups.
 	* Mouse look
-		* The mouse can now be used to select items in look mode.
-	* ALife take more factors into consideration when deciding if they are safe
+		* The mouse can now be used to select items in look mode (`l`).
+	* ALife take more factors into consideration when deciding if they are safe.
 	* Worlds are initially seeded with one group of a random motive.
 	* Weapons now have multiple firing modes (using `f`).
+	* Added Night Terrors.
+	* Revamped recoil.
+		* Recoil now depends on the type of ammo used.
+	* Added the MP5, a mid-range submachine gun. Takes 9x19mm ammo.
+	* Fast-forward is no longer enabled when the player performs an action.
+	* A cache now exists for deleted items that are still referenced by ALife.
+		* This is untested on longer playthroughs.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
 		* Numerous out-of-bounds issues solved.
-		* 
+		* Optimized AI's look function.
+		
 
 New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets

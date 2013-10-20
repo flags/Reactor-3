@@ -243,7 +243,7 @@ def generate_world(combat_test=False):
 		_settings['Map'] = mapgen.generate_map(factories=1)['name']
 	
 	if _settings['World Age'] == 'Day 0':
-		_ticks = 100
+		_ticks = 10
 	elif _settings['World Age'] == '1 Week':
 		_ticks = 1000#30000
 	elif _settings['World Age'] == '2 Weeks':

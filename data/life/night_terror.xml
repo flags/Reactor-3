@@ -2,8 +2,8 @@
 <species>night_terror</species>
 <type>mutant</animal>
 
-<flags>LEGS[flleg,frleg,blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]</flags>
-<vars>vision_max=25|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
+<flags>LEGS[blleg,brleg]|CAN_GROUP|CAN_SEE|HUNGER|THIRST|MELEE[jaw,flpaw,frpaw]</flags>
+<vars>vision_max=20|hunger_max=20000|thirst_max=10000|hunger=hunger_max|thirst=thirst_max</vars>
 <icon>T</icon>
 
 <body>

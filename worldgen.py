@@ -275,7 +275,6 @@ def generate_wildlife():
 		if random.randint(0, 3)>=2:
 			_c = life.create_life('dog',
 				name=['(Young) Wild', 'Dog%s' % i],
-				map=WORLD_INFO['map'],
 				position=[_spawn[0], _spawn[1], 2])
 			_c['icon'] = 'd'
 			
@@ -289,7 +288,6 @@ def generate_wildlife():
 		
 		for i in range(4):
 			_p = life.create_life('night_terror',
-				map=WORLD_INFO['map'],
 				position=[_spawn[0], _spawn[1], 2])
 
 def generate_life():

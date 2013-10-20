@@ -1,4 +1,5 @@
 from globals import *
+from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 
 import life as lfe
 
@@ -323,7 +324,8 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	_center_chunk_pos = maps.get_chunk(center_chunk_key)['pos']
 	#_center_chunk_pos[0] = ((_center_chunk_pos[0]/chunk_size)*chunk_size)+(chunk_size/2)
 	#_center_chunk_pos[1] = ((_center_chunk_pos[1]/chunk_size)*chunk_size)+(chunk_size/2)
-	_chunks = []
+	_chunks = set()
+	_chunk_map = set(chunk_map.keys())
 	
 	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
 	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
@@ -345,133 +347,9 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 		if chunk_map and not _chunk_key in chunk_map:
 			continue
 		
-		_chunks.append(_chunk_key)
+		_chunks.add(_chunk_key)
 	
-	return _chunks
+	return list(_chunks)
 
-#@profile
 def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False, visible_check=True):
-	_center_chunk_key = lfe.get_current_chunk_id(life)
-	
-	if get_chunks:
-		_center_chunk = maps.get_chunk(_center_chunk_key)
-	
-	_visible_chunks = set()
-	
-	if _chunks:
-		_chunks = set([c for c in _chunks if c in WORLD_INFO['chunk_map']])
-	else:
-		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
-		_chunks = set([c for c in _chunks if c in WORLD_INFO['chunk_map']])
-	
-	#Find chunks furthest away
-	if visible_check:
-		_outline_chunks = {'distance': 0, 'chunks': []}
-		for chunk_key in _chunks:
-			_current_chunk = maps.get_chunk(chunk_key)
-			_chunk_x = _current_chunk['pos'][0]+WORLD_INFO['chunk_size']/2
-			_chunk_y = _current_chunk['pos'][1]+WORLD_INFO['chunk_size']/2
-			_dist = numbers.distance(life['pos'], (_chunk_x, _chunk_y))
-			
-			if abs(_dist-_outline_chunks['distance'])>WORLD_INFO['chunk_size']:
-				_outline_chunks['distance'] = _dist
-				_outline_chunks['chunks'] = [chunk_key]
-			else:
-				_outline_chunks['chunks'].append(chunk_key)
-		
-		for outline_chunk_key in _outline_chunks['chunks']:
-			if outline_chunk_key in _visible_chunks:
-				continue
-			
-			_can_see = chunks.can_see_chunk(life, outline_chunk_key)
-			
-			if _can_see:
-				_skip = 0
-				for pos in _can_see:
-					if _skip:
-						_skip-=1
-						continue
-					
-					if _can_see.index(pos)<len(_can_see)-6 and not _skip:
-						_skip = 5
-					
-					_chunk_key = chunks.get_chunk_key_at(pos)
-					if not _chunk_key in _visible_chunks:
-						if judge:
-							if initial:
-								judgement.judge_chunk(life, _chunk_key, seen=True)
-							else:
-								judgement.judge_chunk(life, _chunk_key)
-						
-						_visible_chunks.add(_chunk_key)
-						
-						if _chunk_key in _chunks:
-							_chunks.remove(_chunk_key)
-			else:
-				_chunks.remove(outline_chunk_key)
-	
-	for chunk_key in _chunks:
-		if visible_check and not chunks.can_see_chunk(life, chunk_key):
-			#print chunk_key, lfe.get_current_chunk_id(life)
-			continue
-		
-		if not chunk_key in WORLD_INFO['chunk_map']:
-				continue
-		
-		if get_chunks:
-			_visible_chunks.add(chunk_key)
-		
-		if judge:
-			if initial:
-				judgement.judge_chunk(life, chunk_key, seen=True)
-			else:
-				judgement.judge_chunk(life, chunk_key)
-	
-	if get_chunks:
-		return list(_visible_chunks)
-
-def fast_scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
-	_vision = get_vision(life)/2
-	_center_chunk_key = lfe.get_current_chunk_id(life)
-	_limit = _vision/WORLD_INFO['chunk_size']
-	_outside_chunks = []
-	_inside_chunks = []
-	_visible_chunks = []
-	
-	for x_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
-		for y_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
-			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk_key.split(',')])
-			
-			if not _chunk_key in WORLD_INFO['chunk_map']:
-				continue
-			
-			if not ignore_chunks==0 and _chunk_key in ignore_chunks:
-				continue
-			elif isinstance(ignore_chunks, list):
-				ignore_chunks.append(_chunk_key)
-			
-			#if chunk_map and not _chunk_key in chunk_map:
-			#	continue
-			
-			if (x_mod == -_limit or x_mod == _limit) or (y_mod == -_limit or y_mod == _limit):
-				_outside_chunks.append(_chunk_key)
-			else:
-				_inside_chunks.append(_chunk_key)
-			
-			#_chunks.append(_chunk_key)
-	
-	for chunk_key in _outside_chunks:
-		_can_see = chunks.can_see_chunk(life, chunk_key)
-		
-		if not _can_see:
-			continue
-		
-		for pos in _can_see:
-			_pos_chunk_key = chunks.get_chunk_key_at(pos)
-			
-			if not _pos_chunk_key in _visible_chunks:
-				_visible_chunks.append(_pos_chunk_key)
-	
-	return _visible_chunks
-		
+	return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)

@@ -312,7 +312,7 @@ def can_scratch(life):
 	return None
 
 def is_nervous(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'nervous', break_on_true=True, break_on_false=False, life_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'nervous', life_id=life_id):
 		return False
 	
 	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])

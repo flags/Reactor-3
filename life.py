@@ -303,6 +303,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['realpos'] = list(position)
 	_life['velocity'] = [0.0, 0.0, 0.0]
 	
+	maps.enter_chunk(get_current_chunk_id(_life), _life['id'])
+	
 	try:
 		LIFE_MAP[_life['pos'][0]][_life['pos'][1]].append(_life['id'])
 	except:

@@ -183,6 +183,7 @@ def bullet_hit(life, bullet, limb):
 		return _ret_string+'.'
 
 def bite(life, target_id, limb):
+	logging.debug('%s bit %s in the %s.' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), limb))
 	target = LIFE[target_id]
 	_msg = ['%s' % language.get_introduction(life)]
 	

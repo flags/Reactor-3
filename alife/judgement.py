@@ -238,6 +238,7 @@ def judge(life):
 		
 		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
 		if is_target_dangerous(life, alife_id):
+			print life['name'], '->', LIFE[alife_id]['name']
 			_combat_targets.append(alife_id)
 		else:
 			_potential_combat_targets.append(alife_id)

@@ -12,6 +12,13 @@ def suicide():
 def kill(life_id):
 	life.kill(LIFE[life_id], 'suicide')
 
+def clean_slate():
+	for alife in LIFE.values():
+		if alife['id'] == SETTINGS['controlling'] or alife['dead']:
+			continue
+		
+		life.kill(alife, 'an act of treason')
+
 def make_hungry(life_id):
 	LIFE[life_id]['hunger'] = 500
 	

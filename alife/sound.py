@@ -286,16 +286,21 @@ def listen(life):
 				pass
 			else:
 				_trust_sender = judgement.can_trust(life, event['from']['id'])
-				_trust_target = judgement.can_trust(life, event['target'])
 				
-				if judgement.can_trust(life, event['target']):
+				if brain.knows_alife_by_id(life, event['target']):
+					_trust_target = judgement.can_trust(life, event['target'], low=5)
+				else:
+					brain.meet_alife(life, LIFE[event['target']])
+					_trust_target = False
+				
+				if _trust_target and not _trust_sender and 1==4:
 					lfe.memory(life, 'trusted target attacked by',
 					           victim=event['target'],
 					           target=event['from']['id'],
-					           trust=-1,
+					           trust=-5,
 					           danger=3)
 				
-				_target = event['target']
+				#_target = event['target']
 		
 		elif event['gist'] == 'get_alife_location':
 			_target = brain.knows_alife(life, event['alife'])
