@@ -6,6 +6,8 @@ import items
 import logging
 import json
 
+import os
+
 def _capsule():
 	return {'uid': None,
 	        'date': WORLD_INFO['ticks'],
@@ -14,7 +16,7 @@ def _capsule():
 
 def _write_to_cache(cache_name, data):
 	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), '%s_history.dat' % cache_name), 'a') as f:
-		f.write(json.dumps(data)+'\n')
+		f.write(json.dumps(data)+'\n\n')
 
 def _read_from_cache(cache_name, uid):
 	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), '%s_history.dat' % cache_name)) as f:
@@ -37,11 +39,10 @@ def save_cache(cache_name):
 	with open(_path, 'r') as f:
 		_cache = f.readlines()
 
-		for line in _cache:
-			if line.endswith('\n'):
-				line.rstrip()
+		for _line in _cache:
+			line = _line.rstrip()
 			
-			if line == '\n':
+			if line == '\n' or not line:
 				continue
 			
 			_historic_item = json.loads(line)
@@ -49,10 +50,7 @@ def save_cache(cache_name):
 			if not _historic_item['_allow_dump']:
 				continue
 			
-			if _write_cache:
-				_dump_string = '\n'+json.dumps(_historic_item)
-			else:
-				_dump_string = json.dumps(_historic_item)
+			_dump_string = json.dumps(_historic_item)
 			
 			_write_cache.append(_dump_string)
 
@@ -71,9 +69,13 @@ def commit_cache(cache_name):
 	with open(_path, 'r') as f:
 		_cache = f.readlines()
 
-		for line in _cache:
-			print repr(line)
-			_historic_item = json.loads(line.strip())
+		for _line in _cache:
+			line = _line.strip()
+			
+			if line == '\n' or not line:
+				continue
+			
+			_historic_item = json.loads(line)
 			_historic_item['_allow_dump'] = True
 			_write_cache.append(json.dumps(_historic_item))
 
@@ -86,6 +88,10 @@ def commit_cache(cache_name):
 			_historic_item['_allow_dump'] = True
 
 	with open(_path, 'w') as f:
+		print '*'*10
+		print 'commit'
+		print _write_cache
+		print '*'*10
 		f.write('\n'.join(_write_cache))
 
 	logging.debug('Cache: Committed.')
