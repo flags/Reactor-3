@@ -21,7 +21,7 @@ import time
 
 def can_tick(check=True):
 	if SETTINGS['controlling'] and not EVENTS:
-		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions']:
+		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
 	if not check:
