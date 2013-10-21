@@ -51,13 +51,13 @@ gfx.log(WINDOW_TITLE)
 create_all_tiles()
 items.initiate_all_items()
 
-LOAD_MAP = '1382326490.22.dat'
+LOAD_MAP = '1382395316.1.dat'
 
 gfx.init_libtcod(terraform=True)
 
 gfx.title('Loading...')
 try:
-	maps.load_map(LOAD_MAP)
+	maps.load_map(LOAD_MAP, show_process=False)
 except IOError:
 	maps.create_map()
 	maps.save_map()

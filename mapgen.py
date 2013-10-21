@@ -554,6 +554,9 @@ def create_tree(map_gen, position, height):
 					
 				_dist = _size-numbers.clip(numbers.distance(position, pos), 1, height-map_gen['size'][2])
 				for _z in range(_dist/2, _dist):
+					if map_gen['map'][pos[0]][pos[1]][2+_z]:
+						continue
+					
 					map_gen['map'][pos[0]][pos[1]][2+_z] = tiles.create_tile(random.choice(tiles.LEAF_TILES))
 		else:
 			map_gen['map'][position[0]][position[1]][position[2]+z] = tiles.create_tile(_trunk)
@@ -595,7 +598,7 @@ def place_forest(map_gen):
 			if random.randint(0, _height*18):
 				continue
 			
-			_actual_height = _height+(random.randint(1, 3))
+			_actual_height = numbers.clip(_height, 2, 100)+(random.randint(2, 4))
 			create_tree(map_gen, (x, y, 2), _actual_height)
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
@@ -1325,4 +1328,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(350, 350, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(250, 250, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

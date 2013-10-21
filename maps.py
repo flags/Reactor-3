@@ -117,7 +117,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			raise e
 
-def load_map(map_name, base_dir=DATA_DIR, like_new=False):
+def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
@@ -130,12 +130,23 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 				value = line.split(':')
 				
 				if line.startswith('chunk'):
+					if show_process:
+						gfx.title('Loading chunk...')
+					
 					WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
 				elif line.startswith('map'):
+					if show_process:
+						gfx.title('Loading map...')
+					
 					WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
 				elif line.startswith('slice'):
+					if show_process:
+						gfx.title('Loading slice...')
+					
 					WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 				elif line.startswith('world_info'):
+					if show_process:
+						gfx.title('Loading world info...')
 					WORLD_INFO.update(json.loads(':'.join(value[1:])))
 			
 			if 'items' in WORLD_INFO:
@@ -189,14 +200,20 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		#	logging.error('FATAL: Map not JSON serializable.')
 		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
+def get_tile(pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return True
+	
+	return False
+
 def is_solid(pos):
 	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
 		return False
 	
-	if not 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
-		return True
+	if 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
+		return False
 	
-	return False
+	return True
 
 def position_is_in_map(pos):
 	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:

@@ -1039,7 +1039,6 @@ def walk(life, to=None, path=None):
 		life['path_state'] = life['state']
 	elif to and (not _dest or not (_dest[0],_dest[1]) == tuple(to)):
 		_stime = time.time()
-		
 		_zone = can_walk_to(life, to)
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
