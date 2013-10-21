@@ -171,13 +171,15 @@ LEAF_1 = {'id': 'leaf_1',
             'icon': '\'',
             'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
             'burnable': True,
-            'translucent': True}
+            'translucent': True,
+            'not_solid': True}
 
 LEAF_2 = {'id': 'leaf_2',
             'icon': '`',
             'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
             'burnable': True,
-            'translucent': True}
+            'translucent': True,
+            'not_solid': True}
 
 ROOF_DARK = {'id': 'roof_dark',
             'icon': '^',

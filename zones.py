@@ -5,8 +5,10 @@ import graphics as gfx
 
 import fast_dijkstra
 import numbers
+import maps
 import smp
 
+import logging
 import copy
 import time
 
@@ -26,9 +28,9 @@ def create_map_array(val=0, size=MAP_SIZE):
 	
 	return _map
 
-def get_unzoned(slice_map, z):
-	for x in range(MAP_SIZE[0]):
-		for y in range(MAP_SIZE[1]):
+def get_unzoned(slice_map, z, map_size=MAP_SIZE):
+	for x in range(map_size[0]):
+		for y in range(map_size[1]):
 			if not WORLD_INFO['map'][x][y][z]:# or (z<MAP_SIZE[2]-1 and not MAP[x][y][z+1]):
 				continue
 			
@@ -41,18 +43,18 @@ def get_unzoned(slice_map, z):
 	return None
 
 #@profile
-def process_slice(z, world_info=None, start_id=0):
+def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 	print 'Processing:', z
 	_runs = 0
-	_slice = create_map_array()
+	_slice = create_map_array(size=map_size)
 	
 	if world_info:
 		WORLD_INFO.update(world_info)
 		
-	for x in range(MAP_SIZE[0]):
-		for y in range(MAP_SIZE[1]):
-			if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][x][y][z+1]:
-				if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][x][y][z+2]:
+	for x in range(map_size[0]):
+		for y in range(map_size[1]):
+			if z < map_size[2]-1 and maps.is_solid((x, y, z+1)):
+				if z < map_size[2]-2 and maps.is_solid((x, y, z+2)):
 					_slice[x][y] = -2
 				else:
 					_slice[x][y] = -1
@@ -65,8 +67,8 @@ def process_slice(z, world_info=None, start_id=0):
 			WORLD_INFO['zoneid'] += 1
 			_z_id = WORLD_INFO['zoneid']
 		
-		_ramps = []
-		_start_pos = get_unzoned(_slice, z)
+		_ramps = set()
+		_start_pos = get_unzoned(_slice, z, map_size=map_size)
 		
 		if not _start_pos:
 			print '\tRuns for zone id %s: %s' % (_z_id, _runs)
@@ -81,10 +83,9 @@ def process_slice(z, world_info=None, start_id=0):
 			_per_run = time.time()
 			_runs += 1
 			_changed = False
-			print _ramps
 			
-			for x in range(MAP_SIZE[0]):
-				for y in range(MAP_SIZE[1]):
+			for x in range(map_size[0]):
+				for y in range(map_size[1]):
 					if not _slice[x][y] == _z_id:
 						continue
 					
@@ -92,40 +93,40 @@ def process_slice(z, world_info=None, start_id=0):
 						_x = x+x_mod
 						_y = y+y_mod
 						
-						if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
+						if _x<0 or _x>=map_size[0] or _y<0 or _y>=map_size[1]:
 							continue
 						
-						if WORLD_INFO['map'][_x][_y][z] and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
+						if maps.is_solid((_x, _y, z)) and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
 							_slice[_x][_y] = _z_id
 							_changed = True
 						
 						#Above, Below
-						if z < MAP_SIZE[2]-1 and WORLD_INFO['map'][_x][_y][z+1]:
-							if z < MAP_SIZE[2]-2 and WORLD_INFO['map'][_x][_y][z+2]:
+						if z < map_size[2]-1 and maps.is_solid((_x, _y, z+1)):
+							if z < map_size[2]-2 and maps.is_solid((_x, _y, z+2)):
 								pass
 							else:
 								if (_x, _y, z+1) in _ramps:
 									print 'panic (2)'
 									continue
 								
-								_ramps.append((_x, _y, z+1))
+								_ramps.add((_x, _y, z+1))
 								continue
 						
-						if z and not WORLD_INFO['map'][_x][_y][z] and WORLD_INFO['map'][_x][_y][z-1]:
+						elif z and not maps.is_solid((_x, _y, z)) and maps.is_solid((_x, _y, z-1)):
 							if (_x, _y, z-1) in _ramps:
 								print 'panic'
 								continue
 							
-							_ramps.append((_x, _y, z-1))
+							_ramps.add((_x, _y, z-1))
 			
 			print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 	
 		#NOTE: If stuff starts breaking, remove the condition:
-		if _ramps:
-			if world_info:
-				return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
-			else:
-				WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': copy.deepcopy(_slice), 'ramps': copy.deepcopy(_ramps), 'neighbors': {}}
+		
+		if world_info:
+			return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': list(_ramps), 'neighbors': {}}
+		else:
+			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': copy.deepcopy(_slice), 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in ZONE_CACHE[pos[2]]:

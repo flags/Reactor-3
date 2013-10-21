@@ -51,7 +51,7 @@ gfx.log(WINDOW_TITLE)
 create_all_tiles()
 items.initiate_all_items()
 
-LOAD_MAP = '1382307134.84.dat'
+LOAD_MAP = '1382326490.22.dat'
 
 gfx.init_libtcod(terraform=True)
 

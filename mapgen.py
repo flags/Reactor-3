@@ -161,6 +161,7 @@ def generate_map(size=(600, 600, 10), detail=5, towns=2, factories=1, forests=1,
 	if not skip_zoning:
 		logging.debug('Creating zone map...')
 		zones.create_zone_map()
+		#smp.create_zone_maps()
 		
 		logging.debug('Connecting zone ramps...')
 		zones.connect_ramps()
@@ -1324,4 +1325,4 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(200, 200, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(350, 350, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))

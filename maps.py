@@ -83,15 +83,35 @@ def save_map(map_name, base_dir=DATA_DIR):
 	#	print WORLD_INFO['items'][item]
 	#	json.dumps(WORLD_INFO['items'][item])
 
-	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
+	with open(os.path.join(_map_dir,map_name), 'w') as _map_file:
 		try:
-			_save_string = json.dumps(WORLD_INFO)
-			_map_file.write(_save_string)
+			_map = WORLD_INFO['map']
+			_slices = WORLD_INFO['slices']
+			_chunk_map = WORLD_INFO['chunk_map']
+			
+			del WORLD_INFO['map']
+			del WORLD_INFO['slices']
+			del WORLD_INFO['chunk_map']
+			
+			_save_string = ['world_info:'+json.dumps(WORLD_INFO)]
+			
+			for _slice in _slices.keys():
+				_save_string.append('slice:%s:%s' % (_slice, json.dumps(_slices[_slice])))
+			
+			for _chunk_key in _chunk_map:
+				_save_string.append('chunk:%s:%s' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
+			
+			_save_string.append('map:%s' % json.dumps(_map))
+			
+			_map_file.write('\n'.join(_save_string))
+			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
-		except TypeError:
+		except TypeError as e:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+			
+			raise e
 
 def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -100,11 +120,20 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		try:
-			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+			#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+			for line in _map_file.readlines():
+				line = line.rstrip()
+				value = line.split(':')
+				
+				if line.startswith('chunk'):
+					WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
+				elif line.startswith('map'):
+					WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
+				elif line.startswith('world_info'):
+					WORLD_INFO.update(json.loads(':'.join(value[1:])))
 			
 			if 'items' in WORLD_INFO:
 				ITEMS.update(WORLD_INFO['items'])
-				#del WORLD_INFO['items']
 			
 			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]
@@ -120,23 +149,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 			if not WORLD_INFO['lights']:
 				logging.warning('World has no lights. Creating one manually.')
 				effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
-			
-		except ValueError:
-			_map_file.seek(0)
-			WORLD_INFO['map'] = json.loads(_map_file.readline())
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			logging.warning('Hello legacy users :)')
-			update_chunk_map()
-			smooth_chunk_map()
-			generate_reference_maps()
-			logging.warning('Zone maps regenerating (This should only happen once)')
-			zones.create_zone_map()
-			zones.connect_ramps()
+		except Exception as e:
+			print ''.join(value[1:])
+			raise e
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		
@@ -167,6 +182,15 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		#except TypeError:
 		#	logging.error('FATAL: Map not JSON serializable.')
 		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+
+def is_solid(pos):
+	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return False
+	
+	if not 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
+		return True
+	
+	return False
 
 def position_is_in_map(pos):
 	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:

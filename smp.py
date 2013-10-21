@@ -49,8 +49,8 @@ def _retrieve_zone_map(ret):
 	if ret:
 		WORLD_INFO['slices'][ret['id']] = ret
 
-def create_zone_map(world_info, z, start_id):
-	zones.process_slice(z, world_info=world_info, start_id=start_id)
+def create_zone_map(world_info, z, start_id, map_size):
+	zones.process_slice(z, world_info=world_info, start_id=start_id, map_size=map_size)
 
 def create_zone_maps():
 	_workers = []
@@ -58,7 +58,8 @@ def create_zone_maps():
 	for z in range(MAP_SIZE[2]):
 		WORLD_INFO['zoneid'] += 100
 		_z = WORLD_INFO['zoneid']
-		_workers.append(SETTINGS['smp'].apply_async(create_zone_map, args=(WORLD_INFO, z, _z), callback=_retrieve_zone_map))
+		
+		_workers.append(SETTINGS['smp'].apply_async(create_zone_map, args=(WORLD_INFO, z, _z, MAP_SIZE), callback=_retrieve_zone_map))
 	
 	while _workers:
 		_rem = []
