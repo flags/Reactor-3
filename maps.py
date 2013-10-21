@@ -105,6 +105,10 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			_map_file.write('\n'.join(_save_string))
 			
+			WORLD_INFO['map'] = _map
+			WORLD_INFO['slices'] = _slices
+			WORLD_INFO['chunk_map'] = _chunk_map
+			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
 		except TypeError as e:
@@ -129,6 +133,8 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 					WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
 				elif line.startswith('map'):
 					WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
+				elif line.startswith('slice'):
+					WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 				elif line.startswith('world_info'):
 					WORLD_INFO.update(json.loads(':'.join(value[1:])))
 			
