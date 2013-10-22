@@ -34,6 +34,8 @@ def astar(life, start, end, zones, dijkstra=False):
 		_path['pmap'].append([0] * MAP_SIZE[1])
 
 	_path['map'] = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_path['map'] -= 2
+	
 	#KEY:
 	#0: Unwalkable (can't walk there, too low/high)
 	#1: Walkable
@@ -41,10 +43,8 @@ def astar(life, start, end, zones, dijkstra=False):
 	#3: Travels down
 	
 	for zone in [zns.get_slice(z) for z in zones]:
-		_t = time.time()
-
 		for _open_pos in zone['map']:
-			_path['map'][_open_pos[0]][_open_pos[1]] = 1
+			_path['map'][_open_pos[1], _open_pos[0]] = 1
 	
 	start = (start[0], start[1])
 	
@@ -144,7 +144,7 @@ def getadj(path, pos, checkclist=True):
 
 def find_path(path):
 	if path['map'][path['end'][1], path['end'][0]] == -2:
-		return [[path['start'][0], path['start'][1],0]]
+		return [[path['start'][0], path['start'][1], 0]]
 
 	node = path['pmap'][path['end'][0]][path['end'][1]]
 	_path = [[path['end'][0],path['end'][1],int(path['map'][path['end'][1],path['end'][0]])]]
