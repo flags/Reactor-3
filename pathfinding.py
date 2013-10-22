@@ -42,27 +42,9 @@ def astar(life, start, end, zones, dijkstra=False):
 	
 	for zone in [zns.get_slice(z) for z in zones]:
 		_t = time.time()
-		
-		if not 'rotmap' in zone:
-			zone['rotmap'] = numpy.rot90(numpy.fliplr(numpy.clip(numpy.array(zone['map']), -2, 9999999)))
-			logging.debug('Generated rotmap for zone #%s' % zone['id'])
-		
-		#with open('mapout.txt', 'w') as mo:
-			#for y in range(MAP_SIZE[1]):
-				#_line = ''
-				#for x in range(MAP_SIZE[0]):
-					#if _nm[y,x]==zone['id']:
-						#_line += ' '
-					#elif _nm[y,x]==-1:
-						#_line += '^'
-					#else:
-						#_line += str(_nm[y,x])#'#'
-				
-				#mo.write(_line+'\n')
-		
-		#print 'end',zone['z']
-		_path['map'] = numpy.add(zone['rotmap'], _path['map'])
-		#print time.time()-_t
+
+		for _open_pos in zone['map']:
+			_path['map'][_open_pos[0]][_open_pos[1]] = 1
 	
 	start = (start[0], start[1])
 	

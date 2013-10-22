@@ -61,9 +61,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		os.mkdir(_map_dir)
 	except:
 		pass
-
-	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
-		del _slice['rotmap']
 		
 	for light in WORLD_INFO['lights']:
 		if 'los' in light:
