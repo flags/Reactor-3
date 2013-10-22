@@ -13,6 +13,7 @@ import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
+import alife_follow
 import alife_cover
 import alife_group
 import alife_needs
@@ -49,7 +50,8 @@ MODULES = [alife_hide,
 	alife_shelter,
 	alife_search,
 	alife_surrender,
-    alife_cover]
+	alife_cover,
+	alife_follow]
 
 def sort_modules(life):
 	global MODULES
@@ -296,7 +298,7 @@ def understand(life, source_map):
 	
 	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
 		life['think_rate'] = 0
-	elif life['state'] == 'combat' and life['think_rate_max'] == LIFE_THINK_RATE:
+	elif life['state_tier'] <= TIER_COMBAT and life['think_rate_max'] == LIFE_THINK_RATE:
 		if life['think_rate'] > 2:
 			life['think_rate'] = 2
 		

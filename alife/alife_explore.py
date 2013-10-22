@@ -24,9 +24,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not life['state'] == STATE:
 		RETURN_VALUE = STATE_CHANGE
 	
-	_leading_target = judgement.get_leading_target(life)
-	if _leading_target:
-		_known = brain.knows_alife_by_id(life, _leading_target)
+	#_leading_target = judgement.get_leading_target(life)
+	#if _leading_target:
+	#	_known = brain.knows_alife_by_id(life, _leading_target)
+	#	
+	#	print _leading_target
 	
 	_explore_chunk = chunks.find_best_chunk(life, ignore_time=True)
 	brain.store_in_memory(life, 'explore_chunk', _explore_chunk)

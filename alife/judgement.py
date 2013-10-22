@@ -277,18 +277,22 @@ def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
 
-def get_leading_target(life):
+def get_target_to_follow(life):
 	_highest = {'id': None, 'score': 1}
 	
 	for target_id in get_trusted(life, visible=False, only_recent=False):
-		if not lfe.execute_raw(life, 'explore', 'follow_target_if', life_id=target_id):
+		if not lfe.execute_raw(life, 'follow', 'follow_target_if', life_id=target_id):
 			continue
 		
 		_score = 0
 		_known_target = brain.knows_alife_by_id(life, target_id)
 		
-		if _known_target['trust'] >= 3:
-			_score += 1
+		if _known_target['escaped'] == 2:
+			continue
+		
+		#if _known_target['trust'] >= 3:
+		#	_score += 1
+		_score += _known_target['trust']
 			
 		if life['group'] and groups.is_leader(life['group'], target_id):
 			_score += 1
@@ -521,9 +525,6 @@ def judge_chunk_life(life, chunk_id):
 		
 		if not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			continue
-		
-		if life_id == get_leading_target(life):
-			_score += 10
 	
 	return _score 
 
@@ -584,9 +585,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 			
 			_score += get_influence(life, _target['life']['id'], 'follow')
 			_score += get_influence(life, _target['life']['id'], 'talk')
-			
-			if _actually_here:
-				_score += stats.desires_to_follow(life, _target['life']['id'])
 		else:
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])

@@ -16,9 +16,6 @@ import jobs
 
 import random
 
-def score_search(life,target,pos):
-	return -numbers.distance(life['pos'],pos)
-
 def score_shootcover(life,target,pos):
 	if sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
 		return 9999
@@ -257,24 +254,34 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	
 	return False
 
-def find_target(life, target, distance=5, follow=False):
+def find_target(life, target, distance=5, follow=False, call=True):
 	_target = brain.knows_alife_by_id(life, target)
+	_dist = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	_can_see = sight.can_see_target(life, target)
-	if _can_see and len(_can_see)<=distance:
+	if _can_see and _dist<=distance:
 		if not follow:
 			return True
 		
 		lfe.stop(life)
 	
-	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
-		speech.communicate(life, 'call', matches=[{'id': target}])
+	if _target['escaped'] == 1:
+		search_for_target(life, target)
 		return False
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,
-	               {'action': 'move','to': _target['last_seen_at'][:2]},
-	               200)
+	if not _can_see and sight.can_see_position(life, _target['last_seen_at']) and _dist<distance:
+		if call:
+			speech.communicate(life, 'call', matches=[{'id': target}])
+		
+		_target['escaped'] = 1
+		
+		return False
+	
+	if not lfe.path_dest(life) == tuple(_target['last_seen_at'][:2]):
+		lfe.clear_actions(life)
+		lfe.add_action(life,
+			          {'action': 'move','to': _target['last_seen_at'][:2]},
+			          200)
 	
 	return False
 

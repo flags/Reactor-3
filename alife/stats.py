@@ -503,17 +503,6 @@ def is_safe_in_shelter(life, life_id):
 	
 	return True
 
-def desires_to_follow(life, life_id):
-	_know = brain.knows_alife_by_id(life, life_id)
-	
-	if not _know:
-		return False
-	
-	if not lfe.execute_raw(life, 'movement', 'follow', life_id=life_id):
-		return False
-	
-	return _know['trust']
-
 def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
 	

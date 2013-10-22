@@ -278,6 +278,8 @@ def generate_wildlife():
           name=['Wild', 'Dog'],
           position=[_spawn[0], _spawn[1], 2])
 	
+	_group = alife.groups.create_group(_p)
+	
 	_children = []
 	for i in range(2, 6):
 		_spawn = get_spawn_point_around(_spawn)
@@ -286,6 +288,8 @@ def generate_wildlife():
 	          name=['(Young) Wild', 'Dog'],
 	          position=[_spawn[0], _spawn[1], 2])
 		_c['icon'] = 'd'
+		
+		alife.groups.add_member(_group, _c['id'])
 		
 		alife.brain.meet_alife(_p, _c)
 		alife.brain.meet_alife(_c, _p)
