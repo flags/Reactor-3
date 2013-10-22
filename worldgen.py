@@ -99,15 +99,15 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		WORLD_INFO['life_spawn_interval'] = [-1, (600, 799)]
 	
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
-		WORLD_INFO['wildlife_spawn_interval'] = [3500, (770, 990)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
-		WORLD_INFO['wildlife_spawn_interval'] = [3500, (550, 700)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (550, 700)]
 	elif WORLD_INFO['wildlife_density'] == 'Heavy':
-		WORLD_INFO['wildlife_spawn_interval'] = [3500, (250, 445)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
-	create_region_spawns()
+	#create_region_spawns()
 	randomize_item_spawns()
 	
 	alife.camps.create_all_camps()
@@ -237,8 +237,8 @@ def randomize_item_spawns():
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
 def get_spawn_point_around(pos, area=5):
-	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0])
-	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1])
+	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
+	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
 	
 	return (_x, _y)
 
@@ -384,5 +384,5 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
-	for i in range(2, 4):
+	for i in range(5):
 		generate_wildlife()
