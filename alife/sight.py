@@ -16,22 +16,22 @@ import numbers
 import logging
 import time
 
+#@profile
 def look(life):
+	if life['think_rate']%6 and not 'player' in life:
+		return False
+	
 	life['seen'] = []
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	if not life['speed'] or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+	if life['speed'] or life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	else:
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
-	
-	#TODO: What?
-	#if not _chunks:
-	#	_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for target_id in life['know']:
 		life['know'][target_id]['last_seen_time'] += 1

@@ -52,6 +52,12 @@ def create_map(size=MAP_SIZE):
 	logging.debug('Created new map of size (%s,%s).' % (size[0], size[1]))
 	return _map
 
+def reload_slices():
+	for _slice in WORLD_INFO['slices']:
+		WORLD_INFO['slices'][_slice]['_map'] = zones.create_map_array()
+		for pos in WORLD_INFO['slices'][_slice]['map']:
+			WORLD_INFO['slices'][_slice]['_map'][pos[0]][pos[1]] = 1
+
 def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
@@ -93,6 +99,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 			_save_string = ['world_info:'+json.dumps(WORLD_INFO)]
 			
 			for _slice in _slices.keys():
+				del _slices[_slice]['_map']
 				_save_string.append('slice:%s:%s' % (_slice, json.dumps(_slices[_slice])))
 			
 			for _chunk_key in _chunk_map:
@@ -105,6 +112,8 @@ def save_map(map_name, base_dir=DATA_DIR):
 			WORLD_INFO['map'] = _map
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
+			
+			reload_slices()
 			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
@@ -148,6 +157,11 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
 			
 			if 'items' in WORLD_INFO:
 				ITEMS.update(WORLD_INFO['items'])
+			
+			reload_slices()
+					
+			#if not (x, y) in zone['map']:
+			#for slice 
 			
 			_map_size = maputils.get_map_size(WORLD_INFO['map'])
 			MAP_SIZE[0] = _map_size[0]

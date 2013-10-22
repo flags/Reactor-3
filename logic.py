@@ -101,8 +101,6 @@ def tick_all_objects(source_map):
 			if _targets and SETTINGS['controlling'] in _targets:
 				_in_combat = True
 	
-	print WORLD_INFO['wildlife_spawn_interval']
-	
 	effects.calculate_all_effects()
 	tick_world()
 	timers.tick()

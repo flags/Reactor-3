@@ -301,6 +301,8 @@ def understand(life, source_map):
 			life['think_rate'] = 2
 		
 		life['think_rate_max'] = 2
+	elif life['state'] == 'idle':
+		life['think_rate_max'] = 30
 	else:
 		life['think_rate_max'] = LIFE_THINK_RATE
 	

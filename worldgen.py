@@ -18,6 +18,7 @@ import maps
 
 import threading
 import logging
+import numbers
 import random
 import time
 import json
@@ -106,6 +107,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
+	create_region_spawns()
 	randomize_item_spawns()
 	
 	alife.camps.create_all_camps()
@@ -234,6 +236,12 @@ def randomize_item_spawns():
 			_rand_pos = random.choice(_chunk['ground'])
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
+def get_spawn_point_around(pos, area=5):
+	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0])
+	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1])
+	
+	return (_x, _y)
+
 def get_spawn_point(randomize=False):
 	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
@@ -264,31 +272,45 @@ def get_spawn_point(randomize=False):
 	return _spawn
 
 def generate_wildlife():
-	for i in range(1, 3):
-		_spawn = get_spawn_point(randomize=True)
+	_spawn = get_spawn_point(randomize=True)
+	
+	_p = life.create_life('dog',
+          name=['Wild', 'Dog'],
+          position=[_spawn[0], _spawn[1], 2])
+	
+	_children = []
+	for i in range(2, 6):
+		_spawn = get_spawn_point_around(_spawn)
 		
-		_p = life.create_life('dog',
-			name=['Wild', 'Dog%s' % i],
-			map=WORLD_INFO['map'],
-			position=[_spawn[0], _spawn[1], 2])
+		_c = life.create_life('dog',
+	          name=['(Young) Wild', 'Dog'],
+	          position=[_spawn[0], _spawn[1], 2])
+		_c['icon'] = 'd'
 		
-		if random.randint(0, 3)>=2:
-			_c = life.create_life('dog',
-				name=['(Young) Wild', 'Dog%s' % i],
-				position=[_spawn[0], _spawn[1], 2])
-			_c['icon'] = 'd'
+		alife.brain.meet_alife(_p, _c)
+		alife.brain.meet_alife(_c, _p)
+		
+		alife.brain.flag_alife(_p, _c['id'], 'son')
+		alife.brain.flag_alife(_c, _p['id'], 'father')
+		
+		_children.append(_c)
+	
+	for _c1 in _children:
+		for _c2 in _children:
+			if _c1['id'] == _c2['id']:
+				continue
 			
-			alife.brain.meet_alife(_p, _c)
-			alife.brain.meet_alife(_c, _p)
+			alife.brain.meet_alife(_c1, _c2)
+			alife.brain.meet_alife(_c2, _c1)
 			
-			alife.brain.flag_alife(_p, _c['id'], 'son')
-			alife.brain.flag_alife(_c, _p['id'], 'father')
-		
-		_spawn = get_spawn_point(randomize=True)
-		
-		for i in range(4):
-			_p = life.create_life('night_terror',
-				position=[_spawn[0], _spawn[1], 2])
+			alife.brain.flag_alife(_c1, _c2['id'], 'sibling')
+			alife.brain.flag_alife(_c2, _c1['id'], 'sibling')
+	
+	#_spawn = get_spawn_point(randomize=True)
+	
+	#for i in range(4):
+	#	_p = life.create_life('night_terror',
+	#		position=[_spawn[0], _spawn[1], 2])
 
 def generate_life():
 	_spawn = get_spawn_point()
@@ -357,8 +379,6 @@ def create_player():
 	
 	return PLAYER
 	
-	#for x in range(-10, 11):
-	#	for y in range(-10, 11):
-	#		if random.randint(0, 10):
-	#			continue
-	#		effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
+def create_region_spawns():
+	for i in range(2, 4):
+		generate_wildlife()
