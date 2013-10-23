@@ -1,4 +1,7 @@
 New in version 0.6.1:
+	* Optimized ALife logic
+		* Dogs now follow the pack leader and spawn in larger amounts.
+		* ALife no longer think as much during non-combat tasks.
 	* Enhanced groups
 		* Groups will now gather resources and engage in combat with other groups.
 	* Mouse look
@@ -13,12 +16,13 @@ New in version 0.6.1:
 	* Fast-forward is no longer enabled when the player performs an action.
 	* A cache now exists for deleted items that are still referenced by ALife.
 		* This is untested on longer playthroughs.
+	* Updated map generation.
+		* Maps are now 600x600 and contain multiple larger towns/cities.
+	* Experimental optimizations in ALife think rate.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
 		* Numerous out-of-bounds issues solved.
-		* Optimized AI's look function.
-		
 
 New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets
