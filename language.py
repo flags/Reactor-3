@@ -75,7 +75,7 @@ def load_strings():
 
 def generate_place_name():
 	if not TEXT_MAP['places']:
-		return 'Zoolandia'
+		return 'Zoolandia %s' % WORLD_INFO['ticks']
 	
 	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
 

@@ -215,7 +215,7 @@ def _get_nearest_chunk_in_list(pos, chunks):
 def get_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['chunk_key']
 
-def get_distance_to_hearest_chunk_in_list(pos, chunks):
+def get_distance_to_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']
 
 def _can_see_chunk_quick(start_pos, chunk_id, vision):

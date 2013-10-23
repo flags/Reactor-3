@@ -3,6 +3,7 @@ from globals import *
 import libtcodpy as tcod
 
 import maputils
+import language
 import drawing
 import numbers
 import effects
@@ -22,9 +23,11 @@ import copy
 import sys
 import os
 
-TOWN_DISTANCE = 25
+TOWN_DISTANCE = 60*5
 TOWN_SIZE = 160
 FOREST_DISTANCE = 10
+FIELD_SIZE_RANGE = [45, 46]
+FIELD_DISTANCE = 30*5
 OPEN_TILES = ['.']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
@@ -96,7 +99,7 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
-def generate_map(size=(600, 600, 10), detail=5, towns=2, factories=1, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -115,7 +118,7 @@ def generate_map(size=(600, 600, 10), detail=5, towns=2, factories=1, forests=1,
 		'forests': forests,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': []},
+		'refs': {'factories': [], 'towns': {}, 'forests': [], 'roads': [], 'town_seeds': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -140,7 +143,7 @@ def generate_map(size=(600, 600, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
-		construct_town(map_gen, _town)
+		construct_town(map_gen, map_gen['refs']['towns'][_town]['chunks'])
 	
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
@@ -235,9 +238,12 @@ def generate_outlines(map_gen):
 		place_town(map_gen, start_chunk_key=town_seed_chunk)
 	
 	for chunk_key in clean_chunk_map(map_gen, 'town', minimum_chunks=1):
-		for town in map_gen['refs']['towns']:
-			if chunk_key in town:
-				town.remove(chunk_key)
+		for town in map_gen['refs']['towns'].values():
+			if chunk_key in town['chunks']:
+				town['chunks'].remove(chunk_key)
+	
+	logging.debug('Occupying empty spaces...')
+	fill_empty_spaces(map_gen)
 	
 	logging.debug('Decorating world...')
 	decorate_world(map_gen)
@@ -377,7 +383,7 @@ def place_factory(map_gen):
 			
 			break
 				
-		if _avoid_chunk_keys and alife.chunks.get_distance_to_hearest_chunk_in_list(_town_chunk['pos'], _avoid_chunk_keys) < TOWN_DISTANCE:
+		if _avoid_chunk_keys and alife.chunks.get_distance_to_nearest_chunk_in_list(_town_chunk['pos'], _avoid_chunk_keys) < TOWN_DISTANCE:
 			continue
 		
 		_walked = walker(map_gen,
@@ -414,8 +420,8 @@ def place_town(map_gen, start_chunk_key=None):
 	_chunks = []
 	_driveways = {}
 	
-	for town in map_gen['refs']['towns']:
-		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town])
+	for town in map_gen['refs']['towns'].values():
+		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town['chunks']])
 	
 	#Find some areas near roads...
 	if start_chunk_key:
@@ -426,6 +432,7 @@ def place_town(map_gen, start_chunk_key=None):
 			if numbers.distance(_start_chunk['pos'], _road_chunk['pos'])<map_gen['settings']['town size']*WORLD_INFO['chunk_size']:
 				_chunks.append(_road_chunk)
 	else:
+		logging.warning('No given start chunk for town. This might look weird...')
 		for road_chunk_key in map_gen['refs']['roads']:
 			_chunks.append(map_gen['chunk_map'][road_chunk_key])
 			
@@ -525,7 +532,9 @@ def place_town(map_gen, start_chunk_key=None):
 		
 		_covered_houses.extend(get_all_connected_chunks_of_type(map_gen, _driveways[chunk], 'town'))
 	
-	map_gen['refs']['towns'].append(_actual_town_chunks)
+	_name = language.generate_place_name()
+	
+	map_gen['refs']['towns'][_name] = {'chunks': _actual_town_chunks}
 
 def place_hills(map_gen):
 	_size = (map_gen['size'][0], map_gen['size'][1], 4)
@@ -646,7 +655,7 @@ def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type):
 	
 	return _connected_chunks
 
-def walker(map_gen, pos, moves, density=5, allow_diagonal_moves=True, avoid_chunks=[], avoid_chunk_distance=0):
+def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_chunks=[], avoid_chunk_distance=0):
 	_pos = list(pos)
 	_directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]
 	
@@ -670,13 +679,13 @@ def walker(map_gen, pos, moves, density=5, allow_diagonal_moves=True, avoid_chun
 			if _next_pos[0]<=0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<=0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
 				continue
 			
-			if avoid_chunks and alife.chunks.get_distance_to_hearest_chunk_in_list(_next_pos, avoid_chunks) < avoid_chunk_distance:
+			if avoid_chunks and alife.chunks.get_distance_to_nearest_chunk_in_list(_next_pos, avoid_chunks) < avoid_chunk_distance:
 				continue
 			
 			_possible_dirs.append(_next_pos)
 			
 		if not _possible_dirs:
-			return False
+			return _walked
 		
 		_chosen_dir = random.choice(_possible_dirs)
 		if _chosen_dir == _last_dir['dir']:
@@ -687,8 +696,16 @@ def walker(map_gen, pos, moves, density=5, allow_diagonal_moves=True, avoid_chun
 		
 		_pos[0] = _chosen_dir[0]
 		_pos[1] = _chosen_dir[1]
-	
-		_walked.append(list(_pos))
+		
+		for _y in range(-brush_size, brush_size+1):
+			for _x in range(-brush_size, brush_size+1):
+				__x = _pos[0]+_x*map_gen['chunk_size']
+				__y = _pos[1]+_y*map_gen['chunk_size']
+				
+				if __x < 0 or __x>=map_gen['size'][0] or __y < 0 or __y>=map_gen['size'][1]:
+					continue
+					
+				_walked.append([__x, __y])
 	
 	return _walked
 
@@ -1250,6 +1267,51 @@ def can_spawn_item(item):
 	
 	return False
 
+def fill_empty_spaces(map_gen, fields=3):
+	_empty_spots = []
+	_field_spawns = []
+	_fields = {}
+	
+	#for y in range(0, map_gen['map_size'][1]/map_gen['chunk_size'], map_gen['chunk_size']):
+	#	for x in range(0, map_gen['map_size'][0]/map_gen['chunk_size'], map_gen['chunk_size']):
+	#		if 
+	for chunk_key in map_gen['chunk_map']:
+		_chunk = map_gen['chunk_map'][chunk_key]
+		
+		if not _chunk['type'] == 'other':
+			continue
+		
+		_empty_spots.append(chunk_key)
+	
+	for i in range(fields):
+		_spots = _empty_spots[:]
+		
+		while _spots:
+			_spot = _spots.pop(random.randint(0, len(_spots)-1))
+			_chunk = map_gen['chunk_map'][_spot]
+			
+			#logging.info(len(get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True, return_keys=True)))
+			if len(get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True)) < 8:
+				continue
+			
+			logging.info('here')
+			
+			if _field_spawns:
+				if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _field_spawns) < FIELD_DISTANCE:
+					continue
+			
+			_field_spawns.append(_spot[:])
+			break
+	
+	_placed_field_chunks = []
+	for _field in _field_spawns:
+		_start_chunk = map_gen['chunk_map'][_field]
+		#avoid_chunks=['%s,%s' % (x,y) for x,y in _placed_field_chunks]
+		_placed_field_chunks.extend(walker(map_gen, _start_chunk['pos'], random.randint(FIELD_SIZE_RANGE[0], FIELD_SIZE_RANGE[1])*map_gen['chunk_size']))
+	
+	for _chunk_key in ['%s,%s' % (x, y) for x,y  in _placed_field_chunks]:
+		map_gen['chunk_map'][_chunk_key]['type'] = 'wash'
+
 def decorate_world(map_gen):
 	#backyards
 	for town in map_gen['refs']['towns']:
@@ -1324,8 +1386,9 @@ if __name__ == '__main__':
 	
 	tiles.create_all_tiles()
 	items.initiate_all_items()
+	language.load_strings()
 
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(250, 250, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(600, 600, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
