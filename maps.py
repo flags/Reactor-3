@@ -96,18 +96,18 @@ def save_map(map_name, base_dir=DATA_DIR):
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
 			
-			_save_string = ['world_info:'+json.dumps(WORLD_INFO)]
+			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
 			
 			for _slice in _slices.keys():
-				del _slices[_slice]['_map']
-				_save_string.append('slice:%s:%s' % (_slice, json.dumps(_slices[_slice])))
+				if '_map' in _slices[_slice]:
+					del _slices[_slice]['_map']
+				
+				_map_file.write('slice:%s:%s\n' % (_slice, json.dumps(_slices[_slice])))
 			
 			for _chunk_key in _chunk_map:
-				_save_string.append('chunk:%s:%s' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
+				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
 			
-			_save_string.append('map:%s' % json.dumps(_map))
-			
-			_map_file.write('\n'.join(_save_string))
+			_map_file.write('map:%s\n' % json.dumps(_map))
 			
 			WORLD_INFO['map'] = _map
 			WORLD_INFO['slices'] = _slices
