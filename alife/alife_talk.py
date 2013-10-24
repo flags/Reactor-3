@@ -59,7 +59,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	_potential_talking_targets = []
 	for ai in alife_seen:
-		if life['state'] == 'combat':
+		if life['state'] in ['combat', 'hiding', 'hidden']:
 			break
 		
 		if judgement.is_target_dangerous(life, ai['life']['id']):
@@ -83,10 +83,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	for target in _potential_talking_targets:
 		if life['dialogs']:
 			print 'existing'
-			break
-		
-		if life['state'] in ['combat', 'hiding', 'hidden']:
-			print 'hiding'
 			break
 		
 		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
