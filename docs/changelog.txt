@@ -23,6 +23,7 @@ New in version 0.6.1:
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
 		* Numerous out-of-bounds issues solved.
+		* Fixed Linux-specific crash caused by a frame being drawn outside the console.
 
 New in version 0.6:
 	* ALife now use dijkstra maps to better calculate distance to targets

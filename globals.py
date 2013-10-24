@@ -24,7 +24,6 @@ UPDATE_CAMP_RATE = 5
 WORLD_INFO = {'map': [],
 	'id': None,
 	'seed': 0,
-	'seed_state': None,
 	'time': 0,
 	'real_time_of_day': 6000,
 	'time_of_day': 'limbo',

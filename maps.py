@@ -75,8 +75,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		
 		if 'old_pos' in light:
 			del light['old_pos']
-	
-	WORLD_INFO['seed_state'] = random.getstate()
 
 	#For debug
 	#for key in WORLD_INFO:
@@ -196,10 +194,6 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
 					for key in TILE_STRUCT:
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
-		
-		if WORLD_INFO['seed_state']:
-			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
-			random.setstate(tuple(WORLD_INFO['seed_state']))
 		
 		zones.cache_zones()
 		create_position_maps()

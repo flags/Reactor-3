@@ -5,6 +5,7 @@ import graphics as gfx
 
 import fast_dijkstra
 import numbers
+import alife
 import maps
 import smp
 
@@ -23,19 +24,12 @@ def create_map_array(val=0, size=MAP_SIZE):
 	
 	return _map
 
-def get_unzoned(slice_map, z, map_size=MAP_SIZE):
-	for x in range(map_size[0]):
-		for y in range(map_size[1]):
-			if not WORLD_INFO['map'][x][y][z] or not maps.is_solid((x, y, z)):# or (z<MAP_SIZE[2]-1 and not MAP[x][y][z+1]):
-				continue
-			
-			if maps.is_solid((x, y, z)) and z>0 and z<=MAP_SIZE[2]:
-				if maps.is_solid((x, y, z+1)) and maps.is_solid((x, y, z-1)):
-					continue
-			
-			if not slice_map[x][y]:
-				return x,y
-	
+#@profile
+def get_unzoned(slice_map, positions, z, map_size=MAP_SIZE):
+	for x,y in positions:
+		if not slice_map[x][y]:
+			return x,y
+
 	return None
 
 #@profile
@@ -44,6 +38,17 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 	_runs = 0
 	_slice = create_map_array(size=map_size)
 	_ground = []
+	_unzoned = {}
+	for y in range(map_size[1]):
+		for x in range(map_size[0]):
+			if not WORLD_INFO['map'][x][y][z] or not maps.is_solid((x, y, z)):
+				continue
+		
+			if maps.is_solid((x, y, z)) and z>0 and z<=map_size[2]:
+				if maps.is_solid((x, y, z+1)) and maps.is_solid((x, y, z-1)):
+					continue
+			
+			_unzoned[(x, y)] = None
 	
 	if world_info:
 		WORLD_INFO.update(world_info)
@@ -65,7 +70,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			_z_id = WORLD_INFO['zoneid']
 		
 		_ramps = set()
-		_start_pos = get_unzoned(_slice, z, map_size=map_size)
+		_start_pos = get_unzoned(_slice, _unzoned, z, map_size=map_size)
 		
 		if _start_pos:
 			print '\tNew zone:', _z_id
@@ -75,6 +80,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
 		_ground = [_start_pos]
+		del _unzoned[_start_pos]
 		_top_left = [map_size[0], map_size[1]]
 		_bot_right = [0, 0]
 		_to_check = [_start_pos]
@@ -95,6 +101,11 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			if y > _bot_right[1]:
 				_bot_right[1] = y
 			
+			_skip_ramp_check = False
+			if z == 2:
+				if WORLD_INFO['chunk_map'][alife.chunks.get_chunk_key_at((x, y))]['max_z'] == z:
+					_skip_ramp_check = True
+			
 			if not _slice[x][y] == _z_id:
 				continue
 			
@@ -105,18 +116,22 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 				if _x<0 or _x>=map_size[0] or _y<0 or _y>=map_size[1]:
 					continue
 				
-				if maps.is_solid((_x, _y, z+1)) and maps.is_solid((_x, _y, z-1)):
-					print 'both solid!!!!!!!!!!!'
-					continue
+				#if maps.is_solid((_x, _y, z+1)) and maps.is_solid((_x, _y, z-1)):
+				#	print 'both solid!!!!!!!!!!!'
+				#	continue
 				
-				if maps.is_solid((_x, _y, z)) and not (_slice[_x][_y] == _z_id or _slice[_x][_y] in [-2, -1]):
+				if (_x, _y) in _unzoned and not (_slice[_x][_y]):
 					_slice[_x][_y] = _z_id
 					_ground.append((_x, _y))
+					del _unzoned[(_x, _y)]
 					
 					#if not (_x, _y) in _to_check:
 					_to_check.append((_x, _y))
 					#else:
 					#	print 'dupe'
+				
+				if _skip_ramp_check:
+					continue
 				
 				if (_x, _y, z+1) in _ramps or (_x, _y, z-1) in _ramps:
 					continue
@@ -139,7 +154,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 					
 					_ramps.add((_x, _y, z-1))
 				
-		print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps)) +" "+str(len(_ground))
+		print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 		
 		if world_info:
 			return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': list(_ramps), 'neighbors': {}}

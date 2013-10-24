@@ -99,6 +99,13 @@ def load_tiles(file_name, chunk_size):
 	
 	return _buildings
 
+def create_tile(map_gen, x, y, z, tile):
+	map_gen['map'][x][y][z] = tiles.create_tile(tile)
+	
+	_chunk = map_gen['chunk_map'][alife.chunks.get_chunk_key_at((x, y))]
+	if z > _chunk['max_z']:
+		_chunk['max_z'] = z
+
 def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1, underground=True, skip_zoning=False, skip_chunking=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
@@ -151,7 +158,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
 	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
 	
-	print_chunk_map_to_console(map_gen)
+	#print_chunk_map_to_console(map_gen)
 	
 	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
@@ -202,7 +209,7 @@ def generate_noise_map(size):
 			for z in range(height):
 				_noise_map[x, y] = height
 				#callback((x, y, z), value)
-				#_tile = tiles.create_tile(random.choice(
+				#_tile = tiles.create_tile(map_gen, random.choice(
 				#		[tiles.TALL_GRASS_TILE, tiles.SHORT_GRASS_TILE, tiles.GRASS_TILE]))
 				
 				#map_gen['map'][x][y][z] = _tile
@@ -223,7 +230,8 @@ def generate_chunk_map(map_gen):
 				'reference': None,
 				'last_updated': None,
 				'flags': {},
-				'type': 'other'}
+				'type': 'other',
+				'max_z': 2}
 			
 def generate_outlines(map_gen):
 	logging.debug('Placing roads and towns...')
@@ -549,7 +557,7 @@ def place_hills(map_gen):
 				continue
 			
 			for z in range(0, int(_noise_map[y, x])):
-				map_gen['map'][x][y][2+z] = tiles.create_tile(random.choice(tiles.GRASS_TILES))
+				create_tile(map_gen, x, y, 2+z, random.choice(tiles.GRASS_TILES))
 
 def create_tree(map_gen, position, height):
 	_trunk = random.choice(tiles.TREE_STUMPS)
@@ -566,9 +574,9 @@ def create_tree(map_gen, position, height):
 					if map_gen['map'][pos[0]][pos[1]][2+_z]:
 						continue
 					
-					map_gen['map'][pos[0]][pos[1]][2+_z] = tiles.create_tile(random.choice(tiles.LEAF_TILES))
+					create_tile(map_gen, pos[0], pos[1], 2+_z, random.choice(tiles.LEAF_TILES))
 		else:
-			map_gen['map'][position[0]][position[1]][position[2]+z] = tiles.create_tile(_trunk)
+			create_tile(map_gen, position[0], position[1], position[2]+z, _trunk)
 
 def place_forest(map_gen):
 	SMALLEST_FOREST = (80, 80)
@@ -796,7 +804,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 				
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 1 and (0, 1) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(0, map_gen['chunk_size']):
@@ -808,7 +816,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 1 and (1, 0) in _directions:
 		for x in range(0, map_gen['chunk_size']):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -820,7 +828,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 1 and (-1, 0) in _directions:
 		for x in range(0, map_gen['chunk_size']):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -832,7 +840,8 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
+					
 	elif len(_directions) == 2 and (-1, 0) in _directions and (1, 0) in _directions:
 		for x in range(0, map_gen['chunk_size']):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -847,7 +856,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 2 and (0, -1) in _directions and (0, 1) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(0, map_gen['chunk_size']):
@@ -859,7 +868,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 2 and (0, -1) in _directions and (-1, 0) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -871,7 +880,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 3 and (0, -1) in _directions and (-1, 0) in _directions and (1, 0) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -883,7 +892,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 3 and (0, 1) in _directions and (-1, 0) in _directions and (1, 0) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -895,7 +904,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 3 and (0, -1) in _directions and (0, 1) in _directions and (1, 0) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -907,7 +916,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 3 and (0, -1) in _directions and (0, 1) in _directions and (-1, 0) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
@@ -919,13 +928,13 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 					_height = height
 					
 				for z in range(0, _height):
-					map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2+z] = maps.create_tile(_tile)
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
 	elif len(_directions) == 4:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
 				_tile = random.choice(ground_tiles)
-					
-				map_gen['map'][chunk['pos'][0]+x][chunk['pos'][1]+y][2] = maps.create_tile(_tile)
+				
+				create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2, _tile)
 	
 	return _directions
 
@@ -1007,9 +1016,9 @@ def construct_factory(map_gen, town):
 					
 					for i in range(3):
 						if _building[_y][_x] == '#':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
+							create_tile(map_gen, x, y, 2+i, _wall_tile)
 						elif (not i or i == 2) and _building[_y][_x] == '.':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(_floor_tiles))
+							create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 							
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
@@ -1146,70 +1155,70 @@ def construct_town(map_gen, town):
 							##if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
 							#if not _neighbor_dirs:
 								#if _x < _half:
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
 								#else:
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 							#elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
 								#if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
 								
 								#elif _y < h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#elif _y >= h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 								
 								#elif _y > _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 			
 								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 							
 							#elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
 								#if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(tiles.ROOF_DARK)
+									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
 								
 								#elif _y < h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#elif _y >= h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 								
 								#elif _y > _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 			
 								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 	
 							#elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
 								#if _y<=_half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 							
 							#elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
 								#if _y<=_half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_BRIGHT)
+									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 								
 								#else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(tiles.ROOF_DARK)
+									#map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
 								
 								##else:
-								##	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(tiles.ROOF_DARKER)
+								##	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
 							#elif len(_neighbor_dirs) == 4:
-								#map_gen['map'][x][y][2+i] = tiles.create_tile(tiles.ROOF_BRIGHT)
+								#map_gen['map'][x][y][2+i] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
 
 						elif _building[_y][_x] == '#':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
+							create_tile(map_gen, x, y, 2+i, _wall_tile)
 						elif i in [0] and _building[_y][_x] == '.':
-							map_gen['map'][x][y][2+i] = tiles.create_tile(random.choice(_floor_tiles))
+							create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 							
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
@@ -1388,7 +1397,10 @@ if __name__ == '__main__':
 	items.initiate_all_items()
 	language.load_strings()
 
+	_t = time.time()
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(350, 350, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(300, 300, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+	
+	print 'Total mapgen time:', time.time()-_t

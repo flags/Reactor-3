@@ -626,4 +626,3 @@ Cycle 1: Towns
 The current town size is fine, but the actual layout needs to be much more detailed. Buildings should not be constricted to tetris blocks and need to span multiple z-levels.
 
 First, we need to generate a road leading into the Zone. It should NOT go deeper than factories and must cross through the main town.
-
