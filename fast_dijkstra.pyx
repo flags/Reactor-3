@@ -110,7 +110,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if _open_map[x][y]>-3:
 					continue
 				
-				if not zone['_map'][x][y]:
+				if not zone['_map'][x-zone['top_left'][0]][y-zone['top_left'][1]]:
 					continue
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)

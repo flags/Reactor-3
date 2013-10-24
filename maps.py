@@ -53,10 +53,11 @@ def create_map(size=MAP_SIZE):
 	return _map
 
 def reload_slices():
-	for _slice in WORLD_INFO['slices']:
-		WORLD_INFO['slices'][_slice]['_map'] = zones.create_map_array()
-		for pos in WORLD_INFO['slices'][_slice]['map']:
-			WORLD_INFO['slices'][_slice]['_map'][pos[0]][pos[1]] = 1
+	for _slice in WORLD_INFO['slices'].values():
+		_slice['_map'] = zones.create_map_array(size=(_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]))
+		
+		for pos in _slice['map']:
+			_slice['_map'][pos[0]-_slice['top_left'][0]][pos[1]-_slice['top_left'][1]] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -129,57 +130,56 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
 		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
-		try:
-			#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
-			for line in _map_file.readlines():
-				line = line.rstrip()
-				value = line.split(':')
+		#try:
+		#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+		for line in _map_file.readlines():
+			line = line.rstrip()
+			value = line.split(':')
+			
+			if line.startswith('chunk'):
+				if show_process:
+					gfx.title('Loading chunk...')
 				
-				if line.startswith('chunk'):
-					if show_process:
-						gfx.title('Loading chunk...')
-					
-					WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
-				elif line.startswith('map'):
-					if show_process:
-						gfx.title('Loading map...')
-					
-					WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
-				elif line.startswith('slice'):
-					if show_process:
-						gfx.title('Loading slice...')
-					
-					WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
-				elif line.startswith('world_info'):
-					if show_process:
-						gfx.title('Loading world info...')
-					WORLD_INFO.update(json.loads(':'.join(value[1:])))
-			
-			if 'items' in WORLD_INFO:
-				ITEMS.update(WORLD_INFO['items'])
-			
-			reload_slices()
-					
-			#if not (x, y) in zone['map']:
-			#for slice 
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			if like_new:
-				update_chunk_map()
-				smooth_chunk_map()
-			else:
-				WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
-			
-			if not WORLD_INFO['lights']:
-				logging.warning('World has no lights. Creating one manually.')
-				effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
-		except Exception as e:
-			print ''.join(value[1:])
-			raise e
+				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('map'):
+				if show_process:
+					gfx.title('Loading map...')
+				
+				WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
+			elif line.startswith('slice'):
+				if show_process:
+					gfx.title('Loading slice...')
+				
+				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('world_info'):
+				if show_process:
+					gfx.title('Loading world info...')
+				WORLD_INFO.update(json.loads(':'.join(value[1:])))
+		
+		if 'items' in WORLD_INFO:
+			ITEMS.update(WORLD_INFO['items'])
+				
+		#if not (x, y) in zone['map']:
+		#for slice 
+		
+		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		MAP_SIZE[0] = _map_size[0]
+		MAP_SIZE[1] = _map_size[1]
+		MAP_SIZE[2] = _map_size[2]
+		
+		reload_slices()
+		
+		if like_new:
+			update_chunk_map()
+			smooth_chunk_map()
+		else:
+			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
+		
+		if not WORLD_INFO['lights']:
+			logging.warning('World has no lights. Creating one manually.')
+			effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
+		#except Exception as e:
+		#	raise e
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		

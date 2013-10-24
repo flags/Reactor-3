@@ -9,6 +9,7 @@ import maps
 import smp
 
 import logging
+import numpy
 import copy
 import time
 
@@ -17,14 +18,8 @@ def cache_zones():
 		ZONE_CACHE[z] = get_slices_at_z(z)
 
 def create_map_array(val=0, size=MAP_SIZE):
-	_map = []
-	for x in range(size[0]):
-		_y = []
-		
-		for y in range(size[1]):
-			_y.append(val)
-		
-		_map.append(_y)
+	_map = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_map+=val
 	
 	return _map
 
@@ -80,7 +75,8 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
 		_ground = [_start_pos]
-		
+		_top_left = [map_size[0], map_size[1]]
+		_bot_right = [0, 0]
 		_to_check = [_start_pos]
 		
 		while _to_check:
@@ -88,6 +84,16 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			_runs += 1
 			
 			x,y = _to_check.pop(0)
+			
+			if x < _top_left[0]:
+				_top_left[0] = x
+			if y < _top_left[1]:
+				_top_left[1] = y
+				
+			if x > _bot_right[0]:
+				_bot_right[0] = x
+			if y > _bot_right[1]:
+				_bot_right[1] = y
 			
 			if not _slice[x][y] == _z_id:
 				continue
@@ -138,7 +144,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		if world_info:
 			return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': list(_ramps), 'neighbors': {}}
 		else:
-			WORLD_INFO['slices'][_z_id] = {'z': z, 'id': _z_id, 'map': list(_ground), 'ramps': list(_ramps), 'neighbors': {}}
+			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'map': list(_ground), 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
 	for _splice in ZONE_CACHE[pos[2]]:

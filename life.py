@@ -2285,7 +2285,7 @@ def pick_up_and_hold_item(life, item_uid):
 		logging.error('%s cannot pick up item: both hands are full' % ' '.join(life['name']))
 		return False
 	
-	life.add_action(life, {'action': 'pickupholditem',
+	add_action(life, {'action': 'pickupholditem',
 	                       'item': item_uid,
 	                       'hand': get_open_hands(life)[0]},
 				200,
@@ -3254,9 +3254,8 @@ def damage_from_item(life, item, damage):
 	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
 	create_and_update_self_snapshot(LIFE[item['owner']])
 	
-	if get_memory(life, matches={'target': item['owner'], 'text': 'friendly'}):
-		memory(life, 'traitor',
-			target=item['owner'])
+	if judgement.can_trust(life, item['owner']):
+		memory(life, 'traitor', target=item['owner'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])

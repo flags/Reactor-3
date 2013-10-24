@@ -26,6 +26,7 @@ def fast_scan_surroundings(life_id, center_chunk_key, chunk_size, vision):
 	return [life_id, alife.sight._scan_surroundings(center_chunk_key, chunk_size, vision)]
 		
 def scan_all_surroundings():
+	print 'WHATTTTTTTTTTTTTTTTTT?'
 	_workers = []
 	
 	for life in LIFE.values():

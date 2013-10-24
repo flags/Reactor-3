@@ -544,14 +544,15 @@ def is_target_group_friendly(life, life_id):
 def is_born_leader(life):
 	return life['stats']['is_leader']
 
-def has_attacked_trusted(life, life_id):
-	_trusted = judgement.get_trusted(life)
-	
+def _has_attacked(life, life_id, target_list):
 	for memory in lfe.get_memory(life, matches={'text': 'heard about attack', 'attacker': life_id}):
-		if memory['target'] in _trusted:
+		if memory['target'] in target_list:
 			return True
 	
 	return False
+
+def has_attacked_trusted(life, life_id):
+	return _has_attacked(life, life_id, judgement.get_trusted(life))
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
