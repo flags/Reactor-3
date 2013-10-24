@@ -27,5 +27,5 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_threats = judgement.get_combat_targets(life)
-	#_knows = brain.knows_alife_by_id(life, _threat)
+	
 	movement.escape(life, _threats)

@@ -163,7 +163,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 
 def get_zone_at_coords(pos):
 	for _splice in ZONE_CACHE[pos[2]]:
-		if list(pos[:2]) in _splice['map']:
+		if _splice['_map'][pos[0]][pos[1]]:
 			return _splice['id']
 	
 	return None

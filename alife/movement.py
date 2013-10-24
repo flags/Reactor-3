@@ -143,7 +143,7 @@ def escape(life, targets):
 	                            _target_positions,
 	                            _zones,
 	                            avoid_chunks=_visible_target_chunks,
-	                            return_score_in_range=[1, 100])
+	                            return_score_in_range=[1, sight.get_vision(life)])
 	_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
 	
 	if not _cover:
