@@ -2601,9 +2601,9 @@ def draw_life_info():
 	
 	tcod.console_set_default_background(0, tcod.black)
 	tcod.console_set_background_flag(0, tcod.BKGND_SET)
-	
+
 	tcod.console_set_default_foreground(0, BORDER_COLOR)
-	tcod.console_print_frame(0,MAP_WINDOW_SIZE[0],0,60,WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
+	tcod.console_print_frame(0, MAP_WINDOW_SIZE[0], 0, WINDOW_SIZE[0]-MAP_WINDOW_SIZE[0], WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
 	
 	tcod.console_set_default_foreground(0, tcod.white)
 	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))

@@ -112,6 +112,7 @@ def main():
 		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
+	
 	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights(WORLD_INFO['map'])
@@ -152,7 +153,7 @@ def main():
 			SETTINGS['running'] = 1
 			return False
 	
-	if SETTINGS['draw life info']:
+	if SETTINGS['draw life info'] and SETTINGS['following']:
 		life.draw_life_info()
 	
 	menus.align_menus()
