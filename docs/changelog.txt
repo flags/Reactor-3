@@ -4,6 +4,8 @@ New in version 0.6.1:
 		* ALife no longer think as much during non-combat tasks.
 	* Enhanced groups
 		* Groups will now gather resources and engage in combat with other groups.
+	* The player and ALife can now "hear" noises (firearms, explosions, etc.)
+		* Note: Actual sounds are planned for a future version.
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
 	* ALife take more factors into consideration when deciding if they are safe.
@@ -19,6 +21,7 @@ New in version 0.6.1:
 	* Updated map generation.
 		* Maps are now 600x600 and contain multiple larger towns/cities.
 	* Experimental optimizations in ALife think rate.
+	* Slicing/zoning-related speed-ups.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.

@@ -1566,7 +1566,7 @@ def kill(life, injury):
 		groups.remove_member(life['group'], life['id'])
 	
 	life['actions'] = []
-	if not life['pos'] == life['prev_pos']:
+	if not life['pos'] == life['prev_pos'] and life['path']:
 		_walk_direction = numbers.direction_to(life['prev_pos'], life['pos'])
 		push(life, _walk_direction, 2)
 	

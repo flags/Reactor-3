@@ -151,6 +151,9 @@ def get_trust(life, target_id):
 def can_trust(life, life_id, low=0):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
+	if not _knows:
+		return False
+	
 	if _knows['trust']>=low:
 		return True
 	

@@ -411,6 +411,7 @@ def explode(item):
 	if not item['type'] == 'explosive':
 		return False
 	
+	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
 	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
 	
 	if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
