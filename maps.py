@@ -54,10 +54,27 @@ def create_map(size=MAP_SIZE):
 
 def reload_slices():
 	for _slice in WORLD_INFO['slices'].values():
-		_slice['_map'] = zones.create_map_array(size=(_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]))
+		#logging.debug('Loading slice: %s' % _slice['id'])
+		
+		if _slice['bot_right'][0]-_slice['top_left'][0]>1:
+			_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]
+			_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
+			_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
+			
+		_slice['_map'] = zones.create_map_array(size=_size)
 		
 		for pos in _slice['map']:
-			_slice['_map'][pos[0]-_slice['top_left'][0]][pos[1]-_slice['top_left'][1]] = 1
+			if _slice['top_left'][0]:
+				_xx = _slice['top_left'][0]
+			else:
+				_xx = 1
+			
+			if _slice['top_left'][1]:
+				_yy = _slice['top_left'][1]
+			else:
+				_yy = 1
+			
+			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -106,13 +123,20 @@ def save_map(map_name, base_dir=DATA_DIR):
 			for _chunk_key in _chunk_map:
 				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
 			
-			_map_file.write('map:%s\n' % json.dumps(_map))
+			logging.debug('Writing map to disk...')
+			for x in range(MAP_SIZE[0]):
+				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
+				logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+			
+			logging.info('Map \'%s\' saved to disk.' % map_name)			
 			
 			WORLD_INFO['map'] = _map
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
 			
+			logging.debug('Reloading slices...')
 			reload_slices()
+			logging.debug('Done!')
 			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)

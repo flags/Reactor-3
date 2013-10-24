@@ -19,7 +19,7 @@ def cache_zones():
 		ZONE_CACHE[z] = get_slices_at_z(z)
 
 def create_map_array(val=0, size=MAP_SIZE):
-	_map = numpy.zeros((MAP_SIZE[1], MAP_SIZE[0]))
+	_map = numpy.zeros((size[1], size[0]))
 	_map+=val
 	
 	return _map

@@ -319,7 +319,10 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 					_y = _i-1
 				elif _next_dir[1]:
 					_x = _i-1
-					
+				
+				if (_pos[0]+_x)*map_gen['chunk_size']>=MAP_SIZE[0] or (_pos[0]+_x)*map_gen['chunk_size']<0 or (_pos[1]+_y)*map_gen['chunk_size']>=MAP_SIZE[1] or (_pos[1]+_y)*map_gen['chunk_size']<0:
+					continue
+				
 				_chunk_key = '%s,%s' % ((_pos[0]+_x)*map_gen['chunk_size'], (_pos[1]+_y)*map_gen['chunk_size'])
 				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				map_gen['refs']['roads'].append(_chunk_key)
@@ -1401,6 +1404,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(600, 600, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(300, 300, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t

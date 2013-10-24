@@ -22,6 +22,7 @@ New in version 0.6.1:
 		* Maps are now 600x600 and contain multiple larger towns/cities.
 	* Experimental optimizations in ALife think rate.
 	* Slicing/zoning-related speed-ups.
+	* New map format that no longer eats memory.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
