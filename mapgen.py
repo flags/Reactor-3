@@ -138,7 +138,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	logging.debug('Creating chunk map...')
 	generate_chunk_map(map_gen)
 	logging.debug('Drawing outlines...')
-	generate_outlines(map_gen)	
+	generate_outlines(map_gen)
 	
 	logging.debug('Creating roads...')
 	for chunk_key in map_gen['refs']['roads']:
@@ -158,7 +158,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
 	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
 	
-	#print_chunk_map_to_console(map_gen)
+	print_chunk_map_to_console(map_gen)
 	
 	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
@@ -235,7 +235,7 @@ def generate_chunk_map(map_gen):
 			
 def generate_outlines(map_gen):
 	logging.debug('Placing roads and towns...')
-	place_road(map_gen, turnoffs=map_gen['towns']-1, length=(15*map_gen['towns'], 35*map_gen['towns']), width=2)
+	place_road(map_gen, turnoffs=map_gen['towns']-1, length=(15*map_gen['towns'], 16*map_gen['towns']), width=2)
 	
 	#logging.debug('Placing factories...')
 	#while len(map_gen['refs']['factories'])<map_gen['factories']:
@@ -283,17 +283,19 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 	
 	if not _pos:
 		if not _start_edge:
-			_pos = [random.randint(0, map_gen['size'][0]/map_gen['chunk_size']), -1]
+			_pos = [random.randint(0, map_gen['size'][0])/map_gen['chunk_size'], 0]
 			_next_dir = (0, 1)
 		elif _start_edge == 1:
-			_pos = [map_gen['size'][0]/map_gen['chunk_size'], random.randint(0, map_gen['size'][1]/map_gen['chunk_size'])]
+			_pos = [map_gen['size'][0]/map_gen['chunk_size'], random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
 			_next_dir = (-1, 0)
 		elif _start_edge == 2:
-			_pos = [random.randint(0, map_gen['size'][0]/map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
+			_pos = [random.randint(0, map_gen['size'][0])/map_gen['chunk_size'], map_gen['size'][1]/map_gen['chunk_size']]
 			_next_dir = (0, -1)
 		elif _start_edge == 3:
-			_pos = [-1, random.randint(0, map_gen['size'][1]/map_gen['chunk_size'])]
+			_pos = [-1, random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
 			_next_dir = (1, 0)
+			
+		print _next_dir
 	
 	while 1:
 		for i in _road_segments:
@@ -301,15 +303,19 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_pos[1] += _next_dir[1]
 			
 			if _pos[0] >= map_gen['size'][0]/map_gen['chunk_size']:
+				print 'QUIT'
 				return False
 			
 			if _pos[1] >= map_gen['size'][1]/map_gen['chunk_size']:
+				print 'QUIT'
 				return False
 			
 			if _pos[0] < 0:
+				print 'QUIT'
 				return False
 			
 			if _pos[1] < 0:
+				print 'QUIT'
 				return False
 		
 			for _i in range(1, 1+width):
@@ -320,7 +326,7 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 				elif _next_dir[1]:
 					_x = _i-1
 				
-				if (_pos[0]+_x)*map_gen['chunk_size']>=MAP_SIZE[0] or (_pos[0]+_x)*map_gen['chunk_size']<0 or (_pos[1]+_y)*map_gen['chunk_size']>=MAP_SIZE[1] or (_pos[1]+_y)*map_gen['chunk_size']<0:
+				if (_pos[0]+_x)*map_gen['chunk_size']>=map_gen['size'][0] or (_pos[0]+_x)*map_gen['chunk_size']<0 or (_pos[1]+_y)*map_gen['chunk_size']>=map_gen['size'][1] or (_pos[1]+_y)*map_gen['chunk_size']<0:
 					continue
 				
 				_chunk_key = '%s,%s' % ((_pos[0]+_x)*map_gen['chunk_size'], (_pos[1]+_y)*map_gen['chunk_size'])
@@ -1284,9 +1290,6 @@ def fill_empty_spaces(map_gen, fields=3):
 	_field_spawns = []
 	_fields = {}
 	
-	#for y in range(0, map_gen['map_size'][1]/map_gen['chunk_size'], map_gen['chunk_size']):
-	#	for x in range(0, map_gen['map_size'][0]/map_gen['chunk_size'], map_gen['chunk_size']):
-	#		if 
 	for chunk_key in map_gen['chunk_map']:
 		_chunk = map_gen['chunk_map'][chunk_key]
 		
@@ -1404,6 +1407,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(600, 600, 10), towns=2, factories=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(450, 450, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t
