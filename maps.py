@@ -56,23 +56,22 @@ def reload_slices():
 	for _slice in WORLD_INFO['slices'].values():
 		#logging.debug('Loading slice: %s' % _slice['id'])
 		
-		if _slice['bot_right'][0]-_slice['top_left'][0]>1:
-			_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]
-			_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
-			_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
+		_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]		
+		_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
+		_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
 			
 		_slice['_map'] = zones.create_map_array(size=_size)
 		
 		for pos in _slice['map']:
-			if _slice['top_left'][0]:
-				_xx = _slice['top_left'][0]
+			if _size[0]>1:
+				_xx = _slice['top_left'][0]+1
 			else:
-				_xx = 1
+				_xx = _slice['top_left'][0]+1
 			
-			if _slice['top_left'][1]:
-				_yy = _slice['top_left'][1]
+			if _size[1]>1:
+				_yy = _slice['top_left'][1]+1
 			else:
-				_yy = 1
+				_yy = _slice['top_left'][1]+1
 			
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
@@ -146,7 +145,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			raise e
 
-def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
+def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
@@ -159,23 +158,12 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False, show_process=False):
 			value = line.split(':')
 			
 			if line.startswith('chunk'):
-				if show_process:
-					gfx.title('Loading chunk...')
-				
 				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
 			elif line.startswith('map'):
-				if show_process:
-					gfx.title('Loading map...')
-				
-				WORLD_INFO['map'] = json.loads(':'.join(value[1:]))
+				WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
 			elif line.startswith('slice'):
-				if show_process:
-					gfx.title('Loading slice...')
-				
 				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 			elif line.startswith('world_info'):
-				if show_process:
-					gfx.title('Loading world info...')
 				WORLD_INFO.update(json.loads(':'.join(value[1:])))
 		
 		if 'items' in WORLD_INFO:

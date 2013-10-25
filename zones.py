@@ -19,7 +19,7 @@ def cache_zones():
 		ZONE_CACHE[z] = get_slices_at_z(z)
 
 def create_map_array(val=0, size=MAP_SIZE):
-	_map = numpy.zeros((size[1], size[0]))
+	_map = numpy.zeros((size[0], size[1]))
 	_map+=val
 	
 	return _map
@@ -85,21 +85,21 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		_bot_right = [0, 0]
 		_to_check = [_start_pos]
 		
+		if _start_pos[0] < _top_left[0]:
+			_top_left[0] = _start_pos[0]
+		if _start_pos[1] < _top_left[1]:
+			_top_left[1] = _start_pos[1]
+			
+		if _start_pos[0] > _bot_right[0]:
+			_bot_right[0] = _start_pos[0]
+		if _start_pos[1] > _bot_right[1]:
+			_bot_right[1] = _start_pos[1]
+		
 		while _to_check:
 			_per_run = time.time()
 			_runs += 1
 			
 			x,y = _to_check.pop(0)
-			
-			if x < _top_left[0]:
-				_top_left[0] = x
-			if y < _top_left[1]:
-				_top_left[1] = y
-				
-			if x > _bot_right[0]:
-				_bot_right[0] = x
-			if y > _bot_right[1]:
-				_bot_right[1] = y
 			
 			_skip_ramp_check = False
 			if z == 2:
@@ -124,6 +124,16 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 					_slice[_x][_y] = _z_id
 					_ground.append((_x, _y))
 					del _unzoned[(_x, _y)]
+					
+					if _x < _top_left[0]:
+						_top_left[0] = _x
+					if _y < _top_left[1]:
+						_top_left[1] = _y
+						
+					if _x > _bot_right[0]:
+						_bot_right[0] = _x
+					if _y > _bot_right[1]:
+						_bot_right[1] = _y
 					
 					#if not (_x, _y) in _to_check:
 					_to_check.append((_x, _y))
@@ -163,7 +173,13 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 
 def get_zone_at_coords(pos):
 	for _splice in ZONE_CACHE[pos[2]]:
-		if _splice['_map'][pos[0]][pos[1]]:
+		_p = (pos[0]-_splice['top_left'][0]-1, pos[1]-_splice['top_left'][1]-1)
+		#print _p, _splice['_map'].shape, [(_splice['bot_right'][0]-_splice['top_left'][0]), (_splice['bot_right'][1]-_splice['top_left'][1])],  _splice['top_left'], pos
+		
+		if _p[0]>=_splice['_map'].shape[0] or _p[1]>=_splice['_map'].shape[1]:
+			continue
+		
+		if _splice['_map'][_p[0]][_p[1]]:
 			return _splice['id']
 	
 	return None
