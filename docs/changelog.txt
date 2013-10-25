@@ -23,6 +23,7 @@ New in version 0.6.1:
 	* Experimental optimizations in ALife think rate.
 	* Slicing/zoning-related speed-ups.
 	* New map format that no longer eats memory.
+	* Added weather (only visual effects for now.)
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
