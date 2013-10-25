@@ -14,6 +14,7 @@ TIER = TIER_SURVIVAL-.2
 def setup(life):
 	_needs_to_meet = []
 	_needs_to_satisfy = []
+	_needs_unmet = []
 	
 	for need in life['needs'].values():
 		if not survival.needs_to_satisfy(life, need):
@@ -23,12 +24,14 @@ def setup(life):
 			_needs_to_satisfy.append(need)
 		
 		if not survival.can_satisfy(life, need) and not survival.can_potentially_satisfy(life, need):
+			_needs_unmet.append(need)
 			continue
 		
 		_needs_to_meet.append(need)
 
 	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
 	brain.store_in_memory(life, 'needs_to_satisfy', _needs_to_satisfy)
+	brain.store_in_memory(life, 'needs_unmet', _needs_unmet)
 
 	if not _needs_to_meet and not _needs_to_satisfy:
 		return False
@@ -37,9 +40,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	RETURN_VALUE = STATE_UNCHANGED
 
 	if not lfe.execute_raw(life, 'state', 'needs'):
-		return False
-
-	if not judgement.is_safe(life):
 		return False
 
 	if not brain.retrieve_from_memory(life, 'needs_to_meet') and not brain.retrieve_from_memory(life, 'needs_to_satisfy'):

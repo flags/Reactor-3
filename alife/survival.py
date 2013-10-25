@@ -131,10 +131,13 @@ def is_in_need_matches(life, match):
 	
 	return _matches
 
-def has_needs_to_meet(life):
-	if not brain.retrieve_from_memory(life, 'needs_to_meet'):
-		return False
+def has_unmet_needs(life):
+	if len(brain.retrieve_from_memory(life, 'needs_unmet'))>0:
+		return True
 	
+	return False
+
+def has_needs_to_meet(life):
 	if len(brain.retrieve_from_memory(life, 'needs_to_meet'))>0:
 		return True
 	
