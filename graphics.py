@@ -122,7 +122,7 @@ def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore
 		rgb_back_buffer[0][y,x] = back_color.r
 		rgb_back_buffer[1][y,x] = back_color.g
 		rgb_back_buffer[2][y,x] = back_color.b
-
+	
 	char_buffer[0][y,x] = ord(char)
 	char_buffer[1][y,x] = 1
 
@@ -386,6 +386,9 @@ def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
+	if not MAP_WINDOW:
+		return False
+	
 	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
 	_center_y = WINDOW_SIZE[1]/2
 	tcod.console_set_default_background(0, background_color)
@@ -465,23 +468,23 @@ def end_of_frame(draw_map=True):
 	
 	if _dialog and 'console' in _dialog:
 		tcod.console_blit(_dialog['console'], 0, 0,
-			WINDOW_SIZE[0],
-			40,
-			0,
-			0,
-			0,
-			1, 0.9)
+	        WINDOW_SIZE[0],
+	        40,
+	        0,
+	        0,
+	        0,
+	        1, 0.9)
 	
 	for menu in MENUS:
 		tcod.console_blit(menu['settings']['console'],0,0,
-			menu['settings']['size'][0],
-			menu['settings']['size'][1],0,
-			menu['settings']['position'][0],
-			menu['settings']['position'][1],1,0.5)
-		
+	        menu['settings']['size'][0],
+	        menu['settings']['size'][1],0,
+	        menu['settings']['position'][0],
+	        menu['settings']['position'][1],1,0.5)
+	
 	if SETTINGS['draw console']:
 		tcod.console_blit(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],0,0,0,1,0.5)
-	
+		
 	tcod.console_flush()
 
 def window_is_closed():

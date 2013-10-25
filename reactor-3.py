@@ -97,7 +97,7 @@ def main():
 		else:
 			CURRENT_UPS = 3
 			logic.tick_all_objects(WORLD_INFO['map'])
-			
+	
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
@@ -172,7 +172,7 @@ def main():
 		maps.fast_draw_map()
 	else:
 		gfx.start_of_frame(draw_char_buffer=True)
-		
+	
 	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	

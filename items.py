@@ -209,7 +209,7 @@ def remove_from_chunk(item):
 		_chunk['items'].remove(item['uid'])
 
 def clean_item_for_save(item):
-	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
+	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str) or isinstance(item['icon'], chr):
 			item['icon'] = ord(item['icon'][0])
 		
 	_fore = None

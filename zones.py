@@ -174,7 +174,6 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 def get_zone_at_coords(pos):
 	for _splice in ZONE_CACHE[pos[2]]:
 		_p = (pos[0]-_splice['top_left'][0]-1, pos[1]-_splice['top_left'][1]-1)
-		#print _p, _splice['_map'].shape, [(_splice['bot_right'][0]-_splice['top_left'][0]), (_splice['bot_right'][1]-_splice['top_left'][1])],  _splice['top_left'], pos
 		
 		if _p[0]>=_splice['_map'].shape[0] or _p[1]>=_splice['_map'].shape[1]:
 			continue
@@ -222,8 +221,10 @@ def can_path_to_zone(z1, z2):
 def create_zone_map():
 	WORLD_INFO['slices'] = {}
 	WORLD_INFO['zoneid'] = 1
-	tcod.console_set_default_foreground(0, tcod.white)
-	tcod.console_flush()
+	
+	if MAP_WINDOW:
+		tcod.console_set_default_foreground(0, tcod.white)
+		tcod.console_flush()
 	
 	_t = time.time()
 	if SETTINGS['smp']:
@@ -233,7 +234,8 @@ def create_zone_map():
 			gfx.title('Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
 			process_slice(z)
 	
-		tcod.console_print(0, 0, 0, '              ')
+		if MAP_WINDOW:
+			tcod.console_print(0, 0, 0, '              ')
 	print 'Zone gen took',time.time()-_t
 
 def connect_ramps():
