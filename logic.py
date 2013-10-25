@@ -8,6 +8,7 @@ import encounters
 import worldgen
 import effects
 import numbers
+import weather
 import timers
 import cache
 import menus
@@ -122,6 +123,7 @@ def tick_world():
 	else:
 		WORLD_INFO['real_time_of_day'] = 0
 		WORLD_INFO['day'] += 1
+		weather.change_weather()
 	
 	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
 		if WORLD_INFO['time_of_day'] == 'day':

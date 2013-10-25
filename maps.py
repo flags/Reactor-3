@@ -8,6 +8,7 @@ import maputils
 import numbers
 import drawing
 import effects
+import weather
 import logic
 import items
 import zones
@@ -111,6 +112,11 @@ def save_map(map_name, base_dir=DATA_DIR):
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
 			
+			_weather_light_map = None
+			if 'light_map' in WORLD_INFO['weather']:
+				_weather_light_map = WORLD_INFO['weather']['light_map']
+				del WORLD_INFO['weather']['light_map']
+			
 			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
 			
 			for _slice in _slices.keys():
@@ -132,6 +138,10 @@ def save_map(map_name, base_dir=DATA_DIR):
 			WORLD_INFO['map'] = _map
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
+			
+			if _weather_light_map:
+				WORLD_INFO['weather']['light_map'] = _weather_light_map
+				print WORLD_INFO['weather']
 			
 			logging.debug('Reloading slices...')
 			reload_slices()
@@ -184,6 +194,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 			smooth_chunk_map()
 		else:
 			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
+		
+		if WORLD_INFO['weather']:
+			weather.create_light_map(WORLD_INFO['weather'])
 		
 		if not WORLD_INFO['lights']:
 			logging.warning('World has no lights. Creating one manually.')
@@ -307,7 +320,7 @@ def render_lights(source_map):
 		
 		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		_mod = numbers.clip(_mod-1, 0, 1)
-		SUN = (255*_mod, 165*_mod, 0*_mod)
+		SUN = weather.get_lighting()#(255*_mod, 165*_mod, 0*_mod)
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])

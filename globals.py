@@ -55,7 +55,8 @@ WORLD_INFO = {'map': [],
 	'slices': {},
 	'chunk_size': 5,
 	'lights': [],
-	'timers': []}
+	'timers': [],
+	'weather': {}}
 
 #Return values
 STATE_CHANGE = 2

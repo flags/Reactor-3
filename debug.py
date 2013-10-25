@@ -1,6 +1,7 @@
 from globals import *
 
 import situations
+import weather
 import zones
 import alife
 import items
@@ -72,3 +73,6 @@ def toss():
 
 def soldier():
 	LIFE[SETTINGS['following']]['stats']['firearms'] = 10
+
+def weather():
+	weather.change_weather()

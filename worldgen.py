@@ -7,6 +7,7 @@ import life as lfe
 import historygen
 import profiles
 import effects
+import weather
 import mapgen
 import cache
 import logic
@@ -84,9 +85,6 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
 	
-	if combat_test:
-		WORLD_INFO['time_scale'] = 0
-	
 	random.seed(WORLD_INFO['seed'])
 	
 	if WORLD_INFO['life_density'] == 'Sparse':
@@ -107,6 +105,8 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
+	weather.change_weather()
+	print 'STARTING!',WORLD_INFO['weather']
 	#create_region_spawns()
 	randomize_item_spawns()
 	

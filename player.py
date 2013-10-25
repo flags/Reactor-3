@@ -623,7 +623,9 @@ def handle_input():
 	if INPUT['b']:
 		#print LIFE[SETTINGS['following']]['actions']
 		#print life.create_recent_history(LIFE[SETTINGS['following']])
-		life.print_life_table()
+		#life.print_life_table()
+		import weather
+		weather.change_weather()
 	
 	if INPUT['y']:
 		if int(SETTINGS['following'])>1:
