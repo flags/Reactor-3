@@ -626,6 +626,7 @@ def handle_input():
 		#life.print_life_table()
 		import weather
 		weather.change_weather()
+		WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['y']:
 		if int(SETTINGS['following'])>1:
