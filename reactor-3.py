@@ -120,7 +120,7 @@ def main():
 	if not SETTINGS['map_slices']:
 		render_map.render_map(WORLD_INFO['map'])
 	
-	#items.draw_items()
+	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
 	

@@ -199,7 +199,7 @@ def get_raw(life, section, identifier):
 	
 	return life['raw']['sections'][section][identifier]
 
-def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, **kwargs):
+def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, debug=False, **kwargs):
 	""" break_on_false is defaulted to True because the majority of situations in which this
 	function is used involves making sure all the required checks return True.
 	
@@ -209,7 +209,18 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	"""
 	_broke_on_false = 0
 	
-	for rule_group in get_raw(life, section, identifier):
+	if debug:
+		print 'Grabbing raw: %s, %s' % (section, identifier)
+	
+	_raw = get_raw(life, section, identifier)
+	
+	if not _raw:
+		logging.warning('Cannot grab raw for %s: %s, %s' % (life['raw_name'], section, identifier))
+	
+	for rule_group in _raw:
+		if debug:
+			print 'Function group:', rule_group
+		
 		for rule in rule_group:
 			if rule['string']:
 				return rule['string'].lower()
@@ -235,6 +246,10 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 				except Exception as e:
 					logging.critical('Function \'%s\' got invalid argument.' % rule['function'])
 					raise e
+			
+			if debug:
+				print 'Function:', _func
+				print 'Function arguments:', _func_args
 			
 			if rule['true'] == '*' or _func == rule['true']:
 				for value in rule['values']:

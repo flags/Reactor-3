@@ -86,7 +86,7 @@ def create_function_map():
 		'target_is_combat_ready': judgement.target_is_combat_ready,
 		'is_group_leader': lambda life: groups.is_leader_of_any_group(life)==True,
 		'is_in_same_group': lambda life, life_id: (life['group'] and LIFE[life_id]['group'] == life['group'])>0,
-		'is_target_group_leader': lambda life, life_id: groups.is_leader_of_any_group(LIFE[life_id])==True,
+		'is_target_group_leader': lambda life, life_id: (groups.is_leader_of_any_group(LIFE[life_id]))==True,
 		'is_target_group_friendly': stats.is_target_group_friendly,
 		'get_group_flag': groups.get_flag,
 		'get_flag': brain.get_flag,

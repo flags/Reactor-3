@@ -29,7 +29,7 @@ def update_targets_around_noise(life, noise):
 		if numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:
 			continue
 		
-		target['last_seen_at'] = noise[pos][:]
+		target['last_seen_at'] = noise['pos'][:]
 		print 'UPDATED' * 100
 
 def _spread(noise):

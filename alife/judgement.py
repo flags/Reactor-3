@@ -293,8 +293,6 @@ def get_target_to_follow(life):
 		if _known_target['escaped'] == 2:
 			continue
 		
-		#if _known_target['trust'] >= 3:
-		#	_score += 1
 		_score += _known_target['trust']
 			
 		if life['group'] and groups.is_leader(life['group'], target_id):

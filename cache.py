@@ -70,7 +70,7 @@ def commit_cache(cache_name):
 		_cache = f.readlines()
 
 		for _line in _cache:
-			line = _line.strip()
+			line = _line.rstrip()
 			
 			if line == '\n' or not line:
 				continue

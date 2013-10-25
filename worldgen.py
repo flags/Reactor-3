@@ -378,8 +378,8 @@ def create_player():
 	
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
-	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
-	items.move(_i, 180, 3)
+	#_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
+	#items.move(_i, 180, 3)
 	
 	return PLAYER
 	
