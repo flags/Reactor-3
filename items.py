@@ -209,7 +209,7 @@ def remove_from_chunk(item):
 		_chunk['items'].remove(item['uid'])
 
 def clean_item_for_save(item):
-	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str) or isinstance(item['icon'], chr):
+	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
 			item['icon'] = ord(item['icon'][0])
 		
 	_fore = None
@@ -229,7 +229,7 @@ def save_all_items():
 
 def reload_all_items():
 	for item in ITEMS.values():
-		if not isinstance(item['icon'], unicode) and not isinstance(item['icon'], str):
+		if isinstance(item['icon'], int):
 			item['icon'] = chr(item['icon'])
 		
 		if item['color'][0]:
