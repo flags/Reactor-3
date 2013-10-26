@@ -1714,10 +1714,19 @@ def radio_menu(entry):
 		_people = []
 		
 		for life_id in LIFE[SETTINGS['controlling']]['know']:
+			if _life['group'] and groups.is_leader(_life['group'], life_id):
+				fg_color = tcod.dark_green
+			elif judgement.can_trust(_life, life_id):
+				fg_color = tcod.green
+			else:
+				fg_color = tcod.white
+			
+			_color = life.draw_life_icon(LIFE[life_id])[1]
 			_people.append(menus.create_item('single',
 			                                 ' '.join(LIFE[life_id]['name']),
 			                                 None,
-			                                 target=life_id))
+			                                 target=life_id,
+			                                 color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
 		
 		if _people:
 			_menu = menus.create_menu(title='Talk to...',

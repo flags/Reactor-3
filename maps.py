@@ -42,8 +42,7 @@ def create_map(size=MAP_SIZE):
 			_z = []
 			for z in range(size[2]):
 				if z == 2:
-					_z.append(create_tile(random.choice(
-						[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
+					_z.append(create_tile(random.choice([TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
 				else:
 					_z.append(None)
 

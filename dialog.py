@@ -223,7 +223,10 @@ def get_all_relevant_gist_responses(life, target, gist):
 	elif gist == 'invite_to_group':
 		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
 	elif gist == 'call_accepted':
-		_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
+		if life['group'] and alife.groups.is_leader(life['group'], target):
+			_topics.append({'text': 'Orders?', 'gist': 'call_topics'})
+		else:
+			_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
 	elif gist == 'encounter':
 		_topics.append({'text': 'Leave! I\'m not looking for company!', 'gist': 'encounter_leave', 'dislike': 1, 'danger': 3})
 		_topics.append({'text': 'What are you doing around here?', 'gist': 'encounter_question'})
@@ -1066,6 +1069,7 @@ def process_response(life, target, dialog, chosen):
 			                   'gist': 'call_about_job',
 			                   'job': _life['job']})
 		
+		_responses.append({'text': 'Where are you?', 'gist': 'call_get_location'})
 		_responses.append({'text': 'Goodbye.', 'gist': 'end'})
 	
 	elif chosen['gist'] == 'call_about_job':

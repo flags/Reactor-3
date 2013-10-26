@@ -376,11 +376,6 @@ def listen(life):
 		
 		elif event['gist'] == 'call':
 			if judgement.can_trust(life, event['from']['id']):
-				#_dialog = {'type': 'dialog',
-				#           'from': SETTINGS['controlling'],
-				#           'enabled': True}
-					 
-				#event['from']['dialogs'].append(dialog.create_dialog_with(event['from'], life['id'], _dialog))
 				speech.start_dialog(life, event['from']['id'], 'call_accepted')
 		
 		elif event['gist'] == 'threw_an_item':
