@@ -461,7 +461,7 @@ def place_factory(map_gen):
 		
 		_walked = walker(map_gen,
 			_town_chunk['pos'],
-		     TOWN_SIZE,
+			TOWN_SIZE,
 			allow_diagonal_moves=False,
 			avoid_chunks=_avoid_chunk_keys,
 			avoid_chunk_distance=TOWN_DISTANCE)
@@ -746,12 +746,15 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_c
 			_next_pos = [_pos[0]+(_dir[0]*map_gen['chunk_size']), _pos[1]+(_dir[1]*map_gen['chunk_size'])]
 			
 			if _last_dir['times'] >= 3 and _next_pos == _last_dir['dir']:
+				print 'stopped1'
 				continue
 
-			if _next_pos in _walked:
-				continue
+			#if _next_pos in _walked:
+			#	print 'stopped2'
+			#	continue
 			
-			if _next_pos[0]<=0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<=0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
+			if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
+				print 'stopped3'
 				continue
 			
 			if avoid_chunks and alife.chunks.get_distance_to_nearest_chunk_in_list(_next_pos, avoid_chunks) < avoid_chunk_distance:
@@ -1374,13 +1377,16 @@ def fill_empty_spaces(map_gen, fields=3):
 					continue
 			
 			_field_spawns.append(_spot[:])
-			break
+			#break
 	
 	_placed_field_chunks = []
 	for _field in _field_spawns:
 		_start_chunk = map_gen['chunk_map'][_field]
 		#avoid_chunks=['%s,%s' % (x,y) for x,y in _placed_field_chunks]
-		_placed_field_chunks.extend(walker(map_gen, _start_chunk['pos'], random.randint(FIELD_SIZE_RANGE[0], FIELD_SIZE_RANGE[1])*map_gen['chunk_size']))
+		_size = random.randint(FIELD_SIZE_RANGE[0], FIELD_SIZE_RANGE[1])*map_gen['chunk_size']
+		_walk = walker(map_gen, _start_chunk['pos'], _size)
+		print len(_walk)
+		_placed_field_chunks.extend(_walk)
 	
 	for _chunk_key in ['%s,%s' % (x, y) for x,y  in _placed_field_chunks]:
 		map_gen['chunk_map'][_chunk_key]['type'] = 'wash'
