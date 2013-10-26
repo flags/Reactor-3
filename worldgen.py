@@ -189,8 +189,8 @@ def save_world():
 	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items.dat'), 'w') as e:
 		e.write(json.dumps(ITEMS))
 	
-	cache.commit_cache('items')
-	cache.save_cache('items')
+	#cache.commit_cache('items')
+	#cache.save_cache('items')
 	
 	items.reload_all_items()
 	

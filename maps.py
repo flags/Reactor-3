@@ -63,15 +63,8 @@ def reload_slices():
 		_slice['_map'] = zones.create_map_array(size=_size)
 		
 		for pos in _slice['map']:
-			if _size[0]>1:
-				_xx = _slice['top_left'][0]+1
-			else:
-				_xx = _slice['top_left'][0]+1
-			
-			if _size[1]>1:
-				_yy = _slice['top_left'][1]+1
-			else:
-				_yy = _slice['top_left'][1]+1
+			_xx = _slice['top_left'][0]+1
+			_yy = _slice['top_left'][1]+1
 			
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 

@@ -138,7 +138,12 @@ def has_unmet_needs(life):
 	return False
 
 def has_needs_to_meet(life):
-	if len(brain.retrieve_from_memory(life, 'needs_to_meet'))>0:
+	_needs = brain.retrieve_from_memory(life, 'needs_to_meet')
+	
+	if not _needs:
+		return False
+	
+	if len(_needs)>0:
 		return True
 	
 	return False

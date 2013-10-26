@@ -469,6 +469,9 @@ def is_child_of(life, life_id):
 	if not _know:
 		return False
 	
+	if not _know['escaped'] and _know['life']['dead']:
+		return False
+	
 	for relation in ['mother', 'father']:
 		if brain.get_alife_flag(life, life_id, relation):
 			return True
@@ -483,6 +486,13 @@ def is_parent_of(life, life_id):
 	
 	for relation in ['son', 'daughter']:
 		if brain.get_alife_flag(life, life_id, relation):
+			return True
+	
+	return False
+
+def has_parent(life):
+	for life_id in life['know'].keys():
+		if is_child_of(life, life_id):
 			return True
 	
 	return False

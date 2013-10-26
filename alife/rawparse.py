@@ -54,6 +54,7 @@ def create_function_map():
 		'is_idle': lambda life: life['state'] == 'idle',
 		'is_child_of': stats.is_child_of,
 		'is_parent_of': stats.is_parent_of,
+		'has_parent': stats.has_parent,
 		'has_child': stats.has_child,
 		'is_night': logic.is_night,
 		'is_born_leader': stats.is_born_leader,
