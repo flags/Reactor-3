@@ -171,7 +171,10 @@ SETTINGS = {'running': True,
 	'state history size': 5,
 	'fire burn rate': 0.04,
 	'smp': None,
-	'map_slices': []}
+	'map_slices': [],
+	'recording': False,
+	'recording fps': 1,
+	'recording fps temp': 0}
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]

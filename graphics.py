@@ -487,5 +487,8 @@ def end_of_frame(draw_map=True):
 		
 	tcod.console_flush()
 
+def screenshot():
+	tcod.sys_save_screenshot('screenshot-%s.bmp' % time.time())
+
 def window_is_closed():
 	return tcod.console_is_window_closed()
