@@ -136,8 +136,13 @@ def handle_input():
 			gfx.refresh_window()
 	
 	if INPUT['?']:
-		pix = tcod.image_from_console(0)
-		tcod.image_save(pix, 'screenshot-%s.bmp' % time.time())
+		#gfx.screenshot()
+		if SETTINGS['recording']:
+			SETTINGS['recording'] = False
+			logging.info('Stopped recording')
+		else:
+			SETTINGS['recording'] = True
+			logging.info('Recording')
 	
 	if INPUT['P']:
 		if SETTINGS['paused']:

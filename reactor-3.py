@@ -178,6 +178,14 @@ def main():
 	
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
+	
+	if SETTINGS['recording']:
+		if 30+SETTINGS['recording fps temp']:
+			SETTINGS['recording fps temp'] -= 1
+		else:
+			WORLD_INFO['d'] = WORLD_INFO['ticks']
+			gfx.screenshot()
+			SETTINGS['recording fps temp'] = SETTINGS['recording fps']
 
 def loop():
 	while SETTINGS['running']:
