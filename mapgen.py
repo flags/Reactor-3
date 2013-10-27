@@ -733,7 +733,7 @@ def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type):
 	
 	return _connected_chunks
 
-def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_chunks=[], avoid_chunk_distance=0):
+def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, only_chunk_types=[], avoid_chunks=[], avoid_chunk_distance=0):
 	_pos = list(pos)
 	_directions = [(0, -1), (-1, 0), (1, 0), (0, 1)]
 	
@@ -756,6 +756,9 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_c
 			#	continue
 			
 			if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
+				continue
+
+			if only_chunk_types and not map_gen['chunk_map']['%s,%s' % (_next_pos[0], _next_pos[1])]['type'] in only_chunk_types:
 				continue
 			
 			if avoid_chunks and alife.chunks.get_distance_to_nearest_chunk_in_list(_next_pos, avoid_chunks) < avoid_chunk_distance:
@@ -1120,7 +1123,7 @@ def construct_town(map_gen, town):
 				break
 		
 		#_houses.append(_house)
-		_taken.extend(_house)
+		#_taken.extend(_house)
 		
 		_main_rooms = ['bedroom', 'bathroom']
 		_secondary_rooms = ['kitchen', 'dining room']
@@ -1144,6 +1147,8 @@ def construct_town(map_gen, town):
 					print 'cleaned'
 				
 				break
+			
+			_taken.append(chunk_key)#extend(_house)
 			
 			_items = []
 			_storage = []
@@ -1386,7 +1391,7 @@ def fill_empty_spaces(map_gen, fields=3):
 		_start_chunk = map_gen['chunk_map'][_field]
 		#avoid_chunks=['%s,%s' % (x,y) for x,y in _placed_field_chunks]
 		_size = random.randint(FIELD_SIZE_RANGE[0], FIELD_SIZE_RANGE[1])*map_gen['chunk_size']
-		_walk = walker(map_gen, _start_chunk['pos'], _size)
+		_walk = walker(map_gen, _start_chunk['pos'], _size, only_chunk_types=['field', 'other'])
 		map_gen['refs']['fields'].append(_walk)
 		_placed_field_chunks.extend(_walk)
 	
@@ -1473,6 +1478,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(600, 600, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(300, 300, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t
