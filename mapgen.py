@@ -125,7 +125,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'forests': forests,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': {}, 'forests': [], 'roads': [], 'town_seeds': []},
+		'refs': {'factories': [], 'towns': {}, 'fields': [], 'forests': [], 'roads': [], 'town_seeds': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -152,6 +152,9 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, map_gen['refs']['towns'][_town]['chunks'])
+	
+	for _field in map_gen['refs']['fields']	:
+		construct_field(map_gen, _field)
 	
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
@@ -182,9 +185,9 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		maps.smooth_chunk_map()
 		maps.generate_reference_maps()
 	
-	#items.save_all_items()
-	#maps.save_map(map_gen['name'])
-	#items.reload_all_items()
+	items.save_all_items()
+	maps.save_map(map_gen['name'])
+	items.reload_all_items()
 	
 	return map_gen
 
@@ -746,7 +749,6 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_c
 			_next_pos = [_pos[0]+(_dir[0]*map_gen['chunk_size']), _pos[1]+(_dir[1]*map_gen['chunk_size'])]
 			
 			if _last_dir['times'] >= 3 and _next_pos == _last_dir['dir']:
-				print 'stopped1'
 				continue
 
 			#if _next_pos in _walked:
@@ -754,7 +756,6 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_c
 			#	continue
 			
 			if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
-				print 'stopped3'
 				continue
 			
 			if avoid_chunks and alife.chunks.get_distance_to_nearest_chunk_in_list(_next_pos, avoid_chunks) < avoid_chunk_distance:
@@ -783,7 +784,7 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, avoid_c
 				if __x < 0 or __x>=map_gen['size'][0] or __y < 0 or __y>=map_gen['size'][1]:
 					continue
 					
-				_walked.append([__x, __y])
+				_walked.append((__x, __y))
 	
 	return _walked
 
@@ -1340,6 +1341,14 @@ def construct_town(map_gen, town):
 			for container in _placed_containers:
 				_storage.remove(container)
 
+def construct_field(map_gen, field):
+	for chunk_key in field:
+		_chunk = map_gen['chunk_map']['%s,%s' % (chunk_key[0], chunk_key[1])]
+		
+		for y in range(map_gen['chunk_size']):
+			for x in range(map_gen['chunk_size']):
+				create_tile(map_gen, _chunk['pos'][0]+x, _chunk['pos'][1]+y, 2, random.choice(tiles.FIELD_TILES))
+
 def can_spawn_item(item):
 	if item['rarity']>random.uniform(0, 1.0):
 		return True
@@ -1366,18 +1375,11 @@ def fill_empty_spaces(map_gen, fields=3):
 			_spot = _spots.pop(random.randint(0, len(_spots)-1))
 			_chunk = map_gen['chunk_map'][_spot]
 			
-			#logging.info(len(get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True, return_keys=True)))
-			#if len(get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True)) < 8:
-			#	continue
-			
-			logging.info('here')
-			
 			if _field_spawns:
 				if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _field_spawns) < FIELD_DISTANCE:
 					continue
 			
 			_field_spawns.append(_spot[:])
-			#break
 	
 	_placed_field_chunks = []
 	for _field in _field_spawns:
@@ -1385,7 +1387,7 @@ def fill_empty_spaces(map_gen, fields=3):
 		#avoid_chunks=['%s,%s' % (x,y) for x,y in _placed_field_chunks]
 		_size = random.randint(FIELD_SIZE_RANGE[0], FIELD_SIZE_RANGE[1])*map_gen['chunk_size']
 		_walk = walker(map_gen, _start_chunk['pos'], _size)
-		print len(_walk)
+		map_gen['refs']['fields'].append(_walk)
 		_placed_field_chunks.extend(_walk)
 	
 	for _chunk_key in ['%s,%s' % (x, y) for x,y  in _placed_field_chunks]:
