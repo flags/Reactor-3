@@ -125,7 +125,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'forests': forests,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': {}, 'fields': [], 'forests': [], 'roads': [], 'town_seeds': []},
+		'refs': {'factories': [], 'towns': [], 'fields': [], 'forests': [], 'roads': [], 'town_seeds': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -151,7 +151,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
-		construct_town(map_gen, map_gen['refs']['towns'][_town]['chunks'])
+		construct_town(map_gen, _town)
 	
 	for _field in map_gen['refs']['fields']	:
 		construct_field(map_gen, _field)
@@ -159,7 +159,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
 	
-	clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
+	#clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
 	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
 	
 	print_chunk_map_to_console(map_gen)
@@ -185,10 +185,11 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		maps.smooth_chunk_map()
 		maps.generate_reference_maps()
 	
-	items.save_all_items()
-	maps.save_map(map_gen['name'])
-	items.reload_all_items()
-	
+	if not skip_chunking and not skip_chunking:
+		items.save_all_items()
+		maps.save_map(map_gen['name'])
+		items.reload_all_items()
+		
 	return map_gen
 
 def generate_noise_map(size):
@@ -492,127 +493,195 @@ def place_factory(map_gen):
 		break
 
 def place_town(map_gen, start_chunk_key=None, size=10):
-	_avoid_chunk_keys = []
-	_chunks = []
-	_driveways = {}
+	#Find driveways
 	
-	print 'size',size
+	_building_map = {}
 	
-	for town in map_gen['refs']['towns'].values():
-		_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town['chunks']])
+	#for town in map_gen['refs']['towns'].values():
+		#_avoid_chunk_keys.extend(['%s,%s' % (t[0], t[1]) for t in town['chunks']])
 	
-	#Find some areas near roads...
+	_road_seeds = []
 	if start_chunk_key:
 		_start_chunk = map_gen['chunk_map'][start_chunk_key]
 		for road_chunk_key in get_all_connected_chunks_of_type(map_gen, start_chunk_key, 'road'):
 			_road_chunk = map_gen['chunk_map'][road_chunk_key]
 			
+			if len(get_neighbors_of_type(map_gen, _road_chunk['pos'], 'road'))>2:
+				continue
+			
 			if numbers.distance(_start_chunk['pos'], _road_chunk['pos'])<size*WORLD_INFO['chunk_size']:
-				_chunks.append(_road_chunk)
+				_road_seeds.append(road_chunk_key)
 	else:
 		logging.warning('No given start chunk for town. This might look weird...')
 		for road_chunk_key in map_gen['refs']['roads']:
-			_chunks.append(map_gen['chunk_map'][road_chunk_key])
-			
-	#print _chunks
-	_potential_chunks = []
-	for chunk in _chunks:
-		for chunk_key in get_neighbors_of_type(map_gen, chunk['pos'], 'other'):
-			_house_chunk = map_gen['chunk_map'][chunk_key]
-			_direction = direction_from_key_to_key(map_gen, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]), chunk_key)
-			_next_chunk_key = '%s,%s' % ((_house_chunk['pos'][0]+(map_gen['chunk_size']*_direction[0])),
-		                                 (_house_chunk['pos'][1]+(map_gen['chunk_size']*_direction[1])))
-			
-			if not _next_chunk_key in map_gen['chunk_map']:
-				continue
-			
-			if get_neighbors_of_type(map_gen, map_gen['chunk_map'][_next_chunk_key]['pos'], 'road'):
-				continue
-			
-			if not map_gen['chunk_map'][_next_chunk_key]['type'] == 'other':
-				continue
-			
-			if not _next_chunk_key in _potential_chunks:
-				_potential_chunks.append(_next_chunk_key)
-				_driveways[_next_chunk_key] = chunk_key[:]
+			_road_seeds.append(road_chunk_key)
 	
-	_actual_town_chunks = []
-	_town_chunks = _potential_chunks#[:random.randint(0, numbers.clip(len(_potential_chunks)-1, 0, 60))]
-	for chunk in _town_chunks:
-		_skip = False
-		for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk]['pos'], 'town', diagonal=True):
-			if not neighbor_key in _town_chunks:
-				_skip = True
-				break
+	#Find driveways, set building seeds
+	while _road_seeds:
+		_chosen_key = random.choice(_road_seeds)
 		
-		if _skip:
+		#Choose the one with the most space surrounding it
+		_best_key = {'key': None, 'score': 0, 'distance': 0}
+		for _driveway_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_chosen_key]['pos'], 'other'):
+			#if get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveway_key]['pos'], 'driveway'):
+			#	continue
+			
+			if len(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveway_key]['pos'], 'road'))>2:
+				continue
+			
+			_potential_driveway_chunk = map_gen['chunk_map'][_driveway_key]
+			
+			_score = len(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveway_key]['pos'], 'other'))
+			
+			if _score<3:
+				continue
+			
+			_distance = (size*WORLD_INFO['chunk_size'])-numbers.distance(_start_chunk['pos'], _potential_driveway_chunk['pos'])
+			_score += _distance
+			
+			if _score > _best_key['score']:
+				_best_key['key'] = _driveway_key
+				_best_key['score'] = _score
+				_best_key['distance'] = _distance
+		
+		_road_seeds.remove(_chosen_key)
+		
+		if not _best_key['key']:
 			continue
 		
-		if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>=len(ROOM_TYPES):
-			continue
+		_driveway_key = _best_key['key']
 		
-		map_gen['chunk_map'][chunk]['type'] = 'town'
+		#Remove nearby roads from the list so we don't cluster buildings
+		for _neighbor_road_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveway_key]['pos'], 'road'):
+			if not _neighbor_road_key in _road_seeds:
+				continue
+			
+			_road_seeds.remove(_neighbor_road_key)
 		
-		_actual_town_chunks.append(chunk)
+		#map_gen['chunk_map'][_driveway_key]['type'] = 'driveway'
 		
-		if len(_actual_town_chunks)>size*(WORLD_INFO['chunk_size']/2):
-			print 'size reached!'
+		_building_map[_driveway_key] = {'distance': _best_key['distance']}
+		
+		if len(_building_map)>size/2:
 			break
-	
-	for chunk_key in _actual_town_chunks[:]:
-		_added = True
-		_break = False
-		while _added:
-			_added = False
-			
-			for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
-				#if neighbor_key in _actual_town_chunks:
-				#	continue
-				
-				if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>=len(ROOM_TYPES):
-					_break = True
-					break
-				
-				_skip = False
-				for _next_neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'town'):
-					if not _next_neighbor in _actual_town_chunks:
-						_skip = True
-						break
-				
-				if _skip:
-					continue
-				
-				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'road'):
-					continue
-				
-				if random.randint(0, 3):
-					continue
-				
-				_actual_town_chunks.append(neighbor_key)
-				map_gen['chunk_map'][neighbor_key]['type'] = 'town'
-				_added = True
 		
-			if _break:
-				break
-		
-		if _break:
-			break
-	
-	_covered_houses = []
-	for chunk in _actual_town_chunks:
-		#if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveways[chunk]]['pos'], 'driveway') and :
-		if chunk in _covered_houses:
-			continue
-		
-		_chunk = map_gen['chunk_map'][_driveways[chunk]]
-		create_road(map_gen, _driveways[chunk], ground_tiles=tiles.CONCRETE_FLOOR_TILES, size=1)
-		_chunk['type'] = 'driveway'
-		
-		_covered_houses.extend(get_all_connected_chunks_of_type(map_gen, _driveways[chunk], 'town'))
-	
 	_name = language.generate_place_name()
+	map_gen['refs']['towns'].append({'name': _name, 'buildings': _building_map})
 	
-	map_gen['refs']['towns'][_name] = {'chunks': _actual_town_chunks}
+	#print _chunks
+	#_potential_chunks = []
+	#for chunk in _chunks:
+		#for chunk_key in get_neighbors_of_type(map_gen, chunk['pos'], 'other'):
+			#_start_chunk = map_gen['chunk_map'][chunk_key]
+			
+			#_building_spots = [_start_chunk]
+			#while len(_potential_chunks)<4:
+				#_building_chunk = _building_spots.pop(random.randint(0, len(_building_spots)-1))
+				
+				##_potential_chunks.append('%s,%s' % (_building_chunk['pos'][0], _building_chunk['pos'][1]))
+				
+				#for _building_key in get_neighbors_of_type(map_gen, _building_chunk['pos'], 'other'):
+					#if not get_neighbors_of_type(map_gen, _building_chunk['pos'], 'road'):
+						#_driveways[_building_key] = chunk_key[:]
+						#_potential_chunks.append(_building_key)
+					
+					
+					#_next_building_chunk = map_gen['chunk_map'][_building_key]
+					#_building_spots.append(_next_building_chunk)
+			
+			##_direction = direction_from_key_to_key(map_gen, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]), chunk_key)
+			##_next_chunk_key = '%s,%s' % ((_house_chunk['pos'][0]+(map_gen['chunk_size']*_direction[0])),
+			##                             (_house_chunk['pos'][1]+(map_gen['chunk_size']*_direction[1])))
+			
+			##if not _next_chunk_key in map_gen['chunk_map']:
+			##	continue
+			
+			##if get_neighbors_of_type(map_gen, map_gen['chunk_map'][_next_chunk_key]['pos'], 'road'):
+			##	continue
+			
+			##if not map_gen['chunk_map'][_next_chunk_key]['type'] in ['field', 'other']:
+			##	continue
+			
+			##if not _next_chunk_key in _potential_chunks:
+				##_potential_chunks.append(_next_chunk_key)
+			
+			##if not chunk_key in _driveways:
+			##	_driveways[_next_chunk_key] = chunk_key[:]
+	
+	#print _potential_chunks
+	
+	#_actual_town_chunks = []
+	#_town_chunks = _potential_chunks#[:random.randint(0, numbers.clip(len(_potential_chunks)-1, 0, 60))]
+	#for chunk in _town_chunks:
+		#_skip = False
+		#for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk]['pos'], 'town', diagonal=True):
+			#if not neighbor_key in _town_chunks:
+				#_skip = True
+				#break
+		
+		#if _skip:
+			#continue
+		
+		#if len(get_all_connected_chunks_of_type(map_gen, chunk, 'town'))>=len(ROOM_TYPES)+2:
+			#continue
+		
+		#map_gen['chunk_map'][chunk]['type'] = 'town'
+		
+		#_actual_town_chunks.append(chunk)
+		
+		#if len(_actual_town_chunks)>size*(WORLD_INFO['chunk_size']/2):
+			#break
+	
+	#for chunk_key in _actual_town_chunks[:]:
+		#_added = True
+		#_break = False
+		#while _added:
+			#_added = False
+			
+			#for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
+				##if neighbor_key in _actual_town_chunks:
+				##	continue
+				
+				#if len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'town'))>=len(ROOM_TYPES)+2:
+					#_break = True
+					#break
+				
+				#_skip = False
+				#for _next_neighbor in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'town'):
+					#if not _next_neighbor in _actual_town_chunks:
+						#_skip = True
+						#break
+				
+				#if _skip:
+					#continue
+				
+				#if get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'road'):
+					#continue
+				
+				#if random.randint(0, 3):
+					#continue
+				
+				#_actual_town_chunks.append(neighbor_key)
+				#map_gen['chunk_map'][neighbor_key]['type'] = 'town'
+				#_added = True
+		
+			#if _break:
+				#break
+		
+		#if _break:
+			#break
+	
+	#_covered_houses = []
+	#for chunk in _actual_town_chunks:
+		##if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][_driveways[chunk]]['pos'], 'driveway') and :
+		#if chunk in _covered_houses:
+			#continue
+		
+		#_chunk = map_gen['chunk_map'][_driveways[chunk]]
+		#create_road(map_gen, _driveways[chunk], ground_tiles=tiles.CONCRETE_FLOOR_TILES, size=1)
+		#_chunk['type'] = 'driveway'
+		
+		#_covered_houses.extend(get_all_connected_chunks_of_type(map_gen, _driveways[chunk], 'town'))
 
 def place_hills(map_gen):
 	_size = (map_gen['size'][0], map_gen['size'][1], 4)
@@ -1098,8 +1167,234 @@ def construct_factory(map_gen, town):
 								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
 
 def construct_town(map_gen, town):
-	#_houses = []
+	_buildings = []
 	_taken = []
+	
+	for building_seed in town['buildings']:
+		#How much space do we have to build with?
+		_first_building_key = None
+		_bs = map_gen['chunk_map'][building_seed]
+		
+		for _nearest_road_key in get_neighbors_of_type(map_gen, _bs['pos'], 'road'):
+			_direction = direction_from_key_to_key(map_gen, _nearest_road_key, building_seed)
+			_first_building_key = '%s,%s' % (_bs['pos'][0]+(_direction[0]*map_gen['chunk_size']),
+			                                 _bs['pos'][1]+(_direction[1]*map_gen['chunk_size']))
+		
+		if not _first_building_key:
+			continue
+		
+		_to_check = [_first_building_key]
+		_building_space = [_first_building_key]
+		
+		while _to_check:
+			_check_chunk = map_gen['chunk_map'][_to_check.pop(len(_to_check)-1)]
+			
+			for empty_chunk_key in get_neighbors_of_type(map_gen, _check_chunk['pos'], 'other'):
+				_continue = False
+				for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][empty_chunk_key]['pos'], 'town', diagonal=True):
+					if neighbor_chunk_key in _taken:
+						_continue = True
+						break
+				
+				if _continue or empty_chunk_key in _taken:
+					continue
+				
+				if empty_chunk_key in _building_space:
+					continue
+				
+				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][empty_chunk_key]['pos'], 'road', diagonal=True):
+					continue
+				
+				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][empty_chunk_key]['pos'], 'town', diagonal=True):
+					continue
+				
+				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][empty_chunk_key]['pos'], 'driveway', diagonal=True):
+					continue
+				
+				_to_check.append(empty_chunk_key)
+				_building_space.append(empty_chunk_key)
+				_taken.append(empty_chunk_key)
+				
+				if len(_building_space)>3:
+					break
+			
+			if len(_building_space)>3:
+				break
+		
+		if not len(_building_space)>3:
+			continue
+		
+		map_gen['chunk_map'][building_seed]['type'] = 'driveway'
+		create_road(map_gen, building_seed, ground_tiles=tiles.CONCRETE_FLOOR_TILES, size=1)
+		
+		#_buildings.append(_building_space)
+		for chunk_key in _building_space:
+			map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		
+		_buildings.append({'driveway': building_seed,
+		                   'rooms': _building_space[:]})
+	
+	#_main_rooms = ['bedroom', 'bathroom', 'bathroom', 'bedroom']
+	#_secondary_rooms = ['kitchen', 'dining room']
+	_main_room_types = []
+	_secondary_room_types = []
+	
+	for building in _buildings:
+		if 2<len(building['rooms'])<=4:
+			_main_room_types = ['bedroom', 'bathroom', 'kitchen']
+			_secondary_room_types = ['dining room']
+			#_building_type = 'house'
+		elif len(building['rooms'])==2:
+			_main_room_types = ['bedroom', 'bathroom']
+		else:
+			_main_room_types = ['bedroom', 'bathroom', 'kitchen']
+			
+		for chunk_key in building['rooms']:
+			_items = []
+			_storage = []
+			
+			if _main_room_types:
+				_room_type = _main_room_types.pop()
+			elif _secondary_room_types:
+				_room_type = _secondary_room_types.pop()
+			else:
+				print 'Unfinished building: Out of room types'
+				break
+			
+			if _room_type == 'bedroom':
+				_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
+				_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				               {'item': 'leather backpack', 'rarity': 0.65},
+				               {'item': 'sneakers', 'rarity': 1.0},
+				               {'item': 'white t-shirt', 'rarity': 1.0},
+				               {'item': 'white cloth', 'rarity': 0.4}]
+				_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _items}]
+			elif _room_type == 'bathroom':
+				_floor_tiles = tiles.BLUE_FLOOR_TILES
+				_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				               {'item': 'leather backpack', 'rarity': 0.65},
+				               {'item': 'sneakers', 'rarity': 1.0},
+				               {'item': 'white t-shirt', 'rarity': 1.0},
+				               {'item': 'white cloth', 'rarity': 0.4}]
+			elif _room_type == 'kitchen':
+				_floor_tiles = tiles.BROWN_FLOOR_TILES
+				
+			_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
+			
+			_avoid_directions = []
+			_directions = []
+			_chunk = map_gen['chunk_map'][chunk_key]
+			for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'any'):
+				if not neighbor_key in building['rooms'] and not map_gen['chunk_map'][neighbor_key]['type'] == 'driveway':
+					_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+					continue
+				
+				if map_gen['chunk_map'][neighbor_key]['type'] in ['town', 'driveway']:
+					_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				
+				#_neighbor_chunk = map_gen['chunk_map'][neighbor_key]
+				#for next_neighbor_key in get_neighbors_of_type(map_gen, _neighbor_chunk['pos'], 'driveway'):
+				#	_dir = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, neighbor_key, next_neighbor_key))]
+				#	
+				#	#if _dir in _directions:
+				#	#	continue
+				#	
+				#	_directions.append(_dir)
+				#	print 'yeah'
+		
+			_possible_tiles = []
+			for possible_building in map_gen['buildings']:
+				_continue = False
+				for _dir in _directions:
+					if not possible_building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
+					continue
+				
+				for _dir in _avoid_directions:
+					if possible_building['open'][_dir]:
+						_continue = True
+						break
+				
+				if _continue:
+					continue
+				
+				_possible_tiles.append(possible_building['building'])
+			
+			_neighbor_dirs = [DIRECTION_MAP[str(d)] for d in [direction_from_key_to_key(map_gen, chunk_key, n) for n in get_neighbors_of_type(map_gen, _chunk['pos'], 'town')]]
+			_building = random.choice(_possible_tiles)
+			_half = map_gen['chunk_size']/2
+			
+			_open_spots = []
+			for _y in range(map_gen['chunk_size']):
+				y = _chunk['pos'][1]+_y
+				for _x in range(map_gen['chunk_size']):
+					x = _chunk['pos'][0]+_x
+					
+					for i in range(3):
+						if i == 2:
+							create_tile(map_gen, x, y, 2+i, _wall_tile)
+						elif _building[_y][_x] == '#':
+							create_tile(map_gen, x, y, 2+i, _wall_tile)
+						elif i in [0] and _building[_y][_x] == '.':
+							create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
+							
+							if not i and random.randint(0, 500) == 500:
+								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
+							
+							_open_spots.append((x, y))
+							
+			_possible_spots = []
+			for pos in _open_spots:
+				_open = 0
+				for _n_pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+					if (pos[0]+_n_pos[0], pos[1]+_n_pos[1]) in _open_spots:
+						_open += 1
+				
+				_possible_spots.append({'spot': pos[:], 'open_neighbors': _open})
+			
+			_only_one_neighbor = []
+			for entry in _possible_spots:
+				if entry['open_neighbors'] == 3:
+					_only_one_neighbor.append(entry)
+			
+			if not _only_one_neighbor:
+				continue
+			
+			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
+			_placed_containers = []
+			if _storage:
+				for _container in _storage:
+					if not _container['rarity']>random.uniform(0, 1.0):
+						continue
+					
+					_c = items.create_item(_container['item'], position=[_spawn_x, _spawn_y, 2])
+					_placed_containers.append(_container)
+					
+					for _inside_item in _container['spawn_list']:
+						if not can_spawn_item(_inside_item):
+							continue
+						
+						_i = items.create_item(_inside_item['item'], position=[_spawn_x, _spawn_y, 2])
+						
+						if not items.can_store_item_in(_i, _c):
+							items.delete_item(_i)
+							continue
+						
+						items.store_item_in(_i, _c)
+						
+			elif _items:
+				pass
+			
+			for container in _placed_containers:
+				_storage.remove(container)
+	
+	return False
+	_houses = []
+	_taken = []
+	
 	for chunk_key in town:
 		if chunk_key in _taken:
 			continue
@@ -1109,7 +1404,7 @@ def construct_town(map_gen, town):
 		_house_dirs = {}
 		_to_check = [chunk_key]
 		while _to_check:
-			_checking_chunk_key = _to_check.pop(0)
+			_checking_chunk_key = _to_check.pop(random.randint(0, len(_to_check)-1))
 			_chunk = map_gen['chunk_map'][_checking_chunk_key]
 			_neighbors = get_neighbors_of_type(map_gen, _chunk['pos'], 'town')
 			_added = False
@@ -1125,7 +1420,7 @@ def construct_town(map_gen, town):
 		#_houses.append(_house)
 		#_taken.extend(_house)
 		
-		_main_rooms = ['bedroom', 'bathroom']
+		_main_rooms = ['bedroom', 'bathroom', 'bathroom', 'bedroom']
 		_secondary_rooms = ['kitchen', 'dining room']
 		_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
 		
@@ -1223,74 +1518,8 @@ def construct_town(map_gen, town):
 					x = _chunk['pos'][0]+_x
 					
 					for i in range(3):
-						if i == 2:#000000000000000000000000000000000000000000000000000000000000000000000000000000:
-							map_gen['map'][x][y][2+i] = tiles.create_tile(_wall_tile)
-							#h_x = _half-(abs(_half-_x))
-							#h_y = _half-(abs(_half-_y))
-							
-							##if len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-							#if not _neighbor_dirs:
-								#if _x < _half:
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
-								#else:
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-							#elif len(_neighbor_dirs) == 1 and 'right' in _neighbor_dirs:
-								#if _x<_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
-								
-								#elif _y < h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#elif _y >= h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-								
-								#elif _y > _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-			
-								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-							
-							#elif len(_neighbor_dirs) == 1 and 'left' in _neighbor_dirs:
-								#if _x>_half and ((_y<_half and _y >= h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+h_x] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
-								
-								#elif _y < h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#elif _y >= h_x and _y < _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#elif _y > _half and _y > map_gen['chunk_size']-(_half+h_x):
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-								
-								#elif _y > _half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-			
-								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-	
-							#elif len(_neighbor_dirs) == 2 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs:
-								#if _y<=_half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#else:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-							
-							#elif len(_neighbor_dirs) == 3 and 'left' in _neighbor_dirs and 'right' in _neighbor_dirs and 'bot' in _neighbor_dirs:
-								#if _y<=_half:
-									#map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-								
-								#else:#elif _x<_half and ((_y<_half and _y > h_x) or (_y>=_half-1 and _y <= (_half+h_y)+1)):
-									#map_gen['map'][x][y][2+i+(h_x)] = tiles.create_tile(map_gen, tiles.ROOF_DARK)
-								
-								##else:
-								##	map_gen['map'][x][y][2+i+h_y] = tiles.create_tile(map_gen, tiles.ROOF_DARKER)
-							#elif len(_neighbor_dirs) == 4:
-								#map_gen['map'][x][y][2+i] = tiles.create_tile(map_gen, tiles.ROOF_BRIGHT)
-
+						if i == 2:
+							create_tile(map_gen, x, y, 2+i, _wall_tile)
 						elif _building[_y][_x] == '#':
 							create_tile(map_gen, x, y, 2+i, _wall_tile)
 						elif i in [0] and _building[_y][_x] == '.':
