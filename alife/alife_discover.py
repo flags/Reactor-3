@@ -19,11 +19,14 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	if brain.get_flag(life, 'lost'):
 		if STATE in life['states']:
+			print life['name']
 			return False
 		else:
 			brain.unflag(life, 'lost')
 		
 		print life['name'],'lost'
+	
+	
 	
 	if not lfe.execute_raw(life, 'state', 'discover'):
 		brain.store_in_memory(life, 'discovery_lock', False)

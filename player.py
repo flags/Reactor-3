@@ -722,13 +722,13 @@ def inventory_select(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	_item_uid = entry['id']
-	_item = life.get_inventory_item(LIFE[SETTINGS['following']], _item_uid)
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
 	_menu_items = []
 	
 	if 'storing' in _item and not 'is_item' in entry:
 		_stored_items = []
 		for _stored_item_uid in _item['storing']:
-			_stored_item = life.get_inventory_item(LIFE[SETTINGS['following']], _stored_item_uid)
+			_stored_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _stored_item_uid)
 			_i = menus.create_item('single',
 				_stored_item['name'],
 				None,

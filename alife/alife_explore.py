@@ -16,6 +16,8 @@ STATE = 'exploring'
 TIER = TIER_EXPLORE-.2
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	return False
+
 	RETURN_VALUE = STATE_UNCHANGED
 	
 	if not lfe.execute_raw(life, 'state', 'explore'):
