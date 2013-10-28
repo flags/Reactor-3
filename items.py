@@ -439,7 +439,8 @@ def explode(item):
 			_limb = random.choice(_limbs)
 			
 			for _attached_limb in life.get_all_attached_limbs(LIFE[life_id], _limb):
-				_limbs.remove(_attached_limb)
+				if _attached_limb in _limbs:
+					_limbs.remove(_attached_limb)
 			
 			#_limb = random.choice(LIFE[life_id]['body'].keys())
 			
