@@ -809,9 +809,9 @@ def handle_inventory_item_select_action(entry):
 def inventory_equip(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
-	item = entry['id']
+	item_uid = entry['id']
 	
-	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
+	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], item_uid)
 	
 	if _item['type'] == 'gun' and not life.can_hold_item(LIFE[SETTINGS['controlling']]):
 		gfx.message('You can\'t possibly hold that!')
@@ -819,11 +819,14 @@ def inventory_equip(entry):
 		return False
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'equipitem',
-		'item': item},
+		'item': item_uid},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']],item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item_uid))
 	
-	gfx.message('You start putting on the %s.' % _item['name'])
+	if 'CAN_WEAR' in _item['flags']:
+		gfx.message('You start putting on %s.' % items.get_name(_item))
+	else:
+		gfx.message('You begin handling %s.' % items.get_name(_item))
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

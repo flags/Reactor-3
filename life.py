@@ -1350,11 +1350,15 @@ def perform_action(life):
 		delete_action(life, action)
 	
 	elif _action['action'] == 'equipitem':
-		_name = items.get_name(get_inventory_item(life,_action['item']))
+		_name = items.get_name(get_inventory_item(life, _action['item']))
 		
-		if not equip_item(life,_action['item']):
-			delete_action(life,action)
-			gfx.message('You can\'t wear %s.' % _name)
+		if not equip_item(life, _action['item']):
+			delete_action(life, action)
+			
+			if 'CAN_WEAR' in ITEMS[_action['item']]['flags']:
+				gfx.message('You can\'t wear %s.' % _name)
+			else:
+				gfx.message('You can\'t hold %s.' % _name)
 			
 			return False
 		
@@ -1362,17 +1366,21 @@ def perform_action(life):
 
 		if _stored:
 			if 'player' in life:
-				gfx.message('You remove %s from your %s.' % (_name,_stored['name']))
+				gfx.message('You remove %s from your %s.' % (_name, _stored['name']))
 			else:
 				pass
 		
 		if 'player' in life:
-			gfx.message('You put on %s.' % _name)
+			#if ITEMS[_action['item']]['type'] == 'gun':
+			if is_holding(life, _action['item']):
+				gfx.message('You hold %s.' % _name)
+			else:
+				gfx.message('You put on %s.' % _name)
 		else:
-			say(life,'@n puts on %s.' % _name,action=True)
+			say(life,'@n puts on %s.' % _name, action=True)
 		
 		set_animation(life, [';', '*'], speed=6)
-		delete_action(life,action)
+		delete_action(life, action)
 	
 	elif _action['action'] == 'storeitem':
 		_item_to_store_name = items.get_name(get_inventory_item(life,_action['item']))
