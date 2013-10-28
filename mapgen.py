@@ -330,15 +330,19 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 		
 		if not _start_edge:
 			_pos = [random.randint(0, map_gen['size'][0])/map_gen['chunk_size'], 0]
+			_prev_dir = (0, -1)
 			_next_dir = (0, 1)
 		elif _start_edge == 1:
 			_pos = [map_gen['size'][0]/map_gen['chunk_size'], random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
+			_prev_dir = (1, 0)
 			_next_dir = (-1, 0)
 		elif _start_edge == 2:
-			_pos = [random.randint(8*map_gen['chunk_size'], (map_gen['size'][0])/map_gen['chunk_size'])-(8*map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
+			_pos = [random.randint(8*map_gen['chunk_size'], (map_gen['size'][0])/map_gen['chunk_size'])-(2*map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
+			_prev_dir = (0, 1)
 			_next_dir = (0, -1)
 		elif _start_edge == 3:
 			_pos = [-1, random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
+			_prev_dir = (-1, 0)
 			_next_dir = (1, 0)
 	
 	while 1:
