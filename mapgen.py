@@ -869,6 +869,10 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, only_ch
 				if __x < 0 or __x>=map_gen['size'][0] or __y < 0 or __y>=map_gen['size'][1]:
 					continue
 				
+				if only_chunk_types and not map_gen['chunk_map']['%s,%s' % (__x, __y)]['type'] in only_chunk_types:
+					print only_chunk_types
+					continue
+				
 				if return_keys:
 					if not '%s,%s' % (__x, __y) in _walked:
 						_walked.append('%s,%s' % (__x, __y))
