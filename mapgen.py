@@ -153,8 +153,11 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
 	
+	logging.debug('Decorating world...')
+	decorate_world(map_gen)
+	
 	for _field in map_gen['refs']['fields']	:
-		construct_field(map_gen, _field)
+		construct_field(map_gen, _field)	
 	
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
@@ -270,9 +273,6 @@ def generate_outlines(map_gen):
 	
 	logging.debug('Occupying empty spaces...')
 	fill_empty_spaces(map_gen)
-	
-	logging.debug('Decorating world...')
-	decorate_world(map_gen)
 	
 	logging.debug('Placing forests...')
 	while len(map_gen['refs']['forests'])<map_gen['forests']:
@@ -1649,7 +1649,7 @@ def decorate_world(map_gen):
 			_pos = (_chunk['pos'][0]+random.randint(0, map_gen['chunk_size']-1),
 			        _chunk['pos'][1]+random.randint(0, map_gen['chunk_size']-1), 2)
 			
-			#create_tree(map_gen, _pos, random.randint(4, 7))
+			create_tree(map_gen, _pos, random.randint(4, 7))
 	
 	#fences
 	_possible_fences = []

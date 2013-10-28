@@ -432,16 +432,26 @@ def explode(item):
 		
 		#TODO: Intelligent(?) limb groups?
 		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
-		#_limbs = random.sample(LIFE[life_id]['body'].keys(), _force-_distance)
-		_limb = random.choice(LIFE[life_id]['body'].keys())
 		
-		#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
-		print 'known item', _known_item
-		if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
-			life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
-		
-		#for _limb in _limbs:
-		life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force))
+		#for limb in random.sample(LIFE[life_id]['body'].keys(), _force-_distance):
+		_limbs = LIFE[life_id]['body'].keys()
+		for i in range(_force-_distance):
+			_limb = random.choice(_limbs)
+			
+			for _attached_limb in life.get_all_attached_limbs(LIFE[life_id], _limb):
+				_limbs.remove(_attached_limb)
+			
+			#_limb = random.choice(LIFE[life_id]['body'].keys())
+			
+			#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+			if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
+				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
+			
+			#for _limb in _limbs:
+			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force))
+			
+			if not _limbs:
+				break
 		
 		life.push(LIFE[life_id], _direction, _force)
 		
