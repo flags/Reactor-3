@@ -158,11 +158,12 @@ def calculate_all_effects():
 def update_effect(effect):
 	_x = effect['pos'][0]-CAMERA_POS[0]
 	_y = effect['pos'][1]-CAMERA_POS[1]
+	_view = gfx.get_view_by_name('map')
 	
-	if _x<0 or _x>=MAP_WINDOW_SIZE[0]-1 or _y<0 or _y>=MAP_WINDOW_SIZE[1]-1:
+	if _x<0 or _x>=_view['draw_size'][0]-1 or _y<0 or _y>=_view['draw_size'][1]-1:
 		return False
 	
-	gfx.refresh_window_position(_x, _y)
+	gfx.refresh_view_position(_x, _y, 'map')
 
 def draw_effect(pos):
 	if not EFFECT_MAP[pos[0]][pos[1]]:

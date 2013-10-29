@@ -206,7 +206,8 @@ def draw_event(event):
 		
 		gfx.blit_string(_x,
 			10+_i,
-			line)
+			line,
+		     'map')
 		
 		_i += 1
 

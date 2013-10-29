@@ -190,7 +190,9 @@ def delete_item(item):
 	remove_from_chunk(item)
 	
 	if gfx.position_is_in_frame(item['pos']):
-		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
+		gfx.refresh_view_position(item['pos'][0]-CAMERA_POS[0],
+		                          item['pos'][1]-CAMERA_POS[1],
+		                          'map')
 	
 	cache.offload_item(item)
 	
@@ -328,28 +330,28 @@ def is_item_owned(item_uid):
 	return False
 
 def draw_items():
+	_view = gfx.get_view_by_name('map')
+	
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
 		if is_item_owned(item['uid']):
 			continue
 		
-		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
 			_x = item['pos'][0] - CAMERA_POS[0]
 			_y = item['pos'][1] - CAMERA_POS[1]
 		
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
-			gfx.blit_char(_x,
+			gfx.blit_char_to_view(_x,
 				_y,
 				item['icon'],
-				item['color'][0],
-				item['color'][1],
-				char_buffer=MAP_CHAR_BUFFER,
-				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+				(item['color'][0],
+			      item['color'][1]),
+				'map')
 
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -489,7 +491,7 @@ def explode(item):
 		
 				if gfx.position_is_in_frame(pos):
 					_render_pos = gfx.get_render_position(pos)
-					gfx.refresh_window_position(_render_pos[0], _render_pos[1])
+					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
 	delete_item(item)
 
@@ -562,8 +564,10 @@ def tick_item(item_uid):
 	
 	_x = item['pos'][0]-CAMERA_POS[0]
 	_y = item['pos'][1]-CAMERA_POS[1]
-	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-		gfx.refresh_window_position(_x, _y)
+	
+	_view = gfx.get_view_by_name('map')
+	if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+		gfx.refresh_view_position(_x, _y, 'map')
 	
 	item['realpos'][0] += item['velocity'][0]
 	item['realpos'][1] += item['velocity'][1]
@@ -661,8 +665,9 @@ def tick_item(item_uid):
 	
 	_x = item['pos'][0]-CAMERA_POS[0]
 	_y = item['pos'][1]-CAMERA_POS[1]
-	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-		gfx.refresh_window_position(_x, _y)
+	
+	if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+		gfx.refresh_view_position(_x, _y, 'map')
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:

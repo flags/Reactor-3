@@ -1,4 +1,4 @@
-from graphics import blit_tile, darken_tile, blit_char, blit_tile, get_view_by_name
+from graphics import blit_tile, darken_tile, blit_char, blit_tile, get_view_by_name, blit_char_to_view
 from globals import MAP_CHAR_BUFFER, DARK_BUFFER
 from tiles import *
 
@@ -50,7 +50,7 @@ def render_map(map):
 			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
 				continue
 			
-			DARK_BUFFER[0][_RENDER_Y, _RENDER_X] = 0
+			_view['light_buffer'][1][_RENDER_Y, _RENDER_X] = 0
 			
 			_drawn = False
 			_shadow = 2
@@ -69,14 +69,12 @@ def render_map(map):
 							_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							blit_char(_RENDER_X,
+							blit_char_to_view(_RENDER_X,
 								_RENDER_Y,
 								'X',
-								tcod.darker_grey,
-								tcod.black,
-								char_buffer=MAP_CHAR_BUFFER,
-								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+								(tcod.darker_grey,
+									tcod.black),
+								'map')
 						else:
 							if _shadow > 2:
 								darken_tile(_RENDER_X, _RENDER_Y, 15*(_shadow-2))
