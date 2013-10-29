@@ -161,9 +161,6 @@ def main():
 	logic.draw_encounter()
 	dialog.draw_dialog()
 	
-	if SETTINGS['draw message box']:
-		gfx.draw_message_box()
-	
 	gfx.draw_status_line()
 	gfx.draw_console()
 	

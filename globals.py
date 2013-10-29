@@ -200,6 +200,7 @@ DIJKSTRA_CACHE = {}
 ZONE_CACHE = {}
 VIEWS = {}
 VIEW_SCENE = {}
+VIEW_SCENE_CACHE = []
 
 #Consoles
 ITEM_WINDOW = None

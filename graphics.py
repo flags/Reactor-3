@@ -109,6 +109,9 @@ def clear_scene():
 	for key in VIEW_SCENE.keys():
 		del VIEW_SCENE[key]
 	
+	for entry in VIEW_SCENE_CACHE:
+		VIEW_SCENE_CACHE.remove(entry)
+	
 	logging.debug('Cleared scene.')
 
 def _add_view_to_scene(view):
@@ -119,8 +122,26 @@ def _add_view_to_scene(view):
 	
 	logging.debug('Added view \'%s\' to scene.' % view['name'])
 
+def _remove_view_from_scene(view):
+	if not view in VIEW_SCENE[view['layer']]:
+		raise Exception('View \'%s\' not in scene.' % view['name'])
+	
+	VIEW_SCENE[view['layer']].remove(view)
+	logging.debug('Removed view \'%s\' from scene.' % view['name'])
+	
+	#tcod.console_clear(0)
+	#tcod.console_flush()
+
+def is_view_in_scene(view_name):
+	return view_name in VIEW_SCENE_CACHE
+
 def add_view_to_scene_by_name(view_name):
 	_add_view_to_scene(get_view_by_name(view_name))
+	VIEW_SCENE_CACHE.add(view_name)
+
+def remove_view_from_scene_by_name(view_name):
+	_remove_view_from_scene(get_view_by_name(view_name))
+	VIEW_SCENE_CACHE.remove(view_name)
 
 def get_view_by_name(name):
 	if name in VIEWS:
@@ -332,7 +353,8 @@ def disable_panels():
 	tcod.console_clear(MESSAGE_WINDOW)
 	
 	SETTINGS['draw life info'] = False
-	SETTINGS['draw message box'] = False
+	
+	remove_view_from_scene_by_name('message_box')
 
 def enable_panels():
 	_view = get_view_by_name('message_box')
@@ -341,7 +363,8 @@ def enable_panels():
 	tcod.console_clear(view['console'])
 	
 	SETTINGS['draw life info'] = True
-	SETTINGS['draw message box'] = True
+	
+	_add_view_to_scene(_view)
 
 def draw_message_box():
 	_view = get_view_by_name('message_box')
@@ -581,7 +604,9 @@ def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 
 def end_of_frame(draw_map=True):
 	render_scene()
-	tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
+	
+	if is_view_in_scene('message_box'):
+		tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
 	#if not SETTINGS['map_slices'] and draw_map:
 	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
