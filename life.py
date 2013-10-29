@@ -1048,13 +1048,18 @@ def walk(life, to=None, path=None):
 			life['recoil'] = get_max_speed(life)
 	
 	_dest = path_dest(life)
+	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
 	
 	if path:
 		life['path'] = path
 		life['path_state'] = life['state']
-	elif to and (not _dest or not (_dest[0],_dest[1]) == tuple(to)):
+	elif _existing_chunk_path:
+		if not life['path']:
+			life['path'] = pathfinding.walk_chunk_path(life)
+	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to)):
 		_stime = time.time()
 		_zone = can_walk_to(life, to)
+		
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
 			life['path_state'] = life['state']

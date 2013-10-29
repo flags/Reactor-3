@@ -313,8 +313,7 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_segment -= 10
 		else:
 			_segment = 5
-			
-		print _segment
+		
 		_town_segments.append(_segment)
 	
 	_pos = start_pos
@@ -870,7 +869,6 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, only_ch
 					continue
 				
 				if only_chunk_types and not map_gen['chunk_map']['%s,%s' % (__x, __y)]['type'] in only_chunk_types:
-					print only_chunk_types
 					continue
 				
 				if return_keys:
@@ -1449,8 +1447,6 @@ def construct_outpost(map_gen):
 	
 	for _chunk_key in _building_chunks:
 		map_gen['chunk_map'][_chunk_key]['type'] = 'Outpost'
-	
-	print _building_chunks
 	
 	construct_building(map_gen, {'rooms': _building_chunks})
 

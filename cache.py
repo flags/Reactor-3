@@ -94,6 +94,8 @@ def commit_cache(cache_name):
 	logging.debug('Cache: Committed.')
 
 def scan_cache():
+	return False
+
 	for item_uid in ITEMS_HISTORY:
 		_historic_item = ITEMS_HISTORY[item_uid]
 
