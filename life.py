@@ -421,7 +421,7 @@ def focus_on(life):
 	SETTINGS['following'] = life['id']
 	
 	gfx.camera_track(life['pos'])
-	gfx.refresh_window()
+	gfx.refresh_view('map')
 	
 	LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 	                                 LIFE[SETTINGS['following']]['pos'],
@@ -2481,33 +2481,35 @@ def draw_life_icon(life, draw_alignment=False):
 	return _icon
 
 def draw_life():
+	_view = gfx.get_view_by_name('map')
+	
 	for life in [LIFE[i] for i in LIFE]:
 		_icon,_fore_color,_back_color = draw_life_icon(life)
 		
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
 			_x = life['pos'][0] - CAMERA_POS[0]
 			_y = life['pos'][1] - CAMERA_POS[1]
 			
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if 0<=_p_x<=MAP_WINDOW_SIZE[0]-1 and 0<=_p_y<=MAP_WINDOW_SIZE[1]-1:
+			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
 				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
-					gfx.refresh_window_position(_p_x, _p_y)
+					gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
-			MAP_CHAR_BUFFER[1][_y,_x] = 0
+			gfx.refresh_view_position(_x, _y, 'map')
 			gfx.blit_char(_x,
 				_y,
 				_icon,
 				_fore_color,
 				_back_color,
-				char_buffer=MAP_CHAR_BUFFER,
-				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+				char_buffer=_view['char_buffer'],
+				rgb_fore_buffer=_view['col_buffer'][0],
+				rgb_back_buffer=_view['col_buffer'][1])
 
 def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,check_hands=False,matches=None):
 	"""Returns list of menu items with "fancy formatting".

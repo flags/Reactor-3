@@ -227,7 +227,7 @@ def show_next_event():
 		return False
 	
 	EVENTS.pop(0)
-	gfx.refresh_window()
+	gfx.refresh_view('map')
 	
 	if not EVENTS:
 		life.focus_on(LIFE[SETTINGS['following']])

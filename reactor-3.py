@@ -53,9 +53,9 @@ def move_camera(pos,scroll=False):
 	CAMERA_POS[2] = pos[2]
 	
 	if not _orig_pos == CAMERA_POS:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	elif SETTINGS['controlling'] and not alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'redraw') == pos:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	if SETTINGS['controlling']:
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
@@ -88,7 +88,7 @@ def main():
 			else:
 				CURRENT_UPS = 2 #ticks to run while actions are in queue before breaking
 			
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 			break
 	
 	if not _played_moved:
@@ -102,7 +102,7 @@ def main():
 	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
 		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)

@@ -24,6 +24,7 @@ New in version 0.6.1:
 	* Slicing/zoning-related speed-ups.
 	* New map format that no longer eats memory.
 	* Added weather (only visual effects for now.)
+	* Longer paths are now generated in segments.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.

@@ -4,10 +4,12 @@ from tiles import *
 import libtcodpy as tcod
 
 import numbers
+import life
+
+import logging
 import random
 import numpy
 import time
-import life
 
 def init_libtcod(terraform=False):
 	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
@@ -23,9 +25,9 @@ def init_libtcod(terraform=False):
 	
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	
-	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[0], 0, 'map')
-	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
-	create_view(0, 0, MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map')
+	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
+	create_view(0, 0, MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
 	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	
 	if terraform:
@@ -60,28 +62,51 @@ def init_libtcod(terraform=False):
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 
-def create_view(x, y, w, h, alpha, name, layer=0):
+def create_view(x, y, w, h, dw, dh, alpha, name, layer=0):
 	if get_view_by_name(name):
 		raise Exception('View with name \'%s\' already exists.' % name)
+	
+	dh = h
+	dw = w
 	
 	_v_id = SETTINGS['viewid']
 	_view = {'console': tcod.console_new(w, h),
 	         'position': [x, y],
-	         'size': (w, h),
+	         'draw_size': (dw, dh),
+	         'view_size': (w, h),
 	         'alpha': alpha,
 	         'layer': layer,
 	         'name': name,
-	         'char_buffer': (numpy.zeros((h, w), dtype=numpy.int16),
-	                          numpy.zeros((h, w), dtype=numpy.int16)),
-	         'col_buffer': (numpy.zeros((h, w)),
-	                         numpy.zeros((h, w)),
-	                         numpy.zeros((h, w))),
+	         'char_buffer': [numpy.zeros((dh, dw), dtype=numpy.int16),
+	                          numpy.zeros((dh, dw), dtype=numpy.int16)],
+	         'col_buffer': ((numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw))),
+	                        (numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)))),
 	         'id': _v_id}	
 	
 	SETTINGS['viewid'] += 1
 	VIEWS[name] = _view
 	
+	logging.debug('Created view \'%s\'.' % name)
+	
+	if not VIEW_SCENE:
+		_add_view_to_scene(_view)
+	
 	return _view
+
+def _add_view_to_scene(view):
+	if view['layer'] in VIEW_SCENE:
+		VIEW_SCENE[view['layer']].append(view)
+	else:
+		VIEW_SCENE[view['layer']] = [view]
+	
+	logging.debug('Added view \'%s\' to scene.' % view['name'])
+
+def add_view_to_sceen_by_name(view_name):
+	_add_view_to_scene(get_view_by_name(view_name))
 
 def get_view_by_name(name):
 	if name in VIEWS:
@@ -89,28 +114,48 @@ def get_view_by_name(name):
 	
 	return False
 
+def get_active_view():
+	return SETTINGS['active_view']
+
+def set_active_view(name):
+	SETTINGS['active_view'] = get_view_by_name(name)
+
+def _draw_view(view):
+	tcod.console_fill_foreground(view['console'],
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
+	
+	tcod.console_fill_background(view['console'],
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+		numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
+	
+	tcod.console_fill_char(view['console'], view['char_buffer'][0])
+
 def draw_view(view_name):
 	_view = get_view_by_name(name)
+	_draw_view(_view)
 
-	tcod.console_fill_background(_view['console'],
-	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	tcod.console_fill_char(_view['console'], _view['char_buffer'][0])
+def draw_scene():
+	for layer in VIEW_SCENE.values():
+		for view in layer:
+			_draw_view(view)
+
+def render_scene():
+	for layer in VIEW_SCENE.values():
+		for view in layer:
+			tcod.console_blit(view['console'],
+				             0,
+				             0,
+				             view['draw_size'][0],
+				             view['draw_size'][1],
+				             0,
+				             view['position'][0],
+				             view['position'][1])
 
 def start_of_frame(draw_char_buffer=True):
-	tcod.console_fill_background(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	tcod.console_fill_foreground(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	
-	if draw_char_buffer:
-		#tcod.console_fill_char(MAP_WINDOW, get_view(')
-		draw_view('map')
+	draw_scene()
 
 def start_of_frame_terraform():
 	tcod.console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
@@ -125,34 +170,35 @@ def start_of_frame_terraform():
 	tcod.console_fill_foreground(Y_CUTOUT_WINDOW,Y_CUTOUT_RGB_FORE_BUFFER[0],Y_CUTOUT_RGB_FORE_BUFFER[1],Y_CUTOUT_RGB_FORE_BUFFER[2])
 	tcod.console_fill_char(Y_CUTOUT_WINDOW,Y_CUTOUT_CHAR_BUFFER[0])
 
-def refresh_window_position(x, y):
-	logging.debug('FIXME: refresh_window_position')
+def refresh_view_position(x, y, view_name):
+	_view = get_view_by_name(view_name)
 	
 	#DARK_BUFFER[0][y,x] = 0
 	#LIGHT_BUFFER[0][y,x] = 0
-	#MAP_CHAR_BUFFER[1][y,x] = 0
+	_view['char_buffer'][1][y, x] = 0
 
-def refresh_window():
-	logging.debug('FIXME: refresh_window')
-
-	#MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def refresh_view(view_name):
+	_view = get_view_by_name(view_name)
+	
+	_view['char_buffer'][1] = _view['char_buffer'][1].clip(0, 0)
 
 def blit_tile_to_console(console, x, y, tile):
 	_tile = get_raw_tile(tile)
 	
 	tcod.console_put_char_ex(console, x, y, _tile['icon'], _tile['color'][0], _tile['color'][1])
 
-def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
+def blit_tile(x, y, tile, view_name):
+	_view = get_view_by_name(view_name)
 	_tile = get_raw_tile(tile)
 
 	blit_char(x,y,_tile['icon'],
 		_tile['color'][0],
 		_tile['color'][1],
-		char_buffer=char_buffer,
-		rgb_fore_buffer=rgb_fore_buffer,
-		rgb_back_buffer=rgb_back_buffer)
+		char_buffer=_view['char_buffer'],
+		rgb_fore_buffer=_view['col_buffer'][0],
+		rgb_back_buffer=_view['col_buffer'][1])
 
-def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore_buffer=None,rgb_back_buffer=None):
+def blit_char(x, y, char, fore_color=None, back_color=None, char_buffer=None, rgb_fore_buffer=None, rgb_back_buffer=None):
 	if fore_color:
 		rgb_fore_buffer[0][y,x] = fore_color.r
 		rgb_fore_buffer[1][y,x] = fore_color.g
@@ -499,8 +545,9 @@ def end_of_frame_reactor3():
 	tcod.console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
 
 def end_of_frame(draw_map=True):
-	if not SETTINGS['map_slices'] and draw_map:
-		tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
+	render_scene()
+	#if not SETTINGS['map_slices'] and draw_map:
+	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_dialog = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:

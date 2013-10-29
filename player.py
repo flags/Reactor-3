@@ -130,10 +130,10 @@ def handle_input():
 	if INPUT[' ']:
 		if SETTINGS['paused']:
 			SETTINGS['paused'] = False
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 		else:
 			SETTINGS['paused'] = True
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 	
 	if INPUT['?']:
 		#gfx.screenshot()
@@ -639,7 +639,7 @@ def handle_input():
 			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])-1)
 			life.focus_on(LIFE[str(int(SETTINGS['following'])-1)])
 			FADE_TO_WHITE[0] = 0
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 
 	if INPUT['u']:
 		if int(SETTINGS['following']) < len(LIFE.keys()):
@@ -647,7 +647,7 @@ def handle_input():
 			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])+1)
 			life.focus_on(LIFE[str(int(SETTINGS['following'])+1)])
 			FADE_TO_WHITE[0] = 0
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 
 	if INPUT['l']:
 		create_look_list()

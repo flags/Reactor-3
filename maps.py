@@ -402,7 +402,7 @@ def render_map(map):
 			for z in range(MAP_SIZE[2]-1,-1,-1):
 				if map[x][y][z]:
 					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						gfx.blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z])
 						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
 						_drawn = True
 					elif z == CAMERA_POS[2]:
@@ -466,9 +466,7 @@ def render_x_cutout(map,x_pos,y_pos):
 			gfx.blit_tile(_RENDER_X,
 				(MAP_SIZE[2]-3)-z,
 				_tile,
-				char_buffer=X_CUTOUT_CHAR_BUFFER,
-				rgb_fore_buffer=X_CUTOUT_RGB_FORE_BUFFER,
-				rgb_back_buffer=X_CUTOUT_RGB_BACK_BUFFER)
+				'map')
 
 def render_y_cutout(map,x_pos,y_pos):
 	_Y_MAX = y_pos+Y_CUTOUT_WINDOW_SIZE[1]

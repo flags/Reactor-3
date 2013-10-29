@@ -1580,6 +1580,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(400, 400, 10), towns=2, factories=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(200, 200, 10), towns=0, factories=0, outposts=0, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t

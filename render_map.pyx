@@ -1,4 +1,4 @@
-from graphics import blit_tile, darken_tile, blit_char, blit_tile
+from graphics import blit_tile, darken_tile, blit_char, blit_tile, get_view_by_name
 from globals import MAP_CHAR_BUFFER, DARK_BUFFER
 from tiles import *
 
@@ -33,7 +33,8 @@ def render_map(map):
 	cdef int _RENDER_X = 0
 	cdef int _RENDER_Y = 0
 	
-	_TEMP_MAP_CHAR_BUFFER = MAP_CHAR_BUFFER[1].copy()
+	_view = get_view_by_name('map')
+	_TEMP_MAP_CHAR_BUFFER = _view['char_buffer'][1].copy()
 
 	if _X_MAX>_MAP_SIZE[0]:
 		_X_MAX = _MAP_SIZE[0]
@@ -63,7 +64,7 @@ def render_map(map):
 							_shadow = 0
 							
 						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z])
+							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
 							_drawn = True
 					elif z == _CAMERA_POS[2]:
@@ -80,7 +81,7 @@ def render_map(map):
 							if _shadow > 2:
 								darken_tile(_RENDER_X, _RENDER_Y, 15*(_shadow-2))
 							
-							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z])
+							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							
 							if SETTINGS['draw effects']:
 								if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
@@ -100,7 +101,7 @@ def render_map(map):
 									
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z], 'map')
 						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)
 						_drawn = True
 				
@@ -108,4 +109,4 @@ def render_map(map):
 						break
 			
 			if not _drawn:
-				blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+				blit_tile(_RENDER_X, _RENDER_Y, BLANK_TILE, 'map')
