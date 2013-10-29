@@ -1179,6 +1179,9 @@ def draw_dialog():
 	
 	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
 	
+	if '_drawn' in dialog:
+		return False
+	
 	if 'player' in LIFE[dialog['creator']]:
 		_receiver = LIFE[dialog['target']]
 	else:

@@ -156,6 +156,8 @@ def main():
 	if SETTINGS['draw life info'] and SETTINGS['following']:
 		life.draw_life_info()
 	
+	gfx.draw_message_box()
+	
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
@@ -255,6 +257,7 @@ if __name__ == '__main__':
 		
 		if SETTINGS['controlling']:
 			SETTINGS['running'] = 2
+			gfx.add_view_to_scene_by_name('message_box')
 		else:
 			logging.debug('No active player found. Going back to menu.')
 			SETTINGS['running'] = 1

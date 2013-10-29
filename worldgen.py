@@ -159,7 +159,6 @@ def load_world(world):
 	gfx.create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	gfx.create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
 	gfx.add_view_to_scene_by_name('map')
-	gfx.add_view_to_scene_by_name('message_box')
 	gfx.set_active_view('map')	
 	
 	SETTINGS['controlling'] = None

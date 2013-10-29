@@ -116,9 +116,14 @@ def clear_scene():
 
 def _add_view_to_scene(view):
 	if view['layer'] in VIEW_SCENE:
+		if view in VIEW_SCENE[view['layer']]:
+			raise Exception('View \'%s\' already in scene.' % view['name'])
+		
 		VIEW_SCENE[view['layer']].append(view)
 	else:
 		VIEW_SCENE[view['layer']] = [view]
+	
+	VIEW_SCENE_CACHE.add(view['name'])
 	
 	logging.debug('Added view \'%s\' to scene.' % view['name'])
 
@@ -137,7 +142,6 @@ def is_view_in_scene(view_name):
 
 def add_view_to_scene_by_name(view_name):
 	_add_view_to_scene(get_view_by_name(view_name))
-	VIEW_SCENE_CACHE.add(view_name)
 
 def remove_view_from_scene_by_name(view_name):
 	_remove_view_from_scene(get_view_by_name(view_name))
@@ -360,7 +364,7 @@ def enable_panels():
 	_view = get_view_by_name('message_box')
 	
 	tcod.console_clear(0)
-	tcod.console_clear(view['console'])
+	tcod.console_clear(_view['console'])
 	
 	SETTINGS['draw life info'] = True
 	
@@ -530,23 +534,19 @@ def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
-	if not SETTINGS['active_view']:
-		logging.error('Trying to create title with no active view.')
-		return False
-	
-	_view = get_active_view()
-	_center_x = (_view['draw_size'][0]/2)-len(text)/2
-	_center_y = _view['draw_size'][1]/2
+	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
+	_center_y = WINDOW_SIZE[1]/2
 	tcod.console_set_default_background(0, background_color)
 	tcod.console_set_default_foreground(0, text_color)
-	tcod.console_print_frame(_view['console'],
+	tcod.console_print_frame(0,
 	                         _center_x-padding,
 	                         _center_y-padding,
 	                         len(text)+padding*2,
 	                         1+padding*2,
 	                         flag=tcod.BKGND_SET,
 	                         clear=True)
-	tcod.console_print(_view['draw_size'], _center_x, _center_y, text)
+	
+	tcod.console_print(0, _center_x, _center_y, text)
 	tcod.console_flush()
 
 def position_is_in_frame(pos):
@@ -602,6 +602,7 @@ def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_print(0,PREFAB_WINDOW_OFFSET[0],11,'West -X Cutout- East')
 	tcod.console_print(0,PREFAB_WINDOW_OFFSET[0],25,'North -Y Cutout- South')
 
+#@profile
 def end_of_frame(draw_map=True):
 	render_scene()
 	
@@ -615,6 +616,8 @@ def end_of_frame(draw_map=True):
 		_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 	
 	if _dialog and 'console' in _dialog:
+		_dialog['_drawn'] = True
+		
 		tcod.console_blit(_dialog['console'], 0, 0,
 	        WINDOW_SIZE[0],
 	        40,

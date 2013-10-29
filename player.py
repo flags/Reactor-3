@@ -48,6 +48,8 @@ def handle_input():
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']]
 			if _dialog:
 				_dialog = _dialog[0]
+				del _dialog['_drawn']
+				
 				if not dialog.reset_dialog(_dialog):
 					LIFE[SETTINGS['controlling']]['dialogs'] = []
 		else:
@@ -69,6 +71,9 @@ def handle_input():
 			LIFE[SETTINGS['controlling']]['targeting'][1]-=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			
+			if '_drawn' in _dialog:
+				del _dialog['_drawn']
 
 			if _dialog['index']:
 				_dialog['index'] -= 1
@@ -83,6 +88,9 @@ def handle_input():
 			LIFE[SETTINGS['controlling']]['targeting'][1]+=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			
+			if '_drawn' in _dialog:
+				del _dialog['_drawn']
 			
 			if _dialog['index']<len(_dialog['topics'])-1:
 				_dialog['index'] += 1
@@ -117,6 +125,10 @@ def handle_input():
 			
 		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
 			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			
+			if '_drawn' in _dialog:
+				del _dialog['_drawn']
+			
 			dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
 			return False
 	
