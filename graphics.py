@@ -62,7 +62,7 @@ def init_libtcod(terraform=False):
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 
-def create_view(x, y, w, h, dw, dh, alpha, name, layer=0):
+def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0):
 	if get_view_by_name(name):
 		raise Exception('View with name \'%s\' already exists.' % name)
 	
@@ -77,6 +77,7 @@ def create_view(x, y, w, h, dw, dh, alpha, name, layer=0):
 	         'alpha': alpha,
 	         'layer': layer,
 	         'name': name,
+	         'lighting': [],
 	         'char_buffer': [numpy.zeros((dh, dw), dtype=numpy.int16),
 	                          numpy.zeros((dh, dw), dtype=numpy.int16)],
 	         'col_buffer': ((numpy.zeros((dh, dw)),
@@ -85,7 +86,10 @@ def create_view(x, y, w, h, dw, dh, alpha, name, layer=0):
 	                        (numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)))),
-	         'id': _v_id}	
+	         'id': _v_id}
+	
+	if lighting:
+		
 	
 	SETTINGS['viewid'] += 1
 	VIEWS[name] = _view
@@ -238,11 +242,13 @@ def blit_string(x, y, text, console=0, fore_color=tcod.white, back_color=None, f
 		lighten_tile(x+i,y,0)
 		i+=1
 
-def darken_tile(x,y,amt):
-	DARK_BUFFER[0][y,x] = amt
-
 def lighten_tile(x,y,amt):
-	LIGHT_BUFFER[0][y,x] = amt
+	_view = get_active_view()
+	_view['light_buffer'][0][y, x] = amt
+
+def darken_tile(x, y, amt):
+	_view = get_active_view()
+	_view['light_buffer'][1][y, x] = amt
 
 def tint_tile(x,y,color,coef):
 	_o_color = tcod.Color(int(MAP_RGB_BACK_BUFFER[0][y,x]),int(MAP_RGB_BACK_BUFFER[1][y,x]),int(MAP_RGB_BACK_BUFFER[2][y,x]))
