@@ -22,10 +22,11 @@ def init_libtcod(terraform=False):
 	tcod.console_set_custom_font(_font_file, _layout)
 	
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
-	MAP_WINDOW = tcod.console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
+	
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[0], 0, 'map')
+	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
+	create_view(0, 0, MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
 	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
-	CONSOLE_WINDOW = tcod.console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
-	MESSAGE_WINDOW = tcod.console_new(MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
@@ -56,10 +57,46 @@ def init_libtcod(terraform=False):
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
 	LOS_BUFFER[0] = []
-	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
-	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
 	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
+
+def create_view(x, y, w, h, alpha, name, layer=0):
+	if get_view_by_name(name):
+		raise Exception('View with name \'%s\' already exists.' % name)
+	
+	_v_id = SETTINGS['viewid']
+	_view = {'console': tcod.console_new(w, h),
+	         'position': [x, y],
+	         'size': (w, h),
+	         'alpha': alpha,
+	         'layer': layer,
+	         'name': name,
+	         'char_buffer': (numpy.zeros((h, w), dtype=numpy.int16),
+	                          numpy.zeros((h, w), dtype=numpy.int16)),
+	         'col_buffer': (numpy.zeros((h, w)),
+	                         numpy.zeros((h, w)),
+	                         numpy.zeros((h, w))),
+	         'id': _v_id}	
+	
+	SETTINGS['viewid'] += 1
+	VIEWS[name] = _view
+	
+	return _view
+
+def get_view_by_name(name):
+	if name in VIEWS:
+		return VIEWS[name]
+	
+	return False
+
+def draw_view(view_name):
+	_view = get_view_by_name(name)
+
+	tcod.console_fill_background(_view['console'],
+	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
+	        numpy.subtract(numpy.add(numpy.subtract(_view['col_buffer'][2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
+	tcod.console_fill_char(_view['console'], _view['char_buffer'][0])
 
 def start_of_frame(draw_char_buffer=True):
 	tcod.console_fill_background(MAP_WINDOW,
@@ -72,7 +109,8 @@ def start_of_frame(draw_char_buffer=True):
 	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
 	
 	if draw_char_buffer:
-		tcod.console_fill_char(MAP_WINDOW,MAP_CHAR_BUFFER[0])
+		#tcod.console_fill_char(MAP_WINDOW, get_view(')
+		draw_view('map')
 
 def start_of_frame_terraform():
 	tcod.console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
@@ -88,14 +126,16 @@ def start_of_frame_terraform():
 	tcod.console_fill_char(Y_CUTOUT_WINDOW,Y_CUTOUT_CHAR_BUFFER[0])
 
 def refresh_window_position(x, y):
-	DARK_BUFFER[0][y,x] = 0
-	LIGHT_BUFFER[0][y,x] = 0
-	MAP_CHAR_BUFFER[1][y,x] = 0
+	logging.debug('FIXME: refresh_window_position')
+	
+	#DARK_BUFFER[0][y,x] = 0
+	#LIGHT_BUFFER[0][y,x] = 0
+	#MAP_CHAR_BUFFER[1][y,x] = 0
 
 def refresh_window():
-	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	logging.debug('FIXME: refresh_window')
+
+	#MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 
 def blit_tile_to_console(console, x, y, tile):
 	_tile = get_raw_tile(tile)

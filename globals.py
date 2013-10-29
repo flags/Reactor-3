@@ -174,7 +174,8 @@ SETTINGS = {'running': True,
 	'map_slices': [],
 	'recording': False,
 	'recording fps': 1,
-	'recording fps temp': 0}
+	'recording fps temp': 0,
+	'viewid': 1}
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
@@ -195,6 +196,7 @@ SELECTED_TARGET = []
 EVENTS = []
 DIJKSTRA_CACHE = {}
 ZONE_CACHE = {}
+VIEWS = {}
 
 #Consoles
 MAP_WINDOW = None
