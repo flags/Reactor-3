@@ -28,7 +28,6 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	         'chunk_mode': chunk_mode}
 	
 	if chunk_mode:
-		lfe.focus_on(life)
 		_path['start'] = (_path['start'][0]/WORLD_INFO['chunk_size'], _path['start'][1]/WORLD_INFO['chunk_size'])
 		_path['end'] = (_path['end'][0]/WORLD_INFO['chunk_size'], _path['end'][1]/WORLD_INFO['chunk_size'])
 		_path['olist'][0] = (_path['start'][0], _path['start'][1])

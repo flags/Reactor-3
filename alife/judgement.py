@@ -167,12 +167,15 @@ def get_tension_with(life, life_id):
 		return 0
 	
 	_target = brain.knows_alife_by_id(life, life_id)
+	
+	if not _target['last_seen_time'] and _target['life']['dead']:
+		return 0
+	
 	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
 	_score = abs(numbers.clip(get_trust(life, life_id), -10, 0))
-	
 	_score += get_ranged_combat_rating_of_target(life, life_id)
 	
-	return abs(((15-_distance)/15.0)*_score)
+	return abs(((15-_distance)/15.0)*_score)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
 
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
@@ -389,6 +392,9 @@ def get_nearest_target_in_list(life, target_list):
 
 def get_nearest_combat_target(life):
 	return get_nearest_target_in_list(life, get_combat_targets(life))
+
+def get_nearest_trusted_target(life):
+	return get_nearest_target_in_list(life, get_trusted(life))
 
 def get_fondness(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)

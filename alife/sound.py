@@ -251,6 +251,7 @@ def listen(life):
 			if life['id'] == event['attacker']:
 				pass
 			else:
+				print life['name'], 'HEARD CALL FOR HELP FROM', event['from']['name']
 				if not brain.knows_alife_by_id(life, event['attacker']):
 					brain.meet_alife(life, LIFE[event['attacker']])
 					_knows_attacker = False
@@ -260,20 +261,24 @@ def listen(life):
 	
 				#SITUATION 1: We believe it
 				if _believes == event['from']['id']:
+					print 'OK'
 					lfe.memory(life, 'heard about attack',
 						attacker=event['attacker'],
 						target=event['from']['id'])
-					#lfe.memory(life, 'target attacked victim',
-					#	target=event['attacker'],
-					#	victim=event['from']['id'],
-					#	trust=-brain.knows_alife_by_id(life, event['from']['id'])['trust'],
-					#	danger=5)
+					lfe.memory(life, 'target attacked victim',
+						target=event['attacker'],
+						victim=event['from']['id'],
+						trust=-15,
+						danger=5)
 					
 					if event['last_seen_at']:
 						_target['last_seen_at'] = event['last_seen_at'][:]
 					else:
 						_target['last_seen_at'] = event['from']['pos'][:]
+					
+					judgement.judge_life(life, event['attacker'])
 				else:
+					print 'NO'
 					lfe.memory(life, 'reject under_attack: attacker is trusted',
 						attacker=event['attacker'],
 						target=event['from']['id'],

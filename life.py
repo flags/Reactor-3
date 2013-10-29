@@ -1050,9 +1050,6 @@ def walk(life, to=None, path=None):
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
 	
-	if _existing_chunk_path:
-		print life['name'], to, _existing_chunk_path['end']
-	
 	if path:
 		life['path'] = path
 		life['path_state'] = life['state']
@@ -1060,7 +1057,8 @@ def walk(life, to=None, path=None):
 		if not life['path']:
 			life['path'] = pathfinding.walk_chunk_path(life)
 	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to)):
-		_stime = time.time()
+		#_stime = time.time()
+		alife.brain.unflag(life, 'chunk_path')
 		_zone = can_walk_to(life, to)
 		
 		if _zone:
