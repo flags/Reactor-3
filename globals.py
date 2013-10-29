@@ -202,7 +202,6 @@ VIEWS = {}
 VIEW_SCENE = {}
 
 #Consoles
-MAP_WINDOW = None
 ITEM_WINDOW = None
 CONSOLE_WINDOW = None
 MESSAGE_WINDOW = None

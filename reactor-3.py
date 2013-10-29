@@ -173,7 +173,6 @@ def main():
 	else:
 		gfx.start_of_frame(draw_char_buffer=True)
 	
-	gfx.end_of_frame_reactor3()
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:

@@ -189,15 +189,11 @@ def draw_event(event):
 		
 	else:
 		_lines = [event['text']]
-		
-	#print _lines
 	
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:
 			_lines = ['The most annoying error.']
 			break
-	#if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
-	#	_lines = ['The most annoying error.']
 	
 	_i = 0
 	for line in _lines:
