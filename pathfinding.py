@@ -188,25 +188,25 @@ def walk_chunk_path(life):
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
 	
 	if _existing_chunk_path['path']:
-		#print life['name'], _existing_chunk_path['path']
 		_next_chunk = _existing_chunk_path['path'].pop(0)
 		_next_pos = WORLD_INFO['chunk_map']['%s,%s' % (_next_chunk[0]*WORLD_INFO['chunk_size'], _next_chunk[1]*WORLD_INFO['chunk_size'])]['pos']
-		print life['name'], life['pos'], _next_pos
-		return astar(life, life['pos'], _next_pos, _existing_chunk_path['zones'])
+		
+		return create_path(life, life['pos'], _next_pos, _existing_chunk_path['zones'], ignore_chunk_path=True)
 	else:
 		alife.brain.unflag(life, 'chunk_path')
 
-def create_path(life, start, end, zones):
-	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
-	
-	if _existing_chunk_path:
-		return walk_chunk_path(life)
+def create_path(life, start, end, zones, ignore_chunk_path=False):
+	if not ignore_chunk_path:
+		_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
+		
+		if _existing_chunk_path:
+			return walk_chunk_path(life)
 		
 	_shortpath = short_path(life, start, end)
 	if _shortpath:
 		return _shortpath
 	
-	if len(zones) == 1 and numbers.distance(start, end) >= 100:
+	if len(zones) == 1 and (numbers.distance(start, end) >= 100 and not ignore_chunk_path):
 		_chunk_path = {'path': chunk_path(life, start, end, zones),
 		               'start': start,
 		               'end': end,
@@ -214,6 +214,7 @@ def create_path(life, start, end, zones):
 		alife.brain.flag(life, 'chunk_path', _chunk_path)
 		_next_pos = _chunk_path['path'][0][:2]
 		_next_pos = (_next_pos[0]*WORLD_INFO['chunk_size'], _next_pos[1]*WORLD_INFO['chunk_size'])
+		
 		return astar(life, start, _next_pos, zones)
 	
 	return astar(life, start, end, zones)
