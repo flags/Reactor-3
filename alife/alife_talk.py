@@ -102,8 +102,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_dialog = life['dialogs'][0]
 		dialog.tick(life, _dialog)	
 	
-	if not judgement.is_safe(life):
-		_combat_targets = judgement.get_combat_targets(life)
+	if not judgement.is_safe(life) and lfe.ticker(life, 'call_for_help', 90, fire=True):
+		_combat_targets = judgement.get_ready_combat_targets(life)
 		
 		if _combat_targets:
 			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):
@@ -127,7 +127,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						
 					groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
 		
-		for target in judgement.get_combat_targets(life):
+		for target in judgement.get_ready_combat_targets(life):
 			_last_seen_at = None
 			_know = brain.knows_alife_by_id(life, target)
 			
