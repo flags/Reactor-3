@@ -15,7 +15,7 @@ CHAR = {'stance': 'stand',
                     'parry': 0,
                     'grapple': 0,
                     'stand': 0,
-                    'off-balance': 0,
+                    'off-balance': -1,
                     'trip': -1}}
 
 p1 = CHAR.copy()
@@ -51,6 +51,8 @@ def force_stance(p, stance):
 	p['next_stance']['delay'] = get_stance_score(p, stance)
 	p['next_stance']['stance'] = stance
 	p['next_stance']['forced'] = True
+	
+	print p['name'], 'forced into', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
 
 def examine_possible_moves(p, targets):
 	#TODO: Cancel move?
