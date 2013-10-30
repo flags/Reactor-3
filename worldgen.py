@@ -77,13 +77,6 @@ def simulate_life(amount):
 		
 		amount -= 1
 
-def prepare_map_views():
-	gfx.create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
-	gfx.create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
-	gfx.create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
-	gfx.add_view_to_scene_by_name('map')
-	gfx.set_active_view('map')	
-
 def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, combat_test=False, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
@@ -162,9 +155,6 @@ def load_world(world):
 	#	ITEMS_HISTORY.update(json.loads(''.join(e.readlines())))
 	
 	maps.reset_lights()
-	
-	gfx.clear_views()
-	prepare_map_views()
 	
 	SETTINGS['controlling'] = None
 	SETTINGS['following'] = None

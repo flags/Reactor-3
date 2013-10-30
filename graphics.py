@@ -202,6 +202,16 @@ def render_scene():
 				             view['position'][0],
 				             view['position'][1])
 
+def prepare_map_views():
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
+	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+	
+	add_view_to_scene_by_name('map')
+	add_view_to_scene_by_name('message_box')
+
+	set_active_view('map')	
+
 def start_of_frame(draw_char_buffer=True):
 	draw_scene()
 
@@ -404,7 +414,7 @@ def draw_message_box():
 		else:
 			_fore_color = tcod.white
 		
-		_c = 15*((_i>0)+1)
+		_c = 9*((_i>0)+1)
 		_back_color = tcod.Color(_c, _c, _c)
 		
 		_i = -_i
@@ -624,6 +634,7 @@ def end_of_frame(draw_map=True):
 	render_scene()
 	
 	if is_view_in_scene('message_box'):
+		tcod.console_set_default_foreground(0, tcod.gray)
 		tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
 	#if not SETTINGS['map_slices'] and draw_map:
 	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)

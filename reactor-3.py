@@ -141,7 +141,7 @@ def main():
 		gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
 			MAP_WINDOW_SIZE[1]/2,
 			_string,
-			console=MAP_WINDOW,
+			'map',
 			fore_color=tcod.Color(_col, _col, _col),
 			back_color=tcod.Color(255-_col,255-_col,255-_col),
 			flicker=0)
@@ -150,6 +150,9 @@ def main():
 		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
 			worldgen.save_world()
 			worldgen.reset_world()
+
+			gfx.clear_scene()
+			
 			SETTINGS['running'] = 1
 			return False
 	
@@ -257,7 +260,7 @@ if __name__ == '__main__':
 		
 		if SETTINGS['controlling']:
 			SETTINGS['running'] = 2
-			gfx.add_view_to_scene_by_name('message_box')
+			gfx.prepare_map_views()
 		else:
 			logging.debug('No active player found. Going back to menu.')
 			SETTINGS['running'] = 1
