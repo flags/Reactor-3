@@ -39,7 +39,6 @@ import copy
 MODULES = [alife_hide,
 	alife_hidden,
 	alife_talk,
-	alife_explore,
 	alife_discover,
 	alife_manage_items,
 	alife_manage_targets,
@@ -303,9 +302,8 @@ def understand(life, source_map):
 			life['think_rate'] = 2
 		
 		life['think_rate_max'] = 2
-	elif life['state'] == 'discovery':
+	elif life['state'] == 'discovering':
 		life['think_rate_max'] = 6
-		print 'speed'
 	elif life['state'] == 'idle':
 		life['think_rate_max'] = 30
 	else:
@@ -334,11 +332,10 @@ def understand(life, source_map):
 		except:
 			continue
 	
-	_stime = time.time()
+	#_stime = time.time()
 	_passive_only = False
-	
 	_modules_run = False
-	_times = []
+	#_times = []
 	
 	_sorted_modules = _modules.keys()
 	_sorted_modules.sort()
@@ -370,7 +367,7 @@ def understand(life, source_map):
 				if not _module_tier == TIER_PASSIVE:
 					_passive_only = True
 		
-		_times.append({'time': time.time()-_stime, 'module': module.STATE})
+		#_times.append({'time': time.time()-_stime, 'module': module.STATE})
 		
 		if not _modules[_score_tier]:
 			del _modules[_score_tier]
@@ -379,6 +376,5 @@ def understand(life, source_map):
 	if not _modules_run:
 		lfe.change_state(life, 'idle', TIER_IDLE)
 	
-	#print ' '.join(life['name'])
-	#for entry in _times:
-	#	print '\t%s: %s' % (entry['module'], entry['time'])
+	#print life['name'], time.time()-_stime
+	

@@ -133,8 +133,6 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		save_world()
 	
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
-	
-	prepare_map_views()
 
 def load_world(world):
 	gfx.title('Loading...')

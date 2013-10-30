@@ -225,7 +225,7 @@ def create_zone_map():
 	WORLD_INFO['slices'] = {}
 	WORLD_INFO['zoneid'] = 1
 	
-	if MAP_WINDOW:
+	if SETTINGS['running']:
 		tcod.console_set_default_foreground(0, tcod.white)
 		tcod.console_flush()
 	
@@ -237,7 +237,7 @@ def create_zone_map():
 			gfx.title('Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
 			process_slice(z)
 	
-		if MAP_WINDOW:
+		if SETTINGS['running']:
 			tcod.console_print(0, 0, 0, '              ')
 	print 'Zone gen took',time.time()-_t
 

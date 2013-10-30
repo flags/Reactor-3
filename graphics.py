@@ -109,7 +109,7 @@ def clear_scene():
 	for key in VIEW_SCENE.keys():
 		del VIEW_SCENE[key]
 	
-	for entry in VIEW_SCENE_CACHE:
+	for entry in VIEW_SCENE_CACHE[:]:
 		VIEW_SCENE_CACHE.remove(entry)
 	
 	logging.debug('Cleared scene.')
@@ -155,7 +155,9 @@ def get_view_by_name(name):
 
 def get_active_view():
 	if not SETTINGS['active_view']:
-		raise Exception('No active view set.')
+		logging.warning('No active view set.')
+		
+		return False
 	
 	return SETTINGS['active_view']
 
@@ -578,6 +580,10 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 
 def position_is_in_frame(pos):
 	_view = get_active_view()
+	
+	if not _view:
+		return False
+	
 	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, _view['view_size'][0]) and \
 	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, _view['view_size'][1]):
 		return True

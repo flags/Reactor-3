@@ -31,6 +31,23 @@ def look(life):
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	else:
+		#This is for optimizing. Be careful if you mess with this...
+		_nearby_alife = []
+		for alife in LIFE.values():
+			if alife['id'] == life['id']:
+				continue
+			
+			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
+				_nearby_alife.append(alife['id'])
+		
+		_nearby_alife.sort()
+		
+		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
+		if not _last_nearby_alife == _nearby_alife:
+			brain.flag(life, '_nearby_alife', value=_nearby_alife)
+		else:
+			return False
+		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for target_id in life['know']:
