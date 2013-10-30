@@ -253,7 +253,7 @@ def judge(life):
 	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
 	brain.store_in_memory(life, 'tension', _tension)
 
-def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=False):
+def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=False, limit_distance=-1):
 	if not target_list:
 		return []
 	
@@ -262,24 +262,27 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 	for target in target_list:
 		_knows = brain.knows_alife_by_id(life, target)
 		
-		if (escaped_only and not _knows['escaped']==1) or (ignore_escaped and _knows['escaped']>=1):
+		if (escaped_only and not _knows['escaped']==1) or (ignore_escaped and _knows['escaped']>=ignore_escaped):
 			continue
 		
 		if recent_only and _knows['last_seen_time'] >= 150:
+			continue
+		
+		if not limit_distance == -1 and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
 			continue
 	
 		_return_targets.append(target)
 	
 	return _return_targets
 	
-def get_targets(life, escaped_only=False, ignore_escaped=True):
-	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped)
+def get_targets(life, escaped_only=False, ignore_escaped=True, limit_distance=-1):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped, limit_distance=limit_distance)
 
-def get_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False):
-	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only)
+def get_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance)
 
-def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False):
-	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped)
+def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1):
+	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance)
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
 

@@ -26,11 +26,11 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	if life['speed'] or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	else:
+	elif not 'player' in life:
 		#This is for optimizing. Be careful if you mess with this...
 		_nearby_alife = []
 		for alife in LIFE.values():
@@ -48,6 +48,8 @@ def look(life):
 		else:
 			return False
 		
+		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
+	else:
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for target_id in life['know']:

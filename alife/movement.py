@@ -111,10 +111,6 @@ def search_for_target(life, target_id):
 	else:
 		_know['escaped'] = 2
 
-def explore(life, source_map):
-	#This is a bit different than the logic used for the other pathfinding functions
-	pass
-
 def escape(life, targets):
 	#With this function we're trying to get away from the target.
 	_target_positions = []
@@ -139,13 +135,14 @@ def escape(life, targets):
 		return False
 	
 	#TODO: For lower limit in return_score_in_range, use range of weapon
+	SETTINGS['print dijkstra maps'] = True
 	_cover = zones.dijkstra_map(life['pos'],
 	                            _target_positions,
 	                            _zones,
 	                            avoid_chunks=_visible_target_chunks,
 	                            return_score_in_range=[1, sight.get_vision(life)])
 	_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-	
+	SETTINGS['print dijkstra maps'] = False
 	if not _cover:
 		return False
 	

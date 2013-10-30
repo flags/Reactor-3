@@ -80,12 +80,14 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		
 		if goals[_i][0] < _top_left[0]:
 			_top_left[0] = numbers.clip(goals[_i][0]-TEMP_SIZE, 0, MAP_SIZE[0])
-		elif goals[_i][0] > _bot_right[0]:
+		
+		if goals[_i][0] > _bot_right[0]:
 			_bot_right[0] = numbers.clip(goals[_i][0]+TEMP_SIZE, 0, MAP_SIZE[0])
 		
 		if goals[_i][1] < _top_left[1]:
 			_top_left[1] = numbers.clip(goals[_i][1]-TEMP_SIZE, 0, MAP_SIZE[1])
-		elif goals[_i][1] > _bot_right[1]:
+		
+		if goals[_i][1] > _bot_right[1]:
 			_bot_right[1] = numbers.clip(goals[_i][1]+TEMP_SIZE, 0, MAP_SIZE[1])
 	
 	if start_pos[0]<_top_left[0]:
@@ -98,12 +100,22 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	elif start_pos[1]>_bot_right[1]:
 		_bot_right[1] = numbers.clip(start_pos[1]+TEMP_SIZE, 0, MAP_SIZE[1])
 	
+	print 'debug'
+	print 'start_pos', start_pos
+	print 'top_left', (_top_left[0], _top_left[1])
+	print 'bot_right', (_bot_right[0], _bot_right[1])	
+	
+	for goal in goals:
+		print 'goal', goal
+	
 	_open_map = create_map_array(-3, MAP_SIZE)
 	
 	_avoid_goals = []
 	for zone in [zon.get_slice(z) for z in zones]:
 		for y in range(_top_left[1], _bot_right[1]):
 			for x in range(_top_left[0], _bot_right[0]):
+				#print 'running first', time.time(), (_top_left[1], _bot_right[1]), (_top_left[0], _bot_right[0])
+				#print 'looping'
 				if (x, y) in avoid_positions:
 					continue
 				
@@ -225,6 +237,26 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_dijkstra_map[x + y * 500] *= -1.2
 				_old_map[x + y * 500] *= -1.2	
 	
+	if SETTINGS['print dijkstra maps']:
+		print 'YES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+		print (_bot_right[0]-_top_left[0]), _bot_right[1], _top_left[1]
+		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+			for x in range(0, _bot_right[0]-_top_left[0]):
+				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:
+					print 'X',
+				elif rolldown:
+					if _dijkstra_map[x + y * 500]>0:
+						print int(numbers.clip(_dijkstra_map[x + y * 500], 0, 9)),
+					else:
+						print '#',
+				else:
+					if _dijkstra_map[x + y * 500]<0:
+						print int(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9)),
+					else:
+						print '#',
+			
+			print	
+	
 	if return_score:
 		_score = _dijkstra_map[(start_pos[0]-_top_left[0]) + (start_pos[1]-_top_left[1]) * 500]
 		free(_old_map)
@@ -275,6 +307,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	_path = []
 	_pos[0] = start_pos[0]-_top_left[0]
 	_pos[1] = start_pos[1]-_top_left[1]
+	
 	while 1:
 		if rolldown and _dijkstra_map[_pos[0] + _pos[1] * 500]<=0:
 			break
@@ -325,24 +358,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		
 		_pos[0] = _next_pos[0]
 		_pos[1] = _next_pos[1]
-	
-	if SETTINGS['print dijkstra maps']:
-		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-			for x in range(0, _bot_right[0]-_top_left[0]):
-				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:
-					print 'X',
-				elif rolldown:
-					if _dijkstra_map[x + y * 500]>0:
-						print int(numbers.clip(_dijkstra_map[x + y * 500], 0, 9)),
-					else:
-						print '#',
-				else:
-					if _dijkstra_map[x + y * 500]<0:
-						print int(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9)),
-					else:
-						print '#',
-			
-			print
 
 	free(_old_map)
 	free(_dijkstra_map)
