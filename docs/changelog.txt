@@ -25,6 +25,8 @@ New in version 0.6.1:
 	* New map format that no longer eats memory.
 	* Added weather (only visual effects for now.)
 	* Longer paths are now generated in segments.
+	* Created "views," which allows for easier management of multiple consoles.
+		* Note: Some legacy code remains and is being phased out.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
