@@ -228,7 +228,8 @@ def refresh_view_position(x, y, view_name):
 def refresh_view(view_name):
 	_view = get_view_by_name(view_name)
 	
-	_view['char_buffer'][1] = _view['char_buffer'][1].clip(0, 0)
+	if _view:
+		_view['char_buffer'][1] = _view['char_buffer'][1].clip(0, 0)
 
 def blit_tile_to_console(console, x, y, tile):
 	_tile = get_raw_tile(tile)
@@ -377,6 +378,7 @@ def draw_message_box():
 	
 	_y_mod = 1
 	_lower = numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
+	_i = -1
 	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
 		if msg['count']:
 			_text = '%s (x%s)' % (msg['msg'], msg['count']+1)
@@ -384,26 +386,41 @@ def draw_message_box():
 			_text = msg['msg']
 		
 		if msg['style'] == 'damage':
-			tcod.console_set_default_foreground(_view['console'], tcod.red)
+			_fore_color = tcod.red
 		elif msg['style'] == 'speech':
-			tcod.console_set_default_foreground(_view['console'], tcod.gray)
+			_fore_color = tcod.gray
 		elif msg['style'] == 'action':
-			tcod.console_set_default_foreground(_view['console'], tcod.lighter_crimson)
+			_fore_color = tcod.lighter_crimson
 		elif msg['style'] == 'important':
-			tcod.console_set_default_foreground(_view['console'], tcod.Color(150,150,255))
+			_fore_color = tcod.Color(150,150,255)
 		elif msg['style'] == 'radio':
-			tcod.console_set_default_foreground(_view['console'], tcod.Color(225,245,169))
+			_fore_color = tcod.Color(225,245,169)
 		elif msg['style'] == 'good':
-			tcod.console_set_default_foreground(_view['console'], tcod.light_green)
+			_fore_color = tcod.light_green
 		elif msg['style'] == 'player_combat_good':
-			tcod.console_set_default_foreground(_view['console'], tcod.green)
+			_fore_color = tcod.green
 		elif msg['style'] == 'player_combat_bad':
-			tcod.console_set_default_foreground(_view['console'], tcod.crimson)
+			_fore_color = tcod.crimson
 		else:
-			tcod.console_set_default_foreground(_view['console'], tcod.white)
+			_fore_color = tcod.white
 		
-		blit_string(1, _y_mod, _text, 'message_box', fore_color=tcod.white)
-		_y_mod += 1
+		_c = 15*((_i>0)+1)
+		_back_color = tcod.Color(_c, _c, _c)
+		
+		_i = -_i
+		
+		while _text:
+			_print_text = _text[:_view['draw_size'][0]-2]
+			_padding = ' '*numbers.clip(_view['draw_size'][0], 0, _view['draw_size'][0]-len(_print_text)-2)
+			blit_string(1, _y_mod, _print_text+_padding, 'message_box', fore_color=_fore_color, back_color=_back_color)
+			_y_mod += 1
+			_text = _text[_view['draw_size'][0]-2:]
+			
+			if _y_mod >= MESSAGE_LOG_MAX_LINES:
+				break
+			
+			if not _text.startswith(' ') and _text:
+				_text = ' '+_text
 
 def draw_status_line():
 	_flashing_text = []

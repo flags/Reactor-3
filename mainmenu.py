@@ -234,6 +234,8 @@ def switch_to_world_gen():
 def start_game():
 	SETTINGS['running'] = 2
 	
+	graphics.add_view_to_scene_by_name('message_box')
+	
 	while MENUS:
 		menus.delete_active_menu()
 
