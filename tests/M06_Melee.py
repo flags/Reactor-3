@@ -7,6 +7,7 @@ CHAR = {'stance': 'stand',
 		'stances': {'tackle': 7,
                     'leap': 6,
                     'roll': 5,
+                    'prone': 5,
                     'duck': 4,
                     'kick': 2,
                     'punch': 2,
@@ -46,13 +47,16 @@ def assume_stance(p, stance, towards=None):
 	print p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
 	return True
 
-#def perform_stance(p, stance):
 def force_stance(p, stance):
 	p['next_stance']['delay'] = get_stance_score(p, stance)
-	p['next_stance']['stance'] = stance
+	p['stance'] = stance
+	
+	#TODO: Randomly regain balance or fall over
+	p['next_stance']['stance'] = 'stand'
+	
 	p['next_stance']['forced'] = True
 	
-	print p['name'], 'forced into', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
+	print p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')'
 
 def examine_possible_moves(p, targets):
 	#TODO: Cancel move?
@@ -67,7 +71,7 @@ def examine_possible_moves(p, targets):
 		if _next_stance and _next_stance in COMBAT_MOVES and not p['stance'] in COMBAT_MOVES[_next_stance]['counters']:
 			assume_stance(p, COMBAT_MOVES[_next_stance]['counters'][0], towards=target)
 			return False
-		elif not _next_stance:
+		elif not _next_stance or not target['stance'] in COMBAT_MOVES:
 			assume_stance(p, random.choice(COMBAT_MOVES.keys()), towards=target)
 			return True
 
@@ -97,8 +101,12 @@ def perform_moves(people):
 			
 			if life['stance'] in COMBAT_MOVES and _target['stance'] in COMBAT_MOVES[life['stance']]['counters']:
 				print '%s counters %s\'s %s!' % (_target['name'], life['name'], life['stance'])
+				
 				force_stance(life, 'off-balance')
 			else:
+				if _target['stance'] in 'off-balance':
+					force_stance(_target, 'prone')
+				
 				print '%s\'s %s hits %s!' % (life['name'], life['stance'], _target['name'])
 			
 			life['next_stance']['towards'] = None
