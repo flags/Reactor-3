@@ -937,7 +937,6 @@ def path_dest(life):
 	
 	_existing_chunk_map = brain.get_flag(life, 'chunk_path')
 	if _existing_chunk_map:
-		print _existing_chunk_map['end']
 		return _existing_chunk_map['end']
 	
 	return tuple(life['path'][len(life['path'])-1])

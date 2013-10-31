@@ -50,6 +50,8 @@ def init_libtcod(terraform=False):
 			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
+	SETTINGS['light mesh grid'] = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
+	
 	LOS_BUFFER[0] = []
 
 def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, require_refresh=False):
@@ -116,11 +118,39 @@ def clear_scene():
 	
 	logging.debug('Cleared scene.')
 
+def _is_view_dirty(view):
+	return view['_dirty']
+
+def is_view_dirty(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	return _is_view_dirty(_view)
+
+def _set_view_clean(view):
+	view['_dirty'] = False
+
+def set_view_clean(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	_set_view_clean(_view)
+
 def _set_view_dirty(view):
 	view['_dirty'] = True
 
 def set_view_dirty(view_name):
-	_set_view_dirty(get_view_by_name(view_name))
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	_set_view_dirty(_view)
+	return True
 
 def _add_view_to_scene(view):
 	if view['layer'] in VIEW_SCENE:
@@ -394,10 +424,10 @@ def enable_panels():
 def draw_message_box():
 	_view = get_view_by_name('message_box')
 	
-	if not _view['_dirty']:
+	if not _is_view_dirty(_view):
 		return False
 	
-	_view['_dirty'] = False
+	_set_view_clean(_view)
 	
 	#blit_string(1, 0, 'Messages', 'message_box', fore_color=tcod.white)
 	

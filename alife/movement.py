@@ -65,7 +65,6 @@ def travel_to_position(life, pos, stop_on_sight=False):
 		return True
 	
 	_dest = lfe.path_dest(life)
-	print _dest, pos[:2]
 	if _dest and _dest[:2] == pos[:2]:
 		return False
 	
@@ -110,7 +109,6 @@ def search_for_target(life, target_id):
 			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
 				_lowest['score'] = _search_map[y, x]
 				_lowest['pos'] = (_x, _y, x, y)
-			#_search.append((_x, _y, x, y))
 
 	if _lowest['pos']:
 		x, y, _x, _y = _lowest['pos']
