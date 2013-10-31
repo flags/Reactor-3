@@ -332,30 +332,46 @@ def ranged_combat(life, targets):
 		print 'LOST' * 10
 		return False
 	
-	
-	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
-	#print life['pos'], _target_positions, _path_to_nearest
-	
-	if not _path_to_nearest:
-		_path_to_nearest = [life['pos'][:]]
-	
-	if not _path_to_nearest:
-		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+	_targets_too_far = []
+	_closest_target = {'target_id': None, 'score': 9999}
+	for t in [brain.knows_alife_by_id(life, t_id) for t_id in targets]:
+		_distance = numbers.distance(life['pos'], t['last_seen_at'])
 		
-		return False
+		#NOTE: Hardcoding this for optimization reasons.
+		if _distance>=100:
+			targets.remove(t['life']['id'])
+			_targets_too_far.append(t['life']['id'])
+		
+		if _distance < _closest_target['score']:
+			_closest_target['score'] = _distance
+			_closest_target['target_id'] = t['life']['id']
 	
-	_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
-	#else:
-	#	_target_pos = life['pos'][:]
-	#	_target_positions.append(_target_pos)
-	
-	target = None
-	
-	if _target_pos in _target_positions:
-		for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
-			if _target_pos == _target['last_seen_at']:
-				target = _target
-				break
+	if not _targets_too_far:
+		_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
+		
+		if not _path_to_nearest:
+			_path_to_nearest = [life['pos'][:]]
+		
+		if not _path_to_nearest:
+			logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+			
+			return False
+		
+		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
+		#else:
+		#	_target_pos = life['pos'][:]
+		#	_target_positions.append(_target_pos)
+		
+		target = None
+		
+		if _target_pos in _target_positions:
+			for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
+				if _target_pos == _target['last_seen_at']:
+					target = _target
+					break
+	else:
+		print 'THIS IS MUCH QUICKER!!!' * 10
+		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
 	
 	if not life['path'] or not numbers.distance(lfe.path_dest(life), target['last_seen_at']) == 0:
 		movement.position_to_attack(life, target['life']['id'])
