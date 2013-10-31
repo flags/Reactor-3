@@ -36,4 +36,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	print '*' * 50
 	print life['name'], 'THREATS', _threats, brain.knows_alife_by_id(life, _threats[0])['last_seen_time']
 	print '*' * 50
+	
 	movement.escape(life, _threats)

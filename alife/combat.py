@@ -341,7 +341,7 @@ def ranged_combat(life, targets):
 	
 	if not _path_to_nearest:
 		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
-		print _path_to_nearest
+		
 		return False
 	
 	_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])

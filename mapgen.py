@@ -163,7 +163,11 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	decorate_world(map_gen)
 	
 	for _field in map_gen['refs']['fields']	:
-		construct_field(map_gen, _field)	
+		construct_field(map_gen, _field)
+	
+	logging.debug('Placing forests...')
+	while len(map_gen['refs']['forests'])<map_gen['forests']:
+		map_gen['refs']['forests'].append(place_forest(map_gen))
 	
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
@@ -276,10 +280,6 @@ def generate_outlines(map_gen):
 		for town in map_gen['refs']['towns'].values():
 			if chunk_key in town['chunks']:
 				town['chunks'].remove(chunk_key)
-	
-	logging.debug('Placing forests...')
-	while len(map_gen['refs']['forests'])<map_gen['forests']:
-		map_gen['refs']['forests'].append(place_forest(map_gen))
 
 def chunks_in_line(pos1, pos2, avoid_chunk_types):
 	_chunk_keys = []
@@ -1582,6 +1582,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(450, 450, 10), towns=2, factories=0, outposts=4, forests=0, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(450, 450, 10), towns=2, factories=0, outposts=4, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t
