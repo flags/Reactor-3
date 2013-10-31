@@ -8,7 +8,9 @@ import encounters
 import worldgen
 import effects
 import numbers
+import weather
 import timers
+import cache
 import menus
 import items
 import life
@@ -20,7 +22,7 @@ import time
 
 def can_tick(check=True):
 	if SETTINGS['controlling'] and not EVENTS:
-		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions']:
+		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
 	if not check:
@@ -121,6 +123,7 @@ def tick_world():
 	else:
 		WORLD_INFO['real_time_of_day'] = 0
 		WORLD_INFO['day'] += 1
+		weather.change_weather()
 	
 	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
 		if WORLD_INFO['time_of_day'] == 'day':
@@ -150,6 +153,8 @@ def tick_world():
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+	cache.scan_cache()
 	
 def is_night():
 	if WORLD_INFO['time_of_day'] == 'night':
@@ -184,15 +189,11 @@ def draw_event(event):
 		
 	else:
 		_lines = [event['text']]
-		
-	#print _lines
 	
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:
 			_lines = ['The most annoying error.']
 			break
-	#if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
-	#	_lines = ['The most annoying error.']
 	
 	_i = 0
 	for line in _lines:
@@ -201,7 +202,8 @@ def draw_event(event):
 		
 		gfx.blit_string(_x,
 			10+_i,
-			line)
+			line,
+		     'map')
 		
 		_i += 1
 
@@ -222,10 +224,10 @@ def show_next_event():
 		return False
 	
 	EVENTS.pop(0)
-	gfx.refresh_window()
+	gfx.refresh_view('map')
 	
 	if not EVENTS:
-		life.focus_on(LIFE[SETTINGS['controlling']])
+		life.focus_on(LIFE[SETTINGS['following']])
 		return False
 	
 	return True

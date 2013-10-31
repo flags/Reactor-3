@@ -8,6 +8,7 @@ import maputils
 import numbers
 import drawing
 import effects
+import weather
 import logic
 import items
 import zones
@@ -41,8 +42,7 @@ def create_map(size=MAP_SIZE):
 			_z = []
 			for z in range(size[2]):
 				if z == 2:
-					_z.append(create_tile(random.choice(
-						[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
+					_z.append(create_tile(random.choice([TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
 				else:
 					_z.append(None)
 
@@ -51,6 +51,22 @@ def create_map(size=MAP_SIZE):
 
 	logging.debug('Created new map of size (%s,%s).' % (size[0], size[1]))
 	return _map
+
+def reload_slices():
+	for _slice in WORLD_INFO['slices'].values():
+		#logging.debug('Loading slice: %s' % _slice['id'])
+		
+		_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]		
+		_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
+		_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
+			
+		_slice['_map'] = zones.create_map_array(size=_size)
+		
+		for pos in _slice['map']:
+			_xx = _slice['top_left'][0]+1
+			_yy = _slice['top_left'][1]+1
+			
+			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -61,9 +77,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		os.mkdir(_map_dir)
 	except:
 		pass
-
-	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
-		del _slice['rotmap']
 		
 	for light in WORLD_INFO['lights']:
 		if 'los' in light:
@@ -71,8 +84,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		
 		if 'old_pos' in light:
 			del light['old_pos']
-	
-	WORLD_INFO['seed_state'] = random.getstate()
 
 	#For debug
 	#for key in WORLD_INFO:
@@ -83,14 +94,58 @@ def save_map(map_name, base_dir=DATA_DIR):
 	#	print WORLD_INFO['items'][item]
 	#	json.dumps(WORLD_INFO['items'][item])
 
-	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
+	with open(os.path.join(_map_dir,map_name), 'w') as _map_file:
 		try:
-			_map_file.write(json.dumps(WORLD_INFO))
+			_map = WORLD_INFO['map']
+			_slices = WORLD_INFO['slices']
+			_chunk_map = WORLD_INFO['chunk_map']
+			
+			del WORLD_INFO['map']
+			del WORLD_INFO['slices']
+			del WORLD_INFO['chunk_map']
+			
+			_weather_light_map = None
+			if 'light_map' in WORLD_INFO['weather']:
+				_weather_light_map = WORLD_INFO['weather']['light_map']
+				del WORLD_INFO['weather']['light_map']
+			
+			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
+			
+			for _slice in _slices.keys():
+				if '_map' in _slices[_slice]:
+					del _slices[_slice]['_map']
+				
+				_map_file.write('slice:%s:%s\n' % (_slice, json.dumps(_slices[_slice])))
+			
+			for _chunk_key in _chunk_map:
+				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
+			
+			logging.debug('Writing map to disk...')
+			for x in range(MAP_SIZE[0]):
+				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
+				logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+			
+			logging.info('Map \'%s\' saved to disk.' % map_name)			
+			
+			WORLD_INFO['map'] = _map
+			WORLD_INFO['slices'] = _slices
+			WORLD_INFO['chunk_map'] = _chunk_map
+			
+			if _weather_light_map:
+				WORLD_INFO['weather']['light_map'] = _weather_light_map
+				print WORLD_INFO['weather']
+			
+			logging.debug('Reloading slices...')
+			reload_slices()
+			logging.debug('Done!')
+			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
-		except TypeError:
+		except TypeError as e:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+			
+			raise e
 
 def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -98,44 +153,48 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
-		try:
-			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+		#try:
+		#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+		for line in _map_file.readlines():
+			line = line.rstrip()
+			value = line.split(':')
 			
-			if 'items' in WORLD_INFO:
-				ITEMS.update(WORLD_INFO['items'])
-				#del WORLD_INFO['items']
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			if like_new:
-				update_chunk_map()
-				smooth_chunk_map()
-			else:
-				WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
-			
-			if not WORLD_INFO['lights']:
-				logging.warning('World has no lights. Creating one manually.')
-				effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
-			
-		except ValueError:
-			_map_file.seek(0)
-			WORLD_INFO['map'] = json.loads(_map_file.readline())
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			logging.warning('Hello legacy users :)')
+			if line.startswith('chunk'):
+				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('map'):
+				WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
+			elif line.startswith('slice'):
+				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('world_info'):
+				WORLD_INFO.update(json.loads(':'.join(value[1:])))
+		
+		if 'items' in WORLD_INFO:
+			ITEMS.update(WORLD_INFO['items'])
+				
+		#if not (x, y) in zone['map']:
+		#for slice 
+		
+		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		MAP_SIZE[0] = _map_size[0]
+		MAP_SIZE[1] = _map_size[1]
+		MAP_SIZE[2] = _map_size[2]
+		
+		reload_slices()
+		
+		if like_new:
 			update_chunk_map()
 			smooth_chunk_map()
-			generate_reference_maps()
-			logging.warning('Zone maps regenerating (This should only happen once)')
-			zones.create_zone_map()
-			zones.connect_ramps()
+		else:
+			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
+		
+		if WORLD_INFO['weather']:
+			weather.create_light_map(WORLD_INFO['weather'])
+		
+		if not WORLD_INFO['lights']:
+			logging.warning('World has no lights. Creating one manually.')
+			effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
+		#except Exception as e:
+		#	raise e
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		
@@ -153,10 +212,6 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
-		if WORLD_INFO['seed_state']:
-			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
-			random.setstate(tuple(WORLD_INFO['seed_state']))
-		
 		zones.cache_zones()
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
@@ -166,6 +221,21 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		#except TypeError:
 		#	logging.error('FATAL: Map not JSON serializable.')
 		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+
+def get_tile(pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return True
+	
+	return False
+
+def is_solid(pos):
+	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return False
+	
+	if 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
+		return False
+	
+	return True
 
 def position_is_in_map(pos):
 	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:
@@ -188,7 +258,7 @@ def render_lights(source_map):
 	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
-	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
+	(x, y) = SETTINGS['light mesh grid']
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
@@ -242,7 +312,7 @@ def render_lights(source_map):
 		
 		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		_mod = numbers.clip(_mod-1, 0, 1)
-		SUN = (255*_mod, 165*_mod, 0*_mod)
+		SUN = weather.get_lighting()#(255*_mod, 165*_mod, 0*_mod)
 		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
@@ -311,54 +381,6 @@ def render_los(map,position,los_buffer=LOS_BUFFER[0]):
 
 			los_buffer[_y,_x] = 1
 
-def render_map(map):
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-	
-	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for x in range(CAMERA_POS[0],_X_MAX):
-		_RENDER_X = x-CAMERA_POS[0]
-		for y in range(CAMERA_POS[1],_Y_MAX):
-			_RENDER_Y = y-CAMERA_POS[1]
-			_drawn = False
-			for z in range(MAP_SIZE[2]-1,-1,-1):
-				if map[x][y][z]:
-					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
-						_drawn = True
-					elif z == CAMERA_POS[2]:
-						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							gfx.blit_char(_RENDER_X,
-								_RENDER_Y,
-								'X',
-								darker_grey,
-								black,
-								char_buffer=MAP_CHAR_BUFFER,
-								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
-						else:
-							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						_drawn = True
-					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
-						_drawn = True
-				
-					if SETTINGS['draw z-levels above'] and _drawn:
-						break
-			
-			if not _drawn:
-				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
-
 def render_map_slices():
 	SETTINGS['map_slices'] = []
 	
@@ -396,9 +418,7 @@ def render_x_cutout(map,x_pos,y_pos):
 			gfx.blit_tile(_RENDER_X,
 				(MAP_SIZE[2]-3)-z,
 				_tile,
-				char_buffer=X_CUTOUT_CHAR_BUFFER,
-				rgb_fore_buffer=X_CUTOUT_RGB_FORE_BUFFER,
-				rgb_back_buffer=X_CUTOUT_RGB_BACK_BUFFER)
+				'map')
 
 def render_y_cutout(map,x_pos,y_pos):
 	_Y_MAX = y_pos+Y_CUTOUT_WINDOW_SIZE[1]
@@ -650,7 +670,6 @@ def find_all_linked_chunks(chunk_key, check=[]):
 		_linked_chunks.append(_current_chunk_key)
 		_current_chunk = get_chunk(_current_chunk_key)
 		
-		print _current_chunk['neighbors']
 		for neighbor_chunk_key in _current_chunk['neighbors']:
 			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
 				continue
@@ -680,8 +699,6 @@ def generate_reference_maps():
 				continue
 			
 			if _current_chunk['type'] == 'road':
-				print find_all_linked_chunks(_current_chunk_key)
-				print 'done\n'
 				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
 					WORLD_INFO['references'][str(_ref_id)] = _ret

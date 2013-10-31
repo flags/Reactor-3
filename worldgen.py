@@ -7,7 +7,9 @@ import life as lfe
 import historygen
 import profiles
 import effects
+import weather
 import mapgen
+import cache
 import logic
 import items
 import tiles
@@ -17,6 +19,7 @@ import maps
 
 import threading
 import logging
+import numbers
 import random
 import time
 import json
@@ -82,9 +85,6 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
 	
-	if combat_test:
-		WORLD_INFO['time_scale'] = 0
-	
 	random.seed(WORLD_INFO['seed'])
 	
 	if WORLD_INFO['life_density'] == 'Sparse':
@@ -97,14 +97,17 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		WORLD_INFO['life_spawn_interval'] = [-1, (600, 799)]
 	
 	if WORLD_INFO['wildlife_density'] == 'Sparse':
-		WORLD_INFO['wildlife_spawn_interval'] = [0, (770, 990)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (770, 990)]
 	elif WORLD_INFO['wildlife_density'] == 'Medium':
-		WORLD_INFO['wildlife_spawn_interval'] = [3500, (550, 700)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (550, 700)]
 	elif WORLD_INFO['wildlife_density'] == 'Heavy':
-		WORLD_INFO['wildlife_spawn_interval'] = [3500, (250, 445)]
+		WORLD_INFO['wildlife_spawn_interval'] = [2500, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
+	weather.change_weather()
+	print 'STARTING!',WORLD_INFO['weather']
+	#create_region_spawns()
 	randomize_item_spawns()
 	
 	alife.camps.create_all_camps()
@@ -122,7 +125,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 	else:
 		simulate_life(simulate_ticks)
 	
-	lfe.focus_on(create_player(source_map))
+	lfe.focus_on(create_player())
 	WORLD_INFO['id'] = 0
 	
 	if save:
@@ -135,19 +138,28 @@ def load_world(world):
 	gfx.title('Loading...')
 	
 	WORLD_INFO['id'] = world
-	maps.load_map('map', base_dir=profiles.get_world(world))
+	maps.load_map('map', base_dir=profiles.get_world_directory(world))
 
 	logging.debug('Loading life from disk...')
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'r') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'life.dat'), 'r') as e:
 		LIFE.update(json.loads(e.readline()))
 
 	logging.debug('Loading items from disk...')
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'r') as e:
-		ITEMS.update(json.loads(e.readline()))	
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items.dat'), 'r') as e:
+		ITEMS.update(json.loads(e.readline()))
+	
+	logging.debug('Loading historic items...')
+	#with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items_history.dat'), 'r') as e:
+	#	ITEMS_HISTORY.update(json.loads(''.join(e.readlines())))
+	
+	maps.reset_lights()
 	
 	SETTINGS['controlling'] = None
 	SETTINGS['following'] = None
 	for life in LIFE.values():
+		if life['dead']:
+			continue
+		
 		if 'player' in life:
 			SETTINGS['controlling'] = life['id']
 			lfe.focus_on(life)
@@ -168,20 +180,36 @@ def save_world():
 	logging.debug('Saving items...')
 	items.save_all_items()	
 	
-	maps.save_map('map', base_dir=profiles.get_world(WORLD_INFO['id']))
+	maps.save_map('map', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
 	_life = life.save_all_life()
 	
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'life.dat'), 'w') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'life.dat'), 'w') as e:
 		e.write(_life)
 	
-	with open(os.path.join(profiles.get_world(WORLD_INFO['id']), 'items.dat'), 'w') as e:
+	with open(os.path.join(profiles.get_world_directory(WORLD_INFO['id']), 'items.dat'), 'w') as e:
 		e.write(json.dumps(ITEMS))
+	
+	#cache.commit_cache('items')
+	#cache.save_cache('items')
 	
 	items.reload_all_items()
 	
 	logging.info('World saved.')
+
+def cleanup():
+	if not WORLD_INFO['id']:
+		return False
+	
+	gfx.title('Saving cache...')
+	cache.save_cache('items')
+
+def reset_world():
+	SETTINGS['following'] = None
+	SETTINGS['controlling'] = None
+	
+	logging.debug('World reset.')
 
 def randomize_item_spawns():
 	for building in WORLD_INFO['reference_map']['buildings']:
@@ -191,12 +219,33 @@ def randomize_item_spawns():
 		if not _chunk['ground']:
 			continue
 		
+		if random.randint(0, 100)>=80:
+			for i in range(0, 1+random.randint(0, 3)):
+				_rand_pos = random.choice(_chunk['ground'])
+				items.create_item('.22 rifle', position=[_rand_pos[0], _rand_pos[1], 2])
+				items.create_item('.22 LR magazine', position=[_rand_pos[0], _rand_pos[1], 2])
+			
+			for i in range(10):
+				_rand_pos = random.choice(_chunk['ground'])
+				items.create_item('.22 LR cartridge', position=[_rand_pos[0], _rand_pos[1], 2])
+		elif random.randint(0, 100)>=70:
+			_items = ['corn', 'soda']
+			for i in range(0, 1+random.randint(0, 3)):
+				_rand_pos = random.choice(_chunk['ground'])
+				items.create_item(random.choice(_items), position=[_rand_pos[0], _rand_pos[1], 2])
+		
 		for i in range(0, 1+random.randint(0, 3)):
 			_rand_pos = random.choice(_chunk['ground'])
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
-def get_spawn_point():
-	if WORLD_INFO['reference_map']['roads']:
+def get_spawn_point_around(pos, area=5):
+	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
+	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
+	
+	return (_x, _y)
+
+def get_spawn_point(randomize=False):
+	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
 		for road in WORLD_INFO['reference_map']['roads']:
 			for chunk_key in alife.references.get_reference(road):
@@ -206,6 +255,7 @@ def get_spawn_point():
 					_entry_road_keys.append(chunk_key)
 		
 		if _entry_road_keys:
+			
 			_spawn_pos = random.choice(WORLD_INFO['chunk_map'][random.choice(_entry_road_keys)]['ground'])
 			
 			return [_spawn_pos[0], _spawn_pos[1], 2]
@@ -213,58 +263,103 @@ def get_spawn_point():
 	_start_seed = random.randint(0, 3)
 	
 	if not _start_seed:
-		_spawn = (random.randint(0, MAP_SIZE[0]-1), 0)
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), 0, 2)
 	elif _start_seed == 1:
-		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1))
+		_spawn = (MAP_SIZE[0]-1, random.randint(0, MAP_SIZE[1]-1), 2)
 	elif _start_seed == 2:
-		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1)
+		_spawn = (random.randint(0, MAP_SIZE[0]-1), MAP_SIZE[1]-1, 2)
 	else:
-		_spawn = (0, random.randint(0, MAP_SIZE[1]-1))
+		_spawn = (0, random.randint(0, MAP_SIZE[1]-1), 2)
 	
 	return _spawn
 
 def generate_wildlife():
-	for i in range(1, 3):
-		_spawn = get_spawn_point()
+	_spawn = get_spawn_point(randomize=True)
+	
+	_p = life.create_life('dog',
+          name=['Wild', 'Dog'],
+          position=[_spawn[0], _spawn[1], 2])
+	
+	_group = alife.groups.create_group(_p)
+	
+	_children = []
+	for i in range(2, 6):
+		_spawn = get_spawn_point_around(_spawn)
 		
-		_p = life.create_life('dog',
-			name=['Wild', 'Dog%s' % i],
-			map=WORLD_INFO['map'],
-			position=[_spawn[0], _spawn[1], 2])
+		_c = life.create_life('dog',
+	          name=['(Young) Wild', 'Dog'],
+	          position=[_spawn[0], _spawn[1], 2])
+		_c['icon'] = 'd'
 		
-		if random.randint(0, 3)>=2:
-			_c = life.create_life('dog',
-				name=['(Young) Wild', 'Dog%s' % i],
-				map=WORLD_INFO['map'],
-				position=[_spawn[0], _spawn[1], 2])
-			_c['icon'] = 'd'
+		alife.groups.add_member(_group, _c['id'])
+		
+		alife.brain.meet_alife(_p, _c)
+		alife.brain.meet_alife(_c, _p)
+		
+		alife.brain.flag_alife(_p, _c['id'], 'son')
+		alife.brain.flag_alife(_c, _p['id'], 'father')
+		
+		_children.append(_c)
+	
+	for _c1 in _children:
+		for _c2 in _children:
+			if _c1['id'] == _c2['id']:
+				continue
 			
-			alife.brain.meet_alife(_p, _c)
-			alife.brain.meet_alife(_c, _p)
+			alife.brain.meet_alife(_c1, _c2)
+			alife.brain.meet_alife(_c2, _c1)
 			
-			alife.brain.flag_alife(_p, _c['id'], 'son')
-			alife.brain.flag_alife(_c, _p['id'], 'father')
+			alife.brain.flag_alife(_c1, _c2['id'], 'sibling')
+			alife.brain.flag_alife(_c2, _c1['id'], 'sibling')
+	
+	#_spawn = get_spawn_point(randomize=True)
+	
+	#for i in range(4):
+	#	_p = life.create_life('night_terror',
+	#		position=[_spawn[0], _spawn[1], 2])
 
-def generate_life(amount=1):
+def generate_life():
 	_spawn = get_spawn_point()
 	
-	alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	alife['thirst'] = random.randint(alife['thirst_max']/4, alife['thirst_max']/3)
+	if WORLD_INFO['groups']:
+		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
+		
+		if len(LIFE) == 1:
+			logging.warning('No leaders. Creating one manually...')
+			_alife['stats']['is_leader'] = True
+		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
+		return True
 	
-	if len(LIFE) == 1:
-		logging.warning('No leaders. Creating one manually...')
-		alife['stats']['is_leader'] = True
+	_group_members = []
 	
-	for item in BASE_ITEMS:
-		life.add_item_to_inventory(alife, items.create_item(item))
+	for i in range(3):
+		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		
+		for item in BASE_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
+		if not _group_members:
+			_alife['stats']['is_leader'] = True
+			_group = alife.groups.create_group(_alife)
+		
+		_group_members.append(_alife)
+	
+	for m1 in _group_members:
+		if m1['id'] == _group_members[0]['id']:
+			continue
+		
+		alife.groups.add_member(_group, m1['id'])
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))
 
-def create_player(source_map):
+def create_player():
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
-		map=source_map,
 		position=get_spawn_point())
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
@@ -272,25 +367,24 @@ def create_player(source_map):
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('.22 rifle'))
-	life.add_item_to_inventory(PLAYER, items.create_item('.22 LR magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
+	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
 	
 	for i in range(10):
-		life.add_item_to_inventory(PLAYER, items.create_item('.22 LR cartridge'))
+		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(PLAYER, items.create_item(item))
 
 	SETTINGS['controlling'] = PLAYER['id']
-	SETTINGS['following'] = PLAYER['id']
 	
-	_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
-	items.move(_i, 180, 3)
+	lfe.focus_on(LIFE[SETTINGS['controlling']])
+	
+	#_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
+	#items.move(_i, 180, 3)
 	
 	return PLAYER
 	
-	#for x in range(-10, 11):
-	#	for y in range(-10, 11):
-	#		if random.randint(0, 10):
-	#			continue
-	#		effects.create_fire((PLAYER['pos'][0]+x, PLAYER['pos'][1]+y, PLAYER['pos'][2]), intensity=8)
+def create_region_spawns():
+	for i in range(5):
+		generate_wildlife()

@@ -75,7 +75,7 @@ def load_strings():
 
 def generate_place_name():
 	if not TEXT_MAP['places']:
-		return 'Zoolandia'
+		return 'Zoolandia %s' % WORLD_INFO['ticks']
 	
 	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
 
@@ -93,7 +93,7 @@ def generate_first_and_last_name_from_species(species):
 
 def format_injury(injury):
 	if injury['lodged_item']:
-		return 'a %s lodged in the %s' % (injury['lodged_item']['name'], injury['limb'])
+		return 'a %s lodged in the %s' % (ITEMS[injury['lodged_item']]['name'], injury['limb'])
 	elif injury['artery_ruptured']:
 		return 'a ruptured artery in the %s' % injury['limb']
 	elif injury['cut']:

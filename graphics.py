@@ -4,26 +4,27 @@ from tiles import *
 import libtcodpy as tcod
 
 import numbers
+import life
+
+import logging
 import random
 import numpy
 import time
-import life
 
 def init_libtcod(terraform=False):
-	global MAP_WINDOW, ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
+	global ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
 	_font_file = os.path.join(DATA_DIR, 'tiles', FONT)
 	
 	if '_incol' in FONT:
 		_layout = tcod.FONT_LAYOUT_ASCII_INCOL
+	elif '_inrow' in FONT:
+		_layout = tcod.FONT_LAYOUT_ASCII_INROW
 	
 	tcod.console_set_custom_font(_font_file, _layout)
-	
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
-	MAP_WINDOW = tcod.console_new(MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1])
+	
 	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
-	CONSOLE_WINDOW = tcod.console_new(CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1])
-	MESSAGE_WINDOW = tcod.console_new(MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
@@ -41,10 +42,6 @@ def init_libtcod(terraform=False):
 	tcod.sys_set_fps(FPS)
 
 	for i in range(3):
-		MAP_RGB_BACK_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-		MAP_RGB_FORE_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-		RGB_LIGHT_BUFFER[i] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
-		
 		if terraform:
 			PREFAB_RGB_BACK_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
 			PREFAB_RGB_FORE_BUFFER[i] = numpy.zeros((PREFAB_WINDOW_SIZE[1], PREFAB_WINDOW_SIZE[0]), dtype=numpy.int8)
@@ -53,24 +50,210 @@ def init_libtcod(terraform=False):
 			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
+	SETTINGS['light mesh grid'] = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
+	
 	LOS_BUFFER[0] = []
-	MAP_CHAR_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
-	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
-	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
-	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]), dtype=numpy.int8)
+
+def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, require_refresh=False):
+	if get_view_by_name(name):
+		raise Exception('View with name \'%s\' already exists.' % name)
+	
+	dh = h
+	dw = w
+	
+	_v_id = SETTINGS['viewid']
+	_view = {'console': tcod.console_new(w, h),
+	         'position': [x, y],
+	         'draw_size': (dw, dh),
+	         'view_size': (w, h),
+	         'alpha': alpha,
+	         'layer': layer,
+	         'name': name,
+	         'light_buffer': None,
+	         'char_buffer': [numpy.zeros((dh, dw), dtype=numpy.int16),
+	                          numpy.zeros((dh, dw), dtype=numpy.int16)],
+	         'col_buffer': ((numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw))),
+	                        (numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw)))),
+	         'require_refresh': require_refresh,
+	         '_dirty': False,
+	         'id': _v_id}
+	
+	if lighting:
+		_view['light_buffer'] = [numpy.zeros((dh, dw), dtype=numpy.int16),
+		                         numpy.zeros((dh, dw), dtype=numpy.int16)]
+	
+	SETTINGS['viewid'] += 1
+	VIEWS[name] = _view
+	
+	logging.debug('Created view \'%s\'.' % name)
+	
+	#if not VIEW_SCENE:
+	#	_add_view_to_scene(_view)
+	#	set_active_view(name)
+	
+	return _view
+
+def clear_views():
+	for key in VIEWS.keys():
+		del VIEWS[key]
+	
+	logging.debug('Cleared views.')
+	
+	if VIEW_SCENE:
+		logging.debug('Forcing clear_scene()')
+		clear_scene()
+	
+	SETTINGS['active_view'] = None
+
+def clear_scene():
+	for key in VIEW_SCENE.keys():
+		del VIEW_SCENE[key]
+	
+	for entry in VIEW_SCENE_CACHE[:]:
+		VIEW_SCENE_CACHE.remove(entry)
+	
+	logging.debug('Cleared scene.')
+
+def _is_view_dirty(view):
+	return view['_dirty']
+
+def is_view_dirty(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	return _is_view_dirty(_view)
+
+def _set_view_clean(view):
+	view['_dirty'] = False
+
+def set_view_clean(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	_set_view_clean(_view)
+
+def _set_view_dirty(view):
+	view['_dirty'] = True
+
+def set_view_dirty(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if not _view:
+		return False
+	
+	_set_view_dirty(_view)
+	return True
+
+def _add_view_to_scene(view):
+	if view['layer'] in VIEW_SCENE:
+		if view in VIEW_SCENE[view['layer']]:
+			raise Exception('View \'%s\' already in scene.' % view['name'])
+		
+		VIEW_SCENE[view['layer']].append(view)
+	else:
+		VIEW_SCENE[view['layer']] = [view]
+	
+	VIEW_SCENE_CACHE.add(view['name'])
+	
+	logging.debug('Added view \'%s\' to scene.' % view['name'])
+
+def _remove_view_from_scene(view):
+	if not view in VIEW_SCENE[view['layer']]:
+		raise Exception('View \'%s\' not in scene.' % view['name'])
+	
+	VIEW_SCENE[view['layer']].remove(view)
+	logging.debug('Removed view \'%s\' from scene.' % view['name'])
+	
+	#tcod.console_clear(0)
+	#tcod.console_flush()
+
+def is_view_in_scene(view_name):
+	return view_name in VIEW_SCENE_CACHE
+
+def add_view_to_scene_by_name(view_name):
+	_add_view_to_scene(get_view_by_name(view_name))
+
+def remove_view_from_scene_by_name(view_name):
+	_remove_view_from_scene(get_view_by_name(view_name))
+	VIEW_SCENE_CACHE.remove(view_name)
+
+def get_view_by_name(name):
+	if name in VIEWS:
+		return VIEWS[name]
+	
+	return False
+
+def get_active_view():
+	if not SETTINGS['active_view']:
+		logging.warning('No active view set.')
+		
+		return False
+	
+	return SETTINGS['active_view']
+
+def set_active_view(name):
+	SETTINGS['active_view'] = get_view_by_name(name)
+	
+	logging.debug('Set active view to \'%s\'.' % name)
+
+def _draw_view(view):
+	if view['light_buffer']:
+		tcod.console_fill_foreground(view['console'],
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][0],RGB_LIGHT_BUFFER[0]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255),
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][1],RGB_LIGHT_BUFFER[1]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255),
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][0][2],RGB_LIGHT_BUFFER[2]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255))
+		
+		tcod.console_fill_background(view['console'],
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][0],RGB_LIGHT_BUFFER[0]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255),
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][1],RGB_LIGHT_BUFFER[1]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255),
+			numpy.subtract(numpy.add(numpy.subtract(view['col_buffer'][1][2],RGB_LIGHT_BUFFER[2]),view['light_buffer'][0]),view['light_buffer'][1]).clip(0,255))
+	else:
+		tcod.console_fill_foreground(view['console'], view['col_buffer'][0][0], view['col_buffer'][0][1], view['col_buffer'][0][2])
+		tcod.console_fill_background(view['console'], view['col_buffer'][1][0], view['col_buffer'][1][1], view['col_buffer'][1][2])
+	
+	tcod.console_fill_char(view['console'], view['char_buffer'][0])
+
+def draw_view(view_name):
+	_view = get_view_by_name(name)
+	_draw_view(_view)
+
+def draw_scene():
+	for layer in VIEW_SCENE.values():
+		for view in layer:
+			_draw_view(view)
+
+def render_scene():
+	for layer in VIEW_SCENE.values():
+		for view in layer:
+			tcod.console_blit(view['console'],
+				             0,
+				             0,
+				             view['draw_size'][0],
+				             view['draw_size'][1],
+				             0,
+				             view['position'][0],
+				             view['position'][1])
+
+def prepare_map_views():
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
+	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+	
+	add_view_to_scene_by_name('map')
+	add_view_to_scene_by_name('message_box')
+
+	set_active_view('map')
 
 def start_of_frame(draw_char_buffer=True):
-	tcod.console_fill_background(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_BACK_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	tcod.console_fill_foreground(MAP_WINDOW,
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[0],RGB_LIGHT_BUFFER[0]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[1],RGB_LIGHT_BUFFER[1]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255),
-	        numpy.subtract(numpy.add(numpy.subtract(MAP_RGB_FORE_BUFFER[2],RGB_LIGHT_BUFFER[2]),LIGHT_BUFFER[0]),DARK_BUFFER[0]).clip(0,255))
-	
-	if draw_char_buffer:
-		tcod.console_fill_char(MAP_WINDOW,MAP_CHAR_BUFFER[0])
+	draw_scene()
 
 def start_of_frame_terraform():
 	tcod.console_fill_background(PREFAB_WINDOW,PREFAB_RGB_BACK_BUFFER[0],PREFAB_RGB_BACK_BUFFER[1],PREFAB_RGB_BACK_BUFFER[2])
@@ -85,32 +268,41 @@ def start_of_frame_terraform():
 	tcod.console_fill_foreground(Y_CUTOUT_WINDOW,Y_CUTOUT_RGB_FORE_BUFFER[0],Y_CUTOUT_RGB_FORE_BUFFER[1],Y_CUTOUT_RGB_FORE_BUFFER[2])
 	tcod.console_fill_char(Y_CUTOUT_WINDOW,Y_CUTOUT_CHAR_BUFFER[0])
 
-def refresh_window_position(x, y):
-	DARK_BUFFER[0][y,x] = 0
-	LIGHT_BUFFER[0][y,x] = 0
-	MAP_CHAR_BUFFER[1][y,x] = 0
+def refresh_view_position(x, y, view_name):
+	_view = get_view_by_name(view_name)
+	
+	#DARK_BUFFER[0][y,x] = 0
+	#LIGHT_BUFFER[0][y,x] = 0
+	_view['char_buffer'][1][y, x] = 0
 
-def refresh_window():
-	#DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	#LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	MAP_CHAR_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def refresh_view(view_name):
+	_view = get_view_by_name(view_name)
+	
+	if _view:
+		_view['char_buffer'][1] = _view['char_buffer'][1].clip(0, 0)
 
 def blit_tile_to_console(console, x, y, tile):
 	_tile = get_raw_tile(tile)
 	
 	tcod.console_put_char_ex(console, x, y, _tile['icon'], _tile['color'][0], _tile['color'][1])
 
-def blit_tile(x,y,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
-	_tile = get_raw_tile(tile)
+def blit_tile(x, y, tile, view_name, custom_tile=False):
+	_view = get_view_by_name(view_name)
+	
+	if not custom_tile:
+		tile = get_raw_tile(tile)
 
-	blit_char(x,y,_tile['icon'],
-		_tile['color'][0],
-		_tile['color'][1],
-		char_buffer=char_buffer,
-		rgb_fore_buffer=rgb_fore_buffer,
-		rgb_back_buffer=rgb_back_buffer)
+	blit_char(x, y, tile['icon'],
+		fore_color=tile['color'][0],
+		back_color=tile['color'][1],
+		char_buffer=_view['char_buffer'],
+		rgb_fore_buffer=_view['col_buffer'][0],
+		rgb_back_buffer=_view['col_buffer'][1])
 
-def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore_buffer=None,rgb_back_buffer=None):
+def blit_char_to_view(x, y, char, color, view_name):
+	blit_tile(x, y, {'icon': char, 'color': color}, view_name, custom_tile=True)
+
+def blit_char(x, y, char, fore_color=None, back_color=None, char_buffer=None, rgb_fore_buffer=None, rgb_back_buffer=None):
 	if fore_color:
 		rgb_fore_buffer[0][y,x] = fore_color.r
 		rgb_fore_buffer[1][y,x] = fore_color.g
@@ -120,11 +312,12 @@ def blit_char(x,y,char,fore_color=None,back_color=None,char_buffer=None,rgb_fore
 		rgb_back_buffer[0][y,x] = back_color.r
 		rgb_back_buffer[1][y,x] = back_color.g
 		rgb_back_buffer[2][y,x] = back_color.b
-
+	
 	char_buffer[0][y,x] = ord(char)
 	char_buffer[1][y,x] = 1
 
-def blit_string(x, y, text, console=0, fore_color=tcod.white, back_color=None, flicker=0):
+def blit_string(x, y, text, view_name, console=0, fore_color=tcod.white, back_color=None, flicker=0):
+	_view = get_view_by_name(view_name)
 	i = 0
 	
 	for c in text:
@@ -137,32 +330,35 @@ def blit_string(x, y, text, console=0, fore_color=tcod.white, back_color=None, f
 		
 		#_alpha = int(LIGHT_BUFFER[0][y,x+i])
 		
-		blit_char(x+i,
+		blit_char_to_view(x+i,
 			y,
 			c,
-			fore_color=fore_color,
-			back_color=_back_color,
-			char_buffer=MAP_CHAR_BUFFER,
-			rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-			rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+			(fore_color,
+		      _back_color),
+			view_name)
 		
-		darken_tile(x+i,y,0)
-		lighten_tile(x+i,y,0)
+		if _view['light_buffer']:
+			darken_tile(x+i,y,0)
+			lighten_tile(x+i,y,0)
 		i+=1
 
-def darken_tile(x,y,amt):
-	DARK_BUFFER[0][y,x] = amt
+def lighten_tile(x, y, amt):
+	_view = get_active_view()
+	_view['light_buffer'][0][y, x] = amt
 
-def lighten_tile(x,y,amt):
-	LIGHT_BUFFER[0][y,x] = amt
+def darken_tile(x, y, amt):
+	_view = get_active_view()
+	_view['light_buffer'][1][y, x] = amt
 
 def tint_tile(x,y,color,coef):
-	_o_color = tcod.Color(int(MAP_RGB_BACK_BUFFER[0][y,x]),int(MAP_RGB_BACK_BUFFER[1][y,x]),int(MAP_RGB_BACK_BUFFER[2][y,x]))
+	_view = get_active_view()
+	
+	_o_color = tcod.Color(int(_view['col_buffer'][1][0][y,x]),int(_view['col_buffer'][1][1][y,x]),int(_view['col_buffer'][1][2][y,x]))
 	_n_color = tcod.color_lerp(_o_color,color,coef)
 	
-	MAP_RGB_BACK_BUFFER[0][y,x] = _n_color.r
-	MAP_RGB_BACK_BUFFER[1][y,x] = _n_color.g
-	MAP_RGB_BACK_BUFFER[2][y,x] = _n_color.b
+	_view['col_buffer'][1][0][y,x] = _n_color.r
+	_view['col_buffer'][1][1][y,x] = _n_color.g
+	_view['col_buffer'][1][2][y,x] = _n_color.b
 
 def fade_to_white(amt):
 	amt = int(round(amt))
@@ -212,23 +408,32 @@ def disable_panels():
 	tcod.console_clear(MESSAGE_WINDOW)
 	
 	SETTINGS['draw life info'] = False
-	SETTINGS['draw message box'] = False
+	
+	remove_view_from_scene_by_name('message_box')
 
 def enable_panels():
+	_view = get_view_by_name('message_box')
+	
 	tcod.console_clear(0)
-	tcod.console_clear(MESSAGE_WINDOW)
+	tcod.console_clear(_view['console'])
 	
 	SETTINGS['draw life info'] = True
-	SETTINGS['draw message box'] = True
+	
+	_add_view_to_scene(_view)
 
 def draw_message_box():
-	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(128,128,128))
-	tcod.console_print_frame(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1])
-	tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
-	tcod.console_print(MESSAGE_WINDOW,1,0,'Messages')
+	_view = get_view_by_name('message_box')
+	
+	if not _is_view_dirty(_view):
+		return False
+	
+	_set_view_clean(_view)
+	
+	#blit_string(1, 0, 'Messages', 'message_box', fore_color=tcod.white)
 	
 	_y_mod = 1
 	_lower = numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
+	_i = -1
 	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
 		if msg['count']:
 			_text = '%s (x%s)' % (msg['msg'], msg['count']+1)
@@ -236,26 +441,41 @@ def draw_message_box():
 			_text = msg['msg']
 		
 		if msg['style'] == 'damage':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.red)
+			_fore_color = tcod.red
 		elif msg['style'] == 'speech':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.gray)
+			_fore_color = tcod.gray
 		elif msg['style'] == 'action':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.lighter_crimson)
+			_fore_color = tcod.lighter_crimson
 		elif msg['style'] == 'important':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(150,150,255))
+			_fore_color = tcod.Color(150,150,255)
 		elif msg['style'] == 'radio':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.Color(225,245,169))
+			_fore_color = tcod.Color(225,245,169)
 		elif msg['style'] == 'good':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.light_green)
+			_fore_color = tcod.light_green
 		elif msg['style'] == 'player_combat_good':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.green)
+			_fore_color = tcod.green
 		elif msg['style'] == 'player_combat_bad':
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.crimson)
+			_fore_color = tcod.crimson
 		else:
-			tcod.console_set_default_foreground(MESSAGE_WINDOW, tcod.white)
+			_fore_color = tcod.white
 		
-		tcod.console_print(MESSAGE_WINDOW, 1, _y_mod, _text)
-		_y_mod += 1
+		_c = 9*((_i>0)+1)
+		_back_color = tcod.Color(_c, _c, _c)
+		
+		_i = -_i
+		
+		while _text:
+			_print_text = _text[:_view['draw_size'][0]-2]
+			_padding = ' '*numbers.clip(_view['draw_size'][0], 0, _view['draw_size'][0]-len(_print_text)-2)
+			blit_string(1, _y_mod, _print_text+_padding, 'message_box', fore_color=_fore_color, back_color=_back_color)
+			_y_mod += 1
+			_text = _text[_view['draw_size'][0]-2:]
+			
+			if _y_mod >= MESSAGE_LOG_MAX_LINES:
+				break
+			
+			if not _text.startswith(' ') and _text:
+				_text = ' '+_text
 
 def draw_status_line():
 	_flashing_text = []
@@ -275,12 +495,14 @@ def draw_status_line():
 	
 	blit_string(0,
 		MAP_WINDOW_SIZE[1]-1,
-		' '.join(_non_flashing_text))
+		' '.join(_non_flashing_text),
+	     'map')
 	
 	if time.time()%1>=0.5:
 		blit_string(len(_non_flashing_text)+1,
 			MAP_WINDOW_SIZE[1]-1,
-			' '.join(_flashing_text))
+			' '.join(_flashing_text),
+		     'map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
@@ -378,12 +600,17 @@ def message(text, style=None):
 		MESSAGE_LOG[len(MESSAGE_LOG)-1]['count'] += 1
 		return None
 	
+	
+	set_view_dirty('message_box')
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
+	if not SETTINGS['running']:
+		return False
+	
 	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
 	_center_y = WINDOW_SIZE[1]/2
 	tcod.console_set_default_background(0, background_color)
@@ -395,12 +622,18 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	                         1+padding*2,
 	                         flag=tcod.BKGND_SET,
 	                         clear=True)
+	
 	tcod.console_print(0, _center_x, _center_y, text)
 	tcod.console_flush()
 
 def position_is_in_frame(pos):
-	if pos[0] >= CAMERA_POS[0] and pos[0] <= numbers.clip(CAMERA_POS[0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] <= numbers.clip(CAMERA_POS[1]+MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]):
+	_view = get_active_view()
+	
+	if not _view:
+		return False
+	
+	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, _view['view_size'][0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, _view['view_size'][1]):
 		return True
 	
 	return False
@@ -450,50 +683,45 @@ def end_of_frame_terraform(editing_prefab=False, draw_cutouts=True):
 	tcod.console_print(0,PREFAB_WINDOW_OFFSET[0],11,'West -X Cutout- East')
 	tcod.console_print(0,PREFAB_WINDOW_OFFSET[0],25,'North -Y Cutout- South')
 
-def end_of_frame_reactor3():
-	tcod.console_blit(MESSAGE_WINDOW,0,0,MESSAGE_WINDOW_SIZE[0],MESSAGE_WINDOW_SIZE[1],0,0,MAP_WINDOW_SIZE[1])
-
+#@profile
 def end_of_frame(draw_map=True):
-	if not SETTINGS['map_slices'] and draw_map:
-		tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
+	render_scene()
 	
-	_encounter = None
-	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['encounters']:
-		_encounter = LIFE[SETTINGS['controlling']]['encounters'][0]
-	
-	if _encounter and 'console' in _encounter:
-		tcod.console_blit(_encounter['console'], 0, 0,
-			40,
-			40,
-			0,
-			0,
-			0,
-			1, 0.5)
+	if is_view_in_scene('message_box'):
+		tcod.console_set_default_foreground(0, tcod.gray)
+		tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
+	#if not SETTINGS['map_slices'] and draw_map:
+	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_dialog = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:
 		_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 	
 	if _dialog and 'console' in _dialog:
+		_dialog['_drawn'] = True
+		
 		tcod.console_blit(_dialog['console'], 0, 0,
-			WINDOW_SIZE[0],
-			40,
-			0,
-			0,
-			0,
-			1, 0.9)
+	        WINDOW_SIZE[0],
+	        40,
+	        0,
+	        0,
+	        0,
+	        1, 0.9)
 	
 	for menu in MENUS:
 		tcod.console_blit(menu['settings']['console'],0,0,
-			menu['settings']['size'][0],
-			menu['settings']['size'][1],0,
-			menu['settings']['position'][0],
-			menu['settings']['position'][1],1,0.5)
-		
+	        menu['settings']['size'][0],
+	        menu['settings']['size'][1],0,
+	        menu['settings']['position'][0],
+	        menu['settings']['position'][1],1,0.5)
+	
 	if SETTINGS['draw console']:
 		tcod.console_blit(CONSOLE_WINDOW,0,0,CONSOLE_WINDOW_SIZE[0],CONSOLE_WINDOW_SIZE[1],0,0,0,1,0.5)
-	
+		
 	tcod.console_flush()
+
+def screenshot():
+	tcod.sys_save_screenshot('screenshot-%s.bmp' % time.time())
 
 def window_is_closed():
 	return tcod.console_is_window_closed()

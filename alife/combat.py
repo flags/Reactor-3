@@ -318,30 +318,63 @@ def ranged_combat(life, targets):
 	
 	#if not _visible_threats:
 		#Find the nearnest target
-	_target_positions, _zones = get_target_positions_and_zones(life, targets)
-	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
+	#_escaped_targets = []
+	#for target_id in targets[:]:
+	#	_knows = brain.knows_alife_by_id(life, target_id)
+	#	
+	#	if _knows['escaped'] == 1:
+	#		targets.remove(target_id)
+	#		_escaped_targets.append(target_id)
 	
-	#print life['pos'], _target_positions, _path_to_nearest
-	
-	if _path_to_nearest:
-		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
+	if targets:
+		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
-		_target_pos = life['pos'][:]
-		_target_positions.append(_target_pos)
-	
-	target = None
-	
-	if _target_pos in _target_positions:
-		for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
-			if _target_pos == _target['last_seen_at']:
-				target = _target
-				break
-	
-	if not target:
-		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+		print 'LOST' * 10
 		return False
 	
-	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
+	_targets_too_far = []
+	_closest_target = {'target_id': None, 'score': 9999}
+	for t in [brain.knows_alife_by_id(life, t_id) for t_id in targets]:
+		_distance = numbers.distance(life['pos'], t['last_seen_at'])
+		
+		#NOTE: Hardcoding this for optimization reasons.
+		if _distance>=100:
+			targets.remove(t['life']['id'])
+			_targets_too_far.append(t['life']['id'])
+		
+		if _distance < _closest_target['score']:
+			_closest_target['score'] = _distance
+			_closest_target['target_id'] = t['life']['id']
+	
+	if not _targets_too_far:
+		_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
+		
+		if not _path_to_nearest:
+			_path_to_nearest = [life['pos'][:]]
+		
+		if not _path_to_nearest:
+			logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+			
+			return False
+		
+		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
+		#else:
+		#	_target_pos = life['pos'][:]
+		#	_target_positions.append(_target_pos)
+		
+		target = None
+		
+		if _target_pos in _target_positions:
+			for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
+				if _target_pos == _target['last_seen_at']:
+					target = _target
+					break
+	else:
+		print 'THIS IS MUCH QUICKER!!!' * 10
+		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
+	
+	if not life['path'] or not numbers.distance(lfe.path_dest(life), target['last_seen_at']) == 0:
+		movement.position_to_attack(life, target['life']['id'])
 	
 	#if not target['escaped'] and not _pos_for_combat:
 	#	return False
@@ -350,32 +383,31 @@ def ranged_combat(life, targets):
 	#elif _pos_for_combat:
 	#	lfe.stop(life)
 	
-	if sight.can_see_position(life,target['last_seen_at']):
-		if not sight.can_see_position(life, target['life']['pos']):
+	if sight.can_see_position(life,target['last_seen_at'], block_check=True, strict=True):
+		if sight.can_see_position(life, target['life']['pos']):
+			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
+				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
+					lfe.add_action(life,{'action': 'shoot',
+						'target': target['last_seen_at'],
+						'limb': 'chest'},
+						5000,
+						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
+		else:
+			print 'WENT MISSING!!!!!!!!!!'*100
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
 			target['escaped'] = 1
 			
 			for send_to in judgement.get_trusted(life):
 				speech.communicate(life,
-					'target_missing',
-					target=target['life']['id'],
-					matches=[{'id': send_to}])
+			        'target_missing',
+			        target=target['life']['id'],
+			        matches=[{'id': send_to}])
 	else:
+		print 'waiting...'
 		return False
 	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
 	#	return False
 	#	#else:
 	#	#	if sight.can_see_position(life, target['last_seen_at']):
 	#	#		target['escaped'] = 1
-		
-		
-	
-	
-	#TODO: Attach skill to delay
-	if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
-		lfe.add_action(life,{'action': 'shoot',
-			'target': target['life']['pos'][:],
-			'limb': 'chest'},
-			5000,
-			delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))

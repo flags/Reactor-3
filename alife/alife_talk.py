@@ -33,7 +33,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#if not alife_seen:
 	#	return False
 	
-	if brain.retrieve_from_memory(life, 'tension_spike') >= 1:
+	if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 		lfe.say(life, '@n panics!', action=True)
 	
 	for ai in alife_seen:
@@ -59,7 +59,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	_potential_talking_targets = []
 	for ai in alife_seen:
-		if life['state'] == 'combat':
+		if life['state'] in ['combat', 'hiding', 'hidden']:
 			break
 		
 		if judgement.is_target_dangerous(life, ai['life']['id']):
@@ -85,10 +85,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			print 'existing'
 			break
 		
-		if life['state'] in ['combat', 'hiding', 'hidden']:
-			print 'hiding'
-			break
-		
 		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
 			if stats.desires_life(life, target['id']):
 				speech.start_dialog(life, target['id'], 'introduction')
@@ -106,8 +102,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_dialog = life['dialogs'][0]
 		dialog.tick(life, _dialog)	
 	
-	if not judgement.is_safe(life):
-		_combat_targets = judgement.get_combat_targets(life)
+	if not judgement.is_safe(life) and lfe.ticker(life, 'call_for_help', 90, fire=True):
+		_combat_targets = judgement.get_ready_combat_targets(life)
 		
 		if _combat_targets:
 			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):
@@ -131,7 +127,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						
 					groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
 		
-		for target in judgement.get_targets(life):
+		for target in judgement.get_ready_combat_targets(life):
 			_last_seen_at = None
 			_know = brain.knows_alife_by_id(life, target)
 			
@@ -165,5 +161,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			brain.share_item_with(life, ai['life'], item['item'])
 			speech.communicate(life,
 				'share_item_info',
-				item=brain.get_remembered_item(life, item['item']),
+				item=item['item'],
 				matches=[{'id': ai['life']['id']}])

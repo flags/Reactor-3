@@ -78,7 +78,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 	for chunk_key in life['known_chunks']:
 		_chunk = life['known_chunks'][chunk_key]
 		
-		if not ignore_time and _chunk['last_visited'] == -1 or time.time()-_chunk['last_visited']>=900:
+		if not ignore_time and (_chunk['last_visited'] == -1 or time.time()-_chunk['last_visited']<=400):
 			if only_unvisted and not _chunk['last_visited'] == -1:
 				continue
 			
@@ -99,6 +99,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 		_current_known_chunk = lfe.get_current_known_chunk(life)
 		_initial_score = _current_known_chunk['score']
 	else:
+		_current_known_chunk = None
 		_initial_score = 0
 	
 	if only_recent:
@@ -109,7 +110,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 			if chunk['discovered_at']>_recent:
 				_recent = chunk['discovered_at']
 	
-	_best_chunk = {'score': _initial_score, 'chunk_key': None}
+	_best_chunk = {'score': _initial_score, 'chunk_key': lfe.get_current_chunk_id(life)}
 	for chunk_key in _interesting_chunks:
 		chunk = _interesting_chunks[chunk_key]
 		_score = chunk['score']
@@ -129,7 +130,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 			_best_chunk['score'] = _score
 			_best_chunk['chunk_key'] = chunk_key
 		
-	if not _best_chunk['chunk_key']:
+	if not _best_chunk['chunk_key'] or not _best_chunk['score']:
 		return False
 	
 	return _best_chunk['chunk_key']
@@ -214,7 +215,7 @@ def _get_nearest_chunk_in_list(pos, chunks):
 def get_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['chunk_key']
 
-def get_distance_to_hearest_chunk_in_list(pos, chunks):
+def get_distance_to_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']
 
 def _can_see_chunk_quick(start_pos, chunk_id, vision):
@@ -249,10 +250,10 @@ def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
 	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
 
 def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
-	_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
+	#_fast_see = _can_see_chunk_quick(pos1, chunk_key, vision)
 	
-	if _fast_see:
-		return _fast_see
+	#if _fast_see:
+	#	return _fast_see
 	
 	chunk = maps.get_chunk(chunk_key)
 	
@@ -262,9 +263,6 @@ def can_see_chunk_from_pos(pos1, chunk_key, distance=True, vision=10):
 			   ((y-chunk['pos'][1] >= 0 and y-chunk['pos'][1] <= WORLD_INFO['chunk_size']-1) and x-chunk['pos'][0] in [0, WORLD_INFO['chunk_size']-1]):
 				_can_see = sight._can_see_position(pos1, (x, y), distance=distance, max_length=vision)
 				
-				if not get_chunk_key_at((x, y)) == chunk_key:
-					raise Exception('failed')
-		
 				if _can_see:
 					return _can_see
 	

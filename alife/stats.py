@@ -102,7 +102,7 @@ def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 			_top_group['id'] = memory['group']
 			_top_group['score'] = _score
 		
-	if _top_group:
+	if _top_group['score']:
 		if judgement.judge_group(life, _top_group['id'])>get_minimum_group_score(life):
 			return True
 	
@@ -131,6 +131,7 @@ def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
 		return False
 	
+	#TODO: Why?
 	if life['state'] == 'needs':
 		return False
 	
@@ -311,7 +312,7 @@ def can_scratch(life):
 	return None
 
 def is_nervous(life, life_id):
-	if not lfe.execute_raw(life, 'judge', 'nervous', break_on_true=True, break_on_false=False, life_id=life_id):
+	if not lfe.execute_raw(life, 'judge', 'nervous', life_id=life_id):
 		return False
 	
 	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])
@@ -422,7 +423,7 @@ def is_confident(life):
 				#if not _z in _f_zones:
 				#	_f_zones.append(_z)
 	
-	if _total_friendly_score>_total_enemy_score:
+	if _total_friendly_score>=_total_enemy_score:
 		return True
 	
 	return False
@@ -456,16 +457,19 @@ def is_family(life, life_id):
 	if not _know:
 		return False
 	
-	for relation in ['son', 'daughter', 'mother', 'father']:
+	for relation in ['son', 'daughter', 'mother', 'father', 'sibling']:
 		if brain.get_alife_flag(life, life_id, relation):
 			return True
 	
 	return False
 
-def is_child(life, life_id):
+def is_child_of(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 
 	if not _know:
+		return False
+	
+	if not _know['escaped'] and _know['life']['dead']:
 		return False
 	
 	for relation in ['mother', 'father']:
@@ -474,7 +478,7 @@ def is_child(life, life_id):
 	
 	return False
 
-def is_parent(life, life_id):
+def is_parent_of(life, life_id):
 	_know = brain.knows_alife_by_id(life, life_id)
 	
 	if not _know:
@@ -482,6 +486,20 @@ def is_parent(life, life_id):
 	
 	for relation in ['son', 'daughter']:
 		if brain.get_alife_flag(life, life_id, relation):
+			return True
+	
+	return False
+
+def has_parent(life):
+	for life_id in life['know'].keys():
+		if is_child_of(life, life_id):
+			return True
+	
+	return False
+
+def has_child(life):
+	for life_id in life['know'].keys():
+		if is_parent_of(life, life_id):
 			return True
 	
 	return False
@@ -494,17 +512,6 @@ def is_safe_in_shelter(life, life_id):
 		return False
 	
 	return True
-
-def desires_to_follow(life, life_id):
-	_know = brain.knows_alife_by_id(life, life_id)
-	
-	if not _know:
-		return False
-	
-	if not lfe.execute_raw(life, 'movement', 'follow', life_id=life_id):
-		return False
-	
-	return _know['trust']
 
 def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
@@ -523,17 +530,39 @@ def is_compatible_with(life, life_id):
 	
 	return False
 
+def is_target_group_friendly(life, life_id):
+	_target = LIFE[life_id]
+	
+	#Different groups
+	if _target['group'] and not _target['group'] == life['group']:
+		if life['group']:
+			_motive = groups.get_motive(life['group'])
+			
+			if _motive == 'crime':
+				return False
+			
+			if _motive == 'survival' and judgement.is_group_hostile(life, _target['group']):
+				return False
+		else:
+			if judgement.is_group_hostile(life, _target['group']):
+				return False
+		
+	return True
+	#if life['group']:
+	#((life['group'] and groups.is_member(life['group'], life_id)) or (not LIFE[life_id]['group'] or not life['group']))==True
+
 def is_born_leader(life):
 	return life['stats']['is_leader']
 
-def has_attacked_trusted(life, life_id):
-	_trusted = judgement.get_trusted(life)
-	
+def _has_attacked(life, life_id, target_list):
 	for memory in lfe.get_memory(life, matches={'text': 'heard about attack', 'attacker': life_id}):
-		if memory['target'] in _trusted:
+		if memory['target'] in target_list:
 			return True
 	
 	return False
+
+def has_attacked_trusted(life, life_id):
+	return _has_attacked(life, life_id, judgement.get_trusted(life))
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)

@@ -142,7 +142,7 @@ def give_menu_response(life, dialog):
 def alife_response(life, dialog):
 	_target = dialog['listener']
 	_knows = alife.brain.knows_alife_by_id(life, _target)
-	_score = alife.judgement.judge(life, _knows['life']['id'])
+	_score = alife.judgement.judge_life(life, _knows['life']['id'])
 	_choices = [r for r in dialog['topics']]
 		
 	for _choice in _choices[:]:
@@ -223,7 +223,10 @@ def get_all_relevant_gist_responses(life, target, gist):
 	elif gist == 'invite_to_group':
 		_topics.append({'text': 'I\'m getting a squad together. Want in?', 'gist': 'invite_to_group', 'group': life['group']})
 	elif gist == 'call_accepted':
-		_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
+		if life['group'] and alife.groups.is_leader(life['group'], target):
+			_topics.append({'text': 'Orders?', 'gist': 'call_topics'})
+		else:
+			_topics.append({'text': 'What can I help you with?', 'gist': 'call_topics'})
 	elif gist == 'encounter':
 		_topics.append({'text': 'Leave! I\'m not looking for company!', 'gist': 'encounter_leave', 'dislike': 1, 'danger': 3})
 		_topics.append({'text': 'What are you doing around here?', 'gist': 'encounter_question'})
@@ -1066,6 +1069,7 @@ def process_response(life, target, dialog, chosen):
 			                   'gist': 'call_about_job',
 			                   'job': _life['job']})
 		
+		_responses.append({'text': 'Where are you?', 'gist': 'call_get_location'})
 		_responses.append({'text': 'Goodbye.', 'gist': 'end'})
 	
 	elif chosen['gist'] == 'call_about_job':
@@ -1082,6 +1086,10 @@ def process_response(life, target, dialog, chosen):
 	elif chosen['gist'] == 'call_get_location':
 		_life = LIFE[dialog['listener']]
 		_responses.append({'text': 'I am near %s, %s.' % (_life['pos'][0], _life['pos'][1]), 'gist': 'okay'})
+		
+		_target = LIFE[dialog['speaker']]
+		_knows = alife.brain.knows_alife_by_id(_target, dialog['listener'])
+		_knows['last_seen_at'] = _life['pos'][:]
 
 	elif chosen['gist'] == 'okay':
 		_responses.append({'text': 'Okay.', 'gist': 'end'})
@@ -1170,6 +1178,9 @@ def draw_dialog():
 		return False
 	
 	dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+	
+	if '_drawn' in dialog:
+		return False
 	
 	if 'player' in LIFE[dialog['creator']]:
 		_receiver = LIFE[dialog['target']]

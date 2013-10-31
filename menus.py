@@ -23,8 +23,8 @@ def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', p
 		entry['uid'] = _uid
 		_uid+=1
 		
-		for value in entry['values']:
-			_line = format_entry(_menu['settings']['format'],entry)
+		for value in range(len(entry['values'])):
+			_line = format_entry(_menu['settings']['format'], entry, value=value)
 			
 			if len(_line) > _size[0]:
 				_size[0] = len(_line)
@@ -69,9 +69,12 @@ def remove_item_from_menus(matching):
 			if _match:
 				menu['menu'].remove(item)
 
-def format_entry(format_str,entry):
+def format_entry(format_str, entry, value=-1):
+	if value == -1:
+		value = entry['value']
+	
 	return format_str.replace('$k', str(entry['key']))\
-		.replace('$v', str(entry['values'][entry['value']]))\
+		.replace('$v', str(entry['values'][value]))\
 		.replace('$i', str(entry['icon']))
 
 def redraw_menu(menu):
@@ -204,6 +207,37 @@ def find_item_after(menu,index=-1):
 			return menu['menu'].index(item)
 	
 	return find_item_after(menu)
+
+def get_menu_index_by_key(menu, key):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry['key'] == key:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def get_menu_index_by_flag(menu, flag, value):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry[flag] == value:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def go_to_menu_index(menu, index):
+	get_menu(menu)['index'] = index
+	
+	if get_menu(menu)['on_move']:
+		_entry = get_selected_item(menu, index)
+		return get_menu(menu)['on_move'](_entry)
 
 def move_up(menu, index):
 	menu['index'] = find_item_before(menu, index=index)

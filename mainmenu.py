@@ -92,7 +92,7 @@ def draw_intro():
 	
 	SETTINGS['running'] = 1
 
-def clear():
+def clear(*args):
 	console_rect(0,0,0,WINDOW_SIZE[0],WINDOW_SIZE[1],True,flag=BKGND_DEFAULT)
 	_c = random.choice([tcod.sepia, tcod.brass, tcod.gray])
 	
@@ -111,6 +111,7 @@ def clear():
 	console_flush()
 
 def draw_message():
+	console_set_default_foreground(0, tcod.white)
 	_y = 25
 	for line in MESSAGE:
 		#graphics.blit_string(1, _y, line)
@@ -141,14 +142,15 @@ def switch_to_main_menu():
 		position=(0,0),
 		format_str='$k',
 		on_select=main_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
 
 def switch_to_start_game():
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=LIFE[SETTINGS['controlling']]))
+	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=SETTINGS['controlling']))
 	_menu_items.append(menus.create_item('single', 'New Character', None))
 	_menu_items.append(menus.create_item('single', 'New Character (Advanced)', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
@@ -159,7 +161,8 @@ def switch_to_start_game():
 		position=(0,0),
 		format_str='$k',
 		on_select=start_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -177,7 +180,8 @@ def switch_to_select_world():
 		position=(0,0),
 		format_str='$k',
 		on_select=world_select_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -195,7 +199,8 @@ def switch_to_spawn_point():
 		position=(0,0),
 		format_str='$k ($v)',
 		on_select=spawn_menu_select,
-		on_change=None)
+		on_change=None,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
@@ -220,15 +225,19 @@ def switch_to_world_gen():
 		menu=_menu_items,
 		padding=(1,1),
 		position=(0,0),
-		on_select=worldgen_menu_select)
+		on_select=worldgen_menu_select,
+		on_close=clear)
 	
 	menus.activate_menu(_i)
 	clear()
 
 def start_game():
 	SETTINGS['running'] = 2
-	menus.delete_active_menu()
-	menus.delete_active_menu()
+	
+	graphics.prepare_map_views()
+	
+	while MENUS:
+		menus.delete_active_menu()
 
 def generate_world(combat_test=False):
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]
@@ -241,7 +250,7 @@ def generate_world(combat_test=False):
 		_settings['Map'] = mapgen.generate_map(factories=1)['name']
 	
 	if _settings['World Age'] == 'Day 0':
-		_ticks = 100
+		_ticks = 10
 	elif _settings['World Age'] == '1 Week':
 		_ticks = 1000#30000
 	elif _settings['World Age'] == '2 Weeks':
@@ -299,6 +308,7 @@ def spawn_menu_select(entry):
 	key = entry['key']
 	
 	if key == 'Zone Entry Point':
+		worldgen.create_player()
 		start_game()
 	elif key == 'Back':
 		switch_to_start_game()

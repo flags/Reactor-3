@@ -71,6 +71,27 @@ WALL_TILE = {'id':'wall',
 			 'type': 'building',
 			 'cost':-1}
 
+FIELD_TILE_1 = {'id': 'field_1',
+			 'icon': '~',
+			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'burnable': True,
+			 'type': 'field',
+			 'cost': 2}
+
+FIELD_TILE_2 = {'id': 'field_2',
+			 'icon': '\'',
+			 'color': (tcod.Color(210, 170, 153), tcod.Color(211, 181, 168)),
+			 'burnable': True,
+			 'type': 'field',
+			 'cost': 2}
+
+FIELD_TILE_3 = {'id': 'field_3',
+			 'icon': ';',
+			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'burnable': True,
+			 'type': 'field',
+			 'cost': 2}
+
 CONCRETE_TILE_1 = {'id':'concrete_1',
 			 'icon':'.',
 			 'color':(tcod.Color(130,130,130), tcod.Color(70,70,70)),
@@ -170,12 +191,16 @@ WOOD_3 = {'id':'wood_3',
 LEAF_1 = {'id': 'leaf_1',
             'icon': '\'',
             'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
-            'burnable': True}
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
 
 LEAF_2 = {'id': 'leaf_2',
             'icon': '`',
             'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
-            'burnable': True}
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
 
 ROOF_DARK = {'id': 'roof_dark',
             'icon': '^',
@@ -290,6 +315,10 @@ ROOF_TILES = [ROOF_BRIGHTER,
               ROOF_DARK,
               ROOF_DARKER]
 
+FIELD_TILES = [FIELD_TILE_1,
+               FIELD_TILE_2,
+               FIELD_TILE_3]
+
 HOUSE_WALL_TILES = [WALL_BLUE, WALL_BROWN]
 
 BLUE_FLOOR_TILES = [FLOOR_BLUE_1, FLOOR_BLUE_2]
@@ -317,6 +346,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(DARK_BLUE_FLOOR_TILES)
 	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
 	TEMP_TILES.extend(BROWN_FLOOR_TILES)
+	TEMP_TILES.extend(FIELD_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

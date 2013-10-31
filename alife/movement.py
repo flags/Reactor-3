@@ -16,9 +16,6 @@ import jobs
 
 import random
 
-def score_search(life,target,pos):
-	return -numbers.distance(life['pos'],pos)
-
 def score_shootcover(life,target,pos):
 	if sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
 		return 9999
@@ -26,40 +23,14 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def position_to_attack(life, target):
-	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target], ignore_escaped=True)
+	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target], ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if')))
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
-	if _nearest_target_score <= sight.get_vision(life):
+	#if _nearest_target_score >= sight.get_vision(life)/2:
+	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True):
 		print life['name'], 'changing position for combat...'
-		#_visible_target_chunks = []
-		#for target in targets:
-		#	_known_target = brain.knows_alife_by_id(life, target)
-		#	for chunk_key in chunks.get_visible_chunks_from(_known_target['last_seen_at'], sight.get_vision(_known_target['life'])):
-		#		if not chunk_key in _visible_target_chunks:
-		#			_visible_target_chunks.append(chunk_key)
-		#
-		#for chunk_key in chunks.get_visible_chunks_from(life['pos'], sight.get_vision(life)):
-		#	if chunk_key in _visible_target_chunks:
-		#		_visible_target_chunks.remove(chunk_key)
-		#		print 'removing'
-		
-		#TODO: Scores should be between weapon's greatest and least effective range
-		#TODO: For melee combat we'll want to get as close as possible
-		#_cover = zones.dijkstra_map(life['pos'],
-		#                            _target_positions,
-		#                            _zones,
-		#                            return_score_in_range=[10, 15])
-		#_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-		#
-		#if tuple(life['pos']) in _cover:
-		#	print 'test'
-		
-		#if not _cover:
-		#	print 'Nowhere to take cover during combat!'
-		#	return True
-		
-		#print _cover
+
 		_cover = _target_positions
 		
 		_zones = []
@@ -70,33 +41,21 @@ def position_to_attack(life, target):
 				_zones.append(_zone)
 		
 		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
+			lfe.stop(life)
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
-				                  'orig_goals': _cover[:]},
+				                  'orig_goals': _cover[:],
+			                       'reason': 'positioning for attack'},
 				           999)
 			
 			return False
 		else:
-			print 'WAITING!'
+			return False
+	else:
+		lfe.stop(life)
 	
 	return True
-	#TODO: Eventually this should be written into the pathfinding logic
-	#if sight.can_see_position(life, target['life']['pos']) and numbers.distance(life['pos'], target['life']['pos'])<=target['life']['engage_distance']:
-	#	if not sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
-	#		lfe.clear_actions(life)
-	#		return True
-	
-	#What can the target see?
-	#TODO: Unchecked Cython flag
-	#_attack_from = sight.generate_los(life,target,position,source_map,score_shootcover,invert=True)
-	
-	#if _attack_from:
-	#	lfe.clear_actions(life)
-	#	lfe.add_action(life,{'action': 'move','to': _attack_from['pos']},200)
-	#	return False
-	
-	#return True
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos):
@@ -104,6 +63,10 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	
 	if not numbers.distance(life['pos'], pos):
 		return True
+	
+	_dest = lfe.path_dest(life)
+	if _dest and _dest[:2] == pos[:2]:
+		return False
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -146,22 +109,16 @@ def search_for_target(life, target_id):
 			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
 				_lowest['score'] = _search_map[y, x]
 				_lowest['pos'] = (_x, _y, x, y)
-			#_search.append((_x, _y, x, y))
 
 	if _lowest['pos']:
 		x, y, _x, _y = _lowest['pos']
 		
-		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
 			_search_map[_y, _x] = 0
 	else:
 		_know['escaped'] = 2
 
-def explore(life, source_map):
-	#This is a bit different than the logic used for the other pathfinding functions
-	pass
-
 def escape(life, targets):
-	#With this function we're trying to get away from the target.
 	_target_positions = []
 	_visible_target_chunks = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
@@ -183,14 +140,13 @@ def escape(life, targets):
 	if not _target_positions:
 		return False
 	
-	#TODO: For lower limit in return_score_in_range, use range of weapon
+	#TODO: #combat: For lower limit in return_score_in_range, use range of weapon
 	_cover = zones.dijkstra_map(life['pos'],
 	                            _target_positions,
 	                            _zones,
 	                            avoid_chunks=_visible_target_chunks,
-	                            return_score_in_range=[1, 100])
+	                            return_score_in_range=[1, sight.get_vision(life)])
 	_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-	
 	if not _cover:
 		return False
 	
@@ -204,13 +160,11 @@ def escape(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
 		return True
 	
-	#_goals.append(life['pos'][:])
-	
-	#lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': True,
 	                     'zones': _zones,
-                          'goals': _cover[:]},
+                          'goals': _cover[:],
+	                     'reason': 'escaping'},
                    999)
 
 def hide(life, target_id):
@@ -299,24 +253,34 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	
 	return False
 
-def find_target(life, target, distance=5, follow=False):
+def find_target(life, target, distance=5, follow=False, call=True):
 	_target = brain.knows_alife_by_id(life, target)
+	_dist = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	_can_see = sight.can_see_target(life, target)
-	if _can_see and len(_can_see)<=distance:
+	if _can_see and _dist<=distance:
 		if not follow:
 			return True
 		
 		lfe.stop(life)
 	
-	if not _can_see and sight.can_see_position(life, _target['last_seen_at']):
-		speech.communicate(life, 'call', matches=[{'id': target}])
+	if _target['escaped'] == 1:
+		search_for_target(life, target)
 		return False
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,
-	               {'action': 'move','to': _target['last_seen_at'][:2]},
-	               200)
+	if not _can_see and sight.can_see_position(life, _target['last_seen_at']) and _dist<distance:
+		if call:
+			speech.communicate(life, 'call', matches=[{'id': target}])
+		
+		_target['escaped'] = 1
+		
+		return False
+	
+	if not lfe.path_dest(life) == tuple(_target['last_seen_at'][:2]):
+		lfe.clear_actions(life)
+		lfe.add_action(life,
+			          {'action': 'move','to': _target['last_seen_at'][:2]},
+			          200)
 	
 	return False
 

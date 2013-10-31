@@ -1,4 +1,5 @@
 from globals import *
+from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 
 import life as lfe
 
@@ -17,21 +18,37 @@ import time
 
 #@profile
 def look(life):
+	if life['think_rate']%6 and not 'player' in life:
+		return False
+	
 	life['seen'] = []
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	if not life['speed'] or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+	if 'player' in life or life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	else:
+		#This is for optimizing. Be careful if you mess with this...
+		_nearby_alife = []
+		for alife in LIFE.values():
+			if alife['id'] == life['id']:
+				continue
+			
+			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
+				_nearby_alife.append(alife['pos'])
+		
+		_nearby_alife.sort()
+		
+		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
+		if not _last_nearby_alife == _nearby_alife:
+			brain.flag(life, '_nearby_alife', value=_nearby_alife)
+		else:
+			return False
+		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
-	
-	#TODO: What?
-	#if not _chunks:
-	#	_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for target_id in life['know']:
 		life['know'][target_id]['last_seen_time'] += 1
@@ -41,6 +58,7 @@ def look(life):
 	
 	for chunk in _chunks:
 		judgement.judge_chunk_visually(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
+		judgement.judge_chunk_life(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
 		
 		for ai in [LIFE[i] for i in chunk['life']]:
 			if ai['id'] == life['id']:
@@ -54,7 +72,7 @@ def look(life):
 			if ai['id'] in life['know']:
 				if life['think_rate'] == life['think_rate_max']:
 					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
-					judgement.judge(life, ai['id'])
+					judgement.judge_life(life, ai['id'])
 				
 				life['know'][ai['id']]['last_seen_time'] = 0
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
@@ -113,7 +131,7 @@ def get_vision(life):
 	
 	return life['vision_max']
 
-def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=True):
+def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:
@@ -140,8 +158,11 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=Tru
 			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
 			try:
-				if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+				if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
 					_ret_line = []
+					if strict:
+						return False
+					
 					continue
 			except:
 				print pos, pos1
@@ -149,12 +170,12 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=Tru
 	
 	return _ret_line
 
-def can_see_position(life, pos, distance=True, block_check=False):
+def can_see_position(life, pos, distance=True, block_check=False, strict=False):
 	"""Returns `true` if the life can see a certain position."""
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
 	
-	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, distance=distance)
+	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:
@@ -287,22 +308,6 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	
 	return _cover
 
-def handle_lost_los(life):
-	#TODO: Take the original score and subtract/add stuff from there...
-	_nearest_target = {'target': None,'score': 0}
-	for entry in life['know']:
-		_target = life['know'][entry]
-		_score = judgement.judge(life,_target)
-		
-		if _target['escaped']:
-			_score += (_target['last_seen_time']/2)
-		
-		if _score < _nearest_target['score']:
-			_nearest_target['target'] = _target
-			_nearest_target['score'] = _score
-	
-	return _nearest_target
-
 def find_visible_items(life):
 	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
@@ -339,7 +344,8 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	_center_chunk_pos = maps.get_chunk(center_chunk_key)['pos']
 	#_center_chunk_pos[0] = ((_center_chunk_pos[0]/chunk_size)*chunk_size)+(chunk_size/2)
 	#_center_chunk_pos[1] = ((_center_chunk_pos[1]/chunk_size)*chunk_size)+(chunk_size/2)
-	_chunks = []
+	_chunks = set()
+	_chunk_map = set(chunk_map.keys())
 	
 	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
 	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
@@ -361,87 +367,9 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 		if chunk_map and not _chunk_key in chunk_map:
 			continue
 		
-		_chunks.append(_chunk_key)
+		_chunks.add(_chunk_key)
 	
-	return _chunks
+	return list(_chunks)
 
 def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False, visible_check=True):
-	_center_chunk_key = lfe.get_current_chunk_id(life)
-	
-	if get_chunks:
-		_center_chunk = maps.get_chunk(_center_chunk_key)
-	
-	_visible_chunks = []
-	
-	if _chunks:
-		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
-	else:
-		_chunks = _scan_surroundings(_center_chunk_key, WORLD_INFO['chunk_size'], get_vision(life), ignore_chunks=ignore_chunks)
-		_chunks = [c for c in _chunks if c in WORLD_INFO['chunk_map']]
-	
-	for chunk_key in _chunks:
-		if visible_check and not chunks.can_see_chunk(life, chunk_key):
-			#print chunk_key, lfe.get_current_chunk_id(life)
-			continue
-		
-		if not chunk_key in WORLD_INFO['chunk_map']:
-				continue
-		
-		if get_chunks:
-			_current_chunk = maps.get_chunk(chunk_key)
-			_visible_chunks.append(chunk_key)
-		
-		if judge:
-			if initial:
-				judgement.judge_chunk(life, chunk_key, seen=True)
-			else:
-				judgement.judge_chunk(life, chunk_key)
-	
-	if get_chunks:
-		return _visible_chunks
-
-def fast_scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False):
-	_vision = get_vision(life)/2
-	_center_chunk_key = lfe.get_current_chunk_id(life)
-	_limit = _vision/WORLD_INFO['chunk_size']
-	_outside_chunks = []
-	_inside_chunks = []
-	_visible_chunks = []
-	
-	for x_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
-		for y_mod in range((-_vision/WORLD_INFO['chunk_size'])+1, (_vision/WORLD_INFO['chunk_size'])+1):
-			_pos_mod = [x_mod*WORLD_INFO['chunk_size'], y_mod*WORLD_INFO['chunk_size']]
-			_chunk_key = ','.join([str(int(val)+_pos_mod.pop()) for val in _center_chunk_key.split(',')])
-			
-			if not _chunk_key in WORLD_INFO['chunk_map']:
-				continue
-			
-			if not ignore_chunks==0 and _chunk_key in ignore_chunks:
-				continue
-			elif isinstance(ignore_chunks, list):
-				ignore_chunks.append(_chunk_key)
-			
-			#if chunk_map and not _chunk_key in chunk_map:
-			#	continue
-			
-			if (x_mod == -_limit or x_mod == _limit) or (y_mod == -_limit or y_mod == _limit):
-				_outside_chunks.append(_chunk_key)
-			else:
-				_inside_chunks.append(_chunk_key)
-			
-			#_chunks.append(_chunk_key)
-	
-	for chunk_key in _outside_chunks:
-		_can_see = chunks.can_see_chunk(life, chunk_key)
-		
-		if not _can_see:
-			continue
-		
-		for pos in _can_see:
-			_pos_chunk_key = chunks.get_chunk_key_at(pos)
-			
-			if not _pos_chunk_key in _visible_chunks:
-				_visible_chunks.append(_pos_chunk_key)
-	
-	return _visible_chunks
-		
+	return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)

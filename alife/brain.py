@@ -13,6 +13,7 @@ import alife_shelter
 import alife_search
 import alife_hidden
 import alife_combat
+import alife_follow
 import alife_cover
 import alife_group
 import alife_needs
@@ -38,7 +39,6 @@ import copy
 MODULES = [alife_hide,
 	alife_hidden,
 	alife_talk,
-	alife_explore,
 	alife_discover,
 	alife_manage_items,
 	alife_manage_targets,
@@ -49,7 +49,8 @@ MODULES = [alife_hide,
 	alife_shelter,
 	alife_search,
 	alife_surrender,
-    alife_cover]
+	alife_cover,
+	alife_follow]
 
 def sort_modules(life):
 	global MODULES
@@ -73,7 +74,7 @@ def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
-	judgement.judge_life(life)
+	judgement.judge(life)
 	judgement.judge_jobs(life)
 	survival.process(life)
 	understand(life, source_map)
@@ -133,6 +134,7 @@ def flag_item(life, item, flag, value=True):
 		remember_item(life, item)
 	
 	if not flag in life['know_items'][item['uid']]['flags']:
+		print life['know_items'][item['uid']]
 		life['know_items'][item['uid']]['flags'][flag] = value
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
 		
@@ -170,14 +172,10 @@ def remembers_item(life, item):
 	
 	return False
 
-def remember_item_secondhand(life, target, item_memory):
-	_item = item_memory.copy()
-	_item['flags'] = []
-	_item['from'] = target['id']
-
-	life['know_items'][_item['item']] = _item
-
-	#logging.debug('%s gained secondhand knowledge of item #%s from %s.' % (' '.join(life['name']), _item['item']['uid'], ' '.join(target['name'])))
+def offload_remembered_item(life, item_uid):
+	_item_memory = get_remembered_item(life, item_uid)
+	
+	_item_memory['offloaded'] = WORLD_INFO['ticks']
 
 def add_impression(life, target_id, gist, modifiers):
 	life['know'][target_id]['impressions'][gist] = {'modifiers': modifiers, 'happened_at': WORLD_INFO['ticks']}
@@ -253,9 +251,16 @@ def has_met_in_person(life, target):
 def get_remembered_item(life, item_id):
 	return life['know_items'][item_id]
 
-def get_matching_remembered_items(life, matches, no_owner=False):
+def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 	_matched_items = []
+	
 	for item in [i for i in life['know_items'].values()]:
+		if get_item_flag(life, ITEMS[item['item']], 'ignore'):
+			continue
+		
+		if active and 'offloaded' in item:
+			continue
+		
 		if no_owner and item['last_owned_by']:
 			continue
 		
@@ -292,11 +297,15 @@ def understand(life, source_map):
 	
 	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
 		life['think_rate'] = 0
-	elif life['state'] == 'combat' and life['think_rate_max'] == LIFE_THINK_RATE:
+	elif life['state_tier'] <= TIER_COMBAT and life['think_rate_max'] == LIFE_THINK_RATE:
 		if life['think_rate'] > 2:
 			life['think_rate'] = 2
 		
 		life['think_rate_max'] = 2
+	elif life['state'] == 'discovering':
+		life['think_rate_max'] = 6
+	elif life['state'] == 'idle':
+		life['think_rate_max'] = 30
 	else:
 		life['think_rate_max'] = LIFE_THINK_RATE
 	
@@ -315,7 +324,7 @@ def understand(life, source_map):
 	
 	for target in _visible_alife:		
 		if snapshots.process_snapshot(life, target['life']):
-			judgement.judge(life, target['life']['id'])
+			judgement.judge_life(life, target['life']['id'])
 	
 	for module in MODULES:	
 		try:		
@@ -323,11 +332,10 @@ def understand(life, source_map):
 		except:
 			continue
 	
-	_stime = time.time()
+	#_stime = time.time()
 	_passive_only = False
-	
 	_modules_run = False
-	_times = []
+	#_times = []
 	
 	_sorted_modules = _modules.keys()
 	_sorted_modules.sort()
@@ -359,7 +367,7 @@ def understand(life, source_map):
 				if not _module_tier == TIER_PASSIVE:
 					_passive_only = True
 		
-		_times.append({'time': time.time()-_stime, 'module': module.STATE})
+		#_times.append({'time': time.time()-_stime, 'module': module.STATE})
 		
 		if not _modules[_score_tier]:
 			del _modules[_score_tier]
@@ -368,6 +376,5 @@ def understand(life, source_map):
 	if not _modules_run:
 		lfe.change_state(life, 'idle', TIER_IDLE)
 	
-	#print ' '.join(life['name'])
-	#for entry in _times:
-	#	print '\t%s: %s' % (entry['module'], entry['time'])
+	#print life['name'], time.time()-_stime
+	

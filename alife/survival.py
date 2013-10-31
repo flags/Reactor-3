@@ -28,17 +28,18 @@ def _get_need_amount(life, need):
 	if need['amount']:
 		return need['amount']
 
-def add_needed_item(life, item_match, amount=1, amount_callback=None, satisfy_if=None, satisfy_callback=None):
+def add_needed_item(life, matching, amount=1, amount_callback=None, pass_if=[], satisfy_if=None, satisfy_callback=None):
 	life['needs'][str(life['need_id'])] = {'type': 'item',
-	                      'match': item_match,
+	                      'match': matching,
 	                      'meet_with': [],
 	                      'could_meet_with': [],
 	                      'amount': amount,
 	                      'amount_callback': amount_callback,
+	                      'pass_if': pass_if,
 	                      'satisfy_if': satisfy_if,
 	                      'satisfy_callback': satisfy_callback}
 	
-	logging.debug('Added item need: %s' % item_match)
+	logging.debug('Added item need: %s' % matching)
 	
 	life['need_id'] += 1
 	return str(life['need_id']-1)
@@ -63,6 +64,9 @@ def process(life):
 			_potential_items = []
 			
 			for item in brain.get_matching_remembered_items(life, need['match'], no_owner=True):
+				if brain.get_item_flag(life, ITEMS[item], 'ignore'):
+					continue
+				
 				_potential_items.append(item)
 				
 			for item in lfe.get_all_inventory_items(life, matches=[need['match']]):
@@ -83,6 +87,10 @@ def is_need_met(life, need):
 	return False
 
 def needs_to_satisfy(life, need):
+	for requirement in need['pass_if']:
+		if action.execute_small_script(life, requirement):
+			return False
+	
 	return action.execute_small_script(life, need['satisfy_if'])
 
 def can_satisfy(life, need):
@@ -122,6 +130,23 @@ def is_in_need_matches(life, match):
 			_matches.append(root_need)
 	
 	return _matches
+
+def has_unmet_needs(life):
+	if len(brain.retrieve_from_memory(life, 'needs_unmet'))>0:
+		return True
+	
+	return False
+
+def has_needs_to_meet(life):
+	_needs = brain.retrieve_from_memory(life, 'needs_to_meet')
+	
+	if not _needs:
+		return False
+	
+	if len(_needs)>0:
+		return True
+	
+	return False
 
 def get_matched_needs(life, match):
 	_matches = []
@@ -244,7 +269,7 @@ def manage_hands(life):
 		judgement.judge_item(life, item['uid'])
 		_known_item = brain.get_remembered_item(life, item['uid'])
 		
-		if _known_item['score']:
+		if _known_item['score']:#judgement.get_score_of_highest_scoring_item(life):
 			continue
 		
 		_equip_action = {'action': 'equipitem',

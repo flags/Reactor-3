@@ -5,6 +5,7 @@ import life as lfe
 
 import judgement
 import movement
+import survival
 import action
 import combat
 import speech
@@ -23,6 +24,7 @@ def create_group(life, add_creator=True):
 	    'leader': None,
 	    'members': [],
 	    'shelter': None,
+	    'jobs': [],
 	    'events': {},
 	    'event_id': 1,
 	    'announce_event': None,
@@ -114,6 +116,7 @@ def remove_member(group_id, life_id):
 	if not is_member(group_id, life_id):
 		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
+	LIFE[life_id]['group'] = None
 	_group['members'].remove(life_id)
 	
 	reconfigure_group(group_id)
@@ -159,12 +162,6 @@ def find_successor(group_id, assign=False):
 	
 	return _highest['id']
 
-def assign_job(life, group_id, job):
-	_group = get_group(group_id)
-	
-	for member in _group['members']:
-		jobs.add_job_candidate(job, LIFE[member])
-
 def distribute(life, message, filter_by=[], **kvargs):
 	_group = get_group(life['group'])
 	
@@ -173,6 +170,17 @@ def distribute(life, message, filter_by=[], **kvargs):
 			continue
 		
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
+
+def add_job(group_id, job_id):
+	_group = get_group(group_id)
+	
+	#TODO: Remove
+	if not 'jobs' in _group:
+		_group['jobs'] = []
+	
+	_group['jobs'].append(job_id)
+	
+	logging.debug('Registered job %s with group %s' % (job_id, group_id))
 
 def add_event(group_id, event):
 	_group = get_group(group_id)
@@ -190,6 +198,9 @@ def process_events(group_id):
 	
 	for event in _group['events'].values():
 		events.process_event(event)
+
+def get_motive(group_id):
+	return get_group(group_id)['claimed_motive']
 
 def announce(life, group_id, gist, message, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(group_id)
@@ -243,10 +254,13 @@ def get_shelter(group_id):
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	_group['shelter'] = chunks.get_chunk(judgement.get_best_shelter(life))['reference']
+	
+	_shelter = judgement.get_best_shelter(life)
+	
+	if _shelter:
+		_group['shelter'] = chunks.get_chunk(_shelter)['reference']
 	
 	if _group['shelter']:
-		print 'SET SHELTER' * 100
 		announce_shelter(group_id)
 
 def announce_shelter(group_id):
@@ -265,6 +279,8 @@ def find_and_announce_shelter(life, group_id):
 
 def setup_group_events(group_id):
 	_group = get_group(group_id)
+	if _group['announce_event']:
+		return False
 	
 	if stats.desires_shelter(LIFE[_group['leader']]) or 'player' in LIFE[_group['leader']]:
 		_group['announce_event'] = add_event(group_id, events.create('shelter',
@@ -273,14 +289,16 @@ def setup_group_events(group_id):
 			 'group_id': group_id},
 			fail_callback=action.make(return_function='desires_shelter'),
 			fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
+	
+		return True
+	
+	return False
 
 def set_leader(group_id, life_id):
 	_group = get_group(group_id)
 	_group['leader'] = life_id
 	
 	set_motive(group_id, stats.get_group_motive(LIFE[life_id]))
-	
-	setup_group_events(group_id)
 	
 	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
 	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
@@ -418,6 +436,24 @@ def get_jobs(group_id):
 	
 	return _jobs
 
+def manage_resources(life, group_id):
+	_group = get_group(group_id)
+	_last_resource_check = get_flag(group_id, 'last_resource_count')
+	
+	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check>=100:
+		return True
+	
+	_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
+	
+	flag(group_id, 'last_resource_count', WORLD_INFO['ticks'])
+	flag(group_id, 'resource_count', _count)
+
+def get_resources(group_id):
+	return get_flag(group_id, 'resource_count')
+
+def needs_resources(group_id):
+	return get_resources(group_id)<=2
+
 def is_member(group_id, life_id):
 	_group = get_group(group_id)
 	
@@ -425,6 +461,71 @@ def is_member(group_id, life_id):
 		return True
 	
 	return False
+
+def order_to_loot(life, group_id, add_leader=False):
+	#TODO: We should really consider moving the needs portion of this code outside of this function
+	#Because this function really only does something on the first run, rendering it into just another
+	#announce loop...
+	
+	_group = get_group(group_id)
+	
+	_requirements = [action.make_small_script(function='has_number_of_items_matching',
+	                                          args={'matching': [{'type': 'drink'}], 'amount': 1})]
+	
+	_j = jobs.create_job(life, 'Loot for group %s.' % life['group'],
+	                     gist='loot_for_group',
+	                     description='Collect loot for group.',
+	                     group=life['group'],
+	                     requirements=_requirements)
+	
+	if _j:
+		for member in _group['members']:
+			if member == _group['leader'] and not add_leader:
+				continue
+			
+			survival.add_needed_item(LIFE[member],
+				                    {'type': 'drink'},
+				                    amount=1,
+			                         pass_if=_requirements,
+				                    satisfy_if=action.make_small_script(function='group_needs_resources',
+				                                                        args={'group_id': group_id}),
+				                    satisfy_callback=action.make_small_script(return_function='pass'))
+		
+		jobs.add_task(_j, '0', 'bring_back_loot',
+		              action.make_small_script(function='find_target',
+		                                       kwargs={'target': _group['leader'],
+		                                               'distance': 5,
+		                                               'follow': False}),
+		              player_action=action.make_small_script(function='can_see_target',
+		                                                     kwargs={'target_id': _group['leader']}),
+		              description='Drop the item off at the camp',
+		              delete_on_finish=False)
+		
+		jobs.add_task(_j, '1', 'flag_item',
+		              action.make_small_script(function='flag_item_matching',
+		                                       kwargs={'matching': {'type': 'drink'},
+		                                               'flag': 'ignore'}),
+		              player_action=action.make_small_script(function='always'),
+		              description='Ignore this',
+		              delete_on_finish=False)
+		
+		jobs.add_task(_j, '2', 'drop_item',
+		              action.make_small_script(function='drop_item_matching',
+		                                       kwargs={'matching': {'type': 'drink'}}),
+		              player_action=action.make_small_script(function='never'),
+		              description='Drop the item off at the camp',
+		              delete_on_finish=False)
+		
+		flag(group_id, 'loot', _j)
+	
+	if lfe.ticker(life, 'resource_announce', 10):
+		_job_id = get_flag(group_id, 'loot')
+		
+		announce(life, life['group'],
+			     'job',
+			     'We need more resources.',
+			     job_id=_job_id,
+			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
 
 def is_leader(group_id, life_id):
 	_group = get_group(group_id)

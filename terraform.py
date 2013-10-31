@@ -51,13 +51,13 @@ gfx.log(WINDOW_TITLE)
 create_all_tiles()
 items.initiate_all_items()
 
-LOAD_MAP = 'test2.dat'
+LOAD_MAP = '1382395316.1.dat'
 
 gfx.init_libtcod(terraform=True)
 
 gfx.title('Loading...')
 try:
-	maps.load_map(LOAD_MAP)
+	maps.load_map(LOAD_MAP, show_process=False)
 except IOError:
 	maps.create_map()
 	maps.save_map()
@@ -101,7 +101,7 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
 			camera[1]+=change[1]
 	
-	gfx.refresh_window()
+	gfx.refresh_view('map')
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
@@ -191,7 +191,7 @@ def handle_input():
 		else:
 			SETTINGS['view'] = 'map'
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
@@ -208,7 +208,7 @@ def handle_input():
 		if ACTIVE_MENU['menu'] == -1:
 			if SETTINGS['view'] == 'chunk_map':
 				SETTINGS['view'] = 'map'
-				gfx.refresh_window()
+				gfx.refresh_view('map')
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -228,7 +228,7 @@ def handle_input():
 	elif INPUT['q']:
 		if SETTINGS['view'] == 'chunk_map':
 			SETTINGS['view'] = 'map'
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 			return False
 		
 		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
@@ -296,43 +296,43 @@ def handle_input():
 
 	elif INPUT['1']:
 		CAMERA_POS[2] = 1
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['2']:
 		CAMERA_POS[2] = 2
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['3']:
 		CAMERA_POS[2] = 3
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['4']:
 		CAMERA_POS[2] = 4
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['5']:
 		CAMERA_POS[2] = 5
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['6']:
 		CAMERA_POS[2] = 6
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['7']:
 		CAMERA_POS[2] = 7
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['9']:
 		CAMERA_POS[2] = 9
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['0']:
 		CAMERA_POS[2] = 0
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 def menu_item_selected(entry):
 	global RUNNING
@@ -374,7 +374,7 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif key == 'Blit z-level above':
 		if value == 'On':
@@ -382,7 +382,7 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			SETTINGS['draw z-levels above'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif key == 'Draw lights':
 		if value == 'On':
@@ -391,7 +391,7 @@ def menu_item_changed(entry):
 			maps.reset_lights()
 			SETTINGS['draw lights'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 def menu_align():
 	for menu in MENUS:
@@ -477,7 +477,7 @@ def main():
 			maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
 			
-			items.draw_items()
+			#items.draw_items()
 			gfx.draw_all_tiles()
 			gfx.draw_bottom_ui_terraform()
 			gfx.draw_console()

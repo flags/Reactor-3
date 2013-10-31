@@ -87,7 +87,6 @@ def draw_line(x1,y1,x2,y2):
 def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_chunks=None, life=None):
 	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
 	
-	cdef int pos1[2]
 	cdef int _dark = 0
 	cdef int _x,_y
 	cdef int X_CAMERA_POS = top_left[0]
@@ -97,9 +96,9 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 	cdef int Y_MAP_SIZE = MAP_SIZE[1]
 	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
 	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
-	cdef int POSITION[2]
-	POSITION[0] = position[0]
-	POSITION[1] = position[1]
+	cdef int POS_X, POS_Y
+	POS_X = position[0]
+	POS_Y = position[1]
 	
 	#SKIP_CHUNKS = []
 	VISIBLE_CHUNKS = []
@@ -110,10 +109,10 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 		#	if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
 		#		SKIP_CHUNKS.append(chunk_key)
 	
-	if not POSITION[0]-X_CAMERA_POS<0 and not POSITION[0]-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POSITION[1]-Y_CAMERA_POS<0 and not POSITION[1]-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
-		los_buffer[POSITION[1]-Y_CAMERA_POS,POSITION[0]-X_CAMERA_POS] = 1
+	if not POS_X-X_CAMERA_POS<0 and not POS_X-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POS_Y-Y_CAMERA_POS<0 and not POS_Y-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
+		los_buffer[POS_Y-Y_CAMERA_POS,POS_X-X_CAMERA_POS] = 1
 	
-	for _pos in draw_circle(POSITION[0], POSITION[1], size):
+	for _pos in draw_circle(POS_X, POS_Y, size):
 		_dark = 0
 		
 		_chunk_key = '%s,%s' % ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
@@ -122,7 +121,7 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 		#if _chunk_key in HIDDEN_CHUNKS:
 		#	continue
 		
-		for pos in draw_line(POSITION[0],POSITION[1],_pos[0],_pos[1]):
+		for pos in draw_line(POS_X,POS_Y,_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS
 			_y = pos[1]-Y_CAMERA_POS
 			

@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.6'
+VERSION = '0.6.1'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]
@@ -24,7 +24,6 @@ UPDATE_CAMP_RATE = 5
 WORLD_INFO = {'map': [],
 	'id': None,
 	'seed': 0,
-	'seed_state': None,
 	'time': 0,
 	'real_time_of_day': 6000,
 	'time_of_day': 'limbo',
@@ -52,11 +51,12 @@ WORLD_INFO = {'map': [],
 	'groups': {},
 	'jobs': {},
 	'references': {},
-     'reference_map': {'roads': [], 'buildings': []},
+	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5,
 	'lights': [],
-	'timers': []}
+	'timers': [],
+	'weather': {}}
 
 #Return values
 STATE_CHANGE = 2
@@ -108,7 +108,7 @@ CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
 MESSAGE_LOG_MAX_LINES = 8
 PLACING_TILE = None
-RENDERER = tcod.RENDERER_GLSL
+RENDERER = tcod.RENDERER_SDL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
@@ -152,6 +152,7 @@ SETTINGS = {'running': True,
 	'camera_track': [0, 0, 0],
 	'last_camera_pos': [-1, -1, -1],
 	'draw lights': True,
+	'light mesh grid': None,
 	'diffuse light': False,
 	'debug host': '',
 	'debug port': 3335,
@@ -171,7 +172,13 @@ SETTINGS = {'running': True,
 	'state history size': 5,
 	'fire burn rate': 0.04,
 	'smp': None,
-	'map_slices': []}
+	'map_slices': [],
+	'recording': False,
+	'recording fps': 1,
+	'recording fps temp': 0,
+	'viewid': 1,
+	'active_view': 0}
+
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
@@ -182,6 +189,7 @@ LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
+ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 BULLETS = []
 EFFECTS = {}
@@ -191,9 +199,11 @@ SELECTED_TARGET = []
 EVENTS = []
 DIJKSTRA_CACHE = {}
 ZONE_CACHE = {}
+VIEWS = {}
+VIEW_SCENE = {}
+VIEW_SCENE_CACHE = set()
 
 #Consoles
-MAP_WINDOW = None
 ITEM_WINDOW = None
 CONSOLE_WINDOW = None
 MESSAGE_WINDOW = None
@@ -206,12 +216,14 @@ MENU_PADDING = (1,1)
 #Controls
 KEY = tcod.Key()
 MOUSE = tcod.Mouse()
+MOUSE_POS = [0, 0]
+MOUSE_CALLBACKS = {'m1_click': None, 'm2_click': None, 'move': None}
 INPUT = {'up':False,
 		'down':False,
 		'left':False,
 		'right':False,
 		' ':False,
-    	'.':False,
+		'.':False,
 		'-':False,
 		',': False,
 		'?': False,
@@ -262,7 +274,9 @@ INPUT = {'up':False,
 		'7':False,
 		'8':False,
 		'9':False,
-		'0':False}
+		'0':False,
+		'm1': False,
+		'm2': False}
 		
 #Colors
 GREEN_ALT = tcod.Color(0,130,0)
