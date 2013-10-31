@@ -116,6 +116,7 @@ def search_for_target(life, target_id):
 
 def escape(life, targets):
 	#With this function we're trying to get away from the target.
+	print 'here?'
 	_target_positions = []
 	_visible_target_chunks = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
@@ -137,6 +138,7 @@ def escape(life, targets):
 	if not _target_positions:
 		return False
 	
+	print 'huh'
 	#TODO: #combat: For lower limit in return_score_in_range, use range of weapon
 	_cover = zones.dijkstra_map(life['pos'],
 	                            _target_positions,
@@ -157,7 +159,9 @@ def escape(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
 		return True
 	
+	print 'preparing'
 	#_goals.append(life['pos'][:])
+	print len(_cover)
 	
 	#lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',

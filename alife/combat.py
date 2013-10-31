@@ -318,13 +318,13 @@ def ranged_combat(life, targets):
 	
 	#if not _visible_threats:
 		#Find the nearnest target
-	_escaped_targets = []
-	for target_id in targets[:]:
-		_knows = brain.knows_alife_by_id(life, target_id)
-		
-		if _knows['escaped'] == 1:
-			targets.remove(target_id)
-			_escaped_targets.append(target_id)
+	#_escaped_targets = []
+	#for target_id in targets[:]:
+	#	_knows = brain.knows_alife_by_id(life, target_id)
+	#	
+	#	if _knows['escaped'] == 1:
+	#		targets.remove(target_id)
+	#		_escaped_targets.append(target_id)
 	
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
