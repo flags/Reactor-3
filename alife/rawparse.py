@@ -71,7 +71,7 @@ def create_function_map():
 		'has_targets': lambda life: len(judgement.get_targets(life))>0,
 		'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
 		'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
-		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, limit_distance=sight.get_vision(life)+10))>0,
+		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, recent_only=True, limit_distance=sight.get_vision(life)+10))>0,
 		'danger_close': stats.is_combat_target_too_close,
 		'wait': never,
 		'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,

@@ -616,6 +616,12 @@ def tick_item(item_uid):
 			delete_item(ITEMS[item_uid])
 			return False
 		
+		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
+			if item['type'] == 'bullet':
+				effects.create_light(item['pos'], (255, 0, 0), 9, 0)
+			print 'HIT WALL!' * 100
+			return False
+		
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
 				if _life['id'] == item['owner'] or _life['dead']:

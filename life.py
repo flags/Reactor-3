@@ -935,6 +935,11 @@ def path_dest(life):
 	if not life['path']:
 		return None
 	
+	_existing_chunk_map = brain.get_flag(life, 'chunk_path')
+	if _existing_chunk_map:
+		print _existing_chunk_map['end']
+		return _existing_chunk_map['end']
+	
 	return tuple(life['path'][len(life['path'])-1])
 
 def can_traverse(life, pos):
@@ -1270,6 +1275,7 @@ def perform_action(life):
 			if 'debug' in _action and _action['debug']:
 				SETTINGS['print dijkstra maps'] = True
 			
+			_s = time.time()
 			_path = zones.dijkstra_map(life['pos'],
 			                           _action['goals'],
 			                           _zones,
@@ -1278,6 +1284,7 @@ def perform_action(life):
 			                           avoid_positions=_avoid_positions,
 			                           avoid_chunks=_avoid_chunks)
 			
+			print life['name'], _action['reason'], 'took', time.time()-_s
 			if 'debug' in _action and _action['debug']:
 				SETTINGS['print dijkstra maps'] = False
 				print _path
@@ -1383,7 +1390,10 @@ def perform_action(life):
 			else:
 				gfx.message('You put on %s.' % _name)
 		else:
-			say(life,'@n puts on %s.' % _name, action=True)
+			if is_holding(life, _action['item']):
+				say(life,'@n holds %s.' % _name, action=True)
+			else:
+				say(life,'@n puts on %s.' % _name, action=True)
 		
 		set_animation(life, [';', '*'], speed=6)
 		delete_action(life, action)
