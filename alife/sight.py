@@ -26,11 +26,11 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
+	if 'player' in life or life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	elif not 'player' in life:
+	else:
 		#This is for optimizing. Be careful if you mess with this...
 		_nearby_alife = []
 		for alife in LIFE.values():
@@ -48,8 +48,6 @@ def look(life):
 		else:
 			return False
 		
-		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
-	else:
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	for target_id in life['know']:
@@ -133,7 +131,7 @@ def get_vision(life):
 	
 	return life['vision_max']
 
-def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=True):
+def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
 	else:
@@ -160,8 +158,11 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=Tru
 			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
 			try:
-				if WORLD_INFO['map'][pos[0]][pos[1]][pos1[2]+1]:
+				if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
 					_ret_line = []
+					if strict:
+						return False
+					
 					continue
 			except:
 				print pos, pos1
@@ -169,12 +170,12 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, distance=Tru
 	
 	return _ret_line
 
-def can_see_position(life, pos, distance=True, block_check=False):
+def can_see_position(life, pos, distance=True, block_check=False, strict=False):
 	"""Returns `true` if the life can see a certain position."""
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
 	
-	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, distance=distance)
+	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:

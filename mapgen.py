@@ -1565,6 +1565,8 @@ def print_map_to_console(map_gen):
 		print
 
 if __name__ == '__main__':
+	SETTINGS['running'] = False
+	
 	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
 	console_formatter = logging.Formatter('[%(asctime)s-%(levelname)s] %(message)s',datefmt='%H:%M:%S %m/%d/%y')

@@ -100,13 +100,14 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	elif start_pos[1]>_bot_right[1]:
 		_bot_right[1] = numbers.clip(start_pos[1]+TEMP_SIZE, 0, MAP_SIZE[1])
 	
-	print 'debug'
-	print 'start_pos', start_pos
-	print 'top_left', (_top_left[0], _top_left[1])
-	print 'bot_right', (_bot_right[0], _bot_right[1])	
-	
-	for goal in goals:
-		print 'goal', goal
+	if SETTINGS['print dijkstra maps']:
+		print 'debug'
+		print 'start_pos', start_pos
+		print 'top_left', (_top_left[0], _top_left[1])
+		print 'bot_right', (_bot_right[0], _bot_right[1])	
+		
+		for goal in goals:
+			print 'goal', goal
 	
 	_open_map = create_map_array(-3, MAP_SIZE)
 	
@@ -238,8 +239,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_old_map[x + y * 500] *= -1.2	
 	
 	if SETTINGS['print dijkstra maps']:
-		print 'YES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-		print (_bot_right[0]-_top_left[0]), _bot_right[1], _top_left[1]
 		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
 				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:

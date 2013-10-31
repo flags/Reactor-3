@@ -239,6 +239,7 @@ def create_zone_map():
 	
 		if SETTINGS['running']:
 			tcod.console_print(0, 0, 0, '              ')
+	
 	print 'Zone gen took',time.time()-_t
 
 def connect_ramps():

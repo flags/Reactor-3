@@ -27,7 +27,8 @@ def position_to_attack(life, target):
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
-	if _nearest_target_score >= sight.get_vision(life):
+	#if _nearest_target_score >= sight.get_vision(life)/2:
+	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True):
 		print life['name'], 'changing position for combat...'
 
 		_cover = _target_positions
@@ -50,6 +51,8 @@ def position_to_attack(life, target):
 			return False
 		else:
 			return False
+	else:
+		lfe.stop(life)
 	
 	return True
 
@@ -134,15 +137,13 @@ def escape(life, targets):
 	if not _target_positions:
 		return False
 	
-	#TODO: For lower limit in return_score_in_range, use range of weapon
-	SETTINGS['print dijkstra maps'] = True
+	#TODO: #combat: For lower limit in return_score_in_range, use range of weapon
 	_cover = zones.dijkstra_map(life['pos'],
 	                            _target_positions,
 	                            _zones,
 	                            avoid_chunks=_visible_target_chunks,
 	                            return_score_in_range=[1, sight.get_vision(life)])
 	_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-	SETTINGS['print dijkstra maps'] = False
 	if not _cover:
 		return False
 	

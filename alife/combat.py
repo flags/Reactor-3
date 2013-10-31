@@ -323,7 +323,11 @@ def ranged_combat(life, targets):
 	#print life['pos'], _target_positions, _path_to_nearest
 	
 	if not _path_to_nearest:
+		_path_to_nearest = [life['pos'][:]]
+	
+	if not _path_to_nearest:
 		logging.error('%s lost known/visible target.' % ' '.join(life['name']))
+		print _path_to_nearest
 		return False
 	
 	_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
@@ -339,7 +343,8 @@ def ranged_combat(life, targets):
 				target = _target
 				break
 	
-	_pos_for_combat = movement.position_to_attack(life, target['life']['id'])
+	if not life['path'] or not numbers.distance(lfe.path_dest(life), target['last_seen_at']) == 0:
+		movement.position_to_attack(life, target['life']['id'])
 	
 	#if not target['escaped'] and not _pos_for_combat:
 	#	return False
@@ -348,7 +353,7 @@ def ranged_combat(life, targets):
 	#elif _pos_for_combat:
 	#	lfe.stop(life)
 	
-	if sight.can_see_position(life,target['last_seen_at']):
+	if sight.can_see_position(life,target['last_seen_at'], block_check=True, strict=True):
 		if sight.can_see_position(life, target['life']['pos']):
 			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
 				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
@@ -369,6 +374,7 @@ def ranged_combat(life, targets):
 			        target=target['life']['id'],
 			        matches=[{'id': send_to}])
 	else:
+		print 'waiting...'
 		return False
 	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
 	#	return False

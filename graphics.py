@@ -212,7 +212,7 @@ def prepare_map_views():
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
 
-	set_active_view('map')	
+	set_active_view('map')
 
 def start_of_frame(draw_char_buffer=True):
 	draw_scene()
@@ -563,6 +563,9 @@ def radio(source, text):
 	message('%s: %s' % (' '.join(source['name']), text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
+	if not SETTINGS['running']:
+		return False
+	
 	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
 	_center_y = WINDOW_SIZE[1]/2
 	tcod.console_set_default_background(0, background_color)

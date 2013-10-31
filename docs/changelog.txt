@@ -27,6 +27,7 @@ New in version 0.6.1:
 	* Longer paths are now generated in segments.
 	* Created "views," which allows for easier management of multiple consoles.
 		* Note: Some legacy code remains and is being phased out.
+	* Explosives are now more effective.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
