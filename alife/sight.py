@@ -38,7 +38,7 @@ def look(life):
 				continue
 			
 			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
-				_nearby_alife.append(alife['id'])
+				_nearby_alife.append(alife['pos'])
 		
 		_nearby_alife.sort()
 		

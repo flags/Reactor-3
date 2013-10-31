@@ -62,7 +62,7 @@ def get_closest_target(life, targets):
 	return _closest['life']
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	_all_targets = judgement.get_combat_targets(life, ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if')))
+	_all_targets = judgement.get_combat_targets(life, ignore_lost=True, ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if')))
 	
 	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
 		#_closest_target = get_closest_target(life, _all_targets)

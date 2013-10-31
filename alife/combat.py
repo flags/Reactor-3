@@ -318,7 +318,21 @@ def ranged_combat(life, targets):
 	
 	#if not _visible_threats:
 		#Find the nearnest target
-	_target_positions, _zones = get_target_positions_and_zones(life, targets)
+	_escaped_targets = []
+	for target_id in targets[:]:
+		_knows = brain.knows_alife_by_id(life, target_id)
+		
+		if _knows['escaped'] == 1:
+			targets.remove(target_id)
+			_escaped_targets.append(target_id)
+	
+	if targets:
+		_target_positions, _zones = get_target_positions_and_zones(life, targets)
+	else:
+		print 'LOST' * 10
+		return False
+	
+	
 	_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
 	#print life['pos'], _target_positions, _path_to_nearest
 	
