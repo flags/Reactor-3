@@ -383,6 +383,12 @@ def listen(life):
 			if judgement.can_trust(life, event['from']['id']):
 				speech.start_dialog(life, event['from']['id'], 'call_accepted')
 		
+		elif event['gist'] == 'order_attack':
+			lfe.memory(life, 'ordered to attack',
+			           target=event['target'],
+			           trust=-5,
+			           danger=3)
+		
 		elif event['gist'] == 'threw_an_item':
 			print 'CHECK THIS HERE' * 100
 			pass

@@ -55,6 +55,21 @@ def handle_input():
 		else:
 			SETTINGS['running'] = False
 	
+	if INPUT['\t']:
+		if not SETTINGS['controlling'] or not LIFE[SETTINGS['controlling']]['group']:
+			return False
+		
+		_menu_items = [menus.create_item('single', 'Attack', 'Focus attack on target.')]
+	
+		_menu = menus.create_menu(title='Command',
+			menu=_menu_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k: $v',
+			on_select=send_command)
+		
+		menus.activate_menu(_menu)
+	
 	if INPUT['-']:
 		if SETTINGS['draw console']:
 			SETTINGS['draw console'] = False
@@ -1720,6 +1735,32 @@ def talk_to(entry):
 	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
+
+def order_attack(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	speech.announce(LIFE[SETTINGS['controlling']], 'order_attack', group=LIFE[SETTINGS['controlling']]['group'], target=entry['target'])
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
+
+def send_command(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	if key == 'Attack':
+		_menu_items = create_target_list()
+		
+		_menu = menus.create_menu(title='Select Target',
+		                          menu=_menu_items,
+		                          padding=(1,1),
+		                          position=(1,1),
+		                          format_str='$k: $v',
+		                          on_select=order_attack)
+		
+		menus.activate_menu(_menu)
+		#_attackers.append(menus.create_item('list', ' '.join(worker['name']), ['Free', 'Assigned'], workers=_workers))
 
 def radio_menu(entry):
 	key = entry['key']
