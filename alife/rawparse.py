@@ -63,6 +63,8 @@ def create_function_map():
 		'is_target': lambda life, life_id: life_id in judgement.get_targets(life) or life_id in judgement.get_combat_targets(life),
 		'is_combat_target': lambda life, life_id: life_id in judgement.get_combat_targets(life),
 		'is_traitor': lambda life, life_id: len(lfe.get_memory(life, matches={'text': 'traitor', 'target': life_id}))>0,
+		'is_awake': judgement.is_target_awake,
+	    'is_dead': judgement.is_target_dead,
 		'find_and_announce_shelter': groups.find_and_announce_shelter,
 		'desires_shelter': stats.desires_shelter,
 		'travel_to_position': movement.travel_to_position,

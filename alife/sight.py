@@ -78,6 +78,11 @@ def look(life):
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 				life['know'][ai['id']]['escaped'] = False
 				
+				if ai['dead']:
+					life['know'][ai['id']]['dead'] = True
+				elif ai['asleep']:
+					life['know'][ai['id']]['asleep'] = True
+				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')
 				
@@ -157,16 +162,13 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		for pos in _line:
 			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
-			try:
-				if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
-					_ret_line = []
-					if strict:
-						return False
-					
-					continue
-			except:
-				print pos, pos1
-				raise Exception(pos1)
+			
+			if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
+				_ret_line = []
+				if strict:
+					return False
+				
+				continue
 	
 	return _ret_line
 

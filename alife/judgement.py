@@ -200,6 +200,17 @@ def is_target_dangerous(life, target_id):
 	
 	return False
 
+def _get_target_value(life, life_id, value):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	return _knows[value]
+
+def is_target_awake(life, life_id):
+	return _get_target_value(life, life_id, 'asleep')
+
+def is_target_dead(life, life_id):
+	return _get_target_value(life, life_id, 'dead')
+
 def is_target_lost(life, target_id):
 	_know = brain.knows_alife_by_id(life, target_id)
 	if sight.can_see_position(life, _know['last_seen_at']):
