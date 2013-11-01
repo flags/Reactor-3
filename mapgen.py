@@ -153,7 +153,11 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	logging.debug('Generating outposts...')	
 	for i in range(map_gen['outposts']):
-		construct_outpost(map_gen)
+		construct_outpost(map_gen)	
+	
+	#Placeholder!
+	logging.debug('Placing region spawns...')
+	create_region_spawns()
 	
 	logging.debug('Occupying empty spaces...')
 	fill_empty_spaces(map_gen)
@@ -163,6 +167,9 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	for _field in map_gen['refs']['fields']	:
 		construct_field(map_gen, _field)
+	
+	logging.debug('Rounding off edges...')
+	round_off_edges(map_gen)
 	
 	logging.debug('Placing forests...')
 	while len(map_gen['refs']['forests'])<map_gen['forests']:
@@ -269,7 +276,7 @@ def generate_outlines(map_gen):
 		
 		_road['length'] = (_length/2, _length-2)
 		
-		place_road(map_gen, **_road)
+		place_road(map_gen, **_road)	
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -281,8 +288,28 @@ def generate_outlines(map_gen):
 		for town in map_gen['refs']['towns'].values():
 			if chunk_key in town['chunks']:
 				town['chunks'].remove(chunk_key)
+
+def find_spaces_matching(map_gen, chunk_type, neighbor_rules):
+	_chunk_keys = []
 	
-	logging.debug('Placing side roads...')
+	for chunk_key in map_gen['chunk_map']:
+		_chunk = map_gen['chunk_map'][chunk_key]
+		
+		if not _chunk['type'] == chunk_type:
+			continue
+		
+		_break = False
+		for rule in neighbor_rules:
+			if not rule['min']<=len(get_neighbors_of_type(map_gen, _chunk['pos'], rule['chunk_type'], rule['diagonal']))<=rule['max']:
+				_break = True
+				break
+		
+		if _break:
+			continue
+		
+		_chunk_keys.append(chunk_key)
+	
+	return _chunk_keys
 
 def chunks_in_line(pos1, pos2, avoid_chunk_types):
 	_chunk_keys = []
@@ -1013,7 +1040,7 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 	elif len(_directions) == 2 and (-1, 0) in _directions and (1, 0) in _directions:
 		for x in range(0, map_gen['chunk_size']):
 			for y in range(size, map_gen['chunk_size']-size):
-				if (y == 0 or y == map_gen['chunk_size']-1) and not random.randint(0, 2):
+				if (y == size or y == map_gen['chunk_size']-size-1) and not random.randint(0, 2):
 					_tile = random.choice(tiles.GRASS_TILES)
 					_height = 1
 				elif y == round(map_gen['chunk_size']/2) and x % 3 and ground_tiles == tiles.CONCRETE_TILES:
@@ -1028,7 +1055,44 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 	elif len(_directions) == 2 and (0, -1) in _directions and (0, 1) in _directions:
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(0, map_gen['chunk_size']):
-				if (x == 0 or x == map_gen['chunk_size']-1) and not random.randint(0, 2):
+				if (x == size or x == map_gen['chunk_size']-size-1) and not random.randint(0, 2):
+					_tile = random.choice(tiles.GRASS_TILES)
+					_height = 1
+				else:
+					_tile = random.choice(ground_tiles)
+					_height = height
+					
+				for z in range(0, _height):
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
+	#Stopped here
+	elif len(_directions) == 2 and (0, -1) in _directions and (-1, 0) in _directions:
+		for x in range(size, map_gen['chunk_size']-size):
+			for y in range(size, map_gen['chunk_size']-size):
+				if (y == map_gen['chunk_size']-size-1 or x == map_gen['chunk_size']-size-1) and not random.randint(0, 2):
+					_tile = random.choice(tiles.GRASS_TILES)
+					_height = 1
+				else:
+					_tile = random.choice(ground_tiles)
+					_height = height
+					
+				for z in range(0, _height):
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
+	elif len(_directions) == 2 and (0, -1) in _directions and (1, 0) in _directions:
+		for x in range(size, map_gen['chunk_size']-size):
+			for y in range(size, map_gen['chunk_size']-size):
+				if (y == map_gen['chunk_size']-1 or not x) and not random.randint(0, 2):
+					_tile = random.choice(tiles.GRASS_TILES)
+					_height = 1
+				else:
+					_tile = random.choice(ground_tiles)
+					_height = height
+					
+				for z in range(0, _height):
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
+	elif len(_directions) == 2 and (0, 1) in _directions and (1, 0) in _directions:
+		for x in range(size, map_gen['chunk_size']-size):
+			for y in range(size, map_gen['chunk_size']-size):
+				if (not y or not x) and not random.randint(0, 2):
 					_tile = random.choice(tiles.GRASS_TILES)
 					_height = 1
 				else:
@@ -1041,6 +1105,18 @@ def create_road(map_gen, chunk_key, ground_tiles=tiles.CONCRETE_TILES, chunk_typ
 		for x in range(size, map_gen['chunk_size']-size):
 			for y in range(size, map_gen['chunk_size']-size):
 				if (y == map_gen['chunk_size']-1 or x == map_gen['chunk_size']-1) and not random.randint(0, 2):
+					_tile = random.choice(tiles.GRASS_TILES)
+					_height = 1
+				else:
+					_tile = random.choice(ground_tiles)
+					_height = height
+					
+				for z in range(0, _height):
+					create_tile(map_gen, chunk['pos'][0]+x, chunk['pos'][1]+y, 2+z, _tile)
+	elif len(_directions) == 3 and (0, 1) in _directions and (-1, 0) in _directions and (1, 0) in _directions:
+		for x in range(size, map_gen['chunk_size']-size):
+			for y in range(size, map_gen['chunk_size']-size):
+				if not y and not random.randint(0, 2):
 					_tile = random.choice(tiles.GRASS_TILES)
 					_height = 1
 				else:
@@ -1462,6 +1538,9 @@ def can_spawn_item(item):
 	
 	return False
 
+def create_region_spawns():
+	pass
+
 def fill_empty_spaces(map_gen, fields=3):
 	_empty_spots = []
 	_field_spawns = []
@@ -1498,9 +1577,26 @@ def fill_empty_spaces(map_gen, fields=3):
 		_placed_field_chunks.extend(_walk)
 	
 	for _chunk_key in ['%s,%s' % (x, y) for x,y  in _placed_field_chunks]:
-		map_gen['chunk_map'][_chunk_key]['type'] = 'wash'
+		map_gen['chunk_map'][_chunk_key]['type'] = 'field'
 
 def decorate_world(map_gen):
+	#Side roads
+	logging.debug('Generating side roads...')
+	_rules = [{'chunk_type': 'town', 'diagonal': True, 'min': 1, 'max': 7},
+	          {'chunk_type': 'road', 'diagonal': True, 'min': 0, 'max': 0}]
+	
+	_side_road_chunks = find_spaces_matching(map_gen, 'other', _rules)
+	
+	for chunk_key in _side_road_chunks:
+		map_gen['chunk_map'][chunk_key]['type'] = 'road'
+	
+	for chunk_key in _side_road_chunks:
+		if random.randint(0, 5) and len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'road'))<=5:
+			map_gen['chunk_map'][chunk_key]['type'] = 'other'
+			continue
+		
+		create_road(map_gen, chunk_key, size=0, ground_tiles=tiles.CONCRETE_FLOOR_TILES)
+	
 	#backyards
 	for town in map_gen['refs']['towns']:
 		if not map_gen['settings']['back yards']:
@@ -1510,6 +1606,9 @@ def decorate_world(map_gen):
 		for chunk_key in town['buildings']:
 			_chunk = map_gen['chunk_map'][chunk_key]
 			for neighbor in get_neighbors_of_type(map_gen, _chunk['pos'], 'other', diagonal=True):
+				if get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor]['pos'], 'road', diagonal=False):
+					continue
+				
 				if not get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor]['pos'], 'driveway', diagonal=False):
 					_backyard.append(neighbor)
 		
@@ -1546,6 +1645,51 @@ def decorate_world(map_gen):
 	
 	for fence in _possible_fences:
 		create_road(map_gen, fence, size=2, height=3, chunk_type='driveway', ground_tiles=tiles.WOOD_TILES)
+
+def round_off_edges(map_gen):
+	#Round off those fields
+	_rules = [{'chunk_type': 'road', 'min': 1, 'max': 4, 'diagonal': False}]
+	for chunk_key in find_spaces_matching(map_gen, 'field', _rules):
+		_chunk = map_gen['chunk_map'][chunk_key]
+		
+		_directions = []
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen,
+		                                                _chunk['pos'],
+		                                                'road'):
+			_directions.append(direction_from_key_to_key(map_gen, chunk_key, neighbor_chunk_key))
+		
+		_x = _chunk['pos'][0]
+		_y = _chunk['pos'][1]
+		
+		#Fences (unfinished)
+		if len(_directions) == 1 and ((1, 0) in _directions or (-1, 0) in _directions):
+			for y in range(0, map_gen['chunk_size']):
+				create_tile(map_gen,
+				            _x+(map_gen['chunk_size']*((1, 0) in _directions)),
+				            _y+y,
+				            2,
+				            random.choice(tiles.HOUSE_WALL_TILES))
+		elif len(_directions) == 1 and ((0, 1) in _directions or (0, -1) in _directions):
+			for x in range(0, map_gen['chunk_size']):
+				create_tile(map_gen,
+				            _x+x,
+				            _y+(map_gen['chunk_size']*((0, 1) in _directions)),
+				            2,
+				            random.choice(tiles.HOUSE_WALL_TILES))
+		
+		#Dither
+		for x in range(map_gen['chunk_size']):
+			for y in range(map_gen['chunk_size']):
+				if (1, 0) in _directions:
+					if random.randint(0, x)>1:
+						create_tile(map_gen, _x+x, _y+y, 2, random.choice(tiles.GRASS_TILES))
+				elif (-1, 0) in _directions:
+					if not random.randint(0, x+1):
+						create_tile(map_gen, _x+x, _y+y, 2, random.choice(tiles.GRASS_TILES))
+		
+		#elif len(_directions) == 2 and ((0, 1) in _directions or (0, -1) in _directions):
+		#	for x in range(0, map_gen['chunk_size']):
+		#		create_tile(map_gen, _x+x, _y+(map_gen['chunk_size']*((0, 1) in _directions)), 2, random.choice(tiles.HOUSE_WALL_TILES))
 
 MAP_KEY = {'o': '.',
            't': 't'}
@@ -1588,6 +1732,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(450, 450, 10), towns=2, factories=0, outposts=4, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(250, 250, 10), towns=1, factories=0, outposts=0, forests=1, skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t

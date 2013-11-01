@@ -451,7 +451,7 @@ def explode(item):
 				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
 			
 			#for _limb in _limbs:
-			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force))
+			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force*2))
 			
 			if not _limbs:
 				break

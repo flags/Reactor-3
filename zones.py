@@ -176,7 +176,6 @@ def get_zone_at_coords(pos):
 		_p = (pos[0]-_splice['top_left'][0]-1, pos[1]-_splice['top_left'][1]-1)
 		
 		if _p[0]<-1 or _p[1]<-1 or _p[0]>_splice['_map'].shape[1] or _p[1]>_splice['_map'].shape[0]:
-			print 'OOB at', pos
 			continue
 		
 		if _splice['_map'][_p[0]][_p[1]]:
