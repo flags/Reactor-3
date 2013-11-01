@@ -339,7 +339,7 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_prev_dir = (1, 0)
 			_next_dir = (-1, 0)
 		elif _start_edge == 2:
-			_pos = [random.randint(7*map_gen['chunk_size'], (map_gen['size'][0])/map_gen['chunk_size'])-(6*map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
+			_pos = [random.randint(10*map_gen['chunk_size'], (map_gen['size'][0])/map_gen['chunk_size'])-(6*map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
 			_prev_dir = (0, 1)
 			_next_dir = (0, -1)
 		elif _start_edge == 3:
@@ -390,13 +390,14 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 				if _prev_dir in _possible_next_dirs:
 					_possible_next_dirs.remove(_prev_dir)
 
-				print 'road', 4*(len(map_gen['refs']['town_seeds'])+1), len(map_gen['refs']['town_seeds'])
+				#_size = map_gen['towns']-_max_turns
+				#print 'road', random.randint(3, 4), _size
 				
 				_road = {'start_pos': _pos[:],
 				         'turnoffs': 0,
 				         'turns': 2,
 				         'length': (25, 35),
-				         'can_create': random.randint(3, 5),
+				         'can_create': random.randint(4, 5),
 				         'width': 1,
 				         '_next_dirs': _possible_next_dirs}
 				
