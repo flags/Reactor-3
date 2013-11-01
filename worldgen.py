@@ -321,9 +321,9 @@ def generate_wildlife():
 def generate_life():
 	_spawn = get_spawn_point()
 	
-	if WORLD_INFO['groups']:
+	if len(WORLD_INFO['groups'])>=2:
 		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-		_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
+		#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
 		
 		if len(LIFE) == 1:
 			logging.warning('No leaders. Creating one manually...')
@@ -386,5 +386,8 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	#Step 1: Army Outpost
+	for town_seed in WORLD_INFO['refs']['town_seeds']:
+		
 	for i in range(5):
 		generate_wildlife()
