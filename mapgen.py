@@ -147,7 +147,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	#for _factory in map_gen['refs']['factories']:
 		#construct_factory(map_gen, _factory)
 	
-	
 	logging.debug('Building towns...')
 	for _town in map_gen['refs']['towns']:
 		construct_town(map_gen, _town)
@@ -280,6 +279,8 @@ def generate_outlines(map_gen):
 		for town in map_gen['refs']['towns'].values():
 			if chunk_key in town['chunks']:
 				town['chunks'].remove(chunk_key)
+	
+	logging.debug('Placing side roads...')
 
 def chunks_in_line(pos1, pos2, avoid_chunk_types):
 	_chunk_keys = []

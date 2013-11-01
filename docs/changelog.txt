@@ -9,6 +9,7 @@ New in version 0.6.1:
 		* Note: Actual sounds are planned for a future version.
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
+	* Group leaders can now issue attack orders (hit `tab`)
 	* ALife take more factors into consideration when deciding if they are safe.
 	* Worlds are initially seeded with one group of a random motive.
 	* Weapons now have multiple firing modes (using `f`).
@@ -29,7 +30,7 @@ New in version 0.6.1:
 	* Created "views," which allows for easier management of multiple consoles.
 		* Note: Some legacy code remains and is being phased out.
 	* Explosives are now more effective.
-	* Added movie mode (hit `?`)
+	* Added movie mode (recording) (hit `?` to start, again to quit.)
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.

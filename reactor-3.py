@@ -139,13 +139,13 @@ def main():
 		_string = 'You die.'
 		
 		for i in range(len(_string)):
-			_c = _string[_c]
-			gfx.blit_char(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
+			_c = _string[i]
+			gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
 			              MAP_WINDOW_SIZE[1]/2,
 			              _c,
-			              'map',
-			              fore_color=tcod.Color(_col, _col, _col),
-			              back_color=tcod.Color(255-_col,255-_col,255-_col))
+			              (tcod.Color(_col, _col, _col),
+			               tcod.Color(255-_col,255-_col,255-_col)),
+			              'map')
 			
 		#gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
 		#	MAP_WINDOW_SIZE[1]/2,
