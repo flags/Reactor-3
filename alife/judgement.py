@@ -397,7 +397,7 @@ def get_nearest_target_in_list(life, target_list):
 	return _nearest_target
 
 def get_nearest_combat_target(life):
-	return get_nearest_target_in_list(life, get_combat_targets(life))
+	return get_nearest_target_in_list(life, get_combat_targets(life, ignore_lost=True, limit_distance=sight.get_vision(life), ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if'))))
 
 def get_nearest_trusted_target(life):
 	return get_nearest_target_in_list(life, get_trusted(life))

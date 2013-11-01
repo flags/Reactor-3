@@ -45,7 +45,8 @@ def position_to_attack(life, target):
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
-				                  'orig_goals': _cover[:]},
+				                  'orig_goals': _cover[:],
+			                       'reason': 'positioning for attack'},
 				           999)
 			
 			return False
@@ -62,6 +63,10 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	
 	if not numbers.distance(life['pos'], pos):
 		return True
+	
+	_dest = lfe.path_dest(life)
+	if _dest and _dest[:2] == pos[:2]:
+		return False
 	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
@@ -104,18 +109,16 @@ def search_for_target(life, target_id):
 			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
 				_lowest['score'] = _search_map[y, x]
 				_lowest['pos'] = (_x, _y, x, y)
-			#_search.append((_x, _y, x, y))
 
 	if _lowest['pos']:
 		x, y, _x, _y = _lowest['pos']
 		
-		if not travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
 			_search_map[_y, _x] = 0
 	else:
 		_know['escaped'] = 2
 
 def escape(life, targets):
-	#With this function we're trying to get away from the target.
 	_target_positions = []
 	_visible_target_chunks = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
@@ -157,13 +160,11 @@ def escape(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
 		return True
 	
-	#_goals.append(life['pos'][:])
-	
-	#lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
                           'rolldown': True,
 	                     'zones': _zones,
-                          'goals': _cover[:]},
+                          'goals': _cover[:],
+	                     'reason': 'escaping'},
                    999)
 
 def hide(life, target_id):
