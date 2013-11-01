@@ -387,7 +387,10 @@ def create_player():
 	
 def create_region_spawns():
 	#Step 1: Army Outpost
-	for town_seed in WORLD_INFO['refs']['town_seeds']:
+	
+	WORLD_INFO['refs']['town_seeds']
+	
+	#for town_seed in WORLD_INFO['refs']['town_seeds']:
 		
 	for i in range(5):
 		generate_wildlife()
