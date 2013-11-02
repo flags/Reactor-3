@@ -192,6 +192,9 @@ def listen(life):
 			print 'CHECK THIS HERE' * 100
 			pass
 		
+		elif event['gist'] == '_group_leader_state_change':
+			life['think_rate'] = 0
+		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
 		

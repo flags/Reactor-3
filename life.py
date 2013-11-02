@@ -517,6 +517,9 @@ def change_state(life, state, tier):
 	life['states'].append(state)
 	if len(life['states'])>SETTINGS['state history size']:
 		life['states'].pop(0)
+	
+	if groups.is_leader_of_any_group(life):
+		speech.announce(life, '_group_leader_state_change', group=life['group'])
 
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,
@@ -1172,7 +1175,7 @@ def clear_actions(life,matches=[]):
 		clear_actions_matching(life,matches=[{'action': 'dijkstra_move'}])
 		return True
 
-def find_action(life,matches=[{}]):
+def find_action(life, matches=[{}]):
 	_matching_actions = []
 	
 	for action in [action['action'] for action in life['actions']]:
@@ -1191,7 +1194,7 @@ def find_action(life,matches=[{}]):
 	
 	return _matching_actions
 
-def delete_action(life,action):
+def delete_action(life, action):
 	"""Deletes an action."""
 	_action = {'action': action['action'],
 		'score': action['score'],
@@ -1200,19 +1203,19 @@ def delete_action(life,action):
 	
 	life['actions'].remove(_action)
 
-def add_action(life,action,score,delay=0):
+def add_action(life, action, score, delay=0):
 	"""Creates new action. Returns True on success."""
 	_tmp_action = {'action': action,'score': score}
 	
 	if _tmp_action in life['actions']:
-		print 'ALREADY EXISTS'
+		print 'Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action'])
 		return False
 	
 	_tmp_action['delay'] = delay
 	_tmp_action['delay_max'] = delay
 	
 	if _tmp_action in life['actions']:
-		print 'ALREADY EXISTS'
+		print 'Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action'])
 		return False
 	
 	_index = 0
@@ -2264,8 +2267,7 @@ def equip_item(life, item_id):
 	else:
 		_equip_item(life, item_id)
 		
-		if 'ON_EQUIP' in item['flags']:
-			scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item['uid'])
+		items.process_event(life, item_id, 'equip')
 	
 	life['speed_max'] = get_max_speed(life)
 	
@@ -3271,6 +3273,9 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 	return _scatter
 
 def damage_from_item(life, item, damage):
+	#TODO: #combat Reaction times?
+	life['think_rate'] = 0
+	
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 	else:
@@ -3315,6 +3320,7 @@ def damage_from_item(life, item, damage):
 		say(life, _dam_message, action=True)
 	
 	create_and_update_self_snapshot(life)
+	judgement.judge_life(life, _shot_by_alife['id'])
 	
 	return True
 

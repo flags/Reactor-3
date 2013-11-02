@@ -397,6 +397,12 @@ def remove_item_from_any_storage(item_uid):
 	
 	del _item['stored_in']
 
+def process_event(life, item_uid):
+	_item = ITEMS[item_uid]
+	
+	if 'ON_EQUIP' in _item['flags']:
+		scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item_uid)
+
 def burn(item, amount):
 	if not 'CAN_BURN' in item['flags']:
 		return False

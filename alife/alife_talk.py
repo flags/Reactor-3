@@ -36,47 +36,26 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 		lfe.say(life, '@n panics!', action=True)
 	
-	for ai in alife_seen:
-		if life['state'] in ['combat']:
-			break
-		
-		if jobs.alife_has_job(ai['life']):
-			break
-		
-		if not stats.can_talk_to(life, ai['life']['id']):
-			continue
-		
-		if judgement.is_target_dangerous(life, ai['life']['id']):
-			if not speech.discussed(life, ai['life'], 'looks_hostile'):
-				speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
-				speech.send(life, ai['life'], 'looks_hostile')
-		#else:
-		#	if not speech.discussed(life, ai['life'], 'greeting'):
-		#		if stats.is_compatible_with(life, ai['life']['id']):
-		#			speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
-		#		
-		#		speech.send(life, ai['life'], 'greeting')
-				
-	
 	_potential_talking_targets = []
-	for ai in alife_seen:
-		if life['state'] in ['combat', 'hiding', 'hidden']:
-			break
+	if not life['state'] in ['combat', 'hiding', 'hidden']:
+		for ai in alife_seen:
+			if not stats.can_talk_to(life, ai['life']['id']):
+				continue
+			
+			if judgement.is_target_dangerous(life, ai['life']['id']):
+				if not speech.discussed(life, ai['life'], 'looks_hostile'):
+					speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
+					speech.send(life, ai['life'], 'looks_hostile')
 		
-		if judgement.is_target_dangerous(life, ai['life']['id']):
-			continue
+			else:
+				if not stats.desires_conversation_with(life, ai['life']['id']):
+					continue
 		
-		if not stats.can_talk_to(life, ai['life']['id']):
-			continue		
+				#TODO: Not always true.
+				if ai['life']['state'] in ['hiding', 'hidden']:
+					continue
 		
-		if not stats.desires_conversation_with(life, ai['life']['id']):
-			continue
-		
-		#TODO: Not always true.
-		if ai['life']['state'] in ['hiding', 'hidden']:
-			break
-		
-		_potential_talking_targets.append(ai['life'])
+				_potential_talking_targets.append(ai['life'])
 	
 	#TODO: Score these
 	random.shuffle(_potential_talking_targets)
@@ -94,8 +73,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			#	speech.start_dialog(life, target['id'], 'introduction_negative')
 			#	brain.flag_alife(life, target['id'], 'not_friend')
 		elif lfe.get_questions(life, target=target['id']):
-			if _potential_talking_targets:
-				speech.start_dialog(life, target['id'], 'questions')
+			speech.start_dialog(life, target['id'], 'questions')
 		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
 			brain.flag_alife(life, target['id'], 'invited_to_group')
 			speech.start_dialog(life, target['id'], 'ask_to_join_group')
