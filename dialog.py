@@ -715,6 +715,7 @@ def process_response(life, target, dialog, chosen):
 			_responses.extend(get_responses_about_self(life))
 			_responses.append({'text': 'Why would I tell you?', 'gist': 'okay', 'dislike': 1})
 		else:
+			print 'CHECK!', target['name'], life['name']
 			if alife.stats.is_compatible_with(target, life['id']):
 				_responses.extend(get_responses_about_self(life))
 			else:

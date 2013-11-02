@@ -50,12 +50,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not speech.discussed(life, ai['life'], 'looks_hostile'):
 				speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
 				speech.send(life, ai['life'], 'looks_hostile')
-		else:
-			if not speech.discussed(life, ai['life'], 'greeting'):
-				if stats.is_compatible_with(life, ai['life']['id']):
-					speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
+		#else:
+		#	if not speech.discussed(life, ai['life'], 'greeting'):
+		#		if stats.is_compatible_with(life, ai['life']['id']):
+		#			speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
+		#		
+		#		speech.send(life, ai['life'], 'greeting')
 				
-				speech.send(life, ai['life'], 'greeting')
 	
 	_potential_talking_targets = []
 	for ai in alife_seen:
@@ -86,11 +87,12 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			break
 		
 		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
-			if stats.desires_life(life, target['id']):
-				speech.start_dialog(life, target['id'], 'introduction')
-			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
-				speech.start_dialog(life, target['id'], 'introduction_negative')
-				brain.flag_alife(life, target['id'], 'not_friend')
+			pass
+			#if stats.desires_life(life, target['id']):
+			#	speech.start_dialog(life, target['id'], 'introduction')
+			#elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
+			#	speech.start_dialog(life, target['id'], 'introduction_negative')
+			#	brain.flag_alife(life, target['id'], 'not_friend')
 		elif lfe.get_questions(life, target=target['id']):
 			if _potential_talking_targets:
 				speech.start_dialog(life, target['id'], 'questions')

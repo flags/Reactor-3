@@ -516,10 +516,6 @@ def is_safe_in_shelter(life, life_id):
 def is_compatible_with(life, life_id):
 	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
 	
-	#I don't trust modders with this
-	if not is_same_species(life, life_id):
-		return False
-	
 	#print _diff, life['stats']['sociability']
 	if _diff <= life['stats']['sociability']:
 		return True

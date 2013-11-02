@@ -207,7 +207,7 @@ def draw_event(event):
 		
 		_i += 1
 
-def show_event(text, time=30, delay=0, life=None, item=None, pos=None):
+def show_event(text, time=45, delay=0, life=None, item=None, pos=None):
 	_event = {'text': text, 'time': time, 'delay': delay}
 	
 	if life:

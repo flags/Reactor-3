@@ -3,6 +3,7 @@ import life as lfe
 import encounters
 import graphics
 import alife
+import logic
 
 import logging
 
@@ -30,25 +31,8 @@ def _create_context_from_phrase(life, phrase):
 	
 	elif phrase['gist'] == 'looks_hostile':
 		#encounters.create_encounter(life, phrase['from'])
+		#logic.show_event(
 		alife.speech.start_dialog(phrase['from'], life['id'], 'encounter')
-	
-	elif phrase['gist'] == 'surrender':
-		_reactions.append({'type': 'say','text': 'Stay still!',
-			'communicate': 'stand_still'})
-		_reactions.append({'type': 'say','text': 'Drop everything.',
-			'communicate': 'comply|drop_everything|stand_still'})
-	
-	elif phrase['gist'] == 'share_camp_info':
-		lfe.memory(life, 'heard about camp',
-			camp=phrase['camp']['id'],
-			target=phrase['from']['id'])
-		
-		alife.camps.discover_camp(life, phrase['camp'])		
-		graphics.message('You discovered a camp via %s.' % (' '.join(phrase['from']['name'])), style='important')
-	
-	elif phrase['gist'] == 'welcome_to_camp':
-		_reactions.append({'type': 'say','text': 'Good to be here!',
-			'communicate': 'greeting'})
 	#else:
 	#	logging.warning('Unhandled player context: %s' % phrase['gist'])
 

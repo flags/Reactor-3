@@ -1686,7 +1686,7 @@ def tick(life, source_map):
 			if 'player' in life:
 				gfx.message('You wake up.')
 			else:
-				say(life,'@n wakes up.',action=True)
+				say(life,'@n wakes up.',action=True, event=False)
 		
 		return False
 	
@@ -2839,7 +2839,7 @@ def pass_out(life,length=None):
 	if 'player' in life:
 		gfx.message('You pass out!',style='damage')
 	else:
-		say(life, '@n passes out.', action=True)
+		say(life, '@n passes out.', action=True, event=False)
 	
 	logging.debug('%s passed out.' % life['name'][0])
 
