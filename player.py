@@ -177,6 +177,27 @@ def handle_input():
 		else:
 			SETTINGS['paused'] = True
 	
+	if INPUT['a']:
+		_items = []
+		for entry in life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']], show_containers=False, check_hands=True):
+			if not 'id' in entry:
+				continue
+			
+			if 'ON_ACTIVATE' in ITEMS[entry['id']]['flags']:
+				_items.append(entry)
+		
+		if not _items:
+			gfx.message('You have no items to activate.')
+			return False
+		
+		_i = menus.create_menu(title='Activate',
+			menu=_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k: $v',
+			on_select=lambda entry: items.activate(ITEMS[entry['id']]))
+		
+		menus.activate_menu(_i)
 
 	if INPUT['i']:
 		if menus.get_menu_by_name('Inventory')>-1:

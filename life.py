@@ -338,6 +338,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['item_index'] = 0
 	_life['inventory'] = []
 	_life['flags'] = {}
+	_life['seen'] = []
 	_life['state'] = 'idle'
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
@@ -2267,7 +2268,7 @@ def equip_item(life, item_id):
 	else:
 		_equip_item(life, item_id)
 		
-		items.process_event(life, item_id, 'equip')
+		items.process_event(item, 'equip')
 	
 	life['speed_max'] = get_max_speed(life)
 	

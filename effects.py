@@ -99,7 +99,7 @@ def delete_fire(fire):
 	create_ash(fire['pos'])
 	
 	if 'light' in fire:
-		WORLD_INFO['lights'].remove(fire['light'])
+		delete_light(fire['light'])
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
@@ -182,15 +182,27 @@ def light_exists_at(pos):
 	
 	return False
 
-def create_light(pos, color, brightness, shake, fade=0, follow_pos=None):
+def create_light(pos, color, brightness, shake, fade=0, follow=None):
 	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
 	
-	if follow_pos:
-		_light['pos'] = follow_pos
+	if follow:
+		_light['pos'] = pos
 	
 	WORLD_INFO['lights'].append(_light)
 	
 	return _light
+
+def delete_light(light):
+	WORLD_INFO['lights'].remove(light)
+
+def delete_light_at(pos):
+	_light = light_exists_at(pos)
+	
+	if not _light:
+		logging.warning('Cannot remove light: No light exists at position %s, %s' % (pos[0], pos[1]))
+		return False
+	
+	delete_light(_light)
 
 def has_splatter(position, what=None):
 	#TODO: Make this into a dict so we can convert the position to a string and search that

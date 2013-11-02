@@ -18,7 +18,7 @@ import time
 
 #@profile
 def look(life):
-	if life['think_rate'] % 3 and not 'player' in life:
+	if not life['think_rate'] % 3 and not 'player' in life:
 		return False
 	life['seen'] = []
 	

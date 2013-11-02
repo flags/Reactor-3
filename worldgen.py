@@ -369,6 +369,7 @@ def create_player():
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
 	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
 	
 	for i in range(10):
 		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))

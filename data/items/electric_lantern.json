@@ -5,6 +5,6 @@
 "description": "A small light. Built with metal.",
 "brightness": 2,
 "light_shake": 0.3,
-"flags": "ON_ACTIVATE[LIGHT_FOLLOW(self, self.brightness, self.light_shake)]",
+"flags": "ON_ACTIVATE[LIGHT_FOLLOW(self, self.brightness, self.light_shake)]|ON_DEACTIVATE[LIGHT_FOLLOW_REMOVE(self, self.brightness, self.light_shake)]",
 "size": "2x2",
 "material": "metal"}

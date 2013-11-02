@@ -325,7 +325,7 @@ def render_lights(source_map):
 				_remove_lights.append(light)
 	
 	for light in _remove_lights:
-		WORLD_INFO['lights'].remove(light)
+		effects.delete_light(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]

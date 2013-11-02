@@ -160,6 +160,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
+	item['on'] = False
 	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
@@ -397,11 +398,23 @@ def remove_item_from_any_storage(item_uid):
 	
 	del _item['stored_in']
 
-def process_event(life, item_uid):
-	_item = ITEMS[item_uid]
+def process_event(item, event):
+	if event == 'equip' and 'ON_EQUIP' in item['flags']:
+		scripting.execute(item['flags']['ON_EQUIP'], item_uid=item['uid'])
 	
-	if 'ON_EQUIP' in _item['flags']:
-		scripting.execute(item['flags']['ON_EQUIP'], owner=life, item_uid=item_uid)
+	elif event == 'activate' and 'ON_ACTIVATE' in item['flags']:
+		scripting.execute(item['flags']['ON_ACTIVATE'], item_uid=item['uid'])
+	
+	elif event == 'deactivate' and 'ON_DEACTIVATE' in item['flags']:
+		scripting.execute(item['flags']['ON_DEACTIVATE'], item_uid=item['uid'])
+
+def activate(item):
+	if item['on']:
+		process_event(item, 'deactivate')
+		item['on'] = False
+	else:
+		process_event(item, 'activate')
+		item['on'] = True
 
 def burn(item, amount):
 	if not 'CAN_BURN' in item['flags']:
