@@ -31,6 +31,7 @@ New in version 0.6.1:
 		* Note: Some legacy code remains and is being phased out.
 	* Explosives are now more effective.
 	* Added movie mode (recording) (hit `?` to start, again to quit.)
+	* Certain items can now be activated (via `a`)
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
