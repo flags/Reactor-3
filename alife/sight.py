@@ -18,9 +18,6 @@ import time
 
 #@profile
 def look(life):
-	if life['think_rate']%6 and not 'player' in life:
-		return False
-	
 	life['seen'] = []
 	
 	if not 'CAN_SEE' in life['life_flags']:
@@ -38,11 +35,12 @@ def look(life):
 				continue
 			
 			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
-				_nearby_alife.append(alife['pos'])
+				_nearby_alife.append(alife['pos'][:])
 		
 		_nearby_alife.sort()
 		
 		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
+		
 		if not _last_nearby_alife == _nearby_alife:
 			brain.flag(life, '_nearby_alife', value=_nearby_alife)
 		else:
