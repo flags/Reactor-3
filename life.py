@@ -175,7 +175,8 @@ def initiate_limbs(life):
 		del body[limb]
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
-		body[limb]['flags'] = body[limb]['flags'].split('|')
+		body[limb]['_flags'] = body[limb]['flags'].split('|')
+		body[limb]['flags'] = []
 		body[limb]['holding'] = []
 		body[limb]['cut'] = 0
 		body[limb]['bleeding'] = 0
@@ -184,6 +185,21 @@ def initiate_limbs(life):
 		body[limb]['artery_ruptured'] = False
 		body[limb]['pain'] = 0
 		body[limb]['wounds'] = []
+		
+		for flag in body[limb]['_flags']:
+			if not '[' in flag:
+				continue
+			
+			_flag = flag.rstrip(']')
+			_key, _value = _flag.split('[')
+			
+			try:
+				body[limb].update(json.loads(_value))
+			except:
+				logging.error('Limb %s of life type %s has an error in flag %s' % (limb, life['species'], _key))
+		
+		if 'thickness' in body[limb]:
+			body[limb]['max_thickness'] = body[limb]['thickness']
 		
 		if not 'parent' in body[limb]:
 			continue
@@ -1798,7 +1814,6 @@ def throw_item(life, item_uid, target):
 	#TODO: The following works:
 	#_speed = _distance/_distance*(1-_drag)
 	_speed = 2
-	print 'speed',numbers.distance(_item['pos'], target), _drag
 	
 	items.move(_item, _direction, _speed, _velocity=_z_velocity)
 	speech.announce(life, 'threw_an_item', public=True, item=item_uid, target=life['id'])

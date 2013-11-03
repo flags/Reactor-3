@@ -28,7 +28,7 @@ def distance(pos1, pos2, old=False):
 	else:
 		return x_dist + (y_dist-x_dist)
 
-def velocity(direction,speed):
+def velocity(direction, speed):
 	rad = direction*(pi/180)
 	velocity = numpy.multiply(numpy.array([cos(rad),sin(rad)]),speed)
 	

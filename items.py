@@ -81,6 +81,21 @@ def initiate_item(name):
 		item['max_capacity'] = item['max_capacity'][0]*item['max_capacity'][1]
 		item['capacity'] = 0
 		item['storing'] = []
+		
+	if not 'examine_keys' in item:
+		item['examine_keys'] = ['description']
+	
+	if 'speed' in item:
+		item['max_speed'] = item['speed']
+	else:
+		item['max_speed'] = 2
+	
+	if 'thickness' in item:
+		item['max_thickness'] = item['thickness']
+	else:
+		item['max_thickness'] = 1
+		item['thickness'] = 1
+		logging.warning('No thickness defined for item %s.' % item['name'])
 	
 	if not 'size' in item:
 		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_SIZE))
@@ -162,13 +177,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['aim_at_limb'] = None
 	item['on'] = False
 	
-	if not 'examine_keys' in item:
-		item['examine_keys'] = ['description']
-	
-	if 'speed' in item:
-		item['max_speed'] = item['speed']
-	else:
-		item['max_speed'] = 2
+	item['speed'] = 0
 	
 	add_to_chunk(item)
 	ITEMS[item['uid']] = item
@@ -310,6 +319,7 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
+	item['speed'] = speed
 	item['friction'] = friction
 	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
@@ -518,7 +528,7 @@ def collision_with_solid(item, pos):
 	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 		return True
 	
-	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
+	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
 		item['pos'] = pos
@@ -629,6 +639,8 @@ def tick_item(item_uid):
 		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
+		print 'SPEED', item['speed']
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 			logging.warning('Item OOM: %s', item['uid'])
@@ -719,6 +731,8 @@ def tick_item(item_uid):
 	
 	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
+	print 'SPEED', item['speed']
 
 def tick_all_items(MAP):
 	for item in ITEMS.keys():
