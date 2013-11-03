@@ -632,8 +632,8 @@ def position_is_in_frame(pos):
 	if not _view:
 		return False
 	
-	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, _view['view_size'][0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, _view['view_size'][1]):
+	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, MAP_SIZE[1]):
 		return True
 	
 	return False

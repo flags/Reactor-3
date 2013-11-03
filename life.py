@@ -188,6 +188,7 @@ def initiate_limbs(life):
 		
 		for flag in body[limb]['_flags']:
 			if not '[' in flag:
+				body[limb]['flags'].append(flag)
 				continue
 			
 			_flag = flag.rstrip(']')
@@ -3298,10 +3299,10 @@ def damage_from_item(life, item, damage):
 		_rand_limb = [random.choice(life['body'].keys())]
 	
 	_poss_limbs = _rand_limb
-	_shot_by_alife = LIFE[item['owner']]
+	_shot_by_alife = LIFE[item['shot_by']]
 	
 	if not _rand_limb:
-		memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+		memory(life, 'shot at by (missed)', target=item['shot_by'], danger=3, trust=-10)
 		create_and_update_self_snapshot(life)
 		
 		if 'player' in _shot_by_alife:
@@ -3312,11 +3313,11 @@ def damage_from_item(life, item, damage):
 		return False
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
-	create_and_update_self_snapshot(LIFE[item['owner']])
+	memory(life, 'shot by', target=item['shot_by'], danger=3, trust=-10)
+	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	
-	if judgement.can_trust(life, item['owner']):
-		memory(life, 'traitor', target=item['owner'])
+	if judgement.can_trust(life, item['shot_by']):
+		memory(life, 'traitor', target=item['shot_by'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])

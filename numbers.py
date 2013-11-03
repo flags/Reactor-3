@@ -34,6 +34,12 @@ def velocity(direction, speed):
 	
 	return [velocity[0],-velocity[1],0]
 
+def get_surface_area(structure):
+	if 'attaches_to' in structure:
+		return structure['size']*len(structure['attaches_to'])
+	
+	return structure['size']
+
 def direction_to(pos1, pos2):
 	theta = atan2((pos1[1]-pos2[1]), -(pos1[0]-pos2[0]))
 		

@@ -22,7 +22,7 @@ def get_puncture_value(item, target_structure, target_structure_name='object', d
 	
 	return (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	       (target_structure['max_thickness']/float(target_structure['thickness'])))*\
-	       (item['size']/float(target_structure['size']))
+	       (item['size']/float(numbers.get_surface_area(target_structure)))
 
 def own_language(life, message):
 	_mentioned_name = False
@@ -48,7 +48,7 @@ def bullet_hit(life, bullet, limb):
 	#_breaking = False
 	#_lodged = False
 	
-	_owner = LIFE[bullet['owner']]
+	_owner = LIFE[bullet['shot_by']]
 	_actual_limb = lfe.get_limb(life, limb)
 	
 	if 'player' in _owner:
@@ -63,9 +63,10 @@ def bullet_hit(life, bullet, limb):
 		_msg = ['%s shoots' % language.get_name(_owner)]
 		_detailed = False
 	
+	_msg = ['The %s hits' % bullet['name']]
+	
 	#What are we hitting?
 	_items_to_check = []
-	
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})
 		_item = items.get_item_from_uid(item_uid)
@@ -76,23 +77,50 @@ def bullet_hit(life, bullet, limb):
 		
 	for entry in _items_to_check:
 		_item = items.get_item_from_uid(entry['item'])
-		_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
-
-		_item['thickness'] = numbers.clip(_item['thickness']-_damage, 0, _item['max_thickness'])
-		print '%s punctures %s' % (bullet['name'], _item['name']), _damage
+		_item_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
+		_item['thickness'] = numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
 		
-		_speed_mod = 1-(_damage)
-		print _speed_mod, 1, _damage
+		_speed_mod = 1-(_item_damage)
 		bullet['speed'] *= _speed_mod
 		bullet['velocity'][0] *= _speed_mod
 		bullet['velocity'][1] *= _speed_mod
 		
-		if bullet['speed']<=0:
-			return '%s is stopped by the %s.' % (items.get_name(bullet), _item['name'])
+		if not _item['thickness']:
+			_msg.append(' destroying the %s' % _item['name'])
+
+			if _item['type'] == 'explosive':
+				items.explode(_item)
+			else:
+				items.delete_item(_item)
+		else:
+			if bullet['speed']<=0:
+				_msg.append(', lodging itself in %s' % items.get_name(_item))
+				_ret_string = own_language(life, _msg)
+			
+				if _ret_string.endswith('!'):
+					return _ret_string
+				else:
+					return _ret_string+'.'
+			else:
+				if 'material' in _item:
+					if _item['material'] == 'metal':
+						_msg.append(', puncturing the %s' % _item['name'])
+					else:
+						_msg.append(', ripping through the %s' % _item['name'])
 	
-	print bullet['speed'], bullet['max_speed'], bullet['damage']['sharp'],
+	_damage = get_puncture_value(bullet, _actual_limb, target_structure_name=limb)
+	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
+	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
 	
-	return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
+	lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity'])
+	
+	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
+	_ret_string = own_language(life, _msg)
+	
+	if _ret_string.endswith('!'):
+		return _ret_string
+	else:
+		return _ret_string+'.'
 	
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
