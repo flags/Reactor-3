@@ -471,7 +471,7 @@ def draw_message_box():
 			_y_mod += 1
 			_text = _text[_view['draw_size'][0]-2:]
 			
-			if _y_mod >= MESSAGE_LOG_MAX_LINES:
+			if _y_mod >= MESSAGE_LOG_MAX_LINES-1:
 				break
 			
 			if not _text.startswith(' ') and _text:
