@@ -187,7 +187,6 @@ def create_item(name, position=[0,0,2], item=None):
 
 def delete_item(item):
 	if item['owner']:
-		print item['name'], LIFE[item['owner']]['name']
 		life.remove_item_from_inventory(LIFE[item['owner']], item['uid'])
 	
 	logging.debug('Deleting references to item %s' % item['uid'])

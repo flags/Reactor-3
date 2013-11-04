@@ -164,7 +164,6 @@ def fire(life, target, limb=None):
 	items.add_to_chunk(_bullet)
 	
 	if gfx.position_is_in_frame(life['pos']):
-		print 'YEAH!!!!!!!!!!!!!!!'
 		effects.create_light(life['pos'], tcod.yellow, 2, 0, fade=0.8)
 		effects.create_light(_bullet['pos'], tcod.yellow, 1, 0, fade=0.65, follow=_bullet['pos'])
 	

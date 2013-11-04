@@ -329,7 +329,6 @@ def ranged_combat(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
-		print targets
 		movement.find_target(life, targets, call=False)
 		return False
 	
@@ -373,6 +372,10 @@ def ranged_combat(life, targets):
 	else:
 		print 'THIS IS MUCH QUICKER!!!' * 10
 		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
+	
+	if not target:
+		logging.error('No target for ranged combat.')
+		return False
 	
 	if not life['path'] or not numbers.distance(lfe.path_dest(life), target['last_seen_at']) == 0:
 		movement.position_to_attack(life, target['life']['id'])

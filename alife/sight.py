@@ -332,6 +332,9 @@ def find_known_items(life, matches={}, only_visible=True):
 			print 'locked'
 			continue
 		
+		if 'parent' in _item and _item['parent']:
+			continue
+		
 		_match.append(item_uid)
 	
 	return _match

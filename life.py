@@ -1534,7 +1534,7 @@ def perform_action(life):
 		
 	elif _action['action'] == 'reload':	
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
-		_ammo = remove_item_from_inventory(life,_action['ammo']['uid'])
+		_ammo = remove_item_from_inventory(life, _action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
 		
 		if life.has_key('player'):
@@ -2022,7 +2022,7 @@ def _get_item_access_time(life, item):
 	"""Returns the amount of time it takes to get an item from inventory."""
 	#TODO: Where's it at on the body? How long does it take to get to it?
 	if isinstance(item, dict):
-		logging.debug('Getting access time for non-inventory item #%s' % item['uid'])
+		logging.debug('%s is getting access time for non-inventory item #%s' % (' '.join(life['name']), item['uid']))
 		
 		#TODO: We kinda do this twice...
 		_time = 0
@@ -2165,7 +2165,7 @@ def remove_item_from_inventory(life, item_id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['uid']})
 	
-	logging.debug('Removed from inventory: %s' % item['name'])
+	logging.debug('%s removed item from inventory: %s (#%s)' % (' '.join(life['name']), item['name'], item['uid']))
 	
 	life['inventory'].remove(item['uid'])
 	del item['parent_id']

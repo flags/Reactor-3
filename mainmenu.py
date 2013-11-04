@@ -117,8 +117,6 @@ def draw_message():
 		#graphics.blit_string(1, _y, line)
 		console_print(0, 1, _y, line)
 		_y += 1
-	
-	graphics.start_of_frame()
 
 def draw_main_menu():
 	menus.align_menus()
