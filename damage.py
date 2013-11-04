@@ -13,16 +13,18 @@ import random
 
 #Scale & Design
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
+	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
+	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
+	           (item['size']/float(numbers.get_surface_area(target_structure)))
 	if debug:
 		logging.debug('%s is pucturing %s.' % (item['name'], target_structure_name))
 		logging.debug('%s\'s max speed is %s and is currently traveling at speed %s.' % (item['name'], item['max_speed'], item['speed']))
 		logging.debug('The %s\'s material has a thickness of %s (with a max of %s).' % (target_structure_name, target_structure['thickness'], target_structure['max_thickness']))
 		logging.debug('%s has a puncture rating of %s.' % (item['name'], item['damage']['sharp']))
 		logging.debug('Size of %s: %s, size of %s: %s' % (item['name'], item['size'], target_structure_name, target_structure['size']))
+		logging.debug('The %s does %s points of damage to the %s.' % (item['name'], _damage, target_structure_name))
 	
-	return (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
-	       (target_structure['max_thickness']/float(target_structure['thickness'])))*\
-	       (item['size']/float(numbers.get_surface_area(target_structure)))
+	return _damage
 
 def own_language(life, message):
 	_mentioned_name = False
@@ -61,9 +63,8 @@ def bullet_hit(life, bullet, limb):
 		_detailed = True
 	else:
 		_msg = ['%s shoots' % language.get_name(_owner)]
-		_detailed = False
 	
-	_msg = ['The %s hits' % bullet['name']]
+	#_msg = ['The %s hits' % bullet['name']]
 	
 	#What are we hitting?
 	_items_to_check = []
@@ -73,6 +74,9 @@ def bullet_hit(life, bullet, limb):
 		
 		if 'storing' in _item:
 			for item_in_container_uid in _item['storing']:
+				if random.randint(0, ITEMS[item_in_container_uid]['size'])<bullet['size']:
+					continue
+				
 				_items_to_check.append({'item': item_in_container_uid, 'visible': False})
 		
 	for entry in _items_to_check:
@@ -86,7 +90,7 @@ def bullet_hit(life, bullet, limb):
 		bullet['velocity'][1] *= _speed_mod
 		
 		if not _item['thickness']:
-			_msg.append(' destroying the %s' % _item['name'])
+			_msg.append(', destroying the %s' % _item['name'])
 
 			if _item['type'] == 'explosive':
 				items.explode(_item)
@@ -112,7 +116,7 @@ def bullet_hit(life, bullet, limb):
 	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
 	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
 	
-	lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity'])
+	_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
 	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
 	_ret_string = own_language(life, _msg)

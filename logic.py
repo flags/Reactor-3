@@ -35,18 +35,6 @@ def can_tick(check=True):
 		return False
 	
 	if SETTINGS['controlling']:
-		if LIFE[SETTINGS['controlling']]['targeting'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
-			LIFE[SETTINGS['controlling']]['shoot_timer']-=1
-			return False
-		
-		if LIFE[SETTINGS['controlling']]['contexts'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
-			#TODO: Just disable this...
-			LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
-			return False
-		
-		if LIFE[SETTINGS['controlling']]['encounters']:
-			return False
-		
 		if MENUS:
 			return False
 		
@@ -207,7 +195,7 @@ def draw_event(event):
 		
 		_i += 1
 
-def show_event(text, time=45, delay=0, life=None, item=None, pos=None):
+def show_event(text, time=45, delay=0, life=None, item=None, pos=None, priority=False):
 	_event = {'text': text, 'time': time, 'delay': delay}
 	
 	if life:
@@ -217,7 +205,10 @@ def show_event(text, time=45, delay=0, life=None, item=None, pos=None):
 	elif pos:
 		_event['pos'] = pos
 	
-	EVENTS.append(_event)
+	if priority:
+		EVENTS.insert(0, _event)
+	else:
+		EVENTS.append(_event)
 
 def show_next_event():
 	if not EVENTS:

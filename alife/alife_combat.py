@@ -35,9 +35,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not lfe.execute_raw(life, 'combat', 'ranged') and not lfe.execute_raw(life, 'combat', 'melee'):
 		return False
 	
-	if _mode == 'hunt':
-		lfe.focus_on(life)
-	
 	if not life['state'] == STATE:
 		life['state_flags'] = {}
 		stats.battle_cry(life)

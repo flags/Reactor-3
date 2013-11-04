@@ -937,7 +937,7 @@ def stand(life):
 def crawl(life, force=False):
 	if force:
 		life['stance'] = 'crawling'
-		set_animation(life, ['v', '@'], speed=_delay/2)
+		set_animation(life, ['v', '@'], speed=15)
 		return True
 	
 	if life['stance'] == 'standing':
@@ -3123,19 +3123,43 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
+	_cut_amount = amount/float(_limb['size'])
+	_current_limb_condition = get_limb_condition(life, limb)
 	
-	if _limb['cut'] >= _limb['size']:
+	if not _current_limb_condition:
 		if 'CRUCIAL' in life['body'][limb]['flags']:
 			kill(life, 'a critical blow to the %s' % limb)
-			return True
+			
+			if 'player' in life:
+				return 'killing you!'
+			
+			return 'killing %s.' % ' '.join(life['name'])
 		
 		sever_limb(life, limb, impact_velocity)
-		return True
+		return 'severing it!'
 	
 	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
 	
-	if life.has_key('player'):
-		gfx.message('Your %s is severely cut!' % limb,style='damage')
+	if 'player' in life:
+		_name = 'your'
+	else:
+		_name = ' '.join(life['name'])
+	
+	if _cut_amount>=.75:
+		return '%s %s\'s %s!' % (random.choice(['devastating', 'taking a slice out of', 'ripping apart']),
+		                         _name,
+		                         limb)
+	elif _cut_amount>=.50:
+		return '%s %s\'s %s!' % (random.choice(['cutting open', 'wounding', 'opening']),
+		                        _name,
+		                         limb)
+	else:
+		return '%s %s\'s %s!' % (random.choice(['grazing', 'scraping']),
+		                        _name,
+		                         limb)
+	
+	#if life.has_key('player'):
+	#	gfx.message('Your %s is severely cut!' % limb,style='damage')
 
 def bruise_limb(life, limb):
 	_limb = life['body'][limb]
@@ -3194,12 +3218,13 @@ def add_pain_to_limb(life, limb, amount=1):
 
 def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
+	_msg = []
 	
 	if cut:
-		cut_limb(life, limb, amount=cut, impact_velocity=impact_velocity)
+		_msg.append(cut_limb(life, limb, amount=cut, impact_velocity=impact_velocity))
 		
 		if not limb in life['body']:
-			return False
+			return ', '.join(_msg)
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
 	
@@ -3227,6 +3252,8 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		'lodged_item': lodged_item}
 	
 	_limb['wounds'].append(_injury)
+	
+	return ', '.join(_msg)
 
 def get_limb_stability(life, limb):
 	_limb = get_limb(life, limb)
@@ -3238,6 +3265,11 @@ def get_limb_stability(life, limb):
 	_stability -= limb_is_cut(life, limb)
 	
 	return numbers.clip(_stability, 0, 10)/10.0
+
+def get_limb_condition(life, limb):
+	_limb = get_limb(life, limb)
+	
+	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -3346,7 +3378,7 @@ def damage_from_item(life, item, damage):
 	
 	if 'player' in _shot_by_alife:
 		gfx.message(_dam_message, style='player_combat_good')
-		logic.show_event(_dam_message, time=35, life=life)
+		logic.show_event(_dam_message, time=35, life=life, priority=True)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	else:
