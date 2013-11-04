@@ -30,6 +30,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	print life['name'], 'scared of', LIFE[judgement.get_nearest_threat(life)]['name']
 	if lfe.ticker(life, 'call_for_help', 160, fire=True):
 		_target = judgement.get_nearest_threat(life)
 		_knows = brain.knows_alife_by_id(life, _target)
