@@ -18,6 +18,10 @@ import time
 
 #@profile
 def look(life):
+	for target_id in life['know']:
+		if life['know'][target_id]['last_seen_time']:
+			life['know'][target_id]['last_seen_time'] += 1
+	
 	if not life['think_rate'] % 3 and not 'player' in life:
 		return False
 	life['seen'] = []
@@ -49,9 +53,6 @@ def look(life):
 			return False
 		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
-	
-	for target_id in life['know']:
-		life['know'][target_id]['last_seen_time'] += 1
 	
 	for item_uid in life['know_items']:
 		life['know_items'][item_uid]['last_seen_time'] += 1

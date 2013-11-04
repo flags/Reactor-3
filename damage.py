@@ -11,6 +11,19 @@ import items
 import logging
 import random
 
+#Scale & Design
+def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
+	if debug:
+		logging.debug('%s is pucturing %s.' % (item['name'], target_structure_name))
+		logging.debug('%s\'s max speed is %s and is currently traveling at speed %s.' % (item['name'], item['max_speed'], item['speed']))
+		logging.debug('The %s\'s material has a thickness of %s (with a max of %s).' % (target_structure_name, target_structure['thickness'], target_structure['max_thickness']))
+		logging.debug('%s has a puncture rating of %s.' % (item['name'], item['damage']['sharp']))
+		logging.debug('Size of %s: %s, size of %s: %s' % (item['name'], item['size'], target_structure_name, target_structure['size']))
+	
+	return (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
+	       (target_structure['max_thickness']/float(target_structure['thickness'])))*\
+	       (item['size']/float(numbers.get_surface_area(target_structure)))
+
 def own_language(life, message):
 	_mentioned_name = False
 	_ret_string = ''
@@ -28,13 +41,14 @@ def own_language(life, message):
 	return _ret_string
 
 def bullet_hit(life, bullet, limb):
-	_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
-	_damage = 0
-	_cut = 0
-	_bruise = 0
-	_breaking = False
-	_lodged = False
-	_owner = LIFE[bullet['owner']]
+	#_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
+	#_damage = 0
+	#_cut = 0
+	#_bruise = 0
+	#_breaking = False
+	#_lodged = False
+	
+	_owner = LIFE[bullet['shot_by']]
 	_actual_limb = lfe.get_limb(life, limb)
 	
 	if 'player' in _owner:
@@ -49,11 +63,64 @@ def bullet_hit(life, bullet, limb):
 		_msg = ['%s shoots' % language.get_name(_owner)]
 		_detailed = False
 	
-	#_msg = ['The %(name)s' % bullet]
-	#_msg.append('hits the %s,' % limb)
+	_msg = ['The %s hits' % bullet['name']]
 	
-	#Language stuff
-	_limb_in_context = True
+	#What are we hitting?
+	_items_to_check = []
+	for item_uid in lfe.get_items_attached_to_limb(life, limb):
+		_items_to_check.append({'item': item_uid, 'visible': True})
+		_item = items.get_item_from_uid(item_uid)
+		
+		if 'storing' in _item:
+			for item_in_container_uid in _item['storing']:
+				_items_to_check.append({'item': item_in_container_uid, 'visible': False})
+		
+	for entry in _items_to_check:
+		_item = items.get_item_from_uid(entry['item'])
+		_item_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
+		_item['thickness'] = numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
+		
+		_speed_mod = 1-(_item_damage)
+		bullet['speed'] *= _speed_mod
+		bullet['velocity'][0] *= _speed_mod
+		bullet['velocity'][1] *= _speed_mod
+		
+		if not _item['thickness']:
+			_msg.append(' destroying the %s' % _item['name'])
+
+			if _item['type'] == 'explosive':
+				items.explode(_item)
+			else:
+				items.delete_item(_item)
+		else:
+			if bullet['speed']<=0:
+				_msg.append(', lodging itself in %s' % items.get_name(_item))
+				_ret_string = own_language(life, _msg)
+			
+				if _ret_string.endswith('!'):
+					return _ret_string
+				else:
+					return _ret_string+'.'
+			else:
+				if 'material' in _item:
+					if _item['material'] == 'metal':
+						_msg.append(', puncturing the %s' % _item['name'])
+					else:
+						_msg.append(', ripping through the %s' % _item['name'])
+	
+	_damage = get_puncture_value(bullet, _actual_limb, target_structure_name=limb)
+	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
+	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
+	
+	lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity'])
+	
+	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
+	_ret_string = own_language(life, _msg)
+	
+	if _ret_string.endswith('!'):
+		return _ret_string
+	else:
+		return _ret_string+'.'
 	
 	if 'sharp' in bullet['damage']:
 		_cut = int(round(bullet['damage']['sharp']*_falloff))
@@ -61,15 +128,6 @@ def bullet_hit(life, bullet, limb):
 		print 'falloff', _falloff
 	
 	if _cut:
-		_items_to_check = []
-		for _item in lfe.get_items_attached_to_limb(life, limb):
-			_items_to_check.append({'item': _item, 'visible': True})
-			_actual_item = items.get_item_from_uid(_item)
-			
-			if 'storing' in _actual_item:
-				for _item_in_container in _actual_item['storing']:
-					_items_to_check.append({'item': _item_in_container, 'visible': False})
-		
 		for entry in _items_to_check:
 			_item = items.get_item_from_uid(entry['item'])
 			print '***HIT***', _item['name']
@@ -81,7 +139,6 @@ def bullet_hit(life, bullet, limb):
 			_thickness = _item['thickness']
 			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
 			_tear = _item['thickness']-_thickness
-			_limb_in_context = False
 			
 			if _item['material'] == 'cloth':
 				if _thickness and not _item['thickness']:

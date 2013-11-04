@@ -23,7 +23,7 @@ def score_shootcover(life,target,pos):
 	return numbers.distance(life['pos'],pos)
 
 def position_to_attack(life, target):
-	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target], ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if')))
+	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
@@ -150,6 +150,8 @@ def escape(life, targets):
 	if not _cover:
 		return False
 	
+	print 'escaping from', life['pos'], len(_target_positions), len(_cover)
+	
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	for _pos in _cover:
 		_zone = zones.get_zone_at_coords(_pos)
@@ -161,10 +163,10 @@ def escape(life, targets):
 		return True
 	
 	lfe.add_action(life, {'action': 'dijkstra_move',
-                          'rolldown': True,
-	                     'zones': _zones,
-                          'goals': _cover[:],
-	                     'reason': 'escaping'},
+	                      'rolldown': True,
+	                      'zones': _zones,
+	                      'goals': _cover[:],
+	                      'reason': 'escaping'},
                    999)
 
 def hide(life, target_id):

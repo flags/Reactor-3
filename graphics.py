@@ -471,11 +471,14 @@ def draw_message_box():
 			_y_mod += 1
 			_text = _text[_view['draw_size'][0]-2:]
 			
-			if _y_mod >= MESSAGE_LOG_MAX_LINES:
+			if _y_mod > MESSAGE_LOG_MAX_LINES:
 				break
 			
 			if not _text.startswith(' ') and _text:
 				_text = ' '+_text
+		
+		if _y_mod > MESSAGE_LOG_MAX_LINES:
+			break
 
 def draw_status_line():
 	_flashing_text = []
@@ -632,8 +635,9 @@ def position_is_in_frame(pos):
 	if not _view:
 		return False
 	
-	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, _view['view_size'][0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, _view['view_size'][1]):
+	print CAMERA_POS[0], CAMERA_POS[1], pos, CAMERA_POS[0]+_view['view_size'][0], CAMERA_POS[1]+_view['view_size'][1]
+	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['view_size'][0], 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['view_size'][1], 0, MAP_SIZE[1]):
 		return True
 	
 	return False

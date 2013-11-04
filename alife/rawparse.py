@@ -46,6 +46,7 @@ def create_function_map():
 		'is_intimidated': stats.is_intimidated,
 		'is_confident': stats.is_confident,
 		'is_situation_tense': lambda life: judgement.get_tension(life)>=10,
+		'is_combat_ready': lambda life, life_id: not LIFE[life_id]['state'] in ['hiding', 'hidden'],
 		'closest': None,
 		'kill': lambda life: lfe.kill(life, 'their own dumb self'),
 		'has_attacked_trusted': stats.has_attacked_trusted,

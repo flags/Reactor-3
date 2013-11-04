@@ -175,7 +175,8 @@ def initiate_limbs(life):
 		del body[limb]
 		body[str(limb)] = _val
 		body[limb] = body[str(limb)]
-		body[limb]['flags'] = body[limb]['flags'].split('|')
+		body[limb]['_flags'] = body[limb]['flags'].split('|')
+		body[limb]['flags'] = []
 		body[limb]['holding'] = []
 		body[limb]['cut'] = 0
 		body[limb]['bleeding'] = 0
@@ -184,6 +185,22 @@ def initiate_limbs(life):
 		body[limb]['artery_ruptured'] = False
 		body[limb]['pain'] = 0
 		body[limb]['wounds'] = []
+		
+		for flag in body[limb]['_flags']:
+			if not '[' in flag:
+				body[limb]['flags'].append(flag)
+				continue
+			
+			_flag = flag.rstrip(']')
+			_key, _value = _flag.split('[')
+			
+			try:
+				body[limb].update(json.loads(_value))
+			except:
+				logging.error('Limb %s of life type %s has an error in flag %s' % (limb, life['species'], _key))
+		
+		if 'thickness' in body[limb]:
+			body[limb]['max_thickness'] = body[limb]['thickness']
 		
 		if not 'parent' in body[limb]:
 			continue
@@ -917,7 +934,12 @@ def stand(life):
 		200,
 		delay=_delay)
 
-def crawl(life):
+def crawl(life, force=False):
+	if force:
+		life['stance'] = 'crawling'
+		set_animation(life, ['v', '@'], speed=_delay/2)
+		return True
+	
 	if life['stance'] == 'standing':
 		_delay = 15
 	elif life['stance'] == 'crouching':
@@ -1798,7 +1820,6 @@ def throw_item(life, item_uid, target):
 	#TODO: The following works:
 	#_speed = _distance/_distance*(1-_drag)
 	_speed = 2
-	print 'speed',numbers.distance(_item['pos'], target), _drag
 	
 	items.move(_item, _direction, _speed, _velocity=_z_velocity)
 	speech.announce(life, 'threw_an_item', public=True, item=item_uid, target=life['id'])
@@ -3076,7 +3097,11 @@ def sever_limb(life, limb, impact_velocity):
 		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size']*5)
 	
-	set_animation(life, ['X', '!'], speed=4)
+	if limb in get_legs(life):
+		crawl(life, force=True)
+		say(life, 'falls over!', action=True, event=True)
+	
+	set_animation(life, ['X', '!'], speed=5)
 	
 	effects.create_gib(life, '-', life['body'][limb]['size'], limb, impact_velocity)
 	
@@ -3283,10 +3308,10 @@ def damage_from_item(life, item, damage):
 		_rand_limb = [random.choice(life['body'].keys())]
 	
 	_poss_limbs = _rand_limb
-	_shot_by_alife = LIFE[item['owner']]
+	_shot_by_alife = LIFE[item['shot_by']]
 	
 	if not _rand_limb:
-		memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+		memory(life, 'shot at by (missed)', target=item['shot_by'], danger=3, trust=-10)
 		create_and_update_self_snapshot(life)
 		
 		if 'player' in _shot_by_alife:
@@ -3297,11 +3322,11 @@ def damage_from_item(life, item, damage):
 		return False
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot by', target=item['owner'], danger=3, trust=-10)
-	create_and_update_self_snapshot(LIFE[item['owner']])
+	memory(life, 'shot by', target=item['shot_by'], danger=3, trust=-10)
+	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	
-	if judgement.can_trust(life, item['owner']):
-		memory(life, 'traitor', target=item['owner'])
+	if judgement.can_trust(life, item['shot_by']):
+		memory(life, 'traitor', target=item['shot_by'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])
@@ -3321,7 +3346,11 @@ def damage_from_item(life, item, damage):
 		say(life, _dam_message, action=True)
 	
 	create_and_update_self_snapshot(life)
-	judgement.judge_life(life, _shot_by_alife['id'])
+	
+	if brain.knows_alife_by_id(life, _shot_by_alife['id']):
+		judgement.judge_life(life, _shot_by_alife['id'])
+	else:
+		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']])))
 	
 	return True
 

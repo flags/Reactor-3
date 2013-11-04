@@ -3,160 +3,160 @@
     "lthigh": {
       "damage_mod": 1.0, 
       "bleed_mod": 1.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "hip", 
       "size": 4
     }, 
     "lknee": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lthigh", 
       "size": 3
     }, 
     "rfoot": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "rlowerleg", 
       "size": 2
     }, 
     "llowerleg": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lknee", 
       "size": 3
     }, 
     "rhand": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "rforearm", 
       "size": 2
     }, 
     "rupperarm": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lshoulder", 
       "size": 3
     }, 
     "lhand": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lforearm", 
       "size": 2
     }, 
     "rthigh": {
       "damage_mod": 1.0, 
       "bleed_mod": 1.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "hip", 
       "size": 4
     }, 
     "rknee": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "rthigh", 
       "size": 3
     }, 
     "chest": {
       "damage_mod": 2.0, 
       "bleed_mod": 1.5, 
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE|CRUCIAL", 
       "parent": "neck", 
       "size": 7
     }, 
     "lelbow": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lupperarm", 
       "size": 2
     }, 
     "relbow": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "rupperarm", 
       "size": 2
     }, 
     "lupperarm": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lshoulder", 
       "size": 3
     }, 
     "hip": {
       "damage_mod": 2.0, 
       "bleed_mod": 1.0, 
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE|CRUCIAL", 
       "parent": "stomach", 
       "size": 4
     }, 
     "head": {
       "damage_mod": 2.0, 
       "bleed_mod": 1.5, 
-      "flags": "SKIN|BONE|CRUCIAL|AFFECTS[sight,hearing]", 
+      "flags": "SKIN[{\"thickness\": 2}]|BONE|CRUCIAL|AFFECTS[sight,hearing]", 
       "size": 4
     }, 
     "stomach": {
       "damage_mod": 1.0, 
       "bleed_mod": 1.5, 
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE|CRUCIAL", 
       "parent": "chest", 
       "size": 5
     }, 
     "rlowerleg": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.3, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "rknee", 
       "size": 3
     }, 
     "neck": {
       "damage_mod": 2.0, 
       "bleed_mod": 2.0, 
-      "flags": "SKIN|MUSCLE|BONE|CRUCIAL", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE|CRUCIAL", 
       "parent": "head", 
       "size": 3
     }, 
     "lshoulder": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "chest", 
       "size": 4
     }, 
     "lforearm": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "lelbow", 
       "size": 3
     }, 
     "lfoot": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "llowerleg", 
       "size": 2
     }, 
     "rforearm": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.2, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "relbow", 
       "size": 3
     }, 
     "rshoulder": {
       "damage_mod": 1.0, 
       "bleed_mod": 0.5, 
-      "flags": "SKIN|MUSCLE|BONE", 
+      "flags": "SKIN[{\"thickness\": 2}]|MUSCLE|BONE", 
       "parent": "chest", 
       "size": 4
     }
