@@ -1476,11 +1476,18 @@ def perform_action(life):
 		_item = items.get_item_from_uid(_action['item'])
 		_hand = get_limb(life, _action['hand'])
 		
+		if _item['owner']:
+			_know = brain.remember_known_item(life, _action['item'])
+			_know['last_owned_by'] = _item['owner']
+			delete_action(life, action)
+			
+			return False
+		
 		if _hand['holding']:
 			if life.has_key('player'):
 				gfx.message('You\'re already holding something in your %s!' % _action['hand'])
 		
-			delete_action(life,action)
+			delete_action(life, action)
 			
 			return False
 		

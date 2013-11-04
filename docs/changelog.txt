@@ -7,6 +7,11 @@ New in version 0.6.1:
 		* Groups will now gather resources and engage in combat with other groups.
 	* The player and ALife can now "hear" noises (firearms, explosions, etc.)
 		* Note: Actual sounds are planned for a future version.
+	* Reworked judgement.
+		* NPCs won't talk as much and judge based on a wider variety of factors.
+	* NPCs can now learn more details about others and items.
+		* This information can also become out of date, leading to bad decision making.
+	*
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
 	* Group leaders can now issue attack orders (hit `tab`)
