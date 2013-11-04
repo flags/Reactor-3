@@ -3122,9 +3122,9 @@ def sever_limb(life, limb, impact_velocity):
 
 def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
-	
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
+	
 	_cut_amount = amount/float(_limb['size'])
 	_current_limb_condition = get_limb_condition(life, limb)
 	
@@ -3213,8 +3213,14 @@ def add_force_to_limb(life, limb, impact_velocity):
 
 def add_pain_to_limb(life, limb, amount=1):
 	_limb = life['body'][limb]
-	
+	_previous_condition = get_limb_condition(life, limb)
 	_limb['pain'] += amount
+	_current_condition = get_limb_condition(life, limb)
+	
+	print 'PASS OUT CHECK'*50, _previous_condition-_current_condition
+	
+	if _previous_condition-_current_condition>=.50:
+		pass_out(life, length=25*(1-_current_condition))
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
