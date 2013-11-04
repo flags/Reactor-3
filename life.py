@@ -1741,6 +1741,8 @@ def tick(life, source_map):
 			pass_out(life)
 			
 			return False
+	elif life['consciousness']<100:
+		life['consciousness'] += 1
 	
 	perform_collisions(life)
 	alife.survival.generate_needs(life)
@@ -2860,7 +2862,7 @@ def get_damage(life):
 	
 	return _damage		
 
-def pass_out(life,length=None):
+def pass_out(life, length=None):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
@@ -2878,7 +2880,7 @@ def get_total_pain(life):
 	_pain = 0
 	
 	for limb in life['body']:
-		_pain += limb_is_in_pain(life, limb)
+		_pain += get_limb_pain(life, limb)
 	
 	return _pain
 
@@ -3027,7 +3029,7 @@ def limb_is_broken(life, limb):
 	
 	return _limb['broken']
 
-def limb_is_in_pain(life, limb):
+def get_limb_pain(life, limb):
 	_limb = life['body'][limb]
 	
 	_score = _limb['pain']
@@ -3131,9 +3133,9 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 			kill(life, 'a critical blow to the %s' % limb)
 			
 			if 'player' in life:
-				return 'killing you!'
+				return 'killing you'
 			
-			return 'killing %s.' % ' '.join(life['name'])
+			return 'killing %s' % ' '.join(life['name'])
 		
 		sever_limb(life, limb, impact_velocity)
 		return 'severing it!'
@@ -3269,7 +3271,7 @@ def get_limb_stability(life, limb):
 def get_limb_condition(life, limb):
 	_limb = get_limb(life, limb)
 	
-	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)
+	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/_limb['max_thickness'])
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -3394,33 +3396,19 @@ def damage_from_item(life, item, damage):
 	return True
 
 def natural_healing(life):
-	for limb_name in life['body']:
-		_limb = get_limb(life, limb_name)
-		_remove_wounds = []
+	for limb in life['body']:
+		if not get_limb_pain(life, limb) or get_limb_condition(life, limb)<.50:
+			continue
 		
-		for wound in _limb['wounds']:			
-			_remove = True
-			for key in wound:
-				if key == 'limb':
-					continue
+		_limb = get_limb(life, limb)	
+		_limb['pain'] = numbers.clip(_limb['pain']-0.05, 0, 100)
+		
+		if not _limb['pain']:
+			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
+		else:
+			print _limb['pain']
+			logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
-				if wound[key]:
-					_remove = False
-					break
-			
-			if _remove:
-				_remove_wounds.append(wound)
-		
-		#if _limb['bleeding']>0:
-		#	_limb['bleeding'] -= .5*(_limb['bleed_mod']*float(len(_limb['wounds'])))
-		#	_limb['bleeding'] = numbers.clip(_limb['bleeding'], 0, 255)
-		
-		for wound in _remove_wounds:
-			_limb['wounds'].remove(wound)
-			
-			if 'player' in life:
-				gfx.message('Your %s has healed.' % limb_name)
-
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']
 	_lines = []
