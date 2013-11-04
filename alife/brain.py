@@ -14,6 +14,7 @@ import alife_search
 import alife_hidden
 import alife_combat
 import alife_follow
+import alife_guard
 import alife_cover
 import alife_group
 import alife_needs
@@ -50,7 +51,8 @@ MODULES = [alife_hide,
 	alife_search,
 	alife_surrender,
 	alife_cover,
-	alife_follow]
+	alife_follow,
+	alife_guard]
 
 def sort_modules(life):
 	global MODULES

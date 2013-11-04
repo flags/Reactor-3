@@ -47,6 +47,8 @@ def create_function_map():
 		'is_confident': stats.is_confident,
 		'is_situation_tense': lambda life: judgement.get_tension(life)>=10,
 		'is_combat_ready': lambda life, life_id: not LIFE[life_id]['state'] in ['hiding', 'hidden'],
+		'is_surrendering': lambda life, life_id: LIFE[life_id]['state'] == 'surrendering',
+	    'is_being_surrendered_to': lambda life: len(judgement.get_combat_targets(life, ignore_escaped=True, filter_func=lambda life, life_id: LIFE[life_id]['state'] == 'surrender'))>0,
 		'closest': None,
 		'kill': lambda life: lfe.kill(life, 'their own dumb self'),
 		'has_attacked_trusted': stats.has_attacked_trusted,

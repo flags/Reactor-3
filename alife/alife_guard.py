@@ -8,13 +8,14 @@ import brain
 
 import logging
 
-STATE = 'follow'
-TIER = TIER_EXPLORE-.2
+STATE = 'guarding'
+TIER = TIER_COMBAT+.1
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not lfe.execute_raw(life, 'state', 'follow'):
+	if not lfe.execute_raw(life, 'state', 'guard'):
+		print life['name'],'nobody'
 		if life['state'] == STATE:
 			lfe.clear_actions(life)
 		
@@ -26,4 +27,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	movement.find_target(life, judgement.get_target_to_follow(life), call=False)
+	_surrendering_targets = judgement.get_combat_targets(life, ignore_escaped=True, filter_func=lambda life, life_id: LIFE[life_id]['state'] == 'surrender')
+	_target = judgement.get_nearest_target_in_list(life, _surrendering_targets)['target_id']
+	print _target
+	movement.find_target(life, _target, call=False)
