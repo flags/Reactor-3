@@ -87,6 +87,8 @@ def look(life):
 				elif ai['asleep']:
 					life['know'][ai['id']]['asleep'] = True
 				
+				life['know'][ai['id']]['state'] = ai['state']
+				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')
 				
@@ -114,8 +116,6 @@ def look(life):
 			if _can_see:
 				if not item['uid'] in life['know_items']:
 					brain.remember_item(life, item)
-				elif not life['know_items'][item['uid']]['last_seen_time']:
-					continue
 	
 				if item['owner']:
 					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
@@ -320,29 +320,19 @@ def find_visible_items(life):
 def find_known_items(life, matches={}, only_visible=True):
 	_match = []
 	
-	for item in life['know_items'].values():
+	for item_uid in brain.get_matching_remembered_items(life, matches, no_owner=True):
 		#TODO: Offload?
-		if not item['item'] in ITEMS:
-			continue
-		
-		_item = ITEMS[item['item']]
+		_item = ITEMS[item_uid]
 		
 		if only_visible and not can_see_position(life, _item['pos']):
-			continue
-		
-		if items.is_item_owned(item['item']):
-			continue
-		
-		if 'demand_drop' in _item['flags']:
+			print 'cant see'
 			continue
 		
 		if _item['lock']:
+			print 'locked'
 			continue
 		
-		if not logic.matches(_item, matches):
-			continue
-		
-		_match.append(item['item'])
+		_match.append(item_uid)
 	
 	return _match
 

@@ -200,13 +200,19 @@ def is_target_dangerous(life, target_id):
 	
 	return False
 
+def is_target_threat(life, target_id):
+	if lfe.execute_raw(life, 'judge', 'is_threat_if', life_id=target_id):
+		return True
+	
+	return False
+
 def _get_target_value(life, life_id, value):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	return _knows[value]
 
 def is_target_awake(life, life_id):
-	return _get_target_value(life, life_id, 'asleep')
+	return not _get_target_value(life, life_id, 'asleep')
 
 def is_target_dead(life, life_id):
 	return _get_target_value(life, life_id, 'dead')
@@ -246,21 +252,28 @@ def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
 def judge(life):
+	_threats = []
 	_combat_targets = []
-	_potential_combat_targets = []
+	_neutral_targets = []
 	_tension = 0
 	
 	for alife_id in life['know']:
 		_tension += get_tension_with(life, alife_id)
 		
 		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
-		if is_target_dangerous(life, alife_id):
-			_combat_targets.append(alife_id)
+		_threat = is_target_threat(life, alife_id)
+		
+		if _threat:
+			if is_target_dangerous(life, alife_id):
+				_combat_targets.append(alife_id)
+			
+			_threats.append(alife_id)
 		else:
-			_potential_combat_targets.append(alife_id)
+			_neutral_targets.append(alife_id)
 	
+	brain.store_in_memory(life, 'threats', _threats )
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)
-	brain.store_in_memory(life, 'targets', _potential_combat_targets)
+	brain.store_in_memory(life, 'targets', _neutral_targets)
 	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
 	brain.store_in_memory(life, 'tension', _tension)
 
@@ -303,6 +316,9 @@ def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, rec
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
 
+def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True, recent_only=False, limit_distance=-1, filter_func=None):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
+
 def get_target_to_follow(life):
 	_highest = {'id': None, 'score': 1}
 	
@@ -326,6 +342,15 @@ def get_target_to_follow(life):
 			_highest['score'] = _score
 	
 	return _highest['id']
+
+def get_target_to_guard(life):
+	for target_id in get_targets(life):
+		if not lfe.execute_raw(life, 'guard', 'guard_target_if', life_id=target_id):
+			continue
+		
+		return target_id
+	
+	return None
 
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
@@ -424,10 +449,8 @@ def get_fondness(life, target_id):
 def target_is_combat_ready(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
-	if not _knows['last_seen_time'] and LIFE[life_id]['state'] in ['surrender', 'hiding', 'hidden']:
+	if not _knows['last_seen_time'] and (_knows['state'] in ['surrender', 'hiding', 'hidden'] or _knows['asleep']):
 		return False
-	
-	print life['name'], LIFE[life_id]['name'], LIFE[life_id]['state'], _knows['last_seen_time']
 	
 	if combat.get_equipped_weapons(LIFE[life_id]):
 		return True

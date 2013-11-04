@@ -22,13 +22,24 @@ TIER = TIER_COMBAT-.4
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not judgement.get_combat_targets(life, ignore_escaped=True):
+	_mode = None
+	if lfe.execute_raw(life, 'state', 'combat'):
+		_mode = 'combat'
+	
+	if not _mode and lfe.execute_raw(life, 'state', 'hunt'):
+		_mode = 'hunt'
+	
+	if not _mode:
 		return False
 	
 	if not lfe.execute_raw(life, 'combat', 'ranged') and not lfe.execute_raw(life, 'combat', 'melee'):
 		return False
 	
+	if _mode == 'hunt':
+		lfe.focus_on(life)
+	
 	if not life['state'] == STATE:
+		life['state_flags'] = {}
 		stats.battle_cry(life)
 		
 		if gfx.position_is_in_frame(life['pos']) and SETTINGS['controlling']:
@@ -44,6 +55,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 				#gfx.highlight_tiles(_can_see)
 		
 		RETURN_VALUE = STATE_CHANGE
+	
+	brain.flag(life, 'combat_mode', value=_mode)
 	
 	return RETURN_VALUE
 
@@ -61,8 +74,11 @@ def get_closest_target(life, targets):
 	
 	return _closest['life']
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):	
-	_all_targets = judgement.get_combat_targets(life, ignore_lost=True)
+def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+	if brain.get_flag(life, 'combat_mode') == 'combat':
+		_all_targets = judgement.get_combat_targets(life, ignore_lost=True)
+	else:
+		_all_targets = judgement.get_threats(life, ignore_lost=True)
 	
 	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
 		#_closest_target = get_closest_target(life, _all_targets)

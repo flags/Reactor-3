@@ -237,6 +237,7 @@ def meet_alife(life, target):
 		'last_encounter_time': 0,
 		'escaped': False,
 		'asleep': False,
+	    'state': target['state'],
 		'dead': False,
 		'snapshot': {},
 		'sent': [],

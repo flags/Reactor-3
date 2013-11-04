@@ -148,6 +148,14 @@ def has_needs_to_meet(life):
 	
 	return False
 
+def has_needs_to_satisfy(life):
+	_needs = brain.retrieve_from_memory(life, 'needs_to_satisfy')
+	
+	if _needs:
+		return True
+	
+	return False
+
 def get_matched_needs(life, match):
 	_matches = []
 	

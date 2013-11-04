@@ -27,7 +27,8 @@ def setup(life):
 			_needs_unmet.append(need)
 			continue
 		
-		_needs_to_meet.append(need)
+		if not need in _needs_to_satisfy and not need in _needs_to_satisfy:
+			_needs_to_meet.append(need)
 
 	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
 	brain.store_in_memory(life, 'needs_to_satisfy', _needs_to_satisfy)

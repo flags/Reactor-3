@@ -348,11 +348,11 @@ def is_intimidated_by(life, life_id):
 	return False
 
 def is_intimidated(life):
-	for target_id in judgement.get_targets(life, ignore_escaped=True):
-		if is_intimidated_by(life, target_id):
-			return True
+	#for target_id in judgement.get_targets(life, ignore_escaped=True):
+	#	if is_intimidated_by(life, target_id):
+	#		return True
 	
-	for target_id in judgement.get_combat_targets(life, ignore_escaped=True):
+	for target_id in judgement.get_threats(life, ignore_escaped=True):
 		if is_intimidated_by(life, target_id):
 			return True
 	

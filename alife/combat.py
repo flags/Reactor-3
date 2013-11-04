@@ -329,7 +329,8 @@ def ranged_combat(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
-		print 'LOST' * 10
+		print targets
+		movement.find_target(life, targets, call=False)
 		return False
 	
 	_targets_too_far = []
