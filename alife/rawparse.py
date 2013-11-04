@@ -52,6 +52,7 @@ def create_function_map():
 		'closest': None,
 		'kill': lambda life: lfe.kill(life, 'their own dumb self'),
 		'has_attacked_trusted': stats.has_attacked_trusted,
+		'has_attacked_self': stats.has_attacked_self,
 		'distance_to_pos': stats.distance_from_pos_to_pos,
 		'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
 		'is_idle': lambda life: life['state'] == 'idle',

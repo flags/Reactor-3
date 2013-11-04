@@ -560,5 +560,8 @@ def _has_attacked(life, life_id, target_list):
 def has_attacked_trusted(life, life_id):
 	return _has_attacked(life, life_id, judgement.get_trusted(life))
 
+def has_attacked_self(life, life_id):
+	return (lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
+
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)

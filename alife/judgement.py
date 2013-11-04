@@ -260,9 +260,7 @@ def judge(life):
 	for alife_id in life['know']:
 		_tension += get_tension_with(life, alife_id)
 		
-		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
 		_threat = is_target_threat(life, alife_id)
-		
 		if _threat:
 			if is_target_dangerous(life, alife_id):
 				_combat_targets.append(alife_id)
