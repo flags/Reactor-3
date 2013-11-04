@@ -19,7 +19,8 @@ import time
 #@profile
 def look(life):
 	for target_id in life['know']:
-		life['know'][target_id]['last_seen_time'] += 1
+		if life['know'][target_id]['last_seen_time']:
+			life['know'][target_id]['last_seen_time'] += 1
 	
 	if not life['think_rate'] % 3 and not 'player' in life:
 		return False

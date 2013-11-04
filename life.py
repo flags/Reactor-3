@@ -934,7 +934,12 @@ def stand(life):
 		200,
 		delay=_delay)
 
-def crawl(life):
+def crawl(life, force=False):
+	if force:
+		life['stance'] = 'crawling'
+		set_animation(life, ['v', '@'], speed=_delay/2)
+		return True
+	
 	if life['stance'] == 'standing':
 		_delay = 15
 	elif life['stance'] == 'crouching':
@@ -3092,7 +3097,11 @@ def sever_limb(life, limb, impact_velocity):
 		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size']*5)
 	
-	set_animation(life, ['X', '!'], speed=4)
+	if limb in get_legs(life):
+		crawl(life, force=True)
+		say(life, 'falls over!', action=True, event=True)
+	
+	set_animation(life, ['X', '!'], speed=5)
 	
 	effects.create_gib(life, '-', life['body'][limb]['size'], limb, impact_velocity)
 	
@@ -3337,7 +3346,11 @@ def damage_from_item(life, item, damage):
 		say(life, _dam_message, action=True)
 	
 	create_and_update_self_snapshot(life)
-	judgement.judge_life(life, _shot_by_alife['id'])
+	
+	if brain.knows_alife_by_id(life, _shot_by_alife['id']):
+		judgement.judge_life(life, _shot_by_alife['id'])
+	else:
+		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']])))
 	
 	return True
 

@@ -81,9 +81,6 @@ def initiate_item(name):
 		item['max_capacity'] = item['max_capacity'][0]*item['max_capacity'][1]
 		item['capacity'] = 0
 		item['storing'] = []
-		
-	if not 'examine_keys' in item:
-		item['examine_keys'] = ['description']
 	
 	if 'speed' in item:
 		item['max_speed'] = item['speed']
@@ -176,6 +173,9 @@ def create_item(name, position=[0,0,2], item=None):
 	item['owner'] = None
 	item['aim_at_limb'] = None
 	item['on'] = False
+	
+	if not 'examine_keys' in item:
+		item['examine_keys'] = ['description']
 	
 	item['speed'] = 0
 	
@@ -598,12 +598,13 @@ def tick_item(item_uid):
 	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
 		return False
 	
-	_x = item['pos'][0]-CAMERA_POS[0]
-	_y = item['pos'][1]-CAMERA_POS[1]
+	_x = item['pos'][0]
+	_y = item['pos'][1]
 	
-	_view = gfx.get_view_by_name('map')
-	if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
-		gfx.refresh_view_position(_x, _y, 'map')
+	#_view = gfx.get_view_by_name('map')
+	#if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+	if gfx.position_is_in_frame((_x, _y)):
+		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 	
 	item['realpos'][0] += item['velocity'][0]
 	item['realpos'][1] += item['velocity'][1]
@@ -708,11 +709,11 @@ def tick_item(item_uid):
 	
 	add_to_chunk(item)
 	
-	_x = item['pos'][0]-CAMERA_POS[0]
-	_y = item['pos'][1]-CAMERA_POS[1]
+	_x = item['pos'][0]
+	_y = item['pos'][1]
 	
-	if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
-		gfx.refresh_view_position(_x, _y, 'map')
+	if gfx.position_is_in_frame((_x, _y)):
+		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:

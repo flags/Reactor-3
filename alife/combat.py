@@ -393,7 +393,7 @@ def ranged_combat(life, targets):
 						5000,
 						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 		else:
-			print 'WENT MISSING!!!!!!!!!!'*100
+			print life['name'],'WENT MISSING!!!!!!!!!!'*100
 			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
 			
 			target['escaped'] = 1
