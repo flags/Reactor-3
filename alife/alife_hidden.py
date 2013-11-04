@@ -27,6 +27,8 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	_threat = judgement.get_nearest_threat(life)
 	
+	print life['name'], 'is scared of', LIFE[_threat]['name']
+	
 	if not 'hiding' in life['state_flags']:
 		movement.hide(life, _threat)
 		life['state_flags']['hiding'] = True

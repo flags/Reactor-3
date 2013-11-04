@@ -8,7 +8,7 @@ import items
 import life
 
 def suicide():
-	life.kill(LIFE[SETTINGS['controlling']], 'suicide')
+	life.kill(LIFE[SETTINGS['following']], 'suicide')
 
 def kill(life_id):
 	life.kill(LIFE[life_id], 'suicide')

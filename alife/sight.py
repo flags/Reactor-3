@@ -65,6 +65,9 @@ def look(life):
 			if ai['id'] == life['id']:
 				continue
 			
+			for target_id in life['know']:
+				life['know'][target_id]['last_seen_time'] += 1
+			
 			if not can_see_target(life, ai['id']):
 				continue
 			

@@ -279,7 +279,7 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 		if ignore_lost and _knows['escaped'] == 2:
 			continue
 		
-		if recent_only and _knows['last_seen_time'] >= 150:
+		if recent_only and _knows['last_seen_time'] >= 95:
 			continue
 		
 		if not limit_distance == -1 and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
@@ -298,8 +298,8 @@ def get_targets(life, escaped_only=False, ignore_escaped=True, limit_distance=-1
 def get_combat_targets(life, escaped_only=False, ignore_escaped=False, ignore_lost=True, recent_only=False, limit_distance=-1, filter_func=None):
 	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, ignore_lost=ignore_lost, limit_distance=limit_distance, filter_func=filter_func)
 
-def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1):
-	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance)
+def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1, filter_func=None):
+	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
 
@@ -422,6 +422,13 @@ def get_fondness(life, target_id):
 	return target['fondness']
 
 def target_is_combat_ready(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	if not _knows['last_seen_time'] and LIFE[life_id]['state'] in ['surrender', 'hiding', 'hidden']:
+		return False
+	
+	print life['name'], LIFE[life_id]['name'], LIFE[life_id]['state'], _knows['last_seen_time']
+	
 	if combat.get_equipped_weapons(LIFE[life_id]):
 		return True
 	
