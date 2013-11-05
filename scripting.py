@@ -22,8 +22,7 @@ def execute(script, **kvargs):
 			_i = items.create_item(_args[0], position=_args[1])
 			life.add_item_to_inventory(kvargs['owner'], _i)
 		elif function == 'DELETE':
-			_i = items.get_item_from_uid(life.remove_item_from_inventory(kvargs['owner'], kvargs['item']))
-			items.delete_item(_i)
+			items.delete_item(ITEMS[kvargs['item_uid']])
 		elif function == 'LIGHT_FOLLOW':
 			_item = ITEMS[kvargs['item_uid']]
 			

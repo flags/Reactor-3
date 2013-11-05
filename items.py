@@ -420,6 +420,9 @@ def process_event(item, event):
 	
 	elif event == 'deactivate' and 'ON_DEACTIVATE' in item['flags']:
 		scripting.execute(item['flags']['ON_DEACTIVATE'], item_uid=item['uid'])
+	
+	elif event == 'stop' and 'ON_STOP' in item['flags']:
+		scripting.execute(item['flags']['ON_STOP'], item_uid=item['uid'])
 
 def activate(item):
 	if item['on']:
@@ -538,6 +541,7 @@ def collision_with_solid(item, pos):
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
 		item['pos'] = pos
+		process_event(item, 'stop')
 		
 		return True
 	
@@ -647,7 +651,6 @@ def tick_item(item_uid):
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
-		print 'SPEED', item['speed']
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 			logging.warning('Item OOM: %s', item['uid'])

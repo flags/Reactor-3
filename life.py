@@ -1282,40 +1282,48 @@ def perform_action(life):
 		_path = []
 		
 		if not path_dest(life):
-			if 'avoid_positions' in _action:
-				_avoid_positions = _action['avoid_positions']
+			if 'failed_dijkstra' in life['state_flags']:
+				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
+					del life['state_flags']['failed_dijkstra']
+				else:
+					walk_to(life, _action['goals'][0][:2])
 			else:
-				_avoid_positions = []
-			
-			if 'avoid_chunks' in _action:
-				_avoid_chunks = _action['avoid_chunks']
-			else:
-				_avoid_chunks = []
-			
-			if 'zones' in _action:
-				_zones = _action['zones']
-			else:
-				_zones = [zones.get_zone_at_coords(life['pos'])]
-			
-			if 'debug' in _action and _action['debug']:
-				SETTINGS['print dijkstra maps'] = True
-			
-			_s = time.time()
-			_path = zones.dijkstra_map(life['pos'],
-			                           _action['goals'],
-			                           _zones,
-			                           rolldown=_action['rolldown'],
-			                           max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
-			                           avoid_positions=_avoid_positions,
-			                           avoid_chunks=_avoid_chunks)
-			
-			print life['name'], _action['reason'], 'took', time.time()-_s
-			if 'debug' in _action and _action['debug']:
-				SETTINGS['print dijkstra maps'] = False
-				print _path
+				if 'avoid_positions' in _action:
+					_avoid_positions = _action['avoid_positions']
+				else:
+					_avoid_positions = []
+				
+				if 'avoid_chunks' in _action:
+					_avoid_chunks = _action['avoid_chunks']
+				else:
+					_avoid_chunks = []
+				
+				if 'zones' in _action:
+					_zones = _action['zones']
+				else:
+					_zones = [zones.get_zone_at_coords(life['pos'])]
+				
+				if 'debug' in _action and _action['debug']:
+					SETTINGS['print dijkstra maps'] = True
+				
+				_s = time.time()
+				_path = zones.dijkstra_map(life['pos'],
+					                       _action['goals'],
+					                       _zones,
+					                       rolldown=_action['rolldown'],
+					                       max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
+					                       avoid_positions=_avoid_positions,
+					                       avoid_chunks=_avoid_chunks)
+				
+				if not _path:
+					life['state_flags']['failed_dijkstra'] = WORLD_INFO['ticks']
+				
+				if 'debug' in _action and _action['debug']:
+					SETTINGS['print dijkstra maps'] = False
+					print _path
 		
-		if walk(life, path=_path):
-			delete_action(life,action)
+		if not 'failed_dijkstra' in life['state_flags'] and walk(life, path=_path):
+			delete_action(life, action)
 	
 	elif _action['action'] == 'stand':
 		life['stance'] = 'standing'
@@ -3217,7 +3225,7 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	_current_condition = get_limb_condition(life, limb)
 	
-	print 'PASS OUT CHECK'*50, _previous_condition-_current_condition
+	#print 'PASS OUT CHECK'*50, _previous_condition-_current_condition
 	
 	if _previous_condition-_current_condition>=.50:
 		pass_out(life, length=25*(1-_current_condition))

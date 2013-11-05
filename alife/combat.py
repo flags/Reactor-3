@@ -408,7 +408,7 @@ def ranged_combat(life, targets):
 			        target=target['life']['id'],
 			        matches=[{'id': send_to}])
 	else:
-		print 'waiting...'
+		print life['name'], 'waiting...'
 		return False
 	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
 	#	return False

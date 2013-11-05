@@ -29,8 +29,8 @@ def position_to_attack(life, target):
 	#TODO: Short or long-range weapon?
 	#if _nearest_target_score >= sight.get_vision(life)/2:
 	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True):
-		print life['name'], 'changing position for combat...'
-
+		print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
+		
 		_cover = _target_positions
 		
 		_zones = []
@@ -46,7 +46,8 @@ def position_to_attack(life, target):
 				                  'rolldown': True,
 				                  'goals': _cover[:],
 				                  'orig_goals': _cover[:],
-			                       'reason': 'positioning for attack'},
+			                      'reason': 'positioning for attack',
+			                      'debug': True},
 				           999)
 			
 			return False
