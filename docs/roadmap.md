@@ -704,6 +704,19 @@ Reactions:
 				Else:
 					Create mystery
 
+Respect:
+	Factors:
+		* Group leader
+		* Positive combat actions
+		* Superiority
+			* Higher-end weapons
+
+Hostility:
+	Factors:
+		* Unjustified violence
+		* Standing ground
+
+
 Situations (aka Events or Shared Memories)
 --------------------
 Events are shared memories.
