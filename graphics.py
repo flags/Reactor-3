@@ -114,7 +114,7 @@ def clear_scene():
 	for key in VIEW_SCENE.keys():
 		del VIEW_SCENE[key]
 	
-	for entry in VIEW_SCENE_CACHE[:]:
+	for entry in VIEW_SCENE_CACHE.copy():
 		VIEW_SCENE_CACHE.remove(entry)
 	
 	logging.debug('Cleared scene.')

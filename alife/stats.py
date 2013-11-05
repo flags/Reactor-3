@@ -529,6 +529,11 @@ def is_compatible_with(life, life_id):
 def is_target_group_friendly(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
+	#TODO: #memory We don't track groups yet
+	if not groups.group_exists(_target['group']):
+		logging.warning('Not tracking groups yet. Ignoring...')
+		return True
+	
 	#Different groups
 	if _target['group'] and not _target['group'] == life['group']:
 		if life['group']:
@@ -560,6 +565,9 @@ def has_attacked_trusted(life, life_id):
 
 def has_attacked_self(life, life_id):
 	return (lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
+
+def react_to_attack(life, life_id):
+	logging.warning('Dead end.')
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)

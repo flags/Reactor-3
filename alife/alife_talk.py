@@ -42,7 +42,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if not stats.can_talk_to(life, ai['life']['id']):
 				continue
 			
-			if judgement.is_target_dangerous(life, ai['life']['id']):
+			if stats.has_attacked_self(life, ai['life']['id']):
+				stats.react_to_attack(life, ai['life']['id'])
+			elif judgement.is_target_dangerous(life, ai['life']['id']):
 				if not speech.discussed(life, ai['life'], 'looks_hostile'):
 					speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
 					speech.send(life, ai['life'], 'looks_hostile')

@@ -151,7 +151,7 @@ def main():
 			gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
 			gfx.fade_view('overlay', _fade, 0)
 		
-		FADE_TO_WHITE[0] += 0.9
+		FADE_TO_WHITE[0] += 1.2
 		
 		if _time_since_death>=120:
 			worldgen.save_world()

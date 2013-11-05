@@ -682,20 +682,26 @@ def handle_input():
 		WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['y']:
-		if int(SETTINGS['following'])>1:
-			#SETTINGS['following'] = str(int(SETTINGS['following'])-1)
-			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])-1)
-			life.focus_on(LIFE[str(int(SETTINGS['following'])-1)])
-			FADE_TO_WHITE[0] = 0
-			gfx.refresh_view('map')
+		_id = int(SETTINGS['following'])
+		while _id>1:
+			_id -= 1
+			if not LIFE[str(_id)]['dead']:
+				break
+		
+		life.focus_on(LIFE[str(_id)])
+		FADE_TO_WHITE[0] = 0
+		gfx.refresh_view('map')
 
 	if INPUT['u']:
-		if int(SETTINGS['following']) < len(LIFE.keys()):
-			#SETTINGS['following'] = str(int(SETTINGS['following'])+1)
-			#SETTINGS['controlling'] = str(int(SETTINGS['controlling'])+1)
-			life.focus_on(LIFE[str(int(SETTINGS['following'])+1)])
-			FADE_TO_WHITE[0] = 0
-			gfx.refresh_view('map')
+		_id = int(SETTINGS['following'])
+		while _id<len(LIFE):
+			_id += 1
+			if not LIFE[str(_id)]['dead']:
+				break
+		
+		life.focus_on(LIFE[str(_id)])
+		FADE_TO_WHITE[0] = 0
+		gfx.refresh_view('map')
 
 	if INPUT['l']:
 		create_look_list()

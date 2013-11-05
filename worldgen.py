@@ -219,7 +219,7 @@ def randomize_item_spawns():
 		if not _chunk['ground']:
 			continue
 		
-		if random.randint(0, 100)>=80:
+		if random.randint(0, 100)>=65:
 			for i in range(0, 1+random.randint(0, 3)):
 				_rand_pos = random.choice(_chunk['ground'])
 				items.create_item('.22 rifle', position=[_rand_pos[0], _rand_pos[1], 2])
@@ -228,7 +228,7 @@ def randomize_item_spawns():
 			for i in range(10):
 				_rand_pos = random.choice(_chunk['ground'])
 				items.create_item('.22 LR cartridge', position=[_rand_pos[0], _rand_pos[1], 2])
-		elif random.randint(0, 100)>=70:
+		elif random.randint(0, 100)>=40:
 			_items = ['corn', 'soda']
 			for i in range(0, 1+random.randint(0, 3)):
 				_rand_pos = random.choice(_chunk['ground'])

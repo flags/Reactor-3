@@ -57,9 +57,6 @@ def bullet_hit(life, bullet, limb):
 	else:
 		_msg = ['%s shoots' % language.get_name(_owner)]
 	
-	#_msg = ['The %s hits' % bullet['name']]
-	
-	#What are we hitting?
 	_items_to_check = []
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})
@@ -112,123 +109,6 @@ def bullet_hit(life, bullet, limb):
 	_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
 	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
-	_ret_string = own_language(life, _msg)
-	
-	if _ret_string.endswith('!'):
-		return _ret_string
-	else:
-		return _ret_string+'.'
-	
-	if 'sharp' in bullet['damage']:
-		_cut = int(round(bullet['damage']['sharp']*_falloff))
-		print 'cut',_cut
-		print 'falloff', _falloff
-	
-	if _cut:
-		for entry in _items_to_check:
-			_item = items.get_item_from_uid(entry['item'])
-			print '***HIT***', _item['name']
-			
-			if not 'thickness' in _item:
-				logging.warning('Item \'%s\' has no set thickness. Guessing...' % _item['name'])
-				_item['thickness'] = _item['size']/2
-			
-			_thickness = _item['thickness']
-			_item['thickness'] = numbers.clip(_item['thickness']-_cut, 0, 100)
-			_tear = _item['thickness']-_thickness
-			
-			if _item['material'] == 'cloth':
-				if _thickness and not _item['thickness']:
-					if entry['visible']:
-						_msg.append(', destroying <own> %s' % _item['name'])
-					else:
-						_msg.append(', destroying something')
-				elif _tear<=-3:
-					if entry['visible']:
-						_msg.append(', ripping <own> %s' % _item['name'])
-					else:
-						_msg.append(', ripping something')
-				elif _tear<=-2:
-					if entry['visible']:
-						_msg.append(', tearing <own> %s' % _item['name'])
-					else:
-						_msg.append(', tearing something')
-				elif _tear<=-1:
-					if entry['visible']:
-						_msg.append(', slightly tearing <own> %s' % _item['name'])
-					else:
-						_msg.append(', slightly ripping something')
-				
-				_cut -= _thickness/2
-			
-			elif _item['material'] == 'metal':
-				if _thickness and not _item['thickness']:
-					if entry['visible']:
-						_msg.append(', puncturing %s' % items.get_name(_item))
-					else:
-						_msg.append(', puncturing something')
-					
-					if _item['type'] == 'explosive':
-						timers.create(_item, action.make_small_script(function='explode',
-	                                       item=_item['uid']),
-	              15+value)
-				elif _tear<=-3:
-					if entry['visible']:
-						_msg.append(', denting %s' % items.get_name(_item))
-					else:
-						_msg.append(', denting something')
-				elif _tear<=-2:
-					if entry['visible']:
-						_msg.append(', lightly denting %s' % items.get_name(_item))
-					else:
-						_msg.append(', lightly denting something')
-				elif _tear<=-1:
-					if entry['visible']:
-						_msg.append(', scraping %s' % items.get_name(_item))
-					else:
-						_msg.append(', scraping something')
-				
-				_cut -= _thickness
-	
-			if _cut <= 0:
-				return own_language(life, _msg)+'.'
-	
-		#if not lfe.limb_is_cut(life, limb):
-		_cut_percentage = _cut/float(_actual_limb['size'])
-		if _cut_percentage<=.25:
-			_msg.append(', cutting <own> %s' % limb)
-		elif _cut_percentage<=.5:
-			_msg.append(', tearing <own> %s' % limb)
-		elif _cut_percentage<=.75:
-			_msg.append(', ripping open <own> %s' % limb)
-		elif _cut_percentage<=1:
-			_msg.append(', severing <own> %s!' % limb)
-		else:
-			_bruise = _cut
-	
-		if _cut:
-			lfe.add_wound(life, limb, cut=_cut, impact_velocity=bullet['velocity'])
-		
-		#TODO: How thick is skin?
-		_cut -= 1
-		
-		if not _cut or not limb in life['body']:
-			return own_language(life, _msg)+'.'
-		
-		#if not lfe.artery_is_ruptured(life, limb) and random.randint(0, 9)>=9-_cut:
-		#	if _limb_in_context:
-		#		_msg.append('rupturing an artery')
-		#	else:
-		#		_msg.append('and rupturing an artery,')
-		#	
-		#	lfe.add_wound(life, limb, artery_ruptured=True)
-		
-		if random.randint(0, 9)>=9-(_cut*2):
-			_msg.append('. It is lodged!')
-			lfe.add_wound(life, limb, lodged_item=bullet['uid'], impact_velocity=bullet['velocity'])
-		else:
-			lfe.add_wound(life, limb, cut=_cut/2, impact_velocity=bullet['velocity'])
-	
 	_ret_string = own_language(life, _msg)
 	
 	if _ret_string.endswith('!'):
