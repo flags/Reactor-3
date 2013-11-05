@@ -1,4 +1,4 @@
-New in version 0.6.1:
+New in version 0.6.5:
 	* Optimized ALife logic
 		* Dogs now follow the pack leader and spawn in larger amounts.
 		* ALife no longer think as much during non-combat tasks.
@@ -11,13 +11,13 @@ New in version 0.6.1:
 		* NPCs won't talk as much and judge based on a wider variety of factors.
 	* NPCs can now learn more details about others and items.
 		* This information can also become out of date, leading to bad decision making.
-	*
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
+	* Weapons now have multiple firing modes (using `f`).
 	* Group leaders can now issue attack orders (hit `tab`)
+	* Added movie mode (recording) (hit `?` to start, again to quit.)
 	* ALife take more factors into consideration when deciding if they are safe.
 	* Worlds are initially seeded with one group of a random motive.
-	* Weapons now have multiple firing modes (using `f`).
 	* Added Night Terrors.
 	* Revamped recoil.
 		* Recoil now depends on the type of ammo used.
@@ -35,8 +35,8 @@ New in version 0.6.1:
 	* Created "views," which allows for easier management of multiple consoles.
 		* Note: Some legacy code remains and is being phased out.
 	* Explosives are now more effective.
-	* Added movie mode (recording) (hit `?` to start, again to quit.)
 	* Certain items can now be activated (via `a`)
+	* Added caching layer for faster item retrieval.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.
