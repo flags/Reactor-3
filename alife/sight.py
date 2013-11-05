@@ -22,7 +22,7 @@ def look(life):
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
 	
-	if not life['think_rate'] % 3 and not 'player' in life:
+	if life['think_rate'] % numbers.clip(life['think_rate_max'], 0, 6) and not 'player' in life:
 		return False
 	life['seen'] = []
 	
@@ -40,7 +40,7 @@ def look(life):
 			if alife['id'] == life['id']:
 				continue
 			
-			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
+			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
 				_nearby_alife.append(alife['pos'][:])
 		
 		_nearby_alife.sort()
