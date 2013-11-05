@@ -57,6 +57,7 @@ def remove_item_from_needs(life, item_uid):
 		if item_uid in need['could_meet_with']:
 			need['could_meet_with'].remove(item_uid)
 
+#@profile
 def process(life):
 	for need in life['needs'].values():
 		if need['type'] == 'item':

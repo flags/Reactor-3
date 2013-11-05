@@ -389,6 +389,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	#ALife
 	_life['know'] = {}
 	_life['know_items'] = {}
+	_life['known_items_type_cache'] = {}
 	_life['memory'] = []
 	_life['unchecked_memories'] = []
 	_life['known_chunks'] = {}

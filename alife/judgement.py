@@ -258,6 +258,9 @@ def judge(life):
 	_tension = 0
 	
 	for alife_id in life['know']:
+		if life['know'][alife_id]['last_seen_time'] >= 200 or life['know'][alife_id]['dead']:
+			continue
+		
 		_tension += get_tension_with(life, alife_id)
 		
 		_threat = is_target_threat(life, alife_id)

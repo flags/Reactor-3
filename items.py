@@ -197,6 +197,8 @@ def delete_item(item):
 			alife.survival.remove_item_from_needs(_life, item['uid'])
 			del _life['know_items'][item['uid']]
 			
+			_life['known_items_type_cache'][item['type']].remove(item['uid'])
+			
 			logging.debug('\tDeleted reference in life #%s' % _life['id'])
 	
 	timers.remove_by_owner(item)

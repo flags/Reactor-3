@@ -72,6 +72,7 @@ def sort_modules(life):
 	
 	return _scores
 
+#@profile
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)
@@ -163,6 +164,11 @@ def remember_item(life, item):
 			'shared_with': [],
 			'lost': False,
 			'flags': {}}
+		
+		if item['type'] in life['known_items_type_cache']:
+			life['known_items_type_cache'][item['type']].append(item['uid'])
+		else:
+			life['known_items_type_cache'][item['type']] = [item['uid']]
 		
 		return True
 	
@@ -260,7 +266,12 @@ def get_remembered_item(life, item_id):
 def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 	_matched_items = []
 	
-	for item in [i for i in life['know_items'].values()]:
+	if 'type' in matches and matches['type'] in life['known_items_type_cache']:
+		_remembered_items = [life['know_items'][i] for i in life['known_items_type_cache'][matches['type']]]
+	else:
+		_remembered_items = life['know_items'].values()
+	
+	for item in _remembered_items:
 		if get_item_flag(life, ITEMS[item['item']], 'ignore'):
 			continue
 		
