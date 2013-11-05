@@ -46,8 +46,7 @@ def position_to_attack(life, target):
 				                  'rolldown': True,
 				                  'goals': _cover[:],
 				                  'orig_goals': _cover[:],
-			                      'reason': 'positioning for attack',
-			                      'debug': True},
+			                      'reason': 'positioning for attack'},
 				           999)
 			
 			return False

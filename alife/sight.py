@@ -81,13 +81,15 @@ def look(life):
 				life['know'][ai['id']]['last_seen_time'] = 0
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 				life['know'][ai['id']]['escaped'] = False
+				life['know'][ai['id']]['state'] = ai['state']
+				
+				if not ai['group'] == life['know'][ai['id']]['group']:
+					life['know'][ai['id']]['group'] = ai['group']
 				
 				if ai['dead']:
 					life['know'][ai['id']]['dead'] = True
 				elif ai['asleep']:
 					life['know'][ai['id']]['asleep'] = True
-				
-				life['know'][ai['id']]['state'] = ai['state']
 				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')
