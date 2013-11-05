@@ -334,6 +334,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['prev_pos'] = list(position)
 	_life['realpos'] = list(position)
 	_life['velocity'] = [0.0, 0.0, 0.0]
+	_life['created'] = WORLD_INFO['ticks']
 	
 	maps.enter_chunk(get_current_chunk_id(_life), _life['id'])
 	
@@ -3154,18 +3155,18 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	if 'player' in life:
 		_name = 'your'
 	else:
-		_name = ' '.join(life['name'])
+		_name = ' '.join(life['name'])+'\'s'
 	
 	if _cut_amount>=.75:
-		return '%s %s\'s %s!' % (random.choice(['devastating', 'taking a slice out of', 'ripping apart']),
+		return '%s %s %s!' % (random.choice(['devastating', 'taking a slice out of', 'ripping apart']),
 		                         _name,
 		                         limb)
 	elif _cut_amount>=.50:
-		return '%s %s\'s %s!' % (random.choice(['cutting open', 'wounding', 'opening']),
+		return '%s %s %s!' % (random.choice(['cutting open', 'wounding', 'opening']),
 		                        _name,
 		                         limb)
 	else:
-		return '%s %s\'s %s!' % (random.choice(['grazing', 'scraping']),
+		return '%s %s %s!' % (random.choice(['grazing', 'scraping']),
 		                        _name,
 		                         limb)
 	

@@ -72,7 +72,6 @@ def sort_modules(life):
 	
 	return _scores
 
-#@profile
 def think(life, source_map):
 	sight.look(life)
 	sound.listen(life)

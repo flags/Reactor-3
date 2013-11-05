@@ -54,7 +54,7 @@ def init_libtcod(terraform=False):
 	
 	LOS_BUFFER[0] = []
 
-def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, require_refresh=False):
+def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, require_refresh=False):
 	if get_view_by_name(name):
 		raise Exception('View with name \'%s\' already exists.' % name)
 	
@@ -80,6 +80,7 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, requir
 	                         numpy.zeros((dh, dw)))),
 	         'require_refresh': require_refresh,
 	         '_dirty': False,
+	         'fade': [fore_opacity, back_opacity],
 	         'id': _v_id}
 	
 	if lighting:
@@ -118,6 +119,10 @@ def clear_scene():
 	
 	logging.debug('Cleared scene.')
 
+def fade_view(view_name, fore_fade, back_fade):
+	_view = get_view_by_name(view_name)
+	_view['fade'] = [fore_fade, back_fade]
+
 def _is_view_dirty(view):
 	return view['_dirty']
 
@@ -154,7 +159,7 @@ def set_view_dirty(view_name):
 
 def _add_view_to_scene(view):
 	if view['layer'] in VIEW_SCENE:
-		if view in VIEW_SCENE[view['layer']]:
+		if view['name'] in [v['name'] for v in VIEW_SCENE[view['layer']]]:
 			raise Exception('View \'%s\' already in scene.' % view['name'])
 		
 		VIEW_SCENE[view['layer']].append(view)
@@ -240,15 +245,20 @@ def render_scene():
 				             view['draw_size'][1],
 				             0,
 				             view['position'][0],
-				             view['position'][1])
+				             view['position'][1],
+			                 view['fade'][0],
+			                 view['fade'][1])
 
 def prepare_map_views():
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
 	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', fore_opacity=0, back_opacity=0)
 	
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
+	#add_view_to_scene_by_name('console')
+	add_view_to_scene_by_name('overlay')
 
 	set_active_view('map')
 
@@ -368,8 +378,8 @@ def fade_to_white(amt):
 	
 	for x in range(MAP_WINDOW_SIZE[0]):
 		for y in range(MAP_WINDOW_SIZE[1]):
-			darken_tile(x,y,0)
-			lighten_tile(x,y,amt)
+			darken_tile(x, y, 0)
+			lighten_tile(x, y, amt)
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	if time.time()%1>=0.5:

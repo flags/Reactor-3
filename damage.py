@@ -43,13 +43,6 @@ def own_language(life, message):
 	return _ret_string
 
 def bullet_hit(life, bullet, limb):
-	#_falloff = sum([abs(i) for i in bullet['velocity']])/sum([abs(i) for i in bullet['start_velocity']])
-	#_damage = 0
-	#_cut = 0
-	#_bruise = 0
-	#_breaking = False
-	#_lodged = False
-	
 	_owner = LIFE[bullet['shot_by']]
 	_actual_limb = lfe.get_limb(life, limb)
 	

@@ -130,33 +130,30 @@ def main():
 			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
 		gfx.fade_to_white(FADE_TO_WHITE[0])
-		_col = 255-int(round(FADE_TO_WHITE[0]))*2
-		
-		if _col<0:
-			_col = 0
-		#_col = 0
 		
 		_string = 'You die.'
+		_time_since_death = WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']
+		_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
 		
 		for i in range(len(_string)):
 			_c = _string[i]
+			gfx.lighten_tile(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i, MAP_WINDOW_SIZE[1]/2, _col)
 			gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
 			              MAP_WINDOW_SIZE[1]/2,
 			              _c,
-			              (tcod.Color(_col, _col, _col),
-			               tcod.Color(255-_col,255-_col,255-_col)),
+			              (tcod.Color(_col, 0, 0),
+			               tcod.Color(255-_col, 255-_col, 255-_col)),
 			              'map')
-			
-		#gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
-		#	MAP_WINDOW_SIZE[1]/2,
-		#	_string,
-		#	'map',
-		#	fore_color=tcod.Color(_col, _col, _col),
-		#	back_color=tcod.Color(255-_col,255-_col,255-_col),
-		#	flicker=0)
+		
+		if _time_since_death>=25:
+			_fade = numbers.clip((_time_since_death)/100.0, 0, 1)
+			_summary = 'Lived %s days.' % ((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']))
+			gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
+			gfx.fade_view('overlay', _fade, 0)
+		
 		FADE_TO_WHITE[0] += 0.9
 		
-		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
+		if _time_since_death>=120:
 			worldgen.save_world()
 			worldgen.reset_world()
 
