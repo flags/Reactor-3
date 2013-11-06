@@ -42,8 +42,8 @@ def can_tick(check=True):
 		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
 	
-	if life.has_dialog(LIFE[SETTINGS['controlling']]):
-		return False
+		if life.has_dialog(LIFE[SETTINGS['controlling']]):
+			return False
 	
 	if not check:
 		WORLD_INFO['tps'] += 1

@@ -196,7 +196,8 @@ def listen(life):
 			life['think_rate'] = 0
 		
 		elif event['gist'] == 'dialog':
-			life['dialogs'].append(event['dialog_id'])
+			if not 'player' in life and not event['dialog_id'] in life['dialogs']:
+				life['dialogs'].append(event['dialog_id'])
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])

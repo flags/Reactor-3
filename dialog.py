@@ -143,11 +143,11 @@ def add_message(life, dialog_id, gist, text, result, loop=False):
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
 
-def say(life, dialog_id, gist, loop=False):
+def say_via_gist(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_loop = False
 
-	if _chosen_message['text'].startswith('>') and not loop:
+	while _chosen_message['text'].startswith('>') and not loop:
 		_chosen_message = random.choice(get_matching_message(life, dialog_id, _chosen_message['text'][1:]))
 		_loop = True
 	
@@ -165,30 +165,17 @@ def select_choice(dialog_id):
 	
 	add_message(LIFE[SETTINGS['controlling']], _dialog['id'], _choice['gist'], _choice['text'], _choice['result'], loop=_loop)
 
-def process(life, dialog_id):
-	if not is_turn_to_talk(life, dialog_id):
-		return False
-	
-	_last_message = get_last_message(dialog_id)
-	
-	if _last_message['result'] == 'end':
-		end_dialog(dialog_id)
-	else:
-		say(life, dialog_id, _last_message['result'], loop=_last_message['loop'])
-
-def draw_dialog(dialog_id):
+def process_dialog_for_player(dialog_id, loop=False):
 	_dialog = get_dialog(dialog_id)
-	_last_message = get_last_message(dialog_id)
-	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
-	_y = 10
-	_responses = []
-	_dialog['choices'] = _responses
+	_dialog['choices'] = []
 	_dialog['loop_choices'] = []
-	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
-	_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
-	_center_pos.append(2)
-	                                   
-	gfx.camera_track(_center_pos)
+	_dialog['cursor_index'] = 0	
+	_dialog['max_cursor_index'] = len(_dialog['choices'])
+	
+	if loop:
+		end_dialog(dialog_id)
+		lfe.focus_on(LIFE[SETTINGS['controlling']])
+		return False
 	
 	for response in get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['result']):
 		_to_check = [response]
@@ -199,25 +186,41 @@ def draw_dialog(dialog_id):
 				_to_check.extend(get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _response['text'][1:]))
 				_dialog['loop_choices'].extend(_to_check)
 			else:
-				_dialog['loop_choices'].append(_response)
-				_responses.append(_response)
+				_dialog['choices'].append(_response)
+
+def process(life, dialog_id):
+	if not is_turn_to_talk(life, dialog_id):
+		return False
 	
-	if not 'cursor_index' in _dialog:
-		_dialog['cursor_index'] = 0
+	_last_message = get_last_message(dialog_id)
 	
-	_dialog['max_cursor_index']	= len(_responses)
+	if _last_message['result'] == 'end':
+		end_dialog(dialog_id)
+	elif 'player' in life:
+		process_dialog_for_player(dialog_id, loop=_last_message['loop'])
+	else:
+		say_via_gist(life, dialog_id, _last_message['result'], loop=_last_message['loop'])
+
+def draw_dialog(dialog_id):
+	_dialog = get_dialog(dialog_id)
+	_last_message = get_last_message(dialog_id)
+	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
+	_y = 10
+	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
+	_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
+	_center_pos.append(2)
 	_lines = []
-	
+	                                   
+	gfx.camera_track(_center_pos)
 	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')
 	
-	
-	for choice in _responses:
+	for choice in _dialog['choices']:
 		_text = choice['text']
 		
 		if _text.startswith('>'):
 			_text = _text[1:]
 		
-		if _dialog['cursor_index'] == _responses.index(choice):
+		if _dialog['cursor_index'] == _dialog['choices'].index(choice):
 			_text = '> '+_text
 		
 		_n_x = MAP_WINDOW_SIZE[0]/2-len(_text)/2
