@@ -36,6 +36,9 @@ def end_dialog(dialog_id):
 	
 	LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
 	LIFE[_dialog['target']]['dialogs'].remove(dialog_id)
+
+	if SETTINGS['controlling'] in [_dialog['started_by'], _dialog['target']]:
+		lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
 	logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
 
@@ -65,6 +68,49 @@ def is_turn_to_talk(life, dialog_id):
 	
 	return False
 
+def execute_function(life, target, function):
+	_function = function.lower()
+	_pass = True
+	_flags = {'true': True,
+	          'self_call': False,
+	          'no_args': False}
+	_flag_map = {'!': {'true': False},
+	             '@': {'self_call': True},
+	             '%': {'no_args': True}}
+	
+	while 1:
+		_flag = _function[0]
+		
+		if not _flag in _flag_map:
+			break
+		
+		_function = _function[1:]
+		_flags.update(_flag_map[_flag])
+		
+		break
+	
+	if not _function in FUNCTION_MAP:
+		raise Exception('Function does not exist: %s' % _function)
+	
+	try:
+		if _flags['self_call']:
+			if not FUNCTION_MAP[_function](life) == _flags['true']:
+				_pass = False
+		elif _flags['no_args']:
+			if not FUNCTION_MAP[_function]() == _flags['true']:
+				_pass = False
+		else:
+			if not FUNCTION_MAP[_function](life, target) == _flags['true']:
+				_pass = False
+	except Exception, e:
+		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
+		raise e
+	
+	if _pass:
+		return True
+	
+	return False
+
 def get_matching_message(life, dialog_id, gist):
 	_dialog_choices = []
 	_target = get_listener(dialog_id)
@@ -73,85 +119,50 @@ def get_matching_message(life, dialog_id, gist):
 		_pass = True
 		
 		for requirement in dialog_options['requirements']:
-			_req = requirement.lower()
-			_true = True
-			_self_call = False
-			_no_args = False
-			
-			while 1:
-				if _req.startswith('!'):
-					_req = _req.strip('!')
-					_true = False
-					
-					continue
-				elif _req.startswith('@'):
-					_req = _req.strip('@')
-					_self_call = True
-					
-					continue
-				elif _req.startswith('%'):
-					_req = _req.strip('%')
-					_no_args = True
-					
-					continue
-				
-				break
-			
-			if not _req in FUNCTION_MAP:
-				raise Exception('Function in dialog option \'%s\' does not exist: %s' % (gist, _req))
-			
-			try:
-				if _self_call:
-					if not FUNCTION_MAP[_req](life) == _true:
-						_pass = False
-				elif _no_args:
-					if not FUNCTION_MAP[_req]() == _true:
-						_pass = False
-				else:
-					if not FUNCTION_MAP[_req](life, _target) == _true:
-						_pass = False
-			except Exception, e:
-				logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _req)
-				raise e
-			
-			if not _pass:
-				break
-		
-		if _pass:
-			_dialog_choices.append(dialog_options)
+			if execute_function(life, _target, requirement):
+				_dialog_choices.append(dialog_options)
 	
 	return _dialog_choices
 
 def add_message(life, dialog_id, gist, text, result, loop=False):
 	_dialog = get_dialog(dialog_id)
 	
+	if _dialog['started_by'] == life['id']:
+		_target = _dialog['target']
+	else:
+		_target = _dialog['started_by']
+	
 	_message = {'from': life['id'],
 	            'gist': gist,
 	            'text': text,
 	            'read': False,
-	            'result': result.lower(),
+	            'result': result.lower().split(','),
+	            'next_gist': None,
 	            'loop': loop}
 	
 	print ' '.join(life['name'])+':', text
 	
 	_dialog['messages'].append(_message)
 	
-	if _dialog['started_by'] == life['id']:
-		_target = _dialog['target']
-	else:
-		_target = _dialog['started_by']
+	for result in _message['result']:
+		if result.startswith('>'):
+			_message['next_gist'] = result[1:]
+		else:
+			execute_function(life, _target, result)
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
 
 def say_via_gist(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
+	_target = get_listener(dialog_id)
 	_loop = False
 
 	while _chosen_message['text'].startswith('>') and not loop:
 		_chosen_message = random.choice(get_matching_message(life, dialog_id, _chosen_message['text'][1:]))
 		_loop = True
 	
-	_target = get_listener(dialog_id)
+	if 'player' in life:
+		logic.show_event(_chosen_message['text'], life=life)
 	
 	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
 
@@ -171,13 +182,13 @@ def process_dialog_for_player(dialog_id, loop=False):
 	_dialog['loop_choices'] = []
 	_dialog['cursor_index'] = 0	
 	_dialog['max_cursor_index'] = len(_dialog['choices'])
+	_last_message = get_last_message(dialog_id)
 	
 	if loop:
 		end_dialog(dialog_id)
-		lfe.focus_on(LIFE[SETTINGS['controlling']])
 		return False
 	
-	for response in get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['result']):
+	for response in get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['next_gist']):
 		_to_check = [response]
 		while _to_check:
 			_response = _to_check.pop()
@@ -194,12 +205,12 @@ def process(life, dialog_id):
 	
 	_last_message = get_last_message(dialog_id)
 	
-	if _last_message['result'] == 'end':
+	if _last_message['next_gist'] == 'end':
 		end_dialog(dialog_id)
 	elif 'player' in life:
 		process_dialog_for_player(dialog_id, loop=_last_message['loop'])
 	else:
-		say_via_gist(life, dialog_id, _last_message['result'], loop=_last_message['loop'])
+		say_via_gist(life, dialog_id, _last_message['next_gist'], loop=_last_message['loop'])
 
 def draw_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)

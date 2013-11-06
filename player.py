@@ -1231,7 +1231,7 @@ def create_dialog(entry):
 	SELECTED_TILES[0] = []
 
 	_dialog = dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _target)
-	dialog.say_via_gist(LIFE[SETTINGS['controlling']], _dialog, 'greeting')
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']], _dialog, 'start_conversation')
 	
 	menus.delete_active_menu()
 
