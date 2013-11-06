@@ -77,13 +77,10 @@ def handle_input():
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][1]-=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
+			_dialog = dialog.get_dialog(life.has_dialog(LIFE[SETTINGS['controlling']]))
 			
-			#if '_drawn' in _dialog:
-			#	del _dialog['_drawn']
-
-			#if _dialog['index']:
-			#	_dialog['index'] -= 1
+			if _dialog['cursor_index'] > 0:
+				_dialog['cursor_index'] -= 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]>0:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
@@ -94,13 +91,10 @@ def handle_input():
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][1]+=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
+			_dialog = dialog.get_dialog(life.has_dialog(LIFE[SETTINGS['controlling']]))
 			
-			#if '_drawn' in _dialog:
-			#	del _dialog['_drawn']
-			
-			#if _dialog['index']<len(_dialog['topics'])-1:
-			#	_dialog['index'] += 1
+			if _dialog['cursor_index'] < _dialog['max_cursor_index']-1:
+				_dialog['cursor_index'] += 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
@@ -130,8 +124,9 @@ def handle_input():
 			menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 			return False
 			
-		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
+		_dialog = life.has_dialog(LIFE[SETTINGS['controlling']])
+		if SETTINGS['controlling'] and _dialog:
+			dialog.select_choice(_dialog)
 			
 			#if '_drawn' in _dialog:
 			#	del _dialog['_drawn']
