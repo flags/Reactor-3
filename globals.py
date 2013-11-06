@@ -46,6 +46,8 @@ WORLD_INFO = {'map': [],
 	'memoryid': 1,
 	'goalid': 1,
 	'jobid': 1,
+	'dialogid': 1,
+	'dialogs': {},
 	'chunk_map': {},
 	'camps': {},
 	'groups': {},
@@ -202,6 +204,7 @@ ZONE_CACHE = {}
 VIEWS = {}
 VIEW_SCENE = {}
 VIEW_SCENE_CACHE = set()
+DIALOG_TOPICS = {}
 
 #Consoles
 ITEM_WINDOW = None

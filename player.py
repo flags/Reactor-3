@@ -44,14 +44,6 @@ def handle_input():
 			
 			if LIFE[SETTINGS['controlling']]['actions']:
 				LIFE[SETTINGS['controlling']]['actions'] = []
-		elif LIFE[SETTINGS['controlling']]['dialogs']:
-			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']]
-			if _dialog:
-				_dialog = _dialog[0]
-				del _dialog['_drawn']
-				
-				if not dialog.reset_dialog(_dialog):
-					LIFE[SETTINGS['controlling']]['dialogs'] = []
 		else:
 			SETTINGS['running'] = False
 	
@@ -85,13 +77,13 @@ def handle_input():
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][1]-=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 			
-			if '_drawn' in _dialog:
-				del _dialog['_drawn']
+			#if '_drawn' in _dialog:
+			#	del _dialog['_drawn']
 
-			if _dialog['index']:
-				_dialog['index'] -= 1
+			#if _dialog['index']:
+			#	_dialog['index'] -= 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]>0:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
@@ -102,13 +94,13 @@ def handle_input():
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][1]+=1
 		elif life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 			
-			if '_drawn' in _dialog:
-				del _dialog['_drawn']
+			#if '_drawn' in _dialog:
+			#	del _dialog['_drawn']
 			
-			if _dialog['index']<len(_dialog['topics'])-1:
-				_dialog['index'] += 1
+			#if _dialog['index']<len(_dialog['topics'])-1:
+			#	_dialog['index'] += 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
@@ -139,12 +131,12 @@ def handle_input():
 			return False
 			
 		if SETTINGS['controlling'] and life.has_dialog(LIFE[SETTINGS['controlling']]):
-			_dialog = [d for d in LIFE[SETTINGS['controlling']]['dialogs'] if d['enabled']][0]
+			_dialog = LIFE[SETTINGS['controlling']]['dialogs'][0]
 			
-			if '_drawn' in _dialog:
-				del _dialog['_drawn']
+			#if '_drawn' in _dialog:
+			#	del _dialog['_drawn']
 			
-			dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
+			#dialog.give_menu_response(LIFE[SETTINGS['controlling']], _dialog)
 			return False
 	
 	if not SETTINGS['controlling']:
@@ -1242,12 +1234,10 @@ def create_dialog(entry):
 	_target = entry['target']
 	LIFE[SETTINGS['controlling']]['targeting'] = None
 	SELECTED_TILES[0] = []
+
+	_dialog = dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _target)
+	dialog.say(LIFE[SETTINGS['controlling']], _dialog, 'greeting')
 	
-	_dialog = {'type': 'dialog',
-          'from': SETTINGS['controlling'],
-          'enabled': True}
-	
-	LIFE[SETTINGS['controlling']]['dialogs'].append(dialog.create_dialog_with(LIFE[SETTINGS['controlling']], _target, _dialog))
 	menus.delete_active_menu()
 
 def exit_target(entry):

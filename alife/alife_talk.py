@@ -82,7 +82,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
-		dialog.tick(life, _dialog)	
+		dialog.process(life, _dialog)	
 	
 	if not judgement.is_safe(life) and lfe.ticker(life, 'call_for_help', 90, fire=True):
 		_combat_targets = judgement.get_ready_combat_targets(life)

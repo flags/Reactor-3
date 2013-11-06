@@ -216,7 +216,7 @@ def get_raw(life, section, identifier):
 	
 	return life['raw']['sections'][section][identifier]
 
-def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, debug=False, **kwargs):
+def execute_raw(life, section, identifier, break_on_true=False, break_on_false=True, debug=False, dialog=[], **kwargs):
 	""" break_on_false is defaulted to True because the majority of situations in which this
 	function is used involves making sure all the required checks return True.
 	
@@ -226,10 +226,13 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	"""
 	_broke_on_false = 0
 	
-	if debug:
+	if debug and not dialog:
 		print 'Grabbing raw: %s, %s' % (section, identifier)
 	
-	_raw = get_raw(life, section, identifier)
+	if dialog:
+		_raw = dialog
+	else:
+		_raw = get_raw(life, section, identifier)
 	
 	if not _raw:
 		logging.warning('Cannot grab raw for %s: %s, %s' % (life['raw_name'], section, identifier))
@@ -633,7 +636,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 			for key in match:
 				if not key in ai or not ai[key] == match[key]:
 					_does_match = False
-					#logging.debug('\t%s did not meet matches for this conversation' % ' '.join(ai['name']))
+					#logging.debug('%s did not meet matches for this conversation' % ' '.join(ai['name']))
 					break
 		
 			if not _does_match:
@@ -809,7 +812,7 @@ def memory(life, gist, *args, **kvargs):
 	return _entry['id']
 
 def has_dialog(life):
-	for dialog in [d for d in life['dialogs'] if d['enabled']]:
+	for dialog in life['dialogs']:
 		#if dialog['speaker'] == life['id']:
 		return True
 	

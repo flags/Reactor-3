@@ -321,6 +321,12 @@ def generate_wildlife():
 def generate_life():
 	_spawn = get_spawn_point()
 	
+	#TODO: Just testing for now
+	if not LIFE:
+		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	
+	return False
+	
 	if len(WORLD_INFO['groups'])>=2:
 		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)

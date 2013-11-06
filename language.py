@@ -2,6 +2,7 @@ from globals import *
 
 import alife
 
+import logging
 import random
 import os
 
@@ -70,8 +71,30 @@ def load_strings():
 	#TODO: Use better walk, like one in profiles.py
 	try:
 		os.path.walk(TEXT_DIR, _load_strings, None)
+		load_dialog()
 	except:
 		raise Exception('Error loading strings.')
+
+def load_dialog():
+	with open(os.path.join(TEXT_DIR, 'dialog.txt')) as f:
+		for line in f.readlines():
+			line = line.rstrip()
+			
+			if not line or line.startswith('#'):
+				continue
+			
+			_gist, _requirements, _text, _result = line.split(':')
+			_dialog = {'gist': _gist,
+			           'requirements': _requirements.split(','),
+			           'text': _text,
+			           'result': _result}
+			
+			if _gist in DIALOG_TOPICS:
+				DIALOG_TOPICS[_gist].append(_dialog)
+			else:
+				DIALOG_TOPICS[_gist] = [_dialog]
+	
+	logging.debug('Loaded dialog.')
 
 def generate_place_name():
 	if not TEXT_MAP['places']:
