@@ -10,6 +10,7 @@ import effects
 import numbers
 import weather
 import timers
+import dialog
 import cache
 import menus
 import items
@@ -40,6 +41,9 @@ def can_tick(check=True):
 		
 		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
+	
+	if life.has_dialog(LIFE[SETTINGS['controlling']]):
+		return False
 	
 	if not check:
 		WORLD_INFO['tps'] += 1
@@ -160,12 +164,23 @@ def draw_encounter():
 	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
 		LIFE[SETTINGS['controlling']]['encounters'][0])
 
-def draw_event(event):
+def draw_event():
+	_event = None
+	
+	for event in EVENTS:
+		if not event['delay']:
+			_event = event
+			break
+	
+	if not _event:
+		return False
+	
+	gfx.camera_track(_event['pos'])
 	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
-		_lines = list(event['text'].partition(','))
+		_lines = list(_event['text'].partition(','))
 		
 		if not len(_lines[1]):
-			_lines = list(event['text'].partition('.'))
+			_lines = list(_event['text'].partition('.'))
 		
 		if len(_lines[1]):
 			_lines.pop(1)
@@ -173,7 +188,7 @@ def draw_event(event):
 			lines = ['????']
 		
 	else:
-		_lines = [event['text']]
+		_lines = [_event['text']]
 	
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:
@@ -188,9 +203,11 @@ def draw_event(event):
 		gfx.blit_string(_x,
 			10+_i,
 			line,
-		     'map')
+		    'overlay')
 		
 		_i += 1
+	
+	return True
 
 def show_event(text, time=45, delay=0, life=None, item=None, pos=None, priority=False):
 	_event = {'text': text, 'time': time, 'delay': delay}
@@ -237,8 +254,6 @@ def process_events():
 	
 	if _event['time']:
 		_event['time'] -= 1
-		gfx.camera_track(_event['pos'])
-		draw_event(_event)
 		return True
 	
 	return show_next_event()

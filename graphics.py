@@ -4,6 +4,8 @@ from tiles import *
 import libtcodpy as tcod
 
 import numbers
+import dialog
+import logic
 import life
 
 import logging
@@ -54,7 +56,7 @@ def init_libtcod(terraform=False):
 	
 	LOS_BUFFER[0] = []
 
-def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, require_refresh=False):
+def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
 	if get_view_by_name(name):
 		raise Exception('View with name \'%s\' already exists.' % name)
 	
@@ -66,26 +68,32 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_o
 	         'position': [x, y],
 	         'draw_size': (dw, dh),
 	         'view_size': (w, h),
-	         'alpha': alpha,
 	         'layer': layer,
+	         'fade': [fore_opacity, back_opacity],
+	         'transparent': transparent,
 	         'name': name,
 	         'light_buffer': None,
 	         'char_buffer': [numpy.zeros((dh, dw), dtype=numpy.int16),
 	                          numpy.zeros((dh, dw), dtype=numpy.int16)],
-	         'col_buffer': ((numpy.zeros((dh, dw)),
+	         'col_buffer': [[numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)),
-	                         numpy.zeros((dh, dw))),
-	                        (numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw))],
+	                        [numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)),
-	                         numpy.zeros((dh, dw)))),
+	                         numpy.zeros((dh, dw))]],
 	         'require_refresh': require_refresh,
 	         '_dirty': False,
-	         'fade': [fore_opacity, back_opacity],
 	         'id': _v_id}
 	
 	if lighting:
 		_view['light_buffer'] = [numpy.zeros((dh, dw), dtype=numpy.int16),
 		                         numpy.zeros((dh, dw), dtype=numpy.int16)]
+	
+	if transparent:
+		_view['fade'][1] = 0
+		_view['col_buffer'][1][0] += 255
+		_view['col_buffer'][1][2] += 255
+		tcod.console_set_key_color(_view['console'], tcod.Color(255, 0, 255))
 	
 	SETTINGS['viewid'] += 1
 	VIEWS[name] = _view
@@ -97,6 +105,14 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_o
 	#	set_active_view(name)
 	
 	return _view
+
+def clear_view(view_name, color=tcod.black):
+	_view = get_view_by_name(view_name)
+	
+	for col_buffer in _view['col_buffer']:
+		col_buffer[0] = col_buffer[0].clip(color.r)
+		col_buffer[1] = col_buffer[1].clip(color.g)
+		col_buffer[2] = col_buffer[2].clip(color.b)
 
 def clear_views():
 	for key in VIEWS.keys():
@@ -253,7 +269,7 @@ def prepare_map_views():
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
 	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
-	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', fore_opacity=0, back_opacity=0)
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
 	
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
@@ -263,6 +279,13 @@ def prepare_map_views():
 	set_active_view('map')
 
 def start_of_frame(draw_char_buffer=True):
+	clear_view('overlay', color=tcod.Color(255, 0, 255))
+	
+	if not logic.draw_event():
+		_dialog = life.has_dialog(LIFE[SETTINGS['controlling']])
+		if _dialog:
+			dialog.draw_dialog(_dialog)	
+	
 	draw_scene()
 
 def start_of_frame_terraform():
@@ -329,6 +352,9 @@ def blit_char(x, y, char, fore_color=None, back_color=None, char_buffer=None, rg
 def blit_string(x, y, text, view_name, console=0, fore_color=tcod.white, back_color=None, flicker=0):
 	_view = get_view_by_name(view_name)
 	i = 0
+	
+	if _view['transparent'] and not back_color:
+		back_color = tcod.black
 	
 	for c in text:
 		_back_color = back_color

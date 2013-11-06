@@ -2,6 +2,7 @@ import life as lfe
 
 import encounters
 import graphics
+import dialog
 import alife
 import logic
 
@@ -28,6 +29,9 @@ def _create_context_from_phrase(life, phrase):
 	elif phrase['gist'] == 'greeting':
 		#alife.speech.start_dialog(phrase['from'], life['id'], 'encounter')
 		pass
+	
+	elif phrase['gist'] == 'dialog':
+		logic.show_event(dialog.get_last_message(phrase['dialog_id'])['text'], life=phrase['from'])
 	
 	elif phrase['gist'] == 'looks_hostile':
 		#encounters.create_encounter(life, phrase['from'])

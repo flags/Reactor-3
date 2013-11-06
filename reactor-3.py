@@ -170,7 +170,6 @@ def main():
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
-	dialog.draw_dialog()
 	
 	gfx.draw_status_line()
 	gfx.draw_console()

@@ -15,6 +15,7 @@ import effects
 import random
 import damage
 import timers
+import dialog
 import logic
 import zones
 import alife
@@ -812,9 +813,9 @@ def memory(life, gist, *args, **kvargs):
 	return _entry['id']
 
 def has_dialog(life):
-	for dialog in life['dialogs']:
-		#if dialog['speaker'] == life['id']:
-		return True
+	for dialog_id in life['dialogs']:
+		if dialog.is_turn_to_talk(life, dialog_id):
+			return dialog_id
 	
 	return False
 

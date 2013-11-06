@@ -119,40 +119,58 @@ def get_matching_message(life, dialog_id, gist):
 	
 	return _dialog_choices
 
-def add_message(life, dialog_id, gist, text, result):
+def add_message(life, dialog_id, gist, text, result, loop=False):
 	_dialog = get_dialog(dialog_id)
 	
 	_message = {'from': life['id'],
 	            'gist': gist,
-	            'message': text,
+	            'text': text,
 	            'read': False,
-	            'result': result.lower()}
+	            'result': result.lower(),
+	            'loop': loop}
 	
 	print ' '.join(life['name'])+':', text
 	
 	_dialog['messages'].append(_message)
 
-def say(life, dialog_id, gist):
+def say(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
+	_loop = False
 
-	if _chosen_message['text'].startswith('>'):
+	if _chosen_message['text'].startswith('>') and not loop:
 		_chosen_message = random.choice(get_matching_message(life, dialog_id, _chosen_message['text'][1:]))
+		_loop = True
 	
 	_target = get_listener(dialog_id)
 	
+	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
-	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'])
 
 def process(life, dialog_id):
 	if not is_turn_to_talk(life, dialog_id):
 		return False
 	
-	_next_gist = get_last_message(dialog_id)['result']
+	_last_message = get_last_message(dialog_id)
 	
-	if _next_gist == 'end':
+	if _last_message['result'] == 'end':
 		end_dialog(dialog_id)
 	else:
-		say(life, dialog_id, _next_gist)
+		say(life, dialog_id, _last_message['result'], loop=_last_message['loop'])
 
-def draw_dialog():
-	pass
+def draw_dialog(dialog_id):
+	_dialog = get_dialog(dialog_id)
+	_last_message = get_last_message(dialog_id)
+	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
+	_y = 10
+	_responses = get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['result'])
+	
+	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')
+	
+	for choice in :
+		_text = choice['text']
+		
+		if _text.startswith('>'):
+			_text = _text[1:]
+		
+		gfx.blit_string(_x, _y+3, _text.title(), 'overlay')
+		_y += 2

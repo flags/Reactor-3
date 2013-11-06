@@ -197,8 +197,6 @@ def listen(life):
 		
 		elif event['gist'] == 'dialog':
 			life['dialogs'].append(event['dialog_id'])
-			
-			print ' '.join(life['name']), 'Got dialog'
 		
 		else:
 			logging.warning('Unhandled ALife context: %s' % event['gist'])
