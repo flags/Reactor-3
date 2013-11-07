@@ -12,6 +12,7 @@ import alife
 
 import logging
 import random
+import re
 
 def create_dialog_with(life, target_id):
 	_dialog = {'id': str(WORLD_INFO['dialogid']),
@@ -128,10 +129,10 @@ def get_matching_message(life, dialog_id, gist):
 	_dialog_choices = []
 	_target = get_listener(dialog_id)
 	
-	for dialog_options in DIALOG_TOPICS[gist.upper()]:
+	for dialog_option in DIALOG_TOPICS[gist.upper()]:
 		_pass = True
 		
-		for requirement in dialog_options['requirements']:
+		for requirement in dialog_option['requirements']:
 			if not execute_function(life, _target, requirement):
 				_pass = False
 				break
@@ -139,7 +140,7 @@ def get_matching_message(life, dialog_id, gist):
 		if not _pass:
 			continue
 		
-		_dialog_choices.append(dialog_options)
+		_dialog_choices.append(dialog_option)
 	
 	return _dialog_choices
 
@@ -187,28 +188,45 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 			else:
 				_func = result
 			
-			_return = execute_function(life, _target, _func)
+			if _func.count('\"'):
+				_return = _func.partition('\"')[2].partition('\"')[0]
+			else:
+				_return = execute_function(life, _target, _func)
 			
 			if result.count('='):
 				_dialog['flags'][result.split('=')[0]] = _return
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
 
+def reformat_text(dialog_id, text):
+	_dialog = get_dialog(dialog_id)
+	
+	if text.count('%')%2:
+		raise Exception('Closing \% not matched in string: %s' % text)
+	
+	for match in re.findall('%[\w]*%', text):
+		_flag = match.replace('%', '').lower()
+		text = text.replace(match, _dialog['flags'][_flag])
+	
+	return text
+
 def say_via_gist(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
+	_text = reformat_text(dialog_id, _chosen_message['text'])
 	_target = get_listener(dialog_id)
 	_loop = False
 
-	while _chosen_message['text'].startswith('>') and not loop:
-		_chosen_message = random.choice(get_matching_message(life, dialog_id, _chosen_message['text'][1:]))
+	while _text.startswith('>') and not loop:
+		_text = _text[1:]
+		_chosen_message = random.choice(get_matching_message(life, dialog_id, _text))
 		_loop = True
 	
 	if 'player' in life:
-		_text = _chosen_message['text']
-		_text = _text[_text.index('\"')+1:_text.index('\"')-1]
-		logic.show_event(_text, life=life)
+		_player_text = _text
+		_player_text = _text[_text.index('\"')+1:_player_text.index('\"')-1]
+		logic.show_event(_player_text, life=life)
 	
-	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
+	add_message(life, dialog_id, _chosen_message['gist'], _text, _chosen_message['result'], loop=_loop)
 
 def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
