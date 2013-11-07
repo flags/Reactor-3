@@ -132,8 +132,14 @@ def get_matching_message(life, dialog_id, gist):
 		_pass = True
 		
 		for requirement in dialog_options['requirements']:
-			if execute_function(life, _target, requirement):
-				_dialog_choices.append(dialog_options)
+			if not execute_function(life, _target, requirement):
+				_pass = False
+				break
+		
+		if not _pass:
+			continue
+		
+		_dialog_choices.append(dialog_options)
 	
 	return _dialog_choices
 
