@@ -149,3 +149,9 @@ def determine_interesting_event(life, target):
 		return 'I don\'t have anything interesting to say.'
 		
 	return random.choice(_valid_phrases)
+
+def get_recent_events(life):
+	if WORLD_INFO['ticks']-life['created']<75:
+		return 'Hey, I just got here!'
+	
+	return 'Nothing much has been going on lately.'

@@ -108,6 +108,7 @@ def create_function_map():
 		'drop_item_matching': lambda life, matching: lfe.get_all_inventory_items(life, matches=[matching]) and lfe.drop_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0]['uid'])>0,
 		'has_target_to_follow': lambda life: judgement.get_target_to_follow(life)>0,
 		'has_target_to_guard': lambda life: judgement.get_target_to_guard(life)>0,
+		'get_recent_events': speech.get_recent_events,
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'always': always,

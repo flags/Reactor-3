@@ -186,7 +186,7 @@ def main():
 		print tcod.sys_get_fps()
 	
 	if SETTINGS['recording']:
-		if 30+SETTINGS['recording fps temp']:
+		if 10+SETTINGS['recording fps temp']:
 			SETTINGS['recording fps temp'] -= 1
 		else:
 			WORLD_INFO['d'] = WORLD_INFO['ticks']

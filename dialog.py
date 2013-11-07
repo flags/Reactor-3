@@ -73,10 +73,12 @@ def execute_function(life, target, function):
 	_pass = True
 	_flags = {'true': True,
 	          'self_call': False,
-	          'no_args': False}
+	          'no_args': False,
+	          'return': False}
 	_flag_map = {'!': {'true': False},
 	             '@': {'self_call': True},
-	             '%': {'no_args': True}}
+	             '%': {'no_args': True},
+	             '$': {'return': True}}
 	
 	while 1:
 		_flag = _function[0]
@@ -86,25 +88,32 @@ def execute_function(life, target, function):
 		
 		_function = _function[1:]
 		_flags.update(_flag_map[_flag])
-		
-		break
 	
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
 	try:
 		if _flags['self_call']:
-			if not FUNCTION_MAP[_function](life) == _flags['true']:
+			_func = FUNCTION_MAP[_function](life)
+			
+			if not _func == _flags['true']:
 				_pass = False
 		elif _flags['no_args']:
-			if not FUNCTION_MAP[_function]() == _flags['true']:
+			_func = FUNCTION_MAP[_function]()
+			
+			if not _func == _flags['true']:
 				_pass = False
 		else:
-			if not FUNCTION_MAP[_function](life, target) == _flags['true']:
+			_func = FUNCTION_MAP[_function](life, target)
+			
+			if not _func == _flags['true']:
 				_pass = False
 	except Exception, e:
 		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
 		raise e
+	
+	if _flags['return']:
+		return _func
 	
 	if _pass:
 		return True
@@ -124,7 +133,7 @@ def get_matching_message(life, dialog_id, gist):
 	
 	return _dialog_choices
 
-def add_message(life, dialog_id, gist, text, result, loop=False):
+def add_message(life, dialog_id, gist, action, result, loop=False):
 	_dialog = get_dialog(dialog_id)
 	
 	if _dialog['started_by'] == life['id']:
@@ -132,15 +141,28 @@ def add_message(life, dialog_id, gist, text, result, loop=False):
 	else:
 		_target = _dialog['started_by']
 	
+	_text = None
+	for _entry in action.split(','):
+		if _entry.startswith('\"'):
+			_text = _entry[1:].split('\"')[0]
+		else:
+			_return = execute_function(life, _target, _entry)
+			print _return
+			if isinstance(_return, str):
+				_text = _return
+	
+	if not _text:
+		_text = '%s says nothing.' % ' '.join(life['name'])
+	
 	_message = {'from': life['id'],
 	            'gist': gist,
-	            'text': text,
+	            'text': _text,
 	            'read': False,
 	            'result': result.lower().split(','),
 	            'next_gist': None,
 	            'loop': loop}
 	
-	print ' '.join(life['name'])+':', text
+	print ' '.join(life['name'])+':', _text
 	
 	_dialog['messages'].append(_message)
 	
@@ -162,7 +184,9 @@ def say_via_gist(life, dialog_id, gist, loop=False):
 		_loop = True
 	
 	if 'player' in life:
-		logic.show_event(_chosen_message['text'], life=life)
+		_text = _chosen_message['text']
+		_text = _text[_text.index('\"')+1:_text.index('\"')-1]
+		logic.show_event(_text, life=life)
 	
 	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
 
@@ -174,6 +198,10 @@ def select_choice(dialog_id):
 	if _choice in _dialog['loop_choices']:
 		_loop = True
 	
+	_text = _choice['text']
+	_text = _text[_text.index('\"')+1:_text.index('\"')-1]
+	logic.show_event(_text, life=LIFE[SETTINGS['controlling']])
+	
 	add_message(LIFE[SETTINGS['controlling']], _dialog['id'], _choice['gist'], _choice['text'], _choice['result'], loop=_loop)
 
 def process_dialog_for_player(dialog_id, loop=False):
@@ -181,7 +209,6 @@ def process_dialog_for_player(dialog_id, loop=False):
 	_dialog['choices'] = []
 	_dialog['loop_choices'] = []
 	_dialog['cursor_index'] = 0	
-	_dialog['max_cursor_index'] = len(_dialog['choices'])
 	_last_message = get_last_message(dialog_id)
 	
 	if loop:
@@ -198,6 +225,8 @@ def process_dialog_for_player(dialog_id, loop=False):
 				_dialog['loop_choices'].extend(_to_check)
 			else:
 				_dialog['choices'].append(_response)
+	
+	_dialog['max_cursor_index'] = len(_dialog['choices'])
 
 def process(life, dialog_id):
 	if not is_turn_to_talk(life, dialog_id):
@@ -226,20 +255,23 @@ def draw_dialog(dialog_id):
 	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')
 	
 	for choice in _dialog['choices']:
-		_text = choice['text']
+		_text = choice['text'][choice['text'].index('\"')+1:choice['text'].index('\"')-1]
 		
-		if _text.startswith('>'):
-			_text = _text[1:]
-		
-		if _dialog['cursor_index'] == _dialog['choices'].index(choice):
+		if not _text.startswith('>'):
 			_text = '> '+_text
 		
 		_n_x = MAP_WINDOW_SIZE[0]/2-len(_text)/2
 		
 		if _n_x < _x:
 			_x = _n_x
+	
+	for choice in _dialog['choices']:
+		_text = choice['text'][choice['text'].index('\"')+1:choice['text'].index('\"')-1]
 		
-		_lines.append(_text.title())
+		if _dialog['cursor_index'] == _dialog['choices'].index(choice):
+			_text = '> '+_text
+		
+		_lines.append(_text)
 	
 	for line in _lines:
 		gfx.blit_string(_x, _y+3, line, 'overlay')

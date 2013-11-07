@@ -176,7 +176,7 @@ SETTINGS = {'running': True,
 	'smp': None,
 	'map_slices': [],
 	'recording': False,
-	'recording fps': 1,
+	'recording fps': 0,
 	'recording fps temp': 0,
 	'viewid': 1,
 	'active_view': 0}

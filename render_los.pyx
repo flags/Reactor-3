@@ -1,5 +1,6 @@
 from globals import *
 
+import numbers
 import cython
 import numpy
 import alife
@@ -109,8 +110,8 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 		#	if maps.get_chunk(chunk_key)['max_z'] > life['pos'][2]:
 		#		SKIP_CHUNKS.append(chunk_key)
 	
-	if not POS_X-X_CAMERA_POS<0 and not POS_X-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POS_Y-Y_CAMERA_POS<0 and not POS_Y-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
-		los_buffer[POS_Y-Y_CAMERA_POS,POS_X-X_CAMERA_POS] = 1
+	#if not POS_X-X_CAMERA_POS<0 and not POS_X-X_CAMERA_POS >= X_MAP_WINDOW_SIZE and not POS_Y-Y_CAMERA_POS<0 and not POS_Y-Y_CAMERA_POS >= Y_MAP_WINDOW_SIZE:
+	#	los_buffer[POS_Y-Y_CAMERA_POS,POS_X-X_CAMERA_POS] = 1
 	
 	for _pos in draw_circle(POS_X, POS_Y, size):
 		_dark = 0
@@ -124,6 +125,7 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 		for pos in draw_line(POS_X,POS_Y,_pos[0],_pos[1]):
 			_x = pos[0]-X_CAMERA_POS
 			_y = pos[1]-Y_CAMERA_POS
+			#_distance = 1#numbers.clip(numbers.distance(pos, (POS_X, POS_Y), old=True), 1, 255)*.10
 			
 			if _x<0 or _x>=X_MAP_WINDOW_SIZE or _y<0 or _y>=Y_MAP_WINDOW_SIZE:
 				continue

@@ -317,6 +317,10 @@ def render_lights(source_map):
 		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
 		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
 		
+		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[2] *= LOS_BUFFER[0]
+		
 		if logic.can_tick():
 			if light['fade']:
 				light['brightness'] -= light['fade']
