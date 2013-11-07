@@ -243,11 +243,14 @@ def process_events():
 	
 	_event = None
 	for event in EVENTS:
-		if event['delay']:
-			event['delay'] -= 1
-		else:
+		if not event['delay']:
 			_event = event
 			break
+	
+	if not _event:
+		for event in EVENTS:
+			if event['delay']:
+				event['delay'] -= 1
 	
 	if not _event:
 		return False

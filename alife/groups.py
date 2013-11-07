@@ -11,6 +11,8 @@ import combat
 import speech
 import events
 import chunks
+import logic
+import sight
 import camps
 import brain
 import stats
@@ -103,7 +105,11 @@ def add_member(group_id, life_id):
 	_group['members'].append(life_id)
 	
 	if _group['leader'] and 'player' in LIFE[_group['leader']]:
-		gfx.message('%s has joined your group.' % ' '.join(LIFE[life_id]['name']), style='good')
+		_text = '%s has joined your group.' % ' '.join(LIFE[life_id]['name'])
+		gfx.message(_text, style='good')
+		
+		if sight.can_see_target(LIFE[_group['leader']], life_id):
+			logic.show_event(_text, life=LIFE[life_id], delay=1)
 	
 	if SETTINGS['controlling'] == life_id:
 		gfx.message('You join group %s.' % group_id, style='good')
