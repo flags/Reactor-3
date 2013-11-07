@@ -147,9 +147,11 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 			_text = _entry[1:].split('\"')[0]
 		else:
 			_return = execute_function(life, _target, _entry)
-			print _return
+			
 			if isinstance(_return, str):
 				_text = _return
+			elif isinstance(_return, list):
+				_text = random.choice(_return)
 	
 	if not _text:
 		_text = '%s says nothing.' % ' '.join(life['name'])
