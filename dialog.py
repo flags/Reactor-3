@@ -16,6 +16,7 @@ import random
 def create_dialog_with(life, target_id):
 	_dialog = {'id': str(WORLD_INFO['dialogid']),
 	           'messages': [],
+	           'flags': {},
 	           'started_by': life['id'],
 	           'target': target_id,
 	           'choices': [],
@@ -41,6 +42,9 @@ def end_dialog(dialog_id):
 		lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
 	logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
+
+def get_dialog_flag(dialog_id, flag):
+	return get_dialog(dialog_id)['flags'][flag]
 
 def get_last_message(dialog_id):
 	_dialog = get_dialog(dialog_id)
@@ -172,7 +176,15 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 		if result.startswith('>'):
 			_message['next_gist'] = result[1:]
 		else:
-			execute_function(life, _target, result)
+			if result.count('='):
+				_func = result.split('=')[1]
+			else:
+				_func = result
+			
+			_return = execute_function(life, _target, _func)
+			
+			if result.count('='):
+				_dialog['flags'][result.split('=')[0]] = _return
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
 

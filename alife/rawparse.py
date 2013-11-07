@@ -20,12 +20,6 @@ import jobs
 
 import re
 
-def always(life):
-	return True
-
-def never(life):
-	return False
-
 CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 
 def create_function_map():
@@ -80,10 +74,8 @@ def create_function_map():
 		'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
 		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, recent_only=True, limit_distance=sight.get_vision(life)+10))>0,
 		'danger_close': stats.is_combat_target_too_close,
-		'wait': never,
 		'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 		'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
-		'start_dialog': speech.start_dialog,
 		'announce_to_group': groups.announce,
 		'is_in_chunk': chunks.is_in_chunk,
 		'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
@@ -92,6 +84,8 @@ def create_function_map():
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
 		'has_usable_weapon': combat.has_potentially_usable_weapon,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
+		'get_group': lambda life: life['group'],
+		'join_group': lambda life, life_id: groups.add_member(LIFE[life_id]['group'], life['id']),
 		'is_group_leader': lambda life: groups.is_leader_of_any_group(life)==True,
 		'is_in_same_group': lambda life, life_id: (life['group'] and LIFE[life_id]['group'] == life['group'])>0,
 		'is_target_group_leader': lambda life, life_id: (groups.is_leader_of_any_group(LIFE[life_id]))==True,
@@ -111,9 +105,9 @@ def create_function_map():
 		'get_recent_events': speech.get_recent_events,
 		'consume': lfe.consume,
 		'explode': items.explode,
-		'always': always,
+		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
-		'never': never})
+		'never': lambda life: 1==2})
 
 def create_rawlangscript():
 	return {'section': '', 'sections': {}}
