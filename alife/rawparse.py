@@ -11,6 +11,7 @@ import groups
 import combat
 import chunks
 import speech
+import dialog
 import brain
 import items
 import stats
@@ -103,6 +104,10 @@ def create_function_map():
 		'has_target_to_follow': lambda life: judgement.get_target_to_follow(life)>0,
 		'has_target_to_guard': lambda life: judgement.get_target_to_guard(life)>0,
 		'get_recent_events': speech.get_recent_events,
+		'get_target': lambda life, life_id: speech.get_target(life,
+	                                                  lfe.has_dialog_with(life, life_id),
+	                                                  dialog.get_flag(lfe.has_dialog_with(life, life_id),
+	                                                                  'NEXT_GIST')),
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'always': lambda life: 1==1,

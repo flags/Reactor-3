@@ -6,6 +6,7 @@ import judgement
 import language
 import dialog
 import groups
+import menus
 import sight
 import stats
 
@@ -101,31 +102,9 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	lfe.create_and_update_self_snapshot(life)
 
 def start_dialog(life, target, gist):
-	_dialog = {'type': 'dialog',
-		'from': life,
-		'enabled': True,
-		'gist': gist}
-	_dialog = dialog.create_dialog_with(life, target, _dialog)
+	_dialog = dialog.create_dialog_with(life, target)
 	
-	if _dialog:
-		life['dialogs'].append(_dialog)
-	
-	return True
-
-def start_dialog_with_question(life, target, question_id):
-	_question = lfe.get_memory_via_id(life, question_id)	
-	
-	_dialog = {'type': 'dialog',
-		'from': life,
-		'enabled': True,
-		'gist': None}
-	_dialog = dialog.create_dialog_with(life, target, _dialog, question=_question)
-	
-	if _dialog:
-		life['dialogs'].append(_dialog)
-		return True
-	
-	return False
+	dialog.say_via_gist(life, _dialog, gist)
 
 def determine_interesting_event(life, target):
 	_valid_phrases = []
@@ -155,3 +134,17 @@ def get_recent_events(life):
 		return 'Hey, I just got here!'
 	
 	return 'Nothing much has been going on lately.'
+
+def get_target(life, dialog_id, gist):
+	if 'player' in life:
+		_targets = menus.create_target_list()
+		
+		_menu = menus.create_menu(menu=_targets,
+		                          title='Select Target',
+		                          format_str='$k',
+		                          on_select=lambda entry: dialog.say_via_gist(life, dialog_id, gist),
+		                          close_on_select=True)
+		menus.activate_menu(_menu)
+	else:
+		raise Exception('Dead end.')
+	

@@ -310,7 +310,7 @@ def handle_input():
 			return False
 		
 		if not LIFE[SETTINGS['controlling']]['targeting']:
-			_menu_items = create_target_list()
+			_menu_items = menus.create_target_list()
 	
 			if not _menu_items:
 				gfx.message('There\'s nobody to talk to.')
@@ -1047,7 +1047,7 @@ def inventory_fire(entry):
 			menus.delete_menu(ACTIVE_MENU['menu'])
 			return False
 	
-	_menu_items = create_target_list()
+	_menu_items = menus.create_target_list()
 	
 	if not _menu_items:
 		gfx.message('You have nothing to aim at!')
@@ -1145,24 +1145,6 @@ def inventory_change_fire_rate_action(entry):
 	
 	menus.delete_active_menu()
 	menus.delete_active_menu()
-
-def create_target_list():
-	_menu_items = []
-	for target in [l for l in LIFE.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
-		if target['dead']:
-			continue
-		
-		if not _menu_items:
-			SETTINGS['following'] = target['id']
-		
-		_color = life.draw_life_icon(target)[1]
-		_menu_items.append(menus.create_item('single',
-		                                     ' '.join(target['name']),
-		                                     None,
-		                                     target=target['id'],
-		                                     color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
-	
-	return _menu_items
 
 def mouse_select_item_at():
 	_m_x, _m_y = inputs.get_mouse_location()
@@ -1762,7 +1744,7 @@ def send_command(entry):
 	value = entry['values'][entry['value']]
 	
 	if key == 'Attack':
-		_menu_items = create_target_list()
+		_menu_items = menus.create_target_list()
 		
 		_menu = menus.create_menu(title='Select Target',
 		                          menu=_menu_items,

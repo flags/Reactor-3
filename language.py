@@ -72,8 +72,8 @@ def load_strings():
 	try:
 		os.path.walk(TEXT_DIR, _load_strings, None)
 		load_dialog()
-	except:
-		raise Exception('Error loading strings.')
+	except Exception, e:
+		raise Exception(e)
 
 def load_dialog():
 	with open(os.path.join(TEXT_DIR, 'dialog.txt')) as f:

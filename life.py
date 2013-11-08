@@ -819,6 +819,16 @@ def has_dialog(life):
 	
 	return False
 
+def has_dialog_with(life, life_id):
+	for dialog_id in life['dialogs']:
+		_dialog = dialog.get_dialog(dialog_id)
+		_talkers = [_dialog['started_by'], _dialog['target']]
+		
+		if _dialog['started_by'] in _talkers and _dialog['target'] in _talkers:
+			return dialog_id
+	
+	return False
+
 def has_group(life):
 	return life['group']
 

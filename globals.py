@@ -139,14 +139,6 @@ LIFE_BLEED_RATE = .4 #Higher is faster
 LIFE_THINK_RATE = 6
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
-ENCOUNTER_TIME_LIMIT = 150
-DEFAULT_CONTEXT_TIME = 25
-
-QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
-	'wants item': {'type': '*'}}
-
-POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
-	'how_are_you': [1.0, 0.7]}
 
 #Non-constants
 SETTINGS = {'running': True,

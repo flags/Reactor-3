@@ -44,8 +44,8 @@ def end_dialog(dialog_id):
 	
 	logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
 
-def get_dialog_flag(dialog_id, flag):
-	return get_dialog(dialog_id)['flags'][flag]
+def get_flag(dialog_id, flag):
+	return get_dialog(dialog_id)['flags'][flag.lower()]
 
 def get_last_message(dialog_id):
 	_dialog = get_dialog(dialog_id)
@@ -129,6 +129,9 @@ def get_matching_message(life, dialog_id, gist):
 	_dialog_choices = []
 	_target = get_listener(dialog_id)
 	
+	if not gist.upper() in DIALOG_TOPICS:
+		raise Exception('Dialog hit dead end due to no matching gist: %s' % gist)
+	
 	for dialog_option in DIALOG_TOPICS[gist.upper()]:
 		_pass = True
 		
@@ -211,7 +214,6 @@ def reformat_text(dialog_id, text):
 	return text
 
 def say_via_gist(life, dialog_id, gist, loop=False):
-	print gist
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_text = reformat_text(dialog_id, _chosen_message['text'])
 	_target = get_listener(dialog_id)
@@ -239,7 +241,9 @@ def select_choice(dialog_id):
 	
 	_text = _choice['text']
 	_text = _text[_text.index('\"')+1:_text.index('\"')-1]
-	logic.show_event(_text, life=LIFE[SETTINGS['controlling']])
+	
+	if not _text.endswith('...'):
+		logic.show_event(_text, life=LIFE[SETTINGS['controlling']])
 	
 	add_message(LIFE[SETTINGS['controlling']], _dialog['id'], _choice['gist'], _choice['text'], _choice['result'], loop=_loop)
 
@@ -286,8 +290,13 @@ def draw_dialog(dialog_id):
 	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
-	_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
-	_center_pos.append(2)
+	
+	if len(_line_of_sight)<=1:
+		_center_pos = LIFE[_dialog['started_by']]['pos']
+	else:
+		_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
+		_center_pos.append(2)
+	
 	_lines = []
 	                                   
 	gfx.camera_track(_center_pos)
