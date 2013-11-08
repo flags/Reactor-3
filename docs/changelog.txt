@@ -9,6 +9,10 @@ New in version 0.6.5:
 		* Note: Actual sounds are planned for a future version.
 	* Reworked judgement.
 		* NPCs won't talk as much and judge based on a wider variety of factors.
+	* Completely rewrote all dialog-related functions.
+		* An extended version of RawScript is now supported.
+		* All dialog strings are stored externally in `data\text\dialog.txt`.
+		* Questions have been reimplemented .
 	* NPCs can now learn more details about others and items.
 		* This information can also become out of date, leading to bad decision making.
 	* Mouse look
