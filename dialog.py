@@ -211,6 +211,7 @@ def reformat_text(dialog_id, text):
 	return text
 
 def say_via_gist(life, dialog_id, gist, loop=False):
+	print gist
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_text = reformat_text(dialog_id, _chosen_message['text'])
 	_target = get_listener(dialog_id)
