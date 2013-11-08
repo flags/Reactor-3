@@ -6,6 +6,7 @@ import judgement
 import language
 import dialog
 import groups
+import brain
 import menus
 import sight
 import stats
@@ -101,8 +102,8 @@ def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
 
-def start_dialog(life, target, gist):
-	_dialog = dialog.create_dialog_with(life, target)
+def start_dialog(life, target, gist, remote=False):
+	_dialog = dialog.create_dialog_with(life, target, remote=remote)
 	
 	dialog.say_via_gist(life, _dialog, gist)
 

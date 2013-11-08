@@ -295,9 +295,6 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	
 	return True
 
-def generate_likes(life):
-	return copy.deepcopy(POSSIBLE_LIKES)
-
 def get_limb(life, limb):
 	"""Helper function. Finds and returns a limb."""
 	return life['body'][limb]
@@ -409,8 +406,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['completed_jobs'] = []
 	_life['rejected_jobs'] = []
 	_life['group'] = None
-	_life['likes'] = generate_likes(_life)
-	_life['dislikes'] = {}
 	_life['needs'] = {}
 	_life['need_id'] = 1
 	_life['goals'] = {}
@@ -797,12 +792,6 @@ def memory(life, gist, *args, **kvargs):
 	
 	_entry.update(kvargs)
 	
-	if 'question' in _entry:
-		_entry['answered'] = []
-		_entry['asked'] = {}
-		_entry['ignore'] = []
-		#_entry['last_asked'] = -1000
-	
 	life['memory'].append(_entry)
 	life['unchecked_memories'].append(_entry['id'])
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
@@ -832,18 +821,6 @@ def has_dialog_with(life, life_id):
 def has_group(life):
 	return life['group']
 
-def can_ask(life, target_id, question_id):
-	question = get_memory_via_id(life, question_id)
-	
-	if not target_id:
-		print 'cant ask because of wrong id'
-		return False
-	
-	if target_id in question['asked'] and WORLD_INFO['ticks']-question['asked'][target_id] < 900:
-		return False
-	
-	return True
-
 def get_memory(life, matches={}):
 	_memories = []
 	
@@ -870,47 +847,6 @@ def delete_memory(life, matches={}):
 	for _memory in get_memory(life, matches=matches):
 		life['memory'].remove(_memory)
 		logging.debug('%s deleted memory: %s' % (' '.join(life['name']), _memory['text']))
-
-def create_question(life, gist, question, answer_match, match_gist_only=False, answer_all=False, interest=0):
-	question['question'] = True
-	if not isinstance(answer_match, list):
-		answer_match = [answer_match]
-	
-	question['answer_match'] = answer_match
-	_match = {'text': gist}
-	
-	if not match_gist_only:
-		_match.update(question)
-	
-	if get_memory(life, matches=_match):
-		return False
-	
-	if interest:
-		if not 'target' in question:
-			raise Exception('No target in question when `interest` > 0. Stopping (Programmer Error).')
-		
-		brain.add_impression(life, question['target'], 'talk', {'influence': alife.stats.get_influence_from(life, question['target'])})
-	
-	question['answer_all'] = answer_all
-	_id = memory(life, gist, question)
-	
-	logging.debug('Creating question...')
-	return _id
-
-def get_questions(life, target=None, no_filter=False, skip_answered=True):
-	_questions = []
-	
-	for question in get_memory(life, matches={'question': True}):
-		if skip_answered and question['answered']:
-			continue
-		
-		#TODO: no_filter kills the loop entirely?
-		if not no_filter and target and target in question['ignore']:
-			continue
-		
-		_questions.append(question)
-	
-	return _questions
 
 def get_recent_memories(life,number):
 	return life['memory'][len(life['memory'])-number:]

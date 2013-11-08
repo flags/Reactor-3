@@ -14,13 +14,14 @@ import logging
 import random
 import re
 
-def create_dialog_with(life, target_id):
+def create_dialog_with(life, target_id, remote=False):
 	_dialog = {'id': str(WORLD_INFO['dialogid']),
 	           'messages': [],
 	           'flags': {},
 	           'started_by': life['id'],
 	           'target': target_id,
 	           'choices': [],
+	           'remote': remote,
 	           'cursor_index': 0}
 	
 	life['dialogs'].append(_dialog['id'])
@@ -159,6 +160,11 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	for _entry in action.split(','):
 		if _entry.startswith('\"'):
 			_text = _entry[1:].split('\"')[0]
+		#elif _entry.startswith('>'):
+		#	while _text.startswith('>') and not loop:
+		#		_text = _text[1:]
+		#		_chosen_message = random.choice(get_matching_message(life, dialog_id, _text))
+		#		_loop = True
 		else:
 			_return = execute_function(life, _target, _entry)
 			
@@ -178,58 +184,70 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'next_gist': None,
 	            'loop': loop}
 	
-	print ' '.join(life['name'])+':', _text
+	if _dialog['remote']:
+		print ' '.join(life['name'])+' (radio):', _text
+	else:
+		print ' '.join(life['name'])+':', _text
 	
 	_dialog['messages'].append(_message)
 	
 	for result in _message['result']:
-		if result.startswith('>'):
-			_message['next_gist'] = result[1:]
+		_result = reformat_text(life, _target, dialog_id, result)
+		
+		if _result.startswith('>'):
+			_message['next_gist'] = _result[1:]
 		else:
-			if result.count('='):
-				_func = result.split('=')[1]
+			if _result.count('='):
+				_func = _result.split('=')[1]
 			else:
-				_func = result
+				_func = _result
 			
 			if _func.count('\"'):
 				_return = _func.partition('\"')[2].partition('\"')[0]
 			else:
 				_return = execute_function(life, _target, _func)
 			
-			if result.count('='):
-				_dialog['flags'][result.split('=')[0]] = _return
+			if _result.count('='):
+				_dialog['flags'][_result.split('=')[0]] = _return
 	
-	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id)
+	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
 
-def reformat_text(dialog_id, text):
+def reformat_text(life, target, dialog_id, text):
 	_dialog = get_dialog(dialog_id)
 	
 	if text.count('%')%2:
 		raise Exception('Closing \% not matched in string: %s' % text)
 	
-	for match in re.findall('%[\w]*%', text):
+	for match in re.findall('%[\$\*\w]*%', text):
 		_flag = match.replace('%', '').lower()
-		text = text.replace(match, _dialog['flags'][_flag])
+		
+		if _flag.startswith('*'):
+			_flag = _flag[1:]
+			text = text.replace(match, execute_function(life, target, _flag))
+		else:
+			text = text.replace(match, _dialog['flags'][_flag])
 	
 	return text
 
 def say_via_gist(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
-	_text = reformat_text(dialog_id, _chosen_message['text'])
 	_target = get_listener(dialog_id)
+	_text = reformat_text(life, _target, dialog_id, _chosen_message['text'])
 	_loop = False
 
-	while _text.startswith('>') and not loop:
-		_text = _text[1:]
-		_chosen_message = random.choice(get_matching_message(life, dialog_id, _text))
-		_loop = True
+	if not loop:
+		while _text.startswith('>'):
+			_text = _text[1:]
+			_chosen_message = random.choice(get_matching_message(life, dialog_id, _text))
+			_text = _chosen_message['text']
+			_loop = True
 	
 	if 'player' in life:
 		_player_text = _text
 		_player_text = _text[_text.index('\"')+1:_player_text.index('\"')-1]
 		logic.show_event(_player_text, life=life)
 	
-	add_message(life, dialog_id, _chosen_message['gist'], _text, _chosen_message['result'], loop=_loop)
+	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
 
 def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)

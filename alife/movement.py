@@ -8,6 +8,7 @@ import numbers
 import combat
 import speech
 import chunks
+import memory
 import zones
 import sight
 import brain
@@ -272,6 +273,9 @@ def find_target(life, target, distance=5, follow=False, call=True):
 	
 	if not _can_see and sight.can_see_position(life, _target['last_seen_at']) and _dist<distance:
 		if call:
+			if not _target['escaped']:
+				memory.create_question(life, target, 'GET_LOCATION')
+				
 			speech.communicate(life, 'call', matches=[{'id': target}])
 		
 		_target['escaped'] = 1

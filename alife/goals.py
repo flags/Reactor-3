@@ -223,7 +223,3 @@ def process_criteria(life, goal_id, criteria_id, result):
 			break
 	
 	return _criteria['result']
-
-def complete_on_answer(life, goal_id, question_id):
-	_goal = get_goal_via_id(life, goal_id)
-	_goal['complete_on_answer'].append(question_id)

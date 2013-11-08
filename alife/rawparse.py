@@ -7,6 +7,7 @@ import judgement
 import survival
 import movement
 import numbers
+import memory
 import groups
 import combat
 import chunks
@@ -108,6 +109,8 @@ def create_function_map():
 	                                                  lfe.has_dialog_with(life, life_id),
 	                                                  dialog.get_flag(lfe.has_dialog_with(life, life_id),
 	                                                                  'NEXT_GIST')),
+		'has_questions_for_target': lambda life, life_id: len(memory.get_questions_for_target(life, life_id))>0,
+		'ask_target_question': memory.ask_target_question,
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'always': lambda life: 1==1,

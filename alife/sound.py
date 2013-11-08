@@ -180,7 +180,7 @@ def listen(life):
 		
 		elif event['gist'] == 'call':
 			if judgement.can_trust(life, event['from']['id']):
-				speech.start_dialog(life, event['from']['id'], 'call_accepted')
+				speech.start_dialog(life, event['from']['id'], 'call_accepted', remote=True)
 		
 		elif event['gist'] == 'order_attack':
 			lfe.memory(life, 'ordered to attack',
