@@ -26,12 +26,13 @@ def ask_target_question(life, life_id):
 	return get_questions_for_target(life, life_id).pop(0)
 
 def rescore_history(life):
-	for memory in life['memory']:
-		if (brain.get_flag(life, 'hungry') or brain.get_flag(life, 'thirsty')) and memory['text'] == 'consume_item':
-			if not 'trust' in memory:
-				memory['trust'] = -2
-				memory['danger'] = 3
-				print 'HATE!'
+	pass
+	#for memory in life['memory']:
+	#	if (brain.get_flag(life, 'hungry') or brain.get_flag(life, 'thirsty')) and memory['text'] == 'consume_item':
+	#		if not 'trust' in memory:
+	#			memory['trust'] = -2
+	#			memory['danger'] = 3
+	#			print 'HATE!'
 
 def detect_lies(life):
 	pass

@@ -253,6 +253,11 @@ def meet_alife(life, target):
 	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 
+def update_known_life(life, life_id, flag, value):
+	_knows = knows_alife_by_id(life, life_id)
+	
+	_knows[flag] = value
+
 def has_met_in_person(life, target):
 	if knows_alife(life, target)['met_at_time'] == -1:
 		return False

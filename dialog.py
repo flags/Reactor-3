@@ -159,7 +159,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	_text = None
 	for _entry in action.split(','):
 		if _entry.startswith('\"'):
-			_text = _entry[1:].split('\"')[0]
+			_text = reformat_text(life, _target, dialog_id, _entry[1:].split('\"')[0])
 		#elif _entry.startswith('>'):
 		#	while _text.startswith('>') and not loop:
 		#		_text = _text[1:]
@@ -218,7 +218,7 @@ def reformat_text(life, target, dialog_id, text):
 	if text.count('%')%2:
 		raise Exception('Closing \% not matched in string: %s' % text)
 	
-	for match in re.findall('%[\$\*\w]*%', text):
+	for match in re.findall('%[\@\$\*\w]*%', text):
 		_flag = match.replace('%', '').lower()
 		
 		if _flag.startswith('*'):
@@ -232,7 +232,7 @@ def reformat_text(life, target, dialog_id, text):
 def say_via_gist(life, dialog_id, gist, loop=False):
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_target = get_listener(dialog_id)
-	_text = reformat_text(life, _target, dialog_id, _chosen_message['text'])
+	_text = _chosen_message['text']#reformat_text(life, _target, dialog_id, _chosen_message['text'])
 	_loop = False
 
 	if not loop:
@@ -243,9 +243,7 @@ def say_via_gist(life, dialog_id, gist, loop=False):
 			_loop = True
 	
 	if 'player' in life:
-		_player_text = _text
-		_player_text = _text[_text.index('\"')+1:_player_text.index('\"')-1]
-		logic.show_event(_player_text, life=life)
+		logic.show_event(_text.replace('\"', ''), life=life)
 	
 	add_message(life, dialog_id, _chosen_message['gist'], _chosen_message['text'], _chosen_message['result'], loop=_loop)
 
@@ -282,7 +280,8 @@ def process_dialog_for_player(dialog_id, loop=False):
 			_response = _to_check.pop()
 			
 			if _response['text'].startswith('>'):
-				_to_check.extend(get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _response['text'][1:]))
+				_text = reformat_text(LIFE[SETTINGS['controlling']], get_listener(dialog_id), dialog_id, _response['text'][1:])
+				_to_check.extend(get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _text))
 				_dialog['loop_choices'].extend(_to_check)
 			else:
 				_dialog['choices'].append(_response)

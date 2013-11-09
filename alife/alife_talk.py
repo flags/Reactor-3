@@ -63,6 +63,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
+		print life['name'], LIFE[target['id']]['name']
 		if life['dialogs']:
 			print 'existing'
 			break
