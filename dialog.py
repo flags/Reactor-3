@@ -223,6 +223,7 @@ def reformat_text(life, target, dialog_id, text):
 		
 		if _flag.startswith('*'):
 			_flag = _flag[1:]
+			print 'derp', life['name'], _flag
 			text = text.replace(match, execute_function(life, target, _flag))
 		else:
 			text = text.replace(match, _dialog['flags'][_flag])

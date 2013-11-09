@@ -21,46 +21,63 @@ def create_question(life, life_id, gist):
 def create_order(life, life_id, order, message, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	_order = {'order': order, 'message': message, 'args': kwargs}
+	_order = {'active': True, 'order': order, 'message': message, 'args': kwargs}
 	
 	if _order in _target['orders'].values():
 		return False
 	
+	_order['active'] = False
+	if _order in _target['orders'].values():
+		return False
+	
+	_order['active'] = True
 	_target['orders'][str(_target['orderid'])] = _order
 	_target['orderid'] += 1
+	
+	logging.debug('%s created order for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), order))
 
 def get_questions_for_target(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
 	return _target['questions']
 
-def get_orders_for_target(life, life_id):
-	_target = brain.knows_alife_by_id(life, life_id)
+def get_orders_for_target(life, life_id, active_only=True):
+	_active_orders = []
+	for order in brain.knows_alife_by_id(life, life_id)['orders'].values():
+		if active_only and not order['active']:
+			continue
+		
+		_active_orders.append(order)
 	
-	return _target['orders']
+	return _active_orders
 
 def ask_target_question(life, life_id):
 	return get_questions_for_target(life, life_id).pop(0)
 
 def give_target_order(life, life_id):
-	_orders = get_orders_for_target(life, life_id)
-	_order = _orders[_orders.keys()[0]]['order']
-	
-	return _order
+	return get_orders_for_target(life, life_id)[0]['order']
 
 def take_order(life, life_id):
-	_orders = get_orders_for_target(life, life_id)
-	_order = _orders[_orders.keys()[0]]
+	_order = get_orders_for_target(life, life_id)[0]
+	_order['active'] = False
 	
-	print _order
 	if 'job_id' in _order['args']:
 		jobs.join_job(_order['args']['job_id'], life_id)
 	
-	return _order
+	return True
+
+def reject_order(life, life_id):
+	_order = get_orders_for_target(life, life_id)[0]
+	_order['active'] = False
+	
+	if 'job_id' in _order['args']:
+		jobs.join_job(_order['args']['job_id'], life_id)
+	
+	return True
 
 def give_target_order_message(life, life_id):
 	_orders = get_orders_for_target(life, life_id)
-	_message = _orders[_orders.keys()[0]]['message']
+	_message =_orders[0]['message']
 	
 	return _message
 

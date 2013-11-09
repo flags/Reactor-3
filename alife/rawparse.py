@@ -117,6 +117,7 @@ def create_function_map():
 		'give_target_order_message': memory.give_target_order_message,
 		'give_target_order': memory.give_target_order,
 		'take_order': memory.take_order,
+		'reject_order': memory.reject_order,
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'is_player': lambda life: 'player' in life,
