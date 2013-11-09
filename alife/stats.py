@@ -52,6 +52,18 @@ def desires_interaction(life):
 	
 	return True
 
+def desires_first_contact_with(life, life_id):
+	if not brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral':
+		return False
+	
+	if life['stats']['motive_for_crime']>=4:
+		return True
+	
+	if life['stats']['sociability']>=6:
+		return True
+	
+	return False
+
 def desires_conversation_with(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
@@ -228,6 +240,9 @@ def wants_group_member(life, life_id):
 	
 	_know = brain.knows_alife_by_id(life, life_id)
 	if not _know:
+		return False
+	
+	if not judgement.can_trust(life, life_id):
 		return False
 	
 	return True
@@ -533,3 +548,47 @@ def react_to_attack(life, life_id):
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
+
+def get_goal_alignment_for_target(life, life_id):
+	_genuine = 100
+	_malicious = 100
+	
+	_malicious*=life['stats']['motive_for_crime']/10.0
+	
+	if life['stats']['lone_wolf']:
+		_malicious*=.65
+		_genuine*=.65
+	
+	if life['stats']['self_absorbed']:
+		_malicious*=.85
+	
+	if not _genuine>=50 and not _malicious>=50:
+		return False
+	
+	if _malicious>=75 and _genuine>=75:
+		return 'feign_trust'
+	
+	if _genuine>_malicious:
+		return 'genuine'
+	
+	return 'malicious'
+
+def establish_trust(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	_knows['alignment'] = 'trust'
+
+def establish_feign_trust(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	_knows['alignment'] = 'feign_trust'
+
+def establish_aggressive(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	_knows['alignment'] = 'aggressive'
+
+def establish_scared(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	_knows['alignment'] = 'scared'

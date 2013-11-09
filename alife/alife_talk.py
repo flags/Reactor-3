@@ -51,7 +51,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					speech.send(life, ai['life'], 'looks_hostile')
 		
 			else:
-				if not stats.desires_conversation_with(life, ai['life']['id']):
+				if not stats.desires_first_contact_with and not stats.desires_conversation_with(life, ai['life']['id']):
 					continue
 		
 				#TODO: Not always true.
@@ -68,8 +68,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			print 'existing'
 			break
 		
-		#if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
-		#	pass
+		if stats.desires_first_contact_with(life, target['id']):
+			speech.start_dialog(life, target['id'], 'establish_relationship')
+			# and stats.desires_interaction(life):
 			#if stats.desires_life(life, target['id']):
 			#	speech.start_dialog(life, target['id'], 'introduction')
 			#elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):

@@ -90,6 +90,12 @@ def create_background(life):
 	#1 - 9 (BARRY - DAVE)
 	MOTIVE_FOR_SURVIVAL = numbers.roll((FIREARMS>5 or MOTIVE_FOR_WEALTH<5)+(MELEE>5 or PATIENCE>5)+(ENGINEERING>5 or IS_LEADER), 3)
 	
+	#1 - 10 (ANTISOCIAL FREAK - "A REAL RAGER")
+	SOCIABILITY = numbers.roll((not SELF_ABSORBED) + (not LONE_WOLF)+(EXTROVERSION>0)+(IS_LEADER*2), 2)
+	
+	#1 - 10 (TALKS TO STRANGERS - FORT KNOX)
+	TRUSTINESS = numbers.roll((LONE_WOLF)+(TRADING>4)+(MOTIVE_FOR_WEALTH>4)+(not SELF_ABSORBED)+(EXTROVERSION>1), 2)
+	
 	#STRING (INTENTION)
 	# FORTUNE
 	# GREED
@@ -202,6 +208,8 @@ def create_background(life):
 		'self_absorbed': SELF_ABSORBED,
 		'lone_wolf': LONE_WOLF,
 		'patience': PATIENCE,
+		'trustiness': TRUSTINESS,
+		'sociability': SOCIABILITY,
 		'description': '. '.join(HISTORY)+'.',
 		'motive_for_crime': MOTIVE_FOR_CRIME,
 		'motive_for_wealth': MOTIVE_FOR_WEALTH,

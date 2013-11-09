@@ -234,7 +234,7 @@ def meet_alife(life, target):
 		'fondness': 0,
 		'danger': 0,
 		'trust': 0,
-		'influence': 0,
+		'alignment': 'neutral',
 		'last_seen_time': -1,
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': target['pos'][:],

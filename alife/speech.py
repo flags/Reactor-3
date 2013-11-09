@@ -149,3 +149,26 @@ def get_target(life, dialog_id, gist):
 	else:
 		raise Exception('Dead end.')
 	
+def get_introduction_message(life, life_id):
+	_alignment = stats.get_goal_alignment_for_target(life, life_id)
+	
+	if _alignment == 'feign_trust':
+		return 'Hey, buddy, let\'s have a chat.'
+	
+	if _alignment == 'malicious':
+		return 'Back up. I have no time to talk to you.'
+	
+	if _alignment == 'genuine':
+		return 'You! Let\'s have a chat.'
+
+def get_introduction_gist(life, life_id):
+	_alignment = stats.get_goal_alignment_for_target(life, life_id)
+	
+	if _alignment == 'malicious':
+		return 'AGRESSIVE_RESPONSE'
+	
+	if _alignment == 'feign_trust':
+		return 'feign_trust_failed'
+	
+	return 'trust'
+		

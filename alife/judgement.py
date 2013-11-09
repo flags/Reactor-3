@@ -148,13 +148,19 @@ def get_trust(life, target_id):
 	
 	return _knows['trust']
 
-def can_trust(life, life_id, low=0):
+def can_trust(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	if not _knows:
 		return False
 	
-	if _knows['trust']>=low:
+	if _knows['alignment'] in ['trust', 'feign_trust']:
+		return True
+	
+	if _knows['alignment'] == 'aggressive':
+		return False
+	
+	if _knows['trust']>=life['stats']['trustiness']:
 		return True
 	
 	return False

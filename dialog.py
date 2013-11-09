@@ -223,7 +223,6 @@ def reformat_text(life, target, dialog_id, text):
 		
 		if _flag.startswith('*'):
 			_flag = _flag[1:]
-			print 'derp', life['name'], _flag
 			text = text.replace(match, execute_function(life, target, _flag))
 		else:
 			text = text.replace(match, _dialog['flags'][_flag])
@@ -231,6 +230,7 @@ def reformat_text(life, target, dialog_id, text):
 	return text
 
 def say_via_gist(life, dialog_id, gist, loop=False):
+	print gist
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_target = get_listener(dialog_id)
 	_text = _chosen_message['text']#reformat_text(life, _target, dialog_id, _chosen_message['text'])
