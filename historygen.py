@@ -81,14 +81,8 @@ def create_background(life):
 	INTROVERSION = LONE_WOLF+(not HAS_BIRTH_PARENTS and not WAS_ADOPTED)+(not STREET_SMART)+(BULLIED and not FOUGHT_BACK)
 	EXTROVERSION = 3-INTROVERSION
 	
-	#1 - 10 (PHYSICAL TRAIT TOTALS)
-	CHARISMA = numbers.roll(3, 3)
-	
-	#1 - 10 (SHY - SOCIAL BUTTERFLY)
-	SOCIABILITY = numbers.clip(numbers.roll(numbers.clip(((CHARISMA>=5))+(2*(EXTROVERSION>=1)+2*(GRADUATED==1)), 1, 3), 4), 1, 10)
-	
 	#1 - 10 (INNOCENT - GANG LEADER)
-	MOTIVE_FOR_CRIME = numbers.roll((READING<7 or SOCIABILITY>6)+(FIREARMS>6 or MELEE>5)+(TRADING>5 or SELF_ABSORBED)+(not LONE_WOLF)+(BULLIED or IS_LEADER), 2)
+	MOTIVE_FOR_CRIME = numbers.roll((READING<7)+(FIREARMS>6 or MELEE>5)+(TRADING>5 or SELF_ABSORBED)+(not LONE_WOLF)+(BULLIED or IS_LEADER), 2)
 	
 	#1 - 9 (BARRY - DAVE)
 	MOTIVE_FOR_WEALTH = numbers.roll((TRADING>4)+(MATHEMATICS>4)+(PATIENCE>5 or IS_LEADER), 3)
@@ -208,8 +202,6 @@ def create_background(life):
 		'self_absorbed': SELF_ABSORBED,
 		'lone_wolf': LONE_WOLF,
 		'patience': PATIENCE,
-		'charisma': CHARISMA,
-		'sociability': SOCIABILITY,
 		'description': '. '.join(HISTORY)+'.',
 		'motive_for_crime': MOTIVE_FOR_CRIME,
 		'motive_for_wealth': MOTIVE_FOR_WEALTH,

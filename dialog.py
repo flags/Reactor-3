@@ -98,25 +98,25 @@ def execute_function(life, target, function):
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
-	try:
-		if _flags['self_call']:
-			_func = FUNCTION_MAP[_function](life)
-			
-			if not _func == _flags['true']:
-				_pass = False
-		elif _flags['no_args']:
-			_func = FUNCTION_MAP[_function]()
-			
-			if not _func == _flags['true']:
-				_pass = False
-		else:
-			_func = FUNCTION_MAP[_function](life, target)
-			
-			if not _func == _flags['true']:
-				_pass = False
-	except Exception, e:
-		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
-		raise e
+	#try:
+	if _flags['self_call']:
+		_func = FUNCTION_MAP[_function](life)
+		
+		if not _func == _flags['true']:
+			_pass = False
+	elif _flags['no_args']:
+		_func = FUNCTION_MAP[_function]()
+		
+		if not _func == _flags['true']:
+			_pass = False
+	else:
+		_func = FUNCTION_MAP[_function](life, target)
+		
+		if not _func == _flags['true']:
+			_pass = False
+	#except Exception, e:
+	#	logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
+	#	raise e
 	
 	if _flags['return']:
 		return _func

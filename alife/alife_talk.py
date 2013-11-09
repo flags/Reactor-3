@@ -6,6 +6,7 @@ import movement
 import dialog
 import speech
 import groups
+import memory
 import stats
 import raids
 import brain
@@ -63,23 +64,23 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
-		print life['name'], LIFE[target['id']]['name']
 		if life['dialogs']:
 			print 'existing'
 			break
 		
-		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
-			pass
+		#if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
+		#	pass
 			#if stats.desires_life(life, target['id']):
 			#	speech.start_dialog(life, target['id'], 'introduction')
 			#elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
 			#	speech.start_dialog(life, target['id'], 'introduction_negative')
 			#	brain.flag_alife(life, target['id'], 'not_friend')
-		elif lfe.get_questions(life, target=target['id']):
-			speech.start_dialog(life, target['id'], 'questions')
-		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
-			brain.flag_alife(life, target['id'], 'invited_to_group')
-			speech.start_dialog(life, target['id'], 'ask_to_join_group')
+		if memory.get_questions_for_target(life, target['id']):
+			speech.start_dialog(life, target['id'], memory.ask_target_question(life, target['id']))
+		elif memory.get_orders_for_target(life, target['id']):
+			speech.start_dialog(life, target['id'], 'give_order')
+		elif stats.wants_group_member(life, target['id']):
+			memory.create_question(life, target['id'], 'recruit')
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]

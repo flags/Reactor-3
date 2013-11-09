@@ -249,6 +249,8 @@ def meet_alife(life, target):
 		'received': [],
 		'impressions': {},
 		'questions': [],
+		'orders': {},
+		'orderid': 1,
 		'flags': {}}
 	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )

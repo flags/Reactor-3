@@ -83,6 +83,7 @@ def load_dialog():
 			if not line or line.startswith('#'):
 				continue
 			
+			print line
 			_gist, _requirements, _text, _result = line.split(':')
 			_dialog = {'gist': _gist,
 			           'requirements': _requirements.split(','),

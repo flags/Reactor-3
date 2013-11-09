@@ -6,6 +6,7 @@ import life as lfe
 import judgement
 import movement
 import survival
+import memory
 import action
 import combat
 import speech
@@ -249,11 +250,7 @@ def announce(life, group_id, gist, message, consider_motive=False, filter_if=[],
 				_announce_to.remove(entry)
 	
 	for life_id in _announce_to:
-		speech.communicate(life,
-	                      gist,
-	                      msg=message,
-	                      matches=[{'id': life_id}],
-	                      **kwargs)
+		memory.create_order(life, life_id, gist, message, **kwargs)
 
 def get_shelter(group_id):
 	return get_group(group_id)['shelter']

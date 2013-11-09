@@ -730,4 +730,8 @@ These define specific rules that affect the decision-making process.
 	Judgemental: First impressions define relationship alignment, harder to switch later on.
 	Kleptomaniac: Doesn't care about claimed items.
 
+Fixing
+-----
+[x] is_compatible_with
 
+	

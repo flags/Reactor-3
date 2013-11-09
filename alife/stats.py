@@ -207,27 +207,6 @@ def get_group_motive(life):
 	
 	return 'survival'
 
-def get_influence_from(life, life_id):
-	judgement._calculate_impressions(life, life_id)
-	_target = LIFE[life_id]
-	_know = brain.knows_alife_by_id(life, life_id)
-	_score = 0
-	
-	if life['group'] and life['group'] == _target['group']:
-		_group = groups.get_group(life['group'])
-		
-		if _group['leader'] == _target['id']:
-			_power = _know['trust']+_know['danger']
-			
-			if judgement.can_trust(life, life_id):
-				_score += _power
-			else:
-				_score -= _power
-	
-	_score += _target['stats']['charisma']
-	
-	return numbers.clip(_score*2, 0, MAX_INFLUENCE_FROM-((10-_target['stats']['patience'])*8))
-
 def get_minimum_camp_score(life):
 	if life['group'] and groups.is_leader(life['group'], life['id']):
 		return len(groups.get_group(life['group'])['members'])
@@ -238,19 +217,17 @@ def wants_group_member(life, life_id):
 	if not life['group']:
 		return False
 	
+	if groups.is_member(life['group'], life_id):
+		return False
+	
 	if not groups.is_leader(life['group'], life['id']):
+		return False
+	
+	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
 		return False
 	
 	_know = brain.knows_alife_by_id(life, life_id)
 	if not _know:
-		return False
-	
-	#TODO: Second chance?
-	if brain.get_alife_flag(life, life_id, 'invited_to_group'):
-		return False
-	
-	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
-		print 'group not compat'
 		return False
 	
 	return True
@@ -508,23 +485,7 @@ def is_safe_in_shelter(life, life_id):
 	if not lfe.is_in_shelter(life):
 		return True
 	
-	if not is_compatible_with(life, life_id):
-		return False
-	
 	return True
-
-def is_compatible_with(life, life_id):
-	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
-	
-	#print _diff, life['stats']['sociability']
-	if _diff <= life['stats']['sociability']:
-		return True
-	
-	#TODO: Hardcoded
-	if judgement.get_trust(life, life_id)>=5:
-		return True
-	
-	return False
 
 def is_target_group_friendly(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
@@ -564,7 +525,7 @@ def has_attacked_trusted(life, life_id):
 	return _has_attacked(life, life_id, judgement.get_trusted(life))
 
 def has_attacked_self(life, life_id):
-	return (lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
+	return len(lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
 
 def react_to_attack(life, life_id):
 	#logging.warning('Dead end.')
