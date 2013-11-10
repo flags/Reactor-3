@@ -14,10 +14,10 @@ import logging
 import random
 import re
 
-def create_dialog_with(life, target_id, remote=False):
+def create_dialog_with(life, target_id, remote=False, **kwargs):
 	_dialog = {'id': str(WORLD_INFO['dialogid']),
 	           'messages': [],
-	           'flags': {},
+	           'flags': kwargs,
 	           'started_by': life['id'],
 	           'target': target_id,
 	           'choices': [],
@@ -74,17 +74,20 @@ def is_turn_to_talk(life, dialog_id):
 	
 	return False
 
-def execute_function(life, target, function):
+def execute_function(life, target, dialog_id, function):
+	_dialog = get_dialog(dialog_id)
 	_function = function.lower()
 	_pass = True
 	_flags = {'true': True,
 	          'self_call': False,
 	          'no_args': False,
-	          'return': False}
+	          'return': False,
+	          'pass_flags': False}
 	_flag_map = {'!': {'true': False},
 	             '@': {'self_call': True},
 	             '%': {'no_args': True},
-	             '$': {'return': True}}
+	             '$': {'return': True},
+	             '^': {'pass_flags': True}}
 	
 	while 1:
 		_flag = _function[0]
@@ -100,17 +103,27 @@ def execute_function(life, target, function):
 	
 	#try:
 	if _flags['self_call']:
-		_func = FUNCTION_MAP[_function](life)
+		if _flags['pass_flags']:
+			_func = FUNCTION_MAP[_function](life, **_dialog['flags'])
+		else:
+			_func = FUNCTION_MAP[_function](life)
 		
 		if not _func == _flags['true']:
 			_pass = False
 	elif _flags['no_args']:
-		_func = FUNCTION_MAP[_function]()
+		if _flags['pass_flags']:
+			_func = FUNCTION_MAP[_function](**_dialog['flags'])
+		else:
+			_func = FUNCTION_MAP[_function]()
 		
 		if not _func == _flags['true']:
 			_pass = False
 	else:
-		_func = FUNCTION_MAP[_function](life, target)
+		if _flags['pass_flags']:
+			_func = FUNCTION_MAP[_function](life, target, **_dialog['flags'])
+		else:
+			print _function
+			_func = FUNCTION_MAP[_function](life, target)
 		
 		if not _func == _flags['true']:
 			_pass = False
@@ -137,7 +150,7 @@ def get_matching_message(life, dialog_id, gist):
 		_pass = True
 		
 		for requirement in dialog_option['requirements']:
-			if not execute_function(life, _target, requirement):
+			if not execute_function(life, _target, dialog_id, requirement):
 				_pass = False
 				break
 		
@@ -166,7 +179,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 		#		_chosen_message = random.choice(get_matching_message(life, dialog_id, _text))
 		#		_loop = True
 		else:
-			_return = execute_function(life, _target, _entry)
+			_return = execute_function(life, _target, dialog_id, _entry)
 			
 			if isinstance(_return, str):
 				_text = _return
@@ -205,7 +218,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 			if _func.count('\"'):
 				_return = _func.partition('\"')[2].partition('\"')[0]
 			else:
-				_return = execute_function(life, _target, _func)
+				_return = execute_function(life, _target, dialog_id, _func)
 			
 			if _result.count('='):
 				_dialog['flags'][_result.split('=')[0]] = _return
@@ -223,14 +236,13 @@ def reformat_text(life, target, dialog_id, text):
 		
 		if _flag.startswith('*'):
 			_flag = _flag[1:]
-			text = text.replace(match, execute_function(life, target, _flag))
+			text = text.replace(match, execute_function(life, target, dialog_id, _flag))
 		else:
 			text = text.replace(match, _dialog['flags'][_flag])
 	
 	return text
 
 def say_via_gist(life, dialog_id, gist, loop=False):
-	print gist
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_target = get_listener(dialog_id)
 	_text = _chosen_message['text']#reformat_text(life, _target, dialog_id, _chosen_message['text'])

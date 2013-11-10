@@ -38,35 +38,36 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		lfe.say(life, '@n panics!', action=True)
 	
 	_potential_talking_targets = []
-	if not life['state'] in ['combat', 'hiding', 'hidden']:
-		for ai in alife_seen:
-			if not stats.can_talk_to(life, ai['life']['id']):
+	for ai in alife_seen:
+		if not stats.can_talk_to(life, ai['life']['id']):
+			continue
+		
+		if stats.has_attacked_self(life, ai['life']['id']):
+			stats.react_to_attack(life, ai['life']['id'])
+		#elif judgement.is_target_dangerous(life, ai['life']['id']):
+		#	if not speech.discussed(life, ai['life'], 'aggressive'):
+		#		speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
+		#		speech.send(life, ai['life'], 'looks_hostile')
+	
+		else:
+			if not stats.desires_first_contact_with and not stats.desires_conversation_with(life, ai['life']['id']):
 				continue
-			
-			if stats.has_attacked_self(life, ai['life']['id']):
-				stats.react_to_attack(life, ai['life']['id'])
-			elif judgement.is_target_dangerous(life, ai['life']['id']):
-				if not speech.discussed(life, ai['life'], 'looks_hostile'):
-					speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
-					speech.send(life, ai['life'], 'looks_hostile')
-		
-			else:
-				if not stats.desires_first_contact_with and not stats.desires_conversation_with(life, ai['life']['id']):
-					continue
-		
-				#TODO: Not always true.
-				if ai['life']['state'] in ['hiding', 'hidden']:
-					continue
-		
-				_potential_talking_targets.append(ai['life'])
+	
+			#TODO: Not always true.
+			#if ai['life']['state'] in ['hiding', 'hidden']:
+			#	continue
+	
+			_potential_talking_targets.append(ai['life'])
 	
 	#TODO: Score these
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
 		if life['dialogs']:
-			print 'existing'
 			break
+		
+		if life['name'][0].startswith('Marat'):
+			print target['name'], memory.get_questions_for_target(life, target['id'])
 		
 		if stats.desires_first_contact_with(life, target['id']):
 			speech.start_dialog(life, target['id'], 'establish_relationship')
@@ -76,8 +77,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			#elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
 			#	speech.start_dialog(life, target['id'], 'introduction_negative')
 			#	brain.flag_alife(life, target['id'], 'not_friend')
-		if memory.get_questions_for_target(life, target['id']):
-			speech.start_dialog(life, target['id'], memory.ask_target_question(life, target['id']))
+		elif memory.get_questions_for_target(life, target['id']):
+			_question = memory.ask_target_question(life, target['id'])
+			speech.start_dialog(life, target['id'], _question['gist'], **_question['args'])
 		elif memory.get_orders_for_target(life, target['id']):
 			speech.start_dialog(life, target['id'], 'give_order')
 		elif stats.wants_group_member(life, target['id']):

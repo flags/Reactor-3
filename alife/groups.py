@@ -209,7 +209,7 @@ def process_events(group_id):
 def get_motive(group_id):
 	return get_group(group_id)['claimed_motive']
 
-def announce(life, group_id, gist, message, consider_motive=False, filter_if=[], **kwargs):
+def announce(life, group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(group_id)
 	
 	if consider_motive:
@@ -250,7 +250,10 @@ def announce(life, group_id, gist, message, consider_motive=False, filter_if=[],
 				_announce_to.remove(entry)
 	
 	for life_id in _announce_to:
-		memory.create_order(life, life_id, gist, message, **kwargs)
+		if order:
+			memory.create_order(life, life_id, gist, message, **kwargs)
+		else:
+			memory.create_question(life, life_id, gist, **kwargs)
 
 def get_shelter(group_id):
 	return get_group(group_id)['shelter']
@@ -296,6 +299,9 @@ def setup_group_events(group_id):
 		return True
 	
 	return False
+
+def get_leader(group_id):
+	return get_group(group_id)['leader']
 
 def set_leader(group_id, life_id):
 	_group = get_group(group_id)

@@ -16,6 +16,9 @@ def clip(number,start,end):
 def roll(dice, sides):
 	return sum([random.choice(range(sides))+1 for d in range(dice)])
 
+def lerp(n1, n2, t):
+	return n1 + (n2-n1) * t
+
 def distance(pos1, pos2, old=False):
 	if old:
 		return abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])

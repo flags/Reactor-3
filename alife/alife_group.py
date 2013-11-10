@@ -58,6 +58,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			                'give_order_to_gather',
 			                'New group gathering.',
 			                consider_motive=True,
+			                order=True,
 			                job_id=groups.get_flag(life['group'], 'job_gather'))
 	
 	if groups.is_leader(life['group'], life['id']):
@@ -74,17 +75,18 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				_job_id = groups.get_flag(life['group'], 'job_gather')
 				
 				if _job_id:
-					groups.announce(life, life['group'], 'job', 'New group gathering.', consider_motive=True, job_id=_job_id)
+					groups.announce(life, life['group'], 'job', 'New group gathering.', order=True, consider_motive=True, job_id=_job_id)
 			
-			for member in groups.get_unwanted_members_with_perspective(life, life['group']):
-				_j = jobs.create_job(life, 'Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
-					                 gist='remove_member_from_group',
-					                 description='Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
-					                 group=life['group'],
-					                 target=member)
-				
-				if _j:
-					jobs.join_job(_j, life['id'])
+			#TODO: Works... kinda
+			#for member in groups.get_unwanted_members_with_perspective(life, life['group']):
+			#	_j = jobs.create_job(life, 'Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
+			#		                 gist='remove_member_from_group',
+			#		                 description='Remove %s from group %s.' % (' '.join(LIFE[member]['name']), life['group']),
+			#		                 group=life['group'],
+			#		                 target=member)
+			#	
+			#	if _j:
+			#		jobs.join_job(_j, life['id'])
 			
 			#TODO: Raise the amount of members needed
 			if len(groups.get_group(life['group'])['members'])<2 and groups.get_shelter(life['group']):
@@ -123,6 +125,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 					                'job',
 					                'We need everyone here.',
 					                job_id=_job_id,
+					                order=True,
 					                filter_if=[action.make_small_script(function='has_completed_job',
 					                                                   kwargs={'job_id': _job_id})])
 			else:

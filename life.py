@@ -3329,7 +3329,7 @@ def damage_from_item(life, item, damage):
 		return False
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot by', target=item['shot_by'], danger=3, trust=-10)
+	memory(life, 'shot_by', target=item['shot_by'], danger=3, trust=-10)
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	
 	if judgement.can_trust(life, item['shot_by']):

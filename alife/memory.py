@@ -10,17 +10,19 @@ import jobs
 
 import logging
 
-def create_question(life, life_id, gist):
+def create_question(life, life_id, gist, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
+	_question = {'gist': gist, 'args': kwargs}
 	
 	if gist in _target['questions']:
 		return False
 	
-	_target['questions'].append(gist)
+	_target['questions'].append(_question)
+	
+	logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))
 
 def create_order(life, life_id, order, message, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
-	
 	_order = {'active': True, 'order': order, 'message': message, 'args': kwargs}
 	
 	if _order in _target['orders'].values():
@@ -52,13 +54,19 @@ def get_orders_for_target(life, life_id, active_only=True):
 	return _active_orders
 
 def ask_target_question(life, life_id):
+	print get_questions_for_target(life, life_id)
 	return get_questions_for_target(life, life_id).pop(0)
 
 def give_target_order(life, life_id):
 	return get_orders_for_target(life, life_id)[0]['order']
 
 def take_order(life, life_id):
-	_order = get_orders_for_target(life, life_id)[0]
+	_orders = get_orders_for_target(life, life_id)
+
+	if not _orders:
+		return False
+	
+	_order = _orders[0]
 	_order['active'] = False
 	
 	if 'job_id' in _order['args']:
@@ -67,7 +75,12 @@ def take_order(life, life_id):
 	return True
 
 def reject_order(life, life_id):
-	_order = get_orders_for_target(life, life_id)[0]
+	_orders = get_orders_for_target(life, life_id)
+
+	if not _orders:
+		return False
+	
+	_order = _orders[0]
 	_order['active'] = False
 	
 	if 'job_id' in _order['args']:

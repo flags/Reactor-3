@@ -253,11 +253,12 @@ def render_lights(source_map):
 		return False
 
 	reset_lights()
+	SUN = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
-	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN[0])
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN[1])
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN[2])
 	(x, y) = SETTINGS['light mesh grid']
 
 	_remove_lights = []
@@ -307,15 +308,21 @@ def render_lights(source_map):
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
 		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
-		brightness = numpy.clip(brightness * 255.0, 0, 255)
+		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
+		brightness *= LOS_BUFFER[0]
 		
-		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
-		_mod = numbers.clip(_mod-1, 0, 1)
-		SUN = weather.get_lighting()#(255*_mod, 165*_mod, 0*_mod)
-		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
-		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
-		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		#_mod = numbers.clip(_mod-1, 0, 1)
+		#(255*_mod, 165*_mod, 0*_mod)
+		#print brightness
+		#light['brightness'] = 25
+		#light['color'][0] = 255*(light['brightness']/255.0)
+		#light['color'][1] = (light['brightness']/255.0)
+		#light['color'][2] = 255*(light['brightness']/255.0)
+		RGB_LIGHT_BUFFER[0] -= (brightness.clip(0, 1)*(light['color'][0]))#numpy.subtract(RGB_LIGHT_BUFFER[0], light['color'][0]).clip(0, 255)
+		RGB_LIGHT_BUFFER[1] -= (brightness.clip(0, 1)*(light['color'][1]))#numpy.subtract(RGB_LIGHT_BUFFER[1], light['color'][1]).clip(0, 255)
+		RGB_LIGHT_BUFFER[2] -= (brightness.clip(0, 1)*(light['color'][2]))#numpy.subtract(RGB_LIGHT_BUFFER[2], light['color'][2]).clip(0, 255)
 		
 		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
 		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]

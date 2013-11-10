@@ -28,10 +28,6 @@ def _create_context_from_phrase(life, phrase):
 			'delay': lfe.get_item_access_time(life,phrase['item']),
 			'communicate': 'dropped_demanded_item'})
 	
-	elif phrase['gist'] == 'greeting':
-		#alife.speech.start_dialog(phrase['from'], life['id'], 'encounter')
-		pass
-	
 	elif phrase['gist'] == 'dialog':
 		if not phrase['dialog_id'] in LIFE[SETTINGS['controlling']]['dialogs']:
 			life['dialogs'].append(phrase['dialog_id'])

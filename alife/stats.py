@@ -5,6 +5,7 @@ import life as lfe
 import historygen
 import judgement
 import survival
+import speech
 import groups
 import combat
 import camps
@@ -55,6 +56,16 @@ def desires_interaction(life):
 def desires_first_contact_with(life, life_id):
 	if not brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral':
 		return False
+	
+	if life['group'] and not groups.is_leader(life['group'], life['id']):
+		#Don't talk if we're in a group and near our leader.
+		#TODO: #judgement Even then, we should consider having group members avoid non-members regardless.
+		#TODO: #judgement How do group types play into this?
+		_leader = brain.knows_alife_by_id(life, groups.get_leader(life['group']))
+		
+		#TODO: #judgement Placeholder for future logic.
+		if _leader['last_seen_time'] <= 1000:
+			return False
 	
 	if life['stats']['motive_for_crime']>=4:
 		return True
@@ -543,8 +554,15 @@ def has_attacked_self(life, life_id):
 	return len(lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
 
 def react_to_attack(life, life_id):
-	#logging.warning('Dead end.')
-	pass
+	#if not speech.discussed(life, ai['life'], ''):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	if not _knows['alignment'] == 'hostile':
+		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
+		
+		if life['group']:
+			print 'DERP' * 100
+			groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
@@ -587,6 +605,14 @@ def establish_aggressive(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	_knows['alignment'] = 'aggressive'
+
+def establish_hostile(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	print '*' * 15
+	print life['name'], 'hates', LIFE[life_id]['name']
+	
+	_knows['alignment'] = 'hostile'
 
 def establish_scared(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)

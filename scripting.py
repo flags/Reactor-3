@@ -27,7 +27,7 @@ def execute(script, **kvargs):
 			_item = ITEMS[kvargs['item_uid']]
 			
 			effects.create_light(items.get_pos(kvargs['item_uid']),
-			                     (255, 0, 255),
+			                     (255, 255, 255),
 			                     _item['brightness'],
 			                     _item['light_shake'],
 			                     follow=items.get_pos(kvargs['item_uid']))
