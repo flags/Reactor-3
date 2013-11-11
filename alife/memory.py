@@ -54,7 +54,6 @@ def get_orders_for_target(life, life_id, active_only=True):
 	return _active_orders
 
 def ask_target_question(life, life_id):
-	print get_questions_for_target(life, life_id)
 	return get_questions_for_target(life, life_id).pop(0)
 
 def give_target_order(life, life_id):

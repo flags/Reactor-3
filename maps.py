@@ -269,7 +269,7 @@ def render_lights(source_map):
 			light['old_pos'] = light['pos'][:]
 		
 		if 'follow_item' in light:
-			light['pos'] = items.get_pos(light['follow_item'])
+			light['pos'] = items.get_pos(light['follow_item'])[:]
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]

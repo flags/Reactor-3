@@ -30,7 +30,7 @@ def execute(script, **kvargs):
 			                     (255, 255, 255),
 			                     _item['brightness'],
 			                     _item['light_shake'],
-			                     follow=items.get_pos(kvargs['item_uid']))
+			                     follow_item=kvargs['item_uid'])
 		elif function == 'LIGHT_FOLLOW_REMOVE':
 			_item = ITEMS[kvargs['item_uid']]
 			

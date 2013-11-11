@@ -182,15 +182,15 @@ def light_exists_at(pos):
 	
 	return False
 
-def create_light(pos, color, brightness, shake, fade=0, follow=None):
+def create_light(pos, color, brightness, shake, fade=0, follow_item=None):
 	_light = {'pos': list(pos), 'color': list(color), 'brightness': brightness, 'shake': shake, 'fade': fade}
 	_light['brightness'] = 15
 	_light['color'][0] *= _light['brightness']/50.0
 	_light['color'][1] *= _light['brightness']/50.0
 	_light['color'][2] *= _light['brightness']/50.0
 	
-	if follow:
-		_light['pos'] = pos
+	if follow_item:
+		_light['follow_item'] = follow_item
 	
 	WORLD_INFO['lights'].append(_light)
 	
