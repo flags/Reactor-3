@@ -269,6 +269,10 @@ def render_lights(source_map):
 			light['old_pos'] = light['pos'][:]
 		
 		if 'follow_item' in light:
+			if not light['follow_item'] in ITEMS:
+				_remove_lights.append(light)
+				continue
+				
 			light['pos'] = items.get_pos(light['follow_item'])[:]
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]

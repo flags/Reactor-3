@@ -89,9 +89,8 @@ def reject_order(life, life_id):
 
 def give_target_order_message(life, life_id):
 	_orders = get_orders_for_target(life, life_id)
-	_message =_orders[0]['message']
-	
-	return _message
+	print life['name'], LIFE[life_id]['name'], 'ORDER MESSAGE', _orders[0]['message']
+	return _orders[0]['message']
 
 def rescore_history(life):
 	pass

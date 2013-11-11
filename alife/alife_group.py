@@ -55,7 +55,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if groups.get_flag(life['group'], 'job_gather'):
 			groups.announce(life,
 			                _group_id,
-			                'give_order_to_gather',
+			                'job',
 			                'New group gathering.',
 			                consider_motive=True,
 			                order=True,
@@ -75,7 +75,13 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				_job_id = groups.get_flag(life['group'], 'job_gather')
 				
 				if _job_id:
-					groups.announce(life, life['group'], 'job', 'New group gathering.', order=True, consider_motive=True, job_id=_job_id)
+					groups.announce(life,
+					                life['group'],
+					                'job',
+					                'New group gathering.',
+					                order=True,
+					                consider_motive=True,
+					                job_id=_job_id)
 			
 			#TODO: Works... kinda
 			#for member in groups.get_unwanted_members_with_perspective(life, life['group']):

@@ -159,6 +159,9 @@ def get_matching_message(life, dialog_id, gist):
 		
 		_dialog_choices.append(dialog_option)
 	
+	if not _dialog_choices:
+		raise Exception('No dialog choices for gist: %s' % gist)
+	
 	return _dialog_choices
 
 def add_message(life, dialog_id, gist, action, result, loop=False):

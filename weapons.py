@@ -164,8 +164,8 @@ def fire(life, target, limb=None):
 	items.add_to_chunk(_bullet)
 	
 	if gfx.position_is_in_frame(life['pos']):
-		effects.create_light(life['pos'], tcod.yellow, 2, 0, fade=0.8)
-		effects.create_light(_bullet['pos'], tcod.yellow, 1, 0, fade=0.65, follow=_bullet['pos'])
+		effects.create_light(life['pos'], tcod.yellow, 0.5, 0, fade=0.8)
+		effects.create_light(_bullet['pos'], tcod.yellow, 0.4, 0, fade=0.65, follow_item=_bullet['uid'])
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 	del _bullet['parent']

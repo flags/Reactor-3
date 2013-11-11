@@ -403,7 +403,7 @@ def get_jobs(group_id):
 			jobs.add_task(_j, '0', 'announce_to_group',
 			              action.make_small_script(function='announce_to_group',
 			                                       kwargs={'group_id': group_id,
-			                                               'gist': 'job',
+			                                               'gist': 'announce_group_job',
 			                                               'message': jobs.get_job(_j)['description'],
 			                                               'job_id': _j}),
 			              player_action=action.make_small_script(function='always'),
@@ -534,6 +534,7 @@ def order_to_loot(life, group_id, add_leader=False):
 			     'job',
 			     'We need more resources.',
 			     job_id=_job_id,
+		         order=True,
 			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
 
 def is_leader(group_id, life_id):

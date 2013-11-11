@@ -522,7 +522,8 @@ def explode(item):
 						burn(_visible_item, item['damage']['fire'])
 				
 				if not random.randint(0, 4):
-					effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+					effects.create_fire((pos[0], pos[1], item['pos'][2]),
+					                    intensity=item['damage']['fire']/2)
 			
 				_dist = numbers.distance(item['pos'], pos)/2
 				if not random.randint(0, _dist) or not _dist:

@@ -41,6 +41,7 @@ New in version 0.6.5:
 	* Explosives are now more effective.
 	* Certain items can now be activated (via `a`)
 	* Added caching layer for faster item retrieval.
+	* Rewrote lighting system.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.

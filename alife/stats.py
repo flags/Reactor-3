@@ -561,7 +561,6 @@ def react_to_attack(life, life_id):
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
 		if life['group']:
-			print 'DERP' * 100
 			groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
 
 def distance_from_pos_to_pos(life, pos1, pos2):

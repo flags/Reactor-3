@@ -1681,7 +1681,7 @@ def announce_to(entry):
 	
 	for life_id in _announce_to:
 		speech.communicate(LIFE[SETTINGS['controlling']],
-			           'job',
+			           'order_to_gather_resources',
 			           msg='New group gather at xx,yy',
 			           matches=[{'id': life_id}],
 			           job_id=entry['job_id'],)
