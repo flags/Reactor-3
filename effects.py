@@ -90,7 +90,7 @@ def calculate_fire(fire):
 	if 'light' in fire:
 		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
 	elif not _neighbor_lit:
-		fire['light'] = create_light(fire['pos'], (255, 0, 255), .5*(fire['intensity']/8.0), 0.25)
+		fire['light'] = create_light(fire['pos'], (255, 69, 0), 17*(fire['intensity']/8.0), 0.25)
 
 def delete_fire(fire):
 	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'heat', False)
@@ -184,7 +184,7 @@ def light_exists_at(pos):
 
 def create_light(pos, color, brightness, shake, fade=0, follow_item=None):
 	_light = {'pos': list(pos), 'color': list(color), 'brightness': brightness, 'shake': shake, 'fade': fade}
-	_light['brightness'] = 15
+	
 	_light['color'][0] *= _light['brightness']/50.0
 	_light['color'][1] *= _light['brightness']/50.0
 	_light['color'][2] *= _light['brightness']/50.0

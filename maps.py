@@ -283,7 +283,7 @@ def render_lights(source_map):
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), 25, top_left=_top_left)
+			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), light['brightness']*2, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -311,7 +311,7 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
+		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
 		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		brightness *= LOS_BUFFER[0]
@@ -324,9 +324,9 @@ def render_lights(source_map):
 		#light['color'][0] = 255*(light['brightness']/255.0)
 		#light['color'][1] = (light['brightness']/255.0)
 		#light['color'][2] = 255*(light['brightness']/255.0)
-		RGB_LIGHT_BUFFER[0] -= (brightness.clip(0, 1)*(light['color'][0]))#numpy.subtract(RGB_LIGHT_BUFFER[0], light['color'][0]).clip(0, 255)
-		RGB_LIGHT_BUFFER[1] -= (brightness.clip(0, 1)*(light['color'][1]))#numpy.subtract(RGB_LIGHT_BUFFER[1], light['color'][1]).clip(0, 255)
-		RGB_LIGHT_BUFFER[2] -= (brightness.clip(0, 1)*(light['color'][2]))#numpy.subtract(RGB_LIGHT_BUFFER[2], light['color'][2]).clip(0, 255)
+		RGB_LIGHT_BUFFER[0] -= (brightness.clip(0, 2)*(light['color'][0]))#numpy.subtract(RGB_LIGHT_BUFFER[0], light['color'][0]).clip(0, 255)
+		RGB_LIGHT_BUFFER[1] -= (brightness.clip(0, 2)*(light['color'][1]))#numpy.subtract(RGB_LIGHT_BUFFER[1], light['color'][1]).clip(0, 255)
+		RGB_LIGHT_BUFFER[2] -= (brightness.clip(0, 2)*(light['color'][2]))#numpy.subtract(RGB_LIGHT_BUFFER[2], light['color'][2]).clip(0, 255)
 		
 		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
 		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]
