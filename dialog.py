@@ -228,7 +228,6 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 			
 			if _result.count('='):
 				_dialog['flags'][_result.split('=')[0]] = _return
-				print 'returned', gist, _result, _func, _return
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
 

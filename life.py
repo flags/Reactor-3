@@ -396,8 +396,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	                        'towards': None,
 	                        'forced': False}
 	#TODO: Hardcoded for now
-	_life['moves'] = {'punch': {'counters': ['deflect', 'dodge']}}
-	#                  'kick': {'counters': ['}
+	_life['moves'] = {'punch': {'effective_stance': -1, 'counters': ['deflect', 'dodge']},
+	                  'kick': {'effective_stance': 2, 'counters': []}}
 	_life['strafing'] = False
 	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []

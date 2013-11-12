@@ -1570,26 +1570,11 @@ def handle_tasks_menu(entry):
 
 def handle_advanced_movement(entry):
 	_target = entry['target']
-	_menu_items = []
-		
-	for move in LIFE[SETTINGS['controlling']]['moves']:
-		_menu_items.append(menus.create_item('single', move, None, target=_target))
-	
-	_m = menus.create_menu(menu=_menu_items,
-                           title='Adv. Movement',
-                           format_str='$k',
-	                      position=(1, 1),
-                           on_select=handle_advanced_movement_move)
-	menus.activate_menu(_m)
-
-def handle_advanced_movement_move(entry):
-	_target = entry['target']
 	_move = entry['key']
 	
-	melee.fight(LIFE[SETTINGS['controlling']], _target)
+	menus.delete_active_menu()	
 	
-	menus.delete_active_menu()
-	menus.delete_active_menu()
+	melee.fight(LIFE[SETTINGS['controlling']], _target)
 
 def handle_view(entry):
 	if 'item' in entry:
@@ -1619,8 +1604,8 @@ def handle_item_view(entry):
         menu=_menu_items,
         padding=(1, 1),
         position=(-1, -4),
-	    alignment='botleft',
-	    on_select=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
+	   alignment='botleft',
+	   on_select=lambda entry: menus.delete_menu(menus.get_menu_by_name('Examining...')),
         format_str='$k: $v')
 
 def handle_life_view(entry):

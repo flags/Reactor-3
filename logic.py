@@ -33,9 +33,6 @@ def can_tick(check=True):
 	elif EVENTS:
 		return False
 	
-	if melee.process_fights():
-		return False
-	
 	if SETTINGS['controlling']:
 		if MENUS:
 			return False
@@ -45,6 +42,9 @@ def can_tick(check=True):
 	
 		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
+	
+	if melee.process_fights():
+		return False
 	
 	if not check:
 		WORLD_INFO['tps'] += 1
