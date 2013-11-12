@@ -1578,6 +1578,7 @@ def handle_advanced_movement(entry):
 	_m = menus.create_menu(menu=_menu_items,
                            title='Adv. Movement',
                            format_str='$k',
+	                      position=(1, 1),
                            on_select=handle_advanced_movement_move)
 	menus.activate_menu(_m)
 
@@ -1586,6 +1587,9 @@ def handle_advanced_movement_move(entry):
 	_move = entry['key']
 	
 	melee.fight(LIFE[SETTINGS['controlling']], _target)
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
 
 def handle_view(entry):
 	if 'item' in entry:

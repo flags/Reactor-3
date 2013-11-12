@@ -2,6 +2,7 @@
 
 from globals import *
 
+import graphics as gfx
 import life as lfe
 
 import alife
@@ -31,7 +32,7 @@ def force_stance(p, stance):
 	p['stance'] = stance
 	
 	#TODO: Randomly regain balance or fall over
-	p['next_stance']['stance'] = 'stand'
+	p['next_stance']['stance'] = 'standing'
 	
 	p['next_stance']['forced'] = True
 	
@@ -47,13 +48,32 @@ def examine_possible_moves(p, targets):
 		if target == p:
 			continue
 		
-		_next_stance = target['next_stance']['stance']
-		if _next_stance and _next_stance in p['moves'] and not p['stance'] in p['moves'][_next_stance]['counters']:
-			assume_stance(p, p['moves'][_next_stance]['counters'][0], towards=_target)
-			return False
-		elif not _next_stance or not target['stance'] in p['moves']:
-			assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
-			return True
+		print p['stance'], p['next_stance']['stance'], target['stance'], target['next_stance']['stance']
+		_next_stance = p['next_stance']['stance']
+		_next_target_stance = target['next_stance']['stance']
+		
+		#Target is attacking
+		_incoming_attack = False
+		if target['stance'] in target['moves']:
+			_incoming_attack = target['stance']
+		elif _next_target_stance in target['moves']:
+			_incoming_attack = _next_target_stance
+		
+		if _incoming_attack:
+			if not _next_stance in p['moves'][_incoming_attack]['counters']:
+				assume_stance(p, p['moves'][_incoming_attack]['counters'][0], towards=_target)
+				return False
+			elif p['stance'] in p['moves'][_incoming_attack]['counters']:
+				return True
+		
+		assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
+		
+		#if _next_stance and _next_stance in p['moves'] and not p['stance'] in p['moves'][_next_stance]['counters']:
+		#	assume_stance(p, p['moves'][_next_stance]['counters'][0], towards=_target)
+		#	return False
+		#elif (not _next_stance or not target['stance'] in p['moves']):
+		#	assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
+		#	return True
 
 def tick(p):
 	if p['next_stance']['delay']:
@@ -81,6 +101,11 @@ def perform_moves(people):
 			_target = LIFE[_life['next_stance']['towards']]
 			
 			if _life['stance'] in _life['moves'] and _target['stance'] in _life['moves'][_life['stance']]['counters']:
+				if 'player' in _target:
+					gfx.message('You counter %s\'s %s.' % (' '.join(_life['name']), _target['stance']), style='player_combat_good')
+				elif 'player' in _life:
+					gfx.message('%s counters your %s.' % (' '.join(_target['name']), _life['stance']), style='player_combat_bad')
+				
 				print '%s counters %s\'s %s!' % (_target['name'], _life['name'], _life['stance'])
 				
 				force_stance(_life, 'off-balance')
@@ -92,10 +117,20 @@ def perform_moves(people):
 				lfe.memory(_target, 'shot_by', target=_life['id'], danger=3, trust=-10)
 				alife.judgement.judge_life(_target, _life['id'])
 				
+				if 'player' in _life:
+					gfx.message('You punch %s.' % ' '.join(_target['name']), style='player_combat_good')
+				elif 'player' in _target:
+					gfx.message('%s punches you.' % ' '.join(_life['name']), style='player_combat_bad')
+				
 				print '%s\'s %s hits %s!' % (_life['name'], _life['stance'], _target['name'])
 			
 			_life['next_stance']['towards'] = None
 		else:
+			if 'player' in _life:
+					gfx.message('You miss %s.' % ' '.join(_target['name']), style='player_combat_good')
+			elif 'player' in _target:
+				gfx.message('%s misses you.' % ' '.join(_life['name']), style='player_combat_bad')
+			
 			print '%s\'s %s does nothing!' % (_life['name'], _life['stance'])
 		
 		#TODO: React...
