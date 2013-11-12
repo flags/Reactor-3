@@ -49,10 +49,10 @@ def examine_possible_moves(p, targets):
 		
 		_next_stance = target['next_stance']['stance']
 		if _next_stance and _next_stance in p['moves'] and not p['stance'] in p['moves'][_next_stance]['counters']:
-			assume_stance(p, p['moves'][_next_stance]['counters'][0], towards=target)
+			assume_stance(p, p['moves'][_next_stance]['counters'][0], towards=_target)
 			return False
 		elif not _next_stance or not target['stance'] in p['moves']:
-			assume_stance(p, random.choice(p['moves'].keys()), towards=target)
+			assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
 			return True
 
 def tick(p):
@@ -78,7 +78,7 @@ def perform_moves(people):
 			continue
 		
 		if _life['next_stance']['towards']:
-			_target = _life['next_stance']['towards']
+			_target = LIFE[_life['next_stance']['towards']]
 			
 			if _life['stance'] in _life['moves'] and _target['stance'] in _life['moves'][_life['stance']]['counters']:
 				print '%s counters %s\'s %s!' % (_target['name'], _life['name'], _life['stance'])
@@ -93,7 +93,6 @@ def perform_moves(people):
 				alife.judgement.judge_life(_target, _life['id'])
 				
 				print '%s\'s %s hits %s!' % (_life['name'], _life['stance'], _target['name'])
-				
 			
 			_life['next_stance']['towards'] = None
 		else:
@@ -110,6 +109,9 @@ def process_fights():
 	for life in LIFE.values():
 		if life['next_stance']['stance']:
 			_fighters.append(life['id'])
+			
+			if life['next_stance']['towards']:
+				_fighters.append(life['next_stance']['towards'])
 	
 	for _fighter in _fighters:
 		examine_possible_moves(LIFE[_fighter], _fighters)

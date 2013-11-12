@@ -136,6 +136,15 @@ def get_recent_events(life):
 	
 	return 'Nothing much has been going on lately.'
 
+def confirm_target(entry):
+	print 'ENTRY',entry
+	_dialog_id = LIFE[SETTINGS['controlling']]['dialogs'][0]
+	dialog.get_dialog(_dialog_id)['flags']['target'] = entry['target']
+	
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+	                    _dialog_id,
+	                    dialog.get_flag(_dialog_id, 'NEXT_GIST'))
+
 def get_target(life, dialog_id, gist):
 	if 'player' in life:
 		_targets = menus.create_target_list()
@@ -143,7 +152,7 @@ def get_target(life, dialog_id, gist):
 		_menu = menus.create_menu(menu=_targets,
 		                          title='Select Target',
 		                          format_str='$k',
-		                          on_select=lambda entry: dialog.say_via_gist(life, dialog_id, gist),
+		                          on_select=confirm_target,
 		                          close_on_select=True)
 		menus.activate_menu(_menu)
 	else:
@@ -171,4 +180,20 @@ def get_introduction_gist(life, life_id):
 		return 'feign_trust_failed'
 	
 	return 'trust'
-		
+
+def describe_target(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	_details = []
+	
+	if _target['dead']:
+		return 'He died.'
+	
+	if sight.can_see_target(life, life_id):
+		_details.append('He\'s right over there!')
+	else:
+		if _target['last_seen_time'] >= 2000:
+			_details.append('I last saw him at %s, %s, but it was a long time ago.' % (_target['last_seen_at'][0], _target['last_seen_at'][1]))
+		else:
+			_details.append('I last saw him at %s, %s, recently.' % (_target['last_seen_at'][0], _target['last_seen_at'][1]))
+	
+	return ' '.join(_details)

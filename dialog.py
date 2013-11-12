@@ -101,7 +101,7 @@ def execute_function(life, target, dialog_id, function):
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
-	print _function
+	print life['name'], _function, _flags, _dialog['flags']
 	
 	#try:
 	if _flags['self_call']:
@@ -128,6 +128,8 @@ def execute_function(life, target, dialog_id, function):
 		
 		if not _func == _flags['true']:
 			_pass = False
+	
+	#print _function, _flags, _func
 	#except Exception, e:
 	#	logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
 	#	raise e
@@ -226,6 +228,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 			
 			if _result.count('='):
 				_dialog['flags'][_result.split('=')[0]] = _return
+				print 'returned', gist, _result, _func, _return
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
 
@@ -235,7 +238,7 @@ def reformat_text(life, target, dialog_id, text):
 	if text.count('%')%2:
 		raise Exception('Closing \% not matched in string: %s' % text)
 	
-	for match in re.findall('%[\@\$\*\w]*%', text):
+	for match in re.findall('%[\^\@\$\*\w]*%', text):
 		_flag = match.replace('%', '').lower()
 		
 		if _flag.startswith('*'):
