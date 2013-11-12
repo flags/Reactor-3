@@ -2503,6 +2503,12 @@ def draw_life():
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
+			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
+				if time.time()%.5>.25:
+					_back_color = tcod.black
+				else:
+					_back_color = tcod.white
+			
 			gfx.refresh_view_position(_x, _y, 'map')
 			gfx.blit_char(_x,
 				_y,

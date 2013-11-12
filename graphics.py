@@ -266,6 +266,9 @@ def render_scene():
 			                 view['fade'][1])
 
 def prepare_map_views():
+	if get_active_view() == 'map':
+		return False
+	
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
 	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
@@ -275,6 +278,8 @@ def prepare_map_views():
 	add_view_to_scene_by_name('message_box')
 	#add_view_to_scene_by_name('console')
 	add_view_to_scene_by_name('overlay')
+	
+	#fade_view('overlay', 1, 1)
 
 	set_active_view('map')
 

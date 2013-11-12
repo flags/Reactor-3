@@ -193,7 +193,7 @@ def draw_event():
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:
 			_lines = ['The most annoying error.']
-			break
+			break	
 	
 	_i = 0
 	for line in _lines:
@@ -210,7 +210,7 @@ def draw_event():
 	return True
 
 def show_event(text, time=45, delay=0, life=None, item=None, pos=None, priority=False):
-	_event = {'text': text, 'time': time, 'delay': delay}
+	_event = {'text': text, 'time': time, 'delay': delay, 'life': life}
 	
 	if life:
 		_event['pos'] = life['pos']

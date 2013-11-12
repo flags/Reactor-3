@@ -129,6 +129,7 @@ def create_function_map():
 		'consume': lfe.consume,
 		'explode': items.explode,
 		'is_player': lambda life: 'player' in life,
+	    'is_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral',
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
 		'never': lambda life: 1==2})

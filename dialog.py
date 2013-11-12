@@ -101,6 +101,8 @@ def execute_function(life, target, dialog_id, function):
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
+	print _function
+	
 	#try:
 	if _flags['self_call']:
 		if _flags['pass_flags']:
@@ -122,7 +124,6 @@ def execute_function(life, target, dialog_id, function):
 		if _flags['pass_flags']:
 			_func = FUNCTION_MAP[_function](life, target, **_dialog['flags'])
 		else:
-			print _function
 			_func = FUNCTION_MAP[_function](life, target)
 		
 		if not _func == _flags['true']:
@@ -330,10 +331,18 @@ def draw_dialog(dialog_id):
 		_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
 		_center_pos.append(2)
 	
+	if SETTINGS['controlling'] == _dialog['started_by']:
+		_target = _dialog['target']
+	else:
+		_target = _dialog['started_by']
+	
+	_target_portrait = lfe.draw_life_icon(LIFE[_target], draw_alignment=True)
+	
 	_lines = []
 	                                   
 	gfx.camera_track(_center_pos)
-	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')
+	gfx.blit_string(_x-2, _y, _target_portrait[0], 'overlay', fore_color=_target_portrait[1])#, back_color=tcod.darkest_gray)
+	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')#, back_color=tcod.darkest_gray)
 	
 	for choice in _dialog['choices']:
 		_text = choice['text'][choice['text'].index('\"')+1:choice['text'].index('\"')-1]
@@ -355,5 +364,5 @@ def draw_dialog(dialog_id):
 		_lines.append(_text)
 	
 	for line in _lines:
-		gfx.blit_string(_x, _y+3, line, 'overlay')
+		gfx.blit_string(_x, _y+3, line, 'overlay')#, back_color=tcod.darkest_gray)
 		_y += 2
