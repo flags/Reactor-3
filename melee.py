@@ -17,6 +17,11 @@ def get_stance_score(p, stance):
 	return abs(_current_score-_next_score)
 
 def assume_stance(p, stance, towards=None):
+	if p['next_stance']['stance'] == stance and p['next_stance']['towards'] == towards:
+		if 'player' in p:
+			gfx.message('You continue to %s.' % stance)
+			return False
+		
 	if p['next_stance']['forced']:
 		if not p['next_stance']['delay']:
 			p['next_stance']['forced'] = False
@@ -29,10 +34,20 @@ def assume_stance(p, stance, towards=None):
 	p['next_stance']['towards'] = towards
 	p['next_stance']['forced'] = False
 	
+	if 'player' in p:
+		gfx.message('You start to %s.' % stance)
+	elif 'player' in LIFE[towards]:
+		gfx.message('%s begins to %s.' % (' '.join(p['name']), stance))
 	print p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
 	return True
 
-def force_stance(p, stance):
+def force_stance(p, target_id, stance):
+	if not p['stance'] == stance:
+		if 'player' in p:
+			gfx.message('You are thrown %s!' % stance)
+		elif 'player' in LIFE[target_id]:
+			gfx.message('You throw %s into %s.' % (' '.join(p['name']), stance))
+	
 	p['next_stance']['delay'] = get_stance_score(p, stance)
 	p['stance'] = stance
 	
@@ -41,16 +56,13 @@ def force_stance(p, stance):
 	p['next_stance']['forced'] = True
 	
 	print p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')'
-	
-	if 'player' in p:
-		gfx.message('You are thrown %s!' % stance)
 
 def examine_possible_moves(p, targets):
 	#TODO: Cancel move?
 	_moves = {}
 	
-	if p['next_stance']['stance']:
-		return False
+	#if p['next_stance']['stance']:
+	#	return False
 	
 	for _target in targets:
 		target = LIFE[_target]
@@ -146,9 +158,9 @@ def react_to_attack(life, target_id, stance):
 		_force = 0
 	
 	if _force >= life['stances'][life['stance']]:
-		force_stance(life, 'crawling')
-	else:
-		force_stance(life, 'off-balance')
+		force_stance(life, target_id, 'crawling')
+	elif life['stances'][life['stance']]<=life['stances']['crouching']:
+		force_stance(life, target_id, 'off-balance')
 
 def perform_moves(people):
 	for life_id in people:
@@ -169,9 +181,6 @@ def perform_moves(people):
 				
 				#react_to_attack(_life, _target['id'], _target['stance'])
 			else:
-				if _target['stance'] in 'off-balance':
-					force_stance(_target, 'crawling')
-				
 				lfe.memory(_life, 'shot', target=_target['id'])
 				lfe.memory(_target, 'shot_by', target=_life['id'], danger=3, trust=-10)
 				alife.judgement.judge_life(_target, _life['id'])
