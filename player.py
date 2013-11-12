@@ -11,6 +11,7 @@ import weapons
 import dialog
 import timers
 import inputs
+import melee
 import debug
 import zones
 import logic
@@ -341,7 +342,28 @@ def handle_input():
 	if INPUT['V']:
 		if menus.get_menu_by_name('Radio')==-1:
 			return create_radio_menu()
+
+	if INPUT['m']:
+		if menus.get_menu_by_name('Fight')>-1:
+			return False
+		
+		_menu_items = menus.create_target_list()
+
+		if not _menu_items:
+			gfx.message('You have nothing to aim at!')
+			return False
 	
+		_i = menus.create_menu(title='Fight',
+	          menu=_menu_items,
+	          padding=(1,1),
+	          position=(1,1),
+	          format_str='$k',
+	          on_select=handle_advanced_movement,
+	          on_close=exit_target,
+	          on_move=target_view)
+		
+		menus.activate_menu(_i)
+
 	if INPUT['f']:
 		if menus.get_menu_by_name('Select Limb')>-1:
 			return False
@@ -1545,6 +1567,25 @@ def handle_tasks_menu(entry):
 		jobs.leave_job(entry['job_id'], SETTINGS['controlling'], reject=True)
 		
 		menus.delete_menu(ACTIVE_MENU['menu'])
+
+def handle_advanced_movement(entry):
+	_target = entry['target']
+	_menu_items = []
+		
+	for move in LIFE[SETTINGS['controlling']]['moves']:
+		_menu_items.append(menus.create_item('single', move, None, target=_target))
+	
+	_m = menus.create_menu(menu=_menu_items,
+                           title='Adv. Movement',
+                           format_str='$k',
+                           on_select=handle_advanced_movement_move)
+	menus.activate_menu(_m)
+
+def handle_advanced_movement_move(entry):
+	_target = entry['target']
+	_move = entry['key']
+	
+	melee.fight(LIFE[SETTINGS['controlling']], _target)
 
 def handle_view(entry):
 	if 'item' in entry:

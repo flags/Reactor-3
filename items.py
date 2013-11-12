@@ -747,6 +747,6 @@ def tick_item(item_uid):
 	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 	print 'SPEED', item['speed']
 
-def tick_all_items(MAP):
+def tick_all_items():
 	for item in ITEMS.keys():
 		tick_item(item)

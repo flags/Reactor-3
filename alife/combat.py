@@ -6,6 +6,7 @@ import judgement
 import movement
 import weapons
 import speech
+import melee
 import zones
 import items
 import sight
@@ -309,23 +310,7 @@ def melee_combat(life, targets):
 						target=_target['life']['id'],
 						matches=[{'id': send_to}])
 
-def ranged_combat(life, targets):
-	#target = brain.knows_alife_by_id(life, target)
-	
-	#Are we still deciding? Who are we engaging?
-	#STEP 1: We know danger is nearby, but it is not visible
-	#_visible_threats = judgement.get_visible_targets_in_list(life, targets)
-	
-	#if not _visible_threats:
-		#Find the nearnest target
-	#_escaped_targets = []
-	#for target_id in targets[:]:
-	#	_knows = brain.knows_alife_by_id(life, target_id)
-	#	
-	#	if _knows['escaped'] == 1:
-	#		targets.remove(target_id)
-	#		_escaped_targets.append(target_id)
-	
+def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
@@ -373,45 +358,57 @@ def ranged_combat(life, targets):
 		print 'THIS IS MUCH QUICKER!!!' * 10
 		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
 	
-	if not target:
+	return target
+
+def ranged_combat(life, targets):
+	_target = get_closest_target(life, targets)
+	
+	if not _target:
 		logging.error('No target for ranged combat.')
 		return False
 	
-	if not life['path'] or not numbers.distance(lfe.path_dest(life), target['last_seen_at']) == 0:
-		movement.position_to_attack(life, target['life']['id'])
+	if not life['path'] or not numbers.distance(lfe.path_dest(life), _target['last_seen_at']) == 0:
+		movement.position_to_attack(life, _target['life']['id'])
 	
-	#if not target['escaped'] and not _pos_for_combat:
-	#	return False
-	#	#else:
-	#	#	return movement.escape(life, [target['life']['id']])
-	#elif _pos_for_combat:
-	#	lfe.stop(life)
-	
-	if sight.can_see_position(life,target['last_seen_at'], block_check=True, strict=True):
-		if sight.can_see_position(life, target['life']['pos']):
-			if not len(lfe.find_action(life,matches=[{'action': 'shoot'}])):
+	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
+		if sight.can_see_position(life, _target['life']['pos']):
+			if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
 				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
 					lfe.add_action(life,{'action': 'shoot',
-						'target': target['last_seen_at'],
+						'target': _target['last_seen_at'],
 						'limb': 'chest'},
 						5000,
 						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
 		else:
-			print life['name'],'WENT MISSING!!!!!!!!!!'*100
-			lfe.memory(life,'lost sight of %s' % (' '.join(target['life']['name'])),target=target['life']['id'])
+			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 			
-			target['escaped'] = 1
+			_target['escaped'] = 1
 			
 			for send_to in judgement.get_trusted(life):
 				speech.communicate(life,
 			        'target_missing',
-			        target=target['life']['id'],
+			        target=_target['life']['id'],
 			        matches=[{'id': send_to}])
 	else:
 		print life['name'], 'waiting...'
 		return False
-	#	movement.travel_to_position(life, target['last_seen_at'], stop_on_sight=False)
-	#	return False
-	#	#else:
-	#	#	if sight.can_see_position(life, target['last_seen_at']):
-	#	#		target['escaped'] = 1
+
+def melee_combat(life, targets):
+	_target = get_closest_target(life, targets)
+	
+	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
+		if len(sight.can_see_position(life, _target['life']['pos'])) <= 1:
+			melee.process(life, _target)
+		else:
+			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
+			
+			_target['escaped'] = 1
+			
+			for send_to in judgement.get_trusted(life):
+				speech.communicate(life,
+			        'target_missing',
+			        target=_target['life']['id'],
+			        matches=[{'id': send_to}])
+	else:
+		print life['name'], 'waiting...'
+		return False

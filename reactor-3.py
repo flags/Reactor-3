@@ -77,7 +77,7 @@ def main():
 	_played_moved = False
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
-		logic.tick_all_objects(WORLD_INFO['map'])
+		logic.tick_all_objects()
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -93,10 +93,10 @@ def main():
 	
 	if not _played_moved:
 		if CURRENT_UPS:
-			CURRENT_UPS-=1
+			CURRENT_UPS -= 1
 		else:
 			CURRENT_UPS = 3
-			logic.tick_all_objects(WORLD_INFO['map'])
+			logic.tick_all_objects()
 	
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])

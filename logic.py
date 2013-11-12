@@ -11,6 +11,7 @@ import numbers
 import weather
 import timers
 import dialog
+import melee
 import cache
 import menus
 import items
@@ -32,7 +33,7 @@ def can_tick(check=True):
 	elif EVENTS:
 		return False
 	
-	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
+	if melee.process_fights():
 		return False
 	
 	if SETTINGS['controlling']:
@@ -57,7 +58,7 @@ def can_tick(check=True):
 	
 	return True
 
-def tick_all_objects(source_map):
+def tick_all_objects():
 	if not can_tick(check=False):
 		return False
 	
@@ -94,12 +95,12 @@ def tick_all_objects(source_map):
 	effects.calculate_all_effects()
 	tick_world()
 	timers.tick()
-	items.tick_all_items(source_map)
+	items.tick_all_items()
 	
 	#if SETTINGS['smp']:
 	#	smp.scan_all_surroundings()
 	
-	life.tick_all_life(source_map)
+	life.tick_all_life()
 	
 	return True
 

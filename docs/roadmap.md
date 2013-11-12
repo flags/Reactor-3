@@ -734,4 +734,11 @@ Fixing
 -----
 [x] is_compatible_with
 
-	
+Combat flow
+===========
+
+
+
+'  ______          ,
+' |Ranged| - - - |
+'  ______

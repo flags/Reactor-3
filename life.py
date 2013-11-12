@@ -16,6 +16,7 @@ import random
 import damage
 import timers
 import dialog
+import melee
 import logic
 import zones
 import alife
@@ -375,6 +376,27 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['strafing'] = False
 	_life['recoil'] = 0
 	_life['stance'] = 'standing'
+	_life['stances'] = {'tackle': 7,
+	                    'leap': 6,
+	                    'roll': 5,
+	                    'prone': 5,
+	                    'duck': 4,
+	                    'crouch': 2,
+	                    'kick': 2,
+	                    'punch': 2,
+	                    'dodge': 2,
+	                    'deflect': 1,
+	                    'parry': 0,
+	                    'grapple': 0,
+	                    'standing': 0,
+	                    'off-balance': -1,
+	                    'trip': -1}
+	_life['next_stance'] = {'delay': 0,
+	                        'stance': None,
+	                        'towards': None,
+	                        'forced': False}
+	#TODO: Hardcoded for now
+	_life['moves'] = {'punch': {'counters': ['deflect', 'dodge']}}
 	_life['strafing'] = False
 	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
@@ -866,7 +888,7 @@ def crouch(life):
 	elif life['stance'] == 'crawling':
 		_delay = 15
 	else:
-		return False
+		_delay = melee.get_stance_score(life, 'crouch')
 	
 	set_animation(life, ['n', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crouch'},
@@ -879,7 +901,7 @@ def stand(life):
 	elif life['stance'] == 'crawling':
 		_delay = 15
 	else:
-		return False
+		_delay = melee.get_stance_score(life, 'standing')
 	
 	set_animation(life, ['^', '@'], speed=_delay/2)
 	add_action(life,{'action': 'stand'},
@@ -897,7 +919,7 @@ def crawl(life, force=False):
 	elif life['stance'] == 'crouching':
 		_delay = 5
 	else:
-		return False
+		_delay = melee.get_stance_score(life, 'prone')
 	
 	set_animation(life, ['v', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crawl'},
@@ -1020,7 +1042,11 @@ def walk(life, to=None, path=None):
 			life['speed'] -= 0.5
 		elif life['stance'] == 'crawling':
 			life['speed'] -= 0.3
-			
+		else:
+			print 'YESSSSSSSSSSSSSSs' * 100
+			clear_actions(life)
+			stand(life)
+		
 		return False
 	elif life['speed']<=0:
 		life['speed_max'] = get_max_speed(life)
@@ -1635,7 +1661,7 @@ def thirst(life):
 	
 	return True
 
-def tick(life, source_map):
+def tick(life):
 	"""Wrapper function. Performs all life-related logic. Returns nothing."""
 
 	if life['dead']:
@@ -1717,7 +1743,7 @@ def tick(life, source_map):
 		return False	
 	
 	if not 'player' in life:
-		brain.think(life, source_map)
+		brain.think(life)
 	else:
 		brain.sight.look(life)
 		alife.sound.listen(life)
@@ -3414,6 +3440,6 @@ def print_life_table():
 		generate_life_info(life)
 		print '\n','%' * 16,'\n'
 
-def tick_all_life(source_map):
+def tick_all_life():
 	for life in [LIFE[i] for i in LIFE]:
-		tick(life,source_map)
+		tick(life)

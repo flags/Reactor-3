@@ -69,7 +69,7 @@ def draw_world_stats():
 def simulate_life(amount):
 	while amount:
 		#try:
-		logic.tick_all_objects(WORLD_INFO['map'])
+		logic.tick_all_objects()
 		#except Exception as e:
 		#logging.error('Crash: %s' % e)
 		#SETTINGS['running'] = False

@@ -72,14 +72,14 @@ def sort_modules(life):
 	
 	return _scores
 
-def think(life, source_map):
+def think(life):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
 	judgement.judge(life)
 	judgement.judge_jobs(life)
 	survival.process(life)
-	understand(life, source_map)
+	understand(life)
 	
 	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
 		judgement.update_camps(life)
@@ -315,7 +315,7 @@ def remember_known_item(life, item_id):
 	
 	return False
 
-def understand(life, source_map):
+def understand(life):
 	_modules = sort_modules(life)
 	
 	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
@@ -373,13 +373,13 @@ def understand(life, source_map):
 			_module_tier = module.TIER
 		
 		if (_module_tier <= life['state_tier'] and not _passive_only) or _module_tier == TIER_PASSIVE:
-			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, [])
 			
 			if _return == STATE_CHANGE:
 				lfe.change_state(life, module.STATE, _module_tier)
 			
 			if _return:
-				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, source_map)
+				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, [])
 				
 				if _return == RETURN_SKIP:
 					if not _modules[_score_tier]:
