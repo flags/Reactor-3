@@ -277,8 +277,9 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True, on
 		_remembered_items = life['know_items'].values()
 	
 	for item in _remembered_items:
-		_item = ITEMS[item]
-		if get_item_flag(life, ITEMS[item['item']], 'ignore'):
+		_item = ITEMS[item['item']]
+		
+		if get_item_flag(life, _item, 'ignore'):
 			continue
 		
 		if active and 'offloaded' in item:
@@ -288,20 +289,15 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True, on
 			continue
 				
 		if only_visible and not sight.can_see_position(life, _item['pos']):
-			print 'cant see'
 			continue
 		
 		if _item['lock']:
-			print 'locked'
 			continue
 		
 		if 'parent' in _item and _item['parent']:
-			print 'owned already'
-			if _item['uid'] in _could_meet_with:
-				print 'in list'
 			continue
 		
-		if logic.matches(ITEMS[item['item']], matches):
+		if logic.matches(_item, matches):
 			_matched_items.append(item['item'])
 	
 	return _matched_items
