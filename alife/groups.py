@@ -269,36 +269,11 @@ def find_shelter(life, group_id):
 	if _group['shelter']:
 		announce_shelter(group_id)
 
-def announce_shelter(group_id):
-	_group = get_group(group_id)
-	distribute(LIFE[_group['leader']],
-	           'group_set_shelter',
-	           filter_by=get_event(group_id, _group['announce_event'])['accepted'],
-	           reference_id=_group['shelter'],
-	           event_id=_group['announce_event'])
-
 def find_and_announce_shelter(life, group_id):
 	if get_shelter(group_id):
-		announce_shelter(group_id)
+		announce(life, group_id, 'group_shelter', chunk_key=get_shelter(group_id))
 	else:
 		find_shelter(life, group_id)
-
-def setup_group_events(group_id):
-	_group = get_group(group_id)
-	if _group['announce_event']:
-		return False
-	
-	if stats.desires_shelter(LIFE[_group['leader']]) or 'player' in LIFE[_group['leader']]:
-		_group['announce_event'] = add_event(group_id, events.create('shelter',
-			action.make(return_function='find_and_announce_shelter'),
-			{'life': action.make(life=_group['leader'], return_key='life'),
-			 'group_id': group_id},
-			fail_callback=action.make(return_function='desires_shelter'),
-			fail_arguments={'life': action.make(life=_group['leader'], return_key='life')}))
-	
-		return True
-	
-	return False
 
 def get_leader(group_id):
 	return get_group(group_id)['leader']
