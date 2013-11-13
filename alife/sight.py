@@ -324,20 +324,13 @@ def find_visible_items(life):
 def find_known_items(life, matches={}, only_visible=True):
 	_match = []
 	
-	for item_uid in brain.get_matching_remembered_items(life, matches, no_owner=True):
+	_could_meet_with = []
+	for need in brain.retrieve_from_memory(life, 'needs_to_meet'):
+		_could_meet_with.extend(need['could_meet_with'])
+	
+	for item_uid in brain.get_matching_remembered_items(life, matches, no_owner=True, only_visible=only_visible):
 		#TODO: Offload?
 		_item = ITEMS[item_uid]
-		
-		if only_visible and not can_see_position(life, _item['pos']):
-			print 'cant see'
-			continue
-		
-		if _item['lock']:
-			print 'locked'
-			continue
-		
-		if 'parent' in _item and _item['parent']:
-			continue
 		
 		_match.append(item_uid)
 	

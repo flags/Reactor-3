@@ -268,7 +268,7 @@ def has_met_in_person(life, target):
 def get_remembered_item(life, item_id):
 	return life['know_items'][item_id]
 
-def get_matching_remembered_items(life, matches, no_owner=False, active=True):
+def get_matching_remembered_items(life, matches, no_owner=False, active=True, only_visible=False):
 	_matched_items = []
 	
 	if 'type' in matches and matches['type'] in life['known_items_type_cache']:
@@ -277,6 +277,7 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 		_remembered_items = life['know_items'].values()
 	
 	for item in _remembered_items:
+		_item = ITEMS[item]
 		if get_item_flag(life, ITEMS[item['item']], 'ignore'):
 			continue
 		
@@ -284,6 +285,20 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True):
 			continue
 		
 		if no_owner and item['last_owned_by']:
+			continue
+				
+		if only_visible and not sight.can_see_position(life, _item['pos']):
+			print 'cant see'
+			continue
+		
+		if _item['lock']:
+			print 'locked'
+			continue
+		
+		if 'parent' in _item and _item['parent']:
+			print 'owned already'
+			if _item['uid'] in _could_meet_with:
+				print 'in list'
 			continue
 		
 		if logic.matches(ITEMS[item['item']], matches):

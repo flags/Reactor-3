@@ -221,6 +221,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			_highest['item'] = ITEMS[item]
 	
 	if not _highest['item']:
+		print life['name'], 'no highest item', _nearby
 		return True
 	
 	_empty_hand = lfe.get_open_hands(life)
