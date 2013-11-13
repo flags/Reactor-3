@@ -137,7 +137,6 @@ def get_recent_events(life):
 	return 'Nothing much has been going on lately.'
 
 def confirm_target(entry):
-	print 'ENTRY',entry
 	_dialog_id = LIFE[SETTINGS['controlling']]['dialogs'][0]
 	dialog.get_dialog(_dialog_id)['flags']['target'] = entry['target']
 	
@@ -156,7 +155,10 @@ def get_target(life, dialog_id, gist):
 		                          close_on_select=True)
 		menus.activate_menu(_menu)
 	else:
-		raise Exception('Dead end.')
+		dialog.get_dialog(dialog_id)['flags']['target'] = random.choice(judgement.get_threats(life))
+		dialog.say_via_gist(life,
+			                dialog_id,
+			                dialog.get_flag(dialog_id, 'NEXT_GIST'))
 	
 def get_introduction_message(life, life_id):
 	_alignment = stats.get_goal_alignment_for_target(life, life_id)

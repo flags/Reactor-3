@@ -448,11 +448,6 @@ def get_nearest_combat_target(life):
 def get_nearest_trusted_target(life):
 	return get_nearest_target_in_list(life, get_trusted(life))
 
-def get_fondness(life, target_id):
-	target = brain.knows_alife_by_id(life, target_id)
-	
-	return target['fondness']
-
 def target_is_combat_ready(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
@@ -727,8 +722,6 @@ def judge_reference(life, reference_id, known_penalty=False):
 			_knows = brain.knows_alife(life, LIFE[ai])
 			if not _knows:
 				continue
-				
-			_score += get_fondness(life, ai)
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:
