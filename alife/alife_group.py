@@ -139,6 +139,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				
 				if groups.needs_resources(life['group']):
 					groups.order_to_loot(life, life['group'])
+				else:
+					print 'ready for phase 3'
 				#groups.add_event(life['group'], events.create('shelter',
 				#                                              action.make(return_function='find_and_announce_shelter'),
 				#                                              {'life': action.make(life=life['id'], return_key='life'),

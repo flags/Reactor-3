@@ -449,7 +449,7 @@ def manage_resources(life, group_id):
 	_group = get_group(group_id)
 	_last_resource_check = get_flag(group_id, 'last_resource_count')
 	
-	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check>=100:
+	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check<=100:
 		return True
 	
 	_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
