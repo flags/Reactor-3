@@ -273,11 +273,13 @@ def prepare_map_views():
 	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
 	
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
 	#add_view_to_scene_by_name('console')
 	add_view_to_scene_by_name('overlay')
+	add_view_to_scene_by_name('chunk_map')
 	
 	#fade_view('overlay', 1, 1)
 

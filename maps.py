@@ -576,6 +576,14 @@ def update_chunk_map():
 	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
 		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
+			_chunk_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+			
+			#if _type in ['forest', 'field']:
+			#	continue
+			
+			if _chunk_type == 'town':
+				_chunk_type = 'building'
+			
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
 				'life': [],
@@ -585,6 +593,7 @@ def update_chunk_map():
 				'flags': {},
 				'reference': None,
 				'last_updated': None,
+				'type': _chunk_type,
 				'max_z': 0}
 			
 			_tiles = {}
@@ -615,16 +624,16 @@ def update_chunk_map():
 					else:
 						_tiles[_type] = 1
 			
-			_total_tiles = sum(_tiles.values())
-			for tile in _tiles.keys():
-				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
+			#_total_tiles = sum(_tiles.values())
+			#for tile in _tiles.keys():
+				#_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'building' in _tiles:# and _tiles['building']>=9:
-				_chunk_map[_chunk_key]['type'] = 'building'
-			elif 'road' in _tiles and _tiles['road']>=15:
-				_chunk_map[_chunk_key]['type'] = 'road'
-			else:
-				_chunk_map[_chunk_key]['type'] = 'other'
+			#if 'building' in _tiles:# and _tiles['building']>=9:
+				#_chunk_map[_chunk_key]['type'] = 'building'
+			#elif 'road' in _tiles and _tiles['road']>=15:
+				#_chunk_map[_chunk_key]['type'] = 'road'
+			#else:
+				#_chunk_map[_chunk_key]['type'] = 'other'
 	
 	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
@@ -736,3 +745,60 @@ def generate_reference_maps():
 	logging.debug('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
 	logging.debug('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
 	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
+
+def draw_chunk_map(life=None, show_faction_ownership=False):
+	#_x_min = MAP_CURSOR[0]/WORLD_INFO['chunk_size']
+	#_y_min = MAP_CURSOR[1]/WORLD_INFO['chunk_size']
+	#_x_max = numbers.clip(_x_min+WINDOW_SIZE[0]/WORLD_INFO['chunk_size'], _x_min, WINDOW_SIZE[0])
+	#_y_max = numbers.clip(_y_min+WINDOW_SIZE[1]/WORLD_INFO['chunk_size'], _y_min, WINDOW_SIZE[1])
+	#print MAP_SIZE
+	
+	#print _x_min, _x_max, _y_min, _y_max
+	_life_chunk_key = None
+	
+	if life:
+		_life_chunk_key = lfe.get_current_chunk_id(life)
+	
+	for x in range(0, MAP_SIZE[0]/WORLD_INFO['chunk_size']):
+		_d_x = x
+		
+		if _d_x >= MAP_WINDOW_SIZE[0]:
+			continue
+		
+		for y in range(0, MAP_SIZE[1]/WORLD_INFO['chunk_size']):
+			_d_y = y
+			_chunk_key = '%s,%s' % (_d_x*WORLD_INFO['chunk_size'], _d_y*WORLD_INFO['chunk_size'])
+			_draw = True
+			_fore_color = tcod.darker_gray
+			_back_color = tcod.darkest_gray
+			
+			if _d_y >= MAP_WINDOW_SIZE[1]:
+				continue
+			
+			if life:
+				if not _chunk_key in life['known_chunks']:
+					_draw = False
+			
+			if _draw:
+				_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+				_char = 'x'
+				
+				if _type == 'building':
+					_fore_color = tcod.light_gray
+					_char = 'B'
+				elif _type == 'field':
+					_fore_color = tcod.yellow
+				elif _type == 'forest':
+					_fore_color = tcod.dark_green
+				elif _type in ['road', 'driveway']:
+					_fore_color = tcod.white
+					_back_color = tcod.black
+					_char = '.'
+				
+				if _chunk_key == _life_chunk_key and time.time()%1>=.5:
+					_fore_color = tcod.white
+					_char = 'X'
+				
+				gfx.blit_char_to_view(_d_x, _d_y, _char, (_fore_color, _back_color), 'chunk_map')
+			else:
+				gfx.blit_char_to_view(_d_x, _d_y, 'x', (tcod.darker_gray, tcod.darkest_gray), 'chunk_map')
