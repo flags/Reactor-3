@@ -396,8 +396,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	                        'towards': None,
 	                        'forced': False}
 	#TODO: Hardcoded for now
-	_life['moves'] = {'punch': {'effective_stance': -1, 'counters': ['deflect', 'dodge']},
-	                  'kick': {'effective_stance': 2, 'counters': []}}
+	_life['moves'] = {'punch': {'effective_stance': -1, 'counters': ['deflect', 'dodge'], 'damage': {'force': 1}},
+	                  'kick': {'effective_stance': 2, 'counters': [], 'damage': {'force': 3}}}
 	_life['strafing'] = False
 	_life['aim_at'] = _life['id']
 	_life['discover_direction_history'] = []
@@ -997,7 +997,7 @@ def calculate_velocity(life):
 	if not sum([abs(i) for i in life['velocity']]):
 		return False
 	
-	_next_pos = (int(life['pos'][0]+life['velocity'][0]), int(life['pos'][1]+life['velocity'][1]))
+	_next_pos = (int(round(life['pos'][0]+life['velocity'][0])), int(round(life['pos'][1]+life['velocity'][1])))
 	_last_pos = life['pos'][:]
 	
 	for pos in drawing.diag_line(life['pos'], _next_pos):

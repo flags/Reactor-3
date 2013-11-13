@@ -5,6 +5,7 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
+import numbers
 import alife
 import menus
 
@@ -44,9 +45,9 @@ def assume_stance(p, stance, towards=None):
 def force_stance(p, target_id, stance):
 	if not p['stance'] == stance:
 		if 'player' in p:
-			gfx.message('You are thrown %s!' % stance)
+			gfx.message('You are thrown by %s.' % ' '.join(LIFE[target_id]['name']), style='player_combat_bad')
 		elif 'player' in LIFE[target_id]:
-			gfx.message('You throw %s into %s.' % (' '.join(p['name']), stance))
+			gfx.message('You throw %s into %s.' % (' '.join(p['name']), stance), style='player_combat_good')
 	
 	p['next_stance']['delay'] = get_stance_score(p, stance)
 	p['stance'] = stance
@@ -67,6 +68,9 @@ def examine_possible_moves(p, targets):
 	for _target in targets:
 		target = LIFE[_target]
 		if target == p:
+			continue
+		
+		if sum([abs(i) for i in target['velocity']]):
 			continue
 		
 		if 'player' in p:
@@ -106,7 +110,7 @@ def examine_possible_moves(p, targets):
 		#	assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
 		#	return True
 	
-	if _moves:
+	if _moves and menus.get_menu_by_name('Advanced Movement')==-1 and not sum([abs(i) for i in p['velocity']]):
 		_menu = []
 		
 		for target_id in _moves:
@@ -158,6 +162,7 @@ def react_to_attack(life, target_id, stance):
 		_force = 0
 	
 	if _force >= life['stances'][life['stance']]:
+		lfe.push(life, numbers.direction_to(LIFE[target_id]['pos'], life['pos']), _attack['damage']['force'])
 		force_stance(life, target_id, 'crawling')
 	elif life['stances'][life['stance']]<=life['stances']['crouching']:
 		force_stance(life, target_id, 'off-balance')
@@ -214,12 +219,27 @@ def process_fights():
 	_fighters = []
 	for life in LIFE.values():
 		if life['next_stance']['stance']:
-			_fighters.append(life['id'])
+			if sum([abs(i) for i in life['velocity']]):
+				continue
+			
+			if not life['id'] in _fighters:
+				_fighters.append(life['id'])
 			
 			if life['next_stance']['towards']:
-				_fighters.append(life['next_stance']['towards'])
+				if sum([abs(i) for i in LIFE[life['next_stance']['towards']]['velocity']]):
+					life['next_stance']['stance'] = None
+					life['next_stance']['towards'] = None
+					continue
+				
+				if numbers.distance(life['pos'], LIFE[life['next_stance']['towards']]['pos'])>1:
+					life['next_stance']['stance'] = None
+					life['next_stance']['towards'] = None
+					continue
+				
+				if not life['next_stance']['towards'] in _fighters:
+					_fighters.append(life['next_stance']['towards'])
 	
-	if not _fighters:
+	if len(_fighters)<=1:
 		WORLD_INFO['sub_ticks'] = WORLD_INFO['max_sub_ticks']
 		return False
 	
@@ -230,10 +250,24 @@ def process_fights():
 		return False
 	
 	for _fighter in _fighters:
+		if lfe.calculate_velocity(LIFE[_fighter]):
+			continue
+		
 		examine_possible_moves(LIFE[_fighter], _fighters)
 
 		tick(LIFE[_fighter])
 	
 	perform_moves(_fighters)
+	
+	_i = 0
+	for fighter in _fighters:
+		if sum([abs(i) for i in LIFE[fighter]['velocity']]):
+			continue
+		
+		_i += 1
+	
+	if _i<=1:
+		if menus.get_menu_by_name('Advanced Movement')>-1:
+			menus.delete_active_menu()
 	
 	return _fighters

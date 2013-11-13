@@ -23,7 +23,7 @@ import random
 import time
 
 def can_tick(check=True):
-	if SETTINGS['controlling'] and not EVENTS:
+	if SETTINGS['controlling'] and not EVENTS and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
@@ -33,7 +33,7 @@ def can_tick(check=True):
 	elif EVENTS:
 		return False
 	
-	if SETTINGS['controlling']:
+	if SETTINGS['controlling'] and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if MENUS:
 			return False
 		

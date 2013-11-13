@@ -231,7 +231,6 @@ def meet_alife(life, target):
 		return False
 	
 	life['know'][target['id']] = {'life': target,
-		'fondness': 0,
 		'danger': 0,
 		'trust': 0,
 		'alignment': 'neutral',
