@@ -260,14 +260,11 @@ def get_shelter(group_id):
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
-	
 	_shelter = judgement.get_best_shelter(life)
 	
 	if _shelter:
 		_group['shelter'] = chunks.get_chunk(_shelter)['reference']
-	
-	if _group['shelter']:
-		announce_shelter(group_id)
+		logging.debug('Group %s set shelter.' % group_id)
 
 def find_and_announce_shelter(life, group_id):
 	if get_shelter(group_id):

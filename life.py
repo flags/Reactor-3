@@ -419,7 +419,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['unchecked_memories'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
-	_life['known_groups'] = []
+	_life['known_groups'] = {}
 	_life['camp'] = None
 	_life['tempstor2'] = {}
 	_life['job'] = None
@@ -508,8 +508,6 @@ def post_save(life):
 		entry['life'] = LIFE[entry['life']]
 	
 	#NOTE: This section is for updating life entities after keys have been added
-	if not 'known_groups' in life:
-		life['known_groups'] = []
 	
 	initiate_raw(life)
 

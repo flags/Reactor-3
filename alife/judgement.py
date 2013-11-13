@@ -521,17 +521,8 @@ def judge_shelter(life, chunk_id):
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
-	if _known_chunk['life']:
-		return 0
-	
 	if not chunk['type'] == 'building':
 		return 0
-	#	for building in WORLD_INFO['reference_map']['buildings']:
-	#		if chunk_id in building:
-	#			_score += len(building)
-	#			_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
-	#			_score = numbers.clip(_score, 0, 10)
-	#			break
 	
 	if not chunks.get_flag(life, chunk_id, 'shelter'):
 		_cover = []
@@ -546,9 +537,6 @@ def judge_shelter(life, chunk_id):
 			return 0
 		
 		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
-	
-	#if chunks.get_flag(life, chunk_id, 'shelter'):
-	#	_score += 1
 	
 	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
 	
@@ -952,7 +940,7 @@ def get_best_goal(life):
 def get_best_shelter(life):
 	_best_shelter = {'distance': -1, 'shelter': None}
 	
-	if life['group']:
+	if life['group'] and groups.get_shelter(life['group']):
 		_shelter = groups.get_shelter(life['group'])
 		
 		if _shelter:
