@@ -161,10 +161,15 @@ def get_target(life, dialog_id, gist):
 			                dialog.get_flag(dialog_id, 'NEXT_GIST'))
 	
 def get_introduction_message(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	if _target['alignment'] == 'hostile':
+		return ['You will die, scumbag!']
+	
 	_alignment = stats.get_goal_alignment_for_target(life, life_id)
 	
 	if _alignment == 'feign_trust':
-		return 'Hey, buddy, let\'s have a chat.'
+		return 'Let\'s have a chat.'
 	
 	if _alignment == 'malicious':
 		return 'Back up. I have no time to talk to you.'

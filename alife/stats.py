@@ -560,8 +560,8 @@ def react_to_attack(life, life_id):
 	if not _knows['alignment'] == 'hostile':
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
-		if life['group']:
-			groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
+	if life['group']:
+		groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
@@ -607,9 +607,6 @@ def establish_aggressive(life, life_id):
 
 def establish_hostile(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
-	
-	print '*' * 15
-	print life['name'], 'hates', LIFE[life_id]['name']
 	
 	_knows['alignment'] = 'hostile'
 

@@ -396,9 +396,18 @@ def ranged_combat(life, targets):
 def melee_combat(life, targets):
 	_target = get_closest_target(life, targets)
 	
+	if not _target:
+		logging.error('No target for ranged combat.')
+		return False
+	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
-		if len(sight.can_see_position(life, _target['life']['pos'])) <= 1:
-			melee.process(life, _target)
+		_can_see = sight.can_see_position(life, _target['life']['pos'])
+		
+		if _can_see:
+			if len(_can_see)>1:
+				movement.find_target(life, _target['life']['id'], distance=1, follow=True)
+			else:
+				melee.fight(life, _target['life']['id'])
 		else:
 			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 			
