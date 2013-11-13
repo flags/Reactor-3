@@ -71,7 +71,8 @@ def get_flag(group_id, flag):
 
 def discover_group(life, group_id):
 	if not group_id in life['known_groups']:
-		life['known_groups'].append(group_id)
+		life['known_groups'] = {'id': group_id,
+		                        'members':
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
