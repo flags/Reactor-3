@@ -174,7 +174,7 @@ def main():
 	gfx.draw_status_line()
 	gfx.draw_console()
 	
-	maps.draw_chunk_map(life=LIFE[SETTINGS['controlling']])
+	#maps.draw_chunk_map(life=LIFE[SETTINGS['controlling']])
 	
 	#TODO: Experimental map rendering, disabled for now
 	if SETTINGS['map_slices']:

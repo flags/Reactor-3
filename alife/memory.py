@@ -14,6 +14,10 @@ def create_question(life, life_id, gist, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
 	_question = {'gist': gist, 'args': kwargs}
 	
+	if not _target:
+		logging.critical('%s does not know %s but is creating questions for them.' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name'])))
+		return False
+	
 	if _question in _target['questions']:
 		return False
 	
@@ -27,6 +31,7 @@ def create_order(life, life_id, order, message, **kwargs):
 	
 	if not _target:
 		logging.critical('%s does not know %s but is giving orders to them.' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name'])))
+		return False
 	
 	if _order in _target['orders'].values():
 		return False

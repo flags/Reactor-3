@@ -166,6 +166,8 @@ def react_to_attack(life, target_id, stance):
 		force_stance(life, target_id, 'crawling')
 	elif life['stances'][life['stance']]<=life['stances']['crouching']:
 		force_stance(life, target_id, 'off-balance')
+	
+	lfe.add_wound(life, random.choice(life['body'].keys()), pain=_attack['damage']['force'])
 
 def perform_moves(people):
 	for life_id in people:

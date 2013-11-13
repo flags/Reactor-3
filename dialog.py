@@ -29,6 +29,12 @@ def create_dialog_with(life, target_id, remote=False, **kwargs):
 	WORLD_INFO['dialogs'][_dialog['id']] = _dialog
 	WORLD_INFO['dialogid'] += 1
 	
+	if not alife.brain.knows_alife_by_id(life, target_id):
+		alife.brain.meet_alife(life, LIFE[target_id])
+	
+	if not alife.brain.knows_alife_by_id(LIFE[target_id], life['id']):
+		alife.brain.meet_alife(LIFE[target_id], life)
+	
 	return _dialog['id']
 
 def get_dialog(dialog_id):
@@ -101,38 +107,38 @@ def execute_function(life, target, dialog_id, function):
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
-	print life['name'], _function, _flags, _dialog['flags']
+	#print life['name'], _function, _flags, _dialog['flags']
 	
-	#try:
-	if _flags['self_call']:
-		if _flags['pass_flags']:
-			_func = FUNCTION_MAP[_function](life, **_dialog['flags'])
+	try:
+		if _flags['self_call']:
+			if _flags['pass_flags']:
+				_func = FUNCTION_MAP[_function](life, **_dialog['flags'])
+			else:
+				_func = FUNCTION_MAP[_function](life)
+			
+			if not _func == _flags['true']:
+				_pass = False
+		elif _flags['no_args']:
+			if _flags['pass_flags']:
+				_func = FUNCTION_MAP[_function](**_dialog['flags'])
+			else:
+				_func = FUNCTION_MAP[_function]()
+			
+			if not _func == _flags['true']:
+				_pass = False
 		else:
-			_func = FUNCTION_MAP[_function](life)
-		
-		if not _func == _flags['true']:
-			_pass = False
-	elif _flags['no_args']:
-		if _flags['pass_flags']:
-			_func = FUNCTION_MAP[_function](**_dialog['flags'])
-		else:
-			_func = FUNCTION_MAP[_function]()
-		
-		if not _func == _flags['true']:
-			_pass = False
-	else:
-		if _flags['pass_flags']:
-			_func = FUNCTION_MAP[_function](life, target, **_dialog['flags'])
-		else:
-			_func = FUNCTION_MAP[_function](life, target)
-		
-		if not _func == _flags['true']:
-			_pass = False
+			if _flags['pass_flags']:
+				_func = FUNCTION_MAP[_function](life, target, **_dialog['flags'])
+			else:
+				_func = FUNCTION_MAP[_function](life, target)
+			
+			if not _func == _flags['true']:
+				_pass = False
 	
 	#print _function, _flags, _func
-	#except Exception, e:
-	#	logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
-	#	raise e
+	except Exception, e:
+		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
+		raise e
 	
 	if _flags['return']:
 		return _func

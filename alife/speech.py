@@ -189,6 +189,9 @@ def get_introduction_gist(life, life_id):
 	return 'trust'
 
 def describe_target(life, life_id):
+	if life['id'] == life_id:
+		return 'That\'s me.'
+	
 	_target = brain.knows_alife_by_id(life, life_id)
 	_details = []
 	

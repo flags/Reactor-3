@@ -279,7 +279,7 @@ def prepare_map_views():
 	add_view_to_scene_by_name('message_box')
 	#add_view_to_scene_by_name('console')
 	add_view_to_scene_by_name('overlay')
-	add_view_to_scene_by_name('chunk_map')
+	#add_view_to_scene_by_name('chunk_map')
 	
 	#fade_view('overlay', 1, 1)
 
