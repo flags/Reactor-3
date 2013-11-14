@@ -193,6 +193,11 @@ def remembers_item(life, item):
 	
 	return False
 
+def update_item_secondhand(life, item_memory):
+	life['know_items'][item_memory['item']].update(copy.deepcopy(item_memory))
+	
+	logging.debug('%s updated item secondhand: %s' % (' '.join(life['name']), ITEMS[item_memory['item']]['name']))
+
 def offload_remembered_item(life, item_uid):
 	_item_memory = get_remembered_item(life, item_uid)
 	

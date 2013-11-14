@@ -122,6 +122,7 @@ def create_function_map():
 		'get_group_stage_message': speech.get_group_stage_message,
 		'set_group_stage': lambda life, **kwargs: groups.set_stage(life, kwargs['group'], kwargs['stage']),
 		'knows_items_matching': lambda life, **kwargs: len(brain.get_multi_matching_remembered_items(life, kwargs['items'], no_owner=True))>0,
+	     'inform_of_items': lambda life, life_id, **kwargs: speech.inform_of_items(life, life_id, kwargs['items']),
 		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', life['pos'][:]),
 		'has_questions_for_target': lambda life, life_id: len(memory.get_questions_for_target(life, life_id))>0,
 		'has_orders_for_target': lambda life, life_id: len(memory.get_orders_for_target(life, life_id))>0,

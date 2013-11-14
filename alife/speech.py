@@ -255,3 +255,10 @@ def get_group_stage_message(life):
 		return ['Keep an eye out for places to camp.', 'Look for possible camps!', 'Let\'s find a camp, guys.']
 	
 	return 'HE LIVES'
+
+def inform_of_items(life, life_id, item_matches):
+	for item_uid in brain.get_multi_matching_remembered_items(life, item_matches):
+		_remembered_item = brain.get_remembered_item(life, item_uid)
+		brain.update_item_secondhand(LIFE[life_id], _remembered_item)
+	
+	return 'I\'ve added some locations to your PDA. Check there.'
