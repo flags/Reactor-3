@@ -3,6 +3,7 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
+import references
 import judgement
 import movement
 import survival
@@ -290,8 +291,9 @@ def find_and_announce_shelter(life, group_id):
 	_shelter = get_shelter(life, group_id)
 	
 	if _shelter:
-		announce(life, group_id, 'update_group_shelter',
-		         filter_if=lambda alife: get_shelter(alife, group_id)==_shelter)
+		if references.is_in_reference(life['pos'], references.get_reference(_shelter)):
+			announce(life, group_id, 'update_group_shelter',
+				    filter_if=lambda alife: get_shelter(alife, group_id)==_shelter)
 	else:
 		find_shelter(life, group_id)
 
@@ -453,16 +455,11 @@ def manage_resources(life, group_id):
 	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check<=100:
 		return True
 	
-	_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
+	announce(life, group_id, 'resource_check',
+	         filter_if=lambda alife: brain.knows_alife_by_id(life, alife['id'])['items'])
+	#_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
 	
 	flag(group_id, 'last_resource_count', WORLD_INFO['ticks'])
-	flag(group_id, 'resource_count', _count)
-
-def get_resources(group_id):
-	return get_flag(group_id, 'resource_count')
-
-def needs_resources(group_id):
-	return get_resources(group_id)<=2
 
 def is_member(group_id, life_id):
 	_group = get_group(group_id)

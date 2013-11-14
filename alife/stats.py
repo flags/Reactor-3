@@ -54,6 +54,7 @@ def desires_interaction(life):
 	return True
 
 def desires_first_contact_with(life, life_id):
+	#print life['name'], LIFE[life_id]['name'],brain.knows_alife_by_id(life, life_id)['alignment']
 	if not brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral':
 		return False
 	

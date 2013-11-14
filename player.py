@@ -1032,7 +1032,7 @@ def inventory_throw(entry):
 def handle_arm_item(entry):
 	key = entry['key']
 	item = life.get_inventory_item(LIFE[SETTINGS['controlling']], entry['item'])
-	value = entry['values'][entry['value']]*10
+	value = entry['values'][entry['value']]
 	_hand = life.can_throw(LIFE[SETTINGS['controlling']])
 	
 	timers.create(item, action.make_small_script(function='explode',

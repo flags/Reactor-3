@@ -36,3 +36,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#
 	
 	groups.find_and_announce_shelter(life, life['group'])
+	
+	#if groups.get_shelter(life, life['group']):
+	groups.manage_resources(life, life['group'])

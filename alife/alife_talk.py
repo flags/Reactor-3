@@ -62,14 +62,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			break
 		
 		if stats.desires_first_contact_with(life, ai):
-			speech.start_dialog(life, target, 'establish_relationship')
-			# and stats.desires_interaction(life):
-			#if stats.desires_life(life, target):
-			#	speech.start_dialog(life, target, 'introduction')
-			#elif not stats.desires_life(life, target) and not brain.get_alife_flag(life, target, 'not_friend'):
-			#	speech.start_dialog(life, target, 'introduction_negative')
-			#	brain.flag_alife(life, target, 'not_friend')
-		elif memory.get_questions_for_target(life, target):
+			memory.create_question(life, target, 'establish_relationship')
+		
+		if memory.get_questions_for_target(life, target):
 			_question = memory.ask_target_question(life, target)
 			speech.start_dialog(life, target, _question['gist'], **_question['args'])
 		elif memory.get_orders_for_target(life, target):

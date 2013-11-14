@@ -24,7 +24,6 @@ def look(life):
 	
 	if life['think_rate'] % numbers.clip(life['think_rate_max'], 0, 6) and not 'player' in life:
 		return False
-	life['seen'] = []
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
@@ -53,6 +52,8 @@ def look(life):
 			return False
 		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
+	
+	life['seen'] = []
 	
 	for item_uid in life['know_items']:
 		life['know_items'][item_uid]['last_seen_time'] += 1

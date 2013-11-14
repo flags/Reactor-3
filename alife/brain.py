@@ -252,6 +252,7 @@ def meet_alife(life, target):
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': target['pos'][:],
 		'last_encounter_time': 0,
+		'items': [],
 		'escaped': False,
 		'asleep': False,
 		'state': target['state'],
@@ -313,6 +314,14 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True, on
 		
 		if logic.matches(_item, matches):
 			_matched_items.append(item['item'])
+	
+	return _matched_items
+
+def get_multi_matching_remembered_items(life, matches, no_owner=False, active=True, only_visible=False):
+	_matched_items = []
+	
+	for match in matches:
+		_matched_items.extend(get_matching_remembered_items(life, match, no_owner=no_owner, active=active, only_visible=only_visible))
 	
 	return _matched_items
 

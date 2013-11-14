@@ -162,7 +162,44 @@ def get_target(life, dialog_id, gist):
 		dialog.say_via_gist(life,
 			                dialog_id,
 			                dialog.get_flag(dialog_id, 'NEXT_GIST'))
+
+def confirm_items(dialog_id, items):
+	_item_types = []
 	
+	for entry in items:
+		if entry['values'][entry['value']] == 'Need':
+			_item_types.append({'name': entry['item_name']})
+	
+	for flag in dialog.get_dialog(dialog_id)['flags']:
+		if dialog.get_dialog(dialog_id)['flags'][flag] == -333:
+			dialog.get_dialog(dialog_id)['flags'][flag] = _item_types
+			break
+	
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+	                    dialog_id,
+	                    dialog.get_flag(dialog_id, 'NEXT_GIST'))
+
+def get_needs(life, dialog_id, gist):
+	if 'player' in life:
+		_items = []
+		
+		for item_type in ITEM_TYPES:
+			_items.append(menus.create_item('list',
+			                                item_type.title(),
+			                                ['Skip', 'Need'],
+			                                icon=ITEM_TYPES[item_type]['icon'],
+			                                item_name=item_type))
+		
+		_menu = menus.create_menu(menu=_items,
+		                          title='Select Items',
+		                          format_str='[$i] $k: $v',
+		                          padding=[1, 1],
+		                          on_select=lambda entry: confirm_items(dialog_id, _items),
+		                          close_on_select=True)
+		menus.activate_menu(_menu)
+	else:
+		raise Exception('Dead end.')
+
 def get_introduction_message(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
