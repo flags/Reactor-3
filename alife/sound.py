@@ -134,44 +134,6 @@ def listen(life):
 		elif event['gist'] == 'consume_item':
 			lfe.memory(life, 'consume_item', target=event['from']['id'])
 		
-		elif event['gist'] == 'group_set_shelter':
-			if 'player' in life:
-				gfx.radio(event['from'], 'Camp established at marker %s.' % ','.join(event['reference_id']))
-			else:
-				judgement.judge_reference(life, event['reference_id'])
-			
-			events.accept(groups.get_event(life['group'], event['event_id']), life['id'])
-		
-		elif event['gist'] == 'group_location':
-			if groups.is_leader(event['group_id'], life['id']):
-				_shelter = groups.get_shelter(event['group_id'])
-				
-				if _shelter:
-					speech.communicate(life,
-						               'answer_group_location',
-						               matches=[{'id': event['from']['id']}],
-						               group_id=event['group_id'],
-						               location=_shelter)
-				else:
-					speech.communicate(life,
-						               'answer_group_location_fail',
-						               matches=[{'id': event['from']['id']}],
-						               group_id=event['group_id'])
-		
-		elif event['gist'] == 'answer_group_location':
-			gfx.radio(event['from'], 'We\'re at marker %s.' % ','.join(event['location']))
-		
-		elif event['gist'] == 'answer_group_location_fail':
-			gfx.radio(event['from'], 'We don\'t have a camp yet. I\'ll let you know when we meet up.')
-		
-		elif event['gist'] == 'group_jobs':
-			if groups.is_leader(event['group_id'], life['id']):
-				_jobs = groups.get_jobs(event['group_id'])
-				
-				if _jobs:
-					gfx.radio(life, 'I\'ve got a few jobs for you...')
-					speech.start_dialog(event['from'], life['id'], 'jobs')
-		
 		elif event['gist'] == 'job':
 			groups.discover_group(life, event['from']['group'])
 			

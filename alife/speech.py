@@ -210,3 +210,11 @@ def describe_target(life, life_id):
 			_details.append('I last saw him at %s, %s, recently.' % (_target['last_seen_at'][0], _target['last_seen_at'][1]))
 	
 	return ' '.join(_details)
+
+def get_group_stage_message(life):
+	_group_stage = groups.get_stage(life, life['group'])
+	
+	if _group_stage == STAGE_SETTLING:
+		return ['Keep an eye out for places to camp.', 'Look for possible camps!', 'Let\'s find a camp, guys.']
+	
+	return 'HE LIVES'

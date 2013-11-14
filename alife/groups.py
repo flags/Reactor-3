@@ -74,7 +74,8 @@ def discover_group(life, group_id):
 		life['known_groups'][group_id] = {'id': group_id,
 		                        'members': [],
 		                        'leader': None,
-		                        'shelter': None}
+		                        'shelter': None,
+		                        'stage': STAGE_FORMING}
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
@@ -266,25 +267,31 @@ def announce(life, group_id, gist, message='', order=False, consider_motive=Fals
 		else:
 			memory.create_question(life, life_id, gist, **kwargs)
 
-def get_shelter(group_id):
-	return get_group(group_id)['shelter']
+def get_shelter(life, group_id):
+	return get_group_memory(life, group_id, 'shelter')
+
+def set_shelter(life, group_id, shelter):
+	update_group_memory(life, group_id, 'shelter', shelter)
 
 def find_shelter(life, group_id):
 	_group = get_group(group_id)
 	_shelter = judgement.get_best_shelter(life)
 	
 	if _shelter:
-		_group['shelter'] = chunks.get_chunk(_shelter)['reference']
-		logging.debug('Group %s set shelter: %s' % (group_id, _group['shelter']))
-		
+		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
+	else:
+		if get_stage(life, group_id) < STAGE_SETTLING:
+			set_stage(life, group_id, STAGE_SETTLING)
+			announce(life, group_id, 'update_group_stage',
+				    filter_if=lambda alife: get_stage(alife, group_id)>=STAGE_SETTLING)
 
 def find_and_announce_shelter(life, group_id):
-	_shelter = get_shelter(group_id)
+	_shelter = get_shelter(life, group_id)
 	
 	if _shelter:
 		announce(life, group_id, 'update_group_shelter',
-		         filter_if=lambda alife: get_group_memory(alife, group_id, 'shelter')==_shelter)
+		         filter_if=lambda alife: get_shelter(alife, group_id)==_shelter)
 	else:
 		find_shelter(life, group_id)
 
@@ -302,6 +309,12 @@ def set_leader(group_id, life_id):
 
 def set_motive(group_id, motive):
 	get_group(group_id)['claimed_motive'] = motive
+
+def get_stage(life, group_id):
+	return get_group_memory(life, group_id, 'stage')
+
+def set_stage(life, group_id, stage):
+	update_group_memory(life, group_id, 'stage', stage)
 
 def get_combat_score(group_id, potential=False):
 	_group = get_group(group_id)

@@ -272,10 +272,10 @@ def reformat_text(life, target, dialog_id, text):
 		
 		if _flag.startswith('*'):
 			_flag = _flag[1:]
-			_replacement_text = execute_function(life, target, dialog_id, _flag).replace(',', '+++')
+			_replacement_text = execute_function(life, target, dialog_id, _flag)#.replace(',', '+++')
 			text = text.replace(match, _replacement_text)
 		else:
-			_replacement_text = _dialog['flags'][_flag].replace(',', '+++')
+			_replacement_text = _dialog['flags'][_flag]#.replace(',', '+++')
 			text = text.replace(match, _replacement_text)
 	
 	return text

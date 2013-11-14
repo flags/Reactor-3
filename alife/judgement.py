@@ -940,8 +940,8 @@ def get_best_goal(life):
 def get_best_shelter(life):
 	_best_shelter = {'distance': -1, 'shelter': None}
 	
-	if life['group'] and groups.get_shelter(life['group']):
-		_shelter = groups.get_shelter(life['group'])
+	if life['group'] and groups.get_shelter(life, life['group']):
+		_shelter = groups.get_shelter(life, life['group'])
 		
 		if _shelter:
 			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
