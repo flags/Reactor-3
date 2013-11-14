@@ -71,14 +71,23 @@ def get_flag(group_id, flag):
 
 def discover_group(life, group_id):
 	if not group_id in life['known_groups']:
-		life['known_groups'] = {'id': group_id,
-		                        'members':
+		life['known_groups'][group_id] = {'id': group_id,
+		                        'members': [],
+		                        'leader': None,
+		                        'shelter': None}
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
+		
 		return True
 	
 	return False
+
+def update_group_memory(life, group_id, flag, value):
+	_previous_value = life['known_groups'][group_id][flag]
+	life['known_groups'][group_id][flag] = value
+	
+	logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
 
 def get_group_relationships():
 	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
@@ -269,7 +278,7 @@ def find_shelter(life, group_id):
 
 def find_and_announce_shelter(life, group_id):
 	if get_shelter(group_id):
-		announce(life, group_id, 'group_shelter', chunk_key=get_shelter(group_id))
+		announce(life, group_id, 'update_group_shelter')
 	else:
 		find_shelter(life, group_id)
 

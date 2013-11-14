@@ -12,6 +12,7 @@ import alife
 
 import logging
 import random
+import sys
 import re
 
 def create_dialog_with(life, target_id, remote=False, **kwargs):
@@ -138,7 +139,15 @@ def execute_function(life, target, dialog_id, function):
 	#print _function, _flags, _func
 	except Exception, e:
 		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
-		raise e
+		logging.debug('Argument dump...')
+		print _flags
+		
+		if _flags['pass_flags']:
+			print 'Dialog flags:', _dialog['flags']
+		
+		import traceback
+		traceback.print_exc()
+		sys.exit()
 	
 	if _flags['return']:
 		return _func

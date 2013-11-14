@@ -111,8 +111,9 @@ def create_function_map():
 	                                                  dialog.get_flag(lfe.has_dialog_with(life, life_id),
 	                                                                  'NEXT_GIST')),
 		'get_location': lambda life: '%s, %s' % (life['pos'][0], life['pos'][1]),
+		'get_group': lambda life: life['group'],
 		'get_group_shelter': lambda life: groups.get_shelter(life['group']),
-	     'set_group_shelter': lambda life, **kwargs: 
+		'set_group_shelter': lambda life, **kwargs: groups.update_group_memory(life, kwargs['group'], 'shelter', kwargs['shelter']),
 		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', life['pos'][:]),
 		'has_questions_for_target': lambda life, life_id: len(memory.get_questions_for_target(life, life_id))>0,
 		'has_orders_for_target': lambda life, life_id: len(memory.get_orders_for_target(life, life_id))>0,
