@@ -65,12 +65,26 @@ def sort_modules(life):
 		except AttributeError:
 			_module_tier = module.TIER
 		
+		if _module_tier == TIER_CONSTANT:
+			continue
+		
 		if _module_tier in _scores:
 			_scores[_module_tier].append(module)
 		else:
 			_scores[_module_tier] = [module]
 	
 	return _scores
+
+def get_constant_modules(life):
+	global MODULES
+	
+	_modules = []
+	
+	for module in MODULES:
+		if module.TIER == TIER_CONSTANT:
+			_modules.append(module)
+	
+	return _modules
 
 def think(life):
 	sight.look(life)
@@ -327,6 +341,9 @@ def remember_known_item(life, item_id):
 
 def understand(life):
 	_modules = sort_modules(life)
+	
+	for module in get_constant_modules(life):
+		module.tick(life, [], [], [], [], [])
 	
 	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
 		life['think_rate'] = 0

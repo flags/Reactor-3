@@ -31,8 +31,8 @@ WORLD_INFO = {'map': [],
 	'length_of_day': 6000,
 	'day': 0,
 	'ticks': 0,
-     'sub_ticks': 0,
-     'max_sub_ticks': 5,
+	'sub_ticks': 0,
+	'max_sub_ticks': 5,
 	'tps': 0,
 	'tps_time': 0,
 	'life_density': 'Sparse',
@@ -76,6 +76,7 @@ TIER_EXPLORE = 3
 TIER_IDLE = 4
 TIER_WORK = 2.5
 TIER_PASSIVE = 333
+TIER_CONSTANT = 332
 TIER_SUBMIT = 0.1
 
 CAMERA_POS = [0,0,2]

@@ -191,6 +191,16 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 		_target = _dialog['started_by']
 	
 	_text = None
+	#_splits = []
+	#_i = 1
+	#for _entry in action.split(','):
+		#if _entry.count('"')%2:
+			#_splits[_i-1] += _entry
+		#else:
+			#_splits.append(_entry)
+		
+		#_i += 1
+	
 	for _entry in action.split(','):
 		if _entry.startswith('\"'):
 			_text = reformat_text(life, _target, dialog_id, _entry[1:].split('\"')[0])
@@ -206,6 +216,8 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 				_text = _return
 			elif isinstance(_return, list):
 				_text = random.choice(_return)
+	
+	_text = _text.replace('+++', ',')
 	
 	if not _text:
 		_text = '%s says nothing.' % ' '.join(life['name'])
@@ -257,9 +269,11 @@ def reformat_text(life, target, dialog_id, text):
 		
 		if _flag.startswith('*'):
 			_flag = _flag[1:]
-			text = text.replace(match, execute_function(life, target, dialog_id, _flag))
+			_replacement_text = execute_function(life, target, dialog_id, _flag).replace(',', '+++')
+			text = text.replace(match, _replacement_text)
 		else:
-			text = text.replace(match, _dialog['flags'][_flag])
+			_replacement_text = _dialog['flags'][_flag].replace(',', '+++')
+			text = text.replace(match, _replacement_text)
 	
 	return text
 

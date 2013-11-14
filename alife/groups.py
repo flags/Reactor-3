@@ -89,6 +89,9 @@ def update_group_memory(life, group_id, flag, value):
 	
 	logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
 
+def get_group_memory(life, group_id, flag):
+	return life['known_groups'][group_id][flag]
+
 def get_group_relationships():
 	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
 	
@@ -254,12 +257,10 @@ def announce(life, group_id, gist, message='', order=False, consider_motive=Fals
 		_announce_to.remove(life['id'])
 	#TODO: Could have an option here to form an emergency "combat" group
 	
-	for filter_action in filter_if:
-		for entry in _announce_to[:]:
-			if action.execute_small_script(LIFE[entry], filter_action):
-				_announce_to.remove(entry)
-	
 	for life_id in _announce_to:
+		if filter_if and filter_if(LIFE[life_id]):
+			continue
+		
 		if order:
 			memory.create_order(life, life_id, gist, message, **kwargs)
 		else:
@@ -274,11 +275,16 @@ def find_shelter(life, group_id):
 	
 	if _shelter:
 		_group['shelter'] = chunks.get_chunk(_shelter)['reference']
-		logging.debug('Group %s set shelter.' % group_id)
+		logging.debug('Group %s set shelter: %s' % (group_id, _group['shelter']))
+		
+		announce(life, group_id, 'found_shelter')
 
 def find_and_announce_shelter(life, group_id):
-	if get_shelter(group_id):
-		announce(life, group_id, 'update_group_shelter')
+	_shelter = get_shelter(group_id)
+	
+	if _shelter:
+		announce(life, group_id, 'update_group_shelter',
+		         filter_if=lambda alife: get_group_memory(alife, group_id, 'shelter')==_shelter)
 	else:
 		find_shelter(life, group_id)
 
