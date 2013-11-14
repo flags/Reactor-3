@@ -138,7 +138,10 @@ def get_recent_events(life):
 
 def confirm_target(entry):
 	_dialog_id = LIFE[SETTINGS['controlling']]['dialogs'][0]
-	dialog.get_dialog(_dialog_id)['flags']['target'] = entry['target']
+	for flag in dialog.get_dialog(_dialog_id)['flags']:
+		if dialog.get_dialog(_dialog_id)['flags'][flag] == -333:
+			dialog.get_dialog(_dialog_id)['flags'][flag] = entry['target']
+			break
 	
 	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
 	                    _dialog_id,

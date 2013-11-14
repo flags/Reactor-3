@@ -590,27 +590,26 @@ def get_goal_alignment_for_target(life, life_id):
 	
 	return 'malicious'
 
-def establish_trust(life, life_id):
+def change_alignment(life, life_id, alignment):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
-	_knows['alignment'] = 'trust'
+	if not _knows:
+		brain.meet_alife(life, LIFE[life_id])
+		_knows = brain.knows_alife_by_id(life, life_id)
+	
+	_knows['alignment'] = alignment
+
+def establish_trust(life, life_id):
+	change_alignment(life, life_id, 'trust')
 
 def establish_feign_trust(life, life_id):
-	_knows = brain.knows_alife_by_id(life, life_id)
-	
-	_knows['alignment'] = 'feign_trust'
+	change_alignment(life, life_id, 'feign_trust')
 
 def establish_aggressive(life, life_id):
-	_knows = brain.knows_alife_by_id(life, life_id)
-	
-	_knows['alignment'] = 'aggressive'
+	change_alignment(life, life_id, 'aggressive')
 
 def establish_hostile(life, life_id):
-	_knows = brain.knows_alife_by_id(life, life_id)
-	
-	_knows['alignment'] = 'hostile'
+	change_alignment(life, life_id, 'hostile')
 
 def establish_scared(life, life_id):
-	_knows = brain.knows_alife_by_id(life, life_id)
-	
-	_knows['alignment'] = 'scared'
+	change_alignment(life, life_id, 'scared')

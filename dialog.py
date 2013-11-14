@@ -147,7 +147,7 @@ def execute_function(life, target, dialog_id, function):
 		
 		import traceback
 		traceback.print_exc()
-		sys.exit()
+		raise e
 	
 	if _flags['return']:
 		return _func
@@ -254,7 +254,10 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 				_return = execute_function(life, _target, dialog_id, _func)
 			
 			if _result.count('='):
-				_dialog['flags'][_result.split('=')[0]] = _return
+				_dialog['flags'][_result.split('=')[0]] = -333
+				
+				if not _return == None:
+					_dialog['flags'][_result.split('=')[0]] = _return
 	
 	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
 
