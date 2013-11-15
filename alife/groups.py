@@ -28,6 +28,10 @@ def create_group(life, add_creator=True):
 	_id = str(WORLD_INFO['groupid']-1)
 	
 	discover_group(life, _id)
+	
+	if add_creator:
+		add_member(life, _id, life['id'])
+	
 	set_leader(life, _id, life['id'])
 	
 	return _id
@@ -56,7 +60,8 @@ def discover_group(life, group_id):
 		                        'members': [],
 		                        'leader': None,
 		                        'shelter': None,
-		                        'stage': STAGE_FORMING}
+		                        'stage': STAGE_FORMING,
+		                        'flags': {}}
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
@@ -76,9 +81,6 @@ def get_group_memory(life, group_id, flag):
 
 def get_group_relationships():
 	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
-	
-	#for grp in _groups:
-	#	print _groups[grp]
 
 def add_member(life, group_id, life_id):
 	if is_member(life, group_id, life_id):
@@ -201,7 +203,7 @@ def get_motive(life, group_id):
 	return get_group(life, group_id)['claimed_motive']
 
 def announce(life, group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	
 	if consider_motive:
 		if _group['claimed_motive'] == 'wealth':
@@ -255,7 +257,7 @@ def set_shelter(life, group_id, shelter):
 	update_group_memory(life, group_id, 'shelter', shelter)
 
 def find_shelter(life, group_id):
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	_shelter = judgement.get_best_shelter(life)
 	
 	if _shelter:
@@ -419,16 +421,15 @@ def get_jobs(life, group_id):
 
 def manage_resources(life, group_id):
 	_group = get_group(life, group_id)
-	_last_resource_check = get_flag(group_id, 'last_resource_count')
+	_last_resource_check = get_flag(life, group_id, 'last_resource_count')
 	
 	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check<=100:
 		return True
 	
 	announce(life, group_id, 'resource_check',
 	         filter_if=lambda alife: WORLD_INFO['ticks']-speech.has_sent(life, alife['id'], 'resource_check')<=500)
-	#_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
 	
-	flag(group_id, 'last_resource_count', WORLD_INFO['ticks'])
+	flag(life, group_id, 'last_resource_count', WORLD_INFO['ticks'])
 
 def is_member(life, group_id, life_id):
 	_group = get_group(life, group_id)
