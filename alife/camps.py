@@ -165,7 +165,7 @@ def debug_camps():
 			continue
 		
 		print camp_id, 'is controlled by', _group
-		_actual_group = groups.get_group(_group)
+		_actual_group = groups.get_group(life, _group)
 		print '\t%s member(s)' % len(_actual_group['members'])
 
 #def get_camp_jobs(camp_id):

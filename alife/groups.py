@@ -24,51 +24,31 @@ import jobs
 import logging
 
 def create_group(life, add_creator=True):
-	_group = {'creator': life['id'],
-	    'leader': None,
-	    'members': [],
-	    'shelter': None,
-	    'jobs': [],
-	    'events': {},
-	    'event_id': 1,
-	    'announce_event': None,
-	    'time_created': WORLD_INFO['ticks'],
-	    'last_updated': WORLD_INFO['ticks'],
-	    'flags': {},
-	    'claimed_motive': 'survival',
-	    'actual_motive': 'survival',
-	    'stats': {'kills': 0, 'murders': 0}}
-	
-	WORLD_INFO['groups'][str(WORLD_INFO['groupid'])] = _group
-	
-	lfe.memory(life, 'created group', group=str(WORLD_INFO['groupid']))
-	logging.debug('%s created group: %s' % (' '.join(life['name']), WORLD_INFO['groupid']))
-	
-	if add_creator:
-		add_member(str(WORLD_INFO['groupid']), life['id'])
-		set_leader(str(WORLD_INFO['groupid']), life['id'])
-	
 	WORLD_INFO['groupid'] += 1
+	_id = str(WORLD_INFO['groupid']-1)
 	
-	return str(WORLD_INFO['groupid']-1)
+	discover_group(life, _id)
+	set_leader(life, _id, life['id'])
+	
+	return _id
 
-def group_exists(group_id):
-	return (group_id in WORLD_INFO['groups'])
+def group_exists(life, group_id):
+	return (group_id in life['known_groups'])
 
-def get_group(group_id):
-	if not group_exists(group_id):
+def get_group(life, group_id):
+	if not group_exists(life, group_id):
 		raise Exception('Group does not exist: %s' % group_id)
 	
-	return WORLD_INFO['groups'][group_id]
+	return life['known_groups'][group_id]
 
-def flag(group_id, flag, value):
-	get_group(group_id)['flags'][flag] = value
+def flag(life, group_id, flag, value):
+	get_group(life, group_id)['flags'][flag] = value
 
-def get_flag(group_id, flag):
-	if not flag in get_group(group_id)['flags']:
+def get_flag(life, group_id, flag):
+	if not flag in get_group(life, group_id)['flags']:
 		return None
 	
-	return get_group(group_id)['flags'][flag]
+	return get_group(life, group_id)['flags'][flag]
 
 def discover_group(life, group_id):
 	if not group_id in life['known_groups']:
@@ -100,15 +80,15 @@ def get_group_relationships():
 	#for grp in _groups:
 	#	print _groups[grp]
 
-def add_member(group_id, life_id):
-	if is_member(group_id, life_id):
+def add_member(life, group_id, life_id):
+	if is_member(life, group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
 	if LIFE[life_id]['group']:
 		lfe.memory(LIFE[life_id], 'left group for group', left_group=LIFE[life_id]['group'], group=group_id)
 		remove_member(LIFE[life_id]['group'], life_id)
 	
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	for member in _group['members']:
 		brain.meet_alife(LIFE[member], LIFE[life_id])
 	
@@ -132,36 +112,32 @@ def add_member(group_id, life_id):
 	
 	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
 
-def remove_member(group_id, life_id):
-	_group = get_group(group_id)
+def remove_member(life, group_id, life_id):
+	_group = get_group(life, group_id)
 	
-	if not is_member(group_id, life_id):
+	if not is_member(life, group_id, life_id):
 		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
 	LIFE[life_id]['group'] = None
 	_group['members'].remove(life_id)
 	
-	reconfigure_group(group_id)
+	#reconfigure_group(life, group_id)
 
-def reconfigure_group(group_id):
-	_group = get_group(group_id)
+def reconfigure_group(life, group_id):
+	_group = get_group(life, group_id)
 	
-	if not _group['members']:
-		delete_group(group_id)
-		return False
-	
-	if not is_member(group_id, _group['leader']):
+	if not is_member(life, group_id, _group['leader']):
 		logging.debug('Leader \'%s\' is leaving group #%s' % (' '.join(LIFE[_group['leader']]['name']), group_id))
 	
-	_successor = find_successor(group_id, assign=True)
+	_successor = find_successor(life, group_id, assign=True)
 	
 	if _successor:
 		logging.debug('\'%s\' is now leader of group #%s' % (' '.join(LIFE[_successor]['name']), group_id))
 	else:
 		logging.error('No successor could be found for group #%s (THIS SHOULD NOT HAPPEN)' % group_id)
 
-def find_successor(group_id, assign=False):
-	_group = get_group(group_id)
+def find_successor(life, group_id, assign=False):
+	_group = get_group(life, group_id)
 	_members = {l: 0 for l in _group['members']}
 	
 	for member1 in _group['members']:
@@ -185,7 +161,7 @@ def find_successor(group_id, assign=False):
 	return _highest['id']
 
 def distribute(life, message, filter_by=[], **kvargs):
-	_group = get_group(life['group'])
+	_group = get_group(life, life['group'])
 	
 	for member in _group['members']:
 		if member in filter_by:
@@ -193,8 +169,8 @@ def distribute(life, message, filter_by=[], **kvargs):
 		
 		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
 
-def add_job(group_id, job_id):
-	_group = get_group(group_id)
+def add_job(life, group_id, job_id):
+	_group = get_group(life, group_id)
 	
 	#TODO: Remove
 	if not 'jobs' in _group:
@@ -204,25 +180,25 @@ def add_job(group_id, job_id):
 	
 	logging.debug('Registered job %s with group %s' % (job_id, group_id))
 
-def add_event(group_id, event):
-	_group = get_group(group_id)
+def add_event(life, group_id, event):
+	_group = get_group(life, group_id)
 	
 	_group['events'][str(_group['event_id'])] = event
 	_group['event_id'] += 1
 	
 	return str(_group['event_id']-1)
 
-def get_event(group_id, event_id):
-	return get_group(group_id)['events'][event_id]
+def get_event(life, group_id, event_id):
+	return get_group(life, group_id)['events'][event_id]
 
-def process_events(group_id):
-	_group = get_group(group_id)
+def process_events(life, group_id):
+	_group = get_group(life, group_id)
 	
 	for event in _group['events'].values():
 		events.process_event(event)
 
-def get_motive(group_id):
-	return get_group(group_id)['claimed_motive']
+def get_motive(life, group_id):
+	return get_group(life, group_id)['claimed_motive']
 
 def announce(life, group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(group_id)
@@ -263,6 +239,10 @@ def announce(life, group_id, gist, message='', order=False, consider_motive=Fals
 		if filter_if and filter_if(LIFE[life_id]):
 			continue
 		
+		#_sent = speech.has_sent(life, life_id, gist)
+		#if _sent and WORLD_INFO['ticks']-_sent<15:
+		#	continue
+		
 		if order:
 			memory.create_order(life, life_id, gist, message, **kwargs)
 		else:
@@ -297,20 +277,20 @@ def find_and_announce_shelter(life, group_id):
 	else:
 		find_shelter(life, group_id)
 
-def get_leader(group_id):
-	return get_group(group_id)['leader']
+def get_leader(life, group_id):
+	return get_group(life, group_id)['leader']
 
-def set_leader(group_id, life_id):
-	_group = get_group(group_id)
+def set_leader(life, group_id, life_id):
+	_group = get_group(life, group_id)
 	_group['leader'] = life_id
 	
-	set_motive(group_id, stats.get_group_motive(LIFE[life_id]))
+	set_motive(life, group_id, stats.get_group_motive(LIFE[life_id]))
 	
-	lfe.memory(LIFE[life_id], 'became leader of group', group=group_id)
-	logging.debug('%s is now the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
+	lfe.memory(LIFE[life_id], 'claimed to be the leader of group', group=group_id)
+	logging.debug('%s claims to be the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
 
-def set_motive(group_id, motive):
-	get_group(group_id)['claimed_motive'] = motive
+def set_motive(life, group_id, motive):
+	get_group(life, group_id)['claimed_motive'] = motive
 
 def get_stage(life, group_id):
 	return get_group_memory(life, group_id, 'stage')
@@ -318,8 +298,8 @@ def get_stage(life, group_id):
 def set_stage(life, group_id, stage):
 	update_group_memory(life, group_id, 'stage', stage)
 
-def get_combat_score(group_id, potential=False):
-	_group = get_group(group_id)
+def get_combat_score(life, group_id, potential=False):
+	_group = get_group(life, group_id)
 	_score = 0
 	
 	for member in [LIFE[l] for l in _group['members']]:
@@ -331,11 +311,11 @@ def get_combat_score(group_id, potential=False):
 	
 	return _score
 
-def get_potential_combat_score(group_id):
-	return get_combat_score(group_id, potential=True)
+def get_potential_combat_score(life, group_id):
+	return get_combat_score(life, group_id, potential=True)
 
-def get_status(group_id):
-	_group = get_group(group_id)
+def get_status(life, group_id):
+	_group = get_group(life, group_id)
 	
 	_total_trust = 0
 	_total_danger = 0
@@ -361,7 +341,7 @@ def get_total_danger(group_id):
 	return get_status(group_id)[1]
 
 def get_unwanted_members_with_perspective(life, group_id):
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	_untrusted = []
 	
 	for member in [m for m in _group['members'] if not life['id'] == m]:
@@ -372,17 +352,6 @@ def get_unwanted_members_with_perspective(life, group_id):
 	
 	return _untrusted
 
-def is_ready_to_shelter(group_id):
-	_group = get_group(group_id)
-	
-	if get_total_trust(group_id)<0:
-		return False
-		
-	if WORLD_INFO['ticks']-_group['last_updated'] >= len(_group['members'])*11:
-		return True
-	
-	return False
-
 def has_camp(group_id):
 	for camp in WORLD_INFO['camps']:
 		if camps.get_controlling_group_global(camp) == group_id:
@@ -390,8 +359,8 @@ def has_camp(group_id):
 	
 	return None
 
-def get_jobs(group_id):
-	_group = get_group(group_id)
+def get_jobs(life, group_id):
+	_group = get_group(life, group_id)
 	_jobs = []
 	_leader = LIFE[_group['leader']]
 	
@@ -449,20 +418,20 @@ def get_jobs(group_id):
 	return _jobs
 
 def manage_resources(life, group_id):
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	_last_resource_check = get_flag(group_id, 'last_resource_count')
 	
 	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check<=100:
 		return True
 	
 	announce(life, group_id, 'resource_check',
-	         filter_if=lambda alife: brain.knows_alife_by_id(life, alife['id'])['items'])
+	         filter_if=lambda alife: WORLD_INFO['ticks']-speech.has_sent(life, alife['id'], 'resource_check')<=500)
 	#_count = len(lfe.get_all_inventory_items(life, matches=[{'type': 'food'}, {'type': 'drink'}]))
 	
 	flag(group_id, 'last_resource_count', WORLD_INFO['ticks'])
 
-def is_member(group_id, life_id):
-	_group = get_group(group_id)
+def is_member(life, group_id, life_id):
+	_group = get_group(life, group_id)
 	
 	if life_id in _group['members']:
 		return True
@@ -474,7 +443,7 @@ def order_to_loot(life, group_id, add_leader=False):
 	#Because this function really only does something on the first run, rendering it into just another
 	#announce loop...
 	
-	_group = get_group(group_id)
+	_group = get_group(life, group_id)
 	
 	_requirements = [action.make_small_script(function='has_number_of_items_matching',
 	                                          args={'matching': [{'type': 'drink'}], 'amount': 1})]
@@ -535,8 +504,8 @@ def order_to_loot(life, group_id, add_leader=False):
 		         order=True,
 			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
 
-def is_leader(group_id, life_id):
-	_group = get_group(group_id)
+def is_leader(life, group_id, life_id):
+	_group = get_group(life, group_id)
 	
 	if life_id == _group['leader']:
 		return True
@@ -547,14 +516,4 @@ def is_leader_of_any_group(life):
 	if not life['group']:
 		return False
 	
-	return is_leader(life['group'], life['id'])
-	
-def delete_group(group_id):
-	for member in get_group(group_id)['members']:
-		remove_member(group_id, member)
-		LIFE[member]['group'] = None
-		logging.warning('Forcing removal of member \'%s\' from non-empty group #%s.' % (' '.join(LIFE[member]['name']), group_id)) 
-	
-	logging.warning('Deleted group: %s' % group_id)
-	
-	del WORLD_INFO['groups'][group_id]
+	return is_leader(life, life['group'], life['id'])

@@ -12,7 +12,11 @@ New in version 0.6.5:
 	* Completely rewrote all dialog-related functions.
 		* An extended version of RawScript is now supported.
 		* All dialog strings are stored externally in `data\text\dialog.txt`.
-		* Questions have been reimplemented .
+		* Questions have been reimplemented.
+	* Rewrote damage model.
+		* The size and material of an item now play a role in damage calculations.
+	* Groups are no longer tracked by the world.
+		* Instead, individuals track their interpretations of what the group is.
 	* NPCs can now learn more details about others and items.
 		* This information can also become out of date, leading to bad decision making.
 	* Mouse look
@@ -30,7 +34,7 @@ New in version 0.6.5:
 	* A cache now exists for deleted items that are still referenced by ALife.
 		* This is untested on longer playthroughs.
 	* Updated map generation.
-		* Maps are now 600x600 and contain multiple larger towns/cities.
+		* Maps can now be as large as 600x600 and contain multiple larger towns/cities.
 	* Experimental optimizations in ALife think rate.
 	* Slicing/zoning-related speed-ups.
 	* New map format that no longer eats memory.

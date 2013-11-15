@@ -1743,7 +1743,7 @@ def handle_select_workers(entry):
 	job = entry['key']
 	
 	_workers = []
-	for worker in [LIFE[w] for w in groups.get_group(LIFE[SETTINGS['controlling']]['group'])['members']]:
+	for worker in [LIFE[w] for w in groups.get_group(life, LIFE[SETTINGS['controlling']]['group'])['members']]:
 		_workers.append(menus.create_item('list', ' '.join(worker['name']), ['Free', 'Assigned'], workers=_workers))
 	
 	_menu = menus.create_menu(title='Select Workers',
@@ -1799,7 +1799,7 @@ def radio_menu(entry):
 		_people = []
 		
 		for life_id in LIFE[SETTINGS['controlling']]['know']:
-			if _life['group'] and groups.is_leader(_life['group'], life_id):
+			if _life['group'] and groups.is_leader(LIFE[SETTINGS['controlling']], _life['group'], life_id):
 				fg_color = tcod.dark_green
 			elif judgement.can_trust(_life, life_id):
 				fg_color = tcod.green
@@ -1847,7 +1847,7 @@ def radio_menu(entry):
 		speech.communicate(_life,
 		                   'group_location',
 		                   msg='Where are you?',
-		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   matches=[{'id': groups.get_group(life, _life['group'])['leader']}],
 		                   group_id=_life['group'])
 	elif key == 'Shelter':
 		groups.find_and_announce_shelter(_life, _life['group'])
@@ -1871,7 +1871,7 @@ def radio_menu(entry):
 		speech.communicate(_life,
 		                   'group_jobs',
 		                   msg='Do you have any jobs for me?',
-		                   matches=[{'id': groups.get_group(_life['group'])['leader']}],
+		                   matches=[{'id': groups.get_group(life, _life['group'])['leader']}],
 		                   group_id=_life['group'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -1883,13 +1883,13 @@ def create_radio_menu():
 	if LIFE[SETTINGS['controlling']]['know']:
 		_phrases.append(menus.create_item('single', 'Call', 'Contact someone.'))
 	
-	if not LIFE[SETTINGS['controlling']]['group'] or not groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+	if not LIFE[SETTINGS['controlling']]['group'] or not groups.is_leader(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
 		_phrases.append(menus.create_item('single', 'Create group', 'Start a new group.'))
-	elif groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+	elif groups.is_leader(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
 		_phrases.append(menus.create_item('single', 'Announce group', 'Broadcast for more members.'))
 	
 	if LIFE[SETTINGS['controlling']]['group']:
-		if groups.is_leader(LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
+		if groups.is_leader(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'], SETTINGS['controlling']):
 			_phrases.append(menus.create_item('title', 'Group (Leader)', None))
 			_phrases.append(menus.create_item('single', 'Manage Jobs', 'Create and view jobs.'))
 			_phrases.append(menus.create_item('single', 'Shelter', 'Set this location as a shelter.'))
@@ -1898,7 +1898,7 @@ def create_radio_menu():
 			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
 			if LIFE[SETTINGS['controlling']]['group']:
-				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(LIFE[SETTINGS['controlling']]['group'])['members'])>1))
+				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(life, LIFE[SETTINGS['controlling']]['group'])['members'])>1))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

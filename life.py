@@ -2491,7 +2491,7 @@ def draw_life_icon(life, draw_alignment=False):
 			_icon[1] = tcod.light_red
 		elif not life['id'] == SETTINGS['controlling']:
 			if life['group']:
-				if alife.groups.is_member(life['group'], SETTINGS['controlling']):
+				if alife.groups.is_member(life, life['group'], SETTINGS['controlling']):
 					_icon[1] = tcod.light_green
 				else:
 					_icon[1] = tcod.lighter_crimson

@@ -58,11 +58,11 @@ def desires_first_contact_with(life, life_id):
 	if not brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral':
 		return False
 	
-	if life['group'] and not groups.is_leader(life['group'], life['id']):
+	if life['group'] and not groups.is_leader(life, life['group'], life['id']):
 		#Don't talk if we're in a group and near our leader.
 		#TODO: #judgement Even then, we should consider having group members avoid non-members regardless.
 		#TODO: #judgement How do group types play into this?
-		_leader = brain.knows_alife_by_id(life, groups.get_leader(life['group']))
+		_leader = brain.knows_alife_by_id(life, groups.get_leader(life, life['group']))
 		
 		#TODO: #judgement Placeholder for future logic.
 		if _leader['last_seen_time'] <= 1000:
@@ -105,7 +105,7 @@ def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
 		if judgement.judge_group(life, with_new_group_in_mind)>get_minimum_group_score(life):
 			return True
 	
-	_group = groups.get_group(group_id)
+	_group = groups.get_group(life, group_id)
 	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['patience']:
 		return False
 	
@@ -145,8 +145,8 @@ def desires_to_create_camp(life):
 	if not 'CAN_GROUP' in life['life_flags']:
 		return False
 		
-	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life['group'], life['id']):
-		if len(groups.get_group(life['group'])['members'])>1:
+	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life, life['group'], life['id']):
+		if len(groups.get_group(life, life['group'])['members'])>1:
 			return True
 	
 	return False
@@ -232,8 +232,8 @@ def get_group_motive(life):
 	return 'survival'
 
 def get_minimum_camp_score(life):
-	if life['group'] and groups.is_leader(life['group'], life['id']):
-		return len(groups.get_group(life['group'])['members'])
+	if life['group'] and groups.is_leader(life, life['group'], life['id']):
+		return len(groups.get_group(life, life['group'])['members'])
 	
 	return 3
 
@@ -241,10 +241,10 @@ def wants_group_member(life, life_id):
 	if not life['group']:
 		return False
 	
-	if groups.is_member(life['group'], life_id):
+	if groups.is_member(life, life['group'], life_id):
 		return False
 	
-	if not groups.is_leader(life['group'], life['id']):
+	if not groups.is_leader(life, life['group'], life['id']):
 		return False
 	
 	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
@@ -518,7 +518,7 @@ def is_target_group_friendly(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
 	#TODO: #memory We don't track groups yet
-	if not groups.group_exists(_target['group']):
+	if not groups.group_exists(life, _target['group']):
 		#logging.warning('Not tracking groups yet. Ignoring...')
 		return True
 	

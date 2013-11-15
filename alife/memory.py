@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import rawparse
 import action
+import speech
 import brain
 import jobs
 
@@ -21,6 +22,12 @@ def create_question(life, life_id, gist, **kwargs):
 	if _question in _target['questions']:
 		return False
 	
+	_sent = speech.has_sent(life, life_id, gist)
+	
+	if _sent and WORLD_INFO['ticks']-_sent<30:
+		return False
+	
+	speech.send(life, life_id, gist)
 	_target['questions'].append(_question)
 	
 	logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))

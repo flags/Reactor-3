@@ -14,50 +14,14 @@ import stats
 import logging
 import random
 
-def has_sent(life, target, gist):
-	if gist in life['know'][target['id']]['sent']:
-		return True
+def has_sent(life, target_id, gist):
+	if gist in life['know'][target_id]['sent']:
+		return life['know'][target_id]['sent'][gist]
 	
 	return False
 
-def has_received(life, target, gist):
-	if gist in life['know'][target['id']]['received']:
-		return True
-	
-	return False
-
-def has_heard(life, target, gist):
-	for heard in life['heard']:
-		if heard['from']['id'] == target['id'] and heard['gist'] == gist:
-			return True
-	
-	return False
-
-def discussed(life, target, gist):
-	if has_heard(life, target, gist):
-		return True
-	
-	if has_sent(life, target, gist):
-		return True
-	
-	return False
-
-def send(life, target, gist):
-	life['know'][target['id']]['sent'].append(gist)
-	lfe.create_and_update_self_snapshot(target)
-		
-	return True
-
-def unsend(life, target, gist):
-	if gist in life['know'][target['id']]['sent']:
-		life['know'][target['id']]['sent'].remove(gist)
-		return True
-	
-	return False
-
-def receive(life, target, gist):
-	life['know'][target['id']]['received'].append(gist)
-	lfe.create_and_update_self_snapshot(target)
+def send(life, target_id, gist):
+	life['know'][target_id]['sent'][gist] = WORLD_INFO['ticks']
 		
 	return True
 
@@ -68,15 +32,11 @@ def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
 	elif trusted:
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if judgement.can_trust(life, i)]
 	elif group:
-		_announce_to = [LIFE[i] for i in groups.get_group(group)['members'] if not i == life['id']]
+		_announce_to = [LIFE[i] for i in groups.get_group(life, group)['members'] if not i == life['id']]
 	else:
 		_announce_to = [life['know'][i]['life'] for i in life['know'] if not judgement.is_target_dangerous(life, i)]
 	
 	for target in _announce_to:
-		if not public and has_sent(life, target, gist):
-			#print life['name'],'cant reach',target['id'],has_sent(life, target, gist)
-			continue
-		
 		if not stats.can_talk_to(life, target['id']):
 			continue
 		
@@ -88,7 +48,7 @@ def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
 		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
 		
 		if not public:
-			send(life, target, gist)
+			send(life, target['id'], gist)
 	
 	return True
 

@@ -291,7 +291,8 @@ def generate_wildlife():
 	          position=[_spawn[0], _spawn[1], 2])
 		_c['icon'] = 'd'
 		
-		alife.groups.add_member(_group, _c['id'])
+		alife.groups.add_member(_p, _group, _c['id'])
+		alife.groups.set_leader(_c, _group, _p['id'])
 		
 		alife.brain.meet_alife(_p, _c)
 		alife.brain.meet_alife(_c, _p)
@@ -352,7 +353,8 @@ def generate_life():
 		if m1['id'] == _group_members[0]['id']:
 			continue
 		
-		alife.groups.add_member(_group, m1['id'])
+		alife.groups.add_member(_group_members[0], _group, m1['id'])
+		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))

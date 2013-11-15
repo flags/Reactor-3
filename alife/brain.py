@@ -203,19 +203,6 @@ def offload_remembered_item(life, item_uid):
 	
 	_item_memory['offloaded'] = WORLD_INFO['ticks']
 
-def add_impression(life, target_id, gist, modifiers):
-	life['know'][target_id]['impressions'][gist] = {'modifiers': modifiers, 'happened_at': WORLD_INFO['ticks']}
-	
-	lfe.create_and_update_self_snapshot(LIFE[target_id])
-	
-	logging.debug('%s got impression of %s: %s (%s)' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), gist, modifiers))
-
-def get_impression(life, target_id, gist):
-	if gist in life['know'][target_id]['impressions']:
-		return life['know'][target_id]['impressions'][gist]
-	
-	return None
-
 def knows_alife(life, alife):
 	if life['id'] == alife['id']:
 		raise Exception('Life asking about itself (via dict). Stopping.')
@@ -264,9 +251,7 @@ def meet_alife(life, target):
 		'group': target['group'],
 		'dead': False,
 		'snapshot': {},
-		'sent': [],
-		'received': [],
-		'impressions': {},
+		'sent': {},
 		'questions': [],
 		'orders': {},
 		'orderid': 1,

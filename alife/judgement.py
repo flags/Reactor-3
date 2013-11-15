@@ -130,7 +130,7 @@ def _calculate_trust(life, target_id):
 	_hard_trust = 0
 	_soft_trust = 0
 	
-	if life['group'] and groups.is_member(life['group'], target_id):
+	if life['group'] and groups.is_member(life, life['group'], target_id):
 		_hard_trust += 1
 	
 	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
@@ -341,7 +341,7 @@ def get_target_to_follow(life):
 		
 		_score += _known_target['trust']
 			
-		if life['group'] and groups.is_leader(life['group'], target_id):
+		if life['group'] and groups.is_leader(life, life['group'], target_id):
 			_score += 1
 	
 		if _score >= _highest['score']:
@@ -459,21 +459,6 @@ def target_is_combat_ready(life, life_id):
 	
 	return False
 
-def _get_impressions(life, target):
-	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):
-		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life']['id'], 'had_weapon', {'danger': 2})
-
-def _calculate_impressions(life, target_id):
-	_target = brain.knows_alife_by_id(life, target_id)
-	
-	for impression in _target['impressions']:
-		for key in _target['impressions'][impression]['modifiers']:
-			if not key in _target:
-				raise Exception('Key \'%s\' not in target.' % key)
-			
-			_target[key] += _target['impressions'][impression]['modifiers'][key]
-
 def _calculate_danger(life, target):
 	if target['life']['asleep']:
 		return 0
@@ -491,27 +476,16 @@ def judge_life(life, target_id):
 	_old_danger = target['danger']
 	_old_trust = target['trust']
 	
-	_get_impressions(life, target)
 	target['danger'] = _calculate_danger(life, target)
 	target['trust'] = _calculate_trust(life, target_id)
 	
 	parse_raw_judgements(life, target_id)
-	_calculate_impressions(life, target_id)
 
 	if not _old_danger == target['danger']:
 		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
 	
 	if not _old_trust == target['trust']:
 		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
-
-def get_influence(life, target_id, gist):
-	_impression = brain.get_impression(life, target_id, gist)
-	
-	if _impression:
-		if 'influence' in _impression['modifiers']:
-			return _impression['modifiers']['influence']
-	
-	return 0
 
 def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
@@ -621,13 +595,8 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 			
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
-			elif life['group'] and groups.is_leader(life['group'], _target['life']['id']):
+			elif life['group'] and groups.is_leader(life, life['group'], _target['life']['id']):
 				_trusted += _target['trust']
-			#else:
-			#	_trusted += _target['trust']
-			
-			_score += get_influence(life, _target['life']['id'], 'follow')
-			_score += get_influence(life, _target['life']['id'], 'talk')
 		else:
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
@@ -782,7 +751,7 @@ def judge_camp(life, camp, for_founding=False):
 		_score += judge_group(life, camps.get_controlling_group(_camp))
 	
 	if stats.desires_to_create_camp(life):
-		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)
+		_score += len(groups.get_group(life, life['group'])['members'])/2<=len(_known_chunks_of_camp)
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
@@ -868,7 +837,7 @@ def judge_raid(life, raiders, camp):
 
 def judge_group(life, group_id):
 	_score = 0
-	for member in groups.get_group(group_id)['members']:
+	for member in groups.get_group(life, group_id)['members']:
 		if member == life['id']:
 			continue
 		
@@ -883,18 +852,18 @@ def judge_group(life, group_id):
 	
 	return _score
 
-def group_judge_group(group_id, target_group_id):
-	_group1 = groups.get_group(group_id)
-	_group2 = groups.get_group(target_group_id)
+def group_judge_group(life, group_id, target_group_id):
+	_group1 = groups.get_group(life, group_id)
+	_group2 = groups.get_group(life, target_group_id)
 	
-	_group1_combat = groups.get_combat_score(group_id)
-	_group2_combat = groups.get_combat_score(target_group_id)
+	_group1_combat = groups.get_combat_score(life, group_id)
+	_group2_combat = groups.get_combat_score(life, target_group_id)
 	
 	if _group1_combat > _group2_combat:
 		pass
 
 def is_group_hostile(life, group_id):
-	_group = groups.get_group(group_id)
+	_group = groups.get_group(life, group_id)
 	
 	if judge_group(life, group_id)>=0:
 		return False
