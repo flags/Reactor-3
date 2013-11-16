@@ -217,6 +217,45 @@ def get_group_stage_message(life):
 	
 	return 'HE LIVES'
 
+def get_known_group(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	_dialog_id = lfe.has_dialog_with(life, life_id)
+	
+	if 'player' in life:
+		_menu_items = []
+		
+		for group_id in life['known_groups']:
+			if _target['group'] == group_id:
+				continue
+			
+			_menu_items.append(menus.create_item('single', group_id, None, group=group_id, dialog_id=_dialog_id))
+		
+		if not _menu_items:
+			return False
+		
+		_menu = menus.create_menu(menu=_menu_items,
+		                          title='Inform of Group',
+		                          format_str='$k',
+		                          on_select=confirm_inform_of_group,
+		                          close_on_select=True)
+		menus.activate_menu(_menu)
+	else:
+		raise Exception('Dead end.')
+
+def confirm_inform_of_group(entry):
+	_dialog_id = entry['dialog_id']
+	
+	if 'group' in entry:
+		for flag in dialog.get_dialog(_dialog_id)['flags']:
+			if dialog.get_dialog(_dialog_id)['flags'][flag] == -333:
+				dialog.get_dialog(_dialog_id)['flags'][flag] = entry['group']
+				break
+		
+		dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+			                _dialog_id,
+			                dialog.get_flag(_dialog_id, 'NEXT_GIST'))
+
+
 def inform_of_items(life, life_id, item_matches):
 	for item_uid in brain.get_multi_matching_remembered_items(life, item_matches):
 		_remembered_item = brain.get_remembered_item(life, item_uid)
@@ -234,6 +273,8 @@ def inform_of_group_members(life):
 		if life['id'] == target_id:
 			continue
 		
+		print '*'* 25
+		print '%s is informing %s of group members' % (' '.join(life['name']), LIFE[target_id]['name'])
 		memory.create_question(life, target_id, 'group_list',
 		                       group_id=life['group'],
 		                       group_list=groups.get_group(life, life['group'])['members'])

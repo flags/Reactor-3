@@ -291,6 +291,7 @@ def generate_wildlife():
 	          position=[_spawn[0], _spawn[1], 2])
 		_c['icon'] = 'd'
 		
+		alife.groups.discover_group(_c, _group)
 		alife.groups.add_member(_p, _group, _c['id'])
 		alife.groups.set_leader(_c, _group, _p['id'])
 		_c['group'] = _group
@@ -344,6 +345,9 @@ def generate_life():
 		for item in BASE_ITEMS:
 			life.add_item_to_inventory(_alife, items.create_item(item))
 		
+		for item in RECRUIT_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
 		if not _group_members:
 			_alife['stats']['is_leader'] = True
 			_group = alife.groups.create_group(_alife)
@@ -354,9 +358,20 @@ def generate_life():
 		if m1['id'] == _group_members[0]['id']:
 			continue
 		
+		alife.groups.discover_group(m1, _group)
 		alife.groups.add_member(_group_members[0], _group, m1['id'])
+		alife.groups.add_member(m1, _group, m1['id'])
 		m1['group'] = _group
 		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
+	
+	for m1 in _group_members:
+		for m2 in _group_members:
+			if m1 == m2:
+				continue
+			
+			alife.stats.establish_trust(m1, m2['id'])
+	
+	alife.speech.inform_of_group_members(_group_members[0])
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))

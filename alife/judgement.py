@@ -781,7 +781,6 @@ def judge_jobs(life):
 				continue
 			
 			if life['group'] == jobs.get_flag(job['id'], 'group'):
-				print 'DUDE I HAVE THIS ALREADY WTF!!!!!!!!!' * 100
 				jobs.reject_job(job['id'], life['id'])
 				continue
 		

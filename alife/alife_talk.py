@@ -62,7 +62,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			break
 		
 		if stats.desires_first_contact_with(life, ai):
-			memory.create_question(life, target, 'establish_relationship')
+			memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=30)
 		
 		if memory.get_questions_for_target(life, target):
 			_question = memory.ask_target_question(life, target)

@@ -11,7 +11,7 @@ import jobs
 
 import logging
 
-def create_question(life, life_id, gist, **kwargs):
+def create_question(life, life_id, gist, ignore_if_said_in_last=0, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
 	_question = {'gist': gist, 'args': kwargs}
 	
@@ -20,11 +20,12 @@ def create_question(life, life_id, gist, **kwargs):
 		return False
 	
 	if _question in _target['questions']:
+		print 'Question already exists!'
 		return False
 	
 	_sent = speech.has_sent(life, life_id, gist)
 	
-	if _sent and WORLD_INFO['ticks']-_sent<30:
+	if _sent and WORLD_INFO['ticks']-_sent<ignore_if_said_in_last:
 		return False
 	
 	speech.send(life, life_id, gist)

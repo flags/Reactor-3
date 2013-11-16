@@ -30,7 +30,7 @@ def create_group(life, add_creator=True):
 	discover_group(life, _id)
 	
 	if add_creator:
-		add_member(life, _id, life['id'])
+		join_group(life, _id)
 		life['group'] = _id
 	
 	set_leader(life, _id, life['id'])
@@ -66,6 +66,8 @@ def discover_group(life, group_id):
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
+		else:
+			logging.debug('%s discovered group %s.' % (' '.join(life['name']), group_id))
 		
 		return True
 	
@@ -83,7 +85,15 @@ def get_group_memory(life, group_id, flag):
 def get_group_relationships():
 	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
 
+def join_group(life, group_id):
+	life['group'] = group_id
+	
+	add_member(life, group_id, life['id'])
+
 def add_member(life, group_id, life_id):
+	if not group_id in LIFE[life_id]['known_groups']:
+		raise Exception('DOES NOT KNOW')
+	
 	if is_member(life, group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
@@ -98,7 +108,7 @@ def add_member(life, group_id, life_id):
 					remove_member(life, _target['group'], life_id)
 			
 			_target['group'] = group_id
-	elif life['id'] == life_id and life['group']:
+	elif life['id'] == life_id and life['group'] and not life['group'] == group_id:
 		remove_member(life, life['group'], life_id)
 	
 	_group = get_group(life, group_id)
@@ -123,7 +133,7 @@ def add_member(life, group_id, life_id):
 	if SETTINGS['controlling'] == life_id:
 		gfx.message('You join group %s.' % group_id, style='good')
 	
-	logging.debug('Added %s to group \'%s\'' % (' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
+	logging.debug('%s added %s to group \'%s\'' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
 
 def remove_member(life, group_id, life_id):
 	_group = get_group(life, group_id)
@@ -212,8 +222,8 @@ def process_events(life, group_id):
 def get_motive(life, group_id):
 	return get_group(life, group_id)['claimed_motive']
 
-def announce(life, group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
-	_group = get_group(life, group_id)
+def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
+	_group = get_group(life, _group_id)
 	
 	if consider_motive:
 		if _group['claimed_motive'] == 'wealth':
@@ -440,6 +450,14 @@ def manage_resources(life, group_id):
 	         filter_if=lambda alife: WORLD_INFO['ticks']-speech.has_sent(life, alife['id'], 'resource_check')<=500)
 	
 	flag(life, group_id, 'last_resource_count', WORLD_INFO['ticks'])
+
+def manage_relationships(life, group_id):
+	for known_group_id in life['known_groups']:
+		if group_id == known_group_id:
+			continue
+		
+		if not life['known_groups'][known_group_id]['members']:
+			announce(life, group_id, 'ask_for_group_list', group_id=known_group_id)
 
 def is_member(life, group_id, life_id):
 	_group = get_group(life, group_id)
