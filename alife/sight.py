@@ -91,9 +91,6 @@ def look(life):
 				life['know'][ai['id']]['escaped'] = False
 				life['know'][ai['id']]['state'] = ai['state']
 				
-				if not ai['group'] == life['know'][ai['id']]['group']:
-					life['know'][ai['id']]['group'] = ai['group']
-				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')
 				

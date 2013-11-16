@@ -271,6 +271,9 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
+	if LIFE[life_id]['asleep']:
+		return False
+		
 	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):
 		return False
 	
@@ -525,7 +528,7 @@ def is_target_group_friendly(life, life_id):
 	#Different groups
 	if _target['group'] and not _target['group'] == life['group']:
 		if life['group']:
-			_motive = groups.get_motive(life['group'])
+			_motive = groups.get_motive(life, life['group'])
 			
 			if _motive == 'crime':
 				return False

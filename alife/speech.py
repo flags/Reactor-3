@@ -224,6 +224,11 @@ def inform_of_items(life, life_id, item_matches):
 	
 	return 'I\'ve added some locations to your PDA. Check there.'
 
+def inform_of_group(life, life_id):
+	memory.create_question(life, life_id, 'group_exists',
+	                       group_id=life['group'],
+	                       group_list=groups.get_group(life, life['group'])['members'])
+
 def inform_of_group_members(life):
 	for target_id in groups.get_group(life, life['group'])['members']:
 		if life['id'] == target_id:

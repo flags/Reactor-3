@@ -1898,7 +1898,7 @@ def create_radio_menu():
 			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
 			if LIFE[SETTINGS['controlling']]['group']:
-				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(life, LIFE[SETTINGS['controlling']]['group'])['members'])>1))
+				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])['members'])>1))
 	
 	_menu = menus.create_menu(title='Radio',
 		menu=_phrases,

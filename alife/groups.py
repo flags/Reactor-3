@@ -86,9 +86,15 @@ def add_member(life, group_id, life_id):
 	if is_member(life, group_id, life_id):
 		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
-	if LIFE[life_id]['group']:
-		lfe.memory(LIFE[life_id], 'left group for group', left_group=LIFE[life_id]['group'], group=group_id)
-		remove_member(LIFE[life_id]['group'], life_id)
+	if not life['id'] == life_id:
+		_target = brain.knows_alife_by_id(life, life_id)
+		
+		if _target and _target['group']:
+			lfe.memory(LIFE[life_id], 'left group for group', left_group=_target['group'], group=group_id)
+			remove_member(life, _target['group'], life_id)
+			_target['group'] = group_id
+	elif life['group']:
+			remove_member(life, life['group'], life_id)
 	
 	_group = get_group(life, group_id)
 	for member in _group['members']:
