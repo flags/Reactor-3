@@ -6,6 +6,7 @@ import judgement
 import language
 import dialog
 import groups
+import memory
 import brain
 import menus
 import sight
@@ -222,3 +223,30 @@ def inform_of_items(life, life_id, item_matches):
 		brain.update_item_secondhand(LIFE[life_id], _remembered_item)
 	
 	return 'I\'ve added some locations to your PDA. Check there.'
+
+def inform_of_group_members(life):
+	for target_id in groups.get_group(life, life['group'])['members']:
+		if life['id'] == target_id:
+			continue
+		
+		memory.create_question(life, target_id, 'group_list',
+		                       group_id=life['group'],
+		                       group_list=groups.get_group(life, life['group'])['members'])
+
+def update_group_members(life, target_id, group_id, group_list):
+	_known_members = groups.get_group(life, group_id)['members']
+	_group_list = group_list[:]
+	_send = []
+	
+	for member in _group_list:
+		if not member in _known_members:
+			_known_members.append(member)
+	
+	for member in _known_members:
+		if not member in group_list:
+			_send.append(member)
+	
+	if _send:
+		memory.create_question(life, target_id, 'group_list',
+		                       group_id=life['group'],
+		                       group_list=groups.get_group(life, life['group'])['members'])
