@@ -293,6 +293,7 @@ def generate_wildlife():
 		
 		alife.groups.add_member(_p, _group, _c['id'])
 		alife.groups.set_leader(_c, _group, _p['id'])
+		_c['group'] = _group
 		
 		alife.brain.meet_alife(_p, _c)
 		alife.brain.meet_alife(_c, _p)
@@ -354,6 +355,7 @@ def generate_life():
 			continue
 		
 		alife.groups.add_member(_group_members[0], _group, m1['id'])
+		m1['group'] = _group
 		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
 	
 	#for item in RECRUIT_ITEMS:

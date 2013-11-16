@@ -120,6 +120,7 @@ def create_function_map():
 		'get_group': lambda life: life['group'],
 		'inform_of_group': speech.inform_of_group,
 		'discover_group': lambda life, **kwargs: groups.discover_group(life, kwargs['group_id']),
+		'add_target_to_known_group': lambda life, life_id, **kwargs: groups.add_member(life, kwargs['group_id'], life_id),
 		'knows_about_group': lambda life, **kwargs: groups.group_exists(life, kwargs['group_id']),
 		'get_group_shelter': lambda life: groups.get_shelter(life, life['group']),
 		'set_group_shelter': lambda life, **kwargs: groups.set_shelter(life, kwargs['group'], kwargs['shelter']),

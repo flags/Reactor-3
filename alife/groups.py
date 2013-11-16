@@ -31,6 +31,7 @@ def create_group(life, add_creator=True):
 	
 	if add_creator:
 		add_member(life, _id, life['id'])
+		life['group'] = _id
 	
 	set_leader(life, _id, life['id'])
 	
@@ -89,12 +90,16 @@ def add_member(life, group_id, life_id):
 	if not life['id'] == life_id:
 		_target = brain.knows_alife_by_id(life, life_id)
 		
-		if _target and _target['group']:
-			lfe.memory(LIFE[life_id], 'left group for group', left_group=_target['group'], group=group_id)
-			remove_member(life, _target['group'], life_id)
+		if _target:
+			if _target['group'] == group_id:
+				pass
+			elif _target and _target['group']:
+					lfe.memory(LIFE[life_id], 'left group for group', left_group=_target['group'], group=group_id)
+					remove_member(life, _target['group'], life_id)
+			
 			_target['group'] = group_id
-	elif life['group']:
-			remove_member(life, life['group'], life_id)
+	elif life['id'] == life_id and life['group']:
+		remove_member(life, life['group'], life_id)
 	
 	_group = get_group(life, group_id)
 	for member in _group['members']:
@@ -105,7 +110,7 @@ def add_member(life, group_id, life_id):
 		lfe.memory(LIFE[life_id], 'shelter founder', shelter=_group['shelter'], founder=_group['leader'])
 	
 	discover_group(LIFE[life_id], group_id)
-	LIFE[life_id]['group'] = group_id
+	#LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
 	if _group['leader'] and 'player' in LIFE[_group['leader']]:
@@ -126,7 +131,6 @@ def remove_member(life, group_id, life_id):
 	if not is_member(life, group_id, life_id):
 		raise Exception('%s is not a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
 	
-	LIFE[life_id]['group'] = None
 	_group['members'].remove(life_id)
 	
 	#reconfigure_group(life, group_id)
