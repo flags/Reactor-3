@@ -449,6 +449,8 @@ def explode(item):
 	if not item['type'] == 'explosive':
 		return False
 	
+	logging.debug('The %s (item %s) explodes!' % (item['name'], item['uid']))
+	
 	#TODO: Don't breathe this!
 	item['pos'] = get_pos(item['uid'])
 	
@@ -533,7 +535,8 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	delete_item(item)
+	if item['uid'] in ITEMS:
+		delete_item(item)
 
 def collision_with_solid(item, pos):
 	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:

@@ -1532,7 +1532,7 @@ def perform_action(life):
 		if life.has_key('player'):
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
 		else:
-			say(life, '@n reloads %s.' % items.get_name(_action['weapon']), action=True)
+			say(life, '@n reloads %s.' % items.get_name(_action['weapon']), action=True, event=False)
 		
 		set_animation(life, [';', 'r'], speed=6)
 		delete_action(life,action)
@@ -2069,7 +2069,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 		items.remove_item_from_any_storage(item_uid)
 	
 	life['inventory'].append(item_uid)
-	logging.debug('Added item to inventory: %s' % item['name'])
+	#logging.debug('Added item to inventory: %s' % item['name'])
 	
 	if 'max_capacity' in item:
 		logging.debug('Container found in direct_add')
@@ -2124,7 +2124,7 @@ def remove_item_from_inventory(life, item_id):
 	_holding = is_holding(life, item_id)
 	if _holding:
 		_holding['holding'].remove(item_id)
-		logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
+		#logging.debug('%s stops holding a %s' % (life['name'][0],item['name']))
 		
 	elif item_is_equipped(life, item_id):
 		logging.debug('%s takes off a %s' % (life['name'][0],item['name']))
@@ -2157,7 +2157,7 @@ def remove_item_from_inventory(life, item_id):
 	if 'player' in life:
 		menus.remove_item_from_menus({'id': item['uid']})
 	
-	logging.debug('%s removed item from inventory: %s (#%s)' % (' '.join(life['name']), item['name'], item['uid']))
+	#logging.debug('%s removed item from inventory: %s (#%s)' % (' '.join(life['name']), item['name'], item['uid']))
 	
 	life['inventory'].remove(item['uid'])
 	del item['parent_id']
@@ -2267,7 +2267,7 @@ def _equip_item(life, item_id):
 	remove_item_in_storage(life, item_id)
 	_hand['holding'].append(item_id)
 	
-	logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
+	#logging.debug('%s equips a %s.' % (life['name'][0],item['name']))
 	
 	return True
 

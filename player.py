@@ -1913,7 +1913,7 @@ def craft_menu_response(entry):
 	key = entry['key']
 	
 	if entry['action'] == 'dismantle':
-		crafting.dismantle_item(LIFE[SETTINGS['controlling']], entry['item'])
+		crafting.dismantle_item(LIFE[SETTINGS['controlling']], entry['item_uid'])
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
@@ -1923,7 +1923,7 @@ def create_crafting_menu():
 		_items.append(menus.create_item('single',
 			item['name'],
 			None,
-			item=item['uid'],
+			item_uid=item['uid'],
 		    action='dismantle'))
 	
 	if _items:

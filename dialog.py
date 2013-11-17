@@ -12,6 +12,7 @@ import alife
 
 import logging
 import random
+import json
 import sys
 import re
 
@@ -119,8 +120,6 @@ def execute_function(life, target, dialog_id, function):
 	else:
 		_life = life
 		_target = target
-
-	#print life['name'], _function, _flags, _dialog['flags']
 	
 	try:
 		if _flags['self_call']:
@@ -156,6 +155,8 @@ def execute_function(life, target, dialog_id, function):
 		
 		if _flags['pass_flags']:
 			print 'Dialog flags:', _dialog['flags']
+		
+		print json.dumps(_dialog)
 		
 		import traceback
 		traceback.print_exc()
@@ -394,6 +395,7 @@ def draw_dialog(dialog_id):
 	_lines = []
 	                                   
 	gfx.camera_track(_center_pos)
+	gfx.blit_string(_x-2, _y-2, ' '.join(LIFE[_target]['name']), 'overlay', fore_color=_target_portrait[1])
 	gfx.blit_string(_x-2, _y, _target_portrait[0], 'overlay', fore_color=_target_portrait[1])#, back_color=tcod.darkest_gray)
 	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')#, back_color=tcod.darkest_gray)
 	

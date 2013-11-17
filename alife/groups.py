@@ -82,7 +82,7 @@ def update_group_memory(life, group_id, flag, value):
 
 def get_group_memory(life, group_id, flag):
 	if not group_id in life['known_groups']:
-		print 'Failure'
+		raise Exception('%s does not know about group %s.' % (' '.join(life['name']), group_id))
 		return False
 	
 	return life['known_groups'][group_id][flag]
@@ -98,6 +98,8 @@ def join_group(life, group_id):
 	
 	if 'player' in life:
 		gfx.message('You join group %s.' % group_id, style='good')
+	else:
+		logging.debug('%s joined group %s.' % (' '.join(life['name']), group_id))
 
 def add_member(life, group_id, life_id):
 	if not group_id in LIFE[life_id]['known_groups']:
@@ -113,8 +115,8 @@ def add_member(life, group_id, life_id):
 			if _target['group'] == group_id:
 				pass
 			elif _target and _target['group']:
-					lfe.memory(LIFE[life_id], 'left group for group', left_group=_target['group'], group=group_id)
-					remove_member(life, _target['group'], life_id)
+				lfe.memory(LIFE[life_id], 'left group for group', left_group=_target['group'], group=group_id)
+				remove_member(life, _target['group'], life_id)
 			
 			_target['group'] = group_id
 	elif life['id'] == life_id and life['group'] and not life['group'] == group_id:
@@ -128,8 +130,6 @@ def add_member(life, group_id, life_id):
 		LIFE[life_id]['shelter'] = _group['shelter']
 		lfe.memory(LIFE[life_id], 'shelter founder', shelter=_group['shelter'], founder=_group['leader'])
 	
-	discover_group(LIFE[life_id], group_id)
-	#LIFE[life_id]['group'] = group_id
 	_group['members'].append(life_id)
 	
 	if _group['leader'] and 'player' in LIFE[_group['leader']]:

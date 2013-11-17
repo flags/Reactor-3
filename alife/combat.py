@@ -81,8 +81,6 @@ def reload_weapon(life, weapon_uid):
 	if _refill:
 		load_feed(life, weapon_uid, _feed['uid'])
 	
-	print 'yeah', _refill
-	
 	return weapons.get_feed(_weapon)
 
 def load_feed(life, weapon_uid, feed_uid):
@@ -127,7 +125,7 @@ def _refill_feed(life, feed):
 			'item': feed['uid']},
 			200,
 			delay=0)
-		print 'TAKIN OUT MAG'
+		
 		return False
 
 	#TODO: No check for ammo type.

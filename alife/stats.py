@@ -101,37 +101,22 @@ def desires_to_create_group(life):
 	
 	return True
 
-def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
-	if with_new_group_in_mind:
-		if judgement.judge_group(life, with_new_group_in_mind)>get_minimum_group_score(life):
-			return True
+def wants_to_abandon_group(life, group_id):
+	_trusted = 0
+	_hostile = 0
 	
-	_group = groups.get_group(life, group_id)
-	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['patience']:
-		return False
-	
-	_top_group = {'id': -1, 'score': 0}
-	for memory in lfe.get_memory(life, matches={'group': '*'}):
-		if not memory['group'] in WORLD_INFO['groups']:
+	for member in groups.get_group_memory(life, group_id, 'members'):
+		if life['id'] == member:
 			continue
 		
-		_score = 0
+		_knows = brain.knows_alife_by_id(life, member)
 		
-		if 'trust' in memory:
-			_score += memory['trust']
-		
-		if 'danger' in memory:
-			_score += memory['danger']
+		if _knows['alignment'] == 'hostile':
+			_hostile += 1
+		else:
+			_trusted += 1
 	
-		if _score > _top_group['score'] or _top_group['id'] == -1:
-			_top_group['id'] = memory['group']
-			_top_group['score'] = _score
-		
-	if _top_group['score']:
-		if judgement.judge_group(life, _top_group['id'])>get_minimum_group_score(life):
-			return True
-	
-	return False
+	return _hostile>_trusted
 
 def desires_group(life, group_id):
 	if life['group']:

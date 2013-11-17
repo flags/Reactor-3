@@ -11,7 +11,7 @@ VERSION = 1
 
 @cython.locals(x=cython.int, y=cython.int)
 def draw_circle(x,y,size):
-	if not size:
+	if not size>2:
 		size = 2
 	
 	cdef float circle = 0
