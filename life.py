@@ -26,6 +26,7 @@ import maps
 import copy
 import time
 import json
+import sys
 import os
 
 try:
@@ -268,7 +269,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 				except Exception as e:
 					logging.critical('Function \'%s\' got invalid argument.' % rule['function'])
 					print rule
-					raise e
+					import traceback
+					traceback.print_exc()
+					sys.exit(1)
 			
 			if debug:
 				print 'Function:', _func
@@ -296,6 +299,9 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 		return False
 	
 	return True
+
+def reset_think_rate(life):
+	life['think_rate'] = 1
 
 def get_limb(life, limb):
 	"""Helper function. Finds and returns a limb."""
@@ -560,7 +566,7 @@ def change_state(life, state, tier):
 		life['states'].pop(0)
 	
 	if groups.is_leader_of_any_group(life):
-		speech.announce(life, '_group_leader_state_change', group=life['group'])
+		speech.announce(life, 'group_leader_state_change', group=life['group'])
 
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,
@@ -1620,7 +1626,7 @@ def kill(life, injury):
 			memory(ai, 'death', target=life['id'])
 	
 	if life['group']:
-		groups.remove_member(life['group'], life['id'])
+		groups.remove_member(life, life['group'], life['id'])
 	
 	life['actions'] = []
 	if not life['pos'] == life['prev_pos'] and life['path']:

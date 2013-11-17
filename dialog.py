@@ -159,7 +159,7 @@ def execute_function(life, target, dialog_id, function):
 		
 		import traceback
 		traceback.print_exc()
-		raise e
+		sys.exit(1)
 	
 	if _flags['return']:
 		return _func

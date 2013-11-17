@@ -518,30 +518,6 @@ def is_safe_in_shelter(life, life_id):
 	
 	return True
 
-def is_target_group_friendly(life, life_id):
-	_target = brain.knows_alife_by_id(life, life_id)
-	
-	#TODO: #memory We don't track groups yet
-	if not groups.group_exists(life, _target['group']):
-		#logging.warning('Not tracking groups yet. Ignoring...')
-		return True
-	
-	#Different groups
-	if _target['group'] and not _target['group'] == life['group']:
-		if life['group']:
-			_motive = groups.get_motive(life, life['group'])
-			
-			if _motive == 'crime':
-				return False
-			
-			if _motive == 'survival' and judgement.is_group_hostile(life, _target['group']):
-				return False
-		else:
-			if judgement.is_group_hostile(life, _target['group']):
-				return False
-		
-	return True
-
 def is_born_leader(life):
 	return life['stats']['is_leader']
 

@@ -371,7 +371,7 @@ def generate_life():
 			
 			alife.stats.establish_trust(m1, m2['id'])
 	
-	alife.speech.inform_of_group_members(_group_members[0])
+	alife.speech.inform_of_group_members(_group_members[0], None)
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))

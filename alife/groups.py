@@ -81,6 +81,7 @@ def update_group_memory(life, group_id, flag, value):
 	logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
 
 def get_group_memory(life, group_id, flag):
+	print life['known_groups'].keys(), group_id
 	return life['known_groups'][group_id][flag]
 
 def get_group_relationships():
@@ -100,7 +101,7 @@ def add_member(life, group_id, life_id):
 		raise Exception('DOES NOT KNOW')
 	
 	if is_member(life, group_id, life_id):
-		raise Exception('%s is already a member of group: %s' % (' '.join(LIFE[life_id]['name']), group_id))
+		raise Exception('%s failed to add new member: %s is already a member of group: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), group_id))
 	
 	if not life['id'] == life_id:
 		_target = brain.knows_alife_by_id(life, life_id)

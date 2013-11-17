@@ -327,13 +327,16 @@ def inform_of_group_members(life, life_id):
 				                   group_list=groups.get_group(life, life['group'])['members'])
 
 def update_group_members(life, target_id, group_id, group_list):
-	_known_members = groups.get_group(life, group_id)['members']
+	_known_members = groups.get_group(life, group_id)['members'][:]
 	_group_list = group_list[:]
 	_send = []
 	
 	for member in _group_list:
 		if not member in _known_members:
 			_known_members.append(member)
+			
+			print life['name'], repr(member), _known_members
+			groups.add_member(life, group_id, member)
 	
 	for member in _known_members:
 		if not member in group_list:
