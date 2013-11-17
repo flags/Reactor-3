@@ -26,12 +26,12 @@ def send(life, target_id, gist):
 		
 	return True
 
-def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
+def announce(life, gist, public=False, trusted=False, group=None, filter_if=None, **kwargs):
 	"""Sends `gist` to any known ALife. If `public`, then send to everyone."""
 	if public:
 		_announce_to = [LIFE[i] for i in LIFE if not i == life['id']]
 	elif trusted:
-		_announce_to = [life['know'][i]['life'] for i in life['know'] if judgement.can_trust(life, i)]
+		_announce_to = [life['know'][i]['life'] for i in life['know'] if life['know'][i]['alignment'] == 'trust']
 	elif group:
 		_announce_to = [LIFE[i] for i in groups.get_group(life, group)['members'] if not i == life['id']]
 	else:
@@ -41,15 +41,17 @@ def announce(life, gist, public=False, trusted=False, group=None, **kvargs):
 		if not stats.can_talk_to(life, target['id']):
 			continue
 		
-		if not sight.can_see_position(life, target['pos']) and not lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):
-			#print life['name'],'cant see',target['id']
-			continue
-	
-		#logging.debug('%s got announce: %s, %s' % (' '.join(target['name']), gist, life['name']))
-		lfe.create_conversation(life, gist, matches=[{'id': target['id']}], **kvargs)
+		if filter_if and filter_if(life):
+			return False
 		
-		if not public:
-			send(life, target['id'], gist)
+		_radio = False
+		if not sight.can_see_position(life, target['pos']):
+			if lfe.get_all_inventory_items(life, matches=[{'name': 'radio'}]):
+				_radio = True
+			else:
+				continue
+	
+		memory.create_question(life, target['id'], gist, **kwargs)
 	
 	return True
 
@@ -123,22 +125,6 @@ def get_target(life, dialog_id, gist):
 		dialog.say_via_gist(life,
 			                dialog_id,
 			                dialog.get_flag(dialog_id, 'NEXT_GIST'))
-
-def confirm_items(dialog_id, items):
-	_item_types = []
-	
-	for entry in items:
-		if entry['values'][entry['value']] == 'Need':
-			_item_types.append({'name': entry['item_name']})
-	
-	for flag in dialog.get_dialog(dialog_id)['flags']:
-		if dialog.get_dialog(dialog_id)['flags'][flag] == -333:
-			dialog.get_dialog(dialog_id)['flags'][flag] = _item_types
-			break
-	
-	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
-	                    dialog_id,
-	                    dialog.get_flag(dialog_id, 'NEXT_GIST'))
 
 def get_needs(life, dialog_id, gist):
 	if 'player' in life:
@@ -242,6 +228,22 @@ def get_known_group(life, life_id):
 	else:
 		raise Exception('Dead end.')
 
+def confirm_items(dialog_id, items):
+	_item_types = []
+	
+	for entry in items:
+		if entry['values'][entry['value']] == 'Need':
+			_item_types.append({'name': entry['item_name']})
+	
+	for flag in dialog.get_dialog(dialog_id)['flags']:
+		if dialog.get_dialog(dialog_id)['flags'][flag] == -333:
+			dialog.get_dialog(dialog_id)['flags'][flag] = _item_types
+			break
+	
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+	                    dialog_id,
+	                    dialog.get_flag(dialog_id, 'NEXT_GIST'))
+
 def confirm_inform_of_group(entry):
 	_dialog_id = entry['dialog_id']
 	
@@ -255,6 +257,19 @@ def confirm_inform_of_group(entry):
 			                _dialog_id,
 			                dialog.get_flag(_dialog_id, 'NEXT_GIST'))
 
+def confirm_inform_of_group_members(entry):
+	_dialog_id = entry['dialog_id']
+	_members = []
+	
+	for entry in entry['members']:
+		if entry['values'][entry['value']] == 'Member':
+			_members.append(entry['target_id'])
+		
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+                        _dialog_id,
+                        'group_list',
+	                    group_list=_members,
+	                    group_id=entry['group'])
 
 def inform_of_items(life, life_id, item_matches):
 	for item_uid in brain.get_multi_matching_remembered_items(life, item_matches):
@@ -268,16 +283,48 @@ def inform_of_group(life, life_id):
 	                       group_id=life['group'],
 	                       group_list=groups.get_group(life, life['group'])['members'])
 
-def inform_of_group_members(life):
-	for target_id in groups.get_group(life, life['group'])['members']:
-		if life['id'] == target_id:
-			continue
+def inform_of_group_members(life, life_id):
+	if 'player' in life:
+		_dialog_id = lfe.has_dialog_with(life, life_id)
+		_menu_items = []
 		
-		print '*'* 25
-		print '%s is informing %s of group members' % (' '.join(life['name']), LIFE[target_id]['name'])
-		memory.create_question(life, target_id, 'group_list',
-		                       group_id=life['group'],
-		                       group_list=groups.get_group(life, life['group'])['members'])
+		for target_id in life['know']:
+			if target_id == life['id'] or target_id == life_id:
+				continue
+			
+			if groups.is_member(life, life['group'], target_id):
+				_colors = (tcod.green, tcod.white)
+				_values = ['Member', 'Not Member']
+			else:
+				_colors = (tcod.red, tcod.white)
+				_values = ['Not Member', 'Member']
+			
+			_menu_items.append(menus.create_item('list',
+			                                     ' '.join(LIFE[target_id]['name']),
+			                                     _values,
+			                                     group=life['group'],
+			                                     target_id=target_id,
+			                                     members=_menu_items,
+			                                     color=_colors,
+			                                     dialog_id=_dialog_id))
+		
+		if not _menu_items:
+			return False
+		
+		_menu = menus.create_menu(menu=_menu_items,
+		                          title='Inform of Group Members',
+		                          format_str='$k: $v',
+		                          on_select=confirm_inform_of_group_members,
+		                          close_on_select=True)
+		menus.activate_menu(_menu)
+	else:
+		for target_id in groups.get_group(life, life['group'])['members']:
+			if life['id'] == target_id:
+				continue
+			
+			memory.create_question(life, target_id, 'group_list',
+				                   group_id=life['group'],
+				                   group_list=groups.get_group(life, life['group'])['members'])
 
 def update_group_members(life, target_id, group_id, group_list):
 	_known_members = groups.get_group(life, group_id)['members']

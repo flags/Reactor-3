@@ -134,12 +134,6 @@ def listen(life):
 		elif event['gist'] == 'consume_item':
 			lfe.memory(life, 'consume_item', target=event['from']['id'])
 		
-		elif event['gist'] == 'job':
-			groups.discover_group(life, event['from']['group'])
-			
-			if not jobs.is_candidate(event['job_id'], life['id']) and judgement.can_trust(life, event['from']['id']):
-				jobs.add_job_candidate(event['job_id'], life['id'])
-		
 		elif event['gist'] == 'call':
 			if judgement.can_trust(life, event['from']['id']):
 				speech.start_dialog(life, event['from']['id'], 'call_accepted', remote=True)

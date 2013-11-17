@@ -267,6 +267,7 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 					_func = rule['function'](life, **kwargs)
 				except Exception as e:
 					logging.critical('Function \'%s\' got invalid argument.' % rule['function'])
+					print rule
 					raise e
 			
 			if debug:
@@ -2464,8 +2465,8 @@ def get_all_life_at_position(life, position):
 	
 	return _life
 	
-def draw_life_icon(life, draw_alignment=False):
-	_icon = [tick_animation(life), tcod.white, None]
+def draw_life_icon(life):
+	_icon = [tick_animation(life), None, None]
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
@@ -2479,31 +2480,38 @@ def draw_life_icon(life, draw_alignment=False):
 		_icon[0] = chr(3)
 	
 	if not life['id'] == SETTINGS['controlling']:
-		if draw_alignment:
-			_knows = brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id'])
+		_knows = brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id'])
+		
+		if _knows:
+			if LIFE[SETTINGS['controlling']]['group']:
+				if _knows['group'] == LIFE[SETTINGS['controlling']]['group']:
+					_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 10)
+				elif groups.group_exists(LIFE[SETTINGS['controlling']], _knows['group']):
+					_alignment = groups.get_alignment(LIFE[SETTINGS['controlling']], _knows['group'])
+					
+					if _alignment == 'hostile':
+						_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 10)
+					elif _alignment == 'friendly':
+						_icon[1] = tcod.yellow
 			
-			if _knows:
-				_color_map = tcod.color_gen_map([tcod.crimson, tcod.white, tcod.light_green], [0, 10, 20])
-				_icon[2] = _color_map[(numbers.clip(judgement.get_trust(LIFE[SETTINGS['controlling']], life['id']), -10, 10))+10]
-			
-		_targets = judgement.get_combat_targets(life)
-		if _targets and SETTINGS['controlling'] in _targets:
-			_icon[1] = tcod.light_red
-		elif not life['id'] == SETTINGS['controlling']:
-			if life['group']:
-				if alife.groups.is_member(life, life['group'], SETTINGS['controlling']):
-					_icon[1] = tcod.light_green
+			if not _icon[1]:
+				if _knows['alignment'] in ['trust', 'feign_trust']:
+					_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 5)
+				elif _knows['alignment'] == 'neutral':
+					_icon[1] = tcod.light_gray
 				else:
-					_icon[1] = tcod.lighter_crimson
-			elif brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life['id']):
-				_trust = judgement.get_trust(LIFE[SETTINGS['controlling']], life['id'])
-				_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.dark_green, numbers.clip(_trust, 1, 10)/10.0)
+					_icon[1] = tcod.crimson
+		else:
+			_icon[1] = tcod.light_gray
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
 	elif life['asleep']:
 		if time.time()%1>=0.5:
 			_icon[0] = 'S'
+	
+	if 'player' in life:
+		_icon[1] = tcod.white
 	
 	return _icon
 

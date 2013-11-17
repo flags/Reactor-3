@@ -62,6 +62,7 @@ def discover_group(life, group_id):
 		                        'leader': None,
 		                        'shelter': None,
 		                        'stage': STAGE_FORMING,
+		                        'alignment': 'neutral',
 		                        'flags': {}}
 		
 		if 'player' in life:
@@ -88,7 +89,11 @@ def get_group_relationships():
 def join_group(life, group_id):
 	life['group'] = group_id
 	
+	update_group_memory(life, group_id, 'alignment', 'friendly')
 	add_member(life, group_id, life['id'])
+	
+	if 'player' in life:
+		gfx.message('You join group %s.' % group_id, style='good')
 
 def add_member(life, group_id, life_id):
 	if not group_id in LIFE[life_id]['known_groups']:
@@ -130,10 +135,7 @@ def add_member(life, group_id, life_id):
 		if sight.can_see_target(LIFE[_group['leader']], life_id):
 			logic.show_event(_text, life=LIFE[life_id], delay=1)
 	
-	if SETTINGS['controlling'] == life_id:
-		gfx.message('You join group %s.' % group_id, style='good')
-	
-	logging.debug('%s added %s to group \'%s\'' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), WORLD_INFO['groupid']))
+	logging.debug('%s added %s to group \'%s\'' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), group_id))
 
 def remove_member(life, group_id, life_id):
 	_group = get_group(life, group_id)
@@ -220,7 +222,10 @@ def process_events(life, group_id):
 		events.process_event(event)
 
 def get_motive(life, group_id):
-	return get_group(life, group_id)['claimed_motive']
+	return get_group_memory(life, group_id, 'claimed_motive')
+
+def get_alignment(life, group_id):
+	return get_group_memory(life, group_id, 'alignment')
 
 def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
 	_group = get_group(life, _group_id)
@@ -456,8 +461,11 @@ def manage_relationships(life, group_id):
 		if group_id == known_group_id:
 			continue
 		
-		if not life['known_groups'][known_group_id]['members']:
-			announce(life, group_id, 'ask_for_group_list', group_id=known_group_id)
+		_known_members = life['known_groups'][known_group_id]['members']
+		if not _known_members:
+			speech.announce(life, 'ask_for_group_list', trusted=True, group_id=known_group_id, ignore_if_said_in_last=3000)
+		elif len(_known_members)<=3:
+			speech.announce(life, 'ask_for_group_list', group=known_group_id, group_id=known_group_id, ignore_if_said_in_last=3000)
 
 def is_member(life, group_id, life_id):
 	_group = get_group(life, group_id)

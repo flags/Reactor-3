@@ -70,6 +70,9 @@ def get_listener(dialog_id):
 	if not _last_message:
 		return _dialog['target']
 	
+	if _last_message['skip']:
+		return _last_message['from']
+	
 	if _last_message['from'] == _dialog['started_by']:
 		return _dialog['started_by']
 	
@@ -89,12 +92,14 @@ def execute_function(life, target, dialog_id, function):
 	          'self_call': False,
 	          'no_args': False,
 	          'return': False,
-	          'pass_flags': False}
+	          'pass_flags': False,
+	          'swap': False}
 	_flag_map = {'!': {'true': False},
 	             '@': {'self_call': True},
 	             '%': {'no_args': True},
 	             '$': {'return': True},
-	             '^': {'pass_flags': True}}
+	             '^': {'pass_flags': True},
+	             '&': {'swap': True}}
 	
 	while 1:
 		_flag = _function[0]
@@ -108,14 +113,21 @@ def execute_function(life, target, dialog_id, function):
 	if not _function in FUNCTION_MAP:
 		raise Exception('Function does not exist: %s' % _function)
 	
+	if _flags['swap']:
+		_life = LIFE[target]
+		_target = life['id']
+	else:
+		_life = life
+		_target = target
+
 	#print life['name'], _function, _flags, _dialog['flags']
 	
 	try:
 		if _flags['self_call']:
 			if _flags['pass_flags']:
-				_func = FUNCTION_MAP[_function](life, **_dialog['flags'])
+				_func = FUNCTION_MAP[_function](_life, **_dialog['flags'])
 			else:
-				_func = FUNCTION_MAP[_function](life)
+				_func = FUNCTION_MAP[_function](_life)
 			
 			if not _func == _flags['true']:
 				_pass = False
@@ -129,9 +141,9 @@ def execute_function(life, target, dialog_id, function):
 				_pass = False
 		else:
 			if _flags['pass_flags']:
-				_func = FUNCTION_MAP[_function](life, target, **_dialog['flags'])
+				_func = FUNCTION_MAP[_function](_life, _target, **_dialog['flags'])
 			else:
-				_func = FUNCTION_MAP[_function](life, target)
+				_func = FUNCTION_MAP[_function](_life, _target)
 			
 			if not _func == _flags['true']:
 				_pass = False
@@ -228,6 +240,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'read': False,
 	            'result': result.lower().split(','),
 	            'next_gist': None,
+	            'skip': False,
 	            'loop': loop}
 	
 	if _dialog['remote']:
@@ -240,7 +253,10 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	for result in _message['result']:
 		_result = reformat_text(life, _target, dialog_id, result)
 		
-		if _result.startswith('>'):
+		if _result.startswith('>>'):
+			_message['skip'] = True
+			_message['next_gist'] = _result[2:]
+		elif _result.startswith('>'):
 			_message['next_gist'] = _result[1:]
 		else:
 			if _result.count('='):
@@ -281,11 +297,14 @@ def reformat_text(life, target, dialog_id, text):
 	
 	return text
 
-def say_via_gist(life, dialog_id, gist, loop=False):
+def say_via_gist(life, dialog_id, gist, loop=False, **kwargs):
+	_dialog = get_dialog(dialog_id)
 	_chosen_message = random.choice(get_matching_message(life, dialog_id, gist))
 	_target = get_listener(dialog_id)
 	_text = _chosen_message['text']#reformat_text(life, _target, dialog_id, _chosen_message['text'])
 	_loop = False
+	
+	_dialog['flags'].update(**kwargs)
 
 	if not loop:
 		while _text.startswith('>'):
@@ -371,8 +390,7 @@ def draw_dialog(dialog_id):
 	else:
 		_target = _dialog['started_by']
 	
-	_target_portrait = lfe.draw_life_icon(LIFE[_target], draw_alignment=True)
-	
+	_target_portrait = lfe.draw_life_icon(LIFE[_target])
 	_lines = []
 	                                   
 	gfx.camera_track(_center_pos)

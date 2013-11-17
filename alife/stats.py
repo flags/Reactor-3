@@ -64,9 +64,10 @@ def desires_first_contact_with(life, life_id):
 		#TODO: #judgement How do group types play into this?
 		_leader = brain.knows_alife_by_id(life, groups.get_leader(life, life['group']))
 		
-		#TODO: #judgement Placeholder for future logic.
-		if _leader['last_seen_time'] <= 1000:
-			return False
+		if _leader:
+			#TODO: #judgement Placeholder for future logic.
+			if _leader['last_seen_time'] <= 1000:
+				return False
 	
 	if life['stats']['motive_for_crime']>=4:
 		return True
