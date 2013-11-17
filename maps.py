@@ -133,7 +133,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			if _weather_light_map:
 				WORLD_INFO['weather']['light_map'] = _weather_light_map
-				print WORLD_INFO['weather']
 			
 			logging.debug('Reloading slices...')
 			reload_slices()

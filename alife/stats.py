@@ -594,3 +594,8 @@ def establish_hostile(life, life_id):
 
 def establish_scared(life, life_id):
 	change_alignment(life, life_id, 'scared')
+
+def declare_group_hostile(life, group_id):
+	groups.update_group_memory(life, group_id, 'alignment', 'hostile')
+	
+	logging.debug('%s declared group %s hostile.' % (' '.join(life['name']), group_id))

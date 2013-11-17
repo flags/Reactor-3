@@ -81,7 +81,10 @@ def update_group_memory(life, group_id, flag, value):
 	logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
 
 def get_group_memory(life, group_id, flag):
-	print life['known_groups'].keys(), group_id
+	if not group_id in life['known_groups']:
+		print 'Failure'
+		return False
+	
 	return life['known_groups'][group_id][flag]
 
 def get_group_relationships():
@@ -90,7 +93,7 @@ def get_group_relationships():
 def join_group(life, group_id):
 	life['group'] = group_id
 	
-	update_group_memory(life, group_id, 'alignment', 'friendly')
+	update_group_memory(life, group_id, 'alignment', 'trust')
 	add_member(life, group_id, life['id'])
 	
 	if 'player' in life:
@@ -467,6 +470,20 @@ def manage_relationships(life, group_id):
 			speech.announce(life, 'ask_for_group_list', trusted=True, group_id=known_group_id, ignore_if_said_in_last=3000)
 		elif len(_known_members)<=3:
 			speech.announce(life, 'ask_for_group_list', group=known_group_id, group_id=known_group_id, ignore_if_said_in_last=3000)
+
+def manage_combat(life, group_id):
+	for known_group_id in life['known_groups']:
+		if group_id == known_group_id:
+			continue
+		
+		if not get_group_memory(life, known_group_id, 'alignment') == 'hostile':
+			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id)
+			declare_group_hostile(life, group_id, known_group_id)
+
+def declare_group_hostile(life, group_id, target_group_id):
+	stats.declare_group_hostile(life, target_group_id)
+	
+	announce(life, group_id, 'group_is_hostile', group_id=target_group_id)
 
 def is_member(life, group_id, life_id):
 	_group = get_group(life, group_id)

@@ -41,3 +41,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	groups.manage_resources(life, life['group'])
 	
 	groups.manage_relationships(life, life['group'])
+	
+	groups.manage_combat(life, life['group'])

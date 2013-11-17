@@ -108,7 +108,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if _know:
 				_last_seen_at = _know['last_seen_at']
 
-			speech.announce(life, 'under_attack', trusted=True, attacker=target, last_seen_at=_last_seen_at)
+			speech.announce(life, 'attacked_by_hostile', trusted=True, hostile=target, last_seen_at=_last_seen_at)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'parent_id' in ITEMS[life['know_items'][item]['item']]]
 	for ai in [life['know'][i] for i in life['know']]:
