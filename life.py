@@ -1408,9 +1408,9 @@ def perform_action(life):
 				gfx.message('You put on %s.' % _name)
 		else:
 			if is_holding(life, _action['item']):
-				say(life,'@n holds %s.' % _name, action=True)
+				say(life,'@n holds %s.' % _name, action=True, event=False)
 			else:
-				say(life,'@n puts on %s.' % _name, action=True)
+				say(life,'@n puts on %s.' % _name, action=True, event=False)
 		
 		set_animation(life, [';', '*'], speed=6)
 		delete_action(life, action)
@@ -2495,14 +2495,14 @@ def draw_life_icon(life):
 				elif groups.group_exists(LIFE[SETTINGS['controlling']], _knows['group']):
 					_alignment = groups.get_alignment(LIFE[SETTINGS['controlling']], _knows['group'])
 					
-					if _alignment == 'hostile':
-						_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 10)
-					elif _alignment == 'friendly':
-						_icon[1] = tcod.yellow
+					if _alignment == 'trust':
+						_icon[1] = tcod.color_lerp(tcod.lightest_blue, tcod.sea, 10)
+					elif _alignment == 'hostile':
+						_icon[1] = tcod.crimson
 			
 			if not _icon[1]:
 				if _knows['alignment'] in ['trust', 'feign_trust']:
-					_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 5)
+					_icon[1] = tcod.color_lerp(tcod.lightest_yellow, tcod.yellow, 5)
 				elif _knows['alignment'] == 'neutral':
 					_icon[1] = tcod.light_gray
 				else:
@@ -3145,7 +3145,7 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 		sever_limb(life, limb, impact_velocity)
 		return 'severing it!'
 	
-	effects.create_splatter('blood', life['pos'], velocity=1, intensity=amount)
+	effects.create_splatter('blood', life['pos'], velocity=impact_velocity, intensity=amount)
 	
 	if 'player' in life:
 		_name = 'your'
@@ -3374,11 +3374,18 @@ def damage_from_item(life, item, damage):
 		return False
 	
 	memory(_shot_by_alife, 'shot', target=life['id'])
-	memory(life, 'shot_by', target=item['shot_by'], danger=3, trust=-10)
+	memory(life, 'shot_by', target=item['shot_by'])
+	
+	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+		if not sight.can_see_position(ai, life['pos']):
+			continue
+		
+		if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
+			memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
+	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	
-	if judgement.can_trust(life, item['shot_by']):
-		memory(life, 'traitor', target=item['shot_by'])
+	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:
 		_poss_limbs.append(life['body'][_rand_limb[0]]['parent'])

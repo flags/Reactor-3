@@ -169,12 +169,12 @@ def get_tension(life):
 	return brain.retrieve_from_memory(life, 'tension')
 
 def get_tension_with(life, life_id):
-	if can_trust(life, life_id):
-		return 0
-	
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if not _target['last_seen_time'] and _target['life']['dead']:
+	if _target['alignment'] == 'trust':
+		return 0
+	
+	if not _target['last_seen_time'] and _target['dead']:
 		return 0
 	
 	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
@@ -195,13 +195,13 @@ def parse_raw_judgements(life, target_id):
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
-	if target['life']['dead']:
+	if target['dead']:
 		return False
 	
-	if target['danger']>=3 or (target['danger'] and combat.has_ready_weapon(life)):
-		if can_trust(life, target_id):
-			return False
-		
+	if target['alignment'] == 'trust':
+		return False
+	
+	if target['alignment'] == 'hostile':
 		return True
 	
 	return False
@@ -278,7 +278,7 @@ def judge(life):
 		else:
 			_neutral_targets.append(alife_id)
 	
-	brain.store_in_memory(life, 'threats', _threats )
+	brain.store_in_memory(life, 'threats', _threats)
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)
 	brain.store_in_memory(life, 'targets', _neutral_targets)
 	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))

@@ -217,15 +217,23 @@ def has_splatter(position, what=None):
 			
 			return splat
 
-def create_splatter(what, position, velocity=0, intensity=4):
+def create_splatter(what, position, velocity=[0, 0], intensity=4):
 	_splatter = has_splatter(tuple(position),what=what)
 	_intensity = numbers.clip(random.random(), intensity*.05, intensity*.1)
 	
 	if not _splatter:
-		_splatter = {'pos': list(position[:]),'what': what,'color': tcod.Color(0,0,0),'coef': _intensity}
-		_splatter['pos'][0] += random.randint(-velocity,velocity)
-		_splatter['pos'][1] += random.randint(-velocity,velocity)
-	
+		_splatter = {'pos': list(position[:]), 'what': what, 'color': tcod.Color(0, 0, 0), 'coef': _intensity}
+		
+		if velocity[0]>0:
+			_splatter['pos'][0] += random.randint(0, numbers.clip(int(round(velocity[0])), 0, 2))
+		elif velocity[0]<0:
+			_splatter['pos'][0] -= random.randint(0, numbers.clip(-int(round(velocity[0])), 0, 2))
+		
+		if velocity[1]>0:
+			_splatter['pos'][1] += random.randint(0, numbers.clip(int(round(velocity[1])), 0, 2))
+		elif velocity[1]<0:
+			_splatter['pos'][1] -= random.randint(0, numbers.clip(-int(round(velocity[1])), 0, 2))
+	 
 		if what == 'blood':
 			_splatter['color'].r = 150
 	else:

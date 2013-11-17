@@ -189,7 +189,7 @@ def perform_moves(people):
 				#react_to_attack(_life, _target['id'], _target['stance'])
 			else:
 				lfe.memory(_life, 'shot', target=_target['id'])
-				lfe.memory(_target, 'shot_by', target=_life['id'], danger=3, trust=-10)
+				lfe.memory(_target, 'attacked', target=_life['id'])
 				alife.judgement.judge_life(_target, _life['id'])
 				
 				if 'player' in _life:
