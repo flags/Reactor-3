@@ -484,20 +484,33 @@ def manage_combat(life, group_id):
 		if group_id == known_group_id:
 			continue
 		
-		if not get_group_memory(life, known_group_id, 'alignment') == 'hostile':
-			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id,
-			         filter_if=lambda alife: group_exists(alife, known_group_id))
-			
+		if get_group_memory(life, known_group_id, 'alignment') == 'neutral':
 			_known_group_members = get_group_memory(life, known_group_id, 'members')
 			
-			print _known_group_members
+			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id,
+			         filter_if=lambda alife: group_exists(alife, known_group_id))
 			
 			if _known_group_members:
 				update_group_memory(life, known_group_id, 'shelter', get_possible_group_location(life, known_group_id))
 				
-				if not get_group_memory(life, known_group_id, 'shelter'):
+				if get_group_memory(life, known_group_id, 'shelter'):
+					fight_or_flight(life, group_id, known_group_id)
+				else:
 					announce(life, group_id, 'last_seen_target', target_id=random.choice(_known_group_members))
+		
+		elif get_group_memory(life, known_group_id, 'alignment') == 'scared':
+			_known_group_shelter = get_group(life, known_group_id)['shelter']
 			
+			if not _known_group_shelter:
+				print 'FREE-FLOATING ANXIETY'
+				continue
+			
+			_distance = chunks.get_distance_to_nearest_chunk_in_list(life['pos'], references.get_reference(_known_group_shelter))
+			
+			if get_stage(life, group_id) >= STAGE_SETTLED:
+				if _distance<=100:
+					set_stage(life, group_id, STAGE_SETTLING)
+					set_shelter(life, group_id, None)
 			#if get_stage(life, group_id) == STAGE_SETTLED:
 			#	set_stage(life, group_id, STAGE_RAIDING)
 			#	
@@ -525,14 +538,30 @@ def get_possible_group_location(life, group_id):
 	
 	return _most_recent['shelter']
 
+def is_combat_ready(life, group_id):
+	_combat_readiness = 0
+	
+	for member in get_group(life, group_id)['members']:
+		if life['id'] == member:
+			continue
+		
+		_combat_readiness += brain.get_alife_flag(life, member, 'combat_ready')
+	
+	if _combat_readiness >= 3:
+		#update_group_memory(life, target_group_id, 'al
+		return True
+	else:
+		return False
+
+def fight_or_flight(life, group_id, target_group_id):
+	if is_combat_ready(life, group_id):
+		stats.declare_group_hostile(life, target_group_id)
+	else:
+		stats.declare_group_scared(life, target_group_id)
+
 def prepare_for_raid(life, group_id):
 	_target_group = get_flag(life, group_id, 'raid_target')
 	
-	#Supply check
-	#for member in get_group(life, group_id)['members']:
-	#	_knows = brain.knows_alife_by_id(life, member)
-	#	
-	#	if :		
 	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000,
 	         filter_if=lambda alife: brain.get_alife_flag(life, alife['id'], 'combat_ready'))
 

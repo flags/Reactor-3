@@ -563,6 +563,7 @@ def change_alignment(life, life_id, alignment):
 		brain.meet_alife(life, LIFE[life_id])
 		_knows = brain.knows_alife_by_id(life, life_id)
 	
+	logging.debug('%s changed alignment of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), alignment))
 	_knows['alignment'] = alignment
 
 def establish_trust(life, life_id):
@@ -580,10 +581,16 @@ def establish_hostile(life, life_id):
 def establish_scared(life, life_id):
 	change_alignment(life, life_id, 'scared')
 
-def declare_group_hostile(life, group_id):
-	groups.update_group_memory(life, group_id, 'alignment', 'hostile')
+def declare_group(life, group_id, alignment):
+	groups.update_group_memory(life, group_id, 'alignment', alignment)
 	
 	for member in groups.get_group_memory(life, group_id, 'members'):
-		establish_hostile(life, member)
+		change_alignment(life, member, alignment)
 	
-	logging.debug('%s declared group %s hostile.' % (' '.join(life['name']), group_id))
+	logging.debug('%s declared group %s %s.' % (' '.join(life['name']), group_id, alignment))
+
+def declare_group_hostile(life, group_id):
+	declare_group(life, group_id, 'hostile')
+
+def declare_group_scared(life, group_id):
+	declare_group(life, group_id, 'scared')

@@ -197,6 +197,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		
+		#with open('ref_dump.txt', 'w') as w:
+		#	w.write(json.dumps(WORLD_INFO['reference_map'], indent=3))
+		
 		for x in range(MAP_SIZE[0]):
 			for y in range(MAP_SIZE[1]):
 				for z in range(MAP_SIZE[2]):

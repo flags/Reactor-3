@@ -149,7 +149,7 @@ def execute_function(life, target, dialog_id, function):
 	
 	#print _function, _flags, _func
 	except Exception, e:
-		logging.critical('Function \'%s\' got invalid arugments. See exception below.' % _function)
+		logging.critical('Function \'%s\' failed to execute. See exception below.' % _function)
 		logging.debug('Argument dump...')
 		print _flags
 		
