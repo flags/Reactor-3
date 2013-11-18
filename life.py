@@ -894,7 +894,7 @@ def crouch(life):
 	elif life['stance'] == 'crawling':
 		_delay = 15
 	else:
-		_delay = melee.get_stance_score(life, 'crouch')
+		_delay = melee.get_stance_score(life, 'crouching')
 	
 	set_animation(life, ['n', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crouch'},
@@ -925,7 +925,7 @@ def crawl(life, force=False):
 	elif life['stance'] == 'crouching':
 		_delay = 5
 	else:
-		_delay = melee.get_stance_score(life, 'prone')
+		_delay = melee.get_stance_score(life, 'crawling')
 	
 	set_animation(life, ['v', '@'], speed=_delay/2)
 	add_action(life,{'action': 'crawl'},
