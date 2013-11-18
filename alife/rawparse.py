@@ -164,6 +164,8 @@ def create_function_map():
 		'reset_think_timer': lfe.reset_think_rate,
 		'mark_target_as_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready'),
 		'mark_target_as_not_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready', value=False),
+		'saw_target_recently': lambda life, **kwargs: brain.knows_alife_by_id(life, kwargs['target_id']) and -1<brain.knows_alife_by_id(life, kwargs['target_id'])['last_seen_time']<6000,
+	    'update_location_of_target_from_target': speech.update_location_of_target_from_target,
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
 		'never': lambda life: 1==2})

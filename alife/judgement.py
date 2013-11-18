@@ -171,7 +171,7 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if _target['alignment'] == 'trust':
+	if _target['alignment'] == 'trust' or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
@@ -578,6 +578,9 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 	
 	_trusted = 0
 	for _target in life['know'].values():
+		if not _target['last_seen_at']:
+			continue
+		
 		_is_here = False
 		_actually_here = False
 		
@@ -939,6 +942,9 @@ def update_camps(life):
 		camp['snapshot']['groups'] = {}
 	
 	for _target in life['know'].values():
+		if not _target['last_seen_at']:
+			continue
+		
 		for camp in life['known_camps'].values():
 			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
 				continue

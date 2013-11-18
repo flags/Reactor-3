@@ -266,7 +266,7 @@ def confirm_inform_of_group_members(entry):
 	for entry in entry['members']:
 		if entry['values'][entry['value']] == 'Member':
 			_members.append(entry['target_id'])
-		
+	
 	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
                         _dialog_id,
                         'group_list',
@@ -285,7 +285,7 @@ def inform_of_group(life, life_id):
 	                       group_id=life['group'],
 	                       group_list=groups.get_group(life, life['group'])['members'])
 
-def inform_of_group_members(life, life_id):
+def inform_of_group_members(life, life_id, group_id):
 	if 'player' in life:
 		_dialog_id = lfe.has_dialog_with(life, life_id)
 		_menu_items = []
@@ -294,7 +294,7 @@ def inform_of_group_members(life, life_id):
 			if target_id == life['id'] or target_id == life_id:
 				continue
 			
-			if groups.is_member(life, life['group'], target_id):
+			if groups.is_member(life, group_id, target_id):
 				_colors = (tcod.green, tcod.white)
 				_values = ['Member', 'Not Member']
 			else:
@@ -304,7 +304,7 @@ def inform_of_group_members(life, life_id):
 			_menu_items.append(menus.create_item('list',
 			                                     ' '.join(LIFE[target_id]['name']),
 			                                     _values,
-			                                     group=life['group'],
+			                                     group=group_id,
 			                                     target_id=target_id,
 			                                     members=_menu_items,
 			                                     color=_colors,
@@ -320,13 +320,13 @@ def inform_of_group_members(life, life_id):
 		                          close_on_select=True)
 		menus.activate_menu(_menu)
 	else:
-		for target_id in groups.get_group(life, life['group'])['members']:
+		for target_id in groups.get_group(life, group_id)['members']:
 			if life['id'] == target_id:
 				continue
 			
 			memory.create_question(life, target_id, 'group_list',
-				                   group_id=life['group'],
-				                   group_list=groups.get_group(life, life['group'])['members'])
+				                   group_id=group_id,
+				                   group_list=groups.get_group(life, group_id)['members'])
 
 def update_group_members(life, target_id, group_id, group_list):
 	_known_members = groups.get_group(life, group_id)['members'][:]
@@ -336,8 +336,6 @@ def update_group_members(life, target_id, group_id, group_list):
 	for member in _group_list:
 		if not member in _known_members:
 			_known_members.append(member)
-			
-			print life['name'], repr(member), _known_members
 			groups.add_member(life, group_id, member)
 	
 	for member in _known_members:
@@ -348,3 +346,23 @@ def update_group_members(life, target_id, group_id, group_list):
 		memory.create_question(life, target_id, 'group_list',
 		                       group_id=life['group'],
 		                       group_list=groups.get_group(life, life['group'])['members'])
+
+def update_location_of_target_from_target(life, life_id, target_id):
+	_known = brain.knows_alife_by_id(life, target_id)
+	_target_known = brain.knows_alife_by_id(LIFE[life_id], target_id)	
+	
+	if _target_known['last_seen_time'] == -1:
+		return False
+	
+	print life['name'], LIFE[life_id]['name'], LIFE[target_id]['name']
+	
+	print life['name'], _known['last_seen_time'], LIFE[life_id]['name'], _target_known['last_seen_time']
+	print _known['last_seen_at']
+	
+	if _target_known['last_seen_time'] < _known['last_seen_time'] or not _known['last_seen_at']:
+		_known['last_seen_at'] = _target_known['last_seen_at']
+		_known['last_seen_time'] = _target_known['last_seen_time']
+		
+		logging.debug('%s updated location of %s.' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name'])))
+	else:
+		print 'Got out of date info!' * 20

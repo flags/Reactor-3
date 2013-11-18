@@ -22,6 +22,7 @@ import raids
 import jobs
 
 import logging
+import random
 
 def create_group(life, add_creator=True):
 	WORLD_INFO['groupid'] += 1
@@ -119,6 +120,8 @@ def add_member(life, group_id, life_id):
 				remove_member(life, _target['group'], life_id)
 			
 			_target['group'] = group_id
+		else:
+			brain.meet_alife(life, LIFE[life_id])
 	elif life['id'] == life_id and life['group'] and not life['group'] == group_id:
 		remove_member(life, life['group'], life_id)
 	
@@ -482,15 +485,45 @@ def manage_combat(life, group_id):
 			continue
 		
 		if not get_group_memory(life, known_group_id, 'alignment') == 'hostile':
-			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id)
+			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id,
+			         filter_if=lambda alife: group_exists(alife, known_group_id))
 			
-			if get_stage(life, group_id) == STAGE_SETTLED:
-				set_stage(life, group_id, STAGE_RAIDING)
+			_known_group_members = get_group_memory(life, known_group_id, 'members')
+			
+			print _known_group_members
+			
+			if _known_group_members:
+				update_group_memory(life, known_group_id, 'shelter', get_possible_group_location(life, known_group_id))
 				
-				announce(life, group_id, 'prepare_for_raid')
-				flag(life, group_id, 'raid_target', known_group_id)
+				if not get_group_memory(life, known_group_id, 'shelter'):
+					announce(life, group_id, 'last_seen_target', target_id=random.choice(_known_group_members))
+			
+			#if get_stage(life, group_id) == STAGE_SETTLED:
+			#	set_stage(life, group_id, STAGE_RAIDING)
+			#	
+			#	announce(life, group_id, 'prepare_for_raid')
+			#	flag(life, group_id, 'raid_target', known_group_id)
 			
 			#declare_group_hostile(life, group_id, known_group_id)
+
+def get_possible_group_location(life, group_id):
+	_group = get_group(life, group_id)
+	_most_recent = {'time': 9999, 'shelter': None}
+	
+	for member in _group['members']:
+		_target = brain.knows_alife_by_id(life, member)
+		
+		if not _target['last_seen_at'] or not _target['state'] in ['shelter', 'idle']:
+			continue
+		
+		if _target['last_seen_time'] < _most_recent['time'] or not _most_recent['shelter']:
+			_most_recent['shelter'] = references.is_in_any_reference(_target['last_seen_at'])
+			_most_recent['time'] = _target['last_seen_time']
+	
+	if not _most_recent['shelter']:
+		print 'STILL DO NOT HAVE TARGET GROUP LOCATION'
+	
+	return _most_recent['shelter']
 
 def prepare_for_raid(life, group_id):
 	_target_group = get_flag(life, group_id, 'raid_target')

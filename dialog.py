@@ -16,12 +16,12 @@ import json
 import sys
 import re
 
-def create_dialog_with(life, target_id, remote=False, **kwargs):
+def create_dialog_with(life, _target_id, remote=False, **kwargs):
 	_dialog = {'id': str(WORLD_INFO['dialogid']),
 	           'messages': [],
 	           'flags': kwargs,
 	           'started_by': life['id'],
-	           'target': target_id,
+	           'target': _target_id,
 	           'choices': [],
 	           'remote': remote,
 	           'cursor_index': 0}
@@ -31,11 +31,11 @@ def create_dialog_with(life, target_id, remote=False, **kwargs):
 	WORLD_INFO['dialogs'][_dialog['id']] = _dialog
 	WORLD_INFO['dialogid'] += 1
 	
-	if not alife.brain.knows_alife_by_id(life, target_id):
-		alife.brain.meet_alife(life, LIFE[target_id])
+	if not alife.brain.knows_alife_by_id(life, _target_id):
+		alife.brain.meet_alife(life, LIFE[_target_id])
 	
-	if not alife.brain.knows_alife_by_id(LIFE[target_id], life['id']):
-		alife.brain.meet_alife(LIFE[target_id], life)
+	if not alife.brain.knows_alife_by_id(LIFE[_target_id], life['id']):
+		alife.brain.meet_alife(LIFE[_target_id], life)
 	
 	return _dialog['id']
 
