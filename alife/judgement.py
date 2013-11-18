@@ -540,7 +540,7 @@ def judge_chunk_life(life, chunk_id):
 		_is_here = False
 		_actually_here = False
 		
-		if not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
+		if not _target['last_seen_at'] or not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			continue
 	
 	return _score 

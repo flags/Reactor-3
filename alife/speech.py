@@ -363,6 +363,6 @@ def update_location_of_target_from_target(life, life_id, target_id):
 		_known['last_seen_at'] = _target_known['last_seen_at']
 		_known['last_seen_time'] = _target_known['last_seen_time']
 		
-		logging.debug('%s updated location of %s.' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name'])))
+		logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), _known['last_seen_at']))
 	else:
 		print 'Got out of date info!' * 20

@@ -493,10 +493,22 @@ def manage_combat(life, group_id):
 			if _known_group_members:
 				update_group_memory(life, known_group_id, 'shelter', get_possible_group_location(life, known_group_id))
 				
+				_people_to_ask_about = []
+				for member in _known_group_members:
+					_target = brain.knows_alife_by_id(life, member)
+					
+					if not _target['last_seen_at'] or not _target['state'] in ['idle', 'shelter']:
+						continue
+					
+					_people_to_ask_about.append(member)
+				
 				if get_group_memory(life, known_group_id, 'shelter'):
 					fight_or_flight(life, group_id, known_group_id)
+				elif _people_to_ask_about:
+					announce(life, group_id, 'last_seen_target', target_id=random.choice(_people_to_ask_about))
 				else:
-					announce(life, group_id, 'last_seen_target', target_id=random.choice(_known_group_members))
+					print 'Nobody to ask about group location'
+					print 'LOST' * 100
 		
 		elif get_group_memory(life, known_group_id, 'alignment') == 'scared':
 			_known_group_shelter = get_group(life, known_group_id)['shelter']
@@ -554,13 +566,17 @@ def is_combat_ready(life, group_id):
 		return False
 
 def fight_or_flight(life, group_id, target_group_id):
+	_distance = chunks.get_distance_to_nearest_chunk_in_list(life['pos'], references.get_reference(get_shelter(life, target_group_id)))
+	
 	if is_combat_ready(life, group_id):
 		stats.declare_group_hostile(life, target_group_id)
-	else:
+	elif _distance<=100:
 		stats.declare_group_scared(life, target_group_id)
+	else:
+		prepare_for_raid(life, group_id)
 
 def prepare_for_raid(life, group_id):
-	_target_group = get_flag(life, group_id, 'raid_target')
+	#_target_group = get_flag(life, group_id, 'raid_target')
 	
 	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000,
 	         filter_if=lambda alife: brain.get_alife_flag(life, alife['id'], 'combat_ready'))
