@@ -457,8 +457,7 @@ def manage_resources(life, group_id):
 	if _last_resource_check and WORLD_INFO['ticks']-_last_resource_check<=100:
 		return True
 	
-	announce(life, group_id, 'resource_check',
-	         filter_if=lambda alife: WORLD_INFO['ticks']-speech.has_sent(life, alife['id'], 'resource_check')<=500)
+	announce(life, group_id, 'resource_check', ignore_if_said_in_last=3000)
 	
 	flag(life, group_id, 'last_resource_count', WORLD_INFO['ticks'])
 
@@ -497,7 +496,12 @@ def prepare_for_raid(life, group_id):
 	_target_group = get_flag(life, group_id, 'raid_target')
 	
 	#Supply check
-	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000)
+	#for member in get_group(life, group_id)['members']:
+	#	_knows = brain.knows_alife_by_id(life, member)
+	#	
+	#	if :		
+	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000,
+	         filter_if=lambda alife: brain.get_alife_flag(life, alife['id'], 'combat_ready'))
 
 def declare_group_hostile(life, group_id, target_group_id):
 	stats.declare_group_hostile(life, target_group_id)

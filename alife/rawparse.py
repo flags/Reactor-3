@@ -161,7 +161,9 @@ def create_function_map():
 		'explode': items.explode,
 		'is_player': lambda life: 'player' in life,
 		'is_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral',
-	    'reset_think_timer': lfe.reset_think_rate,
+		'reset_think_timer': lfe.reset_think_rate,
+		'mark_target_as_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready'),
+		'mark_target_as_not_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready', value=False),
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
 		'never': lambda life: 1==2})
