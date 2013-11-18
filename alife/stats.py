@@ -529,6 +529,31 @@ def react_to_attack(life, life_id):
 	if life['group']:
 		groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
 
+def react_to_tension(life, life_id):
+	if life['group'] and not groups.is_leader(life, life['group'], life['id']) and groups.get_leader(life, life['group']):
+		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
+			return False
+	
+	_has_warned_previously = speech.has_sent(life, life_id, 'confront')
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	if _has_warned_previously:
+		_warned = brain.get_alife_flag(life, life_id, 'warned') 
+		if _warned:
+			brain.flag_alife(life, life_id, 'warned', value=_warned+1)
+			
+			if _warned+1>100 and WORLD_INFO['ticks']-speech.has_sent(life, life_id, 'confront')>60:
+				speech.start_dialog(life, life_id, 'confront_again')
+				speech.send(life, life_id, 'confront')
+			elif _warned+1>150:
+				speech.start_dialog(life, life_id, 'confront_break')
+		else:
+			brain.flag_alife(life, life_id, 'warned', value=1)
+	else:
+		if judgement.get_tension_with(life, life_id) >= 5:
+			speech.start_dialog(life, life_id, 'confront')
+			speech.send(life, life_id, 'confront')
+
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
 

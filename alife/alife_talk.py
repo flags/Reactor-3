@@ -43,6 +43,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
+		elif judgement.get_tension_with(life, ai)>=5:
+			stats.react_to_tension(life, ai)
 	
 		else:
 			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
@@ -61,7 +63,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if life['dialogs']:
 			break
 		
-		if stats.desires_first_contact_with(life, ai):
+		if stats.desires_first_contact_with(life, target):
 			memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=30)
 		
 		if memory.get_questions_for_target(life, target):

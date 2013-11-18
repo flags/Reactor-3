@@ -171,7 +171,7 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if _target['alignment'] == 'trust' or not _target['last_seen_at']:
+	if not _target['alignment'] == 'neutral' or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
