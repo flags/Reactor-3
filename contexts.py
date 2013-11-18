@@ -32,7 +32,8 @@ def _create_context_from_phrase(life, phrase):
 		if not phrase['dialog_id'] in LIFE[SETTINGS['controlling']]['dialogs']:
 			life['dialogs'].append(phrase['dialog_id'])
 		
-		logic.show_event(dialog.get_last_message(phrase['dialog_id'])['text'], life=phrase['from'])
+		if dialog.get_last_message(phrase['dialog_id'])['text']:
+			logic.show_event(dialog.get_last_message(phrase['dialog_id'])['text'], life=phrase['from'])
 		
 		if lfe.has_dialog(LIFE[SETTINGS['controlling']]):
 			dialog.process(LIFE[SETTINGS['controlling']], lfe.has_dialog(LIFE[SETTINGS['controlling']]))

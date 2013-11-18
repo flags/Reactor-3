@@ -58,12 +58,12 @@ def get_flag(life, group_id, flag):
 def discover_group(life, group_id):
 	if not group_id in life['known_groups']:
 		life['known_groups'][group_id] = {'id': group_id,
-		                        'members': [],
-		                        'leader': None,
-		                        'shelter': None,
-		                        'stage': STAGE_FORMING,
-		                        'alignment': 'neutral',
-		                        'flags': {}}
+		                                  'members': [],
+		                                  'leader': None,
+		                                  'shelter': None,
+		                                  'stage': STAGE_FORMING,
+		                                  'alignment': 'neutral',
+		                                  'flags': {}}
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
@@ -293,15 +293,17 @@ def find_shelter(life, group_id):
 		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
 	else:
-		if get_stage(life, group_id) < STAGE_SETTLING:
+		if not get_stage(life, group_id) == STAGE_SETTLING:
 			set_stage(life, group_id, STAGE_SETTLING)
-			announce(life, group_id, 'update_group_stage',
-				    filter_if=lambda alife: get_stage(alife, group_id)>=STAGE_SETTLING)
+			announce(life, group_id, 'update_group_stage')
 
 def find_and_announce_shelter(life, group_id):
 	_shelter = get_shelter(life, group_id)
 	
 	if _shelter:
+		if get_stage(life, group_id) < STAGE_SETTLED:
+			set_stage(life, group_id, STAGE_SETTLED)
+		
 		if references.is_in_reference(life['pos'], references.get_reference(_shelter)):
 			announce(life, group_id, 'update_group_shelter',
 				    filter_if=lambda alife: get_shelter(alife, group_id)==_shelter)
@@ -460,7 +462,7 @@ def manage_resources(life, group_id):
 	
 	flag(life, group_id, 'last_resource_count', WORLD_INFO['ticks'])
 
-def manage_relationships(life, group_id):
+def manage_known_groups(life, group_id):
 	for known_group_id in life['known_groups']:
 		if group_id == known_group_id:
 			continue
@@ -472,13 +474,30 @@ def manage_relationships(life, group_id):
 			speech.announce(life, 'ask_for_group_list', group=known_group_id, group_id=known_group_id, ignore_if_said_in_last=3000)
 
 def manage_combat(life, group_id):
+	if get_stage(life, group_id) == STAGE_RAIDING:
+		prepare_for_raid(life, group_id)
+		return False
+	
 	for known_group_id in life['known_groups']:
 		if group_id == known_group_id:
 			continue
 		
 		if not get_group_memory(life, known_group_id, 'alignment') == 'hostile':
 			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id)
-			declare_group_hostile(life, group_id, known_group_id)
+			
+			if get_stage(life, group_id) == STAGE_SETTLED:
+				set_stage(life, group_id, STAGE_RAIDING)
+				
+				announce(life, group_id, 'prepare_for_raid')
+				flag(life, group_id, 'raid_target', known_group_id)
+			
+			#declare_group_hostile(life, group_id, known_group_id)
+
+def prepare_for_raid(life, group_id):
+	_target_group = get_flag(life, group_id, 'raid_target')
+	
+	#Supply check
+	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000)
 
 def declare_group_hostile(life, group_id, target_group_id):
 	stats.declare_group_hostile(life, target_group_id)

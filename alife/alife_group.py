@@ -32,14 +32,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	
 	_group = groups.get_group(life, life['group'])
 	
-	#if groups.needs_resources(life['group']):
-	#
-	
 	groups.find_and_announce_shelter(life, life['group'])
-	
-	#if groups.get_shelter(life, life['group']):
 	groups.manage_resources(life, life['group'])
-	
-	groups.manage_relationships(life, life['group'])
-	
+	groups.manage_known_groups(life, life['group'])
 	groups.manage_combat(life, life['group'])

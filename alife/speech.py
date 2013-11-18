@@ -1,5 +1,6 @@
 from globals import *
 
+import graphics as gfx
 import life as lfe
 
 import judgement
@@ -98,17 +99,6 @@ def get_recent_events(life):
 		return 'Hey, I just got here!'
 	
 	return 'Nothing much has been going on lately.'
-
-def confirm_target(entry):
-	_dialog_id = LIFE[SETTINGS['controlling']]['dialogs'][0]
-	for flag in dialog.get_dialog(_dialog_id)['flags']:
-		if dialog.get_dialog(_dialog_id)['flags'][flag] == -333:
-			dialog.get_dialog(_dialog_id)['flags'][flag] = entry['target']
-			break
-	
-	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
-	                    _dialog_id,
-	                    dialog.get_flag(_dialog_id, 'NEXT_GIST'))
 
 def get_target(life, dialog_id, gist):
 	if 'player' in life:
@@ -217,6 +207,7 @@ def get_known_group(life, life_id):
 			_menu_items.append(menus.create_item('single', group_id, None, group=group_id, dialog_id=_dialog_id))
 		
 		if not _menu_items:
+			gfx.message('You don\'t know of any other groups.')
 			return False
 		
 		_menu = menus.create_menu(menu=_menu_items,
@@ -227,6 +218,17 @@ def get_known_group(life, life_id):
 		menus.activate_menu(_menu)
 	else:
 		raise Exception('Dead end.')
+
+def confirm_target(entry):
+	_dialog_id = LIFE[SETTINGS['controlling']]['dialogs'][0]
+	for flag in dialog.get_dialog(_dialog_id)['flags']:
+		if dialog.get_dialog(_dialog_id)['flags'][flag] == -333:
+			dialog.get_dialog(_dialog_id)['flags'][flag] = entry['target']
+			break
+	
+	dialog.say_via_gist(LIFE[SETTINGS['controlling']],
+	                    _dialog_id,
+	                    dialog.get_flag(_dialog_id, 'NEXT_GIST'))
 
 def confirm_items(dialog_id, items):
 	_item_types = []

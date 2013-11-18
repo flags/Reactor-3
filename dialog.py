@@ -231,7 +231,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 				_text = random.choice(_return)
 	
 	if not _text:
-		_text = '%s says nothing.' % ' '.join(life['name'])
+		_text = ''
 	
 	_text = _text.replace('+++', ',')
 	
