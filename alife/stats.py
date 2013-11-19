@@ -433,7 +433,7 @@ def is_combat_target_too_close(life):
 		return False
 	
 	#TODO: Unhardcode
-	if _nearest_combat_target['distance'] <= 5:
+	if _nearest_combat_target['distance'] <= 3:
 		return True
 	
 	return False
@@ -576,7 +576,7 @@ def get_goal_alignment_for_target(life, life_id):
 		return 'feign_trust'
 	
 	if _genuine>_malicious:
-		return 'genuine'
+		return 'trust'
 	
 	return 'malicious'
 

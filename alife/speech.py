@@ -151,8 +151,8 @@ def get_introduction_message(life, life_id):
 	if _alignment == 'malicious':
 		return 'Back up. I have no time to talk to you.'
 	
-	if _alignment == 'genuine':
-		return 'You! Let\'s have a chat.'
+	if _alignment == 'trust':
+		return ['Hello traveler.', 'Greetings.']
 
 def get_introduction_gist(life, life_id):
 	_alignment = stats.get_goal_alignment_for_target(life, life_id)

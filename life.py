@@ -1572,7 +1572,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'shoot':
 		if not 'player' in life:
-			if sight.view_blocked_by_life(life, _action['target'], allow=[_action['target']]):
+			if sight.view_blocked_by_life(life, _action['target'], allow=[_action['target_id']]):
 				delete_action(life,action)
 				
 				return False

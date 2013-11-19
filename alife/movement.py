@@ -55,7 +55,7 @@ def position_to_attack(life, target):
 			return False
 		else:
 			return False
-	else:
+	elif life['path']:
 		lfe.stop(life)
 	
 	return True
