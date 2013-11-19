@@ -36,6 +36,7 @@ def create_function_map():
 		'explore_unknown_chunks': survival.explore_unknown_chunks,
 		'is_nervous': stats.is_nervous,
 		'is_aggravated': stats.is_aggravated,
+	    'is_scared': judgement.is_scared,
 		'is_safe': judgement.is_safe,
 		'is_healthy': None,
 		'is_intimidated': stats.is_intimidated,

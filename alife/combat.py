@@ -53,7 +53,7 @@ def get_target_positions_and_zones(life, targets, ignore_escaped=False):
 	for _target in targets:
 		_known_target = brain.knows_alife_by_id(life, _target)
 		
-		if ignore_escaped and _known_target['escaped']:
+		if ignore_escaped and _known_target['escaped'] or not _known_target['last_seen_at']:
 			continue
 		
 		_target_positions.append(_known_target['last_seen_at'])

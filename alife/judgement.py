@@ -239,6 +239,18 @@ def is_safe(life):
 	
 	return True
 
+def is_scared(life):
+	for target in get_all_visible_life(life):
+		_knows = brain.knows_alife_by_id(life, target)
+		
+		if not _knows:
+			continue
+		
+		if _knows['alignment'] == 'scared' and not _knows['asleep'] and not _knows['dead']:
+			return True
+	
+	return False
+
 def get_trusted(life, visible=True, invert=False, only_recent=False):
 	_trusted = []
 	
@@ -264,7 +276,7 @@ def judge(life):
 	_tension = 0
 	
 	for alife_id in life['know']:
-		if life['know'][alife_id]['last_seen_time'] >= 200 or life['know'][alife_id]['dead']:
+		if life['know'][alife_id]['last_seen_time'] >= 200 or life['know'][alife_id]['dead'] or not life['know'][alife_id]['last_seen_at']:
 			continue
 		
 		_tension += get_tension_with(life, alife_id)
@@ -434,6 +446,9 @@ def get_nearest_target_in_list(life, target_list):
 	_nearest_target = {'distance': 9999, 'target_id': None}
 
 	for target_id in target_list:
+		if not brain.knows_alife_by_id(life, target_id)['last_seen_at']:
+			continue
+		
 		_distance = get_distance_to_target(life, target_id)
 		
 		if _distance < _nearest_target['distance'] or not _nearest_target['target_id']:
@@ -451,7 +466,8 @@ def get_nearest_trusted_target(life):
 def target_is_combat_ready(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
-	if not _knows['last_seen_time'] and (_knows['state'] in ['surrender', 'hiding', 'hidden'] or _knows['asleep']):
+	#They could be in those states but still have a weapon
+	if _knows['last_seen_time']:# or _knows['state'] in ['surrender', 'hiding', 'hidden'] or _knows['asleep']:
 		return False
 	
 	if combat.get_equipped_weapons(LIFE[life_id]):

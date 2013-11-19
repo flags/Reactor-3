@@ -21,6 +21,7 @@ New in version 0.6.5:
 		* This information can also become out of date, leading to bad decision making.
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
+	* NPCs now make sure their LOS is clear before opening fire.
 	* Weapons now have multiple firing modes (using `f`).
 	* Group leaders can now issue attack orders (hit `tab`)
 	* Added movie mode (recording) (hit `?` to start, again to quit.)

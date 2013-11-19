@@ -53,6 +53,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	_avoid_positions = avoid_positions[:]
 	avoid_positions = []
 	for position in _avoid_positions:
+		if not position:
+			continue
+		
 		avoid_positions.append(tuple(position[:2]))
 	
 	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
