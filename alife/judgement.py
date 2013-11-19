@@ -283,9 +283,7 @@ def judge(life):
 		
 		_threat = is_target_threat(life, alife_id)
 		if _threat:
-			if is_target_dangerous(life, alife_id):
-				_combat_targets.append(alife_id)
-			
+			_combat_targets.append(alife_id)
 			_threats.append(alife_id)
 		else:
 			_neutral_targets.append(alife_id)

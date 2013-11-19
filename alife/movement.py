@@ -47,9 +47,9 @@ def position_to_attack(life, target):
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
-				                  'orig_goals': _cover[:],
-			                      'avoid_positions': _avoid_positions,
-			                      'reason': 'positioning for attack'},
+			                       'orig_goals': _cover[:],
+			                       'avoid_positions': _avoid_positions,
+			                       'reason': 'positioning for attack'},
 				           999)
 			
 			return False

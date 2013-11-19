@@ -83,7 +83,11 @@ def load_dialog():
 			if not line or line.startswith('#'):
 				continue
 			
-			_gist, _requirements, _text, _result = line.split(':')
+			try:
+				_gist, _requirements, _text, _result = line.split(':')
+			except:
+				raise Exception('Error in dialog (wrong number of arguments): %s' % line)
+			
 			_dialog = {'gist': _gist,
 			           'requirements': _requirements.split(','),
 			           'text': _text,

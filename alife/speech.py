@@ -285,6 +285,9 @@ def inform_of_group(life, life_id):
 	                       group_id=life['group'],
 	                       group_list=groups.get_group(life, life['group'])['members'])
 
+def force_inform_of_group(life, life_id):
+	groups.discover_group(LIFE[life_id], life['group'])
+
 def inform_of_group_members(life, life_id, group_id):
 	if 'player' in life:
 		_dialog_id = lfe.has_dialog_with(life, life_id)

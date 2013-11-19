@@ -433,7 +433,7 @@ def is_combat_target_too_close(life):
 		return False
 	
 	#TODO: Unhardcode
-	if _nearest_combat_target['distance'] <= 10:
+	if _nearest_combat_target['distance'] <= 5:
 		return True
 	
 	return False
@@ -550,9 +550,8 @@ def react_to_tension(life, life_id):
 		else:
 			brain.flag_alife(life, life_id, 'warned', value=1)
 	else:
-		if judgement.get_tension_with(life, life_id) >= 5:
-			speech.start_dialog(life, life_id, 'confront')
-			speech.send(life, life_id, 'confront')
+		speech.start_dialog(life, life_id, 'confront')
+		speech.send(life, life_id, 'confront')
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
@@ -613,6 +612,9 @@ def declare_group(life, group_id, alignment):
 		change_alignment(life, member, alignment)
 	
 	logging.debug('%s declared group %s %s.' % (' '.join(life['name']), group_id, alignment))
+
+def declare_group_trusted(life, group_id):
+	declare_group(life, group_id, 'trust')
 
 def declare_group_hostile(life, group_id):
 	declare_group(life, group_id, 'hostile')

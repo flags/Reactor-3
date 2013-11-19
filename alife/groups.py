@@ -64,12 +64,13 @@ def discover_group(life, group_id):
 		                                  'shelter': None,
 		                                  'stage': STAGE_FORMING,
 		                                  'alignment': 'neutral',
+		                                  'claimed_motive': 'nothing',
 		                                  'flags': {}}
 		
 		if 'player' in life:
 			gfx.message('You learn about group %s.' % group_id)
-		else:
-			logging.debug('%s discovered group %s.' % (' '.join(life['name']), group_id))
+		
+		logging.debug('%s discovered group %s.' % (' '.join(life['name']), group_id))
 		
 		return True
 	
@@ -84,7 +85,6 @@ def update_group_memory(life, group_id, flag, value):
 def get_group_memory(life, group_id, flag):
 	if not group_id in life['known_groups']:
 		raise Exception('%s does not know about group %s.' % (' '.join(life['name']), group_id))
-		return False
 	
 	return life['known_groups'][group_id][flag]
 
@@ -228,9 +228,6 @@ def process_events(life, group_id):
 	for event in _group['events'].values():
 		events.process_event(event)
 
-def get_motive(life, group_id):
-	return get_group_memory(life, group_id, 'claimed_motive')
-
 def get_alignment(life, group_id):
 	return get_group_memory(life, group_id, 'alignment')
 
@@ -326,7 +323,10 @@ def set_leader(life, group_id, life_id):
 	logging.debug('%s claims to be the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
 
 def set_motive(life, group_id, motive):
-	get_group(life, group_id)['claimed_motive'] = motive
+	update_group_memory(life, group_id, 'claimed_motive', motive)
+
+def get_motive(life, group_id):
+	return get_group_memory(life, group_id, 'claimed_motive')
 
 def get_stage(life, group_id):
 	return get_group_memory(life, group_id, 'stage')
