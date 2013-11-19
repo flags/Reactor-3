@@ -368,7 +368,7 @@ def ranged_combat(life, targets):
 	if not life['path'] or not numbers.distance(lfe.path_dest(life), _target['last_seen_at']) == 0:
 		movement.position_to_attack(life, _target['life']['id'])
 	
-	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
+	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True) and not sight.view_blocked_by_life(life, _target['last_seen_at'], allow=[_target['life']['id']]):
 		if sight.can_see_position(life, _target['life']['pos']):
 			if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
 				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):

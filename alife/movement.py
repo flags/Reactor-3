@@ -17,20 +17,21 @@ import jobs
 
 import random
 
-def score_shootcover(life,target,pos):
-	if sight.view_blocked_by_life(life, target['life']['pos'], allow=[target['life']['id']]):
-		return 9999
-	
-	return numbers.distance(life['pos'],pos)
-
 def position_to_attack(life, target):
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
 	#if _nearest_target_score >= sight.get_vision(life)/2:
-	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True):
+	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True) or sight.view_blocked_by_life(life, _target_positions[0], allow=[target]):
 		print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
+		
+		_avoid_positions = []
+		for life_id in life['seen']:
+			if life_id == target or life['id'] == life_id:
+				continue
+			
+			_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
 		
 		_cover = _target_positions
 		
@@ -41,12 +42,13 @@ def position_to_attack(life, target):
 			if not _zone in _zones:
 				_zones.append(_zone)
 		
-		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:]}]):
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:], 'avoid_positions': _avoid_positions}]):
 			lfe.stop(life)
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
 				                  'orig_goals': _cover[:],
+			                      'avoid_positions': _avoid_positions,
 			                      'reason': 'positioning for attack'},
 				           999)
 			

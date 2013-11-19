@@ -48,8 +48,13 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	#Some notes before we begin:
 	#	* You can't get cython-created arrays out of this function
 	#	* I haven't found a way to create proper dynamically-sized arrays. I've locked them out at 500x500
-	#	* 
+	
 	_init_time = time.time()
+	_avoid_positions = avoid_positions[:]
+	avoid_positions = []
+	for position in _avoid_positions:
+		avoid_positions.append(tuple(position[:2]))
+	
 	cdef int x, y, _x, _y, _n_x, _n_y, _i, _number_of_goals
 	cdef float _score
 	cdef float _lowest_score

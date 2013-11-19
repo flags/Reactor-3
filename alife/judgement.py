@@ -302,7 +302,7 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 		if recent_only and _knows['last_seen_time'] >= 95:
 			continue
 		
-		if not limit_distance == -1 and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
+		if not limit_distance == -1 and _knows['last_seen_at'] and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
 			continue
 		
 		if filter_func and not filter_func(life, target):

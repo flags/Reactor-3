@@ -114,6 +114,7 @@ def create_function_map():
 		'is_in_same_group': lambda life, life_id: (life['group'] and LIFE[life_id]['group'] == life['group'])>0,
 		'is_target_group_leader': lambda life, life_id: (groups.is_leader_of_any_group(LIFE[life_id]))==True,
 		'is_in_group': lambda life: life['group']>0,
+		'is_target_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['alignment'] == 'hostile',
 		'is_target_in_group': lambda life, life_id, **kwargs: brain.knows_alife_by_id(life, life_id)['group']==kwargs['group'],
 		'is_target_in_any_group': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group']>0,
 		'is_target_group_friendly': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='trust',
