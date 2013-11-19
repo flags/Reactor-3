@@ -374,6 +374,7 @@ def ranged_combat(life, targets):
 				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
 					lfe.add_action(life,{'action': 'shoot',
 						'target': _target['last_seen_at'],
+						'target_id': _target['life']['id'],
 						'limb': 'chest'},
 						5000,
 						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
