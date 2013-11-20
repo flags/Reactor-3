@@ -265,6 +265,17 @@ def render_lights(source_map):
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
+		_x_range = light['pos'][0]-CAMERA_POS[0]
+		_y_range = light['pos'][1]-CAMERA_POS[1]
+		
+		#print _x_range, _y_range
+		
+		if _x_range <= -20 or _x_range>=MAP_WINDOW_SIZE[0]+20:
+			continue
+		
+		if _y_range <= -20 or _y_range>=MAP_WINDOW_SIZE[1]+20:
+			continue
+		
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
 		else:
