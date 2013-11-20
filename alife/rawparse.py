@@ -83,6 +83,7 @@ def create_function_map():
 		'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
 		'announce_to_group': groups.announce,
 		'is_in_chunk': chunks.is_in_chunk,
+		'is_in_shelter': lfe.is_in_shelter,
 		'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
 		'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 		'retrieve_from_memory': brain.retrieve_from_memory,

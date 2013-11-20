@@ -606,6 +606,7 @@ def establish_scared(life, life_id):
 	change_alignment(life, life_id, 'scared')
 
 def declare_group(life, group_id, alignment):
+	print life['name'], group_id
 	groups.update_group_memory(life, group_id, 'alignment', alignment)
 	
 	for member in groups.get_group_memory(life, group_id, 'members'):

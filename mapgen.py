@@ -33,6 +33,7 @@ FIELD_SIZE_RANGE = [45, 46]
 FIELD_DISTANCE = 30*5
 OUTPOST_DISTANCE = 15*5
 OPEN_TILES = ['.']
+DOOR_TILES = ['D']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
 ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES},
               'bathroom': {'required': True, 'floor_tiles': tiles.BLUE_FLOOR_TILES},
@@ -44,6 +45,10 @@ def create_building(buildings, building, chunk_size):
 	_bot = False
 	_left = False
 	_right = False
+	_door_top = False
+	_door_bot = False
+	_door_left = False
+	_door_right = False
 	
 	for y in range(chunk_size):
 		for x in range(chunk_size):
@@ -51,21 +56,30 @@ def create_building(buildings, building, chunk_size):
 			
 			if x == 0 and (y>0 or y<chunk_size) and _tile in OPEN_TILES:
 				_left = True
+			elif x == 0 and (y>0 or y<chunk_size) and _tile in DOOR_TILES:
+				_door_left = True
 			
 			if x == chunk_size-1 and (y>0 or y<chunk_size) and _tile in OPEN_TILES:
 				_right = True
+			elif x == chunk_size-1 and (y>0 or y<chunk_size) and _tile in DOOR_TILES:
+				_door_right = True
 			
 			if y == 0 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
 				_top = True
+			elif y == 0 and (x>0 or x<chunk_size) and _tile in DOOR_TILES:
+				_door_top = True
 			
 			if y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
 				_bot = True
+			elif y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in DOOR_TILES:
+				_door_bot = True
 			
 			#print _tile,
 		
 		#print
 	
 	_building_temp = {'open': {'top': _top, 'bot': _bot, 'left': _left, 'right': _right},
+	                  'door': {'top': _door_top, 'bot': _door_bot, 'left': _door_left, 'right': _door_right},
 	                  'building': copy.deepcopy(building)}
 	
 	buildings.append(_building_temp)
@@ -1268,7 +1282,7 @@ def construct_factory(map_gen, town):
 							create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 							
 							if not i and random.randint(0, 500) == 500:
-								effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
+								effects.create_light((x, y, 2), (255, 255, 255), 5, 0.1)
 
 def construct_town(map_gen, town):
 	_buildings = []
@@ -1362,7 +1376,9 @@ def construct_building(map_gen, building):
 		_main_room_types = ['bedroom', 'bathroom']
 	else:
 		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
-		
+	
+	_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
+	
 	for chunk_key in building['rooms']:
 		_items = []
 		_storage = []
@@ -1392,53 +1408,80 @@ def construct_building(map_gen, building):
 		                    {'item': 'white cloth', 'rarity': 0.4}]
 		elif _room_type == 'kitchen':
 			_floor_tiles = tiles.BROWN_FLOOR_TILES
-			
-		_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
 		
+		#FRONT DOOR, BACK DOOR, INTERIOR
 		_avoid_directions = []
-		_directions = []
+		_interior_directions = []
+		_exterior_directions = []
 		_chunk = map_gen['chunk_map'][chunk_key]
 		for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'any'):
 			if not neighbor_key in building['rooms'] and not map_gen['chunk_map'][neighbor_key]['type'] == 'driveway':
 				_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
 				continue
 			
-			if map_gen['chunk_map'][neighbor_key]['type'] in ['town', 'driveway']:
-				_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
-			
-			#_neighbor_chunk = map_gen['chunk_map'][neighbor_key]
-			#for next_neighbor_key in get_neighbors_of_type(map_gen, _neighbor_chunk['pos'], 'driveway'):
-			#	_dir = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, neighbor_key, next_neighbor_key))]
-			#	
-			#	#if _dir in _directions:
-			#	#	continue
-			#	
-			#	_directions.append(_dir)
-			#	print 'yeah'
+			if map_gen['chunk_map'][neighbor_key]['type'] in ['town']:
+				_interior_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+			elif map_gen['chunk_map'][neighbor_key]['type'] in ['driveway']:
+				_exterior_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
 	
-		_possible_tiles = []
+		print 'int', _interior_directions
+		print 'ext', _exterior_directions
+	
+		_interior_facing_tiles = []
+		_exterior_facing_tiles = []
 		for possible_building in map_gen['buildings']:
-			_continue = False
-			for _dir in _directions:
-				if not possible_building['open'][_dir]:
+			_continue = False			
+			
+			_unchecked_directions = ['top', 'bot', 'left', 'right']
+			if _interior_directions:
+				for _dir in _interior_directions:
+					if not possible_building['open'][_dir]:
+						_continue = True
+						break
+					
+					_unchecked_directions.remove(_dir)
+			
+			if not _continue and not _exterior_directions:
+				for _dir in _unchecked_directions:
+					if possible_building['door'][_dir]:
+						_continue = True
+						break
+			#not _exterior_directions and possible_building['door'][_dir])
+			for _dir in _exterior_directions:
+				if not possible_building['door'][_dir]:
 					_continue = True
 					break
 			
 			if _continue:
 				continue
 			
-			for _dir in _avoid_directions:
-				if possible_building['open'][_dir]:
-					_continue = True
-					break
+			if _interior_directions:
+				for _dir in _avoid_directions:
+					if possible_building['open'][_dir]:
+						_continue = True
+						break
+			
+			if _exterior_directions:
+				for _dir in _avoid_directions:
+					if possible_building['door'][_dir]:
+						_continue = True
+						break
 			
 			if _continue:
 				continue
 			
-			_possible_tiles.append(possible_building['building'])
+			if _exterior_directions:
+				_exterior_facing_tiles.append(possible_building['building'])
+			else:
+				_interior_facing_tiles.append(possible_building['building'])
 		
 		_neighbor_dirs = [DIRECTION_MAP[str(d)] for d in [direction_from_key_to_key(map_gen, chunk_key, n) for n in get_neighbors_of_type(map_gen, _chunk['pos'], 'town')]]
-		_building = random.choice(_possible_tiles)
+		
+		if _exterior_directions:
+			_building = random.choice(_exterior_facing_tiles)
+		else:
+			_building = random.choice(_interior_facing_tiles)
+		
 		_half = map_gen['chunk_size']/2
 		
 		_open_spots = []
@@ -1452,11 +1495,14 @@ def construct_building(map_gen, building):
 						create_tile(map_gen, x, y, 2+i, _wall_tile)
 					elif _building[_y][_x] == '#':
 						create_tile(map_gen, x, y, 2+i, _wall_tile)
+					elif i in [0] and _building[_y][_x] == 'D':
+						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
+						effects.create_light((x, y, 2), (255, 255, 255), 5, 0.95)
 					elif i in [0] and _building[_y][_x] == '.':
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 						
 						if not i and random.randint(0, 500) == 500:
-							effects.create_light((x, y, 2), (255, 255, 255), 5, 0.1)
+							effects.create_light((x, y, 2), (255, 255, 255), 5, 0.95)
 						
 						_open_spots.append((x, y))
 						
