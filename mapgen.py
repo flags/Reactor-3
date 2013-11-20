@@ -23,6 +23,9 @@ import copy
 import sys
 import os
 
+MAX_WAREHOUSE_SIZE = 16
+MAX_TOWNHOUSE_SIZE = 8
+MAX_BUILDING_SIZE = max([MAX_TOWNHOUSE_SIZE, MAX_WAREHOUSE_SIZE])
 TOWN_DISTANCE = 60*5
 TOWN_SIZE = 160
 FOREST_DISTANCE = 10
@@ -1319,13 +1322,13 @@ def construct_town(map_gen, town):
 				_building_space.append(empty_chunk_key)
 				_taken.append(empty_chunk_key)
 				
-				if len(_building_space)>=4:
+				if len(_building_space)>=MAX_TOWNHOUSE_SIZE:
 					break
 			
-			if len(_building_space)>=4:
+			if len(_building_space)>=MAX_TOWNHOUSE_SIZE:
 				break
 		
-		if not len(_building_space)>=4:
+		if not len(_building_space)>=MAX_TOWNHOUSE_SIZE:
 			continue
 		
 		map_gen['chunk_map'][building_seed]['type'] = 'driveway'
@@ -1348,9 +1351,12 @@ def construct_building(map_gen, building):
 	_main_room_types = []
 	_secondary_room_types = []
 	
-	if 2<len(building['rooms'])<=4:
+	if MAX_TOWNHOUSE_SIZE<len(building['rooms'])<=MAX_WAREHOUSE_SIZE:
 		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
-		_secondary_room_types = ['dining room']
+		_secondary_room_types = ['dining room', 'dining room', 'dining room']
+	elif 2<len(building['rooms'])<=MAX_TOWNHOUSE_SIZE:
+		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
+		_secondary_room_types = ['dining room', 'dining room', 'dining room', 'bedroom', 'bathroom']
 		#_building_type = 'house'
 	elif len(building['rooms'])==2:
 		_main_room_types = ['bedroom', 'bathroom']
@@ -1450,7 +1456,7 @@ def construct_building(map_gen, building):
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 						
 						if not i and random.randint(0, 500) == 500:
-							effects.create_light((x, y, 2), (255, 0, 255), 5, 0.1)
+							effects.create_light((x, y, 2), (255, 255, 255), 5, 0.1)
 						
 						_open_spots.append((x, y))
 						
