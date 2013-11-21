@@ -1390,7 +1390,7 @@ def construct_building(map_gen, building):
 		
 		if _room_type == 'bedroom':
 			_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
-			_rules = {'doors': 1}
+			_rules = {'doors': 2}
 			_items = [{'item': 'blue jeans', 'rarity': 1.0},
 		                    {'item': 'leather backpack', 'rarity': 0.65},
 		                    {'item': 'sneakers', 'rarity': 1.0},
@@ -1399,14 +1399,14 @@ def construct_building(map_gen, building):
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _items}]
 		elif _room_type == 'bathroom':
 			_floor_tiles = tiles.BLUE_FLOOR_TILES
-			_rules = {'doors': 1}
+			_rules = {'doors': 2}
 			_items = [{'item': 'blue jeans', 'rarity': 1.0},
 		                    {'item': 'leather backpack', 'rarity': 0.65},
 		                    {'item': 'sneakers', 'rarity': 1.0},
 		                    {'item': 'white t-shirt', 'rarity': 1.0},
 		                    {'item': 'white cloth', 'rarity': 0.4}]
 		elif _room_type == 'kitchen':
-			_rules = {'doors': 1}
+			_rules = {'doors': 2}
 		elif _room_type == 'closet':
 			_floor_tiles = tiles.RED_BRICK_TILES
 			_rules = {'doors': 1}
@@ -1432,52 +1432,45 @@ def construct_building(map_gen, building):
 	
 		_interior_facing_tiles = []
 		_exterior_facing_tiles = []
+		
+		print 'doors', _rules['doors'], len(_exterior_directions)
+		
 		for possible_building in map_gen['buildings']:
-			_doors = _rules['doors']+len(_exterior_directions)
+			_doors = numbers.clip(_rules['doors']-len(_exterior_directions), 0, 4)
 			_continue = False			
 			_unchecked_directions = ['top', 'bot', 'left', 'right']
 			
-			#print _doors, len(_interior_directions), len(possible_building['open']), possible_building['door']
+			print 'doors', _doors
+			if _doors and len(_interior_directions)>=_doors:
+				while _doors:
+					_exterior_directions.append(_interior_directions.pop(len(_interior_directions)-1))
+					_doors -= 1
+			elif _rules['doors'] and _doors:
+				print _rules['doors'], 'loop?'
+				continue
+
+			#_open_in_tile = len([i for i in possible_building['open'].values() if i])
+			#_doors_in_tile = len([i for i in possible_building['door'].values() if i])
 			
-			#for line in possible_building['building']:
-			#	print line
-			
-			#if _doors and not len(_interior_directions)+len(_exterior_directions) >= _doors:
-			#	continue
-			
-			#print 'ever?'
-			_open_in_tile = len([i for i in possible_building['open'].values() if i])
-			_doors_in_tile = len([i for i in possible_building['door'].values() if i])
-			
-			print _doors, _open_in_tile, _doors_in_tile
+			#print _doors, _open_in_tile, _doors_in_tile
 			
 			if _interior_directions:
-				if _doors and (not _doors_in_tile == _doors or _open_in_tile):
-					print 'Skipped!'
-					continue
-				else:
-					for _dir in _interior_directions:
-						_unchecked_directions.remove(_dir)
-					
-					if _doors:
-						_doors -= 1
-				
 				for _dir in _interior_directions:
-					if not possible_building['open'][_dir] and (not _doors or not possible_building['door'][_dir]):
+					if not possible_building['open'][_dir]:
 						_continue = True
 						break
 					
 					_unchecked_directions.remove(_dir)
 					
-					if _doors:
-						_doors -= 1
+					#if _doors and possible_building['door'][_dir]:
+					#	_doors -= 1
+					#elif _rules['doors'] and not _doors:
+					#	_continue = True
+					#	break
 			
-			if _doors:
-				print 'Leftover doors:', _doors
-				print 'Continue?', _continue
-				print 'Unchecked directions:', _unchecked_directions
-				continue
-			
+			#if _doors:
+			#	continue
+	
 			if not _continue and not _exterior_directions:
 				for _dir in _unchecked_directions:
 					if possible_building['door'][_dir]:
@@ -1507,7 +1500,7 @@ def construct_building(map_gen, building):
 			if _continue:
 				continue
 			
-			print 'Created building.'
+			#print 'Created building.'
 			
 			if _exterior_directions:
 				_exterior_facing_tiles.append(possible_building['building'])
@@ -1524,7 +1517,7 @@ def construct_building(map_gen, building):
 		except:
 			_int = ', '.join(_interior_directions)
 			_ext = ', '.join(_exterior_directions)
-			
+			print _room_type
 			raise Exception('Matching tile not found for the following layout: Interior-facing: %s, Exterior-facing: %s, Doors: %s' % (_int, _ext, _rules['doors']))
 		
 		_half = map_gen['chunk_size']/2
