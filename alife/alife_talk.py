@@ -33,8 +33,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
 	#	return False
-	if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
-		lfe.say(life, '@n panics!', action=True)
+	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
+	#	lfe.say(life, '@n panics!', action=True)
 	
 	_potential_talking_targets = []
 	for ai in life['seen']:
@@ -110,7 +110,7 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			if _know:
 				_last_seen_at = _know['last_seen_at']
 
-			speech.announce(life, 'attacked_by_hostile', trusted=True, hostile=target, last_seen_at=_last_seen_at)
+			speech.announce(life, 'attacked_by_hostile', trusted=True, target_id=target, last_seen_at=_last_seen_at)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'parent_id' in ITEMS[life['know_items'][item]['item']]]
 	for ai in [life['know'][i] for i in life['know']]:

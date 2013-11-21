@@ -247,6 +247,7 @@ def is_scared(life):
 			continue
 		
 		if _knows['alignment'] == 'scared' and not _knows['asleep'] and not _knows['dead']:
+			print life['name'], 'is scared'
 			return True
 	
 	return False

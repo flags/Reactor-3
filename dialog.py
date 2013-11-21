@@ -174,6 +174,9 @@ def get_matching_message(life, dialog_id, gist):
 	_dialog_choices = []
 	_target = get_listener(dialog_id)
 	
+	if not gist:
+		raise Exception('No gist passed.')
+	
 	if not gist.upper() in DIALOG_TOPICS:
 		raise Exception('Dialog hit dead end due to no matching gist: %s' % gist)
 	

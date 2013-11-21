@@ -527,12 +527,14 @@ def react_to_attack(life, life_id):
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
 	if life['group']:
-		groups.announce(life, life['group'], 'attacked_by_hostile', hostile=_knows['life']['id'])
+		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'])
 
 def react_to_tension(life, life_id):
 	if life['group'] and not groups.is_leader(life, life['group'], life['id']) and groups.get_leader(life, life['group']):
 		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
 			return False
+	
+	print life['name'], 'tension with', LIFE[life_id]['name']
 	
 	_has_warned_previously = speech.has_sent(life, life_id, 'confront')
 	_target = brain.knows_alife_by_id(life, life_id)
@@ -605,8 +607,12 @@ def establish_hostile(life, life_id):
 def establish_scared(life, life_id):
 	change_alignment(life, life_id, 'scared')
 
+def declare_group_target(life, target_id, alignment):
+	change_alignment(life, target_id, alignment)
+	
+	groups.announce(life, life['group'], 'add_group_target', target_id=target_id)
+
 def declare_group(life, group_id, alignment):
-	print life['name'], group_id
 	groups.update_group_memory(life, group_id, 'alignment', alignment)
 	
 	for member in groups.get_group_memory(life, group_id, 'members'):

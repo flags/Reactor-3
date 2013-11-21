@@ -485,6 +485,41 @@ def manage_known_groups(life, group_id):
 		elif len(_known_members)<=3:
 			speech.announce(life, 'ask_for_group_list', group=known_group_id, group_id=known_group_id, ignore_if_said_in_last=3000)
 
+def manage_territory(life, group_id):
+	_shelter = get_shelter(life, group_id)
+	
+	if not _shelter:
+		return False
+	
+	_shelter_chunk = chunks.get_nearest_chunk_in_list(life['pos'], references.get_reference(_shelter))
+	
+	for known_group_id in life['known_groups']:
+		if group_id == known_group_id:
+			continue
+		
+		_opposing_shelter = get_possible_group_location(life, known_group_id)
+		if not _opposing_shelter:
+			continue
+		
+		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], references.get_reference(_opposing_shelter))
+		
+		if _distance<=30:
+			print '2 CLOSE 2 HANDLE'
+	
+	for seen_life_id in life['seen']:
+		_target = brain.knows_alife_by_id(life, seen_life_id)
+		
+		if not _target or _target['alignment'] == 'trust' or not _target['last_seen_at']:
+			continue
+		
+		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:
+			continue
+		
+		print 'L@@K'* 20
+		print life['name'], LIFE[seen_life_id]['name'], _target['alignment']
+		
+		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
+
 def manage_combat(life, group_id):
 	if get_stage(life, group_id) == STAGE_RAIDING:
 		prepare_for_raid(life, group_id)
