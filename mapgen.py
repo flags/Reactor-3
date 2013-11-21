@@ -1392,15 +1392,19 @@ def construct_building(map_gen, building):
 		_interior_directions = []
 		_exterior_directions = []
 		_chunk = map_gen['chunk_map'][chunk_key]
+		_neighbor_chunks = {}
 		for neighbor_key in get_neighbors_of_type(map_gen, _chunk['pos'], 'any'):
+			_neighbor_direction = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))]
+			
 			if not neighbor_key in building['rooms'] and not map_gen['chunk_map'][neighbor_key]['type'] == 'driveway':
-				_avoid_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				_avoid_directions.append(_neighbor_direction)
 				continue
 			
 			if map_gen['chunk_map'][neighbor_key]['type'] in ['town']:
-				_interior_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				_interior_directions.append(_neighbor_direction)
+				_neighbor_chunks[_neighbor_direction] = neighbor_key
 			elif map_gen['chunk_map'][neighbor_key]['type'] in ['driveway']:
-				_exterior_directions.append(DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))])
+				_exterior_directions.append(_neighbor_direction)
 	
 		_total_neighbors = len(_interior_directions)+len(_exterior_directions)
 		
@@ -1423,7 +1427,14 @@ def construct_building(map_gen, building):
 		                        {'item': 'sneakers', 'rarity': 1.0},
 		                        {'item': 'white t-shirt', 'rarity': 1.0},
 		                        {'item': 'white cloth', 'rarity': 0.4}]})
-		
+		_rooms.append({'name': 'hall',
+		              'doors': 4,
+		              'floor_tiles': tiles.WHITE_TILE_TILES,
+		              'items': []})
+		_rooms.append({'name': 'hall',
+		              'doors': 3,
+		              'floor_tiles': tiles.WHITE_TILE_TILES,
+		              'items': []})
 		_rooms.append({'name': 'kitchen',
 		              'doors': 2,
 		              'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES,
@@ -1441,28 +1452,55 @@ def construct_building(map_gen, building):
 		_possible_rooms = []
 		for room in _rooms:
 			#TODO: Flexible door counts?
-			if room['doors'] <= _total_neighbors:
-				_possible_rooms.append(room)
+			#if room['doors'] == 1 and _total_neighbors == 1:
+			#	_possible_rooms.append(room)
+			#if room['doors'] == _total_neighbors:
+			_possible_rooms.append(room)
 		
 		if not _possible_rooms:
 			raise Exception('Building... impossible?')
 		
-		_room = random.choice(_possible_rooms)
+		_room = copy.deepcopy(random.choice(_possible_rooms))
 		_floor_tiles = _room['floor_tiles']
 		_items = _room['items']
 		_interior_facing_tiles = []
 		_exterior_facing_tiles = []
 		_doors = numbers.clip(_room['doors']-len(_exterior_directions), 0, 4)
-		
-		while _doors:
-			if _interior_directions:
-				_exterior_directions.append(_interior_directions.pop(random.randint(0, len(_interior_directions)-1)))
-			else:
-				_doors = -33
+		_room['neighbors'] = _total_neighbors
+		_repeat = False
+		while len(_interior_directions)-len(_exterior_directions)>_doors:
+			#Here we're trying to find the best neighbor to connect our door to
+			#Typically, you'll want to always choose the neighbor with the least
+			#amount of connected neighbors to help the rooms spread a bit more.
+			_highest_neighbor = {'count': 0, 'direction': None}
+			
+			for _dir in _interior_directions:
+				_count = len(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_neighbor_chunks[_dir]]['pos'], 'town'))
+				
+				if _count > _highest_neighbor['count'] or not _highest_neighbor['direction']:
+					_highest_neighbor['count'] = _count
+					_highest_neighbor['direction'] = _dir
+			
+			#_exterior_directions.append(_highest_neighbor['direction'])
+			_interior_directions.remove(_highest_neighbor['direction'])
+			
+			#_doors -= 1
+			
+			if not _interior_directions and _doors:
+				_repeat = True
 				break
-			_doors -= 1
+			
+			#if _interior_directions:
+			#	_exterior_directions.append(_interior_directions.pop(random.randint(0, len(_interior_directions)-1)))
+			#else:
+			#	_doors = -33
+			#	break
+			
+			#_doors -= 1
 		
-		if _doors == -33:
+		if _repeat:
+			print _doors
+			print 'Killed room'
 			continue
 		
 		for possible_building in map_gen['buildings']:
