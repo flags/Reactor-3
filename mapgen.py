@@ -1434,19 +1434,24 @@ def construct_building(map_gen, building):
 		_exterior_facing_tiles = []
 		
 		print 'doors', _rules['doors'], len(_exterior_directions)
+		_temp_exterior_directions = _exterior_directions[:]
+		_temp_interior_directions = _interior_directions[:]
 		
 		for possible_building in map_gen['buildings']:
+			_interior_directions = _temp_interior_directions
+			_exterior_directions = _temp_exterior_directions
 			_doors = numbers.clip(_rules['doors']-len(_exterior_directions), 0, 4)
 			_continue = False			
 			_unchecked_directions = ['top', 'bot', 'left', 'right']
 			
-			print 'doors', _doors
+			#print 'doors', _doors
 			if _doors and len(_interior_directions)>=_doors:
 				while _doors:
 					_exterior_directions.append(_interior_directions.pop(len(_interior_directions)-1))
 					_doors -= 1
-			elif _rules['doors'] and _doors:
-				print _rules['doors'], 'loop?'
+			
+			if _rules['doors'] and _doors:
+				#print _rules['doors'], 'loop?'
 				continue
 
 			#_open_in_tile = len([i for i in possible_building['open'].values() if i])
@@ -1500,7 +1505,7 @@ def construct_building(map_gen, building):
 			if _continue:
 				continue
 			
-			#print 'Created building.'
+			print 'Created building.'
 			
 			if _exterior_directions:
 				_exterior_facing_tiles.append(possible_building['building'])
