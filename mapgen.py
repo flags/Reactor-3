@@ -1407,8 +1407,6 @@ def construct_building(map_gen, building):
 				_exterior_directions.append(_neighbor_direction)
 	
 		_total_neighbors = len(_interior_directions)+len(_exterior_directions)
-		
-		#if _total_neighbors == 
 		_rooms = []
 		_rooms.append({'name': 'bedroom',
 		              'doors': 2,
@@ -1455,7 +1453,8 @@ def construct_building(map_gen, building):
 			#if room['doors'] == 1 and _total_neighbors == 1:
 			#	_possible_rooms.append(room)
 			#if room['doors'] == _total_neighbors:
-			_possible_rooms.append(room)
+			if room['doors'] == _total_neighbors:
+				_possible_rooms.append(room)
 		
 		if not _possible_rooms:
 			raise Exception('Building... impossible?')
@@ -1468,21 +1467,33 @@ def construct_building(map_gen, building):
 		_doors = numbers.clip(_room['doors']-len(_exterior_directions), 0, 4)
 		_room['neighbors'] = _total_neighbors
 		_repeat = False
+		_highest = True
 		while len(_interior_directions)-len(_exterior_directions)>_doors:
 			#Here we're trying to find the best neighbor to connect our door to
 			#Typically, you'll want to always choose the neighbor with the least
 			#amount of connected neighbors to help the rooms spread a bit more.
 			_highest_neighbor = {'count': 0, 'direction': None}
+			_lowest_neighbor = {'count': 0, 'direction': None}
 			
 			for _dir in _interior_directions:
 				_count = len(get_neighbors_of_type(map_gen, map_gen['chunk_map'][_neighbor_chunks[_dir]]['pos'], 'town'))
 				
-				if _count > _highest_neighbor['count'] or not _highest_neighbor['direction']:
-					_highest_neighbor['count'] = _count
-					_highest_neighbor['direction'] = _dir
+				if _highest:
+					if _count > _highest_neighbor['count'] or not _highest_neighbor['direction']:
+						_highest_neighbor['count'] = _count
+						_highest_neighbor['direction'] = _dir
+				else:
+					if _count < _lowest_neighbor['count'] or not _lowest_neighbor['direction']:
+						_lowest_neighbor['count'] = _count
+						_lowest_neighbor['direction'] = _dir
 			
-			#_exterior_directions.append(_highest_neighbor['direction'])
-			_interior_directions.remove(_highest_neighbor['direction'])
+			if _highest:
+				#_exterior_directions.append(_highest_neighbor['direction'])
+				_interior_directions.remove(_highest_neighbor['direction'])
+				_highest = True #False - to enable alternating picks
+			else:
+				_interior_directions.remove(_lowest_neighbor['direction'])
+				_highest = True
 			
 			#_doors -= 1
 			
