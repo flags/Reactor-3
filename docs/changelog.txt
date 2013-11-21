@@ -13,6 +13,7 @@ New in version 0.6.5:
 		* An extended version of RawScript is now supported.
 		* All dialog strings are stored externally in `data\text\dialog.txt`.
 		* Questions have been reimplemented.
+	* Faster, more detailed world generation.
 	* Rewrote damage model.
 		* The size and material of an item now play a role in damage calculations.
 	* Groups are no longer tracked by the world.
