@@ -257,7 +257,7 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
-	if LIFE[life_id]['asleep']:
+	if LIFE[life_id]['asleep'] or LIFE[life_id]['dead']:
 		return False
 		
 	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):

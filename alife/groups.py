@@ -306,7 +306,7 @@ def find_and_announce_shelter(life, group_id):
 			announce(life, group_id, 'update_group_shelter',
 				    filter_if=lambda alife: not get_shelter(alife, group_id))
 			
-			print 'MOTIVATED BY CRIME'
+		print 'MOTIVATED BY CRIME' * 20
 		
 		return False
 	
@@ -509,7 +509,7 @@ def manage_territory(life, group_id):
 	for seen_life_id in life['seen']:
 		_target = brain.knows_alife_by_id(life, seen_life_id)
 		
-		if not _target or _target['alignment'] == 'trust' or not _target['last_seen_at']:
+		if not _target or _target['alignment'] == 'trust' or not _target['last_seen_at'] or _target['dead']:
 			continue
 		
 		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:

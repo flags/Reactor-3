@@ -931,9 +931,10 @@ def get_best_shelter(life):
 		
 		if _shelter:
 			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
-			judge_chunk(life, _nearest_chunk_key)
 			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
 			_dist = numbers.distance(life['pos'], _shelter_center)
+			
+			judge_chunk(life, _nearest_chunk_key)
 			
 			if _dist <= logic.time_until_midnight()*life['speed_max']:
 				print life['name'],'can get to shelter in time'

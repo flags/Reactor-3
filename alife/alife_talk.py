@@ -117,8 +117,8 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
 		
-		if life['state'] == 'combat':
-			break
+		#if life['state'] == 'combat':
+		#	break
 		
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break

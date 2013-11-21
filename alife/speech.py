@@ -171,7 +171,7 @@ def get_introduction_gist(life, life_id):
 	if _alignment == 'feign_trust':
 		return 'feign_trust_failed'
 	
-	return 'trust'
+	return 'potential_trust'
 
 def describe_target(life, life_id):
 	if life['id'] == life_id:
