@@ -300,6 +300,16 @@ def find_shelter(life, group_id):
 def find_and_announce_shelter(life, group_id):
 	_shelter = get_shelter(life, group_id)
 	
+	if get_motive(life, group_id) == 'crime' and logic.is_night():
+		if _shelter:
+			set_shelter(life, group_id, None)
+			announce(life, group_id, 'update_group_shelter',
+				    filter_if=lambda alife: not get_shelter(alife, group_id))
+			
+			print 'MOTIVATED BY CRIME'
+		
+		return False
+	
 	if _shelter:
 		if get_stage(life, group_id) < STAGE_SETTLED:
 			set_stage(life, group_id, STAGE_SETTLED)
