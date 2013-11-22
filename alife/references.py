@@ -202,7 +202,7 @@ def is_in_reference(position, reference):
 def is_in_any_reference(position):
 	for r_type in WORLD_INFO['reference_map']:
 		for reference in WORLD_INFO['reference_map'][r_type]:
-			if is_in_reference(position, reference):
+			if is_in_reference(position, get_reference(reference)):
 				return reference
 	
 	return False

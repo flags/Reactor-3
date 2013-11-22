@@ -77,7 +77,7 @@ def main():
 	_played_moved = False
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
-		logic.tick_all_objects(WORLD_INFO['map'])
+		logic.tick_all_objects()
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -93,10 +93,10 @@ def main():
 	
 	if not _played_moved:
 		if CURRENT_UPS:
-			CURRENT_UPS-=1
+			CURRENT_UPS -= 1
 		else:
 			CURRENT_UPS = 3
-			logic.tick_all_objects(WORLD_INFO['map'])
+			logic.tick_all_objects()
 	
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
@@ -130,24 +130,30 @@ def main():
 			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
 		gfx.fade_to_white(FADE_TO_WHITE[0])
-		_col = 255-int(round(FADE_TO_WHITE[0]))*2
-		
-		if _col<0:
-			_col = 0
-		#_col = 0
 		
 		_string = 'You die.'
+		_time_since_death = WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']
+		_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
 		
-		gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
-			MAP_WINDOW_SIZE[1]/2,
-			_string,
-			'map',
-			fore_color=tcod.Color(_col, _col, _col),
-			back_color=tcod.Color(255-_col,255-_col,255-_col),
-			flicker=0)
-		FADE_TO_WHITE[0] += 0.9
+		for i in range(len(_string)):
+			_c = _string[i]
+			gfx.lighten_tile(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i, MAP_WINDOW_SIZE[1]/2, _col)
+			gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
+			              MAP_WINDOW_SIZE[1]/2,
+			              _c,
+			              (tcod.Color(_col, 0, 0),
+			               tcod.Color(255-_col, 255-_col, 255-_col)),
+			              'map')
 		
-		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
+		if _time_since_death>=25:
+			_fade = numbers.clip((_time_since_death)/100.0, 0, 1)
+			_summary = 'Lived %s days.' % ((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']))
+			gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
+			gfx.fade_view('overlay', _fade, 0)
+		
+		FADE_TO_WHITE[0] += 1.2
+		
+		if _time_since_death>=120:
 			worldgen.save_world()
 			worldgen.reset_world()
 
@@ -164,16 +170,17 @@ def main():
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
-	dialog.draw_dialog()
 	
 	gfx.draw_status_line()
 	gfx.draw_console()
+	
+	#maps.draw_chunk_map(life=LIFE[SETTINGS['controlling']])
 	
 	#TODO: Experimental map rendering, disabled for now
 	if SETTINGS['map_slices']:
 		maps.fast_draw_map()
 	else:
-		gfx.start_of_frame(draw_char_buffer=True)
+		gfx.start_of_frame()
 	
 	gfx.end_of_frame()
 	
@@ -181,7 +188,7 @@ def main():
 		print tcod.sys_get_fps()
 	
 	if SETTINGS['recording']:
-		if 30+SETTINGS['recording fps temp']:
+		if 10+SETTINGS['recording fps temp']:
 			SETTINGS['recording fps temp'] -= 1
 		else:
 			WORLD_INFO['d'] = WORLD_INFO['ticks']

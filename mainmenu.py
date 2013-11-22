@@ -33,6 +33,7 @@ def draw_intro():
 	_shadow = 50
 	_burn = 8.0
 	
+	#Why did I base this on time.time()?
 	while time.time()-_stime<=5:
 		_text = INTRO
 		
@@ -49,9 +50,12 @@ def draw_intro():
 				_title_time += .044
 			
 			if 4.0>time.time()-_stime:
-				_burn *= 1.035
+				_burn *= 1.005
 			elif time.time()-_stime>=4.0:
-				_burn *= .88
+				if _burn>255:
+					_burn = 255
+				
+				_burn *= .99
 			
 			_text = INTRO
 		
@@ -117,8 +121,6 @@ def draw_message():
 		#graphics.blit_string(1, _y, line)
 		console_print(0, 1, _y, line)
 		_y += 1
-	
-	graphics.start_of_frame()
 
 def draw_main_menu():
 	menus.align_menus()
@@ -247,7 +249,7 @@ def generate_world(combat_test=False):
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
 	if _settings['Map'] == 'Generate Map':
-		_settings['Map'] = mapgen.generate_map(factories=1)['name']
+		_settings['Map'] = mapgen.generate_map(size=(250, 250, 10), factories=1)['name']
 	
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 10

@@ -4,6 +4,7 @@ from libc.stdlib cimport malloc, free
 import fast_dijkstra
 import life as lfe
 
+import drawing
 import numbers
 import alife
 import maps
@@ -49,7 +50,11 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 			if outline_chunk_key in _visible_chunks:
 				continue
 			
-			_can_see = alife.chunks.can_see_chunk(life, outline_chunk_key)
+			_outline_chunk = WORLD_INFO['chunk_map'][outline_chunk_key]
+			if _outline_chunk['max_z'] <= life['pos'][2]:
+				_can_see = drawing.diag_line(life['pos'], (_outline_chunk['pos'][0]+CHUNK_SIZE/2, _outline_chunk['pos'][1]+CHUNK_SIZE/2))
+			else:
+				_can_see = alife.chunks.can_see_chunk(life, outline_chunk_key)
 			
 			if _can_see:
 				_skip = 0
@@ -79,11 +84,11 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 	for i in range(len(_chunks)):
 		chunk_key = _chunks[i]
 		
-		if visible_check and not alife.chunks.can_see_chunk(life, chunk_key):
-			#print chunk_key, lfe.get_current_chunk_id(life)
+		if not chunk_key in WORLD_INFO['chunk_map']:
 			continue
 		
-		if not chunk_key in WORLD_INFO['chunk_map']:
+		if visible_check and not WORLD_INFO['chunk_map'][chunk_key]['max_z']<=life['pos'][2]:
+			if not alife.chunks.can_see_chunk(life, chunk_key):
 				continue
 		
 		if get_chunks:

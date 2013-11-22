@@ -18,10 +18,12 @@ import time
 
 #@profile
 def look(life):
-	if life['think_rate']%6 and not 'player' in life:
-		return False
+	for target_id in life['know']:
+		if life['know'][target_id]['last_seen_time']:
+			life['know'][target_id]['last_seen_time'] += 1
 	
-	life['seen'] = []
+	if life['think_rate'] % numbers.clip(life['think_rate_max'], 0, 6) and not 'player' in life:
+		return False
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
@@ -37,12 +39,13 @@ def look(life):
 			if alife['id'] == life['id']:
 				continue
 			
-			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life)+15:
-				_nearby_alife.append(alife['pos'])
+			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
+				_nearby_alife.append(alife['pos'][:])
 		
 		_nearby_alife.sort()
 		
 		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
+		
 		if not _last_nearby_alife == _nearby_alife:
 			brain.flag(life, '_nearby_alife', value=_nearby_alife)
 		else:
@@ -50,8 +53,7 @@ def look(life):
 		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
-	for target_id in life['know']:
-		life['know'][target_id]['last_seen_time'] += 1
+	life['seen'] = []
 	
 	for item_uid in life['know_items']:
 		life['know_items'][item_uid]['last_seen_time'] += 1
@@ -64,6 +66,9 @@ def look(life):
 			if ai['id'] == life['id']:
 				continue
 			
+			for target_id in life['know']:
+				life['know'][target_id]['last_seen_time'] += 1
+			
 			if not can_see_target(life, ai['id']):
 				continue
 			
@@ -74,9 +79,17 @@ def look(life):
 					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
 					judgement.judge_life(life, ai['id'])
 				
+				if ai['dead']:
+					if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
+						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+					life['know'][ai['id']]['dead'] = True
+				elif ai['asleep']:
+					life['know'][ai['id']]['asleep'] = True
+				
 				life['know'][ai['id']]['last_seen_time'] = 0
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 				life['know'][ai['id']]['escaped'] = False
+				life['know'][ai['id']]['state'] = ai['state']
 				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')
@@ -105,8 +118,6 @@ def look(life):
 			if _can_see:
 				if not item['uid'] in life['know_items']:
 					brain.remember_item(life, item)
-				elif not life['know_items'][item['uid']]['last_seen_time']:
-					continue
 	
 				if item['owner']:
 					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
@@ -157,16 +168,13 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		for pos in _line:
 			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
 				return False
-			try:
-				if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
-					_ret_line = []
-					if strict:
-						return False
-					
-					continue
-			except:
-				print pos, pos1
-				raise Exception(pos1)
+			
+			if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
+				_ret_line = []
+				if strict:
+					return False
+				
+				continue
 	
 	return _ret_line
 
@@ -314,29 +322,15 @@ def find_visible_items(life):
 def find_known_items(life, matches={}, only_visible=True):
 	_match = []
 	
-	for item in life['know_items'].values():
+	_could_meet_with = []
+	for need in brain.retrieve_from_memory(life, 'needs_to_meet'):
+		_could_meet_with.extend(need['could_meet_with'])
+	
+	for item_uid in brain.get_matching_remembered_items(life, matches, no_owner=True, only_visible=only_visible):
 		#TODO: Offload?
-		if not item['item'] in ITEMS:
-			continue
+		_item = ITEMS[item_uid]
 		
-		_item = ITEMS[item['item']]
-		
-		if only_visible and not can_see_position(life, _item['pos']):
-			continue
-		
-		if items.is_item_owned(item['item']):
-			continue
-		
-		if 'demand_drop' in _item['flags']:
-			continue
-		
-		if _item['lock']:
-			continue
-		
-		if not logic.matches(_item, matches):
-			continue
-		
-		_match.append(item['item'])
+		_match.append(item_uid)
 	
 	return _match
 

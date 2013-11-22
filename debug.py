@@ -8,7 +8,7 @@ import items
 import life
 
 def suicide():
-	life.kill(LIFE[SETTINGS['controlling']], 'suicide')
+	life.kill(LIFE[SETTINGS['following']], 'suicide')
 
 def kill(life_id):
 	life.kill(LIFE[life_id], 'suicide')
@@ -32,10 +32,6 @@ def make_thirsty(life_id):
 
 def simple_lights():
 	SETTINGS['draw light'] = False
-
-def love_me():
-	for target in LIFE[SETTINGS['controlling']]['know']:
-		alife.brain.add_impression(LIFE[target], LIFE[SETTINGS['controlling']]['id'], 'follow', {'influence': 100})
 
 def time(time):
 	WORLD_INFO['real_time_of_day'] = time

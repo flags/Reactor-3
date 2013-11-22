@@ -35,9 +35,9 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 		_knows = brain.knows_alife_by_id(life, _target)
 		if _target and judgement.get_nearest_trusted_target(life):
 			if _knows:
-				speech.announce(life, 'under_attack', public=True, attacker=_target, last_seen_at=_knows['last_seen_at'])
+				speech.announce(life, 'attacked_by_hostile', public=True, target_id=_target, last_seen_at=_knows['last_seen_at'])
 			else:
-				speech.announce(life, 'under_attack', public=True, attacker=_target)
+				speech.announce(life, 'attacked_by_hostile', public=True, target_id=_target)
 	
 	#if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
 	#	_closest_target = get_closest_target(life, _all_targets)

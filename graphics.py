@@ -4,6 +4,8 @@ from tiles import *
 import libtcodpy as tcod
 
 import numbers
+import dialog
+import logic
 import life
 
 import logging
@@ -54,7 +56,7 @@ def init_libtcod(terraform=False):
 	
 	LOS_BUFFER[0] = []
 
-def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, require_refresh=False):
+def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
 	if get_view_by_name(name):
 		raise Exception('View with name \'%s\' already exists.' % name)
 	
@@ -66,18 +68,19 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, requir
 	         'position': [x, y],
 	         'draw_size': (dw, dh),
 	         'view_size': (w, h),
-	         'alpha': alpha,
 	         'layer': layer,
+	         'fade': [fore_opacity, back_opacity],
+	         'transparent': transparent,
 	         'name': name,
 	         'light_buffer': None,
 	         'char_buffer': [numpy.zeros((dh, dw), dtype=numpy.int16),
 	                          numpy.zeros((dh, dw), dtype=numpy.int16)],
-	         'col_buffer': ((numpy.zeros((dh, dw)),
+	         'col_buffer': [[numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)),
-	                         numpy.zeros((dh, dw))),
-	                        (numpy.zeros((dh, dw)),
+	                         numpy.zeros((dh, dw))],
+	                        [numpy.zeros((dh, dw)),
 	                         numpy.zeros((dh, dw)),
-	                         numpy.zeros((dh, dw)))),
+	                         numpy.zeros((dh, dw))]],
 	         'require_refresh': require_refresh,
 	         '_dirty': False,
 	         'id': _v_id}
@@ -85,6 +88,12 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, requir
 	if lighting:
 		_view['light_buffer'] = [numpy.zeros((dh, dw), dtype=numpy.int16),
 		                         numpy.zeros((dh, dw), dtype=numpy.int16)]
+	
+	if transparent:
+		_view['fade'][1] = 0
+		_view['col_buffer'][1][0] += 255
+		_view['col_buffer'][1][2] += 255
+		tcod.console_set_key_color(_view['console'], tcod.Color(255, 0, 255))
 	
 	SETTINGS['viewid'] += 1
 	VIEWS[name] = _view
@@ -96,6 +105,14 @@ def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, requir
 	#	set_active_view(name)
 	
 	return _view
+
+def clear_view(view_name, color=tcod.black):
+	_view = get_view_by_name(view_name)
+	
+	for col_buffer in _view['col_buffer']:
+		col_buffer[0] = col_buffer[0].clip(color.r)
+		col_buffer[1] = col_buffer[1].clip(color.g)
+		col_buffer[2] = col_buffer[2].clip(color.b)
 
 def clear_views():
 	for key in VIEWS.keys():
@@ -113,10 +130,14 @@ def clear_scene():
 	for key in VIEW_SCENE.keys():
 		del VIEW_SCENE[key]
 	
-	for entry in VIEW_SCENE_CACHE[:]:
+	for entry in VIEW_SCENE_CACHE.copy():
 		VIEW_SCENE_CACHE.remove(entry)
 	
 	logging.debug('Cleared scene.')
+
+def fade_view(view_name, fore_fade, back_fade):
+	_view = get_view_by_name(view_name)
+	_view['fade'] = [fore_fade, back_fade]
 
 def _is_view_dirty(view):
 	return view['_dirty']
@@ -154,7 +175,7 @@ def set_view_dirty(view_name):
 
 def _add_view_to_scene(view):
 	if view['layer'] in VIEW_SCENE:
-		if view in VIEW_SCENE[view['layer']]:
+		if view['name'] in [v['name'] for v in VIEW_SCENE[view['layer']]]:
 			raise Exception('View \'%s\' already in scene.' % view['name'])
 		
 		VIEW_SCENE[view['layer']].append(view)
@@ -240,19 +261,44 @@ def render_scene():
 				             view['draw_size'][1],
 				             0,
 				             view['position'][0],
-				             view['position'][1])
+				             view['position'][1],
+			                 view['fade'][0],
+			                 view['fade'][1])
 
 def prepare_map_views():
+	if get_active_view() == 'map':
+		return False
+	
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
 	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
 	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
 	
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
+	#add_view_to_scene_by_name('console')
+	add_view_to_scene_by_name('overlay')
+	#add_view_to_scene_by_name('chunk_map')
+	
+	#fade_view('overlay', 1, 1)
 
 	set_active_view('map')
 
+def prepare_terraform_views():
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	
+	add_view_to_scene_by_name('map')
+	set_active_view('map')
+
 def start_of_frame(draw_char_buffer=True):
+	clear_view('overlay', color=tcod.Color(255, 0, 255))
+	
+	if not logic.draw_event() and SETTINGS['controlling']:
+		_dialog = life.has_dialog(LIFE[SETTINGS['controlling']])
+		if _dialog:
+			dialog.draw_dialog(_dialog)	
+	
 	draw_scene()
 
 def start_of_frame_terraform():
@@ -320,6 +366,9 @@ def blit_string(x, y, text, view_name, console=0, fore_color=tcod.white, back_co
 	_view = get_view_by_name(view_name)
 	i = 0
 	
+	if _view['transparent'] and not back_color:
+		back_color = tcod.black
+	
 	for c in text:
 		_back_color = back_color
 		
@@ -368,8 +417,8 @@ def fade_to_white(amt):
 	
 	for x in range(MAP_WINDOW_SIZE[0]):
 		for y in range(MAP_WINDOW_SIZE[1]):
-			darken_tile(x,y,0)
-			lighten_tile(x,y,amt)
+			darken_tile(x, y, 0)
+			lighten_tile(x, y, amt)
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	if time.time()%1>=0.5:
@@ -471,11 +520,14 @@ def draw_message_box():
 			_y_mod += 1
 			_text = _text[_view['draw_size'][0]-2:]
 			
-			if _y_mod >= MESSAGE_LOG_MAX_LINES:
+			if _y_mod > MESSAGE_LOG_MAX_LINES:
 				break
 			
 			if not _text.startswith(' ') and _text:
 				_text = ' '+_text
+		
+		if _y_mod > MESSAGE_LOG_MAX_LINES:
+			break
 
 def draw_status_line():
 	_flashing_text = []
@@ -632,8 +684,8 @@ def position_is_in_frame(pos):
 	if not _view:
 		return False
 	
-	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['draw_size'][0], 0, _view['view_size'][0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['draw_size'][1], 0, _view['view_size'][1]):
+	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['view_size'][0], 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['view_size'][1], 0, MAP_SIZE[1]):
 		return True
 	
 	return False
@@ -690,8 +742,6 @@ def end_of_frame(draw_map=True):
 	if is_view_in_scene('message_box'):
 		tcod.console_set_default_foreground(0, tcod.gray)
 		tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
-	#if not SETTINGS['map_slices'] and draw_map:
-	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_dialog = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:

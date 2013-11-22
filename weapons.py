@@ -155,7 +155,8 @@ def fire(life, target, limb=None):
 	_bullet = items.get_item_from_uid(_feed['rounds'].pop())
 	_bullet['pos'] = life['pos'][:]
 	_bullet['start_pos'] = life['pos'][:]
-	_bullet['owner'] = life['id']
+	_bullet['owner'] = None
+	_bullet['shot_by'] = life['id']
 	_bullet['aim_at_limb'] = limb
 	
 	life['recoil'] += _bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life))
@@ -163,8 +164,8 @@ def fire(life, target, limb=None):
 	items.add_to_chunk(_bullet)
 	
 	if gfx.position_is_in_frame(life['pos']):
-		effects.create_light(life['pos'], tcod.yellow, 2, 0, fade=0.8)
-		effects.create_light(_bullet['pos'], tcod.yellow, 1, 0, fade=0.65, follow_pos=_bullet['pos'])
+		effects.create_light(life['pos'], tcod.yellow, 7, 1, fade=2.5)
+		effects.create_light(_bullet['pos'], tcod.yellow, 7, 1, fade=0.65, follow_item=_bullet['uid'])
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 	del _bullet['parent']

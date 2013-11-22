@@ -1,16 +1,33 @@
-New in version 0.6.1:
+New in version 0.6.5:
 	* Optimized ALife logic
 		* Dogs now follow the pack leader and spawn in larger amounts.
 		* ALife no longer think as much during non-combat tasks.
+		* Several movement functions optimized to prevent stalling.
 	* Enhanced groups
 		* Groups will now gather resources and engage in combat with other groups.
 	* The player and ALife can now "hear" noises (firearms, explosions, etc.)
 		* Note: Actual sounds are planned for a future version.
+	* Reworked judgement.
+		* NPCs won't talk as much and judge based on a wider variety of factors.
+	* Completely rewrote all dialog-related functions.
+		* An extended version of RawScript is now supported.
+		* All dialog strings are stored externally in `data\text\dialog.txt`.
+		* Questions have been reimplemented.
+	* Faster, more detailed world generation.
+	* Rewrote damage model.
+		* The size and material of an item now play a role in damage calculations.
+	* Groups are no longer tracked by the world.
+		* Instead, individuals track their interpretations of what the group is.
+	* NPCs can now learn more details about others and items.
+		* This information can also become out of date, leading to bad decision making.
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
+	* NPCs now make sure their LOS is clear before opening fire.
+	* Weapons now have multiple firing modes (using `f`).
+	* Group leaders can now issue attack orders (hit `tab`)
+	* Added movie mode (recording) (hit `?` to start, again to quit.)
 	* ALife take more factors into consideration when deciding if they are safe.
 	* Worlds are initially seeded with one group of a random motive.
-	* Weapons now have multiple firing modes (using `f`).
 	* Added Night Terrors.
 	* Revamped recoil.
 		* Recoil now depends on the type of ammo used.
@@ -19,7 +36,7 @@ New in version 0.6.1:
 	* A cache now exists for deleted items that are still referenced by ALife.
 		* This is untested on longer playthroughs.
 	* Updated map generation.
-		* Maps are now 600x600 and contain multiple larger towns/cities.
+		* Maps can now be as large as 600x600 and contain multiple larger towns/cities.
 	* Experimental optimizations in ALife think rate.
 	* Slicing/zoning-related speed-ups.
 	* New map format that no longer eats memory.
@@ -28,6 +45,9 @@ New in version 0.6.1:
 	* Created "views," which allows for easier management of multiple consoles.
 		* Note: Some legacy code remains and is being phased out.
 	* Explosives are now more effective.
+	* Certain items can now be activated (via `a`)
+	* Added caching layer for faster item retrieval.
+	* Rewrote lighting system.
 	
 	Bugfixes:
 		* Forest placement no longer crashes mapgen.

@@ -133,7 +133,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			if _weather_light_map:
 				WORLD_INFO['weather']['light_map'] = _weather_light_map
-				print WORLD_INFO['weather']
 			
 			logging.debug('Reloading slices...')
 			reload_slices()
@@ -198,6 +197,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		
+		#with open('ref_dump.txt', 'w') as w:
+		#	w.write(json.dumps(WORLD_INFO['reference_map'], indent=3))
+		
 		for x in range(MAP_SIZE[0]):
 			for y in range(MAP_SIZE[1]):
 				for z in range(MAP_SIZE[2]):
@@ -253,22 +255,38 @@ def render_lights(source_map):
 		return False
 
 	reset_lights()
+	SUN = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
-	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN[0])
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN[1])
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN[2])
 	(x, y) = SETTINGS['light mesh grid']
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
+		_x_range = light['pos'][0]-CAMERA_POS[0]
+		_y_range = light['pos'][1]-CAMERA_POS[1]
+		
+		#print _x_range, _y_range
+		
+		if _x_range <= -20 or _x_range>=MAP_WINDOW_SIZE[0]+20:
+			continue
+		
+		if _y_range <= -20 or _y_range>=MAP_WINDOW_SIZE[1]+20:
+			continue
+		
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
 		else:
 			light['old_pos'] = light['pos'][:]
 		
 		if 'follow_item' in light:
-			light['pos'] = items.get_pos(light['follow_item'])
+			if not light['follow_item'] in ITEMS:
+				_remove_lights.append(light)
+				continue
+				
+			light['pos'] = items.get_pos(light['follow_item'])[:]
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
@@ -278,7 +296,7 @@ def render_lights(source_map):
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), 25, top_left=_top_left)
+			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), light['brightness']*2, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -306,16 +324,26 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
-		brightness = numpy.clip(brightness * 255.0, 0, 255)
+		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
+		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
+		brightness *= LOS_BUFFER[0]
 		
-		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
-		_mod = numbers.clip(_mod-1, 0, 1)
-		SUN = weather.get_lighting()#(255*_mod, 165*_mod, 0*_mod)
-		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
-		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
-		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		#_mod = numbers.clip(_mod-1, 0, 1)
+		#(255*_mod, 165*_mod, 0*_mod)
+		#print brightness
+		#light['brightness'] = 25
+		#light['color'][0] = 255*(light['brightness']/255.0)
+		#light['color'][1] = (light['brightness']/255.0)
+		#light['color'][2] = 255*(light['brightness']/255.0)
+		RGB_LIGHT_BUFFER[0] -= (brightness.clip(0, 2)*(light['color'][0]))#numpy.subtract(RGB_LIGHT_BUFFER[0], light['color'][0]).clip(0, 255)
+		RGB_LIGHT_BUFFER[1] -= (brightness.clip(0, 2)*(light['color'][1]))#numpy.subtract(RGB_LIGHT_BUFFER[1], light['color'][1]).clip(0, 255)
+		RGB_LIGHT_BUFFER[2] -= (brightness.clip(0, 2)*(light['color'][2]))#numpy.subtract(RGB_LIGHT_BUFFER[2], light['color'][2]).clip(0, 255)
+		
+		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[2] *= LOS_BUFFER[0]
 		
 		if logic.can_tick():
 			if light['fade']:
@@ -325,7 +353,7 @@ def render_lights(source_map):
 				_remove_lights.append(light)
 	
 	for light in _remove_lights:
-		WORLD_INFO['lights'].remove(light)
+		effects.delete_light(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]
@@ -561,6 +589,14 @@ def update_chunk_map():
 	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
 		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
+			_chunk_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+			
+			#if _type in ['forest', 'field']:
+			#	continue
+			
+			if _chunk_type == 'town':
+				_chunk_type = 'building'
+			
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
 				'life': [],
@@ -570,6 +606,7 @@ def update_chunk_map():
 				'flags': {},
 				'reference': None,
 				'last_updated': None,
+				'type': _chunk_type,
 				'max_z': 0}
 			
 			_tiles = {}
@@ -600,16 +637,16 @@ def update_chunk_map():
 					else:
 						_tiles[_type] = 1
 			
-			_total_tiles = sum(_tiles.values())
-			for tile in _tiles.keys():
-				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
+			#_total_tiles = sum(_tiles.values())
+			#for tile in _tiles.keys():
+				#_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'building' in _tiles:# and _tiles['building']>=9:
-				_chunk_map[_chunk_key]['type'] = 'building'
-			elif 'road' in _tiles and _tiles['road']>=15:
-				_chunk_map[_chunk_key]['type'] = 'road'
-			else:
-				_chunk_map[_chunk_key]['type'] = 'other'
+			#if 'building' in _tiles:# and _tiles['building']>=9:
+				#_chunk_map[_chunk_key]['type'] = 'building'
+			#elif 'road' in _tiles and _tiles['road']>=15:
+				#_chunk_map[_chunk_key]['type'] = 'road'
+			#else:
+				#_chunk_map[_chunk_key]['type'] = 'other'
 	
 	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
@@ -721,3 +758,60 @@ def generate_reference_maps():
 	logging.debug('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
 	logging.debug('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
 	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
+
+def draw_chunk_map(life=None, show_faction_ownership=False):
+	#_x_min = MAP_CURSOR[0]/WORLD_INFO['chunk_size']
+	#_y_min = MAP_CURSOR[1]/WORLD_INFO['chunk_size']
+	#_x_max = numbers.clip(_x_min+WINDOW_SIZE[0]/WORLD_INFO['chunk_size'], _x_min, WINDOW_SIZE[0])
+	#_y_max = numbers.clip(_y_min+WINDOW_SIZE[1]/WORLD_INFO['chunk_size'], _y_min, WINDOW_SIZE[1])
+	#print MAP_SIZE
+	
+	#print _x_min, _x_max, _y_min, _y_max
+	_life_chunk_key = None
+	
+	if life:
+		_life_chunk_key = lfe.get_current_chunk_id(life)
+	
+	for x in range(0, MAP_SIZE[0]/WORLD_INFO['chunk_size']):
+		_d_x = x
+		
+		if _d_x >= MAP_WINDOW_SIZE[0]:
+			continue
+		
+		for y in range(0, MAP_SIZE[1]/WORLD_INFO['chunk_size']):
+			_d_y = y
+			_chunk_key = '%s,%s' % (_d_x*WORLD_INFO['chunk_size'], _d_y*WORLD_INFO['chunk_size'])
+			_draw = True
+			_fore_color = tcod.darker_gray
+			_back_color = tcod.darkest_gray
+			
+			if _d_y >= MAP_WINDOW_SIZE[1]:
+				continue
+			
+			if life:
+				if not _chunk_key in life['known_chunks']:
+					_draw = False
+			
+			if _draw:
+				_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+				_char = 'x'
+				
+				if _type == 'building':
+					_fore_color = tcod.light_gray
+					_char = 'B'
+				elif _type == 'field':
+					_fore_color = tcod.yellow
+				elif _type == 'forest':
+					_fore_color = tcod.dark_green
+				elif _type in ['road', 'driveway']:
+					_fore_color = tcod.white
+					_back_color = tcod.black
+					_char = '.'
+				
+				if _chunk_key == _life_chunk_key and time.time()%1>=.5:
+					_fore_color = tcod.white
+					_char = 'X'
+				
+				gfx.blit_char_to_view(_d_x, _d_y, _char, (_fore_color, _back_color), 'chunk_map')
+			else:
+				gfx.blit_char_to_view(_d_x, _d_y, 'x', (tcod.darker_gray, tcod.darkest_gray), 'chunk_map')

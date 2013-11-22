@@ -5,6 +5,7 @@ import life as lfe
 import historygen
 import judgement
 import survival
+import speech
 import groups
 import combat
 import camps
@@ -52,6 +53,30 @@ def desires_interaction(life):
 	
 	return True
 
+def desires_first_contact_with(life, life_id):
+	#print life['name'], LIFE[life_id]['name'],brain.knows_alife_by_id(life, life_id)['alignment']
+	if not brain.knows_alife_by_id(life, life_id)['alignment'] == 'neutral':
+		return False
+	
+	if life['group'] and not groups.is_leader(life, life['group'], life['id']):
+		#Don't talk if we're in a group and near our leader.
+		#TODO: #judgement Even then, we should consider having group members avoid non-members regardless.
+		#TODO: #judgement How do group types play into this?
+		_leader = brain.knows_alife_by_id(life, groups.get_leader(life, life['group']))
+		
+		if _leader:
+			#TODO: #judgement Placeholder for future logic.
+			if _leader['last_seen_time'] <= 1000:
+				return False
+	
+	if life['stats']['motive_for_crime']>=4:
+		return True
+	
+	if life['stats']['sociability']>=6:
+		return True
+	
+	return False
+
 def desires_conversation_with(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
@@ -76,37 +101,22 @@ def desires_to_create_group(life):
 	
 	return True
 
-def wants_to_abandon_group(life, group_id, with_new_group_in_mind=None):
-	if with_new_group_in_mind:
-		if judgement.judge_group(life, with_new_group_in_mind)>get_minimum_group_score(life):
-			return True
+def wants_to_abandon_group(life, group_id):
+	_trusted = 0
+	_hostile = 0
 	
-	_group = groups.get_group(group_id)
-	if WORLD_INFO['ticks']-_group['time_created']<life['stats']['patience']:
-		return False
-	
-	_top_group = {'id': -1, 'score': 0}
-	for memory in lfe.get_memory(life, matches={'group': '*'}):
-		if not memory['group'] in WORLD_INFO['groups']:
+	for member in groups.get_group_memory(life, group_id, 'members'):
+		if life['id'] == member:
 			continue
 		
-		_score = 0
+		_knows = brain.knows_alife_by_id(life, member)
 		
-		if 'trust' in memory:
-			_score += memory['trust']
-		
-		if 'danger' in memory:
-			_score += memory['danger']
+		if _knows['alignment'] == 'hostile':
+			_hostile += 1
+		else:
+			_trusted += 1
 	
-		if _score > _top_group['score'] or _top_group['id'] == -1:
-			_top_group['id'] = memory['group']
-			_top_group['score'] = _score
-		
-	if _top_group['score']:
-		if judgement.judge_group(life, _top_group['id'])>get_minimum_group_score(life):
-			return True
-	
-	return False
+	return _hostile>_trusted
 
 def desires_group(life, group_id):
 	if life['group']:
@@ -121,8 +131,8 @@ def desires_to_create_camp(life):
 	if not 'CAN_GROUP' in life['life_flags']:
 		return False
 		
-	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life['group'], life['id']):
-		if len(groups.get_group(life['group'])['members'])>1:
+	if life['group'] and not groups.get_camp(life['group']) and groups.is_leader(life, life['group'], life['id']):
+		if len(groups.get_group(life, life['group'])['members'])>1:
 			return True
 	
 	return False
@@ -207,30 +217,9 @@ def get_group_motive(life):
 	
 	return 'survival'
 
-def get_influence_from(life, life_id):
-	judgement._calculate_impressions(life, life_id)
-	_target = LIFE[life_id]
-	_know = brain.knows_alife_by_id(life, life_id)
-	_score = 0
-	
-	if life['group'] and life['group'] == _target['group']:
-		_group = groups.get_group(life['group'])
-		
-		if _group['leader'] == _target['id']:
-			_power = _know['trust']+_know['danger']
-			
-			if judgement.can_trust(life, life_id):
-				_score += _power
-			else:
-				_score -= _power
-	
-	_score += _target['stats']['charisma']
-	
-	return numbers.clip(_score*2, 0, MAX_INFLUENCE_FROM-((10-_target['stats']['patience'])*8))
-
 def get_minimum_camp_score(life):
-	if life['group'] and groups.is_leader(life['group'], life['id']):
-		return len(groups.get_group(life['group'])['members'])
+	if life['group'] and groups.is_leader(life, life['group'], life['id']):
+		return len(groups.get_group(life, life['group'])['members'])
 	
 	return 3
 
@@ -238,19 +227,20 @@ def wants_group_member(life, life_id):
 	if not life['group']:
 		return False
 	
-	if not groups.is_leader(life['group'], life['id']):
+	if groups.is_member(life, life['group'], life_id):
+		return False
+	
+	if not groups.is_leader(life, life['group'], life['id']):
+		return False
+	
+	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
 		return False
 	
 	_know = brain.knows_alife_by_id(life, life_id)
 	if not _know:
 		return False
 	
-	#TODO: Second chance?
-	if brain.get_alife_flag(life, life_id, 'invited_to_group'):
-		return False
-	
-	if not lfe.execute_raw(life, 'group', 'wants_group_member', life_id=life_id):
-		print 'group not compat'
+	if not judgement.can_trust(life, life_id):
 		return False
 	
 	return True
@@ -267,6 +257,9 @@ def will_obey(life, life_id):
 	return False
 
 def can_talk_to(life, life_id):
+	if LIFE[life_id]['asleep'] or LIFE[life_id]['dead']:
+		return False
+		
 	if not lfe.execute_raw(life, 'talk', 'can_talk_to', life_id=life_id):
 		return False
 	
@@ -334,7 +327,7 @@ def is_incapacitated(life):
 	
 	for limb in life['body']:
 		_count += lfe.limb_is_cut(life, limb)
-		_count += lfe.limb_is_in_pain(life, limb)
+		_count += lfe.get_limb_pain(life, limb)
 	
 	if (_count/float(_size))>=.35:
 		return True
@@ -348,11 +341,11 @@ def is_intimidated_by(life, life_id):
 	return False
 
 def is_intimidated(life):
-	for target_id in judgement.get_targets(life, ignore_escaped=True):
-		if is_intimidated_by(life, target_id):
-			return True
+	#for target_id in judgement.get_targets(life, ignore_escaped=True):
+	#	if is_intimidated_by(life, target_id):
+	#		return True
 	
-	for target_id in judgement.get_combat_targets(life, ignore_escaped=True):
+	for target_id in judgement.get_threats(life, ignore_escaped=True):
 		if is_intimidated_by(life, target_id):
 			return True
 	
@@ -440,7 +433,7 @@ def is_combat_target_too_close(life):
 		return False
 	
 	#TODO: Unhardcode
-	if _nearest_combat_target['distance'] <= 10:
+	if _nearest_combat_target['distance'] <= 3:
 		return True
 	
 	return False
@@ -508,48 +501,7 @@ def is_safe_in_shelter(life, life_id):
 	if not lfe.is_in_shelter(life):
 		return True
 	
-	if not is_compatible_with(life, life_id):
-		return False
-	
 	return True
-
-def is_compatible_with(life, life_id):
-	_diff = MAX_CHARISMA-abs(life['stats']['charisma']-LIFE[life_id]['stats']['charisma'])	
-	
-	#I don't trust modders with this
-	if not is_same_species(life, life_id):
-		return False
-	
-	#print _diff, life['stats']['sociability']
-	if _diff <= life['stats']['sociability']:
-		return True
-	
-	#TODO: Hardcoded
-	if judgement.get_trust(life, life_id)>=5:
-		return True
-	
-	return False
-
-def is_target_group_friendly(life, life_id):
-	_target = LIFE[life_id]
-	
-	#Different groups
-	if _target['group'] and not _target['group'] == life['group']:
-		if life['group']:
-			_motive = groups.get_motive(life['group'])
-			
-			if _motive == 'crime':
-				return False
-			
-			if _motive == 'survival' and judgement.is_group_hostile(life, _target['group']):
-				return False
-		else:
-			if judgement.is_group_hostile(life, _target['group']):
-				return False
-		
-	return True
-	#if life['group']:
-	#((life['group'] and groups.is_member(life['group'], life_id)) or (not LIFE[life_id]['group'] or not life['group']))==True
 
 def is_born_leader(life):
 	return life['stats']['is_leader']
@@ -564,5 +516,115 @@ def _has_attacked(life, life_id, target_list):
 def has_attacked_trusted(life, life_id):
 	return _has_attacked(life, life_id, judgement.get_trusted(life))
 
+def has_attacked_self(life, life_id):
+	return len(lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
+
+def react_to_attack(life, life_id):
+	#if not speech.discussed(life, ai['life'], ''):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	if not _knows['alignment'] == 'hostile':
+		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
+		
+	if life['group']:
+		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'])
+
+def react_to_tension(life, life_id):
+	if life['group'] and not groups.is_leader(life, life['group'], life['id']) and groups.get_leader(life, life['group']):
+		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
+			return False
+	
+	print life['name'], 'tension with', LIFE[life_id]['name']
+	
+	_has_warned_previously = speech.has_sent(life, life_id, 'confront')
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	if _has_warned_previously:
+		_warned = brain.get_alife_flag(life, life_id, 'warned') 
+		if _warned:
+			brain.flag_alife(life, life_id, 'warned', value=_warned+1)
+			
+			if _warned+1>100 and WORLD_INFO['ticks']-speech.has_sent(life, life_id, 'confront')>60:
+				speech.start_dialog(life, life_id, 'confront_again')
+				speech.send(life, life_id, 'confront')
+			elif _warned+1>150:
+				speech.start_dialog(life, life_id, 'confront_break')
+		else:
+			brain.flag_alife(life, life_id, 'warned', value=1)
+	else:
+		speech.start_dialog(life, life_id, 'confront')
+		speech.send(life, life_id, 'confront')
+
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
+
+def get_goal_alignment_for_target(life, life_id):
+	_genuine = 100
+	_malicious = 100
+	
+	_malicious*=life['stats']['motive_for_crime']/10.0
+	
+	if life['stats']['lone_wolf']:
+		_malicious*=.65
+		_genuine*=.65
+	
+	if life['stats']['self_absorbed']:
+		_malicious*=.85
+	
+	if not _genuine>=50 and not _malicious>=50:
+		return False
+	
+	if _malicious>=75 and _genuine>=75:
+		return 'feign_trust'
+	
+	if _genuine>_malicious:
+		return 'trust'
+	
+	return 'malicious'
+
+def change_alignment(life, life_id, alignment):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	if not _knows:
+		brain.meet_alife(life, LIFE[life_id])
+		_knows = brain.knows_alife_by_id(life, life_id)
+	
+	logging.debug('%s changed alignment of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), alignment))
+	_knows['alignment'] = alignment
+
+def establish_trust(life, life_id):
+	change_alignment(life, life_id, 'trust')
+
+def establish_feign_trust(life, life_id):
+	change_alignment(life, life_id, 'feign_trust')
+
+def establish_aggressive(life, life_id):
+	change_alignment(life, life_id, 'aggressive')
+
+def establish_hostile(life, life_id):
+	change_alignment(life, life_id, 'hostile')
+
+def establish_scared(life, life_id):
+	change_alignment(life, life_id, 'scared')
+
+def declare_group_target(life, target_id, alignment):
+	change_alignment(life, target_id, alignment)
+	
+	groups.announce(life, life['group'], 'add_group_target', target_id=target_id)
+
+def declare_group(life, group_id, alignment):
+	groups.update_group_memory(life, group_id, 'alignment', alignment)
+	
+	for member in groups.get_group_memory(life, group_id, 'members'):
+		change_alignment(life, member, alignment)
+	
+	logging.debug('%s declared group %s %s.' % (' '.join(life['name']), group_id, alignment))
+
+def declare_group_trusted(life, group_id):
+	declare_group(life, group_id, 'trust')
+
+def declare_group_hostile(life, group_id):
+	declare_group(life, group_id, 'hostile')
+
+def declare_group_scared(life, group_id):
+	declare_group(life, group_id, 'scared')

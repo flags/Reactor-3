@@ -4,6 +4,7 @@
 
 from globals import *
 
+import effects
 import items
 import life
 
@@ -21,15 +22,19 @@ def execute(script, **kvargs):
 			_i = items.create_item(_args[0], position=_args[1])
 			life.add_item_to_inventory(kvargs['owner'], _i)
 		elif function == 'DELETE':
-			_i = items.get_item_from_uid(life.remove_item_from_inventory(kvargs['owner'], kvargs['item']))
-			items.delete_item(_i)
+			items.delete_item(ITEMS[kvargs['item_uid']])
 		elif function == 'LIGHT_FOLLOW':
 			_item = ITEMS[kvargs['item_uid']]
 			
-			WORLD_INFO['lights'].append({'pos': kvargs['owner']['pos'],
-			               'follow_item': kvargs['item_uid'],
-			               'color': (255, 0, 255), 'brightness': _item['brightness'],
-			               'shake': _item['light_shake']})
+			effects.create_light(items.get_pos(kvargs['item_uid']),
+			                     (255, 255, 255),
+			                     _item['brightness'],
+			                     _item['light_shake'],
+			                     follow_item=kvargs['item_uid'])
+		elif function == 'LIGHT_FOLLOW_REMOVE':
+			_item = ITEMS[kvargs['item_uid']]
+			
+			effects.delete_light_at(items.get_pos(kvargs['item_uid']))
 		else:
 			logging.error('Script: \'%s\' is not a valid function.' % function)
 
@@ -41,7 +46,7 @@ def initiate(owner, text):
 def parse_arguments(arguments, **kvargs):
 	_returned_arguments = []
 	for arg in [arg.strip().rstrip(')') for arg in arguments.split(',')]:
-		_returned_arguments.append(parse_argument(kvargs['owner'], arg))
+		_returned_arguments.append(parse_argument(ITEMS[kvargs['item_uid']], arg))
 	
 	return _returned_arguments
 

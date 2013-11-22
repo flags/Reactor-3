@@ -57,6 +57,7 @@ def remove_item_from_needs(life, item_uid):
 		if item_uid in need['could_meet_with']:
 			need['could_meet_with'].remove(item_uid)
 
+#@profile
 def process(life):
 	for need in life['needs'].values():
 		if need['type'] == 'item':
@@ -144,6 +145,14 @@ def has_needs_to_meet(life):
 		return False
 	
 	if len(_needs)>0:
+		return True
+	
+	return False
+
+def has_needs_to_satisfy(life):
+	_needs = brain.retrieve_from_memory(life, 'needs_to_satisfy')
+	
+	if _needs:
 		return True
 	
 	return False

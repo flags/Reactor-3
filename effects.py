@@ -90,7 +90,7 @@ def calculate_fire(fire):
 	if 'light' in fire:
 		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
 	elif not _neighbor_lit:
-		fire['light'] = create_light(fire['pos'], (255, 0, 255), .5*(fire['intensity']/8.0), 0.25)
+		fire['light'] = create_light(fire['pos'], (255, 69, 0), 17*(fire['intensity']/8.0), 0.25)
 
 def delete_fire(fire):
 	tiles.flag(WORLD_INFO['map'][fire['pos'][0]][fire['pos'][1]][fire['pos'][2]], 'heat', False)
@@ -99,7 +99,7 @@ def delete_fire(fire):
 	create_ash(fire['pos'])
 	
 	if 'light' in fire:
-		WORLD_INFO['lights'].remove(fire['light'])
+		delete_light(fire['light'])
 
 def create_fire(pos, intensity=1):
 	intensity = numbers.clip(intensity, 1, 8)
@@ -182,15 +182,31 @@ def light_exists_at(pos):
 	
 	return False
 
-def create_light(pos, color, brightness, shake, fade=0, follow_pos=None):
-	_light = {'pos': list(pos), 'color': color, 'brightness': brightness, 'shake': shake, 'fade': fade}
+def create_light(pos, color, brightness, shake, fade=0, follow_item=None):
+	_light = {'pos': list(pos), 'color': list(color), 'brightness': brightness, 'shake': shake, 'fade': fade}
 	
-	if follow_pos:
-		_light['pos'] = follow_pos
+	_light['color'][0] *= _light['brightness']/50.0
+	_light['color'][1] *= _light['brightness']/50.0
+	_light['color'][2] *= _light['brightness']/50.0
+	
+	if follow_item:
+		_light['follow_item'] = follow_item
 	
 	WORLD_INFO['lights'].append(_light)
 	
 	return _light
+
+def delete_light(light):
+	WORLD_INFO['lights'].remove(light)
+
+def delete_light_at(pos):
+	_light = light_exists_at(pos)
+	
+	if not _light:
+		logging.warning('Cannot remove light: No light exists at position %s, %s' % (pos[0], pos[1]))
+		return False
+	
+	delete_light(_light)
 
 def has_splatter(position, what=None):
 	#TODO: Make this into a dict so we can convert the position to a string and search that
@@ -201,15 +217,23 @@ def has_splatter(position, what=None):
 			
 			return splat
 
-def create_splatter(what, position, velocity=0, intensity=4):
+def create_splatter(what, position, velocity=[0, 0], intensity=4):
 	_splatter = has_splatter(tuple(position),what=what)
 	_intensity = numbers.clip(random.random(), intensity*.05, intensity*.1)
 	
 	if not _splatter:
-		_splatter = {'pos': list(position[:]),'what': what,'color': tcod.Color(0,0,0),'coef': _intensity}
-		_splatter['pos'][0] += random.randint(-velocity,velocity)
-		_splatter['pos'][1] += random.randint(-velocity,velocity)
-	
+		_splatter = {'pos': list(position[:]), 'what': what, 'color': tcod.Color(0, 0, 0), 'coef': _intensity}
+		
+		if velocity[0]>0:
+			_splatter['pos'][0] += random.randint(0, numbers.clip(int(round(velocity[0])), 0, 2))
+		elif velocity[0]<0:
+			_splatter['pos'][0] -= random.randint(0, numbers.clip(-int(round(velocity[0])), 0, 2))
+		
+		if velocity[1]>0:
+			_splatter['pos'][1] += random.randint(0, numbers.clip(int(round(velocity[1])), 0, 2))
+		elif velocity[1]<0:
+			_splatter['pos'][1] -= random.randint(0, numbers.clip(-int(round(velocity[1])), 0, 2))
+	 
 		if what == 'blood':
 			_splatter['color'].r = 150
 	else:

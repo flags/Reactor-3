@@ -130,7 +130,7 @@ def _calculate_trust(life, target_id):
 	_hard_trust = 0
 	_soft_trust = 0
 	
-	if life['group'] and groups.is_member(life['group'], target_id):
+	if life['group'] and groups.is_member(life, life['group'], target_id):
 		_hard_trust += 1
 	
 	for memory in lfe.get_memory(life, matches={'target': target_id, 'trust': '*'}):
@@ -148,13 +148,19 @@ def get_trust(life, target_id):
 	
 	return _knows['trust']
 
-def can_trust(life, life_id, low=0):
+def can_trust(life, life_id):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	if not _knows:
 		return False
 	
-	if _knows['trust']>=low:
+	if _knows['alignment'] in ['trust', 'feign_trust']:
+		return True
+	
+	if _knows['alignment'] == 'aggressive':
+		return False
+	
+	if _knows['trust']>=life['stats']['trustiness']:
 		return True
 	
 	return False
@@ -163,12 +169,12 @@ def get_tension(life):
 	return brain.retrieve_from_memory(life, 'tension')
 
 def get_tension_with(life, life_id):
-	if can_trust(life, life_id):
-		return 0
-	
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if not _target['last_seen_time'] and _target['life']['dead']:
+	if not _target['alignment'] == 'neutral' or not _target['last_seen_at']:
+		return 0
+	
+	if not _target['last_seen_time'] and _target['dead']:
 		return 0
 	
 	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
@@ -189,16 +195,33 @@ def parse_raw_judgements(life, target_id):
 def is_target_dangerous(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
-	if target['life']['dead']:
+	if target['dead']:
 		return False
 	
-	if target['danger']>=3 or (target['danger'] and combat.has_ready_weapon(life)):
-		if can_trust(life, target_id):
-			return False
-		
+	if target['alignment'] == 'trust':
+		return False
+	
+	if target['alignment'] == 'hostile':
 		return True
 	
 	return False
+
+def is_target_threat(life, target_id):
+	if lfe.execute_raw(life, 'judge', 'is_threat_if', life_id=target_id):
+		return True
+	
+	return False
+
+def _get_target_value(life, life_id, value):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	return _knows[value]
+
+def is_target_awake(life, life_id):
+	return not _get_target_value(life, life_id, 'asleep')
+
+def is_target_dead(life, life_id):
+	return _get_target_value(life, life_id, 'dead')
 
 def is_target_lost(life, target_id):
 	_know = brain.knows_alife_by_id(life, target_id)
@@ -215,6 +238,19 @@ def is_safe(life):
 		return False
 	
 	return True
+
+def is_scared(life):
+	for target in get_all_visible_life(life):
+		_knows = brain.knows_alife_by_id(life, target)
+		
+		if not _knows:
+			continue
+		
+		if _knows['alignment'] == 'scared' and not _knows['asleep'] and not _knows['dead']:
+			print life['name'], 'is scared'
+			return True
+	
+	return False
 
 def get_trusted(life, visible=True, invert=False, only_recent=False):
 	_trusted = []
@@ -235,25 +271,31 @@ def get_untrusted(life, visible=True):
 	return get_trusted(life, visible=visible, invert=True)
 
 def judge(life):
+	_threats = []
 	_combat_targets = []
-	_potential_combat_targets = []
+	_neutral_targets = []
 	_tension = 0
 	
 	for alife_id in life['know']:
+		if life['know'][alife_id]['last_seen_time'] >= 200 or life['know'][alife_id]['dead'] or not life['know'][alife_id]['last_seen_at']:
+			continue
+		
 		_tension += get_tension_with(life, alife_id)
 		
-		#TODO: This won't work... use would_be_a_good_idea_to_attack_target() or something
-		if is_target_dangerous(life, alife_id):
+		_threat = is_target_threat(life, alife_id)
+		if _threat:
 			_combat_targets.append(alife_id)
+			_threats.append(alife_id)
 		else:
-			_potential_combat_targets.append(alife_id)
+			_neutral_targets.append(alife_id)
 	
+	brain.store_in_memory(life, 'threats', _threats)
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)
-	brain.store_in_memory(life, 'targets', _potential_combat_targets)
+	brain.store_in_memory(life, 'targets', _neutral_targets)
 	brain.store_in_memory(life, 'tension_spike', _tension-get_tension(life))
 	brain.store_in_memory(life, 'tension', _tension)
 
-def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=False, ignore_lost=False, limit_distance=-1):
+def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=False, ignore_lost=False, limit_distance=-1, filter_func=None):
 	if not target_list:
 		return []
 	
@@ -268,26 +310,32 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 		if ignore_lost and _knows['escaped'] == 2:
 			continue
 		
-		if recent_only and _knows['last_seen_time'] >= 150:
+		if recent_only and _knows['last_seen_time'] >= 95:
 			continue
 		
-		if not limit_distance == -1 and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
+		if not limit_distance == -1 and _knows['last_seen_at'] and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
+			continue
+		
+		if filter_func and not filter_func(life, target):
 			continue
 	
 		_return_targets.append(target)
 	
 	return _return_targets
 	
-def get_targets(life, escaped_only=False, ignore_escaped=True, limit_distance=-1):
-	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped, limit_distance=limit_distance)
+def get_targets(life, escaped_only=False, ignore_escaped=True, limit_distance=-1, filter_func=None):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'targets'), escaped_only, ignore_escaped, limit_distance=limit_distance, filter_func=filter_func)
 
-def get_combat_targets(life, escaped_only=False, ignore_escaped=False, ignore_lost=True, recent_only=False, limit_distance=-1):
-	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, ignore_lost=ignore_lost, limit_distance=limit_distance)
+def get_combat_targets(life, escaped_only=False, ignore_escaped=False, ignore_lost=True, recent_only=False, limit_distance=-1, filter_func=None):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, ignore_lost=ignore_lost, limit_distance=limit_distance, filter_func=filter_func)
 
-def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1):
-	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance)
+def get_ready_combat_targets(life, escaped_only=False, ignore_escaped=False, recent_only=False, limit_distance=-1, filter_func=None):
+	_targets = _target_filter(life, brain.retrieve_from_memory(life, 'combat_targets'), escaped_only, ignore_escaped, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 	
 	return [t for t in _targets if target_is_combat_ready(life, t)]
+
+def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True, recent_only=False, limit_distance=-1, filter_func=None):
+	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 
 def get_target_to_follow(life):
 	_highest = {'id': None, 'score': 1}
@@ -304,7 +352,7 @@ def get_target_to_follow(life):
 		
 		_score += _known_target['trust']
 			
-		if life['group'] and groups.is_leader(life['group'], target_id):
+		if life['group'] and groups.is_leader(life, life['group'], target_id):
 			_score += 1
 	
 		if _score >= _highest['score']:
@@ -312,6 +360,15 @@ def get_target_to_follow(life):
 			_highest['score'] = _score
 	
 	return _highest['id']
+
+def get_target_to_guard(life):
+	for target_id in get_targets(life):
+		if not lfe.execute_raw(life, 'guard', 'guard_target_if', life_id=target_id):
+			continue
+		
+		return target_id
+	
+	return None
 
 def get_nearest_threat(life):
 	_target = {'target': None, 'score': 9999}
@@ -388,6 +445,9 @@ def get_nearest_target_in_list(life, target_list):
 	_nearest_target = {'distance': 9999, 'target_id': None}
 
 	for target_id in target_list:
+		if not brain.knows_alife_by_id(life, target_id)['last_seen_at']:
+			continue
+		
 		_distance = get_distance_to_target(life, target_id)
 		
 		if _distance < _nearest_target['distance'] or not _nearest_target['target_id']:
@@ -397,36 +457,22 @@ def get_nearest_target_in_list(life, target_list):
 	return _nearest_target
 
 def get_nearest_combat_target(life):
-	return get_nearest_target_in_list(life, get_combat_targets(life, ignore_lost=True, limit_distance=sight.get_vision(life), ignore_escaped=(not lfe.execute_raw(life, 'combat', 'seek_combat_if'))))
+	return get_nearest_target_in_list(life, get_combat_targets(life, ignore_lost=True, limit_distance=sight.get_vision(life)))
 
 def get_nearest_trusted_target(life):
 	return get_nearest_target_in_list(life, get_trusted(life))
 
-def get_fondness(life, target_id):
-	target = brain.knows_alife_by_id(life, target_id)
-	
-	return target['fondness']
-
 def target_is_combat_ready(life, life_id):
+	_knows = brain.knows_alife_by_id(life, life_id)
+	
+	#They could be in those states but still have a weapon
+	if _knows['last_seen_time']:# or _knows['state'] in ['surrender', 'hiding', 'hidden'] or _knows['asleep']:
+		return False
+	
 	if combat.get_equipped_weapons(LIFE[life_id]):
 		return True
 	
 	return False
-
-def _get_impressions(life, target):
-	if WORLD_INFO['ticks']-target['met_at_time']<=50 and not brain.get_impression(life, target['life']['id'], 'had_weapon'):
-		if lfe.get_held_items(target['life'], matches=[{'type': 'gun'}]):
-			brain.add_impression(life, target['life']['id'], 'had_weapon', {'danger': 2})
-
-def _calculate_impressions(life, target_id):
-	_target = brain.knows_alife_by_id(life, target_id)
-	
-	for impression in _target['impressions']:
-		for key in _target['impressions'][impression]['modifiers']:
-			if not key in _target:
-				raise Exception('Key \'%s\' not in target.' % key)
-			
-			_target[key] += _target['impressions'][impression]['modifiers'][key]
 
 def _calculate_danger(life, target):
 	if target['life']['asleep']:
@@ -442,34 +488,19 @@ def _calculate_danger(life, target):
 def judge_life(life, target_id):
 	target = brain.knows_alife_by_id(life, target_id)
 	
-	_old_fondness = target['fondness']
 	_old_danger = target['danger']
 	_old_trust = target['trust']
 	
-	_get_impressions(life, target)
 	target['danger'] = _calculate_danger(life, target)
 	target['trust'] = _calculate_trust(life, target_id)
 	
 	parse_raw_judgements(life, target_id)
-	_calculate_impressions(life, target_id)
-	
-	if not _old_fondness == target['fondness']:
-		print '%s fondness in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_fondness, target['fondness'])
 
 	if not _old_danger == target['danger']:
 		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
 	
 	if not _old_trust == target['trust']:
 		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
-
-def get_influence(life, target_id, gist):
-	_impression = brain.get_impression(life, target_id, gist)
-	
-	if _impression:
-		if 'influence' in _impression['modifiers']:
-			return _impression['modifiers']['influence']
-	
-	return 0
 
 def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
@@ -479,17 +510,8 @@ def judge_shelter(life, chunk_id):
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
-	if _known_chunk['life']:
-		return 0
-	
 	if not chunk['type'] == 'building':
 		return 0
-	#	for building in WORLD_INFO['reference_map']['buildings']:
-	#		if chunk_id in building:
-	#			_score += len(building)
-	#			_score += WORLD_INFO['ticks']-_known_chunk['discovered_at']
-	#			_score = numbers.clip(_score, 0, 10)
-	#			break
 	
 	if not chunks.get_flag(life, chunk_id, 'shelter'):
 		_cover = []
@@ -504,9 +526,6 @@ def judge_shelter(life, chunk_id):
 			return 0
 		
 		chunks.flag(life, chunk_id, 'shelter_cover', _cover)
-	
-	#if chunks.get_flag(life, chunk_id, 'shelter'):
-	#	_score += 1
 	
 	chunks.flag(life, chunk_id, 'shelter', len(chunks.get_flag(life, chunk_id, 'shelter_cover')))
 	
@@ -536,7 +555,7 @@ def judge_chunk_life(life, chunk_id):
 		_is_here = False
 		_actually_here = False
 		
-		if not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
+		if not _target['last_seen_at'] or not chunks.position_is_in_chunk(_target['last_seen_at'], chunk_id) and not _target['life']['path']:
 			continue
 	
 	return _score 
@@ -574,6 +593,9 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 	
 	_trusted = 0
 	for _target in life['know'].values():
+		if not _target['last_seen_at']:
+			continue
+		
 		_is_here = False
 		_actually_here = False
 		
@@ -591,13 +613,8 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 			
 			if is_target_dangerous(life, _target['life']['id']):
 				_score -= 10
-			elif life['group'] and groups.is_leader(life['group'], _target['life']['id']):
+			elif life['group'] and groups.is_leader(life, life['group'], _target['life']['id']):
 				_trusted += _target['trust']
-			#else:
-			#	_trusted += _target['trust']
-			
-			_score += get_influence(life, _target['life']['id'], 'follow')
-			_score += get_influence(life, _target['life']['id'], 'talk')
 		else:
 			if _target['life']['id'] in _known_chunk['life']:
 				_known_chunk['life'].remove(_target['life']['id'])
@@ -680,8 +697,6 @@ def judge_reference(life, reference_id, known_penalty=False):
 			_knows = brain.knows_alife(life, LIFE[ai])
 			if not _knows:
 				continue
-				
-			_score += get_fondness(life, ai)
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:
@@ -754,7 +769,7 @@ def judge_camp(life, camp, for_founding=False):
 		_score += judge_group(life, camps.get_controlling_group(_camp))
 	
 	if stats.desires_to_create_camp(life):
-		_score += len(groups.get_group(life['group'])['members'])/2<=len(_known_chunks_of_camp)
+		_score += len(groups.get_group(life, life['group'])['members'])/2<=len(_known_chunks_of_camp)
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
@@ -784,7 +799,6 @@ def judge_jobs(life):
 				continue
 			
 			if life['group'] == jobs.get_flag(job['id'], 'group'):
-				print 'DUDE I HAVE THIS ALREADY WTF!!!!!!!!!' * 100
 				jobs.reject_job(job['id'], life['id'])
 				continue
 		
@@ -840,7 +854,7 @@ def judge_raid(life, raiders, camp):
 
 def judge_group(life, group_id):
 	_score = 0
-	for member in groups.get_group(group_id)['members']:
+	for member in groups.get_group(life, group_id)['members']:
 		if member == life['id']:
 			continue
 		
@@ -855,18 +869,18 @@ def judge_group(life, group_id):
 	
 	return _score
 
-def group_judge_group(group_id, target_group_id):
-	_group1 = groups.get_group(group_id)
-	_group2 = groups.get_group(target_group_id)
+def group_judge_group(life, group_id, target_group_id):
+	_group1 = groups.get_group(life, group_id)
+	_group2 = groups.get_group(life, target_group_id)
 	
-	_group1_combat = groups.get_combat_score(group_id)
-	_group2_combat = groups.get_combat_score(target_group_id)
+	_group1_combat = groups.get_combat_score(life, group_id)
+	_group2_combat = groups.get_combat_score(life, target_group_id)
 	
 	if _group1_combat > _group2_combat:
 		pass
 
 def is_group_hostile(life, group_id):
-	_group = groups.get_group(group_id)
+	_group = groups.get_group(life, group_id)
 	
 	if judge_group(life, group_id)>=0:
 		return False
@@ -912,14 +926,15 @@ def get_best_goal(life):
 def get_best_shelter(life):
 	_best_shelter = {'distance': -1, 'shelter': None}
 	
-	if life['group']:
-		_shelter = groups.get_shelter(life['group'])
+	if life['group'] and groups.get_shelter(life, life['group']):
+		_shelter = groups.get_shelter(life, life['group'])
 		
 		if _shelter:
 			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
-			judge_chunk(life, _nearest_chunk_key)
 			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
 			_dist = numbers.distance(life['pos'], _shelter_center)
+			
+			judge_chunk(life, _nearest_chunk_key)
 			
 			if _dist <= logic.time_until_midnight()*life['speed_max']:
 				print life['name'],'can get to shelter in time'
@@ -943,6 +958,9 @@ def update_camps(life):
 		camp['snapshot']['groups'] = {}
 	
 	for _target in life['know'].values():
+		if not _target['last_seen_at']:
+			continue
+		
 		for camp in life['known_camps'].values():
 			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
 				continue

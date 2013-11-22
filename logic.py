@@ -10,6 +10,8 @@ import effects
 import numbers
 import weather
 import timers
+import dialog
+import melee
 import cache
 import menus
 import items
@@ -21,7 +23,7 @@ import random
 import time
 
 def can_tick(check=True):
-	if SETTINGS['controlling'] and not EVENTS:
+	if SETTINGS['controlling'] and not EVENTS and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
@@ -31,30 +33,18 @@ def can_tick(check=True):
 	elif EVENTS:
 		return False
 	
-	if menus.get_menu_by_name('Select Limb')>-1 or menus.get_menu_by_name('Select Target')>-1:
-		return False
-	
-	if SETTINGS['controlling']:
-		if LIFE[SETTINGS['controlling']]['targeting'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
-			LIFE[SETTINGS['controlling']]['shoot_timer']-=1
-			return False
-		
-		if LIFE[SETTINGS['controlling']]['contexts'] and LIFE[SETTINGS['controlling']]['shoot_timer']:
-			#TODO: Just disable this...
-			LIFE[SETTINGS['controlling']]['shoot_timer'] = 0
-			return False
-		
-		if LIFE[SETTINGS['controlling']]['encounters']:
-			return False
-		
+	if SETTINGS['controlling'] and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if MENUS:
 			return False
 		
 		if LIFE[SETTINGS['controlling']]['targeting']:
 			return False
-		
+	
 		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
+	
+	if melee.process_fights():
+		return False
 	
 	if not check:
 		WORLD_INFO['tps'] += 1
@@ -68,7 +58,7 @@ def can_tick(check=True):
 	
 	return True
 
-def tick_all_objects(source_map):
+def tick_all_objects():
 	if not can_tick(check=False):
 		return False
 	
@@ -105,12 +95,12 @@ def tick_all_objects(source_map):
 	effects.calculate_all_effects()
 	tick_world()
 	timers.tick()
-	items.tick_all_items(source_map)
+	items.tick_all_items()
 	
 	#if SETTINGS['smp']:
 	#	smp.scan_all_surroundings()
 	
-	life.tick_all_life(source_map)
+	life.tick_all_life()
 	
 	return True
 
@@ -125,7 +115,7 @@ def tick_world():
 		WORLD_INFO['day'] += 1
 		weather.change_weather()
 	
-	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500 or WORLD_INFO['real_time_of_day']<=1500:
+	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-22.00 or WORLD_INFO['real_time_of_day']<=1000:
 		if WORLD_INFO['time_of_day'] == 'day':
 			gfx.message('Night falls.')
 		
@@ -175,12 +165,23 @@ def draw_encounter():
 	encounters.draw_encounter(LIFE[SETTINGS['controlling']],
 		LIFE[SETTINGS['controlling']]['encounters'][0])
 
-def draw_event(event):
+def draw_event():
+	_event = None
+	
+	for event in EVENTS:
+		if not event['delay']:
+			_event = event
+			break
+	
+	if not _event:
+		return False
+	
+	gfx.camera_track(_event['pos'])
 	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
-		_lines = list(event['text'].partition(','))
+		_lines = list(_event['text'].partition(','))
 		
 		if not len(_lines[1]):
-			_lines = list(event['text'].partition('.'))
+			_lines = list(_event['text'].partition('.'))
 		
 		if len(_lines[1]):
 			_lines.pop(1)
@@ -188,12 +189,12 @@ def draw_event(event):
 			lines = ['????']
 		
 	else:
-		_lines = [event['text']]
+		_lines = [_event['text']]
 	
 	for line in _lines:
 		if len(line)>=MAP_WINDOW_SIZE[0]-1:
 			_lines = ['The most annoying error.']
-			break
+			break	
 	
 	_i = 0
 	for line in _lines:
@@ -203,12 +204,14 @@ def draw_event(event):
 		gfx.blit_string(_x,
 			10+_i,
 			line,
-		     'map')
+		    'overlay')
 		
 		_i += 1
+	
+	return True
 
-def show_event(text, time=30, delay=0, life=None, item=None, pos=None):
-	_event = {'text': text, 'time': time, 'delay': delay}
+def show_event(text, time=45, delay=0, life=None, item=None, pos=None, priority=False):
+	_event = {'text': text, 'time': time, 'delay': delay, 'life': life}
 	
 	if life:
 		_event['pos'] = life['pos']
@@ -217,7 +220,10 @@ def show_event(text, time=30, delay=0, life=None, item=None, pos=None):
 	elif pos:
 		_event['pos'] = pos
 	
-	EVENTS.append(_event)
+	if priority:
+		EVENTS.insert(0, _event)
+	else:
+		EVENTS.append(_event)
 
 def show_next_event():
 	if not EVENTS:
@@ -238,19 +244,20 @@ def process_events():
 	
 	_event = None
 	for event in EVENTS:
-		if event['delay']:
-			event['delay'] -= 1
-		else:
+		if not event['delay']:
 			_event = event
 			break
+	
+	if not _event:
+		for event in EVENTS:
+			if event['delay']:
+				event['delay'] -= 1
 	
 	if not _event:
 		return False
 	
 	if _event['time']:
 		_event['time'] -= 1
-		gfx.camera_track(_event['pos'])
-		draw_event(_event)
 		return True
 	
 	return show_next_event()

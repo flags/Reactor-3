@@ -27,7 +27,8 @@ def setup(life):
 			_needs_unmet.append(need)
 			continue
 		
-		_needs_to_meet.append(need)
+		if not need in _needs_to_satisfy and not need in _needs_to_satisfy:
+			_needs_to_meet.append(need)
 
 	brain.store_in_memory(life, 'needs_to_meet', _needs_to_meet)
 	brain.store_in_memory(life, 'needs_to_satisfy', _needs_to_satisfy)
@@ -63,5 +64,4 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	_needs_to_satisfy = brain.retrieve_from_memory(life, 'needs_to_satisfy')
 	
 	for need in _needs_to_satisfy:
-		print 'need to be'
-		print survival.satisfy(life, need)
+		survival.satisfy(life, need)

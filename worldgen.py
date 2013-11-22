@@ -69,7 +69,7 @@ def draw_world_stats():
 def simulate_life(amount):
 	while amount:
 		#try:
-		logic.tick_all_objects(WORLD_INFO['map'])
+		logic.tick_all_objects()
 		#except Exception as e:
 		#logging.error('Crash: %s' % e)
 		#SETTINGS['running'] = False
@@ -219,7 +219,7 @@ def randomize_item_spawns():
 		if not _chunk['ground']:
 			continue
 		
-		if random.randint(0, 100)>=80:
+		if random.randint(0, 100)>=65:
 			for i in range(0, 1+random.randint(0, 3)):
 				_rand_pos = random.choice(_chunk['ground'])
 				items.create_item('.22 rifle', position=[_rand_pos[0], _rand_pos[1], 2])
@@ -228,7 +228,7 @@ def randomize_item_spawns():
 			for i in range(10):
 				_rand_pos = random.choice(_chunk['ground'])
 				items.create_item('.22 LR cartridge', position=[_rand_pos[0], _rand_pos[1], 2])
-		elif random.randint(0, 100)>=70:
+		elif random.randint(0, 100)>=40:
 			_items = ['corn', 'soda']
 			for i in range(0, 1+random.randint(0, 3)):
 				_rand_pos = random.choice(_chunk['ground'])
@@ -291,7 +291,10 @@ def generate_wildlife():
 	          position=[_spawn[0], _spawn[1], 2])
 		_c['icon'] = 'd'
 		
-		alife.groups.add_member(_group, _c['id'])
+		alife.groups.discover_group(_c, _group)
+		alife.groups.add_member(_p, _group, _c['id'])
+		alife.groups.set_leader(_c, _group, _p['id'])
+		_c['group'] = _group
 		
 		alife.brain.meet_alife(_p, _c)
 		alife.brain.meet_alife(_c, _p)
@@ -321,9 +324,9 @@ def generate_wildlife():
 def generate_life():
 	_spawn = get_spawn_point()
 	
-	if WORLD_INFO['groups']:
+	if len(WORLD_INFO['groups'])>=2:
 		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-		_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
+		#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
 		
 		if len(LIFE) == 1:
 			logging.warning('No leaders. Creating one manually...')
@@ -342,6 +345,9 @@ def generate_life():
 		for item in BASE_ITEMS:
 			life.add_item_to_inventory(_alife, items.create_item(item))
 		
+		for item in RECRUIT_ITEMS:
+			life.add_item_to_inventory(_alife, items.create_item(item))
+		
 		if not _group_members:
 			_alife['stats']['is_leader'] = True
 			_group = alife.groups.create_group(_alife)
@@ -352,7 +358,20 @@ def generate_life():
 		if m1['id'] == _group_members[0]['id']:
 			continue
 		
-		alife.groups.add_member(_group, m1['id'])
+		alife.groups.discover_group(m1, _group)
+		alife.groups.add_member(_group_members[0], _group, m1['id'])
+		alife.groups.add_member(m1, _group, m1['id'])
+		m1['group'] = _group
+		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
+	
+	for m1 in _group_members:
+		for m2 in _group_members:
+			if m1 == m2:
+				continue
+			
+			alife.stats.establish_trust(m1, m2['id'])
+	
+	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(alife, items.create_item(item))
@@ -369,6 +388,7 @@ def create_player():
 	
 	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
 	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
 	
 	for i in range(10):
 		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
@@ -386,5 +406,11 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	#Step 1: Army Outpost
+	
+	WORLD_INFO['refs']['town_seeds']
+	
+	#for town_seed in WORLD_INFO['refs']['town_seeds']:
+		
 	for i in range(5):
 		generate_wildlife()

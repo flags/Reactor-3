@@ -61,6 +61,8 @@ def _spread(noise):
 			_direction = 'south'
 		elif abs(_direction_to-315)<22:
 			_direction = 'southeast'
+		else:
+			_direction = 'east'
 		
 		#TODO: Check walls between positions
 		#TODO: Add memory

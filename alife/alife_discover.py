@@ -19,14 +19,9 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	if brain.get_flag(life, 'lost'):
 		if STATE in life['states']:
-			print life['name']
 			return False
 		else:
 			brain.unflag(life, 'lost')
-		
-		print life['name'],'lost'
-	
-	
 	
 	if not lfe.execute_raw(life, 'state', 'discover'):
 		brain.store_in_memory(life, 'discovery_lock', False)
@@ -52,7 +47,6 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 				brain.store_in_memory(life, 'explore_chunk', _explore_chunk)
 				
 				if not _explore_chunk:
-					print life['name'],'is lost'
 					brain.flag(life, 'lost')
 					return False
 				

@@ -2,13 +2,18 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', padding=MENU_PADDING,
-                on_select=None, on_change=None, on_close=None, on_move=None, dim=True, alignment='', action=None):
+import alife
+import life
+
+def create_menu(menu=[], position=[0,0], title='Untitled', format_str='$k: $v', padding=MENU_PADDING,
+                on_select=None, on_change=None, on_close=None, on_move=None, dim=True, alignment='', action=None,
+                close_on_select=False):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
-	    'on_move': on_move,
+		'on_move': on_move,
 		'on_close': on_close,
+		'close_on_select': close_on_select,
 		'alignment': alignment,
 		'index': 0,
 		'values':{},
@@ -269,12 +274,15 @@ def get_selected_item(menu,index):
 	
 	return _entry
 
-def item_selected(menu,index):
-	_entry = get_selected_item(menu,index)
-	menu = get_menu(menu)
+def item_selected(menu_id, index):
+	_entry = get_selected_item(menu_id, index)
+	_menu = get_menu(menu_id)
 	
-	if menu['on_select']:
-		return menu['on_select'](_entry)
+	if _menu['close_on_select']:
+		delete_menu(menu_id)
+	
+	if _menu['on_select']:
+		return _menu['on_select'](_entry)
 	
 	return False
 
@@ -303,3 +311,21 @@ def is_any_menu_getting_input():
 			return _item
 	
 	return False
+
+def create_target_list():
+	_menu_items = []
+	for target in [l for l in LIFE.values() if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+		if target['dead']:
+			continue
+		
+		if not _menu_items:
+			SETTINGS['following'] = target['id']
+		
+		_color = life.draw_life_icon(target)[1]
+		_menu_items.append(create_item('single',
+		                               ' '.join(target['name']),
+		                               None,
+		                               target=target['id'],
+		                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
+	
+	return _menu_items

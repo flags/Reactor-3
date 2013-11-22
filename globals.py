@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.6.1'
+VERSION = '0.6.5'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]
@@ -31,6 +31,8 @@ WORLD_INFO = {'map': [],
 	'length_of_day': 6000,
 	'day': 0,
 	'ticks': 0,
+	'sub_ticks': 0,
+	'max_sub_ticks': 5,
 	'tps': 0,
 	'tps_time': 0,
 	'life_density': 'Sparse',
@@ -46,6 +48,8 @@ WORLD_INFO = {'map': [],
 	'memoryid': 1,
 	'goalid': 1,
 	'jobid': 1,
+	'dialogid': 1,
+	'dialogs': {},
 	'chunk_map': {},
 	'camps': {},
 	'groups': {},
@@ -72,13 +76,20 @@ TIER_EXPLORE = 3
 TIER_IDLE = 4
 TIER_WORK = 2.5
 TIER_PASSIVE = 333
+TIER_CONSTANT = 332
 TIER_SUBMIT = 0.1
+
+#Group stages
+STAGE_FORMING = 1
+STAGE_SETTLING = 2
+STAGE_SETTLED = 3
+STAGE_RAIDING = 4
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
-FPS = 100
+FPS = 1000
 FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
@@ -137,14 +148,6 @@ LIFE_BLEED_RATE = .4 #Higher is faster
 LIFE_THINK_RATE = 6
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
-ENCOUNTER_TIME_LIMIT = 150
-DEFAULT_CONTEXT_TIME = 25
-
-QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
-	'wants item': {'type': '*'}}
-
-POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
-	'how_are_you': [1.0, 0.7]}
 
 #Non-constants
 SETTINGS = {'running': True,
@@ -174,7 +177,7 @@ SETTINGS = {'running': True,
 	'smp': None,
 	'map_slices': [],
 	'recording': False,
-	'recording fps': 1,
+	'recording fps': 0,
 	'recording fps temp': 0,
 	'viewid': 1,
 	'active_view': 0}
@@ -202,6 +205,7 @@ ZONE_CACHE = {}
 VIEWS = {}
 VIEW_SCENE = {}
 VIEW_SCENE_CACHE = set()
+DIALOG_TOPICS = {}
 
 #Consoles
 ITEM_WINDOW = None

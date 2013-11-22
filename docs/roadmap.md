@@ -626,3 +626,130 @@ Cycle 1: Towns
 The current town size is fine, but the actual layout needs to be much more detailed. Buildings should not be constricted to tetris blocks and need to span multiple z-levels.
 
 First, we need to generate a road leading into the Zone. It should NOT go deeper than factories and must cross through the main town.
+
+Judgement 2.0
+------------
+Up until recently we've been tracking ALife world-views in a partially "all knowing" sense, i.e., everyone maintained their own views but often borrowed information from the world's memory rather than their own. There's a few reasons why this was done:
+
+	* If a group is disbanded, ALife who are unaware of its removal will still think it exists, and thus pass (now invalid) group IDs to functions that throw Exceptions for doing so.
+	* I stubbornly stood behind "memories" as being the go-to way to interpret the world, which involves iterating over a potentially massive dataset.
+	
+Our previous approach was slow and somewhat clunky - there was no real distinction between Memories and flags in `know_life` and why you would use the former at all. This is still unaddressed - I think the idea before was that memories provided enough context to go back and "rejudge" a situation, but this was never expanded upon outside of one case.
+
+Now we're dealing with the aftermath of the old judgement logic being removed and a new ruleset implemented. It's working fine so far since it was just a modification of how Trust was calculated along with Danger. I don't see that area of the game changing unless these new developments end up uncovering a better way to do it.
+
+THe following things bother me about judgement in its current form:
+
+	* 1) Justification for certain actions are largely unexplained.
+	* 2) Transitions between opposite states (discovering -> combat) are jarring. Besides occasional dialog after the fact, nothing but bullets are exchanged.
+	* 3) Potential combat targets mix much too frequently.
+	* 4) Groups are underdeveloped and play only a very small role in judgement - what about territory?
+	* 5) Danger and Trust scores are idiotic and impossible to maintain - the numbers aren't based on anything and result in superficially high trust or distrust.
+
+Issues #1 and #5: Justifying Actions
+------------------------
+Justification for an action shouldn't consist of just polar opposites ("They are an enemy" and "They are not an enemy"), but instead a wide range of interpretations, some of which is already modeled, just not utilized effectively (See: Dangerous but trusted targets.) ALife should be able to understand the weight of their actions and determined whether or not an action is worth going through with. It is also extremely important that this is not a hidden process - the player and other ALife should know about this in most cases and be able to react accordingly.
+
+The current reaction to seeing members of an opposing faction is a simple fight or flight reponse- we tried to create "Okay, I'll just leave, then" responses, but due to issues in judgement scoring we can't exactly get that range- a target sees a hostile target and reacts immediately, regardless of recent changes in Trust or Danger that may reflect positive advancements in relationships.
+
+Any replacement to this system needs to have hard math backing it and should tell us what type of relationship there is between two ALife.
+
+Relationship types:
+	Established hostile (high Danger, high Hostility): Target has either directly attacked you or someone else you trust.
+		Reactions:
+			Event causing this state happened recently:
+				Event was witnessed: Combat
+				Happened recently: Investigate
+			
+			else:
+				Event was witnessed: Investigate
+				Event was not witnessed (gained knowledge via conversation): Investigate and Interrogate
+
+	Ordered hostile (mixed attributes): ALife made target by group order.
+		Reactions:
+			Target is marked as friendly: Refuse/Morality break
+	
+	Respected (high Respect): Authority figure, not always well-liked on a personal level
+		Reactions: Mixed
+	
+	Friend (mixed Respect, high Trust):
+		Reactions: Mixed
+	
+	Neutral (low attributes):
+		Reactions: Mixed
+	
+	Potential threat (low Respect, >low Danger):
+		Reactions:
+			Target visible: Interrogate
+
+Reactions:
+	Interrogate:
+		Begin dialog.
+		Establish alignments.
+			Hostile:
+				Begin intimidation tactics.
+				Surrender/attack
+	Combat:
+		If in group: Report attack.
+		Begin combat
+	
+	Investigate:
+		In group:
+			Report start of investigation: Alert sent out to members of group.
+				Offer chance to respond with pertinent information
+			Begin search.
+			On search complete:
+				Target found:
+					Interrogate
+				Else:
+					Create mystery
+
+Respect:
+	Factors:
+		* Group leader
+		* Positive combat actions
+		* Superiority
+			* Higher-end weapons
+
+Hostility:
+	Factors:
+		* Unjustified violence
+		* Standing ground
+
+
+Situations (aka Events or Shared Memories)
+--------------------
+Events are shared memories.
+
+Traits
+-----
+These define specific rules that affect the decision-making process.
+
+	Aggressive: Prefers violence.
+	Naive: Lower threshold for required trust when parsing events.
+	Judgemental: First impressions define relationship alignment, harder to switch later on.
+	Kleptomaniac: Doesn't care about claimed items.
+
+Fixing
+-----
+[x] is_compatible_with
+
+Combat flow
+===========
+
+'  ______          ,
+' |Ranged| - - - |
+'  ______
+
+
+Phase 2
+=======
+We are at a point where the game works well enough to put down the hammer and nails and pick up a
+writing utensil instead. That's a fancy way of saying, "Let's make this into a game."
+
+First and foremost, we will focus on effective world generation. Our goal for this round of changes:
+
+* Design and implement the first two areas of the game: The starting village and military outpost
+* Begin implementing enemy types that aren't dynamic ALife: Soldiers and Mutants (maybe later?)
+
+Our first real step is to create the tools we'll need to make this process easier.
