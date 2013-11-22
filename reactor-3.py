@@ -180,7 +180,7 @@ def main():
 	if SETTINGS['map_slices']:
 		maps.fast_draw_map()
 	else:
-		gfx.start_of_frame(draw_char_buffer=True)
+		gfx.start_of_frame()
 	
 	gfx.end_of_frame()
 	

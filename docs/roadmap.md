@@ -737,8 +737,19 @@ Fixing
 Combat flow
 ===========
 
-
-
 '  ______          ,
 ' |Ranged| - - - |
 '  ______
+
+
+Phase 2
+=======
+We are at a point where the game works well enough to put down the hammer and nails and pick up a
+writing utensil instead. That's a fancy way of saying, "Let's make this into a game."
+
+First and foremost, we will focus on effective world generation. Our goal for this round of changes:
+
+* Design and implement the first two areas of the game: The starting village and military outpost
+* Begin implementing enemy types that aren't dynamic ALife: Soldiers and Mutants (maybe later?)
+
+Our first real step is to create the tools we'll need to make this process easier.

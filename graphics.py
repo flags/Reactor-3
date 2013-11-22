@@ -285,10 +285,16 @@ def prepare_map_views():
 
 	set_active_view('map')
 
+def prepare_terraform_views():
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	
+	add_view_to_scene_by_name('map')
+	set_active_view('map')
+
 def start_of_frame(draw_char_buffer=True):
 	clear_view('overlay', color=tcod.Color(255, 0, 255))
 	
-	if not logic.draw_event():
+	if not logic.draw_event() and SETTINGS['controlling']:
 		_dialog = life.has_dialog(LIFE[SETTINGS['controlling']])
 		if _dialog:
 			dialog.draw_dialog(_dialog)	
@@ -736,8 +742,6 @@ def end_of_frame(draw_map=True):
 	if is_view_in_scene('message_box'):
 		tcod.console_set_default_foreground(0, tcod.gray)
 		tcod.console_print_frame(0, 0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], clear=False, fmt='Messages')
-	#if not SETTINGS['map_slices'] and draw_map:
-	#	tcod.console_blit(MAP_WINDOW,0,0,MAP_WINDOW_SIZE[0],MAP_WINDOW_SIZE[1],0,0,0)
 	
 	_dialog = None
 	if SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['dialogs']:
