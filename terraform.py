@@ -9,21 +9,20 @@ ch = logging.StreamHandler()
 ch.setFormatter(console_formatter)
 logger.addHandler(ch)
 
-import graphics as gfx
-
 from libtcodpy import *
 from globals import *
 from inputs import *
 from tiles import *
 
+import graphics as gfx
+
+import language
+import maputils
 import profiles
 import weather
-
-import cProfile
-import maputils
 import numbers
-import prefabs
 import random
+import mapgen
 import items
 import zones
 import menus
@@ -31,6 +30,8 @@ import time
 import maps
 import sys
 import smp
+
+import cProfile
 
 #Optional Cython-compiled modules
 try:
@@ -145,11 +146,27 @@ def handle_input():
 		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(GRASS_TILES))
+		CURSOR_POS[0] = MAP_SIZE[0]/2
+		CURSOR_POS[1] = MAP_SIZE[1]/2
 
-	elif INPUT['d']:
-		pass
+	elif INPUT['r']:
+		language.load_strings()
+		WORLD_INFO['lights'] = []
+		
+		for key in ITEMS.keys():
+			del ITEMS[key]
+		
+		gfx.title('Generating...')
+		reload(mapgen)
+		mapgen.generate_map(size=(250, 250, 10),
+		                    towns=1,
+		                    factories=0,
+		                    outposts=0,
+		                    forests=1,
+		                    skip_zoning=True,
+		                    skip_chunking=True,
+		                    hotload=True)
+		gfx.refresh_view('map')
 
 	elif INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4

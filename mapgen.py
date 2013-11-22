@@ -120,7 +120,7 @@ def create_tile(map_gen, x, y, z, tile):
 	if z > _chunk['max_z']:
 		_chunk['max_z'] = z
 
-def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False):
+def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -128,7 +128,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	Forests: Number of large forested areas.
 	Underground: Flags whether buildings can be constructed beneath the surface.
 	"""
-	
 	#smp.init()
 	
 	map_gen = {'name': '%s.dat' % time.time(),
@@ -198,7 +197,8 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	#clean_chunk_map(map_gen, 'driveway', chunks_of_type='town', minimum_chunks=1)
 	clean_chunk_map(map_gen, 'wall', chunks_of_type='wall', minimum_chunks=1)
 	
-	print_chunk_map_to_console(map_gen)
+	if not hotload:
+		print_chunk_map_to_console(map_gen)
 	
 	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
@@ -223,9 +223,14 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	if not skip_chunking and not skip_chunking:
 		items.save_all_items()
-		maps.save_map(map_gen['name'])
-		items.reload_all_items()
 		
+		if not hotload:
+			maps.save_map(map_gen['name'])
+		
+		items.reload_all_items()
+	
+	logging.debug('Map generation complete.')	
+	
 	return map_gen
 
 def generate_noise_map(size):
@@ -1634,7 +1639,6 @@ def construct_building(map_gen, building):
 						create_tile(map_gen, x, y, 2+i, _wall_tile)
 					elif i in [0] and _building[_y][_x] == 'D':
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
-						effects.create_light((x, y, 2), (255, 255, 255), 5, 0.95)
 					elif i in [0] and _building[_y][_x] == '.':
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 						
