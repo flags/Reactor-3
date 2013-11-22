@@ -9,6 +9,8 @@ ch = logging.StreamHandler()
 ch.setFormatter(console_formatter)
 logger.addHandler(ch)
 
+import graphics as gfx
+
 from libtcodpy import *
 from globals import *
 from inputs import *
@@ -17,7 +19,6 @@ from tiles import *
 import profiles
 import weather
 
-import graphics as gfx
 import cProfile
 import maputils
 import numbers
