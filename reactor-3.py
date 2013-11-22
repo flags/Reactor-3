@@ -46,7 +46,7 @@ import sys
 
 CYTHON_ENABLED = True
 
-def move_camera(pos,scroll=False):
+def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
 	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
@@ -115,7 +115,7 @@ def main():
 	
 	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
-	maps.render_lights(WORLD_INFO['map'])
+	maps.render_lights()
 	
 	if not SETTINGS['map_slices']:
 		render_map.render_map(WORLD_INFO['map'])

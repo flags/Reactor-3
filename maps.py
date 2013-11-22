@@ -189,9 +189,9 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
 		
-		if not WORLD_INFO['lights']:
-			logging.warning('World has no lights. Creating one manually.')
-			effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
+		#if not WORLD_INFO['lights']:
+		#	logging.warning('World has no lights. Creating one manually.')
+		#	effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
 		#except Exception as e:
 		#	raise e
 		
@@ -245,16 +245,16 @@ def position_is_in_map(pos):
 	
 	return False
 
-def reset_lights():
-	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def reset_lights(size=MAP_WINDOW_SIZE):
+	RGB_LIGHT_BUFFER[0] = numpy.zeros((size[1], size[0]))
+	RGB_LIGHT_BUFFER[1] = numpy.zeros((size[1], size[0]))
+	RGB_LIGHT_BUFFER[2] = numpy.zeros((size[1], size[0]))
 
-def render_lights(source_map):
+def render_lights(size=MAP_WINDOW_SIZE):
 	if not SETTINGS['draw lights']:
 		return False
 
-	reset_lights()
+	reset_lights(size=size)
 	SUN = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
@@ -270,10 +270,10 @@ def render_lights(source_map):
 		
 		#print _x_range, _y_range
 		
-		if _x_range <= -20 or _x_range>=MAP_WINDOW_SIZE[0]+20:
+		if _x_range <= -20 or _x_range>=size[0]+20:
 			continue
 		
-		if _y_range <= -20 or _y_range>=MAP_WINDOW_SIZE[1]+20:
+		if _y_range <= -20 or _y_range>=size[1]+20:
 			continue
 		
 		if not 'old_pos' in light:
@@ -290,13 +290,13 @@ def render_lights(source_map):
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
-		_x = numbers.clip(light['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-		_y = numbers.clip(light['pos'][1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+		_x = numbers.clip(light['pos'][0]-(size[0]/2),0,MAP_SIZE[0])
+		_y = numbers.clip(light['pos'][1]-(size[1]/2),0,MAP_SIZE[1])
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), light['brightness']*2, top_left=_top_left)
+			light['los'] = cython_render_los.render_los((light['pos'][0],light['pos'][1]), light['brightness']*2, view_size=size, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -325,7 +325,6 @@ def render_lights(source_map):
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
 		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
-		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
 		brightness *= LOS_BUFFER[0]
 		
@@ -380,7 +379,7 @@ def diffuse_light(source_light):
 
 def _render_los(map, pos, size, cython=False, life=None):
 	if cython:
-		return cython_render_los.render_los(map, pos, size, life=life)
+		return cython_render_los.render_los(pos, size, life=life)
 	else:
 		return render_los(map,pos)
 

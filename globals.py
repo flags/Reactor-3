@@ -13,6 +13,7 @@ PREFAB_WINDOW_SIZE = [40,40]
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
+CURSOR_POS = [0, 100, 2]
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 PREFABS = {}
@@ -154,6 +155,7 @@ SETTINGS = {'running': True,
 	'paused': False,
 	'camera_track': [0, 0, 0],
 	'last_camera_pos': [-1, -1, -1],
+	'cursor speed': 3,
 	'draw lights': True,
 	'light mesh grid': None,
 	'diffuse light': False,

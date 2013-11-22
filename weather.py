@@ -40,5 +40,4 @@ def get_lighting():
 	return WORLD_INFO['weather']['light_map'][_time]
 
 def create_light_map(weather):
-	print weather.keys()
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c[0], c[1], c[2]) for c in weather['colors']], weather['color_indexes'])

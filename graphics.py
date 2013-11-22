@@ -13,7 +13,7 @@ import random
 import numpy
 import time
 
-def init_libtcod(terraform=False):
+def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	global ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
 	_font_file = os.path.join(DATA_DIR, 'tiles', FONT)
@@ -25,8 +25,6 @@ def init_libtcod(terraform=False):
 	
 	tcod.console_set_custom_font(_font_file, _layout)
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
-	
-	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
@@ -52,8 +50,7 @@ def init_libtcod(terraform=False):
 			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
-	SETTINGS['light mesh grid'] = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
-	
+	SETTINGS['light mesh grid'] = numpy.meshgrid(range(map_view_size[0]), range(map_view_size[1]))
 	LOS_BUFFER[0] = []
 
 def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
@@ -287,8 +284,10 @@ def prepare_map_views():
 
 def prepare_terraform_views():
 	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
 	
 	add_view_to_scene_by_name('map')
+	add_view_to_scene_by_name('overlay')
 	set_active_view('map')
 
 def start_of_frame(draw_char_buffer=True):

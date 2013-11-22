@@ -12,7 +12,7 @@ import time
 
 VERSION = 6
 
-def render_map(map):
+def render_map(map, view_size=MAP_WINDOW_SIZE):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
@@ -22,12 +22,12 @@ def render_map(map):
 	_MAP_SIZE[0] = MAP_SIZE[0]
 	_MAP_SIZE[1] = MAP_SIZE[1]
 	_MAP_SIZE[2] = MAP_SIZE[2]
-	_MAP_WINDOW_SIZE[0] = MAP_WINDOW_SIZE[0]
-	_MAP_WINDOW_SIZE[1] = MAP_WINDOW_SIZE[1]
+	_MAP_WINDOW_SIZE[0] = view_size[0]
+	_MAP_WINDOW_SIZE[1] = view_size[1]
 	
 	cdef int x, y, z
-	cdef int _X_MAX = _CAMERA_POS[0]+_MAP_WINDOW_SIZE[0]
-	cdef int _Y_MAX = _CAMERA_POS[1]+_MAP_WINDOW_SIZE[1]
+	cdef int _X_MAX = _CAMERA_POS[0]+view_size[0]
+	cdef int _Y_MAX = _CAMERA_POS[1]+view_size[1]
 	cdef int _X_START = _CAMERA_POS[0]
 	cdef int _Y_START = _CAMERA_POS[1]
 	cdef int _RENDER_X = 0
