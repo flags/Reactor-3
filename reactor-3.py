@@ -53,9 +53,9 @@ def move_camera(pos,scroll=False):
 	CAMERA_POS[2] = pos[2]
 	
 	if not _orig_pos == CAMERA_POS:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	elif SETTINGS['controlling'] and not alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'redraw') == pos:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	if SETTINGS['controlling']:
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
@@ -76,10 +76,8 @@ def main():
 	handle_input()
 	_played_moved = False
 
-	while (life.get_highest_action(LIFE[SETTINGS['controlling']])\
-	       and not life.find_action(LIFE[SETTINGS['controlling']], matches=[{'action': 'move'}]))\
-	      or LIFE[SETTINGS['controlling']]['asleep']:
-		logic.tick_all_objects(WORLD_INFO['map'])
+	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
+		logic.tick_all_objects()
 		_played_moved = True
 		
 		if CURRENT_UPS:
@@ -90,21 +88,21 @@ def main():
 			else:
 				CURRENT_UPS = 2 #ticks to run while actions are in queue before breaking
 			
-			gfx.refresh_window()
+			gfx.refresh_view('map')
 			break
 	
 	if not _played_moved:
 		if CURRENT_UPS:
-			CURRENT_UPS-=1
+			CURRENT_UPS -= 1
 		else:
 			CURRENT_UPS = 3
-			logic.tick_all_objects(WORLD_INFO['map'])
-			
+			logic.tick_all_objects()
+	
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
 		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)
@@ -114,6 +112,7 @@ def main():
 		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
+	
 	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights(WORLD_INFO['map'])
@@ -130,54 +129,71 @@ def main():
 		if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
 			LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 		
-		#gfx.fade_to_white(FADE_TO_WHITE[0])
-		#_col = 255-int(round(FADE_TO_WHITE[0]))*2
-		
-		#if _col<0:
-		#	_col = 0
-		_col = 0
+		gfx.fade_to_white(FADE_TO_WHITE[0])
 		
 		_string = 'You die.'
+		_time_since_death = WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']
+		_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
 		
-		gfx.blit_string(MAP_WINDOW_SIZE[0]/2-(len(_string)/2),
-			MAP_WINDOW_SIZE[1]/2,
-			_string,
-			console=MAP_WINDOW,
-			fore_color=tcod.Color(255,_col,_col),
-			back_color=tcod.Color(255-_col,255-_col,255-_col),
-			flicker=0)
-		#FADE_TO_WHITE[0] += 0.9
+		for i in range(len(_string)):
+			_c = _string[i]
+			gfx.lighten_tile(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i, MAP_WINDOW_SIZE[1]/2, _col)
+			gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
+			              MAP_WINDOW_SIZE[1]/2,
+			              _c,
+			              (tcod.Color(_col, 0, 0),
+			               tcod.Color(255-_col, 255-_col, 255-_col)),
+			              'map')
 		
-		if WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']>=120:
+		if _time_since_death>=25:
+			_fade = numbers.clip((_time_since_death)/100.0, 0, 1)
+			_summary = 'Lived %s days.' % ((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']))
+			gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
+			gfx.fade_view('overlay', _fade, 0)
+		
+		FADE_TO_WHITE[0] += 1.2
+		
+		if _time_since_death>=120:
 			worldgen.save_world()
+			worldgen.reset_world()
+
+			gfx.clear_scene()
+			
 			SETTINGS['running'] = 1
 			return False
 	
-	if SETTINGS['draw life info']:
+	if SETTINGS['draw life info'] and SETTINGS['following']:
 		life.draw_life_info()
+	
+	gfx.draw_message_box()
 	
 	menus.align_menus()
 	menus.draw_menus()
 	logic.draw_encounter()
-	dialog.draw_dialog()
-	
-	if SETTINGS['draw message box']:
-		gfx.draw_message_box()
 	
 	gfx.draw_status_line()
 	gfx.draw_console()
+	
+	#maps.draw_chunk_map(life=LIFE[SETTINGS['controlling']])
 	
 	#TODO: Experimental map rendering, disabled for now
 	if SETTINGS['map_slices']:
 		maps.fast_draw_map()
 	else:
-		gfx.start_of_frame(draw_char_buffer=True)
-		
-	gfx.end_of_frame_reactor3()
+		gfx.start_of_frame()
+	
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
+	
+	if SETTINGS['recording']:
+		if 10+SETTINGS['recording fps temp']:
+			SETTINGS['recording fps temp'] -= 1
+		else:
+			WORLD_INFO['d'] = WORLD_INFO['ticks']
+			gfx.screenshot()
+			SETTINGS['recording fps temp'] = SETTINGS['recording fps']
 
 def loop():
 	while SETTINGS['running']:
@@ -191,7 +207,9 @@ def loop():
 		elif SETTINGS['running'] == 2:
 			main()
 		elif SETTINGS['running'] == 3:
-			mainmenu.draw_intro()	
+			mainmenu.draw_intro()
+	
+	worldgen.cleanup()
 
 if __name__ == '__main__':
 	#TODO: Replace with "module_sanity_check"
@@ -234,6 +252,7 @@ if __name__ == '__main__':
 	
 	life.initiate_life('human')
 	life.initiate_life('dog')
+	life.initiate_life('night_terror')
 	
 	items.initiate_all_items()
 	
@@ -246,8 +265,12 @@ if __name__ == '__main__':
 			worldgen.load_world(world)
 			break
 		
-		if LIFE:
+		if SETTINGS['controlling']:
 			SETTINGS['running'] = 2
+			gfx.prepare_map_views()
+		else:
+			logging.debug('No active player found. Going back to menu.')
+			SETTINGS['running'] = 1
 	
 	if '--debug' in sys.argv:
 		_debug_host = network.DebugHost()
@@ -256,7 +279,7 @@ if __name__ == '__main__':
 	
 	if '--profile' in sys.argv:
 		logging.info('Profiling. Exit when completed.')
-		cProfile.run('look()','profile.dat')
+		cProfile.run('loop()','profile.dat')
 		sys.exit()
 	
 	try:

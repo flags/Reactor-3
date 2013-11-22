@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.6'
+VERSION = '0.6.5'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = (100, 60)
 MAP_SIZE = [250, 250, 5]
@@ -24,7 +24,6 @@ UPDATE_CAMP_RATE = 5
 WORLD_INFO = {'map': [],
 	'id': None,
 	'seed': 0,
-	'seed_state': None,
 	'time': 0,
 	'real_time_of_day': 6000,
 	'time_of_day': 'limbo',
@@ -32,6 +31,8 @@ WORLD_INFO = {'map': [],
 	'length_of_day': 6000,
 	'day': 0,
 	'ticks': 0,
+	'sub_ticks': 0,
+	'max_sub_ticks': 5,
 	'tps': 0,
 	'tps_time': 0,
 	'life_density': 'Sparse',
@@ -47,16 +48,19 @@ WORLD_INFO = {'map': [],
 	'memoryid': 1,
 	'goalid': 1,
 	'jobid': 1,
+	'dialogid': 1,
+	'dialogs': {},
 	'chunk_map': {},
 	'camps': {},
 	'groups': {},
 	'jobs': {},
 	'references': {},
-     'reference_map': {'roads': [], 'buildings': []},
+	'reference_map': {'roads': [], 'buildings': []},
 	'slices': {},
 	'chunk_size': 5,
 	'lights': [],
-	'timers': []}
+	'timers': [],
+	'weather': {}}
 
 #Return values
 STATE_CHANGE = 2
@@ -72,13 +76,20 @@ TIER_EXPLORE = 3
 TIER_IDLE = 4
 TIER_WORK = 2.5
 TIER_PASSIVE = 333
+TIER_CONSTANT = 332
 TIER_SUBMIT = 0.1
+
+#Group stages
+STAGE_FORMING = 1
+STAGE_SETTLING = 2
+STAGE_SETTLED = 3
+STAGE_RAIDING = 4
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
 SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
-FPS = 100
+FPS = 1000
 FPS_TERRAFORM = 100
 LOW_FPS = 15
 UPS = 1
@@ -108,7 +119,7 @@ CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
 MESSAGE_LOG_MAX_LINES = 8
 PLACING_TILE = None
-RENDERER = tcod.RENDERER_GLSL
+RENDERER = tcod.RENDERER_SDL
 DATA_DIR = 'data'
 LIFE_DIR = os.path.join(DATA_DIR,'life')
 ITEM_DIR = os.path.join(DATA_DIR,'items')
@@ -137,14 +148,6 @@ LIFE_BLEED_RATE = .4 #Higher is faster
 LIFE_THINK_RATE = 6
 DAMAGE_MOVE_PENALTY_MOD = .07
 PASS_OUT_PAIN_MOD = 10
-ENCOUNTER_TIME_LIMIT = 150
-DEFAULT_CONTEXT_TIME = 25
-
-QUESTIONS_ANSWERS = {'wants_founder_info': {'camp': '*', 'founder': '*'},
-	'wants item': {'type': '*'}}
-
-POSSIBLE_LIKES = {'status_response_neutral*': [1.0, 0.8],
-	'how_are_you': [1.0, 0.7]}
 
 #Non-constants
 SETTINGS = {'running': True,
@@ -152,6 +155,7 @@ SETTINGS = {'running': True,
 	'camera_track': [0, 0, 0],
 	'last_camera_pos': [-1, -1, -1],
 	'draw lights': True,
+	'light mesh grid': None,
 	'diffuse light': False,
 	'debug host': '',
 	'debug port': 3335,
@@ -171,7 +175,13 @@ SETTINGS = {'running': True,
 	'state history size': 5,
 	'fire burn rate': 0.04,
 	'smp': None,
-	'map_slices': []}
+	'map_slices': [],
+	'recording': False,
+	'recording fps': 0,
+	'recording fps temp': 0,
+	'viewid': 1,
+	'active_view': 0}
+
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
 SELECTED_TILES = [[]]
@@ -182,6 +192,7 @@ LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
+ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 BULLETS = []
 EFFECTS = {}
@@ -191,9 +202,12 @@ SELECTED_TARGET = []
 EVENTS = []
 DIJKSTRA_CACHE = {}
 ZONE_CACHE = {}
+VIEWS = {}
+VIEW_SCENE = {}
+VIEW_SCENE_CACHE = set()
+DIALOG_TOPICS = {}
 
 #Consoles
-MAP_WINDOW = None
 ITEM_WINDOW = None
 CONSOLE_WINDOW = None
 MESSAGE_WINDOW = None
@@ -206,12 +220,14 @@ MENU_PADDING = (1,1)
 #Controls
 KEY = tcod.Key()
 MOUSE = tcod.Mouse()
+MOUSE_POS = [0, 0]
+MOUSE_CALLBACKS = {'m1_click': None, 'm2_click': None, 'move': None}
 INPUT = {'up':False,
 		'down':False,
 		'left':False,
 		'right':False,
 		' ':False,
-    	'.':False,
+		'.':False,
 		'-':False,
 		',': False,
 		'?': False,
@@ -262,7 +278,9 @@ INPUT = {'up':False,
 		'7':False,
 		'8':False,
 		'9':False,
-		'0':False}
+		'0':False,
+		'm1': False,
+		'm2': False}
 		
 #Colors
 GREEN_ALT = tcod.Color(0,130,0)

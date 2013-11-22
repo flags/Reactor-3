@@ -9,4 +9,4 @@ def get_items_for_dismantle(life):
 def dismantle_item(life, item_id):
 	_item = lfe.get_inventory_item(life, item_id)
 	
-	scripting.execute(_item['flags']['CANDISMANTLE'], owner=life, item=item_id)
+	scripting.execute(_item['flags']['CANDISMANTLE'], owner=life, item_uid=item_id)

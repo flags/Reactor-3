@@ -1,3 +1,7 @@
+#All of this code is awful and needs to be re-written at some point.
+#The line drawing functions have been reimplemented in other modules,
+#so I'm not entirely sure how often these are called.
+
 class line_diag:
 	def __init__(self, start, end):
 		self.path = []
@@ -49,7 +53,7 @@ class line_diag:
 	def swap(self,n1,n2):
 		return [n2,n1]
 
-def diag_line(start,end):
+def diag_line(start, end):
 	_l = line_diag(start,end)
 	
 	return _l.path

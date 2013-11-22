@@ -6,6 +6,7 @@ import movement
 import dialog
 import speech
 import groups
+import memory
 import stats
 import raids
 import brain
@@ -16,7 +17,7 @@ import logging
 import random
 
 ENTRY_SCORE = 0
-TIER = TIER_PASSIVE
+TIER = TIER_CONSTANT
 
 def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
 	#Note: We don't want to change the state because we're running this module alongside
@@ -32,82 +33,53 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
 	#	return False
-	
-	if brain.retrieve_from_memory(life, 'tension_spike') >= 1:
-		lfe.say(life, '@n panics!', action=True)
-	
-	for ai in alife_seen:
-		if life['state'] in ['combat']:
-			break
-		
-		if jobs.alife_has_job(ai['life']):
-			break
-		
-		if not stats.can_talk_to(life, ai['life']['id']):
-			continue
-		
-		if judgement.is_target_dangerous(life, ai['life']['id']):
-			if not speech.discussed(life, ai['life'], 'looks_hostile'):
-				speech.communicate(life, 'looks_hostile', msg='...', matches=[{'id': ai['life']['id']}])
-				speech.send(life, ai['life'], 'looks_hostile')
-		else:
-			if not speech.discussed(life, ai['life'], 'greeting'):
-				if stats.is_compatible_with(life, ai['life']['id']):
-					speech.communicate(life, 'greeting', matches=[{'id': ai['life']['id']}])
-				
-				speech.send(life, ai['life'], 'greeting')
+	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
+	#	lfe.say(life, '@n panics!', action=True)
 	
 	_potential_talking_targets = []
-	for ai in alife_seen:
-		if life['state'] == 'combat':
-			break
-		
-		if judgement.is_target_dangerous(life, ai['life']['id']):
+	for ai in life['seen']:
+		if not stats.can_talk_to(life, ai):
 			continue
 		
-		if not stats.can_talk_to(life, ai['life']['id']):
-			continue		
-		
-		if not stats.desires_conversation_with(life, ai['life']['id']):
-			continue
-		
-		#TODO: Not always true.
-		if ai['life']['state'] in ['hiding', 'hidden']:
-			break
-		
-		_potential_talking_targets.append(ai['life'])
+		if stats.has_attacked_self(life, ai):
+			stats.react_to_attack(life, ai)
+		elif judgement.get_tension_with(life, ai)>=5:
+			stats.react_to_tension(life, ai)
+	
+		else:
+			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
+				continue
+	
+			#TODO: Not always true.
+			#if ai['life']['state'] in ['hiding', 'hidden']:
+			#	continue
+	
+			_potential_talking_targets.append(ai)
 	
 	#TODO: Score these
 	random.shuffle(_potential_talking_targets)
 	
 	for target in _potential_talking_targets:
 		if life['dialogs']:
-			print 'existing'
 			break
 		
-		if life['state'] in ['combat', 'hiding', 'hidden']:
-			print 'hiding'
-			break
+		if stats.desires_first_contact_with(life, target):
+			memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=-1)
 		
-		if not lfe.get_memory(life, matches={'text': 'met', 'target': target['id']}) and stats.desires_interaction(life):
-			if stats.desires_life(life, target['id']):
-				speech.start_dialog(life, target['id'], 'introduction')
-			elif not stats.desires_life(life, target['id']) and not brain.get_alife_flag(life, target['id'], 'not_friend'):
-				speech.start_dialog(life, target['id'], 'introduction_negative')
-				brain.flag_alife(life, target['id'], 'not_friend')
-		elif lfe.get_questions(life, target=target['id']):
-			if _potential_talking_targets:
-				speech.start_dialog(life, target['id'], 'questions')
-		elif stats.wants_group_member(life, target['id']) and not groups.is_member(life['group'], target['id']):
-			brain.flag_alife(life, target['id'], 'invited_to_group')
-			speech.start_dialog(life, target['id'], 'ask_to_join_group')
+		if memory.get_questions_for_target(life, target):
+			_question = memory.ask_target_question(life, target)
+			speech.start_dialog(life, target, _question['gist'], **_question['args'])
+		elif memory.get_orders_for_target(life, target):
+			speech.start_dialog(life, target, 'give_order')
+		elif stats.wants_group_member(life, target):
+			memory.create_question(life, target, 'recruit', ignore_if_said_in_last=-1, group_id=life['group'])
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
-		dialog.tick(life, _dialog)	
+		dialog.process(life, _dialog)	
 	
-	if not judgement.is_safe(life):
-		_combat_targets = judgement.get_combat_targets(life)
+	if not judgement.is_safe(life) and lfe.ticker(life, 'call_for_help', 90, fire=True):
+		_combat_targets = judgement.get_ready_combat_targets(life)
 		
 		if _combat_targets:
 			if life['camp'] and camps.is_in_camp(life, lfe.get_current_camp(life)):
@@ -131,22 +103,22 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 						
 					groups.distribute(life, 'under_attack', attacker=target, last_seen_at=_last_seen_at)
 		
-		for target in judgement.get_targets(life):
+		for target in judgement.get_ready_combat_targets(life):
 			_last_seen_at = None
 			_know = brain.knows_alife_by_id(life, target)
 			
 			if _know:
 				_last_seen_at = _know['last_seen_at']
 
-			speech.announce(life, 'under_attack', trusted=True, attacker=target, last_seen_at=_last_seen_at)
+			speech.announce(life, 'attacked_by_hostile', trusted=True, target_id=target, last_seen_at=_last_seen_at)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'parent_id' in ITEMS[life['know_items'][item]['item']]]
 	for ai in [life['know'][i] for i in life['know']]:
 		if judgement.is_target_dangerous(life, ai['life']['id']):
 			continue
 		
-		if life['state'] == 'combat':
-			break
+		#if life['state'] == 'combat':
+		#	break
 		
 		if ai['life']['state'] in ['hiding', 'hidden']:
 			break
@@ -165,5 +137,5 @@ def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, sourc
 			brain.share_item_with(life, ai['life'], item['item'])
 			speech.communicate(life,
 				'share_item_info',
-				item=brain.get_remembered_item(life, item['item']),
+				item=item['item'],
 				matches=[{'id': ai['life']['id']}])

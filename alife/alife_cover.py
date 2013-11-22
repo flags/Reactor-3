@@ -4,6 +4,8 @@ import life as lfe
 
 import judgement
 import movement
+import numbers
+import sight
 import brain
 
 import logging
@@ -26,6 +28,10 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_threats = judgement.get_combat_targets(life)
-	#_knows = brain.knows_alife_by_id(life, _threat)
+	_threats = judgement.get_combat_targets(life, recent_only=True, ignore_escaped=2)
+	
+	for target in [LIFE[t] for t in _threats]:
+		if numbers.distance(life['pos'], brain.knows_alife(life, target)['last_seen_at']) >= sight.get_vision(life):
+			_threats.remove(target['id'])
+	
 	movement.escape(life, _threats)

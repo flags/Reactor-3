@@ -2,6 +2,7 @@ from globals import *
 
 import alife
 
+import logging
 import random
 import os
 
@@ -70,12 +71,38 @@ def load_strings():
 	#TODO: Use better walk, like one in profiles.py
 	try:
 		os.path.walk(TEXT_DIR, _load_strings, None)
-	except:
-		raise Exception('Error loading strings.')
+		load_dialog()
+	except Exception, e:
+		raise Exception(e)
+
+def load_dialog():
+	with open(os.path.join(TEXT_DIR, 'dialog.txt')) as f:
+		for line in f.readlines():
+			line = line.rstrip()
+			
+			if not line or line.startswith('#'):
+				continue
+			
+			try:
+				_gist, _requirements, _text, _result = line.split(':')
+			except:
+				raise Exception('Error in dialog (wrong number of arguments): %s' % line)
+			
+			_dialog = {'gist': _gist,
+			           'requirements': _requirements.split(','),
+			           'text': _text,
+			           'result': _result}
+			
+			if _gist in DIALOG_TOPICS:
+				DIALOG_TOPICS[_gist].append(_dialog)
+			else:
+				DIALOG_TOPICS[_gist] = [_dialog]
+	
+	logging.debug('Loaded dialog.')
 
 def generate_place_name():
 	if not TEXT_MAP['places']:
-		return 'Zoolandia'
+		return 'Zoolandia %s' % WORLD_INFO['ticks']
 	
 	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
 
@@ -93,7 +120,7 @@ def generate_first_and_last_name_from_species(species):
 
 def format_injury(injury):
 	if injury['lodged_item']:
-		return 'a %s lodged in the %s' % (injury['lodged_item']['name'], injury['limb'])
+		return 'a %s lodged in the %s' % (ITEMS[injury['lodged_item']]['name'], injury['limb'])
 	elif injury['artery_ruptured']:
 		return 'a ruptured artery in the %s' % injury['limb']
 	elif injury['cut']:

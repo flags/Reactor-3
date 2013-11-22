@@ -11,6 +11,7 @@ import timers
 import alife
 import logic
 import zones
+import cache
 import maps
 import life
 
@@ -80,6 +81,18 @@ def initiate_item(name):
 		item['max_capacity'] = item['max_capacity'][0]*item['max_capacity'][1]
 		item['capacity'] = 0
 		item['storing'] = []
+	
+	if 'speed' in item:
+		item['max_speed'] = item['speed']
+	else:
+		item['max_speed'] = 2
+	
+	if 'thickness' in item:
+		item['max_thickness'] = item['thickness']
+	else:
+		item['max_thickness'] = 1
+		item['thickness'] = 1
+		logging.warning('No thickness defined for item %s.' % item['name'])
 	
 	if not 'size' in item:
 		logging.warning('No size set for item type \'%s\'. Using default (%s).' % (name, DEFAULT_ITEM_SIZE))
@@ -159,14 +172,12 @@ def create_item(name, position=[0,0,2], item=None):
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
+	item['on'] = False
 	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
 	
-	if 'speed' in item:
-		item['max_speed'] = item['speed']
-	else:
-		item['max_speed'] = 2
+	item['speed'] = 0
 	
 	add_to_chunk(item)
 	ITEMS[item['uid']] = item
@@ -175,20 +186,29 @@ def create_item(name, position=[0,0,2], item=None):
 	return item['uid']
 
 def delete_item(item):
+	if item['owner']:
+		life.remove_item_from_inventory(LIFE[item['owner']], item['uid'])
+	
 	logging.debug('Deleting references to item %s' % item['uid'])
 	
-	for life in [LIFE[i] for i in LIFE]:
-		if item['uid'] in life['know_items']:
-			alife.survival.remove_item_from_needs(life, item['uid'])
-			del life['know_items'][item['uid']]
+	for _life in [LIFE[i] for i in LIFE]:
+		if item['uid'] in _life['know_items']:
+			alife.brain.offload_remembered_item(_life, item['uid'])
+			alife.survival.remove_item_from_needs(_life, item['uid'])
+			del _life['know_items'][item['uid']]
+			_life['known_items_type_cache'][item['type']].remove(item['uid'])
 			
-			logging.debug('\tDeleted reference in life #%s' % life['id'])
+			logging.debug('\tDeleted reference in life #%s' % _life['id'])
 	
 	timers.remove_by_owner(item)
 	remove_from_chunk(item)
 	
 	if gfx.position_is_in_frame(item['pos']):
-		gfx.refresh_window_position(item['pos'][0]-CAMERA_POS[0], item['pos'][1]-CAMERA_POS[1])
+		gfx.refresh_view_position(item['pos'][0]-CAMERA_POS[0],
+		                          item['pos'][1]-CAMERA_POS[1],
+		                          'map')
+	
+	cache.offload_item(item)
 	
 	del ITEMS[item['uid']]
 
@@ -204,25 +224,28 @@ def remove_from_chunk(item):
 	if item['uid'] in _chunk['items']:
 		_chunk['items'].remove(item['uid'])
 
-def save_all_items():
-	for item in ITEMS.values():
-		if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
+def clean_item_for_save(item):
+	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
 			item['icon'] = ord(item['icon'][0])
 		
-		_fore = None
-		_back = None
-		
-		if item['color'][0]:
-			_fore = (item['color'][0][0], item['color'][0][1], item['color'][0][2])
-		
-		if item['color'][1]:
-			_back = (item['color'][1][0], item['color'][1][1], item['color'][1][2])
-		
-		item['color'] = (_fore, _back)
+	_fore = None
+	_back = None
+	
+	if item['color'][0]:
+		_fore = (item['color'][0][0], item['color'][0][1], item['color'][0][2])
+	
+	if item['color'][1]:
+		_back = (item['color'][1][0], item['color'][1][1], item['color'][1][2])
+	
+	item['color'] = (_fore, _back)
+
+def save_all_items():
+	for item in ITEMS.values():
+		clean_item_for_save(item)
 
 def reload_all_items():
 	for item in ITEMS.values():
-		if not isinstance(item['icon'], unicode) and not isinstance(item['icon'], str):
+		if isinstance(item['icon'], int):
 			item['icon'] = chr(item['icon'])
 		
 		if item['color'][0]:
@@ -240,6 +263,13 @@ def reload_all_items():
 def get_item_from_uid(uid):
 	"""Helper function. Returns item of `uid`."""
 	return ITEMS[uid]
+
+def fetch_item(item_uid):
+	if item_uid in ITEMS:
+		return ITEMS[item_uid]
+	
+	#Fetch from history now (sometimes offloaded)
+	return cache.retrieve_item(item_uid)
 
 def get_pos(item_uid):
 	item = ITEMS[item_uid]
@@ -293,6 +323,7 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 	velocity = numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
+	item['speed'] = speed
 	item['friction'] = friction
 	item['velocity'] = velocity
 	item['realpos'] = item['pos'][:]
@@ -314,28 +345,28 @@ def is_item_owned(item_uid):
 	return False
 
 def draw_items():
+	_view = gfx.get_view_by_name('map')
+	
 	for _item in ITEMS:
 		item = ITEMS[_item]
 		
 		if is_item_owned(item['uid']):
 			continue
 		
-		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+MAP_WINDOW_SIZE[0] and\
-			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+MAP_WINDOW_SIZE[1]:
+		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
 			_x = item['pos'][0] - CAMERA_POS[0]
 			_y = item['pos'][1] - CAMERA_POS[1]
 		
 			if not LOS_BUFFER[0][_y,_x]:
 				continue
 			
-			gfx.blit_char(_x,
+			gfx.blit_char_to_view(_x,
 				_y,
 				item['icon'],
-				item['color'][0],
-				item['color'][1],
-				char_buffer=MAP_CHAR_BUFFER,
-				rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-				rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+				(item['color'][0],
+			      item['color'][1]),
+				'map')
 
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -381,6 +412,27 @@ def remove_item_from_any_storage(item_uid):
 	
 	del _item['stored_in']
 
+def process_event(item, event):
+	if event == 'equip' and 'ON_EQUIP' in item['flags']:
+		scripting.execute(item['flags']['ON_EQUIP'], item_uid=item['uid'])
+	
+	elif event == 'activate' and 'ON_ACTIVATE' in item['flags']:
+		scripting.execute(item['flags']['ON_ACTIVATE'], item_uid=item['uid'])
+	
+	elif event == 'deactivate' and 'ON_DEACTIVATE' in item['flags']:
+		scripting.execute(item['flags']['ON_DEACTIVATE'], item_uid=item['uid'])
+	
+	elif event == 'stop' and 'ON_STOP' in item['flags']:
+		scripting.execute(item['flags']['ON_STOP'], item_uid=item['uid'])
+
+def activate(item):
+	if item['on']:
+		process_event(item, 'deactivate')
+		item['on'] = False
+	else:
+		process_event(item, 'activate')
+		item['on'] = True
+
 def burn(item, amount):
 	if not 'CAN_BURN' in item['flags']:
 		return False
@@ -397,9 +449,15 @@ def explode(item):
 	if not item['type'] == 'explosive':
 		return False
 	
-	effects.create_light(item['pos'], (255, 255, 255), item['damage']['force']*2, 0, fade=0.8)
+	logging.debug('The %s (item %s) explodes!' % (item['name'], item['uid']))
 	
-	if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
+	#TODO: Don't breathe this!
+	item['pos'] = get_pos(item['uid'])
+	
+	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
+	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=0.99)
+	
+	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
 		logic.show_event('%s explodes!' % get_name(item), item=item, delay=0)
 		
@@ -417,16 +475,27 @@ def explode(item):
 		
 		#TODO: Intelligent(?) limb groups?
 		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
-		#_limbs = random.sample(LIFE[life_id]['body'].keys(), _force-_distance)
-		_limb = random.choice(LIFE[life_id]['body'].keys())
 		
-		#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
-		print 'known item', _known_item
-		if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
-			life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
-		
-		#for _limb in _limbs:
-		life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force))
+		#for limb in random.sample(LIFE[life_id]['body'].keys(), _force-_distance):
+		_limbs = LIFE[life_id]['body'].keys()
+		for i in range(_force-_distance):
+			_limb = random.choice(_limbs)
+			
+			for _attached_limb in life.get_all_attached_limbs(LIFE[life_id], _limb):
+				if _attached_limb in _limbs:
+					_limbs.remove(_attached_limb)
+			
+			#_limb = random.choice(LIFE[life_id]['body'].keys())
+			
+			#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
+			if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
+				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
+			
+			#for _limb in _limbs:
+			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force*2))
+			
+			if not _limbs:
+				break
 		
 		life.push(LIFE[life_id], _direction, _force)
 		
@@ -455,7 +524,8 @@ def explode(item):
 						burn(_visible_item, item['damage']['fire'])
 				
 				if not random.randint(0, 4):
-					effects.create_fire((pos[0], pos[1], item['pos'][2]), intensity=item['damage']['fire'])
+					effects.create_fire((pos[0], pos[1], item['pos'][2]),
+					                    intensity=item['damage']['fire']/2)
 			
 				_dist = numbers.distance(item['pos'], pos)/2
 				if not random.randint(0, _dist) or not _dist:
@@ -463,15 +533,20 @@ def explode(item):
 		
 				if gfx.position_is_in_frame(pos):
 					_render_pos = gfx.get_render_position(pos)
-					gfx.refresh_window_position(_render_pos[0], _render_pos[1])
+					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	delete_item(item)
+	if item['uid'] in ITEMS:
+		delete_item(item)
 
 def collision_with_solid(item, pos):
-	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]] and item['velocity'][2]<0:
+	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+		return True
+	
+	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
 		item['pos'] = pos
+		process_event(item, 'stop')
 		
 		return True
 	
@@ -531,10 +606,13 @@ def tick_item(item_uid):
 	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
 		return False
 	
-	_x = item['pos'][0]-CAMERA_POS[0]
-	_y = item['pos'][1]-CAMERA_POS[1]
-	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-		gfx.refresh_window_position(_x, _y)
+	_x = item['pos'][0]
+	_y = item['pos'][1]
+	
+	#_view = gfx.get_view_by_name('map')
+	#if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+	if gfx.position_is_in_frame((_x, _y)):
+		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 	
 	item['realpos'][0] += item['velocity'][0]
 	item['realpos'][1] += item['velocity'][1]
@@ -545,6 +623,10 @@ def tick_item(item_uid):
 		item['velocity'][2] -= item['gravity']
 		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 		item['pos'][2] = int(round(item['realpos'][2]))
+		
+		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
+			delete_item(ITEMS[item_uid])
+			return False
 		
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 		if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
@@ -573,15 +655,22 @@ def tick_item(item_uid):
 		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
 			logging.warning('Item OOM: %s', item['uid'])
 			delete_item(ITEMS[item_uid])
 			return False
 		
+		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
+			if item['type'] == 'bullet':
+				effects.create_light(item['pos'], (255, 0, 0), 9, 0)
+			print 'HIT WALL!' * 100
+			return False
+		
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
-				if _life['id'] == item['owner'] or _life['dead']:
+				if _life['id'] == item['shot_by'] or _life['dead']:
 					continue					
 				
 				if _life['pos'][0] == pos[0] and _life['pos'][1] == pos[1] and _life['pos'][2] == int(round(item['realpos'][2])):
@@ -589,6 +678,7 @@ def tick_item(item_uid):
 					item['pos'] = [pos[0],pos[1],_life['pos'][2]]
 					add_to_chunk(item)
 					life.damage_from_item(_life,item,60)
+					
 					delete_item(ITEMS[item_uid])
 					return False
 			
@@ -626,10 +716,11 @@ def tick_item(item_uid):
 	
 	add_to_chunk(item)
 	
-	_x = item['pos'][0]-CAMERA_POS[0]
-	_y = item['pos'][1]-CAMERA_POS[1]
-	if 0<=_x<MAP_WINDOW_SIZE[0] and 0<=_y<MAP_WINDOW_SIZE[1]:
-		gfx.refresh_window_position(_x, _y)
+	_x = item['pos'][0]
+	_y = item['pos'][1]
+	
+	if gfx.position_is_in_frame((_x, _y)):
+		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
@@ -656,7 +747,9 @@ def tick_item(item_uid):
 	
 	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
+	print 'SPEED', item['speed']
 
-def tick_all_items(MAP):
+def tick_all_items():
 	for item in ITEMS.keys():
 		tick_item(item)

@@ -8,6 +8,7 @@ import maputils
 import numbers
 import drawing
 import effects
+import weather
 import logic
 import items
 import zones
@@ -41,8 +42,7 @@ def create_map(size=MAP_SIZE):
 			_z = []
 			for z in range(size[2]):
 				if z == 2:
-					_z.append(create_tile(random.choice(
-						[TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
+					_z.append(create_tile(random.choice([TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
 				else:
 					_z.append(None)
 
@@ -51,6 +51,22 @@ def create_map(size=MAP_SIZE):
 
 	logging.debug('Created new map of size (%s,%s).' % (size[0], size[1]))
 	return _map
+
+def reload_slices():
+	for _slice in WORLD_INFO['slices'].values():
+		#logging.debug('Loading slice: %s' % _slice['id'])
+		
+		_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]		
+		_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
+		_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
+			
+		_slice['_map'] = zones.create_map_array(size=_size)
+		
+		for pos in _slice['map']:
+			_xx = _slice['top_left'][0]+1
+			_yy = _slice['top_left'][1]+1
+			
+			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -61,9 +77,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		os.mkdir(_map_dir)
 	except:
 		pass
-
-	for _slice in [s for s in WORLD_INFO['slices'].values() if 'rotmap' in s]:
-		del _slice['rotmap']
 		
 	for light in WORLD_INFO['lights']:
 		if 'los' in light:
@@ -71,8 +84,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 		
 		if 'old_pos' in light:
 			del light['old_pos']
-	
-	WORLD_INFO['seed_state'] = random.getstate()
 
 	#For debug
 	#for key in WORLD_INFO:
@@ -83,14 +94,57 @@ def save_map(map_name, base_dir=DATA_DIR):
 	#	print WORLD_INFO['items'][item]
 	#	json.dumps(WORLD_INFO['items'][item])
 
-	with open(os.path.join(_map_dir,map_name),'w') as _map_file:
+	with open(os.path.join(_map_dir,map_name), 'w') as _map_file:
 		try:
-			_map_file.write(json.dumps(WORLD_INFO))
+			_map = WORLD_INFO['map']
+			_slices = WORLD_INFO['slices']
+			_chunk_map = WORLD_INFO['chunk_map']
+			
+			del WORLD_INFO['map']
+			del WORLD_INFO['slices']
+			del WORLD_INFO['chunk_map']
+			
+			_weather_light_map = None
+			if 'light_map' in WORLD_INFO['weather']:
+				_weather_light_map = WORLD_INFO['weather']['light_map']
+				del WORLD_INFO['weather']['light_map']
+			
+			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
+			
+			for _slice in _slices.keys():
+				if '_map' in _slices[_slice]:
+					del _slices[_slice]['_map']
+				
+				_map_file.write('slice:%s:%s\n' % (_slice, json.dumps(_slices[_slice])))
+			
+			for _chunk_key in _chunk_map:
+				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
+			
+			logging.debug('Writing map to disk...')
+			for x in range(MAP_SIZE[0]):
+				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
+				logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+			
+			logging.info('Map \'%s\' saved to disk.' % map_name)			
+			
+			WORLD_INFO['map'] = _map
+			WORLD_INFO['slices'] = _slices
+			WORLD_INFO['chunk_map'] = _chunk_map
+			
+			if _weather_light_map:
+				WORLD_INFO['weather']['light_map'] = _weather_light_map
+			
+			logging.debug('Reloading slices...')
+			reload_slices()
+			logging.debug('Done!')
+			
 			logging.info('Map \'%s\' saved.' % map_name)
 			gfx.log('Map \'%s\' saved.' % map_name)
-		except TypeError:
+		except TypeError as e:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+			
+			raise e
 
 def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
@@ -98,46 +152,53 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		map_name+='.dat'
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
-		try:
-			WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+		#try:
+		#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
+		for line in _map_file.readlines():
+			line = line.rstrip()
+			value = line.split(':')
 			
-			if 'items' in WORLD_INFO:
-				ITEMS.update(WORLD_INFO['items'])
-				#del WORLD_INFO['items']
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			if like_new:
-				update_chunk_map()
-				smooth_chunk_map()
-			else:
-				WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
-			
-			if not WORLD_INFO['lights']:
-				logging.warning('World has no lights. Creating one manually.')
-				effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
-			
-		except ValueError:
-			_map_file.seek(0)
-			WORLD_INFO['map'] = json.loads(_map_file.readline())
-			
-			_map_size = maputils.get_map_size(WORLD_INFO['map'])
-			MAP_SIZE[0] = _map_size[0]
-			MAP_SIZE[1] = _map_size[1]
-			MAP_SIZE[2] = _map_size[2]
-			
-			logging.warning('Hello legacy users :)')
-			update_chunk_map()
-			smooth_chunk_map()
-			generate_reference_maps()
-			logging.warning('Zone maps regenerating (This should only happen once)')
-			zones.create_zone_map()
-			zones.connect_ramps()
+			if line.startswith('chunk'):
+				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('map'):
+				WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
+			elif line.startswith('slice'):
+				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
+			elif line.startswith('world_info'):
+				WORLD_INFO.update(json.loads(':'.join(value[1:])))
+		
+		if 'items' in WORLD_INFO:
+			ITEMS.update(WORLD_INFO['items'])
+				
+		#if not (x, y) in zone['map']:
+		#for slice 
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		MAP_SIZE[0] = _map_size[0]
+		MAP_SIZE[1] = _map_size[1]
+		MAP_SIZE[2] = _map_size[2]
+		
+		reload_slices()
+		
+		if like_new:
+			update_chunk_map()
+			smooth_chunk_map()
+		else:
+			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
+		
+		if WORLD_INFO['weather']:
+			weather.create_light_map(WORLD_INFO['weather'])
+		
+		if not WORLD_INFO['lights']:
+			logging.warning('World has no lights. Creating one manually.')
+			effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
+		#except Exception as e:
+		#	raise e
+		
+		_map_size = maputils.get_map_size(WORLD_INFO['map'])
+		
+		#with open('ref_dump.txt', 'w') as w:
+		#	w.write(json.dumps(WORLD_INFO['reference_map'], indent=3))
 		
 		for x in range(MAP_SIZE[0]):
 			for y in range(MAP_SIZE[1]):
@@ -153,10 +214,6 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
-		if WORLD_INFO['seed_state']:
-			WORLD_INFO['seed_state'][1] = tuple(WORLD_INFO['seed_state'][1])
-			random.setstate(tuple(WORLD_INFO['seed_state']))
-		
 		zones.cache_zones()
 		create_position_maps()
 		logging.info('Map \'%s\' loaded.' % map_name)
@@ -166,6 +223,21 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		#except TypeError:
 		#	logging.error('FATAL: Map not JSON serializable.')
 		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
+
+def get_tile(pos):
+	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return True
+	
+	return False
+
+def is_solid(pos):
+	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+		return False
+	
+	if 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
+		return False
+	
+	return True
 
 def position_is_in_map(pos):
 	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:
@@ -183,22 +255,38 @@ def render_lights(source_map):
 		return False
 
 	reset_lights()
+	SUN = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
-	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN_BRIGHTNESS[0])
-	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN_BRIGHTNESS[0])
-	(x, y) = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN[0])
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN[1])
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN[2])
+	(x, y) = SETTINGS['light mesh grid']
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
+		_x_range = light['pos'][0]-CAMERA_POS[0]
+		_y_range = light['pos'][1]-CAMERA_POS[1]
+		
+		#print _x_range, _y_range
+		
+		if _x_range <= -20 or _x_range>=MAP_WINDOW_SIZE[0]+20:
+			continue
+		
+		if _y_range <= -20 or _y_range>=MAP_WINDOW_SIZE[1]+20:
+			continue
+		
 		if not 'old_pos' in light:
 			light['old_pos'] = (0, 0, -2)
 		else:
 			light['old_pos'] = light['pos'][:]
 		
 		if 'follow_item' in light:
-			light['pos'] = items.get_pos(light['follow_item'])
+			if not light['follow_item'] in ITEMS:
+				_remove_lights.append(light)
+				continue
+				
+			light['pos'] = items.get_pos(light['follow_item'])[:]
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
@@ -208,7 +296,7 @@ def render_lights(source_map):
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), 25, top_left=_top_left)
+			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), light['brightness']*2, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -236,16 +324,26 @@ def render_lights(source_map):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']-light['shake'], light['brightness']), 0.01, 255) / sqr_distance
-		brightness = numpy.clip(brightness * 255.0, 0, 255)
+		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
+		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
+		brightness *= LOS_BUFFER[0]
 		
-		_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
-		_mod = numbers.clip(_mod-1, 0, 1)
-		SUN = (255*_mod, 165*_mod, 0*_mod)
-		RGB_LIGHT_BUFFER[0] = numpy.subtract(RGB_LIGHT_BUFFER[0],brightness).clip(0, SUN[0])
-		RGB_LIGHT_BUFFER[1] = numpy.subtract(RGB_LIGHT_BUFFER[1],brightness).clip(0, SUN[1])
-		RGB_LIGHT_BUFFER[2] = numpy.subtract(RGB_LIGHT_BUFFER[2],brightness).clip(0, SUN[2])
+		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		#_mod = numbers.clip(_mod-1, 0, 1)
+		#(255*_mod, 165*_mod, 0*_mod)
+		#print brightness
+		#light['brightness'] = 25
+		#light['color'][0] = 255*(light['brightness']/255.0)
+		#light['color'][1] = (light['brightness']/255.0)
+		#light['color'][2] = 255*(light['brightness']/255.0)
+		RGB_LIGHT_BUFFER[0] -= (brightness.clip(0, 2)*(light['color'][0]))#numpy.subtract(RGB_LIGHT_BUFFER[0], light['color'][0]).clip(0, 255)
+		RGB_LIGHT_BUFFER[1] -= (brightness.clip(0, 2)*(light['color'][1]))#numpy.subtract(RGB_LIGHT_BUFFER[1], light['color'][1]).clip(0, 255)
+		RGB_LIGHT_BUFFER[2] -= (brightness.clip(0, 2)*(light['color'][2]))#numpy.subtract(RGB_LIGHT_BUFFER[2], light['color'][2]).clip(0, 255)
+		
+		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]
+		#RGB_LIGHT_BUFFER[2] *= LOS_BUFFER[0]
 		
 		if logic.can_tick():
 			if light['fade']:
@@ -255,7 +353,7 @@ def render_lights(source_map):
 				_remove_lights.append(light)
 	
 	for light in _remove_lights:
-		WORLD_INFO['lights'].remove(light)
+		effects.delete_light(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]
@@ -311,54 +409,6 @@ def render_los(map,position,los_buffer=LOS_BUFFER[0]):
 
 			los_buffer[_y,_x] = 1
 
-def render_map(map):
-	_X_MAX = CAMERA_POS[0]+MAP_WINDOW_SIZE[0]
-	_Y_MAX = CAMERA_POS[1]+MAP_WINDOW_SIZE[1]
-	
-	DARK_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-	if _X_MAX>MAP_SIZE[0]:
-		_X_MAX = MAP_SIZE[0]
-
-	if _Y_MAX>MAP_SIZE[1]:
-		_Y_MAX = MAP_SIZE[1]
-
-	for x in range(CAMERA_POS[0],_X_MAX):
-		_RENDER_X = x-CAMERA_POS[0]
-		for y in range(CAMERA_POS[1],_Y_MAX):
-			_RENDER_Y = y-CAMERA_POS[1]
-			_drawn = False
-			for z in range(MAP_SIZE[2]-1,-1,-1):
-				if map[x][y][z]:
-					if z > CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
-						_drawn = True
-					elif z == CAMERA_POS[2]:
-						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							gfx.blit_char(_RENDER_X,
-								_RENDER_Y,
-								'X',
-								darker_grey,
-								black,
-								char_buffer=MAP_CHAR_BUFFER,
-								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
-						else:
-							gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						_drawn = True
-					elif z < CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						gfx.blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						gfx.darken_tile(_RENDER_X,_RENDER_Y,abs((CAMERA_POS[2]-z))*30)
-						_drawn = True
-				
-					if SETTINGS['draw z-levels above'] and _drawn:
-						break
-			
-			if not _drawn:
-				gfx.blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
-
 def render_map_slices():
 	SETTINGS['map_slices'] = []
 	
@@ -396,9 +446,7 @@ def render_x_cutout(map,x_pos,y_pos):
 			gfx.blit_tile(_RENDER_X,
 				(MAP_SIZE[2]-3)-z,
 				_tile,
-				char_buffer=X_CUTOUT_CHAR_BUFFER,
-				rgb_fore_buffer=X_CUTOUT_RGB_FORE_BUFFER,
-				rgb_back_buffer=X_CUTOUT_RGB_BACK_BUFFER)
+				'map')
 
 def render_y_cutout(map,x_pos,y_pos):
 	_Y_MAX = y_pos+Y_CUTOUT_WINDOW_SIZE[1]
@@ -541,6 +589,14 @@ def update_chunk_map():
 	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
 		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
+			_chunk_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+			
+			#if _type in ['forest', 'field']:
+			#	continue
+			
+			if _chunk_type == 'town':
+				_chunk_type = 'building'
+			
 			_chunk_map[_chunk_key] = {'pos': (x1, y1),
 				'ground': [],
 				'life': [],
@@ -550,6 +606,7 @@ def update_chunk_map():
 				'flags': {},
 				'reference': None,
 				'last_updated': None,
+				'type': _chunk_type,
 				'max_z': 0}
 			
 			_tiles = {}
@@ -580,16 +637,16 @@ def update_chunk_map():
 					else:
 						_tiles[_type] = 1
 			
-			_total_tiles = sum(_tiles.values())
-			for tile in _tiles.keys():
-				_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
+			#_total_tiles = sum(_tiles.values())
+			#for tile in _tiles.keys():
+				#_tiles[tile] = (_tiles[tile]/float(_total_tiles))*100
 			
-			if 'building' in _tiles:# and _tiles['building']>=9:
-				_chunk_map[_chunk_key]['type'] = 'building'
-			elif 'road' in _tiles and _tiles['road']>=15:
-				_chunk_map[_chunk_key]['type'] = 'road'
-			else:
-				_chunk_map[_chunk_key]['type'] = 'other'
+			#if 'building' in _tiles:# and _tiles['building']>=9:
+				#_chunk_map[_chunk_key]['type'] = 'building'
+			#elif 'road' in _tiles and _tiles['road']>=15:
+				#_chunk_map[_chunk_key]['type'] = 'road'
+			#else:
+				#_chunk_map[_chunk_key]['type'] = 'other'
 	
 	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
@@ -650,7 +707,6 @@ def find_all_linked_chunks(chunk_key, check=[]):
 		_linked_chunks.append(_current_chunk_key)
 		_current_chunk = get_chunk(_current_chunk_key)
 		
-		print _current_chunk['neighbors']
 		for neighbor_chunk_key in _current_chunk['neighbors']:
 			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
 				continue
@@ -680,8 +736,6 @@ def generate_reference_maps():
 				continue
 			
 			if _current_chunk['type'] == 'road':
-				print find_all_linked_chunks(_current_chunk_key)
-				print 'done\n'
 				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
 					WORLD_INFO['references'][str(_ref_id)] = _ret
@@ -704,3 +758,60 @@ def generate_reference_maps():
 	logging.debug('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
 	logging.debug('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
 	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
+
+def draw_chunk_map(life=None, show_faction_ownership=False):
+	#_x_min = MAP_CURSOR[0]/WORLD_INFO['chunk_size']
+	#_y_min = MAP_CURSOR[1]/WORLD_INFO['chunk_size']
+	#_x_max = numbers.clip(_x_min+WINDOW_SIZE[0]/WORLD_INFO['chunk_size'], _x_min, WINDOW_SIZE[0])
+	#_y_max = numbers.clip(_y_min+WINDOW_SIZE[1]/WORLD_INFO['chunk_size'], _y_min, WINDOW_SIZE[1])
+	#print MAP_SIZE
+	
+	#print _x_min, _x_max, _y_min, _y_max
+	_life_chunk_key = None
+	
+	if life:
+		_life_chunk_key = lfe.get_current_chunk_id(life)
+	
+	for x in range(0, MAP_SIZE[0]/WORLD_INFO['chunk_size']):
+		_d_x = x
+		
+		if _d_x >= MAP_WINDOW_SIZE[0]:
+			continue
+		
+		for y in range(0, MAP_SIZE[1]/WORLD_INFO['chunk_size']):
+			_d_y = y
+			_chunk_key = '%s,%s' % (_d_x*WORLD_INFO['chunk_size'], _d_y*WORLD_INFO['chunk_size'])
+			_draw = True
+			_fore_color = tcod.darker_gray
+			_back_color = tcod.darkest_gray
+			
+			if _d_y >= MAP_WINDOW_SIZE[1]:
+				continue
+			
+			if life:
+				if not _chunk_key in life['known_chunks']:
+					_draw = False
+			
+			if _draw:
+				_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
+				_char = 'x'
+				
+				if _type == 'building':
+					_fore_color = tcod.light_gray
+					_char = 'B'
+				elif _type == 'field':
+					_fore_color = tcod.yellow
+				elif _type == 'forest':
+					_fore_color = tcod.dark_green
+				elif _type in ['road', 'driveway']:
+					_fore_color = tcod.white
+					_back_color = tcod.black
+					_char = '.'
+				
+				if _chunk_key == _life_chunk_key and time.time()%1>=.5:
+					_fore_color = tcod.white
+					_char = 'X'
+				
+				gfx.blit_char_to_view(_d_x, _d_y, _char, (_fore_color, _back_color), 'chunk_map')
+			else:
+				gfx.blit_char_to_view(_d_x, _d_y, 'x', (tcod.darker_gray, tcod.darkest_gray), 'chunk_map')

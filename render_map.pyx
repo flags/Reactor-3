@@ -1,4 +1,4 @@
-from graphics import blit_tile, darken_tile, blit_char, blit_tile
+from graphics import blit_tile, darken_tile, blit_char, blit_tile, get_view_by_name, blit_char_to_view
 from globals import MAP_CHAR_BUFFER, DARK_BUFFER
 from tiles import *
 
@@ -6,6 +6,7 @@ import libtcodpy as tcod
 
 import effects
 import numpy
+import tiles
 import alife
 import time
 
@@ -32,7 +33,8 @@ def render_map(map):
 	cdef int _RENDER_X = 0
 	cdef int _RENDER_Y = 0
 	
-	_TEMP_MAP_CHAR_BUFFER = MAP_CHAR_BUFFER[1].copy()
+	_view = get_view_by_name('map')
+	_TEMP_MAP_CHAR_BUFFER = _view['char_buffer'][1].copy()
 
 	if _X_MAX>_MAP_SIZE[0]:
 		_X_MAX = _MAP_SIZE[0]
@@ -48,31 +50,40 @@ def render_map(map):
 			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
 				continue
 			
-			DARK_BUFFER[0][_RENDER_Y, _RENDER_X] = 0
+			_view['light_buffer'][1][_RENDER_Y, _RENDER_X] = 0
 			
 			_drawn = False
+			_shadow = 2
 			for z in range(MAP_SIZE[2]-1,-1,-1):
 				if map[x][y][z]:
-					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above'] and not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
-						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)
-						_drawn = True
+					if z > _CAMERA_POS[2] and SETTINGS['draw z-levels above']:
+						if 'translucent' in tiles.get_raw_tile(tiles.get_tile((x, y, z))):
+							if _shadow >= 2:
+								_shadow += 1
+						else:
+							_shadow = 0
+							
+						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
+							darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
+							_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
-							blit_char(_RENDER_X,
+							blit_char_to_view(_RENDER_X,
 								_RENDER_Y,
 								'X',
-								tcod.darker_grey,
-								tcod.black,
-								char_buffer=MAP_CHAR_BUFFER,
-								rgb_fore_buffer=MAP_RGB_FORE_BUFFER,
-								rgb_back_buffer=MAP_RGB_BACK_BUFFER)
+								(tcod.darker_grey,
+									tcod.black),
+								'map')
 						else:
-							blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+							if _shadow > 2:
+								darken_tile(_RENDER_X, _RENDER_Y, 15*(_shadow-2))
+							
+							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							
 							if SETTINGS['draw effects']:
 								if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-									effects.draw_splatter((x,y,z),(_RENDER_X,_RENDER_Y))
+									effects.draw_splatter((x,y,z), (_RENDER_X,_RENDER_Y))
 									effects.draw_effect((x, y))
 						
 						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
@@ -84,11 +95,11 @@ def render_map(map):
 							if _visible_chunks:
 								for _chunk in _visible_chunks:
 									if alife.chunks.position_is_in_chunk((x, y), _chunk):
-										darken_tile(_RENDER_X,_RENDER_Y,abs(90))
+										darken_tile(_RENDER_X, _RENDER_Y, abs(90))
 									
 						_drawn = True
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
-						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z])
+						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z], 'map')
 						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)
 						_drawn = True
 				
@@ -96,4 +107,4 @@ def render_map(map):
 						break
 			
 			if not _drawn:
-				blit_tile(_RENDER_X,_RENDER_Y,BLANK_TILE)
+				blit_tile(_RENDER_X, _RENDER_Y, BLANK_TILE, 'map')

@@ -2,13 +2,18 @@ from globals import *
 
 import libtcodpy as tcod
 
-def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', padding=MENU_PADDING,
-                on_select=None, on_change=None, on_close=None, on_move=None, dim=True, alignment='', action=None):
+import alife
+import life
+
+def create_menu(menu=[], position=[0,0], title='Untitled', format_str='$k: $v', padding=MENU_PADDING,
+                on_select=None, on_change=None, on_close=None, on_move=None, dim=True, alignment='', action=None,
+                close_on_select=False):
 	_menu = {'settings': {'position': list(position),'title': title,'padding': padding,'dim': dim,'format': format_str},
 		'on_select': on_select,
 		'on_change': on_change,
-	    'on_move': on_move,
+		'on_move': on_move,
 		'on_close': on_close,
+		'close_on_select': close_on_select,
 		'alignment': alignment,
 		'index': 0,
 		'values':{},
@@ -23,8 +28,8 @@ def create_menu(menu=[],position=[0,0], title='Untitled', format_str='$k: $v', p
 		entry['uid'] = _uid
 		_uid+=1
 		
-		for value in entry['values']:
-			_line = format_entry(_menu['settings']['format'],entry)
+		for value in range(len(entry['values'])):
+			_line = format_entry(_menu['settings']['format'], entry, value=value)
 			
 			if len(_line) > _size[0]:
 				_size[0] = len(_line)
@@ -69,9 +74,12 @@ def remove_item_from_menus(matching):
 			if _match:
 				menu['menu'].remove(item)
 
-def format_entry(format_str,entry):
+def format_entry(format_str, entry, value=-1):
+	if value == -1:
+		value = entry['value']
+	
 	return format_str.replace('$k', str(entry['key']))\
-		.replace('$v', str(entry['values'][entry['value']]))\
+		.replace('$v', str(entry['values'][value]))\
 		.replace('$i', str(entry['icon']))
 
 def redraw_menu(menu):
@@ -205,6 +213,37 @@ def find_item_after(menu,index=-1):
 	
 	return find_item_after(menu)
 
+def get_menu_index_by_key(menu, key):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry['key'] == key:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def get_menu_index_by_flag(menu, flag, value):
+	menu = get_menu(menu)
+	
+	_i = 0
+	for entry in menu['menu']:
+		if entry[flag] == value:
+			return _i
+		
+		_i += 1
+	
+	return -1
+
+def go_to_menu_index(menu, index):
+	get_menu(menu)['index'] = index
+	
+	if get_menu(menu)['on_move']:
+		_entry = get_selected_item(menu, index)
+		return get_menu(menu)['on_move'](_entry)
+
 def move_up(menu, index):
 	menu['index'] = find_item_before(menu, index=index)
 	
@@ -235,12 +274,15 @@ def get_selected_item(menu,index):
 	
 	return _entry
 
-def item_selected(menu,index):
-	_entry = get_selected_item(menu,index)
-	menu = get_menu(menu)
+def item_selected(menu_id, index):
+	_entry = get_selected_item(menu_id, index)
+	_menu = get_menu(menu_id)
 	
-	if menu['on_select']:
-		return menu['on_select'](_entry)
+	if _menu['close_on_select']:
+		delete_menu(menu_id)
+	
+	if _menu['on_select']:
+		return _menu['on_select'](_entry)
 	
 	return False
 
@@ -269,3 +311,21 @@ def is_any_menu_getting_input():
 			return _item
 	
 	return False
+
+def create_target_list():
+	_menu_items = []
+	for target in [l for l in LIFE.values() if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+		if target['dead']:
+			continue
+		
+		if not _menu_items:
+			SETTINGS['following'] = target['id']
+		
+		_color = life.draw_life_icon(target)[1]
+		_menu_items.append(create_item('single',
+		                               ' '.join(target['name']),
+		                               None,
+		                               target=target['id'],
+		                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
+	
+	return _menu_items

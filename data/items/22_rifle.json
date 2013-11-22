@@ -7,7 +7,7 @@
 "size": "3x2",
 "feed": "magazine",
 "ammotype": ".22 LR",
-"recoil": 8,
+"recoil": 0.3,
 "firemodes": ["single"],
 "firemode": 0,
 "accuracy": 6,

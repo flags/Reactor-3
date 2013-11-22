@@ -548,3 +548,208 @@ Lost track of how many times I've looked into the needs logic for ALife, but eve
 There's a potential issue with getting NPCs to manage inventory space correctly. This time around I'm probably just going to do a bare-bones version of what I want things to eventually look like so I don't end up spending more than a few days on this, so I'll just have them check storage capacity and work from there (at some point they need to consider access times and score storage options.)
 
 The biggest problem is making groups aware of specific item needs - as a proof of concept we should being working towards moving groups around the map to loot things, which introduces a bunch of new code so we can bridge jobs with needs. At this stage we could just mask group item needs under the guise of jobs - I don't think it matters that each ALife maintain an understanding of what items the group needs as long as the leader is parsing that info and sending it out to everyone (as jobs.)
+
+Version 0.6.5
+=============
+With 0.6 in the wild, it's time to take all existing frameworks/systems and begin using them to create content. We'll also be extending the ALife as much as possible, and implementing the last (?) round of behavioral changes.
+
+What needs to be done
+------------------
+The laundry list of issues currently logged should be checked over for errors or missed fixes along the way that weren't marked as fixed. Most of these should be avoided and put off for bugfix days.
+
+We will focus now on getting content working in a reasonable manner, and make any changes needed to support more early-game tasks (group formation, etc.) Before we do any of this, the content that exists currently should be examined and reconsidered.
+
+Issue #1: It's Boring
+------------------
+First: Currently people enter the Zone one by one. Whle this is an accurate way to simulate a Zone where all ALife are interacting naturally, for the interest of time it is slow and boring for the player to watch and participate in. A better way to go about this is currently displayed by Wildlife, who sometimes enter the Zone with one or two additional "pack members" who have a natural bond. This bond is justified by the idea of Mother<->Father<->Child relationships. For the sake of time, we should implement this for people also.
+
+Issue #1.1: Are we abandoning the "true" Zone?
+----------------------------------------
+By introducing pre-exisiting groups, there could potentially be issues with meshing "natural" ALife (i.e., those entering the Zone by themselves) with ALife who enter the Zone with a pre-existing bond.
+
+Issue #2: The Trust Problem
+------------------------
+Trust is currently implemented in the worst way possible. The values that modify trust are random and unjustified, and are usually marked with "#TODO: Hardcoded". It would be in our best interest to cover this first, before we get into pre-existing bonds.
+
+What is trust?
+
+The criteria:
+* We must be able to measure the ALife's exact trust in another ALife quickly
+* Trust should not just consist of random values. There should be a certain amount of "obvious trust" and "earned trust", combined to calculate the total trust.
+* A violation of a certain trust should not just be a negative value against the total, but instead something that can potentially swing the entirety of the trust variable into the negatives.
+
+In addition, when do we "trust" someone? How can we measure how much trust is needed for a bond to form?
+
+* Solution 1: Trust "tiers". Each ALife could maintain its own idea of who is a true friend vs. someone they know/work with.
+
+Are there any issues with this solution? I can foresee a problem with the differing ideas of who is a friend/not friend introducing some behaviors where one person treats the other as a friend, while the "friend" sees the person differently. While this is the way it works in the world, it does not translate well to this format.
+
+Solution for Solution 1: Issue 1: Rejections
+--------------------------------------
+If the above situation occurs, we can implement some form of "awareness", i.e., exposing the ALife to the idea that their level of trust is not mutual, limiting it as a result. There is also the possiblity for reactions to this - is the ALife opposed to the idea of not having mutual trust?
+
+Where do we need to make changes in trust logic?
+------------------------------------------
+A heavy amount (all?) of the trust modifiers should be in `dialog.py`. We can begin by either disabling  the `modify_trust` function so we don't have to sort through each reference to `like` and `dislike` (misnomer for trust and distrust.)
+
+What determines trust?
+-------------------
+Hard trust: Trust that is implied. Present in Parent<->child relationships and groups
+Dynamic trust: Combination of dialog choices and other interactions
+
+Using these two types of trust
+--------------------------
+Hard trust is all that should be needed for people to "get along," like in groups. Dynamic trust is used everywhere else.
+
+Issue #2: Job Issue
+-----------------
+Starting on group jobs has made me realize just how much work is involved with getting the ALife to perform cycles. For example, I can give them the need to collect items for their group, but when it comes down to returning to the camp and storing the items it completely fails. It's the weird mix of needs and jobs that cause the issue, because iirc jobs have a higher priority than needs, so the ALife in question will become aware of the job to return the items regardless of whether they have them or not.
+
+MapGen: Version 2
+=================
+Now that the current map generator is stable, it's time to write the second iteration of it. We'll work on it in 3 stages, but first, a few notes:
+
+* We need larger maps - at least 2x/3x larger than the current ones
+* Each map should have a number of unique landmarks in addition to areas that need to be on every map
+* Generated maps should have a clear progression, i.e., going from peaceful to hostile
+
+The following should be on every map, in order:
+
+* Town(s)
+* Factories
+* Army Warehouses
+* Labs
+* Reactor
+
+Cycle 1: Towns
+------------
+The current town size is fine, but the actual layout needs to be much more detailed. Buildings should not be constricted to tetris blocks and need to span multiple z-levels.
+
+First, we need to generate a road leading into the Zone. It should NOT go deeper than factories and must cross through the main town.
+
+Judgement 2.0
+------------
+Up until recently we've been tracking ALife world-views in a partially "all knowing" sense, i.e., everyone maintained their own views but often borrowed information from the world's memory rather than their own. There's a few reasons why this was done:
+
+	* If a group is disbanded, ALife who are unaware of its removal will still think it exists, and thus pass (now invalid) group IDs to functions that throw Exceptions for doing so.
+	* I stubbornly stood behind "memories" as being the go-to way to interpret the world, which involves iterating over a potentially massive dataset.
+	
+Our previous approach was slow and somewhat clunky - there was no real distinction between Memories and flags in `know_life` and why you would use the former at all. This is still unaddressed - I think the idea before was that memories provided enough context to go back and "rejudge" a situation, but this was never expanded upon outside of one case.
+
+Now we're dealing with the aftermath of the old judgement logic being removed and a new ruleset implemented. It's working fine so far since it was just a modification of how Trust was calculated along with Danger. I don't see that area of the game changing unless these new developments end up uncovering a better way to do it.
+
+THe following things bother me about judgement in its current form:
+
+	* 1) Justification for certain actions are largely unexplained.
+	* 2) Transitions between opposite states (discovering -> combat) are jarring. Besides occasional dialog after the fact, nothing but bullets are exchanged.
+	* 3) Potential combat targets mix much too frequently.
+	* 4) Groups are underdeveloped and play only a very small role in judgement - what about territory?
+	* 5) Danger and Trust scores are idiotic and impossible to maintain - the numbers aren't based on anything and result in superficially high trust or distrust.
+
+Issues #1 and #5: Justifying Actions
+------------------------
+Justification for an action shouldn't consist of just polar opposites ("They are an enemy" and "They are not an enemy"), but instead a wide range of interpretations, some of which is already modeled, just not utilized effectively (See: Dangerous but trusted targets.) ALife should be able to understand the weight of their actions and determined whether or not an action is worth going through with. It is also extremely important that this is not a hidden process - the player and other ALife should know about this in most cases and be able to react accordingly.
+
+The current reaction to seeing members of an opposing faction is a simple fight or flight reponse- we tried to create "Okay, I'll just leave, then" responses, but due to issues in judgement scoring we can't exactly get that range- a target sees a hostile target and reacts immediately, regardless of recent changes in Trust or Danger that may reflect positive advancements in relationships.
+
+Any replacement to this system needs to have hard math backing it and should tell us what type of relationship there is between two ALife.
+
+Relationship types:
+	Established hostile (high Danger, high Hostility): Target has either directly attacked you or someone else you trust.
+		Reactions:
+			Event causing this state happened recently:
+				Event was witnessed: Combat
+				Happened recently: Investigate
+			
+			else:
+				Event was witnessed: Investigate
+				Event was not witnessed (gained knowledge via conversation): Investigate and Interrogate
+
+	Ordered hostile (mixed attributes): ALife made target by group order.
+		Reactions:
+			Target is marked as friendly: Refuse/Morality break
+	
+	Respected (high Respect): Authority figure, not always well-liked on a personal level
+		Reactions: Mixed
+	
+	Friend (mixed Respect, high Trust):
+		Reactions: Mixed
+	
+	Neutral (low attributes):
+		Reactions: Mixed
+	
+	Potential threat (low Respect, >low Danger):
+		Reactions:
+			Target visible: Interrogate
+
+Reactions:
+	Interrogate:
+		Begin dialog.
+		Establish alignments.
+			Hostile:
+				Begin intimidation tactics.
+				Surrender/attack
+	Combat:
+		If in group: Report attack.
+		Begin combat
+	
+	Investigate:
+		In group:
+			Report start of investigation: Alert sent out to members of group.
+				Offer chance to respond with pertinent information
+			Begin search.
+			On search complete:
+				Target found:
+					Interrogate
+				Else:
+					Create mystery
+
+Respect:
+	Factors:
+		* Group leader
+		* Positive combat actions
+		* Superiority
+			* Higher-end weapons
+
+Hostility:
+	Factors:
+		* Unjustified violence
+		* Standing ground
+
+
+Situations (aka Events or Shared Memories)
+--------------------
+Events are shared memories.
+
+Traits
+-----
+These define specific rules that affect the decision-making process.
+
+	Aggressive: Prefers violence.
+	Naive: Lower threshold for required trust when parsing events.
+	Judgemental: First impressions define relationship alignment, harder to switch later on.
+	Kleptomaniac: Doesn't care about claimed items.
+
+Fixing
+-----
+[x] is_compatible_with
+
+Combat flow
+===========
+
+'  ______          ,
+' |Ranged| - - - |
+'  ______
+
+
+Phase 2
+=======
+We are at a point where the game works well enough to put down the hammer and nails and pick up a
+writing utensil instead. That's a fancy way of saying, "Let's make this into a game."
+
+First and foremost, we will focus on effective world generation. Our goal for this round of changes:
+
+* Design and implement the first two areas of the game: The starting village and military outpost
+* Begin implementing enemy types that aren't dynamic ALife: Soldiers and Mutants (maybe later?)
+
+Our first real step is to create the tools we'll need to make this process easier.

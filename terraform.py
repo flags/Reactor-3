@@ -14,6 +14,8 @@ from globals import *
 from inputs import *
 from tiles import *
 
+import profiles
+
 import graphics as gfx
 import cProfile
 import maputils
@@ -45,28 +47,6 @@ except ImportError, e:
 	logging.warning('[Cython] ImportError with module: %s' % e)
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
-
-gfx.log(WINDOW_TITLE)
-#smp.init()
-create_all_tiles()
-items.initiate_all_items()
-
-LOAD_MAP = 'test2.dat'
-
-gfx.init_libtcod(terraform=True)
-
-gfx.title('Loading...')
-try:
-	maps.load_map(LOAD_MAP)
-except IOError:
-	maps.create_map()
-	maps.save_map()
-
-console_set_keyboard_repeat(200, 30)
-sys_set_fps(FPS_TERRAFORM)
-
-SETTINGS['view'] = 'map'
-PLACING_TILE = WALL_TILE
 
 def handle_scrolling(cursor,camera,window_size,map_size,change):
 	cursor[0] = numbers.clip(cursor[0]+change[0], 0, MAP_SIZE[0]-1)
@@ -101,7 +81,7 @@ def handle_scrolling(cursor,camera,window_size,map_size,change):
 		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
 			camera[1]+=change[1]
 	
-	gfx.refresh_window()
+	gfx.refresh_view('map')
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
@@ -111,7 +91,7 @@ def handle_input():
 		
 		return True
 	
-	elif INPUT['\x1b']:
+	elif INPUT['\x1b'] or INPUT['q']:
 		if not ACTIVE_MENU['menu'] == -1:
 			ACTIVE_MENU['menu'] = -1
 			
@@ -128,9 +108,6 @@ def handle_input():
 			SETTINGS['draw console'] = True
 	
 	elif SETTINGS['draw console']:
-		return
-	
-	elif menus.is_getting_input(ACTIVE_MENU['menu']):
 		return
 
 	elif INPUT['up']:
@@ -191,7 +168,7 @@ def handle_input():
 		else:
 			SETTINGS['view'] = 'map'
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
@@ -208,7 +185,7 @@ def handle_input():
 		if ACTIVE_MENU['menu'] == -1:
 			if SETTINGS['view'] == 'chunk_map':
 				SETTINGS['view'] = 'map'
-				gfx.refresh_window()
+				gfx.refresh_view('map')
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
@@ -224,27 +201,6 @@ def handle_input():
 			MENUS.pop()
 			IN_PREFAB_EDITOR = prefabs.create_prefab_list()
 			menus.activate_menu(IN_PREFAB_EDITOR)
-	
-	elif INPUT['q']:
-		if SETTINGS['view'] == 'chunk_map':
-			SETTINGS['view'] = 'map'
-			gfx.refresh_window()
-			return False
-		
-		_current_index = TILES.keys().index(PLACING_TILE['id'])-1
-		
-		if _current_index<0:
-			_current_index = 0
-		
-		PLACING_TILE = TILES[TILES.keys()[_current_index]]
-			
-	elif INPUT['w']:
-		_current_index = TILES.keys().index(PLACING_TILE['id'])+1
-		
-		if _current_index>=len(TILES):
-			_current_index = len(TILES)-1
-		
-		PLACING_TILE = PLACING_TILE = TILES[TILES.keys()[_current_index]]
 	
 	elif INPUT['f']:
 		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
@@ -296,43 +252,43 @@ def handle_input():
 
 	elif INPUT['1']:
 		CAMERA_POS[2] = 1
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['2']:
 		CAMERA_POS[2] = 2
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['3']:
 		CAMERA_POS[2] = 3
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['4']:
 		CAMERA_POS[2] = 4
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 	elif INPUT['5']:
 		CAMERA_POS[2] = 5
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['6']:
 		CAMERA_POS[2] = 6
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['7']:
 		CAMERA_POS[2] = 7
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['8']:
 		CAMERA_POS[2] = 8
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['9']:
 		CAMERA_POS[2] = 9
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif INPUT['0']:
 		CAMERA_POS[2] = 0
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 def menu_item_selected(entry):
 	global RUNNING
@@ -374,7 +330,7 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			SETTINGS['draw z-levels below'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif key == 'Blit z-level above':
 		if value == 'On':
@@ -382,7 +338,7 @@ def menu_item_changed(entry):
 		elif value == 'Off':
 			SETTINGS['draw z-levels above'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 	
 	elif key == 'Draw lights':
 		if value == 'On':
@@ -391,7 +347,7 @@ def menu_item_changed(entry):
 			maps.reset_lights()
 			SETTINGS['draw lights'] = False
 		
-		gfx.refresh_window()
+		gfx.refresh_view('map')
 
 def menu_align():
 	for menu in MENUS:
@@ -403,39 +359,17 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
-def create_options_menu():
+def create_maps_menu():
 	_menu_items = []
-	_menu_items.append(menus.create_item('title','Tile Operations',None,enabled=False))
-	_menu_items.append(menus.create_item('single','^','Move selected up'))
-	_menu_items.append(menus.create_item('single','v','Move selected down', enabled=False))
-	_menu_items.append(menus.create_item('single','Del','Delete all'))
-	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
 	
-	_menu_items.append(menus.create_item('title','Map Utils',None,enabled=False))
-	_menu_items.append(menus.create_item('single','Width',MAP_SIZE[0]))
-	_menu_items.append(menus.create_item('single','Height',MAP_SIZE[1]))
-	_menu_items.append(menus.create_item('single','Depth',MAP_SIZE[2]))
-	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	for map_file in profiles.get_maps():
+		_menu_items.append(menus.create_item('title', map_file, None))
 	
-	_menu_items.append(menus.create_item('title','View',None,enabled=False))
-	_menu_items.append(menus.create_item('list','Blit z-level below',['Off','On']))
-	_menu_items.append(menus.create_item('list','Blit z-level above',['On','Off']))
-	_menu_items.append(menus.create_item('list','Draw lights',['On','Off']))
-	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
+	if not _menu_items:
+		logging.error('No maps found.')
+		sys.exit(1)
 	
-	_menu_items.append(menus.create_item('title','Prefab',None,enabled=False))
-	_menu_items.append(menus.create_item('input','Name',''))
-	_menu_items.append(menus.create_item('list','S','Save Prefab'))
-	_menu_items.append(menus.create_item('spacer','=',None,enabled=False))
-	
-	_menu_items.append(menus.create_item('title','General',None,enabled=False))
-	_menu_items.append(menus.create_item('list','S','Save'))
-	_menu_items.append(menus.create_item('list','C','Compile'))
-	_menu_items.append(menus.create_item('list','CH','Generate chunk map'))
-	_menu_items.append(menus.create_item('list','L','Load'))
-	_menu_items.append(menus.create_item('list','E','Exit'))
-	
-	menus.create_menu(title='Options',
+	menus.create_menu(title='Maps',
 		menu=_menu_items,
 		padding=(1,1),
 		position=(MAP_WINDOW_SIZE[0],0),
@@ -444,66 +378,46 @@ def create_options_menu():
 	
 	menu_align()
 
-prefabs.cache_all_prefabs()
-CURRENT_PREFAB = prefabs.create_new_prefab((5, 5, 5))
-create_options_menu()
+def map_selection():
+	menus.align_menus()
+	menus.draw_menus()
+	
+	#gfx.start_of_frame()
+	gfx.end_of_frame()
+
+def terraform():
+	maps.render_lights(WORLD_INFO['map'])
+	items.draw_items()
+	menus.align_menus()
+	menus.draw_menus()
+	
+	gfx.start_of_frame()
+	gfx.end_of_frame()
 
 def main():
 	while SETTINGS['running']:
 		get_input()
 		handle_input()
 		
-		if SETTINGS['view'] == 'prefab':
-			#prefabs.draw_prefab_editor()#(CURRENT_PREFAB)
-			gfx.draw_cursor(PREFAB_CURSOR,
-				PREFAB_CAMERA_POS,
-				PLACING_TILE,
-				char_buffer=PREFAB_CHAR_BUFFER,
-				rgb_fore_buffer=PREFAB_RGB_FORE_BUFFER,
-				rgb_back_buffer=PREFAB_RGB_BACK_BUFFER)
-		
-		elif SETTINGS['view'] == 'chunk_map':
-			gfx.draw_chunk_map()
-			
-		else:
-			LOS_BUFFER[0] = numpy.ones((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-
-			if CYTHON_ENABLED:
-				render_map.render_map(WORLD_INFO['map'])
+		#Show list of maps if not passed directly
+		if SETTINGS['running'] == 1:
+			if menus.get_menu_by_name('Maps')>-1:
+				map_selection()
 			else:
-				maps.render_map(WORLD_INFO['map'])
-			
-			#TODO: Cython-ify
-			maps.render_x_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
-			maps.render_y_cutout(WORLD_INFO['map'],MAP_CURSOR[0],MAP_CURSOR[1])
-			
-			items.draw_items()
-			gfx.draw_all_tiles()
-			gfx.draw_bottom_ui_terraform()
-			gfx.draw_console()
-			gfx.draw_cursor(MAP_CURSOR,CAMERA_POS,PLACING_TILE)
+				create_maps_menu()
 		
-		menus.draw_menus()
+		elif SETTINGS['running'] == 2:
+			terraform()
 		
-		gfx.draw_selected_tile_in_item_window(TILES.keys().index(PLACING_TILE['id']))
-		gfx.start_of_frame(draw_char_buffer=(menus.get_menu_by_name('Prefabs')==-1))
-		
-		if menus.get_menu_by_name('Prefabs')==-1:
-			gfx.start_of_frame_terraform()
-		
-		gfx.end_of_frame_terraform(draw_cutouts=(not SETTINGS['view'] == 'prefab'))
-		gfx.end_of_frame(draw_map=(menus.get_menu_by_name('Prefabs')==-1))
-
-if '--profile' in sys.argv:
-	logging.info('Profiling. Exit when completed.')
-	cProfile.run('main()','profile.dat')
-else:
-	try:
-		main()
-	except Exception, e:
-		logging.exception('Crashed: %s' % e)
-
-#TODO: write this into the utility
-#MAP = maputils.resize_map(MAP,(MAP_SIZE[0],MAP_SIZE[1],MAP_SIZE[2]+5))
-
-maps.save_map(LOAD_MAP)
+if __name__ == '__main__':
+	create_all_tiles()
+	items.initiate_all_items()
+	
+	gfx.init_libtcod()
+	gfx.prepare_terraform_views()
+	gfx.log(WINDOW_TITLE)
+	
+	sys_set_fps(FPS_TERRAFORM)
+	console_set_keyboard_repeat(200, 30)
+	
+	main()

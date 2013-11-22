@@ -11,12 +11,48 @@ import items
 
 import random
 
+def get_weapon_to_fire(life):
+	if 'player' in life:
+		return life['firing']
+		
+	_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])
+		
+	if _item:
+		_item = _item[0]
+	else:
+		return False
+	
+	if not _item:
+		if 'player' in life:
+			gfx.message('You aren\'t holding a weapon!')
+		
+		life['firing'] = None
+		return False
+	
+	return lfe.get_inventory_item(life, _item)
+
 def get_feed(weapon):
 	return weapon[weapon['feed']]
 
 def get_fire_mode(weapon):
 	"""Returns current fire mode for a weapon."""
 	return weapon['firemodes'][weapon['firemode']]
+
+def get_rounds_to_fire(weapon):
+	_mode = get_fire_mode(weapon)
+	
+	if _mode == 'single':
+		_bullets = 1
+	elif _mode == '3burst':
+		_bullets = 3
+	else:
+		logging.error('Unhandled firerate: %s. Handling...' % _mode)
+		_bullets = 1
+		
+	return _bullets
+
+def change_fire_mode(weapon, mode):
+	weapon['firemode'] = mode
 
 def get_stance_recoil_mod(life):
 	if life['stance'] == 'standing':
@@ -82,33 +118,10 @@ def get_bullet_scatter_to(life, position, bullet_uid):
 
 def fire(life, target, limb=None):
 	#TODO: Don't breathe this!
-	if 'player' in life:
-		weapon = life['firing']
-	else:
-		_item = lfe.get_held_items(life,matches=[{'type': 'gun'}])
-		
-		if _item:
-			_item = _item[0]
-		else:
-			return False
-		
-		if not _item:
-			if 'player' in life:
-				gfx.message('You aren\'t holding a weapon!')
-			
-			life['firing'] = None
-			return False
-		
-		weapon = lfe.get_inventory_item(life, _item)
+	weapon = get_weapon_to_fire(life)
 	
 	if not weapon:
 		return False
-	
-	_mode = get_fire_mode(weapon)
-	if _mode == 'single':
-		_bullets = 1
-	elif _mode == '3burst':
-		_bullets = 3
 	
 	_aim_with_limb = None
 	for hand in life['hands']:
@@ -116,54 +129,54 @@ def fire(life, target, limb=None):
 			_aim_with_limb = hand
 	
 	_ooa = False
-	for i in range(_bullets):
-		_feed_uid = get_feed(weapon)
-		
-		if not _feed_uid:
-			if 'player' in life:
-				gfx.message('The weapon is unloaded.')
-			
-			_ooa = True
-			continue
-		
-		_feed = items.get_item_from_uid(_feed_uid)
-		
-		if not _feed or (_feed and not _feed['rounds']):
-			if 'player' in life:
-				gfx.message('*Click*')
-			
-			_ooa = True
-			continue
-		
-		direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
-		life['recoil'] = (weapon['recoil'] * get_stance_recoil_mod(life))
-		
-		#TODO: Clean this up...
-		_bullet = items.get_item_from_uid(_feed['rounds'].pop())
-		_bullet['pos'] = life['pos'][:]
-		_bullet['start_pos'] = life['pos'][:]
-		_bullet['owner'] = life['id']
-		_bullet['aim_at_limb'] = limb
-		
-		items.add_to_chunk(_bullet)
-		
-		if gfx.position_is_in_frame(life['pos']):
-			effects.create_light(life['pos'], tcod.yellow, 2, 0, fade=0.8)
-			effects.create_light(_bullet['pos'], tcod.yellow, 1, 0, fade=0.65, follow_pos=_bullet['pos'])
-		
-		_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
-		del _bullet['parent']
-		items.move(_bullet, direction, _bullet['max_speed'])
-		_bullet['start_velocity'] = _bullet['velocity'][:]
-		items.tick_item(_bullet['uid'])
+	_feed_uid = get_feed(weapon)
 	
-	if _ooa:
+	if not _feed_uid:
 		if 'player' in life:
-			gfx.message('You are out of ammo.')
+			gfx.message('The weapon is unloaded.')
+		
+		_ooa = True
+		return False
+	
+	_feed = items.get_item_from_uid(_feed_uid)
+	
+	if not _feed or (_feed and not _feed['rounds']):
+		if 'player' in life:
+			gfx.message('*Click* (You are out of ammo.)')
+		
+		_ooa = True
+		return False
+	
+	direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
+	
+	alife.noise.create(life['pos'], 120, '%s fire' % weapon['name'], 'something discharge')
+	
+	#TODO: Clean this up...
+	_bullet = items.get_item_from_uid(_feed['rounds'].pop())
+	_bullet['pos'] = life['pos'][:]
+	_bullet['start_pos'] = life['pos'][:]
+	_bullet['owner'] = None
+	_bullet['shot_by'] = life['id']
+	_bullet['aim_at_limb'] = limb
+	
+	life['recoil'] += _bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life))
+	
+	items.add_to_chunk(_bullet)
+	
+	if gfx.position_is_in_frame(life['pos']):
+		effects.create_light(life['pos'], tcod.yellow, 7, 1, fade=2.5)
+		effects.create_light(_bullet['pos'], tcod.yellow, 7, 1, fade=0.65, follow_item=_bullet['uid'])
+	
+	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
+	del _bullet['parent']
+	items.move(_bullet, direction, _bullet['max_speed'])
+	_bullet['start_velocity'] = _bullet['velocity'][:]
+	items.tick_item(_bullet['uid'])
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:
 			life['aim_at'] = _life['id']
 			break
 	
-	life['firing'] = None
+	if len(lfe.find_action(life, matches=[{'action': 'shoot'}])) == 1:
+		life['firing'] = None

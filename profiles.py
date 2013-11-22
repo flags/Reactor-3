@@ -57,7 +57,7 @@ def create_world():
 	except OSError:
 		return False
 
-def get_world(world):
+def get_world_directory(world):
 	_config_directory, _worlds_directory = has_reactor3()
 	_world_directory = os.path.join(_worlds_directory, str(world))
 	

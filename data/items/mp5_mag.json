@@ -1,0 +1,15 @@
+{"name": "mp5 magazine",
+"prefix": "a",
+"type": "magazine",
+"icon": "[",
+"description": "A magazine for use in the MP5. Holds 15 rounds.",
+"flags": "",
+"size": "1x2",
+"maxrounds": 15,
+"rounds": [],
+"ammotype": "9x19mm",
+"material": "metal",
+"thickness": 4,
+"upgrades":
+	{}
+}
