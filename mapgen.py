@@ -1440,7 +1440,15 @@ def construct_building(map_gen, building):
 				#	if not next_neighbor_key in _occupied_chunks:
 				#		_free_neighbors += 1
 				
-				_occupied_chunks[chunk_key] = {'room': 'hall',
+				if _exterior_chunks:
+					_type = 'landing'
+				else:
+					if len(_interior_chunks) == 1:
+						_type = random.choice(['closet', 'bathroom'])
+					else:
+						_type = 'hall'
+				
+				_occupied_chunks[chunk_key] = {'room': _type,
 				                               'interior': _interior_chunks,
 				                               'exterior': _exterior_chunks}
 			else:
@@ -1454,10 +1462,32 @@ def construct_building(map_gen, building):
 				                               'exterior': _exterior_chunks}
 				
 			else:
-				_exterior_chunks = [random.choice(_interior_chunks.keys())]
-				_occupied_chunks[chunk_key] = {'room': 'small2',
-				                               'interior': [],
-				                               'exterior': _exterior_chunks}
+				#There's a chance we could potentially cut off a few routes
+				#Check for connected neighbors with only 1 connection
+				
+				_needs_to_connect = _exterior_chunks.keys()
+				_can_connect_to = []
+				for next_neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'town'):
+					if not next_neighbor_key in _occupied_chunks:
+						continue
+					
+					_direction = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, next_neighbor_key))]
+					_exits = len(_occupied_chunks[next_neighbor_key]['interior'])+len(_occupied_chunks[next_neighbor_key]['exterior'])
+					
+					if _exits==1:
+						_needs_to_connect.append(_direction)
+					elif _exits>1:
+						_can_connect_to.append(_direction)
+								
+				if _needs_to_connect:
+					_occupied_chunks[chunk_key] = {'room': 'small1',
+						                          'interior': random.sample(_can_connect_to, random.randint(1, len(_can_connect_to))),
+						                          'exterior': _needs_to_connect}
+				else:
+					_exterior_chunks = [random.choice(_interior_chunks.keys())]
+					_occupied_chunks[chunk_key] = {'room': 'small2',
+						                          'interior': [],
+						                          'exterior': _exterior_chunks}
 		
 	for chunk_key in _occupied_chunks:
 		_possible_buildings = []
@@ -1494,11 +1524,8 @@ def construct_building(map_gen, building):
 			
 			if _continue:
 				continue
-					
-			#if _exterior_directions:
+			
 			_possible_buildings.append(possible_building['building'])
-			#else:
-			#	_possible_buildings.append(possible_building['building'])
 		
 		_items = []
 		if _room == 'closet':
@@ -1507,13 +1534,15 @@ def construct_building(map_gen, building):
 				     {'item': 'sneakers', 'rarity': 1.0},
 				     {'item': 'white t-shirt', 'rarity': 1.0},
 				     {'item': 'white cloth', 'rarity': 0.4}]
-			_floor_tiles = tiles.BROWN_FLOOR_TILES
+			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
+		elif _room == 'bathroom':
+			_floor_tiles = tiles.BLUE_FLOOR_TILES
 		elif _room == 'small1':
 			_floor_tiles = tiles.WHITE_TILE_TILES
 		elif _room == 'small2':
 			_floor_tiles = tiles.RED_BRICK_TILES
 		else:
-			_floor_tiles = tiles.DARK_BLUE_FLOOR_TILES
+			_floor_tiles = tiles.BROWN_FLOOR_TILES
 		
 		_rooms = []
 		_rooms.append({'name': 'bedroom',
