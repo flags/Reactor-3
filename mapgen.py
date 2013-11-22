@@ -1435,16 +1435,13 @@ def construct_building(map_gen, building):
 			
 			#Equals means they have the same view of the house.
 			if _highest_neighbor['count'] == _lowest_neighbor['count']:
-				#_free_neighbors = 0
-				#for next_neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][_lowest_neighbor['chunk_key']]['pos'], 'town'):
-				#	if not next_neighbor_key in _occupied_chunks:
-				#		_free_neighbors += 1
-				
 				if _exterior_chunks:
 					_type = 'landing'
 				else:
 					if len(_interior_chunks) == 1:
 						_type = random.choice(['closet', 'bathroom'])
+						_exterior_chunks = _interior_chunks.keys()
+						_interior_chunks = []
 					else:
 						_type = 'hall'
 				
@@ -1457,7 +1454,17 @@ def construct_building(map_gen, building):
 			if _highest_neighbor['count']>1:
 				#There's more than one connected node but no other available directions to build in
 				#Make this a hallway or otherwise large room
-				_occupied_chunks[chunk_key] = {'room': 'hall',
+				if _exterior_chunks:
+					_type = 'landing'
+				else:
+					if len(_interior_chunks) == 1:
+						_type = random.choice(['closet', 'bathroom'])
+						_exterior_chunks = _interior_chunks.keys()
+						_interior_chunks = []
+					else:
+						_type = 'hall'
+				
+				_occupied_chunks[chunk_key] = {'room': _type,
 				                               'interior': _interior_chunks,
 				                               'exterior': _exterior_chunks}
 				
