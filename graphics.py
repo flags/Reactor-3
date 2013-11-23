@@ -184,14 +184,19 @@ def _add_view_to_scene(view):
 	logging.debug('Added view \'%s\' to scene.' % view['name'])
 
 def _remove_view_from_scene(view):
-	if not view in VIEW_SCENE[view['layer']]:
+	if not view['layer'] in VIEW_SCENE:
 		raise Exception('View \'%s\' not in scene.' % view['name'])
 	
-	VIEW_SCENE[view['layer']].remove(view)
-	logging.debug('Removed view \'%s\' from scene.' % view['name'])
+	_i = 0
+	for existing_view in VIEW_SCENE[view['layer']]:
+		if existing_view['name'] == view['name']:
+			break
+		
+		_i += 1
+		
+	VIEW_SCENE[view['layer']].pop(_i)
 	
-	#tcod.console_clear(0)
-	#tcod.console_flush()
+	logging.debug('Removed view \'%s\' from scene.' % view['name'])
 
 def is_view_in_scene(view_name):
 	return view_name in VIEW_SCENE_CACHE
@@ -285,6 +290,7 @@ def prepare_map_views():
 def prepare_terraform_views():
 	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
 	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
 	
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('overlay')
