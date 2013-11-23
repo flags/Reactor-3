@@ -282,8 +282,9 @@ def get_pos(item_uid):
 def get_items_at(position):
 	"""Returns list of all items at a given position."""
 	_items = []
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))
 	
-	for _item in ITEMS:
+	for _item in _chunk['items']:
 		item = ITEMS[_item]
 		
 		if is_item_owned(_item):
