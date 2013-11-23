@@ -1366,17 +1366,6 @@ def construct_building(map_gen, building):
 	_main_room_types = []
 	_secondary_room_types = []
 	
-	if MAX_TOWNHOUSE_SIZE<len(building['rooms'])<=MAX_WAREHOUSE_SIZE:
-		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
-		_secondary_room_types = ['dining room', 'dining room', 'dining room']
-	elif 2<len(building['rooms'])<=MAX_TOWNHOUSE_SIZE:
-		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
-		_secondary_room_types = ['dining room', 'closet', 'living room', 'open', 'open']
-	elif len(building['rooms'])==2:
-		_main_room_types = ['bedroom', 'bathroom']
-	else:
-		_main_room_types = ['bedroom', 'bathroom', 'kitchen']
-	
 	_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
 	_building_chunk_map = {}
 	for chunk_key in building['rooms']:
@@ -1393,10 +1382,8 @@ def construct_building(map_gen, building):
 				continue
 			
 			if map_gen['chunk_map'][neighbor_key]['type'] in ['town']:
-				#_interior_directions.append(_neighbor_direction)
 				_connected_interior_chunks[_neighbor_direction] = neighbor_key
 			elif map_gen['chunk_map'][neighbor_key]['type'] in ['driveway']:
-				#_exterior_directions.append(_neighbor_direction)
 				_connected_exterior_chunks[_neighbor_direction] = neighbor_key
 		
 		_building_chunk_map[chunk_key] = {'interior_chunks': _connected_interior_chunks,
@@ -1459,6 +1446,10 @@ def construct_building(map_gen, building):
 				else:
 					if len(_interior_chunks) == 1:
 						_type = random.choice(['closet', 'bathroom'])
+						_exterior_chunks = _interior_chunks.keys()
+						_interior_chunks = []
+					elif len(_interior_chunks) == 2:
+						_type = 'bedroom'
 						_exterior_chunks = _interior_chunks.keys()
 						_interior_chunks = []
 					else:
@@ -1535,57 +1526,52 @@ def construct_building(map_gen, building):
 			_possible_buildings.append(possible_building['building'])
 		
 		_items = []
+		_storage = []
 		if _room == 'closet':
-			_items = [{'item': 'blue jeans', 'rarity': 1.0},
+			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				     {'item': 'leather backpack', 'rarity': 0.65},
+				     {'item': 'sneakers', 'rarity': 1.0},
+				     {'item': 'white t-shirt', 'rarity': 1.0},
+				     {'item': 'white cloth', 'rarity': 0.4},
+			         {'item': 'glock', 'rarity': 0.25},
+			         {'item': '9x19mm magazine', 'rarity': 0.3}]
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
+		elif _room == 'bathroom':
+			_floor_tiles = tiles.BLUE_FLOOR_TILES
+		elif _room == 'bedroom':
+			_items = [{'item': 'bed', 'rarity': 1.0},
+			          {'item': 'wooden dresser', 'rarity': 0.5}]
+			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
+				     {'item': 'leather backpack', 'rarity': 0.65},
+				     {'item': 'sneakers', 'rarity': 1.0},
+				     {'item': 'white t-shirt', 'rarity': 1.0},
+				     {'item': 'white cloth', 'rarity': 0.4},
+			         {'item': 'glock', 'rarity': 0.25},
+			         {'item': '9x19mm magazine', 'rarity': 0.3}]
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+			_floor_tiles = tiles.DARK_BLUE_FLOOR_TILES
+		elif _room == 'small1':
+			_floor_tiles = tiles.BLUE_CARPET_TILES
+		elif _room == 'small2':
+			_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
+			_items = [{'item': 'bed', 'rarity': 1.0}]
+			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
 				     {'item': 'leather backpack', 'rarity': 0.65},
 				     {'item': 'sneakers', 'rarity': 1.0},
 				     {'item': 'white t-shirt', 'rarity': 1.0},
 				     {'item': 'white cloth', 'rarity': 0.4}]
-			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
-		elif _room == 'bathroom':
-			_floor_tiles = tiles.BLUE_FLOOR_TILES
-		elif _room == 'small1':
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+		elif _room == 'landing':
+			_items = [{'item': 'coat rack', 'rarity': 1.0}]
+			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
+			          {'item': 'sneakers', 'rarity': 1.0}]
+			
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+			          
 			_floor_tiles = tiles.WHITE_TILE_TILES
-		elif _room == 'small2':
-			_floor_tiles = tiles.RED_BRICK_TILES
 		else:
-			_floor_tiles = tiles.BROWN_FLOOR_TILES
-		
-		_rooms = []
-		_rooms.append({'name': 'bedroom',
-		              'doors': 2,
-		              'floor_tiles': tiles.BLUE_FLOOR_TILES,
-		              'items': _items,
-		              'storage': [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _items}]})
-		_rooms.append({'name': 'bathroom',
-		              'doors': 1,
-		              'floor_tiles': tiles.RED_BRICK_TILES,
-		              'items': [{'item': 'blue jeans', 'rarity': 1.0},
-		                        {'item': 'leather backpack', 'rarity': 0.65},
-		                        {'item': 'sneakers', 'rarity': 1.0},
-		                        {'item': 'white t-shirt', 'rarity': 1.0},
-		                        {'item': 'white cloth', 'rarity': 0.4}]})
-		_rooms.append({'name': 'hall',
-		              'doors': 4,
-		              'floor_tiles': tiles.WHITE_TILE_TILES,
-		              'items': []})
-		_rooms.append({'name': 'hall',
-		              'doors': 3,
-		              'floor_tiles': tiles.WHITE_TILE_TILES,
-		              'items': []})
-		_rooms.append({'name': 'kitchen',
-		              'doors': 2,
-		              'floor_tiles': tiles.DARK_GREEN_FLOOR_TILES,
-		              'items': []})
-		
-		_rooms.append({'name': 'closet',
-		              'doors': 1,
-		              'floor_tiles': tiles.RED_BRICK_TILES,
-		              'items': [{'item': 'blue jeans', 'rarity': 1.0},
-		                        {'item': 'leather backpack', 'rarity': 0.65},
-		                        {'item': 'sneakers', 'rarity': 1.0},
-		                        {'item': 'white t-shirt', 'rarity': 1.0},
-		                        {'item': 'white cloth', 'rarity': 0.4}]})
+			_floor_tiles = tiles.SEA_CARPET_TILES
 		
 		#for possible_building in map_gen['buildings']:
 		#	
@@ -1605,12 +1591,6 @@ def construct_building(map_gen, building):
 			raise Exception('Matching tile not found for the following layout: Interior-facing: %s, Exterior-facing: %s, Doors: %s' % (_int, _ext, _rules['doors']))
 		
 		_half = map_gen['chunk_size']/2
-		
-		if 'storage' in _room:
-			_storage = _room['storage']
-		else:
-			_storage = None
-		
 		_open_spots = []
 		for _y in range(map_gen['chunk_size']):
 			y = _chunk['pos'][1]+_y
@@ -1623,6 +1603,7 @@ def construct_building(map_gen, building):
 					elif _building[_y][_x] == '#':
 						create_tile(map_gen, x, y, 2+i, _wall_tile)
 					elif i in [0] and _building[_y][_x] == 'D':
+						items.create_item('wooden door', position=[x, y, 2+i])
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
 					elif i in [0] and _building[_y][_x] == '.':
 						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
@@ -1635,9 +1616,22 @@ def construct_building(map_gen, building):
 		_possible_spots = []
 		for pos in _open_spots:
 			_open = 0
+			_continue = False
+			
 			for _n_pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+				for item in items.get_items_at((pos[0]+_n_pos[0], pos[1]+_n_pos[1], 2)):
+					if item['type'] == 'door':
+						_continue = True
+						break
+				
+				if _continue:
+					break
+				
 				if (pos[0]+_n_pos[0], pos[1]+_n_pos[1]) in _open_spots:
 					_open += 1
+			
+			if _continue:
+				continue
 			
 			_possible_spots.append({'spot': pos[:], 'open_neighbors': _open})
 		
@@ -1649,9 +1643,10 @@ def construct_building(map_gen, building):
 		if not _only_one_neighbor:
 			continue
 		
-		_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
 		_placed_containers = []
 		if _storage:
+			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
+			
 			for _container in _storage:
 				if not _container['rarity']>random.uniform(0, 1.0):
 					continue
@@ -1671,8 +1666,14 @@ def construct_building(map_gen, building):
 					
 					items.store_item_in(_i, _c)
 					
-		elif _items:
-			pass
+		
+		if _items:
+			for item in _items:
+				if not item['rarity']>random.uniform(0, 1.0):
+					continue
+				
+				_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
+				items.create_item(item['item'], position=[_spawn_x, _spawn_y, 2])
 		
 		for container in _placed_containers:
 			_storage.remove(container)

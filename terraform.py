@@ -51,6 +51,25 @@ except ImportError, e:
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
+def regenerate_world():
+	language.load_strings()
+	WORLD_INFO['lights'] = []
+	
+	for key in ITEMS.keys():
+		del ITEMS[key]
+	
+	gfx.title('Generating...')
+	reload(mapgen)
+	mapgen.generate_map(size=(250, 250, 10),
+                        towns=1,
+                        factories=0,
+                        outposts=0,
+                        forests=1,
+                        skip_zoning=True,
+                        skip_chunking=True,
+                        hotload=True)
+	gfx.refresh_view('map')
+
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	CAMERA_POS[0] = numbers.clip(pos[0]-(WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
@@ -150,23 +169,7 @@ def handle_input():
 		CURSOR_POS[1] = MAP_SIZE[1]/2
 
 	elif INPUT['r']:
-		language.load_strings()
-		WORLD_INFO['lights'] = []
-		
-		for key in ITEMS.keys():
-			del ITEMS[key]
-		
-		gfx.title('Generating...')
-		reload(mapgen)
-		mapgen.generate_map(size=(250, 250, 10),
-		                    towns=1,
-		                    factories=0,
-		                    outposts=0,
-		                    forests=1,
-		                    skip_zoning=True,
-		                    skip_chunking=True,
-		                    hotload=True)
-		gfx.refresh_view('map')
+		regenerate_world()
 
 	elif INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -217,6 +220,7 @@ def handle_input():
 def menu_item_selected(entry):
 	menus.delete_active_menu()
 	gfx.title('Loading...')
+	create_all_tiles()
 	maps.load_map(entry['key'])
 	items.reload_all_items()
 	weather.change_weather()
@@ -268,11 +272,13 @@ def terraform():
 	items.draw_items()
 	menus.align_menus()
 	menus.draw_menus()
-	
 	gfx.start_of_frame()
 	gfx.end_of_frame()
 
 def main():
+	regenerate_world()
+	SETTINGS['running'] = 1
+	
 	while SETTINGS['running']:
 		get_input()
 		handle_input()
