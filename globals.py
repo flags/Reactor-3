@@ -182,7 +182,8 @@ SETTINGS = {'running': True,
 	'recording fps': 0,
 	'recording fps temp': 0,
 	'viewid': 1,
-	'active_view': 0}
+	'active_view': 0,
+    'refresh_los': False}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
@@ -238,6 +239,7 @@ INPUT = {'up':False,
 		'\r':False,
 		'\t':False,
 		'a':False,
+		'A': False,
 		'b':False,
 		'c':False,
 		'C':False,

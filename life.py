@@ -1050,7 +1050,6 @@ def walk(life, to=None, path=None):
 		elif life['stance'] == 'crawling':
 			life['speed'] -= 0.3
 		else:
-			print 'YESSSSSSSSSSSSSSs' * 100
 			clear_actions(life)
 			stand(life)
 		
@@ -1340,6 +1339,11 @@ def perform_action(life):
 		
 		delete_action(life,action)
 	
+	elif _action['action'] == 'activate_item':
+		items.activate(ITEMS[_action['item_uid']])
+		
+		delete_action(life, action)
+		
 	elif _action['action'] == 'pickupitem':
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		delete_action(life,action)
@@ -2054,6 +2058,12 @@ def _get_item_access_time(life, item):
 def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
 	return numbers.clip(_get_item_access_time(life, item),1,999)/2
+
+def activate_item(life, item_uid):
+	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 100)
+	
+	if 'player' in life:
+		gfx.message('You begin interacting with %s.' % items.get_name(ITEMS[item_uid]))
 
 def direct_add_item_to_inventory(life, item_uid, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.

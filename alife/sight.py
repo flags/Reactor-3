@@ -170,8 +170,8 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		for pos in _line:
 			_chunk = chunks.get_chunk(chunks.get_chunk_key_at(pos))
 			
-			for item in [ITEMS[uid] for uid in _chunk['items'] if 'CAN_BLOCK' in ITEMS[uid]]:
-				if tuple(item['pos']) == (pos[0], pos[1], pos1[2]):
+			for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
+				if not tuple(item['pos'])[:2] == tuple(pos2)[:2] and tuple(item['pos']) == (pos[0], pos[1], pos1[2]):
 					_ret_line = []
 					if strict:
 						return False

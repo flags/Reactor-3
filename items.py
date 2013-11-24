@@ -124,10 +124,16 @@ def initiate_item(name):
 			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)
 		else:
 			_flags[flag] = None
-		
+	
+	item['blocking'] = False
+	
 	if 'CAN_BURN' in _flags:
 		item['burning'] = 0
 		item['burnt'] = False
+	
+	if 'CAN_BLOCK' in _flags:
+		item['blocking'] = True
+		item['on'] = True
 	
 	item['flags'] = _flags
 	item['size'] = [int(c) for c in item['size'].split('x')]
@@ -346,6 +352,9 @@ def is_item_owned(item_uid):
 		return True
 	
 	return False
+
+def is_blocking(item_uid):
+	return ITEMS[item_uid]['blocking']
 
 def draw_items(view_size=MAP_WINDOW_SIZE):
 	_view = gfx.get_view_by_name('map')

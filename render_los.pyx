@@ -4,6 +4,7 @@ import numbers
 import cython
 import numpy
 import alife
+import items
 import maps
 import time
 
@@ -146,7 +147,7 @@ def render_los(position, size, view_size=MAP_WINDOW_SIZE, top_left=CAMERA_POS, n
 				_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at((pos[0], pos[1], Z_CAMERA_POS)))
 				_break = False
 				
-				for item in [ITEMS[uid] for uid in _chunk['items'] if 'CAN_BLOCK' in ITEMS[uid]['flags']]:
+				for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
 					if tuple(item['pos']) == (pos[0], pos[1], Z_CAMERA_POS):
 						if not _dark:
 							if not no_edge:
