@@ -5,7 +5,6 @@
 "description": "A large wooden dresser.",
 "flags": "CAN_BURN|CAN_BLOCK|ON_ACTIVATE[TOGGLE_BLOCK()]|ON_DEACTIVATE[TOGGLE_BLOCK()]",
 "size": "12x12",
-"capacity": "12x12",
 "thickness": 3,
 "color": [[127, 101, 63], [94, 75, 47]],
 "material": "wood"}

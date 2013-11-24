@@ -186,6 +186,8 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		else:
 			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
+		alife.chunks.generate_cache()
+		
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
 		

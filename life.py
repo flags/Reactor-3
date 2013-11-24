@@ -1097,6 +1097,12 @@ def walk_path(life):
 		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
 			life['pos'][2] -= 1
 		
+		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
+		for item_uid in _next_chunk['items']:
+			if items.is_blocking(item_uid):
+				stop(life)
+				return False
+		
 		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
 			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		

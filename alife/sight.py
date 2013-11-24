@@ -144,6 +144,7 @@ def get_vision(life):
 	
 	return life['vision_max']
 
+#@profile
 def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
 	if block_check:
 		_check = [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)]
@@ -168,16 +169,19 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 			continue		
 		
 		for pos in _line:
-			_chunk = chunks.get_chunk(chunks.get_chunk_key_at(pos))
+			_chunk = chunks.get_chunk_from_cache(pos)
 			
 			for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
-				if not tuple(item['pos'])[:2] == tuple(pos2)[:2] and tuple(item['pos']) == (pos[0], pos[1], pos1[2]):
+				if tuple(item['pos'])[:2] == tuple(pos2)[:2]:
+					continue
+				
+				if (pos[0], pos[1]) == tuple(item['pos'])[:2]:
 					_ret_line = []
 					if strict:
 						return False
 					
 					continue
-					
+				
 			if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
 				_ret_line = []
 				if strict:
