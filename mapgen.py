@@ -1645,8 +1645,6 @@ def construct_outpost(map_gen):
 				
 				if (x == _xy_swap_x or y == _xy_swap_y) and not _swapped:
 					_swapped = True
-					
-					print 'FUCK!!!!'
 				
 				if y<_y_min or y>_y_max:
 					print _swapped

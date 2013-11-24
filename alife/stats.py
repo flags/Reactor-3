@@ -506,6 +506,9 @@ def is_safe_in_shelter(life, life_id):
 def is_born_leader(life):
 	return life['stats']['is_leader']
 
+def is_psychotic(life):
+	return life['stats']['psychotic']
+
 def _has_attacked(life, life_id, target_list):
 	for memory in lfe.get_memory(life, matches={'text': 'heard about attack', 'attacker': life_id}):
 		if memory['target'] in target_list:
@@ -562,7 +565,10 @@ def get_goal_alignment_for_target(life, life_id):
 	_genuine = 100
 	_malicious = 100
 	
-	_malicious*=life['stats']['motive_for_crime']/10.0
+	if is_psychotic(life):
+		return 'hostile'
+	
+	_malicious*=life['stats']['motive_for_crime']/10.0	
 	
 	if life['stats']['lone_wolf']:
 		_malicious*=.65
@@ -580,7 +586,7 @@ def get_goal_alignment_for_target(life, life_id):
 	if _genuine>_malicious:
 		return 'trust'
 	
-	return 'malicious'
+	return 'hostile'
 
 def change_alignment(life, life_id, alignment):
 	_knows = brain.knows_alife_by_id(life, life_id)

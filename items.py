@@ -345,29 +345,28 @@ def is_item_owned(item_uid):
 	
 	return False
 
-def draw_items():
+def draw_items(view_size=MAP_WINDOW_SIZE):
 	_view = gfx.get_view_by_name('map')
 	
-	for _item in ITEMS:
-		item = ITEMS[_item]
-		
-		if is_item_owned(item['uid']):
-			continue
-		
-		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
-			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
-			_x = item['pos'][0] - CAMERA_POS[0]
-			_y = item['pos'][1] - CAMERA_POS[1]
-		
-			if not LOS_BUFFER[0][_y,_x]:
-				continue
+	#TODO: Use life's seen_items
+	return False
+	
+	for x in range(CAMERA_POS[0], numbers.clip(CAMERA_POS[1]+view_size[0], 0, MAP_SIZE[0])):
+		for y in range(CAMERA_POS[1], numbers.clip(CAMERA_POS[1]+view_size[1], 0, MAP_SIZE[1])):
+			for item_uid in ITEM_MAP[x][y]:
+				_item = ITEMS[item_uid]
+				_d_x = x-CAMERA_POS[0]
+				_d_y = y-CAMERA_POS[1]
 			
-			gfx.blit_char_to_view(_x,
-				_y,
-				item['icon'],
-				(item['color'][0],
-			      item['color'][1]),
-				'map')
+				if not LOS_BUFFER[0][_d_y, _d_x]:
+					continue
+				
+				gfx.blit_char_to_view(_d_x,
+					_d_y,
+					_item['icon'],
+					(_item['color'][0],
+				     _item['color'][1]),
+					'map')
 
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -536,7 +535,7 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	if item['uid'] in ITEMS:
+	if item['uid'] in ITEMS and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
 		delete_item(item)
 
 def collision_with_solid(item, pos):

@@ -8,13 +8,16 @@ import logging
 import random
 
 
-SOLDIER_ITEMS = {'ALICE pack': 1,
-                 'mp5': 1,
-                 '9x19mm magazine': 1,
-                 '9x19mm round': 15,
-                 'frag grenade': 3}
+SOLDIER_ITEMS = [{'ALICE pack': 1},
+                 {'mp5': 1},
+                 {'9x19mm magazine': 1},
+                 {'9x19mm round': 15},
+                 {'frag grenade': 3}]
+SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
+                 'psychotic': True}
 
-LIFE_CLASSES = {'soldier': SOLDIER_ITEMS}
+LIFE_CLASSES = {'soldier': {'items': SOLDIER_ITEMS,
+                            'stats': SOLDIER_STATS}}
 
 
 def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
@@ -22,15 +25,19 @@ def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
 	
 	if spawn_chunks:
 		_chunk_key = random.choice(spawn_chunks)
-		_spawn = alife.chunks.get_chunk(_chunk_key)['pos']
+		_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
 	else:
 		_spawn = get_spawn_point()
 	
 	for i in range(amount):
 		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		
-		for item in LIFE_CLASSES[life_class]:
-			life.add_item_to_inventory(_alife, items.create_item(item))
+		for item in LIFE_CLASSES[life_class]['items']:
+			for i in range(item.values()[0]):
+				life.add_item_to_inventory(_alife, items.create_item(item.keys()[0]))
+		
+		for stat in LIFE_CLASSES[life_class]['stats']:
+			_alife['stats'][stat] = LIFE_CLASSES[life_class]['stats'][stat]
 		
 		if group:
 			if not _group_members:

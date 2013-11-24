@@ -3390,7 +3390,6 @@ def damage_from_item(life, item, damage):
 			memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
-	
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:

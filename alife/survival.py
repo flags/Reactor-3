@@ -199,6 +199,9 @@ def need_is_met(life, need):
 	return False
 
 def generate_needs(life):
+	if not lfe.ticker(life, 'generate_needs', 90, fire=True):
+		return False
+	
 	if stats.desires_weapon(life):
 		brain.flag(life, 'no_weapon')
 	else:

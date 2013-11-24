@@ -196,6 +196,7 @@ LIFE_MAP = []
 ITEMS = {}
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
+ITEM_MAP = []
 BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
