@@ -398,11 +398,15 @@ def blit_string(x, y, text, view_name, console=0, fore_color=tcod.white, back_co
 
 def lighten_tile(x, y, amt):
 	_view = get_active_view()
-	_view['light_buffer'][0][y, x] = amt
+	
+	if not _view['light_buffer'] == None:
+		_view['light_buffer'][0][y, x] = amt
 
 def darken_tile(x, y, amt):
 	_view = get_active_view()
-	_view['light_buffer'][1][y, x] = amt
+	
+	if not _view['light_buffer'] == None:
+		_view['light_buffer'][1][y, x] = amt
 
 def tint_tile(x,y,color,coef):
 	_view = get_active_view()

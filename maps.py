@@ -742,7 +742,7 @@ def generate_reference_maps():
 					
 					for _chunk_key in _ret:
 						get_chunk(_chunk_key)['reference'] = str(_ref_id)
-			elif _current_chunk['type'] == 'building':
+			elif _current_chunk['type'] in ['building', 'town', 'outpost']:
 				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
 					WORLD_INFO['references'][str(_ref_id)] = _ret
@@ -759,33 +759,32 @@ def generate_reference_maps():
 	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
 
 def draw_chunk_map(life=None, show_faction_ownership=False):
-	#_x_min = MAP_CURSOR[0]/WORLD_INFO['chunk_size']
-	#_y_min = MAP_CURSOR[1]/WORLD_INFO['chunk_size']
-	#_x_max = numbers.clip(_x_min+WINDOW_SIZE[0]/WORLD_INFO['chunk_size'], _x_min, WINDOW_SIZE[0])
-	#_y_max = numbers.clip(_y_min+WINDOW_SIZE[1]/WORLD_INFO['chunk_size'], _y_min, WINDOW_SIZE[1])
-	#print MAP_SIZE
+	_x_min = numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_min = numbers.clip(CAMERA_POS[1]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
+	_x_max = numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_max = numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
 	
-	#print _x_min, _x_max, _y_min, _y_max
 	_life_chunk_key = None
 	
 	if life:
 		_life_chunk_key = lfe.get_current_chunk_id(life)
 	
-	for x in range(0, MAP_SIZE[0]/WORLD_INFO['chunk_size']):
-		_d_x = x
+	for x in range(_x_min, _x_max):
+		_d_x = x-(CAMERA_POS[0]/WORLD_INFO['chunk_size'])
 		
-		if _d_x >= MAP_WINDOW_SIZE[0]:
+		if 0>_d_x >= WINDOW_SIZE[0]:
 			continue
 		
-		for y in range(0, MAP_SIZE[1]/WORLD_INFO['chunk_size']):
-			_d_y = y
-			_chunk_key = '%s,%s' % (_d_x*WORLD_INFO['chunk_size'], _d_y*WORLD_INFO['chunk_size'])
+		for y in range(_y_min, _y_max):
+			_d_y = y-(CAMERA_POS[1]/WORLD_INFO['chunk_size'])
 			_draw = True
 			_fore_color = tcod.darker_gray
 			_back_color = tcod.darkest_gray
 			
-			if _d_y >= MAP_WINDOW_SIZE[1]:
+			if 0>_d_y >= WINDOW_SIZE[1]:
 				continue
+			
+			_chunk_key = '%s,%s' % (x*WORLD_INFO['chunk_size'], y*WORLD_INFO['chunk_size'])
 			
 			if life:
 				if not _chunk_key in life['known_chunks']:
@@ -795,9 +794,13 @@ def draw_chunk_map(life=None, show_faction_ownership=False):
 				_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
 				_char = 'x'
 				
-				if _type == 'building':
+				if _type in ['building', 'town']:
 					_fore_color = tcod.light_gray
 					_char = 'B'
+				elif _type in ['outpost']:
+					_fore_color = tcod.desaturated_green
+					_back_color = tcod.desaturated_han
+					_char = 'M'
 				elif _type == 'field':
 					_fore_color = tcod.yellow
 				elif _type == 'forest':

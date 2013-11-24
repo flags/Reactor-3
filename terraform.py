@@ -51,24 +51,48 @@ except ImportError, e:
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
-def regenerate_world():
+def pre_setup_world():
 	language.load_strings()
+	create_all_tiles()
 	WORLD_INFO['lights'] = []
-	
+
 	for key in ITEMS.keys():
 		del ITEMS[key]
+
+def post_setup_world():
+	items.reload_all_items()
+	weather.change_weather()
+	maps.create_position_maps()
 	
+	LOS_BUFFER[0] = numpy.ones((WINDOW_SIZE[1], WINDOW_SIZE[0]))
+	WORLD_INFO['real_time_of_day'] = 2000
+
+def regenerate_world():
 	gfx.title('Generating...')
 	reload(mapgen)
-	mapgen.generate_map(size=(250, 250, 10),
-                        towns=1,
-                        factories=0,
-                        outposts=0,
-                        forests=1,
-                        skip_zoning=True,
-                        skip_chunking=True,
-                        hotload=True)
+	
+	pre_setup_world()
+	
+	try:
+		mapgen.generate_map(size=(250, 450, 10),
+			                towns=1,
+			                factories=0,
+			                outposts=2,
+			                forests=1,
+			                skip_zoning=True,
+			                skip_chunking=True,
+			                hotload=True)
+	except:
+		import traceback
+		traceback.print_exc()
+		
+		SETTINGS['running'] = 1
+		return False
+	
+	post_setup_world()
 	gfx.refresh_view('map')
+	
+	return True
 
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
@@ -137,14 +161,8 @@ def handle_input():
 	elif INPUT[' ']:
 		pass
 	
-	elif INPUT['m']:
-		gfx.refresh_view('map')
-	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
-	
-	elif INPUT['o']:
-		pass
 	
 	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
@@ -155,21 +173,41 @@ def handle_input():
 	
 	elif INPUT['\t']:
 		pass
-	
-	elif INPUT['f']:
-		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
-		_matching = 'grass'
-		
-		#SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
-		#	_matching,
-		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
 
 	elif INPUT['c']:
 		CURSOR_POS[0] = MAP_SIZE[0]/2
 		CURSOR_POS[1] = MAP_SIZE[1]/2
 
+	elif INPUT['m']:
+		if SETTINGS['running'] == 2:
+			gfx.add_view_to_scene_by_name('chunk_map')
+			gfx.set_active_view('chunk_map')
+			
+			SETTINGS['running'] = 3
+		elif SETTINGS['running'] == 3:
+			gfx.remove_view_from_scene_by_name('chunk_map')
+			gfx.set_active_view('map')
+			SETTINGS['running'] = 2
+
 	elif INPUT['r']:
-		regenerate_world()
+		if regenerate_world():
+			SETTINGS['running'] = 2
+
+	elif INPUT['s']:
+		items.save_all_items()
+		
+		gfx.title('Generating Chunk Map (1/2)')
+		maps.update_chunk_map()
+		gfx.title('Generating Chunk Map (2/2)')
+		maps.smooth_chunk_map()
+		
+		gfx.title('Zoning...')
+		zones.create_zone_map()
+		maps.generate_reference_maps()
+		
+		gfx.title('Saving...')
+		maps.save_map(str(time.time()))
+		items.reload_all_items()
 
 	elif INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -218,14 +256,14 @@ def handle_input():
 		gfx.refresh_view('map')
 
 def menu_item_selected(entry):
-	menus.delete_active_menu()
+	if MENUS:
+		menus.delete_active_menu()
+	
 	gfx.title('Loading...')
-	create_all_tiles()
+	
+	pre_setup_world
 	maps.load_map(entry['key'])
-	items.reload_all_items()
-	weather.change_weather()
-	LOS_BUFFER[0] = numpy.ones((WINDOW_SIZE[1], WINDOW_SIZE[0]))
-	WORLD_INFO['real_time_of_day'] = 2000
+	post_setup_world()
 	
 	SETTINGS['running'] = 2
 
@@ -275,9 +313,16 @@ def terraform():
 	gfx.start_of_frame()
 	gfx.end_of_frame()
 
+def chunk_map():
+	move_camera(CURSOR_POS)
+	maps.draw_chunk_map()
+	gfx.start_of_frame()
+	gfx.end_of_frame()
+
 def main():
-	regenerate_world()
-	SETTINGS['running'] = 1
+	if not '--select' in sys.argv:
+		if regenerate_world():
+			SETTINGS['running'] = 2
 	
 	while SETTINGS['running']:
 		get_input()
@@ -292,6 +337,9 @@ def main():
 		
 		elif SETTINGS['running'] == 2:
 			terraform()
+		
+		elif SETTINGS['running'] == 3:
+			chunk_map()
 		
 if __name__ == '__main__':
 	create_all_tiles()
