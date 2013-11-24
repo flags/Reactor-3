@@ -1100,7 +1100,8 @@ def walk_path(life):
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
 		for item_uid in _next_chunk['items']:
 			if items.is_blocking(item_uid):
-				stop(life)
+				#stop(life)
+				activate_item(life, item_uid)
 				return False
 		
 		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
@@ -2066,7 +2067,7 @@ def get_item_access_time(life, item):
 	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
 def activate_item(life, item_uid):
-	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 100)
+	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)
 	
 	if 'player' in life:
 		gfx.message('You begin interacting with %s.' % items.get_name(ITEMS[item_uid]))
