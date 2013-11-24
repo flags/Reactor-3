@@ -3,7 +3,7 @@
 "type": "door",
 "icon": "+",
 "description": "A large wooden dresser.",
-"flags": "CAN_BURN",
+"flags": "CAN_BURN|CAN_BLOCK",
 "size": "12x12",
 "capacity": "12x12",
 "thickness": 3,

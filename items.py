@@ -258,6 +258,8 @@ def reload_all_items():
 		else:
 			_back = None
 		
+		add_to_chunk(item)
+		
 		item['color'] = (_fore, _back)
 
 def get_item_from_uid(uid):
@@ -348,25 +350,21 @@ def is_item_owned(item_uid):
 def draw_items(view_size=MAP_WINDOW_SIZE):
 	_view = gfx.get_view_by_name('map')
 	
-	#TODO: Use life's seen_items
-	return False
+	for item_uid in LIFE[SETTINGS['following']]['seen_items']:
+		_item = ITEMS[item_uid]
+		
+		_d_x = _item['pos'][0]-CAMERA_POS[0]
+		_d_y = _item['pos'][1]-CAMERA_POS[1]
 	
-	for x in range(CAMERA_POS[0], numbers.clip(CAMERA_POS[1]+view_size[0], 0, MAP_SIZE[0])):
-		for y in range(CAMERA_POS[1], numbers.clip(CAMERA_POS[1]+view_size[1], 0, MAP_SIZE[1])):
-			for item_uid in ITEM_MAP[x][y]:
-				_item = ITEMS[item_uid]
-				_d_x = x-CAMERA_POS[0]
-				_d_y = y-CAMERA_POS[1]
-			
-				if not LOS_BUFFER[0][_d_y, _d_x]:
-					continue
-				
-				gfx.blit_char_to_view(_d_x,
-					_d_y,
-					_item['icon'],
-					(_item['color'][0],
-				     _item['color'][1]),
-					'map')
+		#if not LOS_BUFFER[0][_d_y, _d_x]:
+		#	continue
+		
+		gfx.blit_char_to_view(_d_x,
+	        _d_y,
+	        _item['icon'],
+	        (_item['color'][0],
+	         _item['color'][1]),
+	        'map')
 
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""

@@ -47,6 +47,8 @@ def handle_input():
 				LIFE[SETTINGS['controlling']]['actions'] = []
 		else:
 			SETTINGS['running'] = False
+		
+		gfx.refresh_view('map')
 	
 	if INPUT['\t']:
 		if not SETTINGS['controlling'] or not LIFE[SETTINGS['controlling']]['group']:

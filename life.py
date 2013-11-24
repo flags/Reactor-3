@@ -366,6 +366,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['inventory'] = []
 	_life['flags'] = {}
 	_life['seen'] = []
+	_life['seen_items'] = []
 	_life['state'] = 'idle'
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}

@@ -142,6 +142,21 @@ def render_los(position, size, view_size=MAP_WINDOW_SIZE, top_left=CAMERA_POS, n
 						los_buffer[_y,_x] = 1
 					
 					break
+			else:
+				_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at((pos[0], pos[1], Z_CAMERA_POS)))
+				_break = False
+				
+				for item in [ITEMS[uid] for uid in _chunk['items'] if 'CAN_BLOCK' in ITEMS[uid]['flags']]:
+					if tuple(item['pos']) == (pos[0], pos[1], Z_CAMERA_POS):
+						if not _dark:
+							if not no_edge:
+								los_buffer[_y,_x] = 1
+						
+							_break = True
+							break
+				
+				if _break:
+					break
 
 			los_buffer[_y,_x] = 1
 	

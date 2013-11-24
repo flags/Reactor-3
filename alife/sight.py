@@ -54,6 +54,7 @@ def look(life):
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	life['seen'] = []
+	life['seen_items'] = []
 	
 	for item_uid in life['know_items']:
 		life['know_items'][item_uid]['last_seen_time'] += 1
@@ -103,28 +104,29 @@ def look(life):
 	
 		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
 			_pos = item['pos']
-			
-			if item['uid'] in life['know_items']:
-				life['know_items'][item['uid']]['last_owned_by'] = item['owner']
-			
-			if item['owner']:
-				#TODO: This doesn't work because we are specifically checking chunks
-				if lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
-					_pos = LIFE[item['owner']]['pos']
-				else:
-					continue
-			
 			_can_see = can_see_position(life, _pos)
-			if _can_see:
-				if not item['uid'] in life['know_items']:
-					brain.remember_item(life, item)
-	
-				if item['owner']:
+			
+			if not _can_see:
+				continue
+			
+			if not item['uid'] in life['know_items']:
+				brain.remember_item(life, item)
+
+			if items.is_item_owned(item['uid']):
+				#TODO: This doesn't work because we are specifically checking chunks
+				if item['owner'] and lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
+					life['know_items'][item['uid']]['last_seen_at'] = LIFE[item['owner']]['pos']
 					life['know_items'][item['uid']]['last_owned_by'] = item['owner']
+					life['know_items'][item['uid']]['last_seen_time'] = 0
 				
-				life['know_items'][item['uid']]['last_seen_time'] = 0
-				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
-				life['know_items'][item['uid']]['lost'] = False
+				continue
+			
+			life['seen_items'].append(item['uid'])
+			life['know_items'][item['uid']]['last_seen_at'] = _pos[:]
+			life['know_items'][item['uid']]['last_seen_time'] = 0
+			life['know_items'][item['uid']]['last_owned_by'] = None
+			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
+			life['know_items'][item['uid']]['lost'] = False
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
@@ -163,12 +165,19 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		
 		if len(_line) > max_length and distance:
 			_ret_line = []
-			continue
+			continue		
 		
 		for pos in _line:
-			if pos[0] >= MAP_SIZE[0] or pos[1] >= MAP_SIZE[1]:
-				return False
+			_chunk = chunks.get_chunk(chunks.get_chunk_key_at(pos))
 			
+			for item in [ITEMS[uid] for uid in _chunk['items'] if 'CAN_BLOCK' in ITEMS[uid]]:
+				if tuple(item['pos']) == (pos[0], pos[1], pos1[2]):
+					_ret_line = []
+					if strict:
+						return False
+					
+					continue
+					
 			if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
 				_ret_line = []
 				if strict:
