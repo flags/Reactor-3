@@ -9,7 +9,7 @@ import numpy
 import time
 
 
-BUFFER_MOD = .15
+BUFFER_MOD = .25
 WORLD_INFO = {}
 WORLD_INFO['map'] = []
 
@@ -21,6 +21,7 @@ for x in range(40):
 	WORLD_INFO['map'].append(_y)
 
 WORLD_INFO['map'][15][10] = 1
+WORLD_INFO['map'][18][10] = 1
 
 def draw(los_map):
 	for y in range(40):
@@ -31,9 +32,9 @@ def draw(los_map):
 				print '#',
 			else:
 				if los_map[x, y]:
-					print '.',
+					print int(los_map[x, y]),
 				else:
-					print 'o',
+					print ' ',
 		
 		print
 
@@ -43,7 +44,7 @@ def slope(start_pos, end_pos):
 def inverse_slope(start_pos, end_pos):
 	return 1 / slope(start_pos, end_pos)
 
-def walk_northeast(los_map, start_pos, l_slope=1, r_slope=0, pos_mod=[0, 0], row=1):
+def walk_northeast(los_map, start_pos, l_slope=1, r_slope=0, pos_mod=[0, 0], row=1, _id=1):
 	#if not l_slope == 1:
 	#	print l_slope
 	_x = -row
@@ -64,31 +65,28 @@ def walk_northeast(los_map, start_pos, l_slope=1, r_slope=0, pos_mod=[0, 0], row
 		if WORLD_INFO['map'][_x+start_pos[0]][_y+start_pos[1]]:
 			_slope = slope((0, 0), (_x+BUFFER_MOD, _y))
 			#print r_slope, l_slope, (0, 0), (_x, _y), _slope
-			walk_northeast(los_map, start_pos, row=row+1, r_slope=_slope, l_slope=l_slope)
+			walk_northeast(los_map, start_pos, row=row+1, r_slope=_slope, l_slope=_n_l_slope, _id=_id+1)
 			_blocked = True
 			continue
 		elif _blocked:
-			print _slope
 			_n_l_slope = _slope
 			_blocked = False
 		
 		if start_pos[0]+_x<0 or start_pos[1]+_y<0:
 			break
 		
-		#print _x+start_pos[0], _y+start_pos[1]
-		los_map[_x+start_pos[0]][_y+start_pos[1]] = 1
+		los_map[_x+start_pos[0]][_y+start_pos[1]] = _id
 		
-	draw(los_map)
-	#print 'fin'
-	
-	#print start_pos[0]+_x, start_pos[1]+_y, _x, _y
+	#draw(los_map)
+
+	#print _was_blocked
 	if start_pos[0]+_x<0 or start_pos[1]+_y<0:
 		return False
 	
-	#if not _blocked:
-	#print _n_l_slope, r_slope
+	#print _was_blocked
+	
 	if not WORLD_INFO['map'][_x+start_pos[0]][_y+start_pos[1]]:
-		walk_northeast(los_map, start_pos, row=row+1, l_slope=_n_l_slope, r_slope=r_slope)
+		walk_northeast(los_map, start_pos, row=row+1, l_slope=_n_l_slope, r_slope=r_slope, _id=_id)
 	
 	#start_pos[0]
 
