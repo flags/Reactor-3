@@ -27,24 +27,26 @@ WORLD_INFO['map'][18][10] = 1
 WORLD_INFO['map'][25][7] = 1
 WORLD_INFO['map'][28][7] = 1
 WORLD_INFO['map'][28][18] = 1
-WORLD_INFO['map'][28][22] = 1
-WORLD_INFO['map'][11][35] = 1
-WORLD_INFO['map'][25][35] = 1
+WORLD_INFO['map'][28][25] = 1
+WORLD_INFO['map'][24][18] = 1
+WORLD_INFO['map'][15][35] = 1
+WORLD_INFO['map'][21][20] = 1
 
 def draw(los_map):
 	for y in range(40):
+		_x = ''
 		for x in range(40):
 			if (x, y) == (20, 20):
-				print 'X',
+				_x+='X'
 			elif WORLD_INFO['map'][x][y]:
-				print '#',
+				_x+='#'
 			else:
 				if los_map[x, y]:
-					print int(los_map[x, y]),
+					_x+=str(int(los_map[x, y]))
 				else:
-					print ' ',
-		
-		print
+					_x+=' '
+			
+		print _x
 
 def slope(start_pos, end_pos):
 	return (start_pos[0] - end_pos[0]) / float(start_pos[1] - end_pos[1])
@@ -53,7 +55,7 @@ def inverse_slope(start_pos, end_pos):
 	return 1 / slope(start_pos, end_pos)
 
 def walk_row(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id=1):
-	_x = row*octant[0]
+	_x = (row*octant[0])+octant[0]
 	_y = row*octant[1]
 	_blocked = False
 	_n_l_slope = l_slope
@@ -62,7 +64,7 @@ def walk_row(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 		_x += -1*octant[0]
 		_slope = abs(slope((0, 0), (_x, _y)))
 
-		if _slope <= r_slope or _slope >= l_slope:
+		if _slope < r_slope or _slope > l_slope:
 			continue
 		
 		if WORLD_INFO['map'][_x+start_pos[0]][_y+start_pos[1]]:
@@ -75,7 +77,7 @@ def walk_row(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 			_n_l_slope = _slope
 			_blocked = False
 		
-		if start_pos[0]+_x<=0 or start_pos[1]+_y<=0 or start_pos[0]+_x>=los_map.shape[0] or start_pos[1]+_y>=los_map.shape[1]:
+		if start_pos[0]+_x<0 or start_pos[1]+_y<=0 or start_pos[0]+_x>=los_map.shape[0]-1 or start_pos[1]+_y>=los_map.shape[1]-1:
 			break
 		
 		los_map[_x+start_pos[0]][_y+start_pos[1]] = _id
@@ -98,7 +100,7 @@ def walk_col(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 		_y += -1*octant[1]
 		_slope = abs(slope((0, 0), (_y, _x)))
 		
-		if _slope <= r_slope or _slope >= l_slope:
+		if _slope < r_slope or _slope > l_slope:
 			continue
 		
 		if WORLD_INFO['map'][_x+start_pos[0]][_y+start_pos[1]]:
@@ -127,7 +129,6 @@ def walk_col(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 def los(start_position, distance):
 	_los = numpy.zeros((distance, distance))
 	
-	#TODO: Repeat for other octants
 	walk_row(_los, (20, 20), octant=(-1, -1))
 	walk_row(_los, (20, 20), octant=(1, -1))
 	walk_row(_los, (20, 20), octant=(-1, 1))
@@ -137,7 +138,6 @@ def los(start_position, distance):
 	walk_col(_los, (20, 20), octant=(-1, 1))
 	walk_col(_los, (20, 20), octant=(1, -1))
 	walk_col(_los, (20, 20), octant=(1, 1))
-	#walk_northeast(_los, (20, 20))
 	
 	#print draw(_los)
 	
