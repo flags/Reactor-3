@@ -102,6 +102,8 @@ def look(life):
 			
 			brain.meet_alife(life, ai)
 	
+		continue
+	
 		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
 			_pos = item['pos']
 			_can_see = can_see_position(life, _pos)

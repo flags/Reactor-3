@@ -375,6 +375,30 @@ def draw_items(view_size=MAP_WINDOW_SIZE):
 	         _item['color'][1]),
 	        'map')
 
+def draw_all_items():
+	_view = gfx.get_view_by_name('map')
+	
+	for _item in ITEMS:
+		item = ITEMS[_item]
+		
+		if is_item_owned(item['uid']):
+			continue
+		
+		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			        item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
+			_x = item['pos'][0] - CAMERA_POS[0]
+			_y = item['pos'][1] - CAMERA_POS[1]
+		
+			if not LOS_BUFFER[0][_y,_x]:
+				continue
+			
+			gfx.blit_char_to_view(_x,
+				        _y,
+				        item['icon'],
+				        (item['color'][0],
+				      item['color'][1]),
+				        'map')
+
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""
 	_container = get_item_from_uid(container_uid)

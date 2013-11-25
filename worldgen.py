@@ -406,6 +406,7 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	return False
 	#Step 1: Army Outpost
 	
 	for outpost in WORLD_INFO['refs']['outposts']:

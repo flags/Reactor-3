@@ -763,4 +763,5 @@ We start with a list of chunks (map positions) and a set of rules:
 
 This is only for house interiors. Exteriors are done on a slightly smaller scale later in mapgen.
 
-Step 1:
+Caching
+------

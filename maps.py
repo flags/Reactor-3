@@ -380,6 +380,10 @@ def diffuse_light(source_light):
 	return (light.ravel(1), light.ravel(0))
 
 def _render_los(map, pos, size, cython=False, life=None):
+	#LOS times:
+	#Raycast: 0.0453310012817
+	
+	
 	if cython:
 		return cython_render_los.render_los(pos, size, life=life)
 	else:
