@@ -14,6 +14,7 @@ import items
 import zones
 import alife
 import tiles
+import fov
 
 import logging
 import random
@@ -24,9 +25,9 @@ import json
 import os
 
 try:
-	import render_los as cython_render_los
+import render_los as cython_render_los
 	CYTHON_ENABLED = True
-	
+
 except ImportError, e:
 	CYTHON_ENABLED = False
 	logging.warning('[Cython] ImportError with module: %s' % e)
@@ -382,37 +383,9 @@ def diffuse_light(source_light):
 def _render_los(map, pos, size, cython=False, life=None):
 	#LOS times:
 	#Raycast: 0.0453310012817
+	#Recursive Shadowcasting:
 	
-	
-	if cython:
-		return cython_render_los.render_los(pos, size, life=life)
-	else:
-		return render_los(map,pos)
-
-def render_los(map,position,los_buffer=LOS_BUFFER[0]):
-	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	
-	for pos1 in drawing.draw_circle(position, SETTINGS['los']):
-
-		_dark = False
-		for pos in drawing.diag_line(position,pos1):
-			_x = pos[0]-CAMERA_POS[0]
-			_y = pos[1]-CAMERA_POS[1]
-			
-			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
-				continue
-			
-			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
-				if not _dark:
-					_dark = True
-					los_buffer[_y,_x] = 1
-					
-					continue
-				
-			if _dark:
-				continue
-
-			los_buffer[_y,_x] = 1
+	fov.fov(pos, size)
 
 def render_map_slices():
 	SETTINGS['map_slices'] = []

@@ -126,7 +126,7 @@ def walk_col(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 
 	return los_map
 
-def los(start_position, distance):
+def fov(start_position, distance):
 	_los = numpy.zeros((distance, distance))
 	
 	walk_row(_los, (20, 20), octant=(-1, -1))
@@ -142,7 +142,3 @@ def los(start_position, distance):
 	draw(_los)
 	
 	return _los
-
-_start_time = time.time()
-_los = los((20, 20), 40)
-print time.time()-_start_time
