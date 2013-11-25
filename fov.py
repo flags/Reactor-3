@@ -60,7 +60,7 @@ def walk_row(los_map, start_pos, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id
 	_blocked = False
 	_n_l_slope = l_slope
 	
-	for i in range(0, row):
+	for i in range(0, row+1):
 		_x += -1*octant[0]
 		_slope = abs(slope((0, 0), (_x, _y)))
 
@@ -139,7 +139,7 @@ def los(start_position, distance):
 	walk_col(_los, (20, 20), octant=(1, -1))
 	walk_col(_los, (20, 20), octant=(1, 1))
 	
-	#print draw(_los)
+	draw(_los)
 	
 	return _los
 
