@@ -105,14 +105,13 @@ def main():
 		gfx.refresh_view('map')
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'] or SETTINGS['refresh_los']:
-		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)		
+		_sight_distance = alife.sight.get_vision(LIFE[SETTINGS['following']])
 		SETTINGS['refresh_los'] = False
 		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
 		                                 SETTINGS['camera_track'],
 		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
-		print LOS_BUFFER[0].shape
 	
 	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	

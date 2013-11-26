@@ -33,9 +33,9 @@ def render_map(map, view_size=MAP_WINDOW_SIZE):
 	cdef int _RENDER_X = 0
 	cdef int _RENDER_Y = 0
 	cdef int _min_los_x = ((LOS_BUFFER[0].shape[0]/2)-view_size[0]/2)
-	cdef int _max_los_x = ((LOS_BUFFER[0].shape[0]/2)+view_size[0]/2)
+	cdef int _max_los_x = LOS_BUFFER[0].shape[0]
 	cdef int _min_los_y = ((LOS_BUFFER[0].shape[1]/2)-view_size[1]/2)
-	cdef int _max_los_y = ((LOS_BUFFER[0].shape[1]/2)+view_size[1]/2)
+	cdef int _max_los_y = LOS_BUFFER[0].shape[1]
 
 	_view = get_view_by_name('map')
 	_TEMP_MAP_CHAR_BUFFER = _view['char_buffer'][1].copy()
@@ -50,7 +50,11 @@ def render_map(map, view_size=MAP_WINDOW_SIZE):
 		_RENDER_X = x-_CAMERA_POS[0]
 		for y in range(_Y_START,_Y_MAX):
 			_RENDER_Y = y-_CAMERA_POS[1]
-			_visible = LOS_BUFFER[0][_min_los_x+_RENDER_X, _min_los_y+_RENDER_Y]
+
+			if _min_los_x+_RENDER_X<0 or _min_los_x+_RENDER_X>=_max_los_x or _min_los_y+_RENDER_Y<0 or _min_los_y+_RENDER_Y>=_max_los_y:
+				_visible = False
+			else:
+				_visible = LOS_BUFFER[0][_min_los_x+_RENDER_X, _min_los_y+_RENDER_Y]
 			
 			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
 				continue

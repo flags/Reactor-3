@@ -9,6 +9,7 @@ import brain
 import logic
 import items
 import maps
+import fov
 
 import render_fast_los
 import render_los
@@ -29,6 +30,7 @@ def look(life):
 		return False
 	
 	if 'player' in life or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+		_a = time.time()
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
@@ -356,8 +358,6 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	_chunks = set()
 	_chunk_map = set(chunk_map.keys())
 	
-	#for x_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
-	#	for y_mod in range((-vision/chunk_size)+2, (vision/chunk_size)-1):
 	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*2)/chunk_size)):
 		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod/chunk_size)*chunk_size
 		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
@@ -381,4 +381,15 @@ def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], c
 	return list(_chunks)
 
 def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=True, get_chunks=False, visible_check=True):
-	return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)
+	if _chunks:
+		_chunk_keys = set(_chunks)
+	else:
+		_chunk_keys = set()
+		fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
+	
+	if ignore_chunks:
+		for chunk_key in ignore_chunks:
+			_chunk_keys.remove(chunk_key)
+	
+	return list(_chunk_keys)
+	#return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)

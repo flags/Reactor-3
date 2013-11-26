@@ -22,6 +22,7 @@ New in version 0.6.5:
 		* This information can also become out of date, leading to bad decision making.
 	* Mouse look
 		* The mouse can now be used to select items in look mode (`l`).
+	* Huge FPS boost on all systems.
 	* Many new items.
 	* NPCs now make sure their LOS is clear before opening fire.
 	* Weapons now have multiple firing modes (using `f`).

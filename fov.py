@@ -29,7 +29,7 @@ def draw(los_map, size):
 			
 		print _x
 
-def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy):
+def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy, callback=None):
 	if start_slope < end_slope:
 		return False
 	
@@ -70,8 +70,10 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy)
 			_rad2 = size*size
 			
 			if (_d_x * _d_x + _d_y * _d_y) < _rad2:
-				#print _sax, _say
 				los_map[_sax+size, _say+size] = 1
+				
+				if callback:
+					callback((_a_x, _a_y))
 			
 			#print _a_x, _a_y
 			_solid = maps.is_solid((_a_x, _a_y, z+1))#WORLD_INFO['map'][_a_x][_a_y]
@@ -93,13 +95,13 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy)
 		if _blocked:
 			break
 
-def fov(start_position, distance):
+def fov(start_position, distance, callback=None):
 	_los = numpy.zeros((distance*2, distance*2))
 	_start = (start_position[0]-distance, start_position[1]-distance, start_position[2])
 
 	for i in range(8):
 		light(_los, start_position, distance, 1, 1.0, 0.0, MULT[0][i],
-		      MULT[1][i], MULT[2][i], MULT[3][i]);
+		      MULT[1][i], MULT[2][i], MULT[3][i], callback=callback);
 	
 	#draw(_los, distance*2)
 	
