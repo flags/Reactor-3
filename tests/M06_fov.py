@@ -1,9 +1,8 @@
 #Recursive Shadowcasting
 #Implemented in Python by flags
+#Ported from C++: http://roguebasin.roguelikedevelopment.org/index.php?title=C%2B%2B_shadowcasting_implementation
 #Original implementation by bjorn.bergstrom@roguelikedevelopment.org
-#Source: http://roguebasin.roguelikedevelopment.org/index.php?title=FOV_using_recursive_shadowcasting
-
-#TODO: Move slope/math functions to numbers.py
+#Article: http://roguebasin.roguelikedevelopment.org/index.php?title=FOV_using_recursive_shadowcasting
 
 import numpy
 import time
@@ -49,12 +48,6 @@ def draw(los_map):
 					_x+=' '
 
 		print _x
-
-def slope(start_pos, end_pos):
-	return (start_pos[0] - end_pos[0]) / float(start_pos[1] - end_pos[1])
-
-def inverse_slope(start_pos, end_pos):
-	return 1 / slope(start_pos, end_pos)
 
 def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy):
 	if start_slope < end_slope:

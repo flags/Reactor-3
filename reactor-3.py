@@ -112,6 +112,7 @@ def main():
 		                                 _sight_distance,
 		                                 cython=True,
 		                                 life=LIFE[SETTINGS['following']])
+		print LOS_BUFFER[0].shape
 	
 	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	

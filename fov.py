@@ -12,7 +12,10 @@ import maps
 import numpy
 import time
 
-
+MULT = [[1,  0,  0, -1, -1,  0,  0,  1],
+        [0,  1, -1,  0,  0, -1,  1,  0],
+        [0,  1,  1,  0,  0, -1, -1,  0],
+        [1,  0,  0,  1, -1,  0,  0, -1]]
 BUFFER_MOD = .25
 
 def draw(los_map, size):
@@ -26,115 +29,78 @@ def draw(los_map, size):
 			
 		print _x
 
-def slope(start_pos, end_pos):
-	return (start_pos[0] - end_pos[0]) / float(start_pos[1] - end_pos[1])
-
-def inverse_slope(start_pos, end_pos):
-	return 1 / slope(start_pos, end_pos)
-
-def walk_row(los_map, start_pos, los_size, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id=1):
-	_x = (row*octant[0])+octant[0]
-	_y = row*octant[1]
-	_blocked = False
-	_n_l_slope = l_slope
+def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy):
+	if start_slope < end_slope:
+		return False
 	
-	for i in range(0, row+1):
-		_x += -1*octant[0]		
-		_w_x = (los_size/2)+_x
-		_w_y = (los_size/2)+_y
-		_d_x = start_pos[0]+_x
-		_d_y = start_pos[1]+_y
-		_slope = abs(slope((0, 0), (_x, _y)))
-
-		if _slope < r_slope or _slope > l_slope:
-			continue
+	x, y, z = world_pos
+	
+	_next_start_slope = start_slope
+	
+	for i in range(row, size):
+		_blocked = False
 		
-		if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-			continue
-		
-		if maps.is_solid((_d_x, _d_y, start_pos[2]+1)):
-			_slope = abs(slope((0, 0), (_x+(BUFFER_MOD*octant[0]), _y)))
-			_blocked = True
-			walk_row(los_map, start_pos, los_size, row=row+1, r_slope=_slope, l_slope=_n_l_slope, _id=_id+1, octant=octant)
+		_d_x = -i
+		_d_y = -i
+		while _d_x <= 0:
+			_l_slope = (_d_x - 0.5) / (_d_y + 0.5)
+			_r_slope = (_d_x + 0.5) / (_d_y - 0.5)
 			
-			if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-				pass
-			else:
-				print 'breaking'
+			if start_slope < _r_slope:
+				_d_x += 1
 				continue
-		elif _blocked:
-			_n_l_slope = _slope
-			_blocked = False
-		
-		print 'here'
-		los_map[_w_x][_w_y] = _id
-	
-	if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-		print 'broke'
-		return los_map
-	
-	if not maps.is_solid((_d_x, _d_y, start_pos[2]+1)):
-		walk_row(los_map, start_pos, los_size, row=row+1, l_slope=_n_l_slope, r_slope=r_slope, _id=_id, octant=octant)
-
-	return los_map
-
-def walk_col(los_map, start_pos, los_size, l_slope=1, r_slope=0, octant=(0, 0), row=1, _id=1):
-	_x = row*octant[0]
-	_y = row*octant[1]
-	_blocked = False
-	_n_l_slope = l_slope
-	
-	for i in range(0, row):
-		_w_x = (los_size/2)+_x
-		_w_y = (los_size/2)+_y
-		_d_x = start_pos[0]+_w_x
-		_d_y = start_pos[1]+_w_y
-		_y += -1*octant[1]
-		_slope = 1/abs(slope((0, -.1*octant[1]), (_x, _y)))
-		
-		if _slope < r_slope or _slope > l_slope:
-			continue
-		
-		if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-			continue
-		
-		if maps.is_solid((_w_x, _w_y, start_pos[2])):
-			_slope = abs(slope((0, 0), (_y+(BUFFER_MOD*octant[0]), _x)))
-			_blocked = True
-			walk_col(los_map, start_pos, los_size, row=row+1, r_slope=_slope, l_slope=_n_l_slope, _id=_id+1, octant=octant)
+			elif end_slope>_l_slope:
+				break
 			
-			if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-				pass
-			else:
+			_sax = _d_x * xx + _d_y * xy
+			_say = _d_x * yx + _d_y * yy
+			
+			if (_sax<0 and abs(_sax)>x) or (_say<0 and abs(_say)>y):
+				_d_x += 1
 				continue
-		elif _blocked:
-			_n_l_slope = _slope
-			_blocked = False
+			
+			
+			_a_x = x + _sax
+			_a_y = y + _say
+			
+			if _a_x >= MAP_SIZE[0] or _a_y >= MAP_SIZE[1]:
+				_d_x += 1
+				continue
+			
+			_rad2 = size*size
+			
+			if (_d_x * _d_x + _d_y * _d_y) < _rad2:
+				#print _sax, _say
+				los_map[_sax+size, _say+size] = 1
+			
+			#print _a_x, _a_y
+			_solid = maps.is_solid((_a_x, _a_y, z+1))#WORLD_INFO['map'][_a_x][_a_y]
+			if _blocked:
+				if _solid:
+					_next_start_slope = _r_slope
+					_d_x += 1
+					continue
+				else:
+					_blocked = False
+					start_slope = _next_start_slope
+			elif _solid:
+				_blocked = True
+				_next_start_slope = _r_slope
+				light(los_map, world_pos, size, i+1, start_slope, _l_slope, xx, xy, yx, yy)
+			
+			_d_x += 1
 		
-		print 'here'
-		los_map[_x+start_pos[0]][_y+start_pos[1]] = _id
-	
-	if _w_x<0 or _w_y<=0 or _w_x>=los_map.shape[0]-1 or _w_y>=los_map.shape[1]-1 or _d_x>=MAP_SIZE[0]-1 or _d_y>=MAP_SIZE[1]-1:
-		return los_map
-	
-	if not WORLD_INFO['map'][_x+start_pos[0]][_y+start_pos[1]]:
-		walk_col(los_map, start_pos, los_size, row=row+1, l_slope=_n_l_slope, r_slope=r_slope, _id=_id, octant=octant)
-
-	return los_map
+		if _blocked:
+			break
 
 def fov(start_position, distance):
-	_los = numpy.zeros((distance, distance))
+	_los = numpy.zeros((distance*2, distance*2))
+	_start = (start_position[0]-distance, start_position[1]-distance, start_position[2])
+
+	for i in range(8):
+		light(_los, start_position, distance, 1, 1.0, 0.0, MULT[0][i],
+		      MULT[1][i], MULT[2][i], MULT[3][i]);
 	
-	walk_row(_los, start_position, distance, octant=(-1, -1))
-	walk_row(_los, start_position, distance, octant=(1, -1))
-	walk_row(_los, start_position, distance, octant=(-1, 1))
-	walk_row(_los, start_position, distance, octant=(1, 1))
-	
-	#walk_col(_los, start_position, distance, octant=(-1, -1))
-	#walk_col(_los, start_position, distance, octant=(-1, 1))
-	#walk_col(_los, start_position, distance, octant=(1, -1))
-	#walk_col(_los, start_position, distance, octant=(1, 1))
-	
-	draw(_los, distance)
+	#draw(_los, distance*2)
 	
 	return _los

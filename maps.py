@@ -383,9 +383,13 @@ def diffuse_light(source_light):
 def _render_los(map, pos, size, cython=False, life=None):
 	#LOS times:
 	#Raycast: 0.0453310012817
-	#Recursive Shadowcasting:
+	#Recursive Shadowcasting: 0.0119090080261 (worst case), 0.000200033187866 (best case)
 	
-	return fov.fov(pos, size)
+	_start_time = time.time()
+	_fov = fov.fov(pos, size)
+	print time.time()-_start_time
+	
+	return _fov
 
 def render_map_slices():
 	SETTINGS['map_slices'] = []
