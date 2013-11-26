@@ -25,7 +25,7 @@ import json
 import os
 
 try:
-import render_los as cython_render_los
+	import render_los as cython_render_los
 	CYTHON_ENABLED = True
 
 except ImportError, e:
@@ -329,7 +329,7 @@ def render_lights(size=MAP_WINDOW_SIZE):
 		
 		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
 		brightness *= los
-		brightness *= LOS_BUFFER[0]
+		#brightness *= LOS_BUFFER[0]
 		
 		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		#_mod = numbers.clip(_mod-1, 0, 1)
@@ -385,7 +385,7 @@ def _render_los(map, pos, size, cython=False, life=None):
 	#Raycast: 0.0453310012817
 	#Recursive Shadowcasting:
 	
-	fov.fov(pos, size)
+	return fov.fov(pos, size)
 
 def render_map_slices():
 	SETTINGS['map_slices'] = []

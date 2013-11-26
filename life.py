@@ -2559,12 +2559,12 @@ def draw_life():
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
-				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
-					gfx.refresh_view_position(_p_x, _p_y, 'map')
+			#if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
+			#	if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
+			#		gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
-			if not LOS_BUFFER[0][_y,_x]:
-				continue
+			#if not LOS_BUFFER[0][_y,_x]:
+			#	continue
 			
 			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
 				if time.time()%.5>.25:

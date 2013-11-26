@@ -63,10 +63,10 @@ def render_map(map, view_size=MAP_WINDOW_SIZE):
 						else:
 							_shadow = 0
 							
-						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
-							darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
-							_drawn = True
+						#if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+						#	blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
+						#	darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
+						#	_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
 							blit_char_to_view(_RENDER_X,
@@ -81,13 +81,13 @@ def render_map(map, view_size=MAP_WINDOW_SIZE):
 							
 							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							
-							if SETTINGS['draw effects']:
-								if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-									effects.draw_splatter((x,y,z), (_RENDER_X,_RENDER_Y))
-									effects.draw_effect((x, y))
+							#if SETTINGS['draw effects']:
+								#if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+								#	effects.draw_splatter((x,y,z), (_RENDER_X,_RENDER_Y))
+								#	effects.draw_effect((x, y))
 						
-						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
-							darken_tile(_RENDER_X, _RENDER_Y, 30)
+						#if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+						#	darken_tile(_RENDER_X, _RENDER_Y, 30)
 						
 						if SETTINGS['draw visible chunks']:
 							_visible_chunks = alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'visible_chunks')
