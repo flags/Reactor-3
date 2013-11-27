@@ -29,11 +29,14 @@ def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
 	
-	if 'player' in life or life['path'] or not brain.get_flag(life, 'visible_chunks'):
+	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		_a = time.time()
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
+	elif 'player' in life:
+		_visible_chunks = brain.get_flag(life, 'visible_chunks')
+		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 	else:
 		#This is for optimizing. Be careful if you mess with this...
 		_nearby_alife = []
@@ -72,7 +75,7 @@ def look(life):
 			for target_id in life['know']:
 				life['know'][target_id]['last_seen_time'] += 1
 			
-			if not can_see_target(life, ai['id']):
+			if not is_in_fov(life, ai['pos']):
 				continue
 			
 			life['seen'].append(ai['id'])
@@ -104,13 +107,8 @@ def look(life):
 			
 			brain.meet_alife(life, ai)
 	
-		continue
-	
 		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
-			_pos = item['pos']
-			_can_see = can_see_position(life, _pos)
-			
-			if not _can_see:
+			if not is_in_fov(life, item['pos']):
 				continue
 			
 			if not item['uid'] in life['know_items']:
@@ -126,7 +124,7 @@ def look(life):
 				continue
 			
 			life['seen_items'].append(item['uid'])
-			life['know_items'][item['uid']]['last_seen_at'] = _pos[:]
+			life['know_items'][item['uid']]['last_seen_at'] = item['pos'][:]
 			life['know_items'][item['uid']]['last_seen_time'] = 0
 			life['know_items'][item['uid']]['last_owned_by'] = None
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
@@ -194,6 +192,20 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 				continue
 	
 	return _ret_line
+
+def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
+	_min_los_x = ((life['fov'].shape[0]/2)-view_size[0]/2)
+	_max_los_x = life['fov'].shape[0]
+	_min_los_y = ((life['fov'].shape[1]/2)-view_size[1]/2)
+	_max_los_y = life['fov'].shape[1]
+	
+	_x = pos[0]-CAMERA_POS[0]
+	_y = pos[1]-CAMERA_POS[1]
+	
+	if _min_los_x+_x<0 or _min_los_x+_x>=_max_los_x or _min_los_y+_y<0 or _min_los_y+_y>=_max_los_y:
+		return False
+	
+	return life['fov'][_min_los_x+_x, _min_los_y+_y] == 1
 
 def can_see_position(life, pos, distance=True, block_check=False, strict=False):
 	"""Returns `true` if the life can see a certain position."""
@@ -385,7 +397,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		_chunk_keys = set(_chunks)
 	else:
 		_chunk_keys = set()
-		fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
+		life['fov'] = fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
 	
 	if ignore_chunks:
 		for chunk_key in ignore_chunks:

@@ -103,6 +103,8 @@ def fov(start_position, distance, callback=None):
 		light(_los, start_position, distance, 1, 1.0, 0.0, MULT[0][i],
 		      MULT[1][i], MULT[2][i], MULT[3][i], callback=callback);
 	
+	_los[_los.shape[0]/2,_los.shape[1]/2] = 1
+	
 	#draw(_los, distance*2)
 	
 	return _los

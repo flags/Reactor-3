@@ -51,7 +51,6 @@ def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
 	SETTINGS['light mesh grid'] = numpy.meshgrid(range(map_view_size[0]), range(map_view_size[1]))
-	LOS_BUFFER[0] = []
 
 def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
 	if get_view_by_name(name):

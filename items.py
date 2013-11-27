@@ -361,12 +361,12 @@ def draw_items(view_size=MAP_WINDOW_SIZE):
 	
 	for item_uid in LIFE[SETTINGS['following']]['seen_items']:
 		_item = ITEMS[item_uid]
+	
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):
+			continue
 		
 		_d_x = _item['pos'][0]-CAMERA_POS[0]
 		_d_y = _item['pos'][1]-CAMERA_POS[1]
-	
-		#if not LOS_BUFFER[0][_d_y, _d_x]:
-		#	continue
 		
 		gfx.blit_char_to_view(_d_x,
 	        _d_y,
@@ -386,17 +386,12 @@ def draw_all_items():
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
 			        item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
-			_x = item['pos'][0] - CAMERA_POS[0]
-			_y = item['pos'][1] - CAMERA_POS[1]
-		
-			if not LOS_BUFFER[0][_y,_x]:
-				continue
 			
 			gfx.blit_char_to_view(_x,
 				        _y,
 				        item['icon'],
 				        (item['color'][0],
-				      item['color'][1]),
+			              item['color'][1]),
 				        'map')
 
 def update_container_capacity(container_uid):

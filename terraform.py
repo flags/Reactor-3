@@ -64,7 +64,6 @@ def post_setup_world():
 	weather.change_weather()
 	maps.create_position_maps()
 	
-	LOS_BUFFER[0] = numpy.ones((WINDOW_SIZE[1], WINDOW_SIZE[0]))
 	WORLD_INFO['real_time_of_day'] = 2000
 
 def regenerate_world():

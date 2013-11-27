@@ -41,6 +41,7 @@ import items
 import life
 import time
 import maps
+import fov
 import smp
 import sys
 
@@ -104,21 +105,14 @@ def main():
 	if SELECTED_TILES[0]:
 		gfx.refresh_view('map')
 	
-	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'] or SETTINGS['refresh_los']:
-		_sight_distance = alife.sight.get_vision(LIFE[SETTINGS['following']])
-		SETTINGS['refresh_los'] = False
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 SETTINGS['camera_track'],
-		                                 _sight_distance,
-		                                 cython=True,
-		                                 life=LIFE[SETTINGS['following']])
-	
-	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
+	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
+		_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
+		alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights()
 	
-	if not SETTINGS['map_slices']:
-		render_map.render_map(WORLD_INFO['map'])
+	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['following']]['fov'])
 	
 	items.draw_items()
 	bullets.draw_bullets()

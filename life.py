@@ -26,6 +26,7 @@ import maps
 import copy
 import time
 import json
+import fov
 import sys
 import os
 
@@ -365,6 +366,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['item_index'] = 0
 	_life['inventory'] = []
 	_life['flags'] = {}
+	_life['fov'] = None
 	_life['seen'] = []
 	_life['seen_items'] = []
 	_life['state'] = 'idle'
@@ -472,11 +474,6 @@ def focus_on(life):
 	
 	gfx.camera_track(life['pos'])
 	gfx.refresh_view('map')
-	
-	LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-	                                 LIFE[SETTINGS['following']]['pos'],
-	                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
-	                                 cython=True)
 
 def sanitize_heard(life):
 	del life['heard']
@@ -489,7 +486,7 @@ def sanitize_know(life):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'actions', 'dialogs']
+	_delete_keys = ['raw', 'actions', 'dialogs', 'fov']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -508,6 +505,7 @@ def post_save(life):
 	life['actions'] = []
 	life['path'] = []
 	life['dialogs'] = []
+	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
 	if not 'unchecked_memories' in life:
 		life['unchecked_memories'] = []
@@ -1119,10 +1117,6 @@ def walk_path(life):
 		
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
-		
-		#if SETTINGS['following'] == life['id']:
-		#	#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
-		#	gfx.redraw_los()
 		
 		if life['path']:
 			return False
@@ -2559,12 +2553,12 @@ def draw_life():
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			#if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
-			#	if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
-			#		gfx.refresh_view_position(_p_x, _p_y, 'map')
+			if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
+				continue
 			
-			#if not LOS_BUFFER[0][_y,_x]:
-			#	continue
+			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
+				if not life['pos'] == life['prev_pos']:
+					gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
 			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
 				if time.time()%.5>.25:

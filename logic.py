@@ -62,44 +62,10 @@ def tick_all_objects():
 	if not can_tick(check=False):
 		return False
 	
-	if SETTINGS['controlling']:
-		_in_combat = False
-		for alife in [LIFE[i] for i in LIFE]:
-			if SETTINGS['controlling'] == alife['id']:
-				continue
-			
-			if alife['asleep'] or alife['dead']:
-				continue
-			
-			_x,_y = alife['pos'][:2]
-			
-			if alife['pos'][0]>CAMERA_POS[0]:
-				_x = alife['pos'][0]-CAMERA_POS[0]
-			
-			if alife['pos'][1]>CAMERA_POS[1]:
-				_y = alife['pos'][1]-CAMERA_POS[1]
-			
-			if _x>=40:
-				continue
-			
-			if _y>=40:
-				continue
-			
-			if not LOS_BUFFER[0][_y, _x]:
-				continue
-			
-			_targets = alfe.judgement.get_combat_targets(LIFE[SETTINGS['controlling']])
-			if _targets and SETTINGS['controlling'] in _targets:
-				_in_combat = True
-	
 	effects.calculate_all_effects()
 	tick_world()
 	timers.tick()
 	items.tick_all_items()
-	
-	#if SETTINGS['smp']:
-	#	smp.scan_all_surroundings()
-	
 	life.tick_all_life()
 	
 	return True
