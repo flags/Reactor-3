@@ -59,6 +59,7 @@ def create_function_map():
 		'has_child': stats.has_child,
 		'is_night': logic.is_night,
 		'is_born_leader': stats.is_born_leader,
+		'is_psychotic': stats.is_psychotic,
 		'is_safe_in_shelter': stats.is_safe_in_shelter,
 		'is_incapacitated': stats.is_incapacitated,
 		'is_target': lambda life, life_id: life_id in judgement.get_targets(life) or life_id in judgement.get_combat_targets(life),

@@ -14,6 +14,7 @@ import items
 import zones
 import alife
 import tiles
+import fov
 
 import logging
 import random
@@ -26,7 +27,7 @@ import os
 try:
 	import render_los as cython_render_los
 	CYTHON_ENABLED = True
-	
+
 except ImportError, e:
 	CYTHON_ENABLED = False
 	logging.warning('[Cython] ImportError with module: %s' % e)
@@ -186,12 +187,14 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		else:
 			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
+		alife.chunks.generate_cache()
+		
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
 		
-		if not WORLD_INFO['lights']:
-			logging.warning('World has no lights. Creating one manually.')
-			effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
+		#if not WORLD_INFO['lights']:
+		#	logging.warning('World has no lights. Creating one manually.')
+		#	effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
 		#except Exception as e:
 		#	raise e
 		
@@ -245,35 +248,39 @@ def position_is_in_map(pos):
 	
 	return False
 
-def reset_lights():
-	RGB_LIGHT_BUFFER[0] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[1] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
-	RGB_LIGHT_BUFFER[2] = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def reset_lights(size=MAP_WINDOW_SIZE):
+	RGB_LIGHT_BUFFER[0] = numpy.zeros((size[1], size[0]))
+	RGB_LIGHT_BUFFER[1] = numpy.zeros((size[1], size[0]))
+	RGB_LIGHT_BUFFER[2] = numpy.zeros((size[1], size[0]))
+	
+	while REFRESH_POSITIONS:
+		_pos = REFRESH_POSITIONS.pop()
+		gfx.refresh_view_position(_pos[0], _pos[1], 'map')
 
-def render_lights(source_map):
+def render_lights(size=MAP_WINDOW_SIZE):
 	if not SETTINGS['draw lights']:
 		return False
 
-	reset_lights()
-	SUN = weather.get_lighting()
+	reset_lights(size=size)
+	_weather_light = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
-	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN[0])
-	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN[1])
-	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN[2])
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], _weather_light[0])
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], _weather_light[1])
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], _weather_light[2])
 	(x, y) = SETTINGS['light mesh grid']
+	
+	weather.generate_effects(size)
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
 		_x_range = light['pos'][0]-CAMERA_POS[0]
 		_y_range = light['pos'][1]-CAMERA_POS[1]
 		
-		#print _x_range, _y_range
-		
-		if _x_range <= -20 or _x_range>=MAP_WINDOW_SIZE[0]+20:
+		if _x_range <= -20 or _x_range>=size[0]+20:
 			continue
 		
-		if _y_range <= -20 or _y_range>=MAP_WINDOW_SIZE[1]+20:
+		if _y_range <= -20 or _y_range>=size[1]+20:
 			continue
 		
 		if not 'old_pos' in light:
@@ -290,13 +297,13 @@ def render_lights(source_map):
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
-		_x = numbers.clip(light['pos'][0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-		_y = numbers.clip(light['pos'][1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+		_x = numbers.clip(light['pos'][0]-(size[0]/2),0,MAP_SIZE[0])
+		_y = numbers.clip(light['pos'][1]-(size[1]/2),0,MAP_SIZE[1])
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
 		if not tuple(light['pos']) == tuple(light['old_pos']):
-			light['los'] = cython_render_los.render_los(source_map, (light['pos'][0],light['pos'][1]), light['brightness']*2, top_left=_top_left)
+			light['los'] = cython_render_los.render_los((light['pos'][0],light['pos'][1]), light['brightness']*2, view_size=size, top_left=_top_left)
 		
 		los = light['los'].copy()
 		
@@ -325,9 +332,8 @@ def render_lights(source_map):
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
 		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
-		#brightness = numpy.clip(brightness * 255.0, 0, 255)
 		brightness *= los
-		brightness *= LOS_BUFFER[0]
+		#brightness *= LOS_BUFFER[0]
 		
 		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		#_mod = numbers.clip(_mod-1, 0, 1)
@@ -379,35 +385,15 @@ def diffuse_light(source_light):
 	return (light.ravel(1), light.ravel(0))
 
 def _render_los(map, pos, size, cython=False, life=None):
-	if cython:
-		return cython_render_los.render_los(map, pos, size, life=life)
-	else:
-		return render_los(map,pos)
-
-def render_los(map,position,los_buffer=LOS_BUFFER[0]):
-	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+	#LOS times:
+	#Raycast: 0.0453310012817
+	#Recursive Shadowcasting: 0.0119090080261 (worst case), 0.000200033187866 (best case)
 	
-	for pos1 in drawing.draw_circle(position, SETTINGS['los']):
-
-		_dark = False
-		for pos in drawing.diag_line(position,pos1):
-			_x = pos[0]-CAMERA_POS[0]
-			_y = pos[1]-CAMERA_POS[1]
-			
-			if _x<0 or _x>=MAP_WINDOW_SIZE[0] or _y<0 or _y>=MAP_WINDOW_SIZE[1]:
-				continue
-			
-			if map[pos[0]][pos[1]][CAMERA_POS[2]+1]:				
-				if not _dark:
-					_dark = True
-					los_buffer[_y,_x] = 1
-					
-					continue
-				
-			if _dark:
-				continue
-
-			los_buffer[_y,_x] = 1
+	_start_time = time.time()
+	_fov = fov.fov(pos, size)
+	print time.time()-_start_time
+	
+	return _fov
 
 def render_map_slices():
 	SETTINGS['map_slices'] = []
@@ -743,7 +729,7 @@ def generate_reference_maps():
 					
 					for _chunk_key in _ret:
 						get_chunk(_chunk_key)['reference'] = str(_ref_id)
-			elif _current_chunk['type'] == 'building':
+			elif _current_chunk['type'] in ['building', 'town', 'outpost']:
 				_ret = find_all_linked_chunks(_current_chunk_key)
 				if _ret:
 					WORLD_INFO['references'][str(_ref_id)] = _ret
@@ -760,33 +746,32 @@ def generate_reference_maps():
 	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
 
 def draw_chunk_map(life=None, show_faction_ownership=False):
-	#_x_min = MAP_CURSOR[0]/WORLD_INFO['chunk_size']
-	#_y_min = MAP_CURSOR[1]/WORLD_INFO['chunk_size']
-	#_x_max = numbers.clip(_x_min+WINDOW_SIZE[0]/WORLD_INFO['chunk_size'], _x_min, WINDOW_SIZE[0])
-	#_y_max = numbers.clip(_y_min+WINDOW_SIZE[1]/WORLD_INFO['chunk_size'], _y_min, WINDOW_SIZE[1])
-	#print MAP_SIZE
+	_x_min = numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_min = numbers.clip(CAMERA_POS[1]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
+	_x_max = numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_max = numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
 	
-	#print _x_min, _x_max, _y_min, _y_max
 	_life_chunk_key = None
 	
 	if life:
 		_life_chunk_key = lfe.get_current_chunk_id(life)
 	
-	for x in range(0, MAP_SIZE[0]/WORLD_INFO['chunk_size']):
-		_d_x = x
+	for x in range(_x_min, _x_max):
+		_d_x = x-(CAMERA_POS[0]/WORLD_INFO['chunk_size'])
 		
-		if _d_x >= MAP_WINDOW_SIZE[0]:
+		if 0>_d_x >= WINDOW_SIZE[0]:
 			continue
 		
-		for y in range(0, MAP_SIZE[1]/WORLD_INFO['chunk_size']):
-			_d_y = y
-			_chunk_key = '%s,%s' % (_d_x*WORLD_INFO['chunk_size'], _d_y*WORLD_INFO['chunk_size'])
+		for y in range(_y_min, _y_max):
+			_d_y = y-(CAMERA_POS[1]/WORLD_INFO['chunk_size'])
 			_draw = True
 			_fore_color = tcod.darker_gray
 			_back_color = tcod.darkest_gray
 			
-			if _d_y >= MAP_WINDOW_SIZE[1]:
+			if 0>_d_y >= WINDOW_SIZE[1]:
 				continue
+			
+			_chunk_key = '%s,%s' % (x*WORLD_INFO['chunk_size'], y*WORLD_INFO['chunk_size'])
 			
 			if life:
 				if not _chunk_key in life['known_chunks']:
@@ -796,9 +781,13 @@ def draw_chunk_map(life=None, show_faction_ownership=False):
 				_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
 				_char = 'x'
 				
-				if _type == 'building':
+				if _type in ['building', 'town']:
 					_fore_color = tcod.light_gray
 					_char = 'B'
+				elif _type in ['outpost']:
+					_fore_color = tcod.desaturated_green
+					_back_color = tcod.desaturated_han
+					_char = 'M'
 				elif _type == 'field':
 					_fore_color = tcod.yellow
 				elif _type == 'forest':

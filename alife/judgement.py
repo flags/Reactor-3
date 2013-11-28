@@ -510,7 +510,7 @@ def judge_shelter(life, chunk_id):
 	_known_chunk = life['known_chunks'][chunk_id]
 	_score = 0
 	
-	if not chunk['type'] == 'building':
+	if not chunk['type'] in ['building', 'town', 'outpost']:
 		return 0
 	
 	if not chunks.get_flag(life, chunk_id, 'shelter'):

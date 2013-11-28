@@ -36,7 +36,7 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	_path['gmap'] = numpy.zeros((_path['map_size'][1], _path['map_size'][0]), dtype=numpy.int16)
 	_path['hmap'] = numpy.zeros((_path['map_size'][1], _path['map_size'][0]), dtype=numpy.int16)
 	_path['pmap'] = []
-	_path['tmap'] = numpy.zeros((_path['map_size'][1], _path['map_size'][0]), dtype=numpy.int16)
+	_path['tmap'] = numpy.zeros((_path['map_size'][0], _path['map_size'][1]), dtype=numpy.int16)
 	
 	for x in range(_path['map_size'][0]):
 		_path['pmap'].append([0] * _path['map_size'][1])

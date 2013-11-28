@@ -47,6 +47,8 @@ def handle_input():
 				LIFE[SETTINGS['controlling']]['actions'] = []
 		else:
 			SETTINGS['running'] = False
+		
+		gfx.refresh_view('map')
 	
 	if INPUT['\t']:
 		if not SETTINGS['controlling'] or not LIFE[SETTINGS['controlling']]['group']:
@@ -166,6 +168,10 @@ def handle_input():
 			SETTINGS['paused'] = True
 	
 	if INPUT['a']:
+		if menus.get_menu_by_name('Activate')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Activate'))
+			return False
+		
 		_items = []
 		for entry in life.get_fancy_inventory_menu_items(LIFE[SETTINGS['controlling']], show_containers=False, check_hands=True):
 			if not 'id' in entry:
@@ -173,6 +179,22 @@ def handle_input():
 			
 			if 'ON_ACTIVATE' in ITEMS[entry['id']]['flags']:
 				_items.append(entry)
+		
+		_nearby_items = []
+		for item_uid in LIFE[SETTINGS['controlling']]['seen_items']:
+			_item = ITEMS[item_uid]
+			
+			if not 'ON_ACTIVATE' in ITEMS[item_uid]['flags']:
+				continue
+			
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], ITEMS[item_uid]['pos'])>1:
+				continue
+			
+			_nearby_items.append(menus.create_item('single', _item['name'], None, icon=_item['icon'], id=item_uid))
+		
+		if _nearby_items:
+			_items.append(menus.create_item('title', 'Nearby', None))
+			_items.extend(_nearby_items)
 		
 		if not _items:
 			gfx.message('You have no items to activate.')
@@ -183,7 +205,34 @@ def handle_input():
 			padding=(1,1),
 			position=(1,1),
 			format_str='[$i] $k: $v',
-			on_select=lambda entry: items.activate(ITEMS[entry['id']]))
+			on_select=lambda entry: life.activate_item(LIFE[SETTINGS['controlling']], entry['id']),
+		     close_on_select=True)
+		
+		menus.activate_menu(_i)
+
+	if INPUT['A']:
+		if menus.get_menu_by_name('Eat')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Eat'))
+			return False
+		
+		_food = []
+		for _item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'food'}, {'type': 'drink'}]):
+			_food.append(menus.create_item('single',
+				items.get_name(_item),
+				None,
+				icon=_item['icon'],
+				id=_item['uid']))
+		
+		if not _food:
+			gfx.message('You have nothing to eat.')
+			return False
+		
+		_i = menus.create_menu(title='Eat',
+			menu=_food,
+			padding=(1,1),
+			position=(1,1),
+			format_str='[$i] $k',
+			on_select=inventory_eat)
 		
 		menus.activate_menu(_i)
 
@@ -656,32 +705,6 @@ def handle_input():
 		
 		create_open_item_menu(_items)
 	
-	if INPUT['a']:
-		if menus.get_menu_by_name('Eat')>-1:
-			menus.delete_menu(menus.get_menu_by_name('Eat'))
-			return False
-		
-		_food = []
-		for _item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'food'}, {'type': 'drink'}]):
-			_food.append(menus.create_item('single',
-				items.get_name(_item),
-				None,
-				icon=_item['icon'],
-				id=_item['uid']))
-		
-		if not _food:
-			gfx.message('You have nothing to eat.')
-			return False
-		
-		_i = menus.create_menu(title='Eat',
-			menu=_food,
-			padding=(1,1),
-			position=(1,1),
-			format_str='[$i] $k',
-			on_select=inventory_eat)
-		
-		menus.activate_menu(_i)
-	
 	if INPUT['b']:
 		#print LIFE[SETTINGS['following']]['actions']
 		#print life.create_recent_history(LIFE[SETTINGS['following']])
@@ -689,6 +712,7 @@ def handle_input():
 		import weather
 		weather.change_weather()
 		WORLD_INFO['time_scale'] = 12
+		WORLD_INFO['real_time_of_day'] = 1200
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

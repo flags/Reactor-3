@@ -12,7 +12,7 @@ import time
 
 VERSION = 6
 
-def render_map(map):
+def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
@@ -22,16 +22,30 @@ def render_map(map):
 	_MAP_SIZE[0] = MAP_SIZE[0]
 	_MAP_SIZE[1] = MAP_SIZE[1]
 	_MAP_SIZE[2] = MAP_SIZE[2]
-	_MAP_WINDOW_SIZE[0] = MAP_WINDOW_SIZE[0]
-	_MAP_WINDOW_SIZE[1] = MAP_WINDOW_SIZE[1]
+	_MAP_WINDOW_SIZE[0] = view_size[0]
+	_MAP_WINDOW_SIZE[1] = view_size[1]
 	
 	cdef int x, y, z
-	cdef int _X_MAX = _CAMERA_POS[0]+_MAP_WINDOW_SIZE[0]
-	cdef int _Y_MAX = _CAMERA_POS[1]+_MAP_WINDOW_SIZE[1]
+	cdef int _X_MAX = _CAMERA_POS[0]+view_size[0]
+	cdef int _Y_MAX = _CAMERA_POS[1]+view_size[1]
 	cdef int _X_START = _CAMERA_POS[0]
 	cdef int _Y_START = _CAMERA_POS[1]
 	cdef int _RENDER_X = 0
 	cdef int _RENDER_Y = 0
+	
+	cdef int _min_los_x = 0
+	cdef int _max_los_x = view_size[0]
+	cdef int _min_los_y = 0
+	cdef int _max_los_y = view_size[1]
+	
+	los = None
+	
+	if 'los' in kwargs:
+		los = kwargs['los']
+		_min_los_x = ((los.shape[0]/2)-view_size[0]/2)
+		_max_los_x = los.shape[0]
+		_min_los_y = ((los.shape[1]/2)-view_size[1]/2)
+		_max_los_y = los.shape[1]
 	
 	_view = get_view_by_name('map')
 	_TEMP_MAP_CHAR_BUFFER = _view['char_buffer'][1].copy()
@@ -46,6 +60,13 @@ def render_map(map):
 		_RENDER_X = x-_CAMERA_POS[0]
 		for y in range(_Y_START,_Y_MAX):
 			_RENDER_Y = y-_CAMERA_POS[1]
+
+			if _min_los_x+_RENDER_X<0 or _min_los_x+_RENDER_X>=_max_los_x or _min_los_y+_RENDER_Y<0 or _min_los_y+_RENDER_Y>=_max_los_y:
+				_visible = False
+			elif not 'los' in kwargs:
+				_visible = True
+			else:
+				_visible = los[_min_los_x+_RENDER_X, _min_los_y+_RENDER_Y]
 			
 			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
 				continue
@@ -62,8 +83,10 @@ def render_map(map):
 								_shadow += 1
 						else:
 							_shadow = 0
-							
-						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+						
+						#_los_x = _RENDER_X-((LOS_BUFFER[0].shape[0])-view_size[0]/2)
+						#_los_y = _RENDER_Y-((LOS_BUFFER[0].shape[1])-view_size[1]/2)
+						if not _visible:
 							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
 							_drawn = True
@@ -82,11 +105,14 @@ def render_map(map):
 							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							
 							if SETTINGS['draw effects']:
-								if LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+								if _visible:
 									effects.draw_splatter((x,y,z), (_RENDER_X,_RENDER_Y))
 									effects.draw_effect((x, y))
+					
+						#if _visible:
+						#	darken_tile(_RENDER_X, _RENDER_Y, 30)
 						
-						if not LOS_BUFFER[0][_RENDER_Y,_RENDER_X]:
+						if not _visible:
 							darken_tile(_RENDER_X, _RENDER_Y, 30)
 						
 						if SETTINGS['draw visible chunks']:

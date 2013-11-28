@@ -753,3 +753,15 @@ First and foremost, we will focus on effective world generation. Our goal for th
 * Begin implementing enemy types that aren't dynamic ALife: Soldiers and Mutants (maybe later?)
 
 Our first real step is to create the tools we'll need to make this process easier.
+
+Intelligent House Gen
+-------------------
+We start with a list of chunks (map positions) and a set of rules:
+
+	* We must be able to travel to a room from any given room (all rooms must be connected.)
+	* Allow doors connecting interior chunks.
+
+This is only for house interiors. Exteriors are done on a slightly smaller scale later in mapgen.
+
+Caching
+------

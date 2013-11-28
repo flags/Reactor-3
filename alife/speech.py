@@ -156,8 +156,8 @@ def get_introduction_message(life, life_id):
 	if _alignment == 'feign_trust':
 		return 'Let\'s have a chat.'
 	
-	if _alignment == 'malicious':
-		return 'Back up. I have no time to talk to you.'
+	if _alignment == 'hostile':
+		return 'Die!'
 	
 	if _alignment == 'trust':
 		return ['Hello traveler.', 'Greetings.']
@@ -165,8 +165,8 @@ def get_introduction_message(life, life_id):
 def get_introduction_gist(life, life_id):
 	_alignment = stats.get_goal_alignment_for_target(life, life_id)
 	
-	if _alignment == 'malicious':
-		return 'AGRESSIVE_RESPONSE'
+	if _alignment == 'hostile':
+		return 'hostile_response'
 	
 	if _alignment == 'feign_trust':
 		return 'feign_trust_failed'

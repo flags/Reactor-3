@@ -13,7 +13,7 @@ import random
 import numpy
 import time
 
-def init_libtcod(terraform=False):
+def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	global ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
 	_font_file = os.path.join(DATA_DIR, 'tiles', FONT)
@@ -25,8 +25,6 @@ def init_libtcod(terraform=False):
 	
 	tcod.console_set_custom_font(_font_file, _layout)
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
-	
-	ITEM_WINDOW = tcod.console_new(ITEM_WINDOW_SIZE[0],ITEM_WINDOW_SIZE[1])
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
@@ -52,9 +50,7 @@ def init_libtcod(terraform=False):
 			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
-	SETTINGS['light mesh grid'] = numpy.meshgrid(range(MAP_WINDOW_SIZE[0]), range(MAP_WINDOW_SIZE[1]))
-	
-	LOS_BUFFER[0] = []
+	SETTINGS['light mesh grid'] = numpy.meshgrid(range(map_view_size[0]), range(map_view_size[1]))
 
 def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
 	if get_view_by_name(name):
@@ -187,14 +183,19 @@ def _add_view_to_scene(view):
 	logging.debug('Added view \'%s\' to scene.' % view['name'])
 
 def _remove_view_from_scene(view):
-	if not view in VIEW_SCENE[view['layer']]:
+	if not view['layer'] in VIEW_SCENE:
 		raise Exception('View \'%s\' not in scene.' % view['name'])
 	
-	VIEW_SCENE[view['layer']].remove(view)
-	logging.debug('Removed view \'%s\' from scene.' % view['name'])
+	_i = 0
+	for existing_view in VIEW_SCENE[view['layer']]:
+		if existing_view['name'] == view['name']:
+			break
+		
+		_i += 1
+		
+	VIEW_SCENE[view['layer']].pop(_i)
 	
-	#tcod.console_clear(0)
-	#tcod.console_flush()
+	logging.debug('Removed view \'%s\' from scene.' % view['name'])
 
 def is_view_in_scene(view_name):
 	return view_name in VIEW_SCENE_CACHE
@@ -287,8 +288,11 @@ def prepare_map_views():
 
 def prepare_terraform_views():
 	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
+	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
 	
 	add_view_to_scene_by_name('map')
+	add_view_to_scene_by_name('overlay')
 	set_active_view('map')
 
 def start_of_frame(draw_char_buffer=True):
@@ -393,11 +397,15 @@ def blit_string(x, y, text, view_name, console=0, fore_color=tcod.white, back_co
 
 def lighten_tile(x, y, amt):
 	_view = get_active_view()
-	_view['light_buffer'][0][y, x] = amt
+	
+	if not _view['light_buffer'] == None:
+		_view['light_buffer'][0][y, x] = amt
 
 def darken_tile(x, y, amt):
 	_view = get_active_view()
-	_view['light_buffer'][1][y, x] = amt
+	
+	if not _view['light_buffer'] == None:
+		_view['light_buffer'][1][y, x] = amt
 
 def tint_tile(x,y,color,coef):
 	_view = get_active_view()

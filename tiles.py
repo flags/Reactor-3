@@ -71,6 +71,34 @@ WALL_TILE = {'id':'wall',
 			 'type': 'building',
 			 'cost':-1}
 
+BLUE_CARPET_1 = {'id':'blue_carpet_1',
+			 'icon':'.',
+			 'color':(tcod.desaturated_cyan, tcod.desaturated_sky),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
+BLUE_CARPET_2 = {'id':'blue_carpet_2',
+			 'icon':'.',
+			 'color':(tcod.desaturated_sky, tcod.desaturated_cyan),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
+SEA_CARPET_1 = {'id':'sea_carpet_1',
+			 'icon':',',
+			 'color':(tcod.desaturated_turquoise, tcod.desaturated_han),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
+SEA_CARPET_2 = {'id':'sea_carpet_2',
+			 'icon':',',
+			 'color':(tcod.desaturated_sea, tcod.desaturated_azure),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
 FIELD_TILE_1 = {'id': 'field_1',
 			 'icon': '~',
 			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
@@ -282,6 +310,12 @@ DIRT_TILES = [DIRT_TILE_1,
 			DIRT_TILE_2,
 			DIRT_TILE_3]
 
+BLUE_CARPET_TILES = [BLUE_CARPET_1,
+                     BLUE_CARPET_2]
+
+SEA_CARPET_TILES = [SEA_CARPET_1,
+                    SEA_CARPET_2]
+
 TREE_STUMPS = [SMALL_TREE_STUMP_1,
                SMALL_TREE_STUMP_2]
 
@@ -347,6 +381,8 @@ def create_all_tiles():
 	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
 	TEMP_TILES.extend(BROWN_FLOOR_TILES)
 	TEMP_TILES.extend(FIELD_TILES)
+	TEMP_TILES.extend(BLUE_CARPET_TILES)
+	TEMP_TILES.extend(SEA_CARPET_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

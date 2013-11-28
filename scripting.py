@@ -4,6 +4,8 @@
 
 from globals import *
 
+import graphics as gfx
+
 import effects
 import items
 import life
@@ -35,6 +37,13 @@ def execute(script, **kvargs):
 			_item = ITEMS[kvargs['item_uid']]
 			
 			effects.delete_light_at(items.get_pos(kvargs['item_uid']))
+		elif function == 'TOGGLE_BLOCK':
+			_item = ITEMS[kvargs['item_uid']]
+			
+			if _item['blocking']:
+				_item['blocking'] = False
+			else:
+				_item['blocking'] = True
 		else:
 			logging.error('Script: \'%s\' is not a valid function.' % function)
 
