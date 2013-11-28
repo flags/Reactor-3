@@ -15,7 +15,7 @@ def change_weather():
 	_weather['events'] = 7
 	_weather['colors'] = []
 	_weather['color_indexes'] = []
-	_weather['light_types'] = ['night', 'sunrise', 'clear', 'overcast', 'overcast_rain', 'sunset', 'night']
+	_weather['light_types'] = ['night', 'sunrise', 'overcast_rain', 'overcast_thunderstorm', 'overcast_rain', 'sunset', 'night']
 	
 	_colors = []
 	_indexes = []
@@ -45,7 +45,6 @@ def change_weather():
 	WORLD_INFO['weather'].update(_weather)
 
 def get_lighting():
-	#print WORLD_INFO['weather']['light_map'][WORLD_INFO['real_time_of_day']-1], WORLD_INFO['real_time_of_day']
 	_time = numbers.clip(WORLD_INFO['real_time_of_day'], 0, len(WORLD_INFO['weather']['light_map'])-1)
 	return WORLD_INFO['weather']['light_map'][_time]
 
@@ -56,20 +55,20 @@ def generate_effects(size):
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
 	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors']))
 	
-	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather]['effects']:
+	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather-1]['effects']:
 		rain(size)
 	
-	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather]['effects'] and not random.randint(0, 200):
+	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather-1]['effects'] and not random.randint(0, 200):
 		RGB_LIGHT_BUFFER[0] *= 0
 		RGB_LIGHT_BUFFER[1] *= 0
 		RGB_LIGHT_BUFFER[2] *= 0
 
 def rain(size):
-	#print (WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors'])) *(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	print WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']) *(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	#print WORLD_INFO['real_time_of_day']-WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors'])
-	for i in range(0, 15):
+	_running_time = WORLD_INFO['real_time_of_day'] - WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))*(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	
+	_rate = .009
+	
+	for i in range(0, int(round(_running_time*_rate))):
 		_x = random.randint(0, size[0]-1)
 		_y = random.randint(0, size[1]-1)
 		_skip = False
