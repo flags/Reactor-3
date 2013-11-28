@@ -273,6 +273,15 @@ def render_lights(size=MAP_WINDOW_SIZE):
 	for i in range(0, 15):
 		_x = random.randint(0, size[0]-1)
 		_y = random.randint(0, size[1]-1)
+		_skip = False
+		
+		for z in range(LIFE[SETTINGS['controlling']]['pos'][2]+1, MAP_SIZE[2]):
+			if is_solid((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y, z)):
+				_skip = True
+				break
+		
+		if _skip:
+			continue
 		
 		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
 			continue
