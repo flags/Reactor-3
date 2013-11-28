@@ -1099,7 +1099,6 @@ def walk_path(life):
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
 		for item_uid in _next_chunk['items']:
 			if items.is_blocking(item_uid):
-				#stop(life)
 				activate_item(life, item_uid)
 				return False
 		

@@ -206,7 +206,7 @@ def handle_input():
 			position=(1,1),
 			format_str='[$i] $k: $v',
 			on_select=lambda entry: life.activate_item(LIFE[SETTINGS['controlling']], entry['id']),
-		    close_on_select=True)
+		     close_on_select=True)
 		
 		menus.activate_menu(_i)
 

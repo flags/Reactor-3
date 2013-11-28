@@ -178,7 +178,6 @@ def create_item(name, position=[0,0,2], item=None):
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
-	item['on'] = False
 	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
@@ -450,8 +449,12 @@ def process_event(item, event):
 	
 	elif event == 'stop' and 'ON_STOP' in item['flags']:
 		scripting.execute(item['flags']['ON_STOP'], item_uid=item['uid'])
+	
+	elif event == 'collide' and 'ON_COLLIDE_WITH' in item['flags']:
+		scripting.execute(item['flags']['ON_COLLIDE_WITH'], item_uid=item['uid'])
 
 def activate(item):
+	print item['on'], item['blocking']
 	if item['on']:
 		process_event(item, 'deactivate')
 		item['on'] = False

@@ -39,6 +39,7 @@ def execute(script, **kvargs):
 			effects.delete_light_at(items.get_pos(kvargs['item_uid']))
 		elif function == 'TOGGLE_BLOCK':
 			_item = ITEMS[kvargs['item_uid']]
+			
 			if _item['blocking']:
 				_item['blocking'] = False
 			else:
