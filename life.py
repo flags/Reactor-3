@@ -12,6 +12,7 @@ import logging
 import weapons
 import numbers
 import effects
+import weather
 import random
 import damage
 import timers
@@ -2750,6 +2751,12 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, tcod.lightest_red)
 	
 	tcod.console_print(0, _health_position[0]+8, _health_position[1], _health_string)
+	
+	#Weather
+	tcod.console_set_default_foreground(0, tcod.light_gray)
+	tcod.console_print(0, _health_position[0]+len(_health_string)+9,
+	                   _health_position[1],
+	                   'Weather: %s' % weather.get_weather_status())
 	
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)

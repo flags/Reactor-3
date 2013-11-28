@@ -12,10 +12,10 @@ import random
 
 def change_weather():
 	_weather = {}
-	_weather['events'] = 7
+	_weather['events'] = 6
 	_weather['colors'] = []
 	_weather['color_indexes'] = []
-	_weather['light_types'] = ['night', 'sunrise', 'overcast_rain', 'overcast_thunderstorm', 'overcast_rain', 'sunset', 'night']
+	_weather['light_types'] = ['night', 'sunrise', 'overcast_thunderstorm', 'overcast_thunderstorm', 'overcast_rain', 'sunset', 'night']
 	
 	_colors = []
 	_indexes = []
@@ -26,19 +26,19 @@ def change_weather():
 		
 		if light_type == 'night':
 			#_weather['colors'].append((28, 0, 12))
-			_weather['colors'].append({'colors': (255, 165, 0), 'type': light_type, 'effects': []})
+			_weather['colors'].append({'name': 'Clear', 'colors': (255, 165, 0), 'type': light_type, 'effects': []})
 		elif light_type == 'overcast':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': []})
+			_weather['colors'].append({'name': 'Overcast', 'colors': (60, 60, 60), 'type': light_type, 'effects': []})
 		elif light_type == 'overcast_rain':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining']})
+			_weather['colors'].append({'name': 'Overcast (Rain)', 'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining']})
 		elif light_type == 'overcast_thunderstorm':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining', 'lightning']})
+			_weather['colors'].append({'name': 'Overcast (Thunderstorm)', 'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining', 'lightning']})
 		elif light_type == 'clear':
-			_weather['colors'].append({'colors': (0, 0, 0), 'type': light_type, 'effects': []})
+			_weather['colors'].append({'name': 'Clear', 'colors': (0, 0, 0), 'type': light_type, 'effects': []})
 		elif light_type == 'sunrise':
-			_weather['colors'].append({'colors': (19, 86, 100), 'type': light_type, 'effects': []})
+			_weather['colors'].append({'name': 'Clear', 'colors': (19, 86, 100), 'type': light_type, 'effects': []})
 		elif light_type == 'sunset':
-			_weather['colors'].append({'colors': (19, 50, 100), 'type': light_type, 'effects': []})
+			_weather['colors'].append({'name': 'Clear', 'colors': (19, 50, 100), 'type': light_type, 'effects': []})
 	
 	create_light_map(_weather)
 	
@@ -51,14 +51,20 @@ def get_lighting():
 def create_light_map(weather):
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])
 
+def get_weather_status():
+	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
+	
+	return WORLD_INFO['weather']['colors'][_current_weather]['name']
+
 def generate_effects(size):
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors']))
+	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
 	
-	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather-1]['effects']:
+	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather]['effects']:
 		rain(size)
 	
-	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather-1]['effects'] and not random.randint(0, 200):
+	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather]['effects'] and not random.randint(0, 200):
 		RGB_LIGHT_BUFFER[0] *= 0
 		RGB_LIGHT_BUFFER[1] *= 0
 		RGB_LIGHT_BUFFER[2] *= 0
