@@ -270,25 +270,7 @@ def render_lights(size=MAP_WINDOW_SIZE):
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], _weather_light[2])
 	(x, y) = SETTINGS['light mesh grid']
 	
-	for i in range(0, 15):
-		_x = random.randint(0, size[0]-1)
-		_y = random.randint(0, size[1]-1)
-		_skip = False
-		
-		for z in range(LIFE[SETTINGS['controlling']]['pos'][2]+1, MAP_SIZE[2]):
-			if is_solid((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y, z)):
-				_skip = True
-				break
-		
-		if _skip:
-			continue
-		
-		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
-			continue
-		
-		REFRESH_POSITIONS.append((_x, _y))
-		
-		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
+	weather.generate_effects(size)
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:

@@ -1,8 +1,14 @@
 from globals import *
 
 import libtcodpy as tcod
+import graphics as gfx
 
 import numbers
+import alife
+import maps
+
+import random
+
 
 def change_weather():
 	_weather = {}
@@ -41,3 +47,31 @@ def get_lighting():
 
 def create_light_map(weather):
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])
+
+def generate_effects(size):
+	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors']))
+	
+	if WORLD_INFO['weather']['colors'][_current_weather]['type'] == 'overcast':
+		rain(size)
+
+def rain(size):
+	for i in range(0, 15):
+		_x = random.randint(0, size[0]-1)
+		_y = random.randint(0, size[1]-1)
+		_skip = False
+		
+		for z in range(LIFE[SETTINGS['controlling']]['pos'][2]+1, MAP_SIZE[2]):
+			if maps.is_solid((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y, z)):
+				_skip = True
+				break
+		
+		if _skip:
+			continue
+		
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
+			continue
+		
+		REFRESH_POSITIONS.append((_x, _y))
+		
+		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
