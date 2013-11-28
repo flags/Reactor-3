@@ -2760,8 +2760,8 @@ def draw_life_info():
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)
 	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
-	#_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
-	#_hunger_str = get_thirst(life)
+	#_nutrition_str = language.prettify_string_array([get_hunger_status(life), get_thirst_status(life)], 30)
+	#_hunger_str = get_thirst_status(life)
 	#tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
@@ -2941,12 +2941,12 @@ def calculate_hunger(life):
 	for _item in _remove:
 		life['eaten'].remove(_item['uid'])
 	
-	if get_hunger(life) == 'Satiated':
+	if get_hunger_status(life) == 'Satiated':
 		brain.unflag(life, 'hungry')
 	else:
 		brain.flag(life, 'hungry')
 	
-	if get_thirst(life) == 'Hydrated':
+	if get_thirst_status(life) == 'Hydrated':
 		brain.unflag(life, 'thirsty')
 	else:
 		brain.flag(life, 'thirsty')
@@ -2957,7 +2957,7 @@ def get_hunger_percentage(life):
 def get_thirst_percentage(life):
 	return life['thirst']/float(life['thirst_max'])
 
-def get_hunger(life):
+def get_hunger_status(life):
 	if not 'HUNGER' in life['life_flags']:
 		return 'Not hungry'
 	
@@ -2970,7 +2970,7 @@ def get_hunger(life):
 	else:
 		return 'Starving'
 
-def get_thirst(life):
+def get_thirst_status(life):
 	if not 'THIRST' in life['life_flags']:
 		return 'Not thirsty'
 	
@@ -3007,8 +3007,16 @@ def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
 
 def calculate_overall_health(life):
+	_string = []
+	
 	if get_total_pain(life)>4:
-		return 'Aching'
+		_string.append(Aching)
+	
+	if not get_hunger_status(life) == 'Satiated':
+		_string.append('Hungry')
+	
+	if _string:
+		return language.prettify_string_array(_string, 30)
 	
 	return 'Fine'
 
