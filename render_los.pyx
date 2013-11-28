@@ -4,6 +4,7 @@ import numbers
 import cython
 import numpy
 import alife
+import items
 import maps
 import time
 
@@ -88,8 +89,8 @@ def draw_line(x1,y1,x2,y2):
 	
 	return path
 
-def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_chunks=None, life=None):
-	los_buffer = numpy.zeros((MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0]))
+def render_los(position, size, view_size=MAP_WINDOW_SIZE, top_left=CAMERA_POS, no_edge=False, visible_chunks=None, life=None):
+	los_buffer = numpy.zeros((view_size[1], view_size[0]))
 	
 	cdef int _dark = 0
 	cdef int _x,_y
@@ -98,8 +99,8 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 	cdef int Z_CAMERA_POS = top_left[2]
 	cdef int X_MAP_SIZE = MAP_SIZE[0]
 	cdef int Y_MAP_SIZE = MAP_SIZE[1]
-	cdef int X_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[0]
-	cdef int Y_MAP_WINDOW_SIZE = MAP_WINDOW_SIZE[1]
+	cdef int X_MAP_WINDOW_SIZE = view_size[0]
+	cdef int Y_MAP_WINDOW_SIZE = view_size[1]
 	cdef int POS_X, POS_Y
 	POS_X = position[0]
 	POS_Y = position[1]
@@ -136,11 +137,26 @@ def render_los(map, position, size, top_left=CAMERA_POS, no_edge=False, visible_
 			if pos[0]<0 or pos[0]>=X_MAP_SIZE or pos[0]<0 or pos[1]>=Y_MAP_SIZE:
 				continue
 			
-			if map[pos[0]][pos[1]][Z_CAMERA_POS+1]:				
+			if maps.is_solid((pos[0], pos[1], Z_CAMERA_POS+1)):
 				if not _dark:
 					if not no_edge:
 						los_buffer[_y,_x] = 1
 					
+					break
+			else:
+				_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at((pos[0], pos[1], Z_CAMERA_POS)))
+				_break = False
+				
+				for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
+					if tuple(item['pos']) == (pos[0], pos[1], Z_CAMERA_POS):
+						if not _dark:
+							if not no_edge:
+								los_buffer[_y,_x] = 1
+						
+							_break = True
+							break
+				
+				if _break:
 					break
 
 			los_buffer[_y,_x] = 1

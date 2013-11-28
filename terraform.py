@@ -14,14 +14,15 @@ from globals import *
 from inputs import *
 from tiles import *
 
-import profiles
-
 import graphics as gfx
-import cProfile
+
+import language
 import maputils
+import profiles
+import weather
 import numbers
-import prefabs
 import random
+import mapgen
 import items
 import zones
 import menus
@@ -29,6 +30,8 @@ import time
 import maps
 import sys
 import smp
+
+import cProfile
 
 #Optional Cython-compiled modules
 try:
@@ -48,40 +51,58 @@ except ImportError, e:
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
-def handle_scrolling(cursor,camera,window_size,map_size,change):
-	cursor[0] = numbers.clip(cursor[0]+change[0], 0, MAP_SIZE[0]-1)
-	cursor[1] = numbers.clip(cursor[1]+change[1], 0, MAP_SIZE[1]-1)
+def pre_setup_world():
+	language.load_strings()
+	create_all_tiles()
+	WORLD_INFO['lights'] = []
+
+	for key in ITEMS.keys():
+		del ITEMS[key]
+
+def post_setup_world():
+	items.reload_all_items()
+	weather.change_weather()
+	maps.create_position_maps()
 	
-	if change[0]>0:
-		#if cursor[0]<map_size[0]-change[0]:
-		#	cursor[0]+=change[0]
+	WORLD_INFO['real_time_of_day'] = 2000
+
+def regenerate_world():
+	gfx.title('Generating...')
+	reload(mapgen)
+	
+	pre_setup_world()
+	
+	try:
+		mapgen.generate_map(size=(250, 450, 10),
+			                towns=1,
+			                factories=0,
+			                outposts=2,
+			                forests=1,
+			                skip_zoning=True,
+			                skip_chunking=True,
+			                hotload=True)
+	except:
+		import traceback
+		traceback.print_exc()
 		
-		if cursor[0]-camera[0]/2>window_size[0]/2 and camera[0]+window_size[0]<map_size[0]:
-			camera[0]+=change[0]
-		#if cursor[0]+camera[0]
+		SETTINGS['running'] = 1
+		return False
 	
-	elif change[0]<0:
-		#if cursor[0]>0:
-		#	cursor[0]+=change[0]
-		
-		if cursor[0]-camera[0]<window_size[0]/2 and camera[0]>0:
-			camera[0]+=change[0]
-	
-	if change[1]>0:
-		#if cursor[1]<map_size[1]-change[1]:
-		#	cursor[1]+=change[1]
-		
-		if cursor[1]-camera[1]/2>window_size[1]/2 and camera[1]+window_size[1]<map_size[1]:
-			camera[1]+=change[1]
-	
-	elif change[1]<0:
-		#if cursor[1]>0:
-		#	cursor[1]+=change[1]
-		
-		if cursor[1]-camera[1]<window_size[1]/2 and camera[1]>0:
-			camera[1]+=change[1]
-	
+	post_setup_world()
 	gfx.refresh_view('map')
+	
+	return True
+
+def move_camera(pos, scroll=False):
+	_orig_pos = CAMERA_POS[:]
+	CAMERA_POS[0] = numbers.clip(pos[0]-(WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
+	CAMERA_POS[1] = numbers.clip(pos[1]-(WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-WINDOW_SIZE[1])
+	CAMERA_POS[2] = pos[2]
+	
+	if not _orig_pos == CAMERA_POS:
+		gfx.refresh_view('map')
+	elif SETTINGS['controlling'] and not alife.brain.get_flag(LIFE[SETTINGS['controlling']], 'redraw') == pos:
+		gfx.refresh_view('map')
 
 def handle_input():
 	global PLACING_TILE,RUNNING,SETTINGS,KEYBOARD_STRING
@@ -92,7 +113,7 @@ def handle_input():
 		return True
 	
 	elif INPUT['\x1b'] or INPUT['q']:
-		if not ACTIVE_MENU['menu'] == -1:
+		if not ACTIVE_MENU['menu'] == -1 and not SETTINGS['running'] == 1:
 			ACTIVE_MENU['menu'] = -1
 			
 			return True
@@ -112,137 +133,80 @@ def handle_input():
 
 	elif INPUT['up']:
 		if not ACTIVE_MENU['menu'] == -1:
-			#MENUS[ACTIVE_MENU['menu']]['index'] = menus.find_item_before(MENUS[ACTIVE_MENU['menu']],index=MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.move_up(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['view'] == 'prefab':
-			#TODO: Make this and everything in the `else` statement a function.
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,CURRENT_PREFAB['size'],MAP_WINDOW_SIZE,(0,-1))
-		elif SETTINGS['view'] == 'chunk_map':
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, -1))
+			CURSOR_POS[1] -= SETTINGS['cursor speed']
 
 	elif INPUT['down']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.move_down(MENUS[ACTIVE_MENU['menu']], MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,PREFAB_WINDOW_SIZE,CURRENT_PREFAB['size'],	(0, 1))
-		elif SETTINGS['view'] == 'chunk_map':
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, WORLD_INFO['chunk_size']))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(0, 1))
+			CURSOR_POS[1] += SETTINGS['cursor speed']
 
 	elif INPUT['right']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.next_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(1, 0))
-		elif SETTINGS['view'] == 'chunk_map':
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(1, 0))
+			CURSOR_POS[0] += SETTINGS['cursor speed']
 
 	elif INPUT['left']:
 		if not ACTIVE_MENU['menu'] == -1:
 			menus.previous_item(MENUS[ACTIVE_MENU['menu']],MENUS[ACTIVE_MENU['menu']]['index'])
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
-		elif SETTINGS['view'] == 'prefab':
-			handle_scrolling(PREFAB_CURSOR,PREFAB_CAMERA_POS,MAP_WINDOW_SIZE,CURRENT_PREFAB['size'],(-1, 0))
-		elif SETTINGS['view'] == 'chunk_map':
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-WORLD_INFO['chunk_size'], 0))
 		else:
-			handle_scrolling(MAP_CURSOR,CAMERA_POS,MAP_WINDOW_SIZE,MAP_SIZE,(-1, 0))
+			CURSOR_POS[0] -= SETTINGS['cursor speed']
 
 	elif INPUT[' ']:
-		if SETTINGS['view'] == 'prefab':
-			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(PLACING_TILE)
-		else:
-			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(PLACING_TILE)
-	
-	elif INPUT['m']:
-		if SETTINGS['view'] == 'map':
-			SETTINGS['view'] = 'chunk_map'
-		else:
-			SETTINGS['view'] = 'map'
-		
-		gfx.refresh_view('map')
+		pass
 	
 	elif INPUT['n']:
 		SUN_POS[2] -= 1
 	
-	elif INPUT['o']:
-		if not ACTIVE_MENU['menu'] == -1:
-			ACTIVE_MENU['menu'] = -1
-			
-			return True
-		
-		menus.activate_menu(0)
-	
 	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:
-			if SETTINGS['view'] == 'chunk_map':
-				SETTINGS['view'] = 'map'
-				gfx.refresh_view('map')
 			return False
 		
 		menus.item_selected(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		ACTIVE_MENU['menu'] = -1
 	
 	elif INPUT['\t']:
-		if SETTINGS['view'] == 'prefab':
-			MENUS.pop(IN_PREFAB_EDITOR)
-			ACTIVE_MENU['menu'] = -1
-			IN_PREFAB_EDITOR = None
-			create_options_menu()
-		else:
-			MENUS.pop()
-			IN_PREFAB_EDITOR = prefabs.create_prefab_list()
-			menus.activate_menu(IN_PREFAB_EDITOR)
-	
-	elif INPUT['f']:
-		#_matching = MAP[MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]].rpartition('_')[0]
-		_matching = 'grass'
-		
-		#SELECTED_TILES[0] = maps.flood_select_by_tile(MAP,
-		#	_matching,
-		#	(MAP_CURSOR[0],MAP_CURSOR[1],CAMERA_POS[2]))
+		pass
 
 	elif INPUT['c']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(GRASS_TILES))
+		CURSOR_POS[0] = MAP_SIZE[0]/2
+		CURSOR_POS[1] = MAP_SIZE[1]/2
 
-	elif INPUT['d']:
-		if SETTINGS['view'] == 'prefab':
-			CURRENT_PREFAB['map'][PREFAB_CURSOR[0]][PREFAB_CURSOR[1]][CAMERA_POS[2]] = None
-		else:
-			WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = None
-	
-	elif INPUT['a']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(SAND_TILES))
-	
-	elif INPUT['b']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(RED_BRICK_TILES))
+	elif INPUT['m']:
+		if SETTINGS['running'] == 2:
+			gfx.add_view_to_scene_by_name('chunk_map')
+			gfx.set_active_view('chunk_map')
+			
+			SETTINGS['running'] = 3
+		elif SETTINGS['running'] == 3:
+			gfx.remove_view_from_scene_by_name('chunk_map')
+			gfx.set_active_view('map')
+			SETTINGS['running'] = 2
 
-	elif INPUT['g']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(CONCRETE_FLOOR_TILES))
-	
-	elif INPUT['h']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(WHITE_TILE_TILES))
-	
+	elif INPUT['r']:
+		if regenerate_world():
+			SETTINGS['running'] = 2
+
 	elif INPUT['s']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(DIRT_TILES))
-	
-	elif INPUT['z']:
-		WORLD_INFO['map'][MAP_CURSOR[0]][MAP_CURSOR[1]][CAMERA_POS[2]] = \
-				create_tile(random.choice(CONCRETE_TILES))
+		items.save_all_items()
+		
+		gfx.title('Generating Chunk Map (1/2)')
+		maps.update_chunk_map()
+		gfx.title('Generating Chunk Map (2/2)')
+		maps.smooth_chunk_map()
+		
+		gfx.title('Zoning...')
+		zones.create_zone_map()
+		maps.generate_reference_maps()
+		
+		gfx.title('Saving...')
+		maps.save_map(str(time.time()))
+		items.reload_all_items()
 
 	elif INPUT['l']:
 		SUN_BRIGHTNESS[0] += 4
@@ -291,63 +255,16 @@ def handle_input():
 		gfx.refresh_view('map')
 
 def menu_item_selected(entry):
-	global RUNNING
-	value = entry['values'][entry['value']]
+	if MENUS:
+		menus.delete_active_menu()
 	
-	if value == 'Save':
-		console_set_default_foreground(0, white)
-		console_print(0, 0, 0, 'Saving...')
-		console_flush()
-		
-		maps.save_map(LOAD_MAP)
-	elif value == 'Save Prefab':
-		prefabs.save(CURRENT_PREFAB)
-	elif value == 'Compile':
-		_stime = time.time()
-		
-		maps.update_chunk_map()
-		maps.smooth_chunk_map()
-		maps.generate_reference_maps()
-		zones.create_zone_map()
-		zones.connect_ramps()
-		
-		logging.debug('Map compile took: %s' % (time.time()-_stime))
-	elif value == 'Generate chunk map':
-		maps.update_chunk_map()
-		maps.smooth_chunk_map()
-		maps.generate_reference_maps()
-		
-	elif value == 'Exit':
-		SETTINGS['running'] = False
-
-def menu_item_changed(entry):
-	key = entry['key']
-	value = entry['values'][entry['value']]
+	gfx.title('Loading...')
 	
-	if key == 'Blit z-level below':
-		if value == 'On':
-			SETTINGS['draw z-levels below'] = True
-		elif value == 'Off':
-			SETTINGS['draw z-levels below'] = False
-		
-		gfx.refresh_view('map')
+	pre_setup_world
+	maps.load_map(entry['key'])
+	post_setup_world()
 	
-	elif key == 'Blit z-level above':
-		if value == 'On':
-			SETTINGS['draw z-levels above'] = True
-		elif value == 'Off':
-			SETTINGS['draw z-levels above'] = False
-		
-		gfx.refresh_view('map')
-	
-	elif key == 'Draw lights':
-		if value == 'On':
-			SETTINGS['draw lights'] = True
-		elif value == 'Off':
-			maps.reset_lights()
-			SETTINGS['draw lights'] = False
-		
-		gfx.refresh_view('map')
+	SETTINGS['running'] = 2
 
 def menu_align():
 	for menu in MENUS:
@@ -363,38 +280,49 @@ def create_maps_menu():
 	_menu_items = []
 	
 	for map_file in profiles.get_maps():
-		_menu_items.append(menus.create_item('title', map_file, None))
+		_menu_items.append(menus.create_item('single', map_file, None))
 	
 	if not _menu_items:
 		logging.error('No maps found.')
 		sys.exit(1)
 	
-	menus.create_menu(title='Maps',
+	_m = menus.create_menu(title='Maps',
 		menu=_menu_items,
 		padding=(1,1),
-		position=(MAP_WINDOW_SIZE[0],0),
+		position=(0, 0),
 		on_select=menu_item_selected,
-		on_change=menu_item_changed)
+	    format_str='$k')
 	
+	menus.activate_menu(_m)
 	menu_align()
 
 def map_selection():
 	menus.align_menus()
 	menus.draw_menus()
 	
-	#gfx.start_of_frame()
 	gfx.end_of_frame()
 
 def terraform():
-	maps.render_lights(WORLD_INFO['map'])
-	items.draw_items()
+	move_camera(CURSOR_POS)
+	render_map.render_map(WORLD_INFO['map'], view_size=WINDOW_SIZE)
+	maps.render_lights(size=WINDOW_SIZE)
+	items.draw_all_items()
 	menus.align_menus()
 	menus.draw_menus()
-	
+	gfx.start_of_frame()
+	gfx.end_of_frame()
+
+def chunk_map():
+	move_camera(CURSOR_POS)
+	maps.draw_chunk_map()
 	gfx.start_of_frame()
 	gfx.end_of_frame()
 
 def main():
+	if not '--select' in sys.argv:
+		if regenerate_world():
+			SETTINGS['running'] = 2
+	
 	while SETTINGS['running']:
 		get_input()
 		handle_input()
@@ -409,11 +337,14 @@ def main():
 		elif SETTINGS['running'] == 2:
 			terraform()
 		
+		elif SETTINGS['running'] == 3:
+			chunk_map()
+		
 if __name__ == '__main__':
 	create_all_tiles()
 	items.initiate_all_items()
 	
-	gfx.init_libtcod()
+	gfx.init_libtcod(map_view_size=WINDOW_SIZE)
 	gfx.prepare_terraform_views()
 	gfx.log(WINDOW_TITLE)
 	

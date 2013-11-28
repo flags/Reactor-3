@@ -210,6 +210,7 @@ def create_background(life):
 		'patience': PATIENCE,
 		'trustiness': TRUSTINESS,
 		'sociability': SOCIABILITY,
+		'psychotic': False,
 		'description': '. '.join(HISTORY)+'.',
 		'motive_for_crime': MOTIVE_FOR_CRIME,
 		'motive_for_wealth': MOTIVE_FOR_WEALTH,

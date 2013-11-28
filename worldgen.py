@@ -8,6 +8,7 @@ import historygen
 import profiles
 import effects
 import weather
+import spawns
 import mapgen
 import cache
 import logic
@@ -106,8 +107,7 @@ def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse',
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]
 
 	weather.change_weather()
-	print 'STARTING!',WORLD_INFO['weather']
-	#create_region_spawns()
+	create_region_spawns()
 	randomize_item_spawns()
 	
 	alife.camps.create_all_camps()
@@ -178,7 +178,7 @@ def save_world():
 	logging.debug('Offloading world...')
 
 	logging.debug('Saving items...')
-	items.save_all_items()	
+	items.save_all_items()
 	
 	maps.save_map('map', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
 	
@@ -406,11 +406,13 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	return False
 	#Step 1: Army Outpost
 	
-	WORLD_INFO['refs']['town_seeds']
+	for outpost in WORLD_INFO['refs']['outposts']:
+		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
 		
-	for i in range(5):
-		generate_wildlife()
+	#for i in range(5):
+	#	generate_wildlife()

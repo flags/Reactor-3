@@ -12,6 +12,7 @@ import logging
 import weapons
 import numbers
 import effects
+import weather
 import random
 import damage
 import timers
@@ -26,6 +27,7 @@ import maps
 import copy
 import time
 import json
+import fov
 import sys
 import os
 
@@ -365,7 +367,9 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['item_index'] = 0
 	_life['inventory'] = []
 	_life['flags'] = {}
+	_life['fov'] = None
 	_life['seen'] = []
+	_life['seen_items'] = []
 	_life['state'] = 'idle'
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
@@ -471,11 +475,6 @@ def focus_on(life):
 	
 	gfx.camera_track(life['pos'])
 	gfx.refresh_view('map')
-	
-	LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-	                                 LIFE[SETTINGS['following']]['pos'],
-	                                 alife.sight.get_vision(LIFE[SETTINGS['following']])*2,
-	                                 cython=True)
 
 def sanitize_heard(life):
 	del life['heard']
@@ -488,7 +487,7 @@ def sanitize_know(life):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'actions', 'dialogs']
+	_delete_keys = ['raw', 'actions', 'dialogs', 'fov']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -507,6 +506,7 @@ def post_save(life):
 	life['actions'] = []
 	life['path'] = []
 	life['dialogs'] = []
+	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
 	if not 'unchecked_memories' in life:
 		life['unchecked_memories'] = []
@@ -1049,7 +1049,6 @@ def walk(life, to=None, path=None):
 		elif life['stance'] == 'crawling':
 			life['speed'] -= 0.3
 		else:
-			print 'YESSSSSSSSSSSSSSs' * 100
 			clear_actions(life)
 			stand(life)
 		
@@ -1097,6 +1096,12 @@ def walk_path(life):
 		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
 			life['pos'][2] -= 1
 		
+		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
+		for item_uid in _next_chunk['items']:
+			if items.is_blocking(item_uid):
+				activate_item(life, item_uid)
+				return False
+		
 		if life['id'] in LIFE_MAP[life['pos'][0]][life['pos'][1]]:
 			LIFE_MAP[life['pos'][0]][life['pos'][1]].remove(life['id'])
 		
@@ -1112,10 +1117,6 @@ def walk_path(life):
 		
 		life['realpos'] = life['pos'][:]
 		LIFE_MAP[life['pos'][0]][life['pos'][1]].append(life['id'])
-		
-		#if SETTINGS['following'] == life['id']:
-		#	#LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'], LIFE[SETTINGS['following']]['pos'], cython=True)
-		#	gfx.redraw_los()
 		
 		if life['path']:
 			return False
@@ -1339,6 +1340,11 @@ def perform_action(life):
 		
 		delete_action(life,action)
 	
+	elif _action['action'] == 'activate_item':
+		items.activate(ITEMS[_action['item_uid']])
+		
+		delete_action(life, action)
+		
 	elif _action['action'] == 'pickupitem':
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		delete_action(life,action)
@@ -2054,6 +2060,12 @@ def get_item_access_time(life, item):
 	#TODO: Don't breathe this!
 	return numbers.clip(_get_item_access_time(life, item),1,999)/2
 
+def activate_item(life, item_uid):
+	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)
+	
+	if 'player' in life:
+		gfx.message('You begin interacting with %s.' % items.get_name(ITEMS[item_uid]))
+
 def direct_add_item_to_inventory(life, item_uid, container=None):
 	"""Dangerous function. Adds item to inventory, bypassing all limitations normally applied. Returns inventory ID.
 	
@@ -2541,12 +2553,12 @@ def draw_life():
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
-				if not life['pos'] == life['prev_pos'] and LOS_BUFFER[0][_p_y,_p_x]:
-					gfx.refresh_view_position(_p_x, _p_y, 'map')
-			
-			if not LOS_BUFFER[0][_y,_x]:
+			if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
 				continue
+			
+			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
+				if not life['pos'] == life['prev_pos']:
+					gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
 			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
 				if time.time()%.5>.25:
@@ -2664,14 +2676,22 @@ def draw_life_info():
 	
 	Anyway, it'll be rewritten sooner or later :V
 	"""
+	
 	life = LIFE[SETTINGS['following']]
-	_info = []
+	
 	_name_mods = []
-	_holding = get_held_items(life)
 	_bleeding = get_bleeding_limbs(life)
 	_broken = get_broken_limbs(life)
 	_bruised = get_bruised_limbs(life)
 	_cut = get_cut_limbs(life)
+	_stance = life['stance']
+	
+	#Draw positions
+	_min_x = MAP_WINDOW_SIZE[0]+1
+	_holding_position = (_min_x, 2)
+	_action_queue_position = (_min_x+len(_stance)+2, 1)
+	_stance_position = (_min_x, _action_queue_position[1])
+	_health_position = (_min_x, _stance_position[1]+2)
 	
 	if life['asleep']:
 		_name_mods.append('(Asleep)')
@@ -2679,7 +2699,6 @@ def draw_life_info():
 	if not 'player' in life and life['state']:
 		_name_mods.append('(%s)' % life['state'])
 	
-	_name_mods.append(life['stance'].title())
 	_name_mods.append(get_current_chunk(life)['type'])
 	_name_mods.append(str(get_current_chunk(life)['pos']))
 	
@@ -2690,53 +2709,62 @@ def draw_life_info():
 	tcod.console_print_frame(0, MAP_WINDOW_SIZE[0], 0, WINDOW_SIZE[0]-MAP_WINDOW_SIZE[0], WINDOW_SIZE[1]-MESSAGE_WINDOW_SIZE[1])
 	
 	tcod.console_set_default_foreground(0, tcod.white)
-	tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
+	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,0,'%s - %s' % (' '.join(life['name']),' - '.join(_name_mods)))
 	
-	if _holding:
-		_held_item_names = [items.get_name(get_inventory_item(life,item)) for item in _holding]
-		_held_string = language.prettify_string_array(_held_item_names,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Holding %s' % _held_string, 'color': tcod.white})
+	#Items held
+	_holding_string = ''
+	for item in [ITEMS[uid] for uid in get_held_items(life)]:
+		_hand = is_holding(life, item['uid'])
+		
+		for limb in life['body']:
+			if _hand == life['body'][limb]:
+				break
+		
+		tcod.console_set_default_foreground(0, tcod.gray)
+		tcod.console_print(0, len(_holding_string)+_holding_position[0],
+		                   _holding_position[1],
+		                   limb+':')
+		
+		tcod.console_set_default_foreground(0, tcod.white)
+		tcod.console_print(0, len(_holding_string)+_holding_position[0]+len(limb)+2,
+		                   _holding_position[1],
+		                   item['name'])
+		
+		_holding_string = '%s: %s ' % (limb, item['name'])
+	
+	if not _holding_string:
+		tcod.console_set_default_foreground(0, tcod.gray)
+		tcod.console_print(0, _holding_position[0], _holding_position[1], 'Holding nothing.')
+	
+	#Stance
+	tcod.console_set_default_foreground(0, tcod.light_gray)
+	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
+	
+	#Health
+	_health_string = calculate_overall_health(life)
+	tcod.console_print(0, _health_position[0], _health_position[1], 'Health:')
+	
+	if _health_string == 'Fine':
+		tcod.console_set_default_foreground(0, tcod.lightest_green)
 	else:
-		_info.append({'text': 'You aren\'t holding anything.',
-			'color': tcod.Color(125,125,125)})
+		tcod.console_set_default_foreground(0, tcod.lightest_red)
 	
-	if _bleeding:
-		_bleeding_string = language.prettify_string_array(_bleeding,max_length=BLEEDING_STRING_MAX_LENGTH)
-		_info.append({'text': 'Bleeding: %s' % _bleeding_string, 'color': tcod.red})
+	tcod.console_print(0, _health_position[0]+8, _health_position[1], _health_string)
 	
-	if _broken:
-		_broken_string = language.prettify_string_array(_broken,max_length=BLEEDING_STRING_MAX_LENGTH)
-		
-		_info.append({'text': 'Broken: %s' % _broken_string,
-			'color': tcod.red})
+	#Weather
+	tcod.console_set_default_foreground(0, tcod.light_gray)
+	tcod.console_print(0, _health_position[0]+len(_health_string)+9,
+	                   _health_position[1],
+	                   'Weather: %s' % weather.get_weather_status())
 	
-	if _cut:
-		_cut_string = language.prettify_string_array(_cut,max_length=BLEEDING_STRING_MAX_LENGTH)
-		
-		_info.append({'text': 'Cut: %s' % _cut_string,
-			'color': tcod.red})
-	
-	if _bruised:
-		_bruised_string = language.prettify_string_array(_bruised,max_length=BLEEDING_STRING_MAX_LENGTH)
-		
-		_info.append({'text': 'Bruised: %s' % _bruised_string,
-			'color': tcod.red})
-	
-	_i = 1
-	for entry in _info:
-		tcod.console_set_default_foreground(0,entry['color'])
-		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_i,entry['text'])
-		
-		_i += 1
-	
-	_blood_r = numbers.clip(300-int(life['blood']),0,255)
-	_blood_g = numbers.clip(int(life['blood']),0,255)
-	_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
-	_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
-	_hunger_str = get_thirst(life)
-	tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
-	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
-	tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
+	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
+	#_blood_g = numbers.clip(int(life['blood']),0,255)
+	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
+	#_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
+	#_hunger_str = get_thirst(life)
+	#tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
+	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
+	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
 	
 	_longest_state = 7
 	_visible_life = []
@@ -2754,13 +2782,13 @@ def draw_life_info():
 	_i = 5
 	_xmod = _longest_state+3
 	
-	tcod.console_set_default_foreground(0, tcod.light_grey)
-	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
-	
+	#tcod.console_set_default_foreground(0, tcod.light_grey)
+	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
+	#
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		_icon = draw_life_icon(ai)
 		tcod.console_set_default_foreground(0, _icon[1])
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 
 		if ai['dead']:
 			_state = 'dead'
@@ -2772,19 +2800,18 @@ def draw_life_info():
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, _state)
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
 		
 		tcod.console_set_default_foreground(0, tcod.white)
-		#if ai in [context['from'] for context in LIFE[SETTINGS['controlling']]['contexts']]:
-		#	if time.time()%1>=0.5:
-		#		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, 'T')
 		
 		if ai['dead']:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Dead (%s)' % (' '.join(ai['name']), ai['cause_of_death']))
+			continue
 		elif ai['asleep']:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(ai['name']))
+			tcod.console_set_default_foreground(0, tcod.gray)
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, '%s - Asleep' % ' '.join(ai['name']))
 		else:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, ' '.join(ai['name']))
+		
 		_i += 1
 	
 	if LIFE[SETTINGS['controlling']]['recoil']:
@@ -2793,16 +2820,7 @@ def draw_life_info():
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
 	
 	#Drawing the action queue
-	_y_mod = 1
-	_y_start = (MAP_WINDOW_SIZE[1]-1)-SETTINGS['action queue size']
-	
-	if len(life['actions']) > SETTINGS['action queue size']:
-		_queued_actions = 'Queued Actions (+%s)' % (len(life['actions'])-SETTINGS['action queue size'])
-	else:
-		_queued_actions = 'Queued Actions'
-	
 	tcod.console_set_default_foreground(0, tcod.white)
-	tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y_start, _queued_actions)
 	
 	for action in life['actions'][:SETTINGS['action queue size']]:
 		if not action['delay']:
@@ -2819,15 +2837,14 @@ def draw_life_info():
 			
 			if 1 <= i <= len(_name):
 				tcod.console_set_default_foreground(0, tcod.green)
-				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,_name[i-1])
+				tcod.console_print(0, _action_queue_position[0]+i, _action_queue_position[1], _name[i-1])
 			else:
-				tcod.console_print(0,MAP_WINDOW_SIZE[0]+2+i,_y_start+_y_mod,'|')
+				tcod.console_print(0, _action_queue_position[0]+i,_action_queue_position[1], '|')
 		
 		tcod.console_set_default_foreground(0, tcod.white)
-		tcod.console_print(0,MAP_WINDOW_SIZE[0]+1,_y_start+_y_mod,'[')
-		tcod.console_print(0,MAP_WINDOW_SIZE[0]+SETTINGS['progress bar max value']+1,_y_start+_y_mod,']')
-			
-		_y_mod += 1
+		tcod.console_print(0, _action_queue_position[0]-1, _action_queue_position[1], '[')
+		tcod.console_print(0, _action_queue_position[0]-2+SETTINGS['progress bar max value']+1, _action_queue_position[1], ']')
+		break
 
 def is_target_of(life):
 	_targets = []
@@ -2988,6 +3005,12 @@ def calculate_blood(life):
 
 def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
+
+def calculate_overall_health(life):
+	if get_total_pain(life)>4:
+		return 'Aching'
+	
+	return 'Fine'
 
 def get_bleeding_limbs(life):
 	"""Returns list of bleeding limbs."""
@@ -3390,7 +3413,6 @@ def damage_from_item(life, item, damage):
 			memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
-	
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
 	
 	if 'parent' in life['body'][_rand_limb[0]]:

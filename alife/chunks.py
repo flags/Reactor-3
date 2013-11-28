@@ -12,6 +12,17 @@ import numbers
 import random
 import time
 
+def generate_cache():
+	logging.debug('Generating chunk map cache...')
+	for key in CHUNK_MAP_CACHE:
+		del CHUNK_MAP_CACHE[key]
+	
+	for x in range(0, MAP_SIZE[0]):
+		for y in range(0, MAP_SIZE[1]):
+			CHUNK_MAP_CACHE[(x, y)] = get_chunk(get_chunk_key_at((x, y)))
+		
+	logging.debug('Done!')
+
 def get_flag(life, chunk_id, flag):
 	#if not chunk_id in life['known_chunks']:
 	#	logging.warning('ALife \'%s\' does not know about chunk \'%s\'' % (' '.join(life['name']), chunk_id))
@@ -42,6 +53,9 @@ def get_global_flag(chunk_key, flag):
 
 def get_chunk(chunk_key):
 	return maps.get_chunk(chunk_key)
+
+def get_chunk_from_cache(pos):
+	return CHUNK_MAP_CACHE[tuple(pos)[:2]]
 
 def get_chunk_pos(chunk_id, center=False):
 	if center:

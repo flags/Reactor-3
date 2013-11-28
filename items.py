@@ -124,10 +124,16 @@ def initiate_item(name):
 			_flags[flag.split('[')[0]] = scripting.initiate(item, flag)
 		else:
 			_flags[flag] = None
-		
+	
+	item['blocking'] = False
+	
 	if 'CAN_BURN' in _flags:
 		item['burning'] = 0
 		item['burnt'] = False
+	
+	if 'CAN_BLOCK' in _flags:
+		item['blocking'] = True
+		item['on'] = True
 	
 	item['flags'] = _flags
 	item['size'] = [int(c) for c in item['size'].split('x')]
@@ -172,7 +178,6 @@ def create_item(name, position=[0,0,2], item=None):
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
-	item['on'] = False
 	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
@@ -258,6 +263,8 @@ def reload_all_items():
 		else:
 			_back = None
 		
+		add_to_chunk(item)
+		
 		item['color'] = (_fore, _back)
 
 def get_item_from_uid(uid):
@@ -282,8 +289,9 @@ def get_pos(item_uid):
 def get_items_at(position):
 	"""Returns list of all items at a given position."""
 	_items = []
+	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))
 	
-	for _item in ITEMS:
+	for _item in _chunk['items']:
 		item = ITEMS[_item]
 		
 		if is_item_owned(_item):
@@ -344,7 +352,29 @@ def is_item_owned(item_uid):
 	
 	return False
 
-def draw_items():
+def is_blocking(item_uid):
+	return ITEMS[item_uid]['blocking']
+
+def draw_items(view_size=MAP_WINDOW_SIZE):
+	_view = gfx.get_view_by_name('map')
+	
+	for item_uid in LIFE[SETTINGS['following']]['seen_items']:
+		_item = ITEMS[item_uid]
+	
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):
+			continue
+		
+		_d_x = _item['pos'][0]-CAMERA_POS[0]
+		_d_y = _item['pos'][1]-CAMERA_POS[1]
+		
+		gfx.blit_char_to_view(_d_x,
+	        _d_y,
+	        _item['icon'],
+	        (_item['color'][0],
+	         _item['color'][1]),
+	        'map')
+
+def draw_all_items():
 	_view = gfx.get_view_by_name('map')
 	
 	for _item in ITEMS:
@@ -354,19 +384,14 @@ def draw_items():
 			continue
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
-			item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
-			_x = item['pos'][0] - CAMERA_POS[0]
-			_y = item['pos'][1] - CAMERA_POS[1]
-		
-			if not LOS_BUFFER[0][_y,_x]:
-				continue
+			        item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
 			
 			gfx.blit_char_to_view(_x,
-				_y,
-				item['icon'],
-				(item['color'][0],
-			      item['color'][1]),
-				'map')
+				        _y,
+				        item['icon'],
+				        (item['color'][0],
+			              item['color'][1]),
+				        'map')
 
 def update_container_capacity(container_uid):
 	"""Updates the current capacity of container. Returns nothing."""
@@ -424,8 +449,12 @@ def process_event(item, event):
 	
 	elif event == 'stop' and 'ON_STOP' in item['flags']:
 		scripting.execute(item['flags']['ON_STOP'], item_uid=item['uid'])
+	
+	elif event == 'collide' and 'ON_COLLIDE_WITH' in item['flags']:
+		scripting.execute(item['flags']['ON_COLLIDE_WITH'], item_uid=item['uid'])
 
 def activate(item):
+	print item['on'], item['blocking']
 	if item['on']:
 		process_event(item, 'deactivate')
 		item['on'] = False
@@ -535,7 +564,7 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	if item['uid'] in ITEMS:
+	if item['uid'] in ITEMS and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
 		delete_item(item)
 
 def collision_with_solid(item, pos):

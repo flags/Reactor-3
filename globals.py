@@ -13,6 +13,7 @@ PREFAB_WINDOW_SIZE = [40,40]
 X_CUTOUT_WINDOW_SIZE = (15,15)
 Y_CUTOUT_WINDOW_SIZE = (15,15)
 PREFAB_WINDOW_OFFSET = (MAP_WINDOW_SIZE[0]+26,1)
+CURSOR_POS = [WINDOW_SIZE[0]/2, WINDOW_SIZE[1]/2, 2]
 MAP_CURSOR = [0,0]
 PREFAB_CURSOR = [0,0]
 PREFABS = {}
@@ -109,11 +110,11 @@ Y_CUTOUT_RGB_FORE_BUFFER = [[],[],[]]
 X_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 Y_CUTOUT_RGB_BACK_BUFFER = [[],[],[]]
 RGB_LIGHT_BUFFER = [[],[],[]]
-LOS_BUFFER = [[]]
 MAP_CHAR_BUFFER = [[], []]
 PREFAB_CHAR_BUFFER = [[], []]
 X_CUTOUT_CHAR_BUFFER = [[], []]
 Y_CUTOUT_CHAR_BUFFER = [[], []]
+REFRESH_POSITIONS = []
 CONSOLE_HISTORY = []
 CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
@@ -154,6 +155,7 @@ SETTINGS = {'running': True,
 	'paused': False,
 	'camera_track': [0, 0, 0],
 	'last_camera_pos': [-1, -1, -1],
+	'cursor speed': 3,
 	'draw lights': True,
 	'light mesh grid': None,
 	'diffuse light': False,
@@ -180,7 +182,8 @@ SETTINGS = {'running': True,
 	'recording fps': 0,
 	'recording fps temp': 0,
 	'viewid': 1,
-	'active_view': 0}
+	'active_view': 0,
+    'refresh_los': False}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
@@ -194,6 +197,8 @@ LIFE_MAP = []
 ITEMS = {}
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
+ITEM_MAP = []
+CHUNK_MAP_CACHE = {}
 BULLETS = []
 EFFECTS = {}
 EFFECT_MAP = []
@@ -235,6 +240,7 @@ INPUT = {'up':False,
 		'\r':False,
 		'\t':False,
 		'a':False,
+		'A': False,
 		'b':False,
 		'c':False,
 		'C':False,

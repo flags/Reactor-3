@@ -41,12 +41,13 @@ import items
 import life
 import time
 import maps
+import fov
 import smp
 import sys
 
 CYTHON_ENABLED = True
 
-def move_camera(pos,scroll=False):
+def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
 	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
@@ -104,21 +105,14 @@ def main():
 	if SELECTED_TILES[0]:
 		gfx.refresh_view('map')
 	
-	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track']:
-		_sight_distance = (alife.sight.get_vision(LIFE[SETTINGS['following']])/WORLD_INFO['chunk_size'])*(alife.sight.get_vision(LIFE[SETTINGS['following']])/2)
-		
-		LOS_BUFFER[0] = maps._render_los(WORLD_INFO['map'],
-		                                 SETTINGS['camera_track'],
-		                                 _sight_distance,
-		                                 cython=True,
-		                                 life=LIFE[SETTINGS['following']])
+	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
+		_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
+		alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
-	SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
+	maps.render_lights()
 	
-	maps.render_lights(WORLD_INFO['map'])
-	
-	if not SETTINGS['map_slices']:
-		render_map.render_map(WORLD_INFO['map'])
+	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['following']]['fov'])
 	
 	items.draw_items()
 	bullets.draw_bullets()

@@ -106,7 +106,8 @@ def bullet_hit(life, bullet, limb):
 	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
 	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
 	
-	_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
+	if limb in life['body']:
+		_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
 	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
 	_ret_string = own_language(life, _msg)
