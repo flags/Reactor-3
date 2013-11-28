@@ -712,6 +712,7 @@ def handle_input():
 		import weather
 		weather.change_weather()
 		WORLD_INFO['time_scale'] = 12
+		WORLD_INFO['real_time_of_day'] = 1200
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

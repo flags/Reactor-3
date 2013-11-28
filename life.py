@@ -2732,6 +2732,10 @@ def draw_life_info():
 		
 		_holding_string = '%s: %s ' % (limb, item['name'])
 	
+	if not _holding_string:
+		tcod.console_set_default_foreground(0, tcod.gray)
+		tcod.console_print(0, _holding_position[0], _holding_position[1], 'Holding nothing.')
+	
 	#Stance
 	tcod.console_set_default_foreground(0, tcod.light_gray)
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
@@ -2778,7 +2782,7 @@ def draw_life_info():
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		_icon = draw_life_icon(ai)
 		tcod.console_set_default_foreground(0, _icon[1])
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+_i, _icon[0])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 
 		if ai['dead']:
 			_state = 'dead'
@@ -2790,7 +2794,7 @@ def draw_life_info():
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, len(_info)+_i, _state)
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
 		
 		tcod.console_set_default_foreground(0, tcod.white)
 		
@@ -2798,9 +2802,9 @@ def draw_life_info():
 			continue
 		elif ai['asleep']:
 			tcod.console_set_default_foreground(0, tcod.gray)
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, '%s - Asleep' % ' '.join(ai['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, '%s - Asleep' % ' '.join(ai['name']))
 		else:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, len(_info)+_i, ' '.join(ai['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, ' '.join(ai['name']))
 		
 		_i += 1
 	

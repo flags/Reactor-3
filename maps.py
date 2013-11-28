@@ -252,26 +252,39 @@ def reset_lights(size=MAP_WINDOW_SIZE):
 	RGB_LIGHT_BUFFER[0] = numpy.zeros((size[1], size[0]))
 	RGB_LIGHT_BUFFER[1] = numpy.zeros((size[1], size[0]))
 	RGB_LIGHT_BUFFER[2] = numpy.zeros((size[1], size[0]))
+	
+	while REFRESH_POSITIONS:
+		_pos = REFRESH_POSITIONS.pop()
+		gfx.refresh_view_position(_pos[0], _pos[1], 'map')
 
 def render_lights(size=MAP_WINDOW_SIZE):
 	if not SETTINGS['draw lights']:
 		return False
 
 	reset_lights(size=size)
-	SUN = weather.get_lighting()
+	_weather_light = weather.get_lighting()
 	
 	#Not entirely my code. Made some changes to someone's code from libtcod's Python forum.
-	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], SUN[0])
-	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], SUN[1])
-	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], SUN[2])
+	RGB_LIGHT_BUFFER[0] = numpy.add(RGB_LIGHT_BUFFER[0], _weather_light[0])
+	RGB_LIGHT_BUFFER[1] = numpy.add(RGB_LIGHT_BUFFER[1], _weather_light[1])
+	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], _weather_light[2])
 	(x, y) = SETTINGS['light mesh grid']
+	
+	for i in range(0, 15):
+		_x = random.randint(0, size[0]-1)
+		_y = random.randint(0, size[1]-1)
+		
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
+			continue
+		
+		REFRESH_POSITIONS.append((_x, _y))
+		
+		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:
 		_x_range = light['pos'][0]-CAMERA_POS[0]
 		_y_range = light['pos'][1]-CAMERA_POS[1]
-		
-		#print _x_range, _y_range
 		
 		if _x_range <= -20 or _x_range>=size[0]+20:
 			continue

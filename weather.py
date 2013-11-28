@@ -9,7 +9,7 @@ def change_weather():
 	_weather['events'] = 7
 	_weather['colors'] = []
 	_weather['color_indexes'] = []
-	_weather['light_types'] = ['night', 'sunrise', 'clear', 'clear', 'clear', 'sunset', 'night']
+	_weather['light_types'] = ['night', 'sunrise', 'clear', 'overcast', 'overcast', 'sunset', 'night']
 	
 	_colors = []
 	_indexes = []
@@ -20,15 +20,15 @@ def change_weather():
 		
 		if light_type == 'night':
 			#_weather['colors'].append((28, 0, 12))
-			_weather['colors'].append((255, 165, 0))
+			_weather['colors'].append({'colors': (255, 165, 0), 'type': light_type})
 		elif light_type == 'overcast':
-			_weather['colors'].append((0, 12, 12))
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
 		elif light_type == 'clear':
-			_weather['colors'].append((0, 0, 0))
+			_weather['colors'].append({'colors': (0, 0, 0), 'type': light_type})
 		elif light_type == 'sunrise':
-			_weather['colors'].append((19, 86, 100))
+			_weather['colors'].append({'colors': (19, 86, 100), 'type': light_type})
 		elif light_type == 'sunset':
-			_weather['colors'].append((19, 50, 100))
+			_weather['colors'].append({'colors': (19, 50, 100), 'type': light_type})
 	
 	create_light_map(_weather)
 	
@@ -40,4 +40,4 @@ def get_lighting():
 	return WORLD_INFO['weather']['light_map'][_time]
 
 def create_light_map(weather):
-	weather['light_map'] = tcod.color_gen_map([tcod.Color(c[0], c[1], c[2]) for c in weather['colors']], weather['color_indexes'])
+	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])
