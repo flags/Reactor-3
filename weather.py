@@ -15,7 +15,7 @@ def change_weather():
 	_weather['events'] = 7
 	_weather['colors'] = []
 	_weather['color_indexes'] = []
-	_weather['light_types'] = ['night', 'sunrise', 'clear', 'overcast', 'overcast', 'sunset', 'night']
+	_weather['light_types'] = ['night', 'sunrise', 'clear', 'overcast', 'overcast_rain', 'sunset', 'night']
 	
 	_colors = []
 	_indexes = []
@@ -28,6 +28,10 @@ def change_weather():
 			#_weather['colors'].append((28, 0, 12))
 			_weather['colors'].append({'colors': (255, 165, 0), 'type': light_type})
 		elif light_type == 'overcast':
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
+		elif light_type == 'overcast_rain':
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
+		elif light_type == 'overcast_thunderstorm':
 			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
 		elif light_type == 'clear':
 			_weather['colors'].append({'colors': (0, 0, 0), 'type': light_type})
@@ -75,3 +79,9 @@ def rain(size):
 		REFRESH_POSITIONS.append((_x, _y))
 		
 		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
+	
+	if not random.randint(0, 200):
+		RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0].clip(0, 0)
+		RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1].clip(0, 0)
+		RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2].clip(0, 0)
+	
