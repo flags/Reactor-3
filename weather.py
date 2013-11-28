@@ -26,19 +26,19 @@ def change_weather():
 		
 		if light_type == 'night':
 			#_weather['colors'].append((28, 0, 12))
-			_weather['colors'].append({'colors': (255, 165, 0), 'type': light_type})
+			_weather['colors'].append({'colors': (255, 165, 0), 'type': light_type, 'effects': []})
 		elif light_type == 'overcast':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': []})
 		elif light_type == 'overcast_rain':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining']})
 		elif light_type == 'overcast_thunderstorm':
-			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type})
+			_weather['colors'].append({'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining', 'lightning']})
 		elif light_type == 'clear':
-			_weather['colors'].append({'colors': (0, 0, 0), 'type': light_type})
+			_weather['colors'].append({'colors': (0, 0, 0), 'type': light_type, 'effects': []})
 		elif light_type == 'sunrise':
-			_weather['colors'].append({'colors': (19, 86, 100), 'type': light_type})
+			_weather['colors'].append({'colors': (19, 86, 100), 'type': light_type, 'effects': []})
 		elif light_type == 'sunset':
-			_weather['colors'].append({'colors': (19, 50, 100), 'type': light_type})
+			_weather['colors'].append({'colors': (19, 50, 100), 'type': light_type, 'effects': []})
 	
 	create_light_map(_weather)
 	
@@ -56,10 +56,19 @@ def generate_effects(size):
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
 	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors']))
 	
-	if WORLD_INFO['weather']['colors'][_current_weather]['type'] == 'overcast':
+	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather]['effects']:
 		rain(size)
+	
+	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather]['effects'] and not random.randint(0, 200):
+		RGB_LIGHT_BUFFER[0] *= 0
+		RGB_LIGHT_BUFFER[1] *= 0
+		RGB_LIGHT_BUFFER[2] *= 0
 
 def rain(size):
+	#print (WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors'])) *(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	print WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']) *(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	#print WORLD_INFO['real_time_of_day']-WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors'])
 	for i in range(0, 15):
 		_x = random.randint(0, size[0]-1)
 		_y = random.randint(0, size[1]-1)
@@ -79,9 +88,4 @@ def rain(size):
 		REFRESH_POSITIONS.append((_x, _y))
 		
 		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
-	
-	if not random.randint(0, 200):
-		RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0].clip(0, 0)
-		RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1].clip(0, 0)
-		RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2].clip(0, 0)
 	
