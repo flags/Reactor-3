@@ -257,7 +257,7 @@ def reset_lights(size=MAP_WINDOW_SIZE):
 		_pos = REFRESH_POSITIONS.pop()
 		gfx.refresh_view_position(_pos[0], _pos[1], 'map')
 
-def render_lights(size=MAP_WINDOW_SIZE):
+def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 	if not SETTINGS['draw lights']:
 		return False
 
@@ -270,7 +270,8 @@ def render_lights(size=MAP_WINDOW_SIZE):
 	RGB_LIGHT_BUFFER[2] = numpy.add(RGB_LIGHT_BUFFER[2], _weather_light[2])
 	(x, y) = SETTINGS['light mesh grid']
 	
-	weather.generate_effects(size)
+	if show_weather:
+		weather.generate_effects(size)
 
 	_remove_lights = []
 	for light in WORLD_INFO['lights']:

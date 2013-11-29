@@ -1590,7 +1590,7 @@ def perform_action(life):
 		#	5001,
 		#	delay=weapons.get_recoil(life))
 		
-		delete_action(life,action)
+		delete_action(life, action)
 	
 	elif _action['action'] == 'bite':
 		damage.bite(life, _action['target'], _action['limb'])
@@ -3010,7 +3010,7 @@ def calculate_overall_health(life):
 	_string = []
 	
 	if get_total_pain(life)>4:
-		_string.append(Aching)
+		_string.append('Aching')
 	
 	if not get_hunger_status(life) == 'Satiated':
 		_string.append('Hungry')

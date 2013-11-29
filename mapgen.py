@@ -646,6 +646,21 @@ def place_hills(map_gen):
 			for z in range(0, int(_noise_map[y, x])):
 				create_tile(map_gen, x, y, 2+z, random.choice(tiles.GRASS_TILES))
 
+def place_bushes(map_gen):
+	_size = (map_gen['size'][0], map_gen['size'][1], 9)
+	_noise_map = generate_noise_map(_size)
+	
+	for y in range(0, map_gen['size'][1]-1):
+		for x in range(0, map_gen['size'][0]-1):
+			_chunk = map_gen['chunk_map']['%s,%s' % ((x/map_gen['chunk_size'])*map_gen['chunk_size'],
+			                                (y/map_gen['chunk_size'])*map_gen['chunk_size'])]
+			
+			if not map_gen['map'][x][y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+				continue
+			
+			if random.randint(0, _noise_map[x, y])>3:
+				create_tile(map_gen, x, y, 2, random.choice(tiles.BUSH_TILES))
+
 def create_tree(map_gen, position, height):
 	_trunk = random.choice(tiles.TREE_STUMPS)
 	
@@ -1719,6 +1734,8 @@ def decorate_world(map_gen):
 			continue
 		
 		create_road(map_gen, chunk_key, size=0, ground_tiles=tiles.CONCRETE_FLOOR_TILES)
+	
+	place_bushes(map_gen)
 	
 	#backyards
 	for town in map_gen['refs']['towns']:

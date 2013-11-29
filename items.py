@@ -179,6 +179,9 @@ def create_item(name, position=[0,0,2], item=None):
 	item['owner'] = None
 	item['aim_at_limb'] = None
 	
+	if not 'blocking' in item:
+		item['blocking'] = False
+	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
 	
@@ -385,6 +388,9 @@ def draw_all_items():
 		
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
 			        item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
+			
+			_x = item['pos'][0]-CAMERA_POS[0]
+			_y = item['pos'][1]-CAMERA_POS[1]
 			
 			gfx.blit_char_to_view(_x,
 				        _y,

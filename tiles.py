@@ -230,6 +230,16 @@ LEAF_2 = {'id': 'leaf_2',
             'translucent': True,
             'not_solid': True}
 
+BUSH_1 = {'id': 'bush_1',
+            'icon': '\'',
+            'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
+            'burnable': True}
+
+BUSH_2 = {'id': 'bush_2',
+            'icon': '`',
+            'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
+            'burnable': True}
+
 ROOF_DARK = {'id': 'roof_dark',
             'icon': '^',
             'color': (tcod.dark_sepia, tcod.darker_sepia),
@@ -344,6 +354,9 @@ WOOD_TILES = [WOOD_1,
 LEAF_TILES = [LEAF_1,
               LEAF_2]
 
+BUSH_TILES = [BUSH_1,
+              BUSH_2]
+
 ROOF_TILES = [ROOF_BRIGHTER,
               ROOF_BRIGHT,
               ROOF_DARK,
@@ -383,6 +396,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(FIELD_TILES)
 	TEMP_TILES.extend(BLUE_CARPET_TILES)
 	TEMP_TILES.extend(SEA_CARPET_TILES)
+	TEMP_TILES.extend(BUSH_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

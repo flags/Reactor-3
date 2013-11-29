@@ -347,6 +347,9 @@ def get_target_to_follow(life):
 		_score = 0
 		_known_target = brain.knows_alife_by_id(life, target_id)
 		
+		if not _known_target['last_seen_at']:
+			continue
+		
 		if _known_target['escaped'] == 2:
 			continue
 		
