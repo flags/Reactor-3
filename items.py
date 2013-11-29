@@ -460,7 +460,6 @@ def process_event(item, event):
 		scripting.execute(item['flags']['ON_COLLIDE_WITH'], item_uid=item['uid'])
 
 def activate(item):
-	print item['on'], item['blocking']
 	if item['on']:
 		process_event(item, 'deactivate')
 		item['on'] = False

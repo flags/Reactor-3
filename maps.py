@@ -237,7 +237,8 @@ def is_solid(pos):
 	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
 		return False
 	
-	if 'not_solid' in tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]):
+	_raw_tile = tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]])
+	if 'not_solid' in _raw_tile and _raw_tile['not_solid']:
 		return False
 	
 	return True

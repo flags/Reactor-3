@@ -35,7 +35,7 @@ WORLD_INFO = {'map': [],
 	'sub_ticks': 0,
 	'max_sub_ticks': 5,
 	'tps': 0,
-	'tps_time': 0,
+	'last_update_time': 0,
 	'life_density': 'Sparse',
 	'life_spawn_interval': [0, (0, 0)],
 	'wildlife_spawn_interval': [0, (0, 0)],
@@ -93,8 +93,6 @@ SUN_BRIGHTNESS = [100]
 FPS = 1000
 FPS_TERRAFORM = 100
 LOW_FPS = 15
-UPS = 1
-TPS = 30
 FONT = 'terminal8x8_gs_as_incol.png'
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]

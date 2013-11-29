@@ -43,23 +43,23 @@ def can_tick(check=True):
 		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
 	
-	if melee.process_fights():
-		return False
-	
-	if not check:
-		WORLD_INFO['tps'] += 1
-		
-		if WORLD_INFO['ticks']-WORLD_INFO['tps_time']>=30:
+	if not check: 
+		if time.time()-WORLD_INFO['last_update_time']<1:
+			if WORLD_INFO['tps']<30:
+				WORLD_INFO['tps'] += 1
+			else:
+				return False
+		else:
+			WORLD_INFO['last_update_time'] = time.time()
 			WORLD_INFO['tps'] = 0
-			WORLD_INFO['tps_time'] = WORLD_INFO['ticks']
-	
-	if WORLD_INFO['tps'] > TPS:
-		return False
 	
 	return True
 
 def tick_all_objects():
 	if not can_tick(check=False):
+		return False
+	
+	if melee.process_fights():
 		return False
 	
 	effects.calculate_all_effects()
