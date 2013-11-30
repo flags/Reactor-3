@@ -308,7 +308,7 @@ def generate_wildlife():
 def generate_life():
 	_spawn = get_spawn_point()
 	
-	if len(WORLD_INFO['groups'])>=2:
+	if len(WORLD_INFO['groups'])>=3:
 		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
 		
@@ -396,6 +396,8 @@ def create_region_spawns():
 		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
-		
+	for i in range(1):
+		generate_life()
+	
 	for i in range(1):
 		generate_wildlife()

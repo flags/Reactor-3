@@ -352,11 +352,20 @@ def understand(life):
 	if SETTINGS['controlling']:
 		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
 		if _dist_to_player < 100:
-			life['think_rate_max'] = 1
+			if life['think_rate_max']>=30:
+				if _dist_to_player < 90:
+					life['think_rate_max'] = 1
+					logging.debug('[Agent] %s brought online (Reason: Near viewer)' % ' '.join(life['name']))
+				
+			else:
+				life['think_rate_max'] = 1
 		else:
+			if life['think_rate_max']<30:
+				logging.debug('[Agent] %s went offline (Reason: Away from viewer)' % ' '.join(life['name']))
+			
 			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
 	else:
-		life['think_rate_max'] = 1
+		life['think_rate_max'] = 5
 	
 	life['_last_module'] = _modules.keys()[0]
 	

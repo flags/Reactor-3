@@ -105,6 +105,7 @@ def main():
 	_played_moved = False
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
+		gfx.title('Sleeping: %s' % LIFE[SETTINGS['controlling']]['asleep'])
 		logic.tick_all_objects()
 		_played_moved = True
 	

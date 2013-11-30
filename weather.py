@@ -15,7 +15,13 @@ def change_weather():
 	_weather['events'] = 6
 	_weather['colors'] = []
 	_weather['color_indexes'] = []
-	_weather['light_types'] = ['night', 'sunrise', 'overcast_thunderstorm', 'overcast_thunderstorm', 'overcast_rain', 'sunset', 'night']
+	_weather['light_types'] = ['dark_night',
+	                           'sunrise',
+	                           'overcast_thunderstorm',
+	                           'overcast_thunderstorm',
+	                           'overcast_rain',
+	                           'overcast',
+	                           'dark_night_rain']
 	
 	_colors = []
 	_indexes = []
@@ -24,21 +30,31 @@ def change_weather():
 		_weather['color_indexes'].append((WORLD_INFO['length_of_day']/_weather['events'])*_i)
 		_i += 1
 		
-		if light_type == 'night':
-			#_weather['colors'].append((28, 0, 12))
-			_weather['colors'].append({'name': 'Clear', 'colors': (255, 165, 0), 'type': light_type, 'effects': []})
+		if 'dark_night' in light_type:
+			_event = {'name': 'Dark', 'colors': (255, 165, 25), 'type': light_type}
+		elif 'night' in light_type:
+			_event = {'name': 'Clear', 'colors': (255, 165, 0), 'type': light_type}
 		elif light_type == 'overcast':
-			_weather['colors'].append({'name': 'Overcast', 'colors': (60, 60, 60), 'type': light_type, 'effects': []})
+			_event = {'name': 'Overcast', 'colors': (60, 60, 60), 'type': light_type}
 		elif light_type == 'overcast_rain':
-			_weather['colors'].append({'name': 'Overcast (Rain)', 'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining']})
+			_event = {'name': 'Overcast (Rain)', 'colors': (60, 60, 60), 'type': light_type}
 		elif light_type == 'overcast_thunderstorm':
-			_weather['colors'].append({'name': 'Overcast (Thunderstorm)', 'colors': (60, 60, 60), 'type': light_type, 'effects': ['raining', 'lightning']})
+			_event = {'name': 'Overcast (Thunderstorm)', 'colors': (60, 60, 60), 'type': light_type}
 		elif light_type == 'clear':
-			_weather['colors'].append({'name': 'Clear', 'colors': (0, 0, 0), 'type': light_type, 'effects': []})
+			_event = {'name': 'Clear', 'colors': (0, 0, 0), 'type': light_type}
 		elif light_type == 'sunrise':
-			_weather['colors'].append({'name': 'Clear', 'colors': (19, 86, 100), 'type': light_type, 'effects': []})
-		elif light_type == 'sunset':
-			_weather['colors'].append({'name': 'Clear', 'colors': (19, 50, 100), 'type': light_type, 'effects': []})
+			_event = {'name': 'Clear', 'colors': (19, 86, 100), 'type': light_type}
+		elif 'sunset' in light_type:
+			_event = {'name': 'Clear', 'colors': (19, 50, 100), 'type': light_type}
+		
+		_event['effects'] = []
+		if 'thunderstorm' in light_type:
+			_event['effects'].extend(['raining', 'lightning'])
+		
+		if 'rain' in light_type:
+			_event['effects'].append('raining')
+		
+		_weather['colors'].append(_event)
 	
 	create_light_map(_weather)
 	
