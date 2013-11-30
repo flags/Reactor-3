@@ -26,6 +26,7 @@ import snapshots
 import judgement
 import survival
 import movement
+import numbers
 import memory
 import speech
 import combat
@@ -348,19 +349,14 @@ def understand(life):
 	for module in get_constant_modules(life):
 		module.tick(life, [], [], [], [], [])
 	
-	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
-		life['think_rate'] = 0
-	elif life['state_tier'] <= TIER_COMBAT and life['think_rate_max'] == LIFE_THINK_RATE:
-		if life['think_rate'] > 2:
-			life['think_rate'] = 2
-		
-		life['think_rate_max'] = 2
-	elif life['state'] in ['discovering', 'following']:
-		life['think_rate_max'] = 6
-	elif life['state'] == 'idle':
-		life['think_rate_max'] = 30
+	if SETTINGS['controlling']:
+		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
+		if _dist_to_player < 100:
+			life['think_rate_max'] = 1
+		else:
+			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
 	else:
-		life['think_rate_max'] = LIFE_THINK_RATE
+		life['think_rate_max'] = 1
 	
 	life['_last_module'] = _modules.keys()[0]
 	

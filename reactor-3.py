@@ -107,9 +107,6 @@ def main():
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
 		logic.tick_all_objects()
 		_played_moved = True
-		
-		#gfx.refresh_view('map')
-		#break
 	
 	if not _played_moved:
 		logic.tick_all_objects()

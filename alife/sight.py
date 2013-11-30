@@ -23,7 +23,7 @@ def look(life):
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
 	
-	if life['think_rate'] % numbers.clip(life['think_rate_max'], 0, 6) and not 'player' in life:
+	if life['think_rate'] % 3 and not 'player' in life:
 		return False
 	
 	if not 'CAN_SEE' in life['life_flags']:

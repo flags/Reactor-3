@@ -148,6 +148,23 @@ too real to the point that the player feels annoyed for frustrated.
 Some of these elements are influenced by the world (and will be marked as such)
 
 	* General health: The combination of each limbs' status.
-	* 
 
 The proposed set of variables
+
+### The Behavior of Life
+
+Terraform features an extensive set of AI-related functions. Over the past year
+they have been painstakingly written and rewritten to work in conjunction with
+the various flaws described in "Addressing Big Data." One of the shortcuts taken
+to improve the current state-based implementation was to limit the amount of
+times ALife reconsider their current state. This solution exposes the following
+issues:
+
+	* Reaction times are slow if the ALife's think rate is too high.
+	* Lower think rates cause idle ALife to reconsider all possible states more
+		often than needed. Not doing so means ALife take more time to become
+		active again.
+
+A better system, I've found, is to change the entity's think rate based on
+their distance from the player. This puts the ALife on relatively equal footing
+while saving CPU time
