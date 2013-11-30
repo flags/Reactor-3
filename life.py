@@ -1091,9 +1091,9 @@ def walk_path(life):
 		_nfx = _pos[0]
 		_nfy = _pos[1]
 		
-		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
+		if maps.is_solid((_nfx, _nfy, life['pos'][2]+1)) and not maps.is_solid((_nfx, _nfy, life['pos'][2]+2)):
 			life['pos'][2] += 1
-		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
+		elif not maps.is_solid((_nfx, _nfy, life['pos'][2])) and maps.is_solid((_nfx, _nfy, life['pos'][2]-1)):
 			life['pos'][2] -= 1
 		
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
