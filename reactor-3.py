@@ -138,7 +138,6 @@ def main():
 	
 	menus.align_menus()
 	menus.draw_menus()
-	logic.draw_encounter()
 	
 	gfx.draw_status_line()
 	gfx.draw_console()
