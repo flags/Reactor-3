@@ -182,7 +182,7 @@ def create_function_map():
 		'update_location_of_target_from_target': speech.update_location_of_target_from_target,
 		'ping': lambda life: logging.debug('%s: Ping!' % ' '.join(life['name'])),
 		'wander': lambda life: alife_discover.tick(life),
-		'pick_up_needed_items': lambda life: alife_needs.tick(life),
+		'pick_up_item': lambda life: alife_needs.tick(life),
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,

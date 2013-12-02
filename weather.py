@@ -81,9 +81,13 @@ def generate_effects(size):
 		rain(size)
 	
 	if 'lightning' in WORLD_INFO['weather']['colors'][_current_weather]['effects'] and not random.randint(0, 200):
-		RGB_LIGHT_BUFFER[0] *= 0
-		RGB_LIGHT_BUFFER[1] *= 0
-		RGB_LIGHT_BUFFER[2] *= 0
+		RGB_LIGHT_BUFFER[0] -= 155
+		RGB_LIGHT_BUFFER[1] -= 155
+		RGB_LIGHT_BUFFER[2] -= 155
+		
+		RGB_LIGHT_BUFFER[0] = RGB_LIGHT_BUFFER[0].clip(0, 255)
+		RGB_LIGHT_BUFFER[1] = RGB_LIGHT_BUFFER[1].clip(0, 255)
+		RGB_LIGHT_BUFFER[2] = RGB_LIGHT_BUFFER[2].clip(0, 255)
 
 def rain(size):
 	_running_time = WORLD_INFO['real_time_of_day'] - WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))*(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
