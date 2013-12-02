@@ -120,6 +120,7 @@ def get_max_speed(life):
 def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
+	life['goals'] = alife.planner.parse_goals(life)
 
 def initiate_needs(life):
 	"""Creates innate needs for `life`."""
@@ -552,16 +553,16 @@ def show_debug_info(life):
 def get_engage_distance(life):
 	return 0
 
-def change_state(life, state, tier):
-	if life['state'] == state:
+def change_goal(life, goal, tier):
+	if life['state'] == goal:
 		return False
 	
-	logging.debug('%s state change: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], state, tier))
-	life['state'] = state
+	logging.debug('%s set new goal: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], goal, tier))
+	life['state'] = goal
 	life['state_flags'] = {}
 	life['state_tier'] = tier
 	
-	life['states'].append(state)
+	life['states'].append(goal)
 	if len(life['states'])>SETTINGS['state history size']:
 		life['states'].pop(0)
 	

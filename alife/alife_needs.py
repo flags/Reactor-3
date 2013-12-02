@@ -51,9 +51,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 
 	return RETURN_VALUE
 
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+def tick(life):
 	if life['actions']:
 		return True
+
+	print 'looting'
 
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	

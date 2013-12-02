@@ -208,3 +208,32 @@ Actions or Goals.
     `alife_search` -> `goal_search`
     `alife_shelter` -> `goal_shelter`
     `alife_talk` -> `goal_talk`, `action_talk`
+
+
+Task: Discovering
+Tier: RELAXED
+Desire: has_non_relaxed_goal
+Action Set:
+	wander (inf.)
+		Cond: Nothing.
+
+Task: Looting
+Tier: RELAXED
+Desire: has_item_group
+Action Set:
+	wander (inf.)
+		Cond: None
+	pick_up_item (>=1)
+		Cond: Sees item
+
+Task: Find Shelter
+Tier: RELAXED
+Desire: has_shelter
+Action Set:
+	claim_shelter (1)
+		Cond: Sees shelter
+
+### Issues with Current Implementation
+
+Currently, only the cost of the action that directly solves the goal desire is
+taken into account. In the future, A* or another seach algo. should be used.

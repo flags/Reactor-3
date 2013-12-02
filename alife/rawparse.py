@@ -2,10 +2,14 @@ from globals import *
 
 import life as lfe
 
+import alife_discover
+import alife_needs
+
 import references
 import judgement
 import survival
 import movement
+import logging
 import numbers
 import memory
 import groups
@@ -96,6 +100,7 @@ def create_function_map():
 		'has_needs_to_meet': survival.has_needs_to_meet,
 		'has_unmet_needs': survival.has_unmet_needs,
 		'has_needs_to_satisfy': survival.has_needs_to_satisfy,
+		'has_needs': lambda life: survival.has_needs_to_meet(life) or survival.has_unmet_needs(life) or survival.has_needs_to_satisfy(life),
 		'has_number_of_items_matching': lambda life, matching, amount: len(lfe.get_all_inventory_items(life, matches=matching))>=amount,
 		'flag_item_matching': lambda life, matching, flag: lfe.get_all_inventory_items(life, matches=[matching]) and brain.flag_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0], flag)>0,
 		'drop_item_matching': lambda life, matching: lfe.get_all_inventory_items(life, matches=[matching]) and lfe.drop_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0]['uid'])>0,
@@ -175,6 +180,9 @@ def create_function_map():
 		'mark_target_as_not_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready', value=False),
 		'saw_target_recently': lambda life, **kwargs: brain.knows_alife_by_id(life, kwargs['target_id']) and -1<brain.knows_alife_by_id(life, kwargs['target_id'])['last_seen_time']<6000,
 		'update_location_of_target_from_target': speech.update_location_of_target_from_target,
+		'ping': lambda life: logging.debug('%s: Ping!' % ' '.join(life['name'])),
+		'wander': lambda life: alife_discover.tick(life),
+		'pick_up_needed_items': lambda life: alife_needs.tick(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
@@ -319,6 +327,15 @@ def raw_section_has_identifier(life, section, identifier):
 		return True
 	
 	return False
+
+def get_raw_sections(life):
+	return life['raw']['sections'].keys()
+
+def get_raw_identifiers(life, section):
+	return life['raw']['sections'][section].keys()
+
+def get_arguments(life, section, identifier):
+	return life['raw']['sections'][section][identifier]
 
 def translate(function):
 	if not function in FUNCTION_MAP:
