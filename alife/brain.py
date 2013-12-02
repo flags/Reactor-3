@@ -4,8 +4,6 @@ import life as lfe
 
 import alife_manage_targets
 import alife_manage_items
-import alife_visit_camp
-import alife_find_camp
 import alife_surrender
 import alife_discover
 import alife_explore

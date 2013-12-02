@@ -167,4 +167,44 @@ issues:
 
 A better system, I've found, is to change the entity's think rate based on
 their distance from the player. This puts the ALife on relatively equal footing
-while saving CPU time
+while saving CPU time.
+
+### The (Finite State) Machine
+
+The current implementation of ALife used a finite state machine, where roughly
+15-20 states are evaluated at any given time. This way of handling their logic
+is extremely easy to work with, until large amounts of complexity come into
+play, after which the system begins to crumble under the load.
+
+A "planning" phase was tossed around, in which the ALife would plan which states
+they'd enter in the next X ticks, after which their think rate would be lowered
+until coming into contact with the player or another enemy.
+
+After some research, GOAP (Goal-Oriented Action Planning) was brought to my
+attention. In GOAP, there are three core ideas:
+
+* The Goal: A condition (or set of conditions) the AI desires. For example,
+	"Kill Target" or "Eat"
+* Actions: AKA states, like "Reload," "Shoot," or "Walk." Each Action must
+	satisfy their preconditions in order to execute. These can take a specified
+	or infinite amount of time.
+* The Plan: A series of Actions that satisfy the Goal.
+
+With GOAP, a large amount of the work needed to get a state working now can be
+eliminated. To do this, the existing ALife states must be translated to either
+Actions or Goals.
+
+#### Moving to GOAP
+
+    `alife_combat` -> `action_ranged` and `action_melee`
+    `alife_cover` -> `goal_cover`
+    `alife_discover` -> `goal_discover`
+    `alife_explore` -> RM
+    `alife_follow` -> `goal_follow`
+    `alife_guard` -> `goal_guard`
+    `alife_hidden` -> MERGE INTO `goal_cover`
+    `alife_hide` -> MERGE INTO `goal_cover`
+    `alife_needs` -> `goal_needs` -> `action_eat`, `action_sleep` etc
+    `alife_search` -> `goal_search`
+    `alife_shelter` -> `goal_shelter`
+    `alife_talk` -> `goal_talk`, `action_talk`
