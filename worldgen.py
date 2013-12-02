@@ -392,9 +392,9 @@ def create_player():
 	
 def create_region_spawns():
 	#Step 1: Army Outpost
-	
-	for outpost in WORLD_INFO['refs']['outposts']:
-		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+	pass
+	#for outpost in WORLD_INFO['refs']['outposts']:
+	#	spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
 	#for i in range(1):

@@ -120,7 +120,10 @@ def get_max_speed(life):
 def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
-	life['goals'] = alife.planner.parse_goals(life)
+	
+	life['goap_goals'] = {}
+	life['goap_actions'] = {}
+	alife.planner.parse_goap(life)
 
 def initiate_needs(life):
 	"""Creates innate needs for `life`."""
@@ -153,6 +156,8 @@ def initiate_life(name):
 	initiate_raw(life)
 	#except:
 	#	print 'FIXME: Exception on no .dat for life'
+	
+	print 'MOVE GOAP INIT. HERE' * 50
 	
 	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
@@ -443,7 +448,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['group'] = None
 	_life['needs'] = {}
 	_life['need_id'] = 1
-	_life['goals'] = {}
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)

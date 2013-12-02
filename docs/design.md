@@ -210,12 +210,27 @@ Actions or Goals.
     `alife_talk` -> `goal_talk`, `action_talk`
 
 
-Task: Discovering
+**Note**: "Desire" should be read as "Condition to satisfy."
+
+##### Goals
+
+Goal: Discovering
 Tier: RELAXED
-Desire: has_non_relaxed_goal
-Action Set:
-	wander (inf.)
-		Cond: Nothing.
+Desire: has_non_idle_task
+
+Goal: Looting
+Tier: SURVIVAL
+Desire: has_needs
+
+##### Actions
+
+Action: Wander
+Satisfies: has_non_idle_task
+Timing: Infinite
+
+Action: Pick up known item
+Satisfies: has_needs
+Timing
 
 Task: Looting
 Tier: RELAXED
