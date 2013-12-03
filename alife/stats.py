@@ -432,8 +432,8 @@ def is_threat_too_close(life):
 	if _knows['last_seen_time'] >= 100:
 		return False
 	
-	#TODO: Unhardcode
-	if numbers.distance(life['pos'], _knows['last_seen_at'])<15:
+	_danger_close_range = int(lfe.execute_raw(life, 'safety', 'danger_close_range'))
+	if numbers.distance(life['pos'], _knows['last_seen_at'])<_danger_close_range:
 		return True
 	
 	return False

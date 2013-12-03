@@ -8,6 +8,7 @@ import alife_shelter
 import alife_combat
 import alife_cover
 import alife_needs
+import alife_hide
 
 import references
 import judgement
@@ -84,7 +85,7 @@ def create_function_map():
 		'find_target': movement.find_target,
 		'can_see_target': sight.can_see_target,
 		'has_threats': lambda life: len(judgement.get_threats(life, recent_only=True, ignore_escaped=2))>0,
-		'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
+		'has_visible_threat': lambda life: len(judgement.get_visible_threats(life))>0,
 		'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
 		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, recent_only=True, limit_distance=sight.get_vision(life)+10))>0,
 		'danger_close': stats.is_threat_too_close,
@@ -195,6 +196,7 @@ def create_function_map():
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
 		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),
+		'hide': lambda life: alife_hide.tick(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
