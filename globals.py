@@ -73,6 +73,7 @@ STATE_ICONS = {}
 #States
 TIER_RELAXED = 1
 TIER_SURVIVAL = 2
+TIER_URGENT = 3
 
 #Group stages
 STAGE_FORMING = 1

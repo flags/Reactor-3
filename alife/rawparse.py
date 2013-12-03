@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import alife_discover
+import alife_shelter
 import alife_needs
 
 import references
@@ -57,6 +58,7 @@ def create_function_map():
 		'distance_to_pos': stats.distance_from_pos_to_pos,
 		'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
 		'is_idle': lambda life: life['state'] == 'idle',
+		'is_relaxed': lambda life: life['state_tier'] == TIER_RELAXED,
 		'is_child_of': stats.is_child_of,
 		'is_parent_of': stats.is_parent_of,
 		'has_parent': stats.has_parent,
@@ -89,6 +91,7 @@ def create_function_map():
 		'announce_to_group': groups.announce,
 		'is_in_chunk': chunks.is_in_chunk,
 		'is_in_shelter': lfe.is_in_shelter,
+		'has_shelter': lambda life: len(judgement.get_known_shelters(life))>0,
 		'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
 		'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 		'retrieve_from_memory': brain.retrieve_from_memory,
@@ -183,6 +186,7 @@ def create_function_map():
 		'ping': lambda life: logging.debug('%s: Ping!' % ' '.join(life['name'])),
 		'wander': lambda life: alife_discover.tick(life),
 		'pick_up_item': lambda life: alife_needs.tick(life),
+		'take_shelter': lambda life: alife_shelter.tick(life),
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,

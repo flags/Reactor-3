@@ -926,6 +926,9 @@ def get_best_goal(life):
 	
 	return -1
 
+def get_known_shelters(life):
+	return [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]
+
 def get_best_shelter(life):
 	_best_shelter = {'distance': -1, 'shelter': None}
 	

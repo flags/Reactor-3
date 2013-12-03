@@ -123,6 +123,7 @@ def initiate_raw(life):
 	
 	life['goap_goals'] = {}
 	life['goap_actions'] = {}
+	life['goap_plan'] = {}
 	alife.planner.parse_goap(life)
 
 def initiate_needs(life):
@@ -557,7 +558,9 @@ def show_debug_info(life):
 def get_engage_distance(life):
 	return 0
 
-def change_goal(life, goal, tier):
+def change_goal(life, goal, tier, plan):
+	life['goap_plan'] = plan
+	
 	if life['state'] == goal:
 		return False
 	
@@ -2697,6 +2700,7 @@ def draw_life_info():
 	_action_queue_position = (_min_x+len(_stance)+2, 1)
 	_stance_position = (_min_x, _action_queue_position[1])
 	_health_position = (_min_x, _stance_position[1]+2)
+	_debug_position = (_min_x, _health_position[1]+1)
 	
 	if life['asleep']:
 		_name_mods.append('(Asleep)')
@@ -2761,6 +2765,12 @@ def draw_life_info():
 	tcod.console_print(0, _health_position[0]+len(_health_string)+9,
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
+	
+	#Debug info
+	tcod.console_set_default_foreground(0, tcod.light_blue)
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+1,
+	                   ' '.join(life['goap_plan']))
 	
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)

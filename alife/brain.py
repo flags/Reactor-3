@@ -309,12 +309,12 @@ def understand(life):
 	
 	life['think_rate'] = life['think_rate_max']
 	
-	_goal, _tier = planner.get_next_goal(life)
+	_goal, _tier, _plan = planner.get_next_goal(life)
 	
 	if _goal:
-		lfe.change_goal(life, _goal, _tier)
+		lfe.change_goal(life, _goal, _tier, _plan)
 	else:
-		lfe.change_goal(life, 'idle', TIER_RELAXED)
+		lfe.change_goal(life, 'idle', TIER_RELAXED, [])
 		logging.error('%s has no possible goal.' % ' '.join(life['name']))
 		return False
 	

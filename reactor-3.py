@@ -106,11 +106,11 @@ def main():
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
 		gfx.title('Sleeping: %s' % LIFE[SETTINGS['controlling']]['asleep'])
-		logic.tick_all_objects()
+		logic.tick_all_objects(ignore_tickrate=True)
 		_played_moved = True
 	
 	if not _played_moved:
-		logic.tick_all_objects()
+		logic.tick_all_objects(ignore_tickrate=True)
 	
 	move_camera(SETTINGS['camera_track'])
 	

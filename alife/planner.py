@@ -5,17 +5,20 @@ import life as lfe
 import logging
 import os
 
-def add_goal(life, goal_name, desire, tier, set_flags):
+def add_goal(life, goal_name, desire, tier, loop_until, set_flags):
 	if tier == 'relaxed':
 		_tier = TIER_RELAXED
 	elif tier == 'survival':
 		_tier = TIER_SURVIVAL
+	elif tier == 'urgent':
+		_tier = TIER_URGENT
 	else:
 		logging.error('Invalid tier in life type \'%s\': %s' % (life['species'], tier))
 		_tier = TIER_RELAXED
 	
 	life['goap_goals'][goal_name] = {'desire': desire.split(','),
 	                                 'tier': _tier,
+	                                 'loop_until': loop_until.split(','),
 	                                 'set_flags': set_flags.split(',')}
 	
 	logging.debug('Created goal: %s' % goal_name)
@@ -37,7 +40,7 @@ def parse_goap(life):
 	_goal_name = ''
 	_desire = ''
 	_tier = ''
-	_loop = ''
+	_loop_until = ''
 	_set_flags = ''
 	_execute = ''
 	_satisfies = ''
@@ -67,12 +70,12 @@ def parse_goap(life):
 				_non_critical = line.partition(':')[2].strip()
 			elif not line:
 				if _goal_name:
-					add_goal(life, _goal_name, _desire, _tier, _set_flags)
+					add_goal(life, _goal_name, _desire, _tier, _loop_until, _set_flags)
 					
 					_goal_name = ''
 					_desire = ''
 					_tier = ''
-					_loop = ''
+					_loop_until = ''
 					_set_flags = ''
 				elif _action_name:
 					add_action(life, _action_name, _desire, _satisfies, _loop_until, _execute, _set_flags, _non_critical)
@@ -80,7 +83,7 @@ def parse_goap(life):
 					_action_name = ''
 					_desire = ''
 					_tier = ''
-					_loop = ''
+					_loop_until = ''
 					_set_flags = ''
 					_execute = ''
 					_satisfies = ''
@@ -92,12 +95,27 @@ def find_actions_that_satisfy(life, desires):
 	
 	for action in life['goap_actions']:
 		_break = False
+		#_run_anyways = False
 		
 		for desire in desires:
-			if not desire in life['goap_actions'][action]['satisfies']:
-				#print '%s not in action %s: discarding' % (desire, action)
-				_break = True
-				break
+			_continue_instead = False
+			
+			if desire.startswith('-'):
+				continue
+			elif desire.startswith('*'):
+				_continue_instead = True
+			#elif desire.startswith('+'):
+			#	_run_anyways = True
+			
+			_desire = desire.replace('-', '').replace('*', '')
+			
+			if not _desire in life['goap_actions'][action]['satisfies']:
+				if _continue_instead:
+					continue
+				else:
+					#print 'action %s failed to meet the desires of %s' % (action, _desire)
+					_break = True
+					break
 		
 		if _break:
 			continue
@@ -144,12 +162,27 @@ def has_valid_plan_for_goal(life, goal_name):
 
 def execute(life, func):
 	_true = True
+	_self_call = False
 	
-	if func.startswith('!'):
-		func = func[1:]
-		_true = False
+	while 1:
+		if func.startswith('!'):
+			func = func[1:]
+			_true = False
+		elif func.startswith('%'):
+			func = func[1:]
+			_self_call = True
+		elif func.startswith('-'):
+			func = func[1:]
+		elif func.startswith('*'):
+			func = func[1:]
+		else:
+			break
 	
-	if FUNCTION_MAP[func](life) == _true:
+	
+	if _self_call:
+		if FUNCTION_MAP[func]() == _true:
+			return True
+	elif FUNCTION_MAP[func](life) == _true:
 		return True
 	
 	return False
@@ -163,21 +196,47 @@ def execute_plan(life, plan):
 			raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
 
 def get_next_goal(life):
-	_next_goal = {'highest': None, 'goal': None}
+	_next_goal = {'highest': None, 'goal': None, 'plan': None}
 	
 	for goal in life['goap_goals']:
+		_break = False
 		
-		if execute(life, life['goap_goals'][goal]['desire'][0]):
-			print life['name'], 'skipping', goal
+		for desire in life['goap_goals'][goal]['desire']:
+			if '*' in desire:
+				continue
+			
+			if execute(life, desire):
+				#print life['name'], 'skipping', goal, 'because of', desire
+				
+				_loop = False
+				if life['goap_goals'][goal]['loop_until'] and len(life['goap_goals'][goal]['loop_until'][0]):
+					_loop = True
+					
+					for func in life['goap_goals'][goal]['loop_until']:
+						if execute(life, func):
+							_loop = False
+							break
+				
+				if not _loop:
+					_break = True
+					break
+		
+		if _break:
 			continue
 		
 		_plan = has_valid_plan_for_goal(life, goal)
 		
+		if not _plan:
+			_plan = ['idle']
+		
 		if _plan and life['goap_goals'][goal]['tier'] > _next_goal['highest']:
 			_next_goal['highest'] = life['goap_goals'][goal]['tier']
 			_next_goal['goal'] = goal
+			_next_goal['plan'] = _plan
+		#elif not _plan:
+		#	logging.warning('Failed to find plan for goal \'%s\'.' % goal)
 		
-	return _next_goal['goal'], _next_goal['highest']
+	return _next_goal['goal'], _next_goal['highest'], _next_goal['plan']
 
 def think(life):
 	_goal_name = life['state']

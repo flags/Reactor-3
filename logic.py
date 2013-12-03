@@ -22,12 +22,12 @@ import logging
 import random
 import time
 
-def can_tick(check=True):
+def can_tick(ignore_tickrate=False):
 	if SETTINGS['controlling'] and not EVENTS and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
-	if not check:
+	if not ignore_tickrate:
 		if process_events():
 			return False
 	elif EVENTS:
@@ -43,7 +43,7 @@ def can_tick(check=True):
 		if life.has_dialog(LIFE[SETTINGS['controlling']]):
 			return False
 	
-	if not check: 
+	if not ignore_tickrate: 
 		if time.time()-WORLD_INFO['last_update_time']<1:
 			if WORLD_INFO['tps']<30:
 				WORLD_INFO['tps'] += 1
@@ -55,8 +55,8 @@ def can_tick(check=True):
 	
 	return True
 
-def tick_all_objects():
-	if not can_tick(check=False):
+def tick_all_objects(ignore_tickrate=False):
+	if not can_tick(ignore_tickrate=ignore_tickrate):
 		return False
 	
 	if melee.process_fights():
