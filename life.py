@@ -2769,7 +2769,7 @@ def draw_life_info():
 	#Debug info
 	tcod.console_set_default_foreground(0, tcod.light_blue)
 	tcod.console_print(0, _debug_position[0],
-	                   _debug_position[1]+1,
+	                   _debug_position[1]+1+len(life['seen']),
 	                   ' '.join(life['goap_plan']))
 	
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
