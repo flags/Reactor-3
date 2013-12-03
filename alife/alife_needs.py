@@ -38,8 +38,6 @@ def tick(life):
 	if life['actions']:
 		return True
 
-	print 'looting'
-
 	_needs_to_meet = brain.retrieve_from_memory(life, 'needs_to_meet')
 	
 	for need in _needs_to_meet:

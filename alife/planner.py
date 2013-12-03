@@ -142,6 +142,18 @@ def has_valid_plan_for_goal(life, goal_name):
 	
 	return _plan
 
+def execute(life, func):
+	_true = True
+	
+	if func.startswith('!'):
+		func = func[1:]
+		_true = False
+	
+	if FUNCTION_MAP[func](life) == _true:
+		return True
+	
+	return False
+
 def execute_plan(life, plan):
 	for action in plan:
 		try:
@@ -154,6 +166,11 @@ def get_next_goal(life):
 	_next_goal = {'highest': None, 'goal': None}
 	
 	for goal in life['goap_goals']:
+		
+		if execute(life, life['goap_goals'][goal]['desire'][0]):
+			print life['name'], 'skipping', goal
+			continue
+		
 		_plan = has_valid_plan_for_goal(life, goal)
 		
 		if _plan and life['goap_goals'][goal]['tier'] > _next_goal['highest']:
@@ -167,5 +184,4 @@ def think(life):
 	
 	#TODO: Cache this
 	_plan = has_valid_plan_for_goal(life, _goal_name)
-	print life['name'], _plan
 	execute_plan(life, _plan)
