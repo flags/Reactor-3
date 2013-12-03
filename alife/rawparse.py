@@ -4,6 +4,7 @@ import life as lfe
 
 import alife_discover
 import alife_shelter
+import alife_manage_items
 import alife_needs
 
 import references
@@ -188,6 +189,8 @@ def create_function_map():
 		'pick_up_item': lambda life: alife_needs.tick(life),
 		'take_shelter': lambda life: alife_shelter.tick(life),
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
+		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life),
+		'manage_inventory': lambda life: alife_manage_items.tick(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
