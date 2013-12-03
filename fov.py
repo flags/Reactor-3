@@ -82,7 +82,7 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 			if not _solid:
 				_chunk = maps.get_chunk(alife.chunks.get_chunk_key_at((_a_x, _a_y)))
 				
-				for item_uid in _chunk['items']:
+				for item_uid in _chunk['items'][:]:
 					if not item_uid in ITEMS:
 						_chunk['items'].remove(item_uid)
 				

@@ -147,7 +147,7 @@ def render_los(position, size, view_size=MAP_WINDOW_SIZE, top_left=CAMERA_POS, n
 				_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at((pos[0], pos[1], Z_CAMERA_POS)))
 				_break = False
 				
-				for item_uid in _chunk['items']:
+				for item_uid in _chunk['items'][:]:
 					if not item_uid in ITEMS:
 						_chunk['items'].remove(item_uid)
 				

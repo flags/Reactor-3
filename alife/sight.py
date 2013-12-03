@@ -173,7 +173,7 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		for pos in _line:
 			_chunk = chunks.get_chunk_from_cache(pos)
 			
-			for item_uid in _chunk['items']:
+			for item_uid in _chunk['items'][:]:
 				if not item_uid in ITEMS:
 					_chunk['items'].remove(item_uid)
 			
