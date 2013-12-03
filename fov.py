@@ -77,7 +77,7 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 				if callback:
 					callback((_a_x, _a_y))
 			
-			_solid = maps.is_solid((_a_x, _a_y, z+1))#WORLD_INFO['map'][_a_x][_a_y]
+			_solid = maps.is_solid((_a_x, _a_y, z+1))
 			
 			if not _solid:
 				_chunk = maps.get_chunk(alife.chunks.get_chunk_key_at((_a_x, _a_y)))

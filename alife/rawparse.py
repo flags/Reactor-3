@@ -6,6 +6,7 @@ import alife_manage_items
 import alife_discover
 import alife_shelter
 import alife_combat
+import alife_cover
 import alife_needs
 
 import references
@@ -82,12 +83,11 @@ def create_function_map():
 		'travel_to_position': movement.travel_to_position,
 		'find_target': movement.find_target,
 		'can_see_target': sight.can_see_target,
-		'has_threats': lambda life: len(judgement.get_threats(life))>0,
-		'has_targets': lambda life: len(judgement.get_targets(life))>0,
+		'has_threats': lambda life: len(judgement.get_threats(life, recent_only=True, ignore_escaped=2))>0,
 		'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
 		'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
 		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, recent_only=True, limit_distance=sight.get_vision(life)+10))>0,
-		'danger_close': stats.is_combat_target_too_close,
+		'danger_close': stats.is_threat_too_close,
 		'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 		'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
 		'announce_to_group': groups.announce,
@@ -194,6 +194,7 @@ def create_function_map():
 		'manage_inventory': lambda life: alife_manage_items.tick(life),
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
 		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
+		'take_cover': lambda life: alife_cover.tick(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

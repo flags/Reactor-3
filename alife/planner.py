@@ -14,6 +14,8 @@ def add_goal(life, goal_name, desire, tier, loop_until, set_flags):
 		_tier = TIER_URGENT
 	elif tier == 'combat':
 		_tier = TIER_COMBAT
+	elif tier == 'tactic':
+		_tier = TIER_TACTIC
 	else:
 		logging.error('Invalid tier in life type \'%s\': %s' % (life['species'], tier))
 		_tier = TIER_RELAXED

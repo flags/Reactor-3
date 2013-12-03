@@ -164,7 +164,7 @@ def fire(life, target, limb=None):
 	items.add_to_chunk(_bullet)
 	
 	if gfx.position_is_in_frame(life['pos']):
-		effects.create_light(life['pos'], tcod.yellow, 7, 1, fade=2.5)
+		effects.create_light(life['pos'], tcod.yellow, 7, 1, fade=3.5)
 		effects.create_light(_bullet['pos'], tcod.yellow, 7, 1, fade=0.65, follow_item=_bullet['uid'])
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))

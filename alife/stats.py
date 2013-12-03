@@ -421,19 +421,19 @@ def is_confident(life):
 	
 	return False
 
-def is_combat_target_too_close(life):
-	_nearest_combat_target = judgement.get_nearest_combat_target(life)
+def is_threat_too_close(life):
+	_nearest_threat = judgement.get_nearest_threat(life)
 	
-	_knows = brain.knows_alife_by_id(life, _nearest_combat_target['target_id'])
+	_knows = brain.knows_alife_by_id(life, _nearest_threat)
 	
-	if not _nearest_combat_target['target_id']:
+	if not _nearest_threat:
 		return False
 	
 	if _knows['last_seen_time'] >= 100:
 		return False
 	
 	#TODO: Unhardcode
-	if _nearest_combat_target['distance'] <= 3:
+	if numbers.distance(life['pos'], _knows['last_seen_at'])<15:
 		return True
 	
 	return False

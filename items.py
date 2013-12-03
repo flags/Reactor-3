@@ -489,7 +489,7 @@ def explode(item):
 	item['pos'] = get_pos(item['uid'])
 	
 	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
-	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=0.99)
+	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=2)
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
