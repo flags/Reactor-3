@@ -57,6 +57,11 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	
 	return RETURN_VALUE
 
+def ranged_attack(life):
+	_all_targets = judgement.get_threats(life)
+	
+	combat.ranged_combat(life, _all_targets)
+
 #TODO: Use judgement.get_nearest_threat()
 def get_closest_target(life, targets):
 	_closest = {'dist': -1, 'life': None}

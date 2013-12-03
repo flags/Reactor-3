@@ -2,9 +2,10 @@ from globals import *
 
 import life as lfe
 
+import alife_manage_items
 import alife_discover
 import alife_shelter
-import alife_manage_items
+import alife_combat
 import alife_needs
 
 import references
@@ -191,6 +192,8 @@ def create_function_map():
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
 		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life),
 		'manage_inventory': lambda life: alife_manage_items.tick(life),
+		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
+		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
