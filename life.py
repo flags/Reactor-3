@@ -120,6 +120,11 @@ def get_max_speed(life):
 def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
+	
+	life['goap_goals'] = {}
+	life['goap_actions'] = {}
+	life['goap_plan'] = {}
+	alife.planner.parse_goap(life)
 
 def initiate_needs(life):
 	"""Creates innate needs for `life`."""
@@ -152,6 +157,8 @@ def initiate_life(name):
 	initiate_raw(life)
 	#except:
 	#	print 'FIXME: Exception on no .dat for life'
+	
+	print 'MOVE GOAP INIT. HERE' * 50
 	
 	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
@@ -442,7 +449,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['group'] = None
 	_life['needs'] = {}
 	_life['need_id'] = 1
-	_life['goals'] = {}
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)
@@ -552,16 +558,18 @@ def show_debug_info(life):
 def get_engage_distance(life):
 	return 0
 
-def change_state(life, state, tier):
-	if life['state'] == state:
+def change_goal(life, goal, tier, plan):
+	life['goap_plan'] = plan
+	
+	if life['state'] == goal:
 		return False
 	
-	logging.debug('%s state change: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], state, tier))
-	life['state'] = state
+	logging.debug('%s set new goal: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], goal, tier))
+	life['state'] = goal
 	life['state_flags'] = {}
 	life['state_tier'] = tier
 	
-	life['states'].append(state)
+	life['states'].append(goal)
 	if len(life['states'])>SETTINGS['state history size']:
 		life['states'].pop(0)
 	
@@ -1091,9 +1099,9 @@ def walk_path(life):
 		_nfx = _pos[0]
 		_nfy = _pos[1]
 		
-		if WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+1] and not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]+2]:
+		if maps.is_solid((_nfx, _nfy, life['pos'][2]+1)) and not maps.is_solid((_nfx, _nfy, life['pos'][2]+2)):
 			life['pos'][2] += 1
-		elif not WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]] and WORLD_INFO['map'][_nfx][_nfy][life['pos'][2]-1]:
+		elif not maps.is_solid((_nfx, _nfy, life['pos'][2])) and maps.is_solid((_nfx, _nfy, life['pos'][2]-1)):
 			life['pos'][2] -= 1
 		
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
@@ -1590,7 +1598,7 @@ def perform_action(life):
 		#	5001,
 		#	delay=weapons.get_recoil(life))
 		
-		delete_action(life,action)
+		delete_action(life, action)
 	
 	elif _action['action'] == 'bite':
 		damage.bite(life, _action['target'], _action['limb'])
@@ -2692,6 +2700,7 @@ def draw_life_info():
 	_action_queue_position = (_min_x+len(_stance)+2, 1)
 	_stance_position = (_min_x, _action_queue_position[1])
 	_health_position = (_min_x, _stance_position[1]+2)
+	_debug_position = (_min_x, _health_position[1]+1)
 	
 	if life['asleep']:
 		_name_mods.append('(Asleep)')
@@ -2757,11 +2766,17 @@ def draw_life_info():
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
+	#Debug info
+	tcod.console_set_default_foreground(0, tcod.light_blue)
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+1+len(life['seen']),
+	                   ' '.join(life['goap_plan']))
+	
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)
 	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
-	#_nutrition_str = language.prettify_string_array([get_hunger(life), get_thirst(life)], 30)
-	#_hunger_str = get_thirst(life)
+	#_nutrition_str = language.prettify_string_array([get_hunger_status(life), get_thirst_status(life)], 30)
+	#_hunger_str = get_thirst_status(life)
 	#tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
@@ -2941,12 +2956,12 @@ def calculate_hunger(life):
 	for _item in _remove:
 		life['eaten'].remove(_item['uid'])
 	
-	if get_hunger(life) == 'Satiated':
+	if get_hunger_status(life) == 'Satiated':
 		brain.unflag(life, 'hungry')
 	else:
 		brain.flag(life, 'hungry')
 	
-	if get_thirst(life) == 'Hydrated':
+	if get_thirst_status(life) == 'Hydrated':
 		brain.unflag(life, 'thirsty')
 	else:
 		brain.flag(life, 'thirsty')
@@ -2957,7 +2972,7 @@ def get_hunger_percentage(life):
 def get_thirst_percentage(life):
 	return life['thirst']/float(life['thirst_max'])
 
-def get_hunger(life):
+def get_hunger_status(life):
 	if not 'HUNGER' in life['life_flags']:
 		return 'Not hungry'
 	
@@ -2970,7 +2985,7 @@ def get_hunger(life):
 	else:
 		return 'Starving'
 
-def get_thirst(life):
+def get_thirst_status(life):
 	if not 'THIRST' in life['life_flags']:
 		return 'Not thirsty'
 	
@@ -3007,8 +3022,16 @@ def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
 
 def calculate_overall_health(life):
+	_string = []
+	
 	if get_total_pain(life)>4:
-		return 'Aching'
+		_string.append('Aching')
+	
+	if not get_hunger_status(life) == 'Satiated':
+		_string.append('Hungry')
+	
+	if _string:
+		return language.prettify_string_array(_string, 30)
 	
 	return 'Fine'
 

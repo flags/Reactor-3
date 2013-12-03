@@ -4,10 +4,12 @@ from tiles import *
 
 import libtcodpy as tcod
 
+import numbers
 import effects
 import numpy
 import tiles
 import alife
+
 import time
 
 VERSION = 6
@@ -38,13 +40,28 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _min_los_y = 0
 	cdef int _max_los_y = view_size[1]
 	
-	los = None
+	cdef int _x_mod = 0
+	cdef int _y_mod = 0
 	
+	if not CAMERA_POS[0]:
+		_x_mod = SETTINGS['camera_track'][0]-view_size[0]/2
+	elif CAMERA_POS[0]+view_size[0]>=MAP_SIZE[0]:
+		_x_mod = (SETTINGS['camera_track'][0]+view_size[0]/2)-MAP_SIZE[0]
+	
+	if not CAMERA_POS[1]:
+		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
+	elif CAMERA_POS[1]+view_size[1]>=MAP_SIZE[1]:
+		_y_mod = (SETTINGS['camera_track'][1]+view_size[1]/2)-MAP_SIZE[1]
+	
+	if not CAMERA_POS[1]:
+		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
+	
+	los = None
 	if 'los' in kwargs:
 		los = kwargs['los']
-		_min_los_x = ((los.shape[0]/2)-view_size[0]/2)
+		_min_los_x = (los.shape[0]/2)-view_size[0]/2-_x_mod
 		_max_los_x = los.shape[0]
-		_min_los_y = ((los.shape[1]/2)-view_size[1]/2)
+		_min_los_y = (los.shape[1]/2)-view_size[1]/2-_y_mod
 		_max_los_y = los.shape[1]
 	
 	_view = get_view_by_name('map')
@@ -56,9 +73,9 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 	if _Y_MAX>_MAP_SIZE[1]:
 		_Y_MAX = _MAP_SIZE[1]
 
-	for x in range(_X_START,_X_MAX):
+	for x in range(_X_START, _X_MAX):
 		_RENDER_X = x-_CAMERA_POS[0]
-		for y in range(_Y_START,_Y_MAX):
+		for y in range(_Y_START, _Y_MAX):
 			_RENDER_Y = y-_CAMERA_POS[1]
 
 			if _min_los_x+_RENDER_X<0 or _min_los_x+_RENDER_X>=_max_los_x or _min_los_y+_RENDER_Y<0 or _min_los_y+_RENDER_Y>=_max_los_y:

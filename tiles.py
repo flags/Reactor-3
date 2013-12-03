@@ -120,6 +120,20 @@ FIELD_TILE_3 = {'id': 'field_3',
 			 'type': 'field',
 			 'cost': 2}
 
+WHEAT_TILE_1 = {'id': 'wheat_1',
+            'icon': '|',
+            'color': (tcod.Color(232, 210, 169), tcod.Color(210, 170, 153)),
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
+
+WHEAT_TILE_2 = {'id': 'wheat_2',
+            'icon': '!',
+            'color': (tcod.Color(245, 222, 179), tcod.Color(211, 181, 168)),
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
+
 CONCRETE_TILE_1 = {'id':'concrete_1',
 			 'icon':'.',
 			 'color':(tcod.Color(130,130,130), tcod.Color(70,70,70)),
@@ -229,6 +243,16 @@ LEAF_2 = {'id': 'leaf_2',
             'burnable': True,
             'translucent': True,
             'not_solid': True}
+
+BUSH_1 = {'id': 'bush_1',
+            'icon': '\'',
+            'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
+            'burnable': True}
+
+BUSH_2 = {'id': 'bush_2',
+            'icon': '`',
+            'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
+            'burnable': True}
 
 ROOF_DARK = {'id': 'roof_dark',
             'icon': '^',
@@ -344,6 +368,12 @@ WOOD_TILES = [WOOD_1,
 LEAF_TILES = [LEAF_1,
               LEAF_2]
 
+BUSH_TILES = [BUSH_1,
+              BUSH_2]
+
+WHEAT_TILES = [WHEAT_TILE_1,
+               WHEAT_TILE_2]
+
 ROOF_TILES = [ROOF_BRIGHTER,
               ROOF_BRIGHT,
               ROOF_DARK,
@@ -383,6 +413,8 @@ def create_all_tiles():
 	TEMP_TILES.extend(FIELD_TILES)
 	TEMP_TILES.extend(BLUE_CARPET_TILES)
 	TEMP_TILES.extend(SEA_CARPET_TILES)
+	TEMP_TILES.extend(BUSH_TILES)
+	TEMP_TILES.extend(WHEAT_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

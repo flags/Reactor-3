@@ -306,7 +306,7 @@ def find_and_announce_shelter(life, group_id):
 			announce(life, group_id, 'update_group_shelter',
 				    filter_if=lambda alife: not get_shelter(alife, group_id))
 			
-		print 'MOTIVATED BY CRIME' * 20
+		#print 'MOTIVATED BY CRIME' * 20
 		
 		return False
 	

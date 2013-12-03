@@ -30,7 +30,7 @@ def get_task(job_id, task_id):
 def get_creator(job_id):
 	return get_job(job_id)['creator']
 
-def create_job(creator, name, gist='', tier=TIER_WORK, description='Job description needed.', ignore_dupe=False, requirements=[], **kwargs):
+def create_job(creator, name, gist='', tier=0, description='Job description needed.', ignore_dupe=False, requirements=[], **kwargs):
 	if not ignore_dupe and get_job_via_name(name):
 		return False
 	

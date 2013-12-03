@@ -148,6 +148,107 @@ too real to the point that the player feels annoyed for frustrated.
 Some of these elements are influenced by the world (and will be marked as such)
 
 	* General health: The combination of each limbs' status.
-	* 
 
 The proposed set of variables
+
+### The Behavior of Life
+
+Terraform features an extensive set of AI-related functions. Over the past year
+they have been painstakingly written and rewritten to work in conjunction with
+the various flaws described in "Addressing Big Data." One of the shortcuts taken
+to improve the current state-based implementation was to limit the amount of
+times ALife reconsider their current state. This solution exposes the following
+issues:
+
+	* Reaction times are slow if the ALife's think rate is too high.
+	* Lower think rates cause idle ALife to reconsider all possible states more
+		often than needed. Not doing so means ALife take more time to become
+		active again.
+
+A better system, I've found, is to change the entity's think rate based on
+their distance from the player. This puts the ALife on relatively equal footing
+while saving CPU time.
+
+### The (Finite State) Machine
+
+The current implementation of ALife used a finite state machine, where roughly
+15-20 states are evaluated at any given time. This way of handling their logic
+is extremely easy to work with, until large amounts of complexity come into
+play, after which the system begins to crumble under the load.
+
+A "planning" phase was tossed around, in which the ALife would plan which states
+they'd enter in the next X ticks, after which their think rate would be lowered
+until coming into contact with the player or another enemy.
+
+After some research, GOAP (Goal-Oriented Action Planning) was brought to my
+attention. In GOAP, there are three core ideas:
+
+* The Goal: A condition (or set of conditions) the AI desires. For example,
+	"Kill Target" or "Eat"
+* Actions: AKA states, like "Reload," "Shoot," or "Walk." Each Action must
+	satisfy their preconditions in order to execute. These can take a specified
+	or infinite amount of time.
+* The Plan: A series of Actions that satisfy the Goal.
+
+With GOAP, a large amount of the work needed to get a state working now can be
+eliminated. To do this, the existing ALife states must be translated to either
+Actions or Goals.
+
+#### Moving to GOAP
+
+    `alife_combat` -> `action_ranged` and `action_melee`
+    `alife_cover` -> `goal_cover`
+    `alife_discover` -> `goal_discover`
+    `alife_explore` -> RM
+    `alife_follow` -> `goal_follow`
+    `alife_guard` -> `goal_guard`
+    `alife_hidden` -> MERGE INTO `goal_cover`
+    `alife_hide` -> MERGE INTO `goal_cover`
+    `alife_needs` -> `goal_needs` -> `action_eat`, `action_sleep` etc
+    `alife_search` -> `goal_search`
+    `alife_shelter` -> `goal_shelter`
+    `alife_talk` -> `goal_talk`, `action_talk`
+
+
+**Note**: "Desire" should be read as "Condition to satisfy."
+
+##### Goals
+
+Goal: Discovering
+Tier: RELAXED
+Desire: has_non_idle_task
+
+Goal: Looting
+Tier: SURVIVAL
+Desire: has_needs
+
+##### Actions
+
+Action: Wander
+Satisfies: has_non_idle_task
+Timing: Infinite
+
+Action: Pick up known item
+Satisfies: has_needs
+Timing
+
+Task: Looting
+Tier: RELAXED
+Desire: has_item_group
+Action Set:
+	wander (inf.)
+		Cond: None
+	pick_up_item (>=1)
+		Cond: Sees item
+
+Task: Find Shelter
+Tier: RELAXED
+Desire: has_shelter
+Action Set:
+	claim_shelter (1)
+		Cond: Sees shelter
+
+### Issues with Current Implementation
+
+Currently, only the cost of the action that directly solves the goal desire is
+taken into account. In the future, A* or another seach algo. should be used.

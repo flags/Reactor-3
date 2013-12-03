@@ -1,4 +1,5 @@
 New in version 0.6.5:
+	* AI states now controlled by the GOAP planner.
 	* Optimized ALife logic
 		* Dogs now follow the pack leader and spawn in larger amounts.
 		* ALife no longer think as much during non-combat tasks.

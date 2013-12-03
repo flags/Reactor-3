@@ -7,9 +7,6 @@ import movement
 import survival
 import brain
 
-STATE = 'needs'
-
-TIER = TIER_SURVIVAL-.2
 
 def setup(life):
 	_needs_to_meet = []
@@ -37,21 +34,7 @@ def setup(life):
 	if not _needs_to_meet and not _needs_to_satisfy:
 		return False
 
-def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	RETURN_VALUE = STATE_UNCHANGED
-
-	if not lfe.execute_raw(life, 'state', 'needs'):
-		return False
-
-	if not brain.retrieve_from_memory(life, 'needs_to_meet') and not brain.retrieve_from_memory(life, 'needs_to_satisfy'):
-		return False
-
-	if not life['state'] == STATE:
-		RETURN_VALUE = STATE_CHANGE
-
-	return RETURN_VALUE
-
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+def tick(life):
 	if life['actions']:
 		return True
 

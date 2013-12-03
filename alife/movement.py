@@ -153,7 +153,7 @@ def escape(life, targets):
 	if not _cover:
 		return False
 	
-	print 'escaping from', life['pos'], len(_target_positions), len(_cover)
+	print life['name'], 'is escaping from', life['pos'], len(_target_positions), len(_cover), tuple(life['pos']) in _cover
 	
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	for _pos in _cover:
@@ -163,14 +163,16 @@ def escape(life, targets):
 			_zones.append(_zone)
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
+		print life['name'], 'waiting to hide/hide in progress'
 		return True
 	
+	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
 	                      'rolldown': True,
 	                      'zones': _zones,
 	                      'goals': _cover[:],
 	                      'reason': 'escaping'},
-                   999)
+	               999)
 
 def hide(life, target_id):
 	return False

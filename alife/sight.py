@@ -23,7 +23,7 @@ def look(life):
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
 	
-	if life['think_rate'] % numbers.clip(life['think_rate_max'], 0, 6) and not 'player' in life:
+	if life['think_rate'] % 3 and not 'player' in life:
 		return False
 	
 	if not 'CAN_SEE' in life['life_flags']:
@@ -172,6 +172,10 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		
 		for pos in _line:
 			_chunk = chunks.get_chunk_from_cache(pos)
+			
+			for item_uid in _chunk['items'][:]:
+				if not item_uid in ITEMS:
+					_chunk['items'].remove(item_uid)
 			
 			for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
 				if tuple(item['pos'])[:2] == tuple(pos2)[:2]:
