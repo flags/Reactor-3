@@ -277,8 +277,21 @@ def judge(life):
 	_tension = 0
 	
 	for alife_id in life['know']:
-		if life['know'][alife_id]['last_seen_time'] >= 200 or life['know'][alife_id]['dead'] or not life['know'][alife_id]['last_seen_at']:
+		_target = life['know'][alife_id]
+		
+		if _target['escaped'] == 2 or _target['dead'] or not _target['last_seen_at']:
 			continue
+		
+		#Lost targets
+		#TODO: Unhardcode 1. Can be used for reaction times
+		if _target['last_seen_time'] >= 1 and not _target['escaped']:
+			#TODO: Unhardcode 2000. How long to wait until a target is lost
+			#Note that `escaped` can be set to 2 after a failed search
+			if _target['last_seen_time'] >= 2000:
+				_target['escaped'] = 2
+				logging.debug('%s flagged %s as lost (state 2).' % (' '.join(life['name']), ' '.join(_target['life']['name'])))
+			else:
+				_target['escaped'] = 1
 		
 		_tension += get_tension_with(life, alife_id)
 		
@@ -346,6 +359,9 @@ def get_target_to_follow(life):
 		
 		_score = 0
 		_known_target = brain.knows_alife_by_id(life, target_id)
+		
+		if not _known_target['last_seen_at']:
+			continue
 		
 		if _known_target['escaped'] == 2:
 			continue
@@ -922,6 +938,9 @@ def get_best_goal(life):
 		return goal
 	
 	return -1
+
+def get_known_shelters(life):
+	return [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]
 
 def get_best_shelter(life):
 	_best_shelter = {'distance': -1, 'shelter': None}

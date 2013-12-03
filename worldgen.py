@@ -274,69 +274,54 @@ def get_spawn_point(randomize=False):
 	return _spawn
 
 def generate_wildlife():
-	_spawn = get_spawn_point(randomize=True)
+	_spawn = get_spawn_point()
+	_group_members = []
 	
-	_p = life.create_life('dog',
-          name=['Wild', 'Dog'],
-          position=[_spawn[0], _spawn[1], 2])
+	for i in range(3):
+		_alife = life.create_life('dog', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		
+		if not _group_members:
+			_alife['stats']['is_leader'] = True
+			_group = alife.groups.create_group(_alife)
+		
+		_group_members.append(_alife)
 	
-	_group = alife.groups.create_group(_p)
+	for m1 in _group_members:
+		if m1['id'] == _group_members[0]['id']:
+			continue
+		
+		alife.groups.discover_group(m1, _group)
+		alife.groups.add_member(_group_members[0], _group, m1['id'])
+		alife.groups.add_member(m1, _group, m1['id'])
+		m1['group'] = _group
+		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
 	
-	_children = []
-	for i in range(2, 6):
-		_spawn = get_spawn_point_around(_spawn)
-		
-		_c = life.create_life('dog',
-	          name=['(Young) Wild', 'Dog'],
-	          position=[_spawn[0], _spawn[1], 2])
-		_c['icon'] = 'd'
-		
-		alife.groups.discover_group(_c, _group)
-		alife.groups.add_member(_p, _group, _c['id'])
-		alife.groups.set_leader(_c, _group, _p['id'])
-		_c['group'] = _group
-		
-		alife.brain.meet_alife(_p, _c)
-		alife.brain.meet_alife(_c, _p)
-		
-		alife.brain.flag_alife(_p, _c['id'], 'son')
-		alife.brain.flag_alife(_c, _p['id'], 'father')
-		
-		_children.append(_c)
-	
-	for _c1 in _children:
-		for _c2 in _children:
-			if _c1['id'] == _c2['id']:
+	for m1 in _group_members:
+		for m2 in _group_members:
+			if m1 == m2:
 				continue
 			
-			alife.brain.meet_alife(_c1, _c2)
-			alife.brain.meet_alife(_c2, _c1)
-			
-			alife.brain.flag_alife(_c1, _c2['id'], 'sibling')
-			alife.brain.flag_alife(_c2, _c1['id'], 'sibling')
+			alife.stats.establish_trust(m1, m2['id'])
 	
-	#_spawn = get_spawn_point(randomize=True)
-	
-	#for i in range(4):
-	#	_p = life.create_life('night_terror',
-	#		position=[_spawn[0], _spawn[1], 2])
+	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 
 def generate_life():
 	_spawn = get_spawn_point()
 	
-	if len(WORLD_INFO['groups'])>=2:
-		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-		#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
-		
-		if len(LIFE) == 1:
-			logging.warning('No leaders. Creating one manually...')
-			_alife['stats']['is_leader'] = True
-		
-		for item in BASE_ITEMS:
-			life.add_item_to_inventory(_alife, items.create_item(item))
-		
-		return True
 	
+	#if len(WORLD_INFO['groups'])>=3:
+	_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+	#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
+	
+	if len(LIFE) == 1:
+		logging.warning('No leaders. Creating one manually...')
+		_alife['stats']['is_leader'] = True
+	
+	for item in BASE_ITEMS:
+		life.add_item_to_inventory(_alife, items.create_item(item))
+	
+	return True
+
 	_group_members = []
 	
 	for i in range(3):
@@ -406,13 +391,14 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
-	return False
 	#Step 1: Army Outpost
-	
-	for outpost in WORLD_INFO['refs']['outposts']:
-		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+	pass
+	#for outpost in WORLD_INFO['refs']['outposts']:
+	#	spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
-		
-	#for i in range(5):
+	#for i in range(1):
+	#	generate_life()
+	
+	#for i in range(1):
 	#	generate_wildlife()

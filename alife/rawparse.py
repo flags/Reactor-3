@@ -2,10 +2,20 @@ from globals import *
 
 import life as lfe
 
+import alife_manage_items
+import alife_discover
+import alife_shelter
+import alife_search
+import alife_combat
+import alife_cover
+import alife_needs
+import alife_hide
+
 import references
 import judgement
 import survival
 import movement
+import logging
 import numbers
 import memory
 import groups
@@ -53,6 +63,7 @@ def create_function_map():
 		'distance_to_pos': stats.distance_from_pos_to_pos,
 		'current_chunk_has_flag': lambda life, flag: chunks.get_flag(life, lfe.get_current_chunk_id(life), flag)>0,
 		'is_idle': lambda life: life['state'] == 'idle',
+		'is_relaxed': lambda life: life['state_tier'] == TIER_RELAXED,
 		'is_child_of': stats.is_child_of,
 		'is_parent_of': stats.is_parent_of,
 		'has_parent': stats.has_parent,
@@ -74,17 +85,18 @@ def create_function_map():
 		'travel_to_position': movement.travel_to_position,
 		'find_target': movement.find_target,
 		'can_see_target': sight.can_see_target,
-		'has_threats': lambda life: len(judgement.get_threats(life))>0,
-		'has_targets': lambda life: len(judgement.get_targets(life))>0,
-		'has_visible_targets': lambda life: len(judgement.get_visible_threats(life))>0,
+		'has_threats': lambda life: len(judgement.get_threats(life, recent_only=True, ignore_escaped=1))>0,
+		'has_visible_threat': lambda life: len(judgement.get_visible_threats(life))>0,
 		'has_combat_targets': lambda life: len(judgement.get_combat_targets(life))>0,
+		'has_lost_threat': lambda life: len(judgement.get_threats(life, escaped_only=True, ignore_escaped=2))>0,
 		'has_ready_combat_targets': lambda life: len(judgement.get_ready_combat_targets(life, recent_only=True, limit_distance=sight.get_vision(life)+10))>0,
-		'danger_close': stats.is_combat_target_too_close,
+		'danger_close': stats.is_threat_too_close,
 		'number_of_alife_in_chunk_matching': lambda life, chunk_key, matching, amount: len(chunks.get_alife_in_chunk_matching(chunk_key, matching))>amount,
 		'number_of_alife_in_reference_matching': lambda life, reference_id, matching, amount: len(references.get_alife_in_reference_matching(reference_id, matching))>amount,
 		'announce_to_group': groups.announce,
 		'is_in_chunk': chunks.is_in_chunk,
 		'is_in_shelter': lfe.is_in_shelter,
+		'has_shelter': lambda life: len(judgement.get_known_shelters(life))>0,
 		'has_completed_job': lambda life, job_id: job_id in life['completed_jobs'],
 		'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 		'retrieve_from_memory': brain.retrieve_from_memory,
@@ -96,6 +108,7 @@ def create_function_map():
 		'has_needs_to_meet': survival.has_needs_to_meet,
 		'has_unmet_needs': survival.has_unmet_needs,
 		'has_needs_to_satisfy': survival.has_needs_to_satisfy,
+		'has_needs': lambda life: survival.has_needs_to_meet(life) or survival.has_unmet_needs(life) or survival.has_needs_to_satisfy(life),
 		'has_number_of_items_matching': lambda life, matching, amount: len(lfe.get_all_inventory_items(life, matches=matching))>=amount,
 		'flag_item_matching': lambda life, matching, flag: lfe.get_all_inventory_items(life, matches=[matching]) and brain.flag_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0], flag)>0,
 		'drop_item_matching': lambda life, matching: lfe.get_all_inventory_items(life, matches=[matching]) and lfe.drop_item(life, lfe.get_all_inventory_items(life, matches=[matching])[0]['uid'])>0,
@@ -175,6 +188,18 @@ def create_function_map():
 		'mark_target_as_not_combat_ready': lambda life, life_id: brain.flag_alife(life, life_id, 'combat_ready', value=False),
 		'saw_target_recently': lambda life, **kwargs: brain.knows_alife_by_id(life, kwargs['target_id']) and -1<brain.knows_alife_by_id(life, kwargs['target_id'])['last_seen_time']<6000,
 		'update_location_of_target_from_target': speech.update_location_of_target_from_target,
+		'ping': lambda life: logging.debug('%s: Ping!' % ' '.join(life['name'])),
+		'wander': lambda life: alife_discover.tick(life),
+		'pick_up_item': lambda life: alife_needs.tick(life),
+		'take_shelter': lambda life: alife_shelter.tick(life),
+		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
+		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life),
+		'manage_inventory': lambda life: alife_manage_items.tick(life),
+		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
+		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
+		'take_cover': lambda life: alife_cover.tick(life),
+		'hide': lambda life: alife_hide.tick(life),
+		'search_for_threat': lambda life: alife_search.tick(life),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,
@@ -319,6 +344,15 @@ def raw_section_has_identifier(life, section, identifier):
 		return True
 	
 	return False
+
+def get_raw_sections(life):
+	return life['raw']['sections'].keys()
+
+def get_raw_identifiers(life, section):
+	return life['raw']['sections'][section].keys()
+
+def get_arguments(life, section, identifier):
+	return life['raw']['sections'][section][identifier]
 
 def translate(function):
 	if not function in FUNCTION_MAP:

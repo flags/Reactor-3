@@ -179,6 +179,9 @@ def create_item(name, position=[0,0,2], item=None):
 	item['owner'] = None
 	item['aim_at_limb'] = None
 	
+	if not 'blocking' in item:
+		item['blocking'] = False
+	
 	if not 'examine_keys' in item:
 		item['examine_keys'] = ['description']
 	
@@ -386,6 +389,9 @@ def draw_all_items():
 		if item['pos'][0] >= CAMERA_POS[0] and item['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
 			        item['pos'][1] >= CAMERA_POS[1] and item['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
 			
+			_x = item['pos'][0]-CAMERA_POS[0]
+			_y = item['pos'][1]-CAMERA_POS[1]
+			
 			gfx.blit_char_to_view(_x,
 				        _y,
 				        item['icon'],
@@ -454,7 +460,6 @@ def process_event(item, event):
 		scripting.execute(item['flags']['ON_COLLIDE_WITH'], item_uid=item['uid'])
 
 def activate(item):
-	print item['on'], item['blocking']
 	if item['on']:
 		process_event(item, 'deactivate')
 		item['on'] = False
@@ -484,7 +489,7 @@ def explode(item):
 	item['pos'] = get_pos(item['uid'])
 	
 	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
-	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=0.99)
+	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=2)
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))

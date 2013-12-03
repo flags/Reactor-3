@@ -763,5 +763,30 @@ We start with a list of chunks (map positions) and a set of rules:
 
 This is only for house interiors. Exteriors are done on a slightly smaller scale later in mapgen.
 
-Caching
-------
+.goap format
+-----------
+
+	[GOAL_DISCOVER]
+	DESIRE: HAS_NON_RELAXED_GOAL
+	TIER: TIER_RELAXED
+	
+	[GOAL_LOOT]
+	DESIRE: !HAS_NEEDS
+	TIER: TIER_SURVIVAL
+	SET_FLAGS: {"wanted_items": GET_NEEDED_ITEMS}
+	
+	[ACTION_WANDER]
+	SATISFIES: HAS_NON_RELAXED_GOAL
+	LOOP: True
+	EXECUTE: WANDER
+	
+	[ACTION_PICK_UP_ITEM]
+	SATISFIES: HAS_NEEDS
+	DESIRES: KNOWS_ABOUT_ITEM
+	LOOP: False
+	EXECUTE: PICK_UP_ITEM
+	
+	[ACTION_FIND_ITEM]
+	SATISFIES: KNOWS_ABOUT_ITEM
+	DESIRES: HAS_NON_RELAXED_GOAL
+	LOOP_UNTIL: HAS_WANTED_ITEMS

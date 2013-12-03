@@ -305,7 +305,7 @@ def map_selection():
 def terraform():
 	move_camera(CURSOR_POS)
 	render_map.render_map(WORLD_INFO['map'], view_size=WINDOW_SIZE)
-	maps.render_lights(size=WINDOW_SIZE)
+	maps.render_lights(size=WINDOW_SIZE, show_weather=False)
 	items.draw_all_items()
 	menus.align_menus()
 	menus.draw_menus()

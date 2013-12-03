@@ -11,28 +11,7 @@ import smp
 
 import logging
 
-STATE = 'discovering'
-TIER = TIER_EXPLORE-.1
-
-def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	RETURN_VALUE = STATE_UNCHANGED
-	
-	if brain.get_flag(life, 'lost'):
-		if STATE in life['states']:
-			return False
-		else:
-			brain.unflag(life, 'lost')
-	
-	if not lfe.execute_raw(life, 'state', 'discover'):
-		brain.store_in_memory(life, 'discovery_lock', False)
-		return False
-	
-	if not life['state'] == STATE:
-		RETURN_VALUE = STATE_CHANGE
-	
-	return RETURN_VALUE
-
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+def tick(life):
 	if not lfe.execute_raw(life, 'discover', 'discover_type'):
 		_lost_method = lfe.execute_raw(life, 'discover', 'when_lost')
 		if _lost_method:

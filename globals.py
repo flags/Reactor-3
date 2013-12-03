@@ -35,7 +35,7 @@ WORLD_INFO = {'map': [],
 	'sub_ticks': 0,
 	'max_sub_ticks': 5,
 	'tps': 0,
-	'tps_time': 0,
+	'last_update_time': 0,
 	'life_density': 'Sparse',
 	'life_spawn_interval': [0, (0, 0)],
 	'wildlife_spawn_interval': [0, (0, 0)],
@@ -71,14 +71,11 @@ RETURN_SKIP = 4
 STATE_ICONS = {}
 
 #States
-TIER_COMBAT = 1
+TIER_RELAXED = 1
 TIER_SURVIVAL = 2
-TIER_EXPLORE = 3
-TIER_IDLE = 4
-TIER_WORK = 2.5
-TIER_PASSIVE = 333
-TIER_CONSTANT = 332
-TIER_SUBMIT = 0.1
+TIER_URGENT = 3
+TIER_COMBAT = 4
+TIER_TACTIC = 5
 
 #Group stages
 STAGE_FORMING = 1
@@ -93,8 +90,6 @@ SUN_BRIGHTNESS = [100]
 FPS = 1000
 FPS_TERRAFORM = 100
 LOW_FPS = 15
-UPS = 1
-TPS = 30
 FONT = 'terminal8x8_gs_as_incol.png'
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]

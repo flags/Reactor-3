@@ -2,30 +2,14 @@ from globals import *
 
 import life as lfe
 
-import alife_manage_targets
-import alife_manage_items
-import alife_visit_camp
-import alife_find_camp
-import alife_surrender
-import alife_discover
-import alife_explore
-import alife_shelter
-import alife_search
-import alife_hidden
-import alife_combat
-import alife_follow
-import alife_guard
-import alife_cover
-import alife_group
 import alife_needs
-import alife_camp
-import alife_talk
-import alife_work
-import alife_hide
+
 import snapshots
 import judgement
 import survival
 import movement
+import planner
+import numbers
 import memory
 import speech
 import combat
@@ -37,54 +21,8 @@ import logging
 import time
 import copy
 
-MODULES = [alife_hide,
-	alife_hidden,
-	alife_talk,
-	alife_discover,
-	alife_manage_items,
-	alife_manage_targets,
-	alife_combat,
-	alife_work,
-	alife_needs,
-	alife_group,
-	alife_shelter,
-	alife_search,
-	alife_surrender,
-	alife_cover,
-	alife_follow,
-	alife_guard]
 
-def sort_modules(life):
-	global MODULES
-	
-	_scores = {}
-	
-	for module in MODULES:
-		try:
-			_module_tier = module.get_tier(life)
-		except AttributeError:
-			_module_tier = module.TIER
-		
-		if _module_tier == TIER_CONSTANT:
-			continue
-		
-		if _module_tier in _scores:
-			_scores[_module_tier].append(module)
-		else:
-			_scores[_module_tier] = [module]
-	
-	return _scores
-
-def get_constant_modules(life):
-	global MODULES
-	
-	_modules = []
-	
-	for module in MODULES:
-		if module.TIER == TIER_CONSTANT:
-			_modules.append(module)
-	
-	return _modules
+CONSTANT_MODULES = [alife_needs]
 
 def think(life):
 	sight.look(life)
@@ -220,8 +158,6 @@ def knows_alife_by_id(life, alife_id):
 		if life['id'] == alife_id['id']:
 			raise Exception('Life asking about itself (via ID). Stopping.')
 		
-		print alife_id['name']
-		print alife_id.keys()
 		raise Exception('Not a valid ID.')
 	
 	if life['id'] == alife_id:
@@ -343,91 +279,44 @@ def remember_known_item(life, item_id):
 	return False
 
 def understand(life):
-	_modules = sort_modules(life)
+	#for module in get_constant_modules(life):
+	#	module.tick(life, [], [], [], [], [])
 	
-	for module in get_constant_modules(life):
-		module.tick(life, [], [], [], [], [])
-	
-	if '_last_module' in life and not life['_last_module'] == _modules.keys()[0]:
-		life['think_rate'] = 0
-	elif life['state_tier'] <= TIER_COMBAT and life['think_rate_max'] == LIFE_THINK_RATE:
-		if life['think_rate'] > 2:
-			life['think_rate'] = 2
-		
-		life['think_rate_max'] = 2
-	elif life['state'] in ['discovering', 'following']:
-		life['think_rate_max'] = 6
-	elif life['state'] == 'idle':
-		life['think_rate_max'] = 30
+	if SETTINGS['controlling']:
+		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
+		if _dist_to_player < 100:
+			if life['think_rate_max']>=30:
+				if _dist_to_player < 90:
+					life['think_rate_max'] = 1
+					logging.debug('[Agent] %s brought online (Reason: Near viewer)' % ' '.join(life['name']))
+				
+			else:
+				life['think_rate_max'] = 1
+		else:
+			if life['think_rate_max']<30:
+				logging.debug('[Agent] %s went offline (Reason: Away from viewer)' % ' '.join(life['name']))
+			
+			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
 	else:
-		life['think_rate_max'] = LIFE_THINK_RATE
-	
-	life['_last_module'] = _modules.keys()[0]
+		life['think_rate_max'] = 5
 	
 	if life['think_rate']:
 		life['think_rate'] -= 1
 		return False
 	
+	for module in CONSTANT_MODULES:
+		module.setup(life)
+	
 	life['think_rate'] = life['think_rate_max']
 	
-	_visible_alife = [knows_alife_by_id(life, t) for t in life['seen']] #Targets we can see
-	_non_visible_alife = [knows_alife_by_id(life, k) for k in life['know'] if not k in life['seen']] #Targets we can't see but still might be relevant
-	_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_visible_threats(life)]
-	_non_visible_threats = []#[knows_alife_by_id(life, t) for t in judgement.get_invisible_threats(life)]
+	_goal, _tier, _plan = planner.get_next_goal(life)
 	
-	for target in _visible_alife:		
-		if snapshots.process_snapshot(life, target['life']):
-			judgement.judge_life(life, target['life']['id'])
+	if _goal:
+		lfe.change_goal(life, _goal, _tier, _plan)
+	else:
+		lfe.change_goal(life, 'idle', TIER_RELAXED, [])
+		logging.error('%s has no possible goal.' % ' '.join(life['name']))
+		return False
 	
-	for module in MODULES:	
-		try:		
-			module.setup(life)
-		except:
-			continue
-	
-	#_stime = time.time()
-	_passive_only = False
-	_modules_run = False
-	#_times = []
-	
-	_sorted_modules = _modules.keys()
-	_sorted_modules.sort()
-	
-	while _modules:
-		_score_tier = _sorted_modules[0]
-		module = _modules[_score_tier].pop(0)
-		
-		try:
-			_module_tier = module.get_tier(life)
-		except AttributeError:
-			_module_tier = module.TIER
-		
-		if (_module_tier <= life['state_tier'] and not _passive_only) or _module_tier == TIER_PASSIVE:
-			_return = module.conditions(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, [])
-			
-			if _return == STATE_CHANGE:
-				lfe.change_state(life, module.STATE, _module_tier)
-			
-			if _return:
-				module.tick(life, _visible_alife, _non_visible_alife, _visible_threats, _non_visible_threats, [])
-				
-				if _return == RETURN_SKIP:
-					if not _modules[_score_tier]:
-						del _modules[_score_tier]
-					continue
-				
-				_modules_run = True
-				if not _module_tier == TIER_PASSIVE:
-					_passive_only = True
-		
-		#_times.append({'time': time.time()-_stime, 'module': module.STATE})
-		
-		if not _modules[_score_tier]:
-			del _modules[_score_tier]
-			_sorted_modules.remove(_score_tier)
-	
-	if not _modules_run:
-		lfe.change_state(life, 'idle', TIER_IDLE)
-	
-	#print life['name'], time.time()-_stime
+	planner.think(life)
 	

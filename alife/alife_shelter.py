@@ -19,21 +19,7 @@ def get_tier(life):
 	
 	return TIER
 
-def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	RETURN_VALUE = STATE_UNCHANGED
-	
-	if not life['state'] == STATE:
-		RETURN_VALUE = STATE_CHANGE
-	
-	if not lfe.execute_raw(life, 'discover', 'desires_shelter') or not lfe.execute_raw(life, 'state', 'shelter'):
-		return False
-	
-	if not [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
-		return False
-	
-	return RETURN_VALUE
-
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+def tick(life):
 	if not 'shelter' in life['state_flags']:
 		life['state_flags']['shelter'] = judgement.get_best_shelter(life)
 	
