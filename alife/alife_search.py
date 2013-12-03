@@ -32,6 +32,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life):
-	_lost_targets = judgement.get_threats(life, escaped_only=True)
+	_lost_targets = judgement.get_threats(life, escaped_only=True, ignore_escaped=2)
 	
 	movement.search_for_target(life, _lost_targets[0])
