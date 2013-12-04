@@ -109,11 +109,16 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 							_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
+							if time.time()%1>=0.75:
+								_back_color = tcod.black
+							else:
+								_back_color = tcod.white
+							
 							blit_char_to_view(_RENDER_X,
 								_RENDER_Y,
 								'X',
 								(tcod.darker_grey,
-									tcod.black),
+									_back_color),
 								'map')
 						else:
 							if _shadow > 2:

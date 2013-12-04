@@ -362,6 +362,9 @@ def draw_items(view_size=MAP_WINDOW_SIZE):
 	_view = gfx.get_view_by_name('map')
 	
 	for item_uid in LIFE[SETTINGS['following']]['seen_items']:
+		if not item_uid in ITEMS:
+			continue
+		
 		_item = ITEMS[item_uid]
 	
 		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):

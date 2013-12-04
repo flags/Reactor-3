@@ -1235,8 +1235,6 @@ def create_look_list():
 		gfx.enable_panels()
 		return False
 	
-	gfx.disable_panels()
-	
 	_menu_items = []
 	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		if items.is_item_owned(item['uid']):
@@ -1250,6 +1248,8 @@ def create_look_list():
 	if not _menu_items:
 		gfx.message('There\'s nothing to look at.')
 		return False
+	
+	gfx.disable_panels()
 	
 	_i = menus.create_menu(title='Look at...',
 	    menu=_menu_items,

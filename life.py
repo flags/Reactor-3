@@ -2928,6 +2928,9 @@ def pass_out(life, length=None):
 	
 	logging.debug('%s passed out.' % life['name'][0])
 
+def get_pain_tolerance(life):
+	return .15*alife.stats.get_melee_skill(life)
+
 def get_total_pain(life):
 	_pain = 0
 	
@@ -3010,9 +3013,9 @@ def get_thirst_status(life):
 def get_health_status(life):
 	_string = []
 	
-	if get_total_pain(life)>4:
+	if get_total_pain(life)>=3.5:
 		_string.append('Faint')
-	elif get_total_pain(life)>2:
+	elif get_total_pain(life)>=1.5:
 		_string.append('Wincing')
 	
 	if not get_hunger_status(life) == 'Satiated':
@@ -3487,7 +3490,7 @@ def natural_healing(life):
 			continue
 		
 		_limb = get_limb(life, limb)	
-		_limb['pain'] = numbers.clip(_limb['pain']-0.05, 0, 100)
+		_limb['pain'] = numbers.clip(_limb['pain']-get_pain_tolerance(life), 0, 100)
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
