@@ -573,7 +573,7 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
-	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
 		return True
 	
 	if maps.is_solid(pos) and item['velocity'][2]<0:

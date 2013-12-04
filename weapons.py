@@ -56,9 +56,9 @@ def change_fire_mode(weapon, mode):
 
 def get_stance_recoil_mod(life):
 	if life['stance'] == 'standing':
-		return 1
+		return 1.3
 	elif life['stance'] == 'crouching':
-		return .75
+		return .95
 	elif life['stance'] == 'crawling':
 		return .50
 

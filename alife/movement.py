@@ -9,6 +9,7 @@ import combat
 import speech
 import chunks
 import memory
+import alife
 import zones
 import sight
 import brain
@@ -140,6 +141,9 @@ def escape(life, targets):
 			
 			_visible_target_chunks.append(chunk_key)
 	
+	for friendly_id in life['seen']:
+		_visible_target_chunks.append(lfe.get_current_chunk_id(LIFE[friendly_id]))
+	
 	if not _target_positions:
 		return False
 	
@@ -153,8 +157,6 @@ def escape(life, targets):
 	if not _cover:
 		return False
 	
-	print life['name'], 'is escaping from', life['pos'], len(_target_positions), len(_cover), tuple(life['pos']) in _cover
-	
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	for _pos in _cover:
 		_zone = zones.get_zone_at_coords(_pos)
@@ -163,7 +165,6 @@ def escape(life, targets):
 			_zones.append(_zone)
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _cover[:]}]):
-		print life['name'], 'waiting to hide/hide in progress'
 		return True
 	
 	lfe.stop(life)

@@ -1065,8 +1065,8 @@ def walk(life, to=None, path=None):
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 		
-		if life['recoil'] < get_max_speed(life):
-			life['recoil'] = get_max_speed(life)
+		if life['recoil'] < get_max_speed(life)*weapons.get_stance_recoil_mod(life):
+			life['recoil'] = get_max_speed(life)*weapons.get_stance_recoil_mod(life)
 	
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
