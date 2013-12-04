@@ -1360,7 +1360,8 @@ def perform_action(life):
 				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
 				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
 			
-			remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
+			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
+				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
 		
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		delete_action(life, action)

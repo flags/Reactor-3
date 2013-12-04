@@ -194,7 +194,7 @@ def create_item(name, position=[0,0,2], item=None):
 	return item['uid']
 
 def delete_item(item):
-	if item['owner']:
+	if item['uid'] in ITEMS and item['owner'] and item['uid'] in LIFE[item['owner']]['inventory']:
 		life.remove_item_from_inventory(LIFE[item['owner']], item['uid'])
 	
 	logging.debug('Deleting references to item %s' % item['uid'])
@@ -569,8 +569,8 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	if item['uid'] in ITEMS and ITEMS[item['uid']]['owner'] and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
-		delete_item(item)
+	#if item['uid'] in ITEMS and ITEMS[item['uid']]['owner'] and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
+	delete_item(item)
 
 def collision_with_solid(item, pos):
 	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:

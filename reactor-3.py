@@ -61,6 +61,13 @@ def move_camera(pos, scroll=False):
 	if SETTINGS['controlling']:
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
+def draw_targeting():
+	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
+		
+		SELECTED_TILES[0] = []
+		for pos in drawing.diag_line(LIFE[SETTINGS['controlling']]['pos'],LIFE[SETTINGS['controlling']]['targeting']):
+			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
+
 def death():
 	#TODO: Awful hack
 	if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
@@ -112,6 +119,7 @@ def main():
 	if not _played_moved:
 		logic.tick_all_objects(ignore_tickrate=True)
 	
+	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
