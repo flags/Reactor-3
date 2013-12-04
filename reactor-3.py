@@ -126,8 +126,13 @@ def main():
 		gfx.refresh_view('map')
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
-		_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
-		alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+		if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
+			alife.brain.flag(LIFE[SETTINGS['controlling']], 'visible_chunks', value=_visible_chunks)
+			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['controlling']], judge=False, get_chunks=True)
+		else:
+			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
+			alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+			
 		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights()

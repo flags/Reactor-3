@@ -27,6 +27,13 @@ def add_goal(life, goal_name, desire, tier, loop_until, set_flags):
 	
 	logging.debug('Created goal: %s' % goal_name)
 
+
+def remove_goal(life, goal_name):
+	logging.warning('TODO: Remove blacklist.')
+	
+	if not goal_name in life['goap_goals_blacklist']:
+		life['goap_goals_blacklist'].append(goal_name)
+
 def add_action(life, action_name, desire, satisfies, loop_until, execute, set_flags, non_critical):
 	life['goap_actions'][action_name] = {'desire': desire.split(','),
 	                                     'satisfies': satisfies.split(','),

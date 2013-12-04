@@ -21,7 +21,7 @@ def change_weather():
 	                           'overcast_thunderstorm',
 	                           'overcast_rain',
 	                           'overcast',
-	                           'dark_night_rain']
+	                           'dark_night_thunderstorm']
 	
 	_colors = []
 	_indexes = []

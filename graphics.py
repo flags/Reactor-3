@@ -656,12 +656,12 @@ def log(text):
 	CONSOLE_HISTORY.append(text)
 
 def message(text, style=None):
+	set_view_dirty('message_box')
+	
 	if MESSAGE_LOG and MESSAGE_LOG[len(MESSAGE_LOG)-1]['msg'] == text:
 		MESSAGE_LOG[len(MESSAGE_LOG)-1]['count'] += 1
 		return None
 	
-	
-	set_view_dirty('message_box')
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):

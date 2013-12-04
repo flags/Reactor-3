@@ -15,9 +15,11 @@ SOLDIER_ITEMS = [{'ALICE pack': 1},
                  {'frag grenade': 3}]
 SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}
+SOLDIER_BANNED_GOALS = ['discover']
 
 LIFE_CLASSES = {'soldier': {'items': SOLDIER_ITEMS,
-                            'stats': SOLDIER_STATS}}
+                            'stats': SOLDIER_STATS,
+                            'banned_goals': SOLDIER_BANNED_GOALS}}
 
 
 def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
@@ -38,6 +40,9 @@ def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
 		
 		for stat in LIFE_CLASSES[life_class]['stats']:
 			_alife['stats'][stat] = LIFE_CLASSES[life_class]['stats'][stat]
+		
+		for goal in LIFE_CLASSES[life_class]['banned_goals']:
+			alife.planner.remove_goal(_alife, goal)
 		
 		if group:
 			if not _group_members:

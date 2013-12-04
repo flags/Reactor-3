@@ -314,18 +314,18 @@ def is_any_menu_getting_input():
 
 def create_target_list():
 	_menu_items = []
-	for target in [l for l in LIFE.values() if alife.sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
-		if target['dead']:
+	for target_id in LIFE[SETTINGS['controlling']]['seen']:
+		if LIFE[target_id]['dead']:
 			continue
 		
 		if not _menu_items:
-			SETTINGS['following'] = target['id']
+			SETTINGS['following'] = target_id
 		
-		_color = life.draw_life_icon(target)[1]
+		_color = life.draw_life_icon(LIFE[target_id])[1]
 		_menu_items.append(create_item('single',
-		                               ' '.join(target['name']),
+		                               ' '.join(LIFE[target_id]['name']),
 		                               None,
-		                               target=target['id'],
+		                               target=target_id,
 		                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
 	
 	return _menu_items

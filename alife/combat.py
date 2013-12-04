@@ -377,7 +377,7 @@ def ranged_combat(life, targets):
 						'target_id': _target['life']['id'],
 						'limb': 'chest'},
 						5000,
-						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life)*stats.get_firearm_accuracy(life))))
+						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
 		else:
 			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 			

@@ -785,7 +785,6 @@ def tick_item(item_uid):
 	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
-	print 'SPEED', item['speed']
 
 def tick_all_items():
 	for item in ITEMS.keys():

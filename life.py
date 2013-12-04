@@ -121,10 +121,17 @@ def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
 	
+	if not 'goap_goals_blacklist' in life:
+		life['goap_goals_blacklist'] = []
+	
 	life['goap_goals'] = {}
 	life['goap_actions'] = {}
 	life['goap_plan'] = {}
+	
 	alife.planner.parse_goap(life)
+	
+	for goal in life['goap_goals_blacklist']:
+		del life['goap_goals'][goal]
 
 def initiate_needs(life):
 	"""Creates innate needs for `life`."""
@@ -1258,7 +1265,7 @@ def perform_action(life):
 	if not _action in life['actions']:
 		return False
 
-	if action['delay']:
+	if action['delay']>0:
 		action['delay']-=1
 		
 		return False
@@ -1355,7 +1362,7 @@ def perform_action(life):
 		
 	elif _action['action'] == 'pickupitem':
 		#If we're looting someone...
-		if ITEMS[_action['item']]['owner']:
+		if ITEMS[_action['item']]['owner'] and not life['id'] == ITEMS[_action['item']]['owner']:
 			if not LIFE[ITEMS[_action['item']]['owner']]['asleep']:
 				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
 				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
