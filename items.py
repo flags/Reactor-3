@@ -569,7 +569,7 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	if item['uid'] in ITEMS and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
+	if item['uid'] in ITEMS and ITEMS[item['uid']]['owner'] and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
 		delete_item(item)
 
 def collision_with_solid(item, pos):

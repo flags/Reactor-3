@@ -698,6 +698,15 @@ def handle_input():
 		for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
 			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
 			_items.extend(items.get_items_at(__pos))
+			
+		#Sue me.
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+				continue
+			
+			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
+				if 'capacity' in ITEMS[item_uid]:
+					_items.append(ITEMS[item_uid])
 		
 		if menus.get_menu_by_name('Pick up')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Pick up'))
@@ -706,10 +715,8 @@ def handle_input():
 		create_open_item_menu(_items)
 	
 	if INPUT['b']:
-		#print LIFE[SETTINGS['following']]['actions']
-		#print life.create_recent_history(LIFE[SETTINGS['following']])
-		#life.print_life_table()
 		import weather
+		
 		weather.change_weather()
 		WORLD_INFO['time_scale'] = 12
 		WORLD_INFO['real_time_of_day'] = 1200

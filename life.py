@@ -1354,8 +1354,16 @@ def perform_action(life):
 		delete_action(life, action)
 		
 	elif _action['action'] == 'pickupitem':
+		#If we're looting someone...
+		if ITEMS[_action['item']]['owner']:
+			if not LIFE[ITEMS[_action['item']]['owner']]['asleep']:
+				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
+				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
+			
+			remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
+		
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
-		delete_action(life,action)
+		delete_action(life, action)
 		
 		set_animation(life, [',', 'x'], speed=6)
 		
