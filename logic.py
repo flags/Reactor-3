@@ -222,8 +222,8 @@ def process_events():
 	if not _event:
 		return False
 	
-	if _event['time']:
-		_event['time'] -= 1
+	if _event['time']>0:
+		_event['time'] -= 0.1
 		return True
 	
 	return show_next_event()

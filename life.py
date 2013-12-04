@@ -2758,7 +2758,7 @@ def draw_life_info():
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
 	
 	#Health
-	_health_string = calculate_overall_health(life)
+	_health_string = get_health_status(life)
 	tcod.console_print(0, _health_position[0], _health_position[1], 'Health:')
 	
 	if _health_string == 'Fine':
@@ -3006,6 +3006,28 @@ def get_thirst_status(life):
 	else:
 		return 'Dehydrated'
 
+def get_health_status(life):
+	_string = []
+	
+	if get_total_pain(life)>4:
+		_string.append('Faint')
+	elif get_total_pain(life)>2:
+		_string.append('Wincing')
+	
+	if not get_hunger_status(life) == 'Satiated':
+		_string.append('Hungry')
+	
+	if life['blood']/float(calculate_max_blood(life))<.50:
+		_string.append('Passing out')
+	elif life['blood']/float(calculate_max_blood(life))<.75:
+		_string.append('Dizzy')
+	
+	if _string:
+		return language.prettify_string_array(_string, 30)
+	
+	return 'Fine'
+
+
 def calculate_blood(life):
 	_blood = 0
 	
@@ -3028,20 +3050,6 @@ def calculate_blood(life):
 
 def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
-
-def calculate_overall_health(life):
-	_string = []
-	
-	if get_total_pain(life)>4:
-		_string.append('Aching')
-	
-	if not get_hunger_status(life) == 'Satiated':
-		_string.append('Hungry')
-	
-	if _string:
-		return language.prettify_string_array(_string, 30)
-	
-	return 'Fine'
 
 def get_bleeding_limbs(life):
 	"""Returns list of bleeding limbs."""

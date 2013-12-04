@@ -126,7 +126,7 @@ def find_actions_that_satisfy(life, desires):
 		
 		_looping = False
 		for loop_until_func in life['goap_actions'][action]['loop_until']:
-			if not FUNCTION_MAP[loop_until_func](life):
+			if not execute(life, loop_until_func):
 				_looping = True
 				
 		if _looping:
