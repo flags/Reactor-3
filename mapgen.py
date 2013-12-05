@@ -30,7 +30,7 @@ MAX_BUILDING_SIZE = max([MAX_TOWNHOUSE_SIZE, MAX_WAREHOUSE_SIZE])
 TOWN_DISTANCE = 60*5
 TOWN_SIZE = 160
 FOREST_DISTANCE = 10
-OUTPOST_DISTANCE = 15*5
+OUTPOST_DISTANCE = 8*5
 OPEN_TILES = ['.']
 DOOR_TILES = ['D']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
@@ -169,6 +169,8 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	logging.debug('Generating outposts...')	
 	for i in range(map_gen['outposts']):
 		construct_outpost(map_gen)	
+	
+	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
 	
 	#Placeholder!
 	logging.debug('Placing region spawns...')
@@ -1595,6 +1597,8 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 		
 		for container in _placed_containers:
 			_storage.remove(container)
+	
+	return _building_chunk_map
 
 def construct_outpost(map_gen):
 	_chunk_keys = map_gen['chunk_map'].keys()
@@ -1616,9 +1620,14 @@ def construct_outpost(map_gen):
 		if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _dirt_road_chunks)>OUTPOST_DISTANCE:
 			continue
 		
+		_continue = False
 		for _outpost_chunks in map_gen['refs']['outposts']:
-			if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _outpost_chunks)>OUTPOST_DISTANCE:
+			if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _outpost_chunks)<15*5:
+				_continue = True
 				continue
+		
+		if _continue:
+			continue
 		
 		_outpost_chunk = _chunk
 		break
@@ -1697,13 +1706,25 @@ def construct_outpost(map_gen):
 					_swapped = True
 				
 				if y<_y_min or y>_y_max:
-					print _swapped
 					continue
 				
 				create_tile(map_gen, _x, _y, 2, _tile)
 	
 	map_gen['refs']['outposts'].append(_building_chunks)
-	construct_building(map_gen, {'rooms': _building_chunks}, building_type='outpost', exterior_chunks=[_door_chunk_key])
+	_building_chunk_keys = construct_building(map_gen, {'rooms': _building_chunks}, building_type='outpost', exterior_chunks=[_door_chunk_key])
+	
+	for chunk_key in _building_chunks:
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'wall', diagonal=True):
+			for y in range(map_gen['chunk_size']):
+				for x in range(map_gen['chunk_size']):
+					_pos = list(map_gen['chunk_map'][neighbor_chunk_key]['pos'])
+					_pos[0] += x
+					_pos[1] += y
+					
+					if not map_gen['map'][_pos[0]][_pos[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+						continue
+					
+					create_tile(map_gen, _pos[0], _pos[1], 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
 
 def can_spawn_item(item):
 	if item['rarity']>random.uniform(0, 1.0):

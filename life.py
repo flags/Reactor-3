@@ -1617,7 +1617,10 @@ def perform_action(life):
 		#	5001,
 		#	delay=weapons.get_recoil(life))
 		
-		delete_action(life, action)
+		try:
+			delete_action(life, action)
+		except:
+			logging.error('Action no longer in action queue: shoot')
 	
 	elif _action['action'] == 'bite':
 		damage.bite(life, _action['target'], _action['limb'])
