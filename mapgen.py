@@ -30,7 +30,7 @@ MAX_BUILDING_SIZE = max([MAX_TOWNHOUSE_SIZE, MAX_WAREHOUSE_SIZE])
 TOWN_DISTANCE = 60*5
 TOWN_SIZE = 160
 FOREST_DISTANCE = 10
-OUTPOST_DISTANCE = 8*5
+OUTPOST_DISTANCE = 12*5
 OPEN_TILES = ['.']
 DOOR_TILES = ['D']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
@@ -521,6 +521,7 @@ def place_dirt_path(map_gen, start_chunk, end_chunk):
 	
 	for pos in render_los.draw_line(_start_pos[0], _start_pos[1], _end_pos[0], _end_pos[1]):
 		_chunk_key = alife.chunks.get_chunk_key_at(pos)
+		map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 		
 		if not _chunk_key in map_gen['refs']['dirt_road']:
 			map_gen['refs']['dirt_road'].append(_chunk_key)
@@ -748,7 +749,8 @@ def place_forest(map_gen):
 			if random.randint(0, _height*18):
 				continue
 			
-			_actual_height = numbers.clip(_height, 2, 100)+(random.randint(2, 4))
+			_actual_height = numbers.clip(_height, 2, 100)+(random.randint(2, 4))			
+			
 			create_tree(map_gen, (x, y, 2), _actual_height)
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
@@ -1641,9 +1643,11 @@ def construct_outpost(map_gen):
 		map_gen['chunk_map'][chunk_key]['type'] = 'outpost'
 	
 	_wall_chunks = []
+	_yard_chunks = []
 	for chunk_key in _building_chunks:	
 		for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other', diagonal=True):
 			_wall_chunks.append(neighbor_key)
+			_yard_chunks.extend(get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'other'))	
 	
 	_door_chunk_key = random.choice(_wall_chunks)
 	
@@ -1653,6 +1657,34 @@ def construct_outpost(map_gen):
 		
 		map_gen['chunk_map'][chunk_key]['type'] = 'wall'
 	
+	for chunk_key in _yard_chunks[:]:
+		_pos = map_gen['chunk_map'][chunk_key]['pos']
+		
+		for new_chunk_key in walker(map_gen, _pos, 8, return_keys=True):
+			if not new_chunk_key in _yard_chunks:
+				_yard_chunks.append(new_chunk_key)
+	
+	if _door_chunk_key in _yard_chunks:
+		_yard_chunks.remove(_door_chunk_key)
+	
+	for chunk_key in _yard_chunks:
+		if map_gen['chunk_map'][chunk_key]['type'] == 'wall':
+			continue
+		
+		_pos = map_gen['chunk_map'][chunk_key]['pos']
+		map_gen['chunk_map'][chunk_key]['type'] = 'outpost'
+		
+		for y in range(map_gen['chunk_size']):
+			for x in range(map_gen['chunk_size']):
+				create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+		
+		if not random.randint(0, 5):
+			for y in range(2, 4):
+				for x in range(2, 4):
+					for z in range(0, 2):
+						create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2+z, random.choice(tiles.WHITE_TILE_TILES))	
+	
+	
 	for chunk_key in _wall_chunks:
 		if chunk_key == _door_chunk_key:
 			continue
@@ -1661,8 +1693,6 @@ def construct_outpost(map_gen):
 		_xy_swap_y = -1
 		_pos = map_gen['chunk_map'][chunk_key]['pos']
 		_directions = [DIRECTION_MAP[k] for k in [str(direction_from_key_to_key(map_gen, chunk_key, k)) for k in get_neighbors_of_type(map_gen,  map_gen['chunk_map'][chunk_key]['pos'], 'wall') if not k == _door_chunk_key]]
-		
-		#print _directions
 		
 		if 'left' in _directions and 'right' in _directions or (len(_directions)==1 and ('left' in _directions or 'right' in _directions)):
 			_x_min = 0

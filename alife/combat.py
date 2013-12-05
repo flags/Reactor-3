@@ -286,32 +286,11 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def melee_combat(life, targets):
-	_target = brain.knows_alife_by_id(life, targets[0])
-	
-	if not _target['escaped']:
-		if movement.travel_to_position(life, _target['last_seen_at']):
-			if sight.can_see_position(life, _target['life']['pos']):
-				lfe.clear_actions(life, matches=[{'action': 'move'}])
-				
-				lfe.add_action(life,{'action': 'bite',
-					'target': _target['life']['id'],
-					'limb': random.choice(_target['life']['body'].keys())},
-					5000,
-					delay=0)
-			else:
-				_target['escaped'] = 1
-			
-				for send_to in judgement.get_trusted(life):
-					speech.communicate(life,
-						'target_missing',
-						target=_target['life']['id'],
-						matches=[{'id': send_to}])
-
 def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
+		#TODO: Dude, what?
 		movement.find_target(life, targets, call=False)
 		return False
 	

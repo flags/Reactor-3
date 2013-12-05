@@ -32,7 +32,10 @@ def position_to_attack(life, target):
 			if life_id == target or life['id'] == life_id:
 				continue
 			
-			_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
+			if alife.judgement.can_trust(life, life_id):
+				_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
+			else:
+				_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
 		
 		_cover = _target_positions
 		
@@ -87,6 +90,12 @@ def search_for_target(life, target_id):
 	else:
 		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
+		
+		lfe.stop(life)
+		lfe.walk_to(life, _know['last_seen_at'][:2])
+	
+	if life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
+		return False
 	
 	_lowest = {'score': -1, 'pos': None}
 	_x_top_left = numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])

@@ -502,6 +502,11 @@ def explode(item):
 	
 	#TODO: Dirty hack
 	for life_id in LIFE:
+		_limbs = LIFE[life_id]['body'].keys()
+		
+		if not _limbs:
+			continue
+		
 		_force = numbers.clip((item['damage']['force']*2)-numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
 		
 		if not _force:
@@ -513,8 +518,6 @@ def explode(item):
 		#TODO: Intelligent(?) limb groups?
 		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
 		
-		#for limb in random.sample(LIFE[life_id]['body'].keys(), _force-_distance):
-		_limbs = LIFE[life_id]['body'].keys()
 		for i in range(_force-_distance):
 			_limb = random.choice(_limbs)
 			
