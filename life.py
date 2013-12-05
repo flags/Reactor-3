@@ -1112,6 +1112,9 @@ def walk_path(life):
 			life['pos'][2] -= 1
 		
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
+		for item_uid in _next_chunk['items'][:]:
+			_next_chunk['items'].remove(item_uid)
+		
 		for item_uid in _next_chunk['items']:
 			if items.is_blocking(item_uid):
 				activate_item(life, item_uid)

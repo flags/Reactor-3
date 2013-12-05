@@ -24,6 +24,12 @@ import time
 
 def can_tick(ignore_tickrate=False):
 	if SETTINGS['controlling'] and not EVENTS and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
+		if life.is_target_of(LIFE[SETTINGS['controlling']]):
+			if not SETTINGS['paused']:
+				gfx.message('An enemy appears.', style='important')
+			
+			SETTINGS['paused'] = True
+			
 		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
