@@ -541,6 +541,9 @@ def draw_status_line():
 	_flashing_text = []
 	_non_flashing_text = []
 	
+	if not SETTINGS['following']:
+		return False
+	
 	if LIFE[SETTINGS['following']]['targeting']:
 		_flashing_text.append('Firing')
 	
