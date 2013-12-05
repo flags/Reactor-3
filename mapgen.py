@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
+import render_los
 import maputils
 import language
 import drawing
@@ -137,7 +138,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'outposts': outposts,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': []},
+		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -293,7 +294,12 @@ def generate_outlines(map_gen):
 		
 		_road['length'] = (_length/2, _length-2)
 		
-		place_road(map_gen, **_road)	
+		place_road(map_gen, **_road)
+	
+	#Place dirt road leading to factories/swamp
+	#TODO: Actual location of factories/swamp
+	_dirt_path_start_key = alife.chunks.get_nearest_chunk_in_list((MAP_SIZE[0]/2, 150), map_gen['refs']['roads'])
+	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((MAP_SIZE[0]/2, 150)))
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -503,6 +509,22 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			break
 		
 		#take rest of _possible_next_dirs and make intersection?
+
+def place_dirt_path(map_gen, start_chunk, end_chunk):
+	_start_pos = list(alife.chunks.get_chunk(start_chunk)['pos'])
+	_start_pos[0]+=map_gen['chunk_size']/2
+	_start_pos[1]+=map_gen['chunk_size']/2
+	
+	_end_pos = alife.chunks.get_chunk(end_chunk)['pos']
+	
+	for pos in render_los.draw_line(_start_pos[0], _start_pos[1], _end_pos[0], _end_pos[1]):
+		_chunk_key = alife.chunks.get_chunk_key_at(pos)
+		
+		if not _chunk_key in map_gen['refs']['dirt_road']:
+			map_gen['refs']['dirt_road'].append(_chunk_key)
+		
+		for pos_mod in render_los.draw_circle(pos[0], pos[1], 4):
+			create_tile(map_gen, pos_mod[0], pos_mod[1], 2, random.choice(tiles.DIRT_TILES))
 
 def place_factory(map_gen):
 	_existing_factories = map_gen['refs']['factories']
@@ -1581,8 +1603,22 @@ def construct_outpost(map_gen):
 	while _chunk_keys:
 		_chunk_key = _chunk_keys.pop(random.randint(0, len(_chunk_keys)-1))
 		_chunk = map_gen['chunk_map'][_chunk_key]
-		if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], map_gen['refs']['roads'])<OUTPOST_DISTANCE:
+		
+		_dirt_road_chunks = []
+		_dirt_road_end_pos = alife.chunks.get_chunk(map_gen['refs']['dirt_road'][len(map_gen['refs']['dirt_road'])-1])['pos']
+		
+		for chunk_key in map_gen['refs']['dirt_road']:
+			if numbers.distance(alife.chunks.get_chunk(chunk_key)['pos'], _dirt_road_end_pos)>6*5:
+				continue
+			
+			_dirt_road_chunks.append(chunk_key)
+		
+		if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _dirt_road_chunks)>OUTPOST_DISTANCE:
 			continue
+		
+		for _outpost_chunks in map_gen['refs']['outposts']:
+			if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _outpost_chunks)>OUTPOST_DISTANCE:
+				continue
 		
 		_outpost_chunk = _chunk
 		break
