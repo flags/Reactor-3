@@ -271,7 +271,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	return False
 
 def find_target(life, target, distance=5, follow=False, call=True):
-	print 'tar get', target
+	print 'tar get', target, life['state']
 	_target = brain.knows_alife_by_id(life, target)
 	_dist = numbers.distance(life['pos'], _target['last_seen_at'])
 	

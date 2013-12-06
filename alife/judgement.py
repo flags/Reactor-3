@@ -290,8 +290,9 @@ def judge(life):
 			if _target['last_seen_time'] >= 2000:
 				_target['escaped'] = 2
 				logging.debug('%s flagged %s as lost (state 2).' % (' '.join(life['name']), ' '.join(_target['life']['name'])))
-			else:
-				_target['escaped'] = 1
+			#else:
+			#	_target['escaped'] = 1
+			#	print 'lost.....'
 		
 		_tension += get_tension_with(life, alife_id)
 		

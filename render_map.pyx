@@ -48,25 +48,25 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 	else:
 		_cam_pos = SETTINGS['camera_track'][:]
 	
-	if not _cam_pos[0]:
-		_x_mod = _cam_pos[0]-view_size[0]/2
-	elif _cam_pos[0]+view_size[0]>=MAP_SIZE[0]:
-		_x_mod = (_cam_pos[0]+view_size[0]/2)-MAP_SIZE[0]
+	if not CAMERA_POS[0]:
+		_x_mod = SETTINGS['camera_track'][0]-view_size[0]/2
+	elif CAMERA_POS[0]+view_size[0]>=MAP_SIZE[0]:
+		_x_mod = (SETTINGS['camera_track'][0]+view_size[0]/2)-MAP_SIZE[0]
+   
+	if not CAMERA_POS[1]:
+		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
+	elif CAMERA_POS[1]+view_size[1]>=MAP_SIZE[1]:
+		_y_mod = (SETTINGS['camera_track'][1]+view_size[1]/2)-MAP_SIZE[1]
 	
-	if not _cam_pos[1]:
-		_y_mod = _cam_pos[1]-view_size[1]/2
-	elif _cam_pos[1]+view_size[1]>=MAP_SIZE[1]:
-		_y_mod = (_cam_pos[1]+view_size[1]/2)-MAP_SIZE[1]
-	
-	if not _cam_pos[1]:
-		_y_mod = _cam_pos[1]-view_size[1]/2
+	_camera_x_offset = CAMERA_POS[0]-force_camera_pos[0]
+	_camera_y_offset = CAMERA_POS[1]-force_camera_pos[1]
 	
 	los = None
 	if 'los' in kwargs:
 		los = kwargs['los']
-		_min_los_x = (los.shape[0]/2)-view_size[0]/2-_x_mod
+		_min_los_x = (los.shape[0]/2)-view_size[0]/2-_x_mod+_camera_x_offset
 		_max_los_x = los.shape[0]
-		_min_los_y = (los.shape[1]/2)-view_size[1]/2-_y_mod
+		_min_los_y = (los.shape[1]/2)-view_size[1]/2-_y_mod+_camera_y_offset
 		_max_los_y = los.shape[1]
 	
 	_view = get_view_by_name('map')
