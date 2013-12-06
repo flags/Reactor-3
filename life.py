@@ -2774,18 +2774,17 @@ def draw_life_info():
 	
 	#Health
 	_health_string = get_health_status(life)
-	tcod.console_print(0, _health_position[0], _health_position[1], 'Health:')
 	
 	if _health_string == 'Fine':
 		tcod.console_set_default_foreground(0, tcod.lightest_green)
 	else:
 		tcod.console_set_default_foreground(0, tcod.lightest_red)
 	
-	tcod.console_print(0, _health_position[0]+8, _health_position[1], _health_string)
+	tcod.console_print(0, _health_position[0], _health_position[1], _health_string)
 	
 	#Weather
 	tcod.console_set_default_foreground(0, tcod.light_gray)
-	tcod.console_print(0, _health_position[0]+len(_health_string)+9,
+	tcod.console_print(0, _health_position[0]+len(_health_string)+1,
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
