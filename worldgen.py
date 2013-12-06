@@ -29,9 +29,8 @@ import sys
 BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt',
-              'leather backpack',
+              'ALICE pack',
               'radio',
-              'frag grenade',
               'molotov']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
@@ -371,12 +370,12 @@ def create_player():
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
-	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('AK-74'))
+	life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm magazine'))
 	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
 	
-	for i in range(10):
-		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
+	for i in range(30):
+		life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm round'))
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(PLAYER, items.create_item(item))

@@ -8,7 +8,8 @@ import logging
 import random
 
 
-SOLDIER_ITEMS = [{'ALICE pack': 1},
+SOLDIER_ITEMS = [{'kevlar jacket': 1},
+                 {'ALICE pack': 1},
                  {'mp5': 1},
                  {'9x19mm magazine': 1},
                  {'9x19mm round': 15},

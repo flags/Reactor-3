@@ -64,7 +64,10 @@ def bullet_hit(life, bullet, limb):
 		
 		if 'storing' in _item:
 			for item_in_container_uid in _item['storing']:
-				if random.randint(0, ITEMS[item_in_container_uid]['size'])<bullet['size']:
+				print '*' * 100
+				_chance_of_hitting_item = bullet['size']*(_item['capacity']/float(_item['max_capacity']))
+				print 'percent chance of hitting item:', 1-_chance_of_hitting_item
+				if random.uniform(0, 1)<_chance_of_hitting_item:
 					continue
 				
 				_items_to_check.append({'item': item_in_container_uid, 'visible': False})
@@ -74,7 +77,7 @@ def bullet_hit(life, bullet, limb):
 		_item_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
 		_item['thickness'] = numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
 		
-		_speed_mod = 1-(_item_damage)
+		_speed_mod = _item_damage
 		bullet['speed'] *= _speed_mod
 		bullet['velocity'][0] *= _speed_mod
 		bullet['velocity'][1] *= _speed_mod
@@ -87,7 +90,7 @@ def bullet_hit(life, bullet, limb):
 			else:
 				items.delete_item(_item)
 		else:
-			if bullet['speed']<=0:
+			if bullet['speed']<=1:
 				_msg.append(', lodging itself in %s' % items.get_name(_item))
 				_ret_string = own_language(life, _msg)
 			
