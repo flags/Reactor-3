@@ -317,7 +317,7 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 	for target in target_list:
 		_knows = brain.knows_alife_by_id(life, target)
 		
-		if (escaped_only and not _knows['escaped']==1) or (ignore_escaped and _knows['escaped']==ignore_escaped):
+		if (escaped_only and not _knows['escaped']==1) or (ignore_escaped and _knows['escaped']>=ignore_escaped):
 			continue
 		
 		if ignore_lost and _knows['escaped'] == 2:

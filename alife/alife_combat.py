@@ -63,7 +63,7 @@ def ranged_attack(life):
 	combat.ranged_combat(life, _all_targets)
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	_all_targets = judgement.get_threats(life, ignore_escaped=2)
+	_all_targets = judgement.get_threats(life, ignore_escaped=1)
 	
 	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
 		combat.ranged_combat(life, _all_targets)

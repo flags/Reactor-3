@@ -1113,7 +1113,8 @@ def walk_path(life):
 		
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
 		for item_uid in _next_chunk['items'][:]:
-			_next_chunk['items'].remove(item_uid)
+			if not item_uid in ITEMS:
+				_next_chunk['items'].remove(item_uid)
 		
 		for item_uid in _next_chunk['items']:
 			if items.is_blocking(item_uid):
@@ -3034,7 +3035,9 @@ def get_health_status(life):
 	if not get_hunger_status(life) == 'Satiated':
 		_string.append('Hungry')
 	
-	if life['blood']/float(calculate_max_blood(life))<.50:
+	if not calculate_max_blood(life):
+		_string.append('Dying')
+	elif life['blood']/float(calculate_max_blood(life))<.50:
 		_string.append('Passing out')
 	elif life['blood']/float(calculate_max_blood(life))<.75:
 		_string.append('Dizzy')
