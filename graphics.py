@@ -23,7 +23,10 @@ def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	elif '_inrow' in FONT:
 		_layout = tcod.FONT_LAYOUT_ASCII_INROW
 	
-	tcod.console_set_custom_font(_font_file, _layout|tcod.FONT_TYPE_GRAYSCALE)
+	if '_tiles' in FONT:
+		_layout = _layout|tcod.FONT_TYPE_GRAYSCALE
+	
+	tcod.console_set_custom_font(_font_file, _layout)
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	
 	if terraform:
