@@ -14,7 +14,7 @@ import time
 
 VERSION = 6
 
-def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
+def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
@@ -43,18 +43,23 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _x_mod = 0
 	cdef int _y_mod = 0
 	
-	if not CAMERA_POS[0]:
-		_x_mod = SETTINGS['camera_track'][0]-view_size[0]/2
-	elif CAMERA_POS[0]+view_size[0]>=MAP_SIZE[0]:
-		_x_mod = (SETTINGS['camera_track'][0]+view_size[0]/2)-MAP_SIZE[0]
+	if force_camera_pos:
+		_cam_pos = force_camera_pos[:]
+	else:
+		_cam_pos = SETTINGS['camera_track'][:]
 	
-	if not CAMERA_POS[1]:
-		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
-	elif CAMERA_POS[1]+view_size[1]>=MAP_SIZE[1]:
-		_y_mod = (SETTINGS['camera_track'][1]+view_size[1]/2)-MAP_SIZE[1]
+	if not _cam_pos[0]:
+		_x_mod = _cam_pos[0]-view_size[0]/2
+	elif _cam_pos[0]+view_size[0]>=MAP_SIZE[0]:
+		_x_mod = (_cam_pos[0]+view_size[0]/2)-MAP_SIZE[0]
 	
-	if not CAMERA_POS[1]:
-		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
+	if not _cam_pos[1]:
+		_y_mod = _cam_pos[1]-view_size[1]/2
+	elif _cam_pos[1]+view_size[1]>=MAP_SIZE[1]:
+		_y_mod = (_cam_pos[1]+view_size[1]/2)-MAP_SIZE[1]
+	
+	if not _cam_pos[1]:
+		_y_mod = _cam_pos[1]-view_size[1]/2
 	
 	los = None
 	if 'los' in kwargs:
