@@ -1989,7 +1989,24 @@ def create_wound_menu():
 				_title = True
 				
 			if wound['cut']:
-				_entries.append(menus.create_item('single', 'Cut', '%s' % wound['cut'], limb=wound['limb']))
+				if wound['cut']<=.5:
+					_status = 'Scraped'
+					_color = tcod.lighter_red
+				elif wound['cut']<=1:
+					_status = 'Cut'
+					_color = tcod.light_crimson
+				elif wound['cut']<=2:
+					_status = 'Gouged'
+					_color = tcod.crimson
+				else:
+					_status = 'Devastated'
+					_color = tcod.dark_crimson
+				
+				_entries.append(menus.create_item('single',
+				                                  'Cut',
+				                                  _status,
+				                                  limb=wound['limb'],
+				                                  color=(_color, tcod.white)))
 	
 	if not _entries:
 		gfx.message('You don\'t need medical attention.')

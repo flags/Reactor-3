@@ -290,8 +290,8 @@ def judge(life):
 			if _target['last_seen_time'] >= 2000:
 				_target['escaped'] = 2
 				logging.debug('%s flagged %s as lost (state 2).' % (' '.join(life['name']), ' '.join(_target['life']['name'])))
-			#else:
-			#	_target['escaped'] = 1
+			elif _target['last_seen_time']>=25 and not _target['escaped']:
+				_target['escaped'] = 1
 			#	print 'lost.....'
 		
 		_tension += get_tension_with(life, alife_id)
@@ -422,7 +422,7 @@ def get_invisible_threats(life):
 def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
-	for target_id in get_combat_targets(life):
+	for target_id in get_threats(life):
 		if not target_id in life['seen'] == _inverse:
 			_targets.append(target_id)
 	

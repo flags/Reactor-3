@@ -3463,6 +3463,8 @@ def damage_from_item(life, item, damage):
 	memory(_shot_by_alife, 'shot', target=life['id'])
 	memory(life, 'shot_by', target=item['shot_by'])
 	
+	brain.flag(life, 'cover_exposed', value=item['shot_by'])
+	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not sight.can_see_position(ai, life['pos']):
 			continue

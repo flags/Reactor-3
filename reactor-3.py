@@ -113,7 +113,7 @@ def main():
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
 		gfx.title('Sleeping: %s' % LIFE[SETTINGS['controlling']]['asleep'])
-		logic.tick_all_objects(ignore_tickrate=True)
+		logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
 		_played_moved = True
 	
 	if not _played_moved:

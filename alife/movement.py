@@ -51,9 +51,9 @@ def position_to_attack(life, target):
 			lfe.add_action(life, {'action': 'dijkstra_move',
 				                  'rolldown': True,
 				                  'goals': _cover[:],
-			                       'orig_goals': _cover[:],
-			                       'avoid_positions': _avoid_positions,
-			                       'reason': 'positioning for attack'},
+			                      'orig_goals': _cover[:],
+			                      'avoid_positions': _avoid_positions,
+			                      'reason': 'positioning for attack'},
 				           999)
 			
 			return False
@@ -151,7 +151,14 @@ def escape(life, targets):
 			_visible_target_chunks.append(chunk_key)
 	
 	for friendly_id in life['seen']:
-		_visible_target_chunks.append(lfe.get_current_chunk_id(LIFE[friendly_id]))
+		_chunk_key = lfe.get_current_chunk_id(LIFE[friendly_id])
+		
+		if not _chunk_key in _visible_target_chunks:
+			_visible_target_chunks.append(_chunk_key)
+	
+	_cover_exposed_by = brain.get_flag(life, 'cover_exposed')
+	if _cover_exposed_by and not _cover_exposed_by in life['seen']:
+		brain.unflag(life, 'cover_exposed')
 	
 	if not _target_positions:
 		return False
@@ -183,43 +190,6 @@ def escape(life, targets):
 	                      'goals': _cover[:],
 	                      'reason': 'escaping'},
 	               999)
-
-def hide(life, target_id):
-	return False
-	_target = brain.knows_alife_by_id(life, target_id)
-	_goals = [_target['last_seen_at'][:]]
-	_avoid_positions = []
-	
-	print 'HIDING!!!!!!!!!'
-	print _goals
-	
-	_orig_goals = _goals[:]
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _goals[:]}]):
-		print 'currently pathing'
-		return True
-	
-	#_goals.append(life['pos'][:])
-	
-	#TODO: replace with chunks_visible_from_position
-	for chunk_key in brain.get_flag(LIFE[target_id], 'visible_chunks'):
-		_chunk = WORLD_INFO['chunk_map'][chunk_key]
-		
-		_avoid_positions.extend(_chunk['ground'])
-	
-	lfe.stop(life)
-	lfe.add_action(life, {'action': 'dijkstra_move',
-                          'rolldown': False,
-                          'goals': _goals[:],
-	                     'orig_goals': _orig_goals,
-	                     'avoid_positions': _avoid_positions},
-                   999)
-	#else:
-	#	if brain.get_flag(life, 'scared') and not speech.has_considered(life, target, 'surrendered_to'):
-	#		speech.communicate(life, 'surrender', target=target)
-	#		brain.flag(life, 'surrendered')
-	#		#print 'surrender'
-	
-	#return True
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
