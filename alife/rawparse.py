@@ -195,7 +195,7 @@ def create_function_map():
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
 		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life),
 		'manage_inventory': lambda life: alife_manage_items.tick(life),
-		'cover_exposed': lambda life: brain.get_flag(life, 'cover_exposed')>0,
+		'cover_exposed': lambda life: brain.get_flag(life, 'cover_exposed_at')>0,
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
 		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),

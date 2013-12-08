@@ -3463,7 +3463,14 @@ def damage_from_item(life, item, damage):
 	memory(_shot_by_alife, 'shot', target=life['id'])
 	memory(life, 'shot_by', target=item['shot_by'])
 	
-	brain.flag(life, 'cover_exposed', value=item['shot_by'])
+	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
+	_chunk_key = get_current_chunk_id(life)
+	
+	if _cover_exposed_at:
+		if not _chunk_key in _cover_exposed_at:
+			_cover_exposed_at.append(get_current_chunk_id(life))
+	else:
+		brain.flag(life, 'cover_exposed_at', value=[_chunk_key])
 	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not sight.can_see_position(ai, life['pos']):

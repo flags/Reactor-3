@@ -62,6 +62,9 @@ def move_camera(pos, scroll=False):
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
 def draw_targeting():
+	if SETTINGS['following'] and not SETTINGS['controlling'] == SETTINGS['following']:
+		SELECTED_TILES[0] = [(p[0], p[1], 2) for p in LIFE[SETTINGS['following']]['path']]
+	
 	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
 		
 		SELECTED_TILES[0] = []
