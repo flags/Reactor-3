@@ -29,6 +29,25 @@ def unregister_effect(effect):
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
 	del EFFECTS[effect['id']]
 
+def create_fire(pos, intensity=1):
+	intensity = numbers.clip(intensity, 1, 8)
+	
+	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
+		return False
+	
+	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
+		return False
+	
+	_effect = {'type': 'fire',
+	    'color': tcod.Color(255, 69, 0),
+	    'pos': list(pos),
+	    'intensity': intensity,
+	    'callback': calculate_fire,
+	    'draw_callback': draw_fire,
+	    'unregister_callback': delete_fire}
+	
+	register_effect(_effect)
+
 def draw_fire(pos, fire):
 	_intensity = fire['intensity']/float(8)
 	_rand_intensity = numbers.clip(_intensity-random.uniform(0, .2), 0, 1)
@@ -101,31 +120,6 @@ def delete_fire(fire):
 	if 'light' in fire:
 		delete_light(fire['light'])
 
-def create_fire(pos, intensity=1):
-	intensity = numbers.clip(intensity, 1, 8)
-	
-	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
-		return False
-	
-	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
-		return False
-	
-	_effect = {'type': 'fire',
-	    'color': tcod.Color(255, 69, 0),
-	    'pos': list(pos),
-	    'intensity': intensity,
-	    'callback': calculate_fire,
-	    'draw_callback': draw_fire,
-	    'unregister_callback': delete_fire}
-	
-	register_effect(_effect)
-
-def draw_ash(pos, ash):
-	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
-
-def delete_ash(ash):
-	unregister_effect(ash)
-
 def create_ash(pos):
 	_color = random.randint(0, 25)
 	_intensity = numbers.clip(_color/float(25), .3, 1)
@@ -139,6 +133,26 @@ def create_ash(pos):
 	    'unregister_callback': delete_ash}
 	
 	register_effect(_effect)
+
+def draw_ash(pos, ash):
+	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
+
+def delete_ash(ash):
+	unregister_effect(ash)
+
+#def create_smoke(pos):
+#	_color = random.randint(50, 100)
+#	_intensity = numbers.clip(_color/float(25), .3, 1)
+#	
+#	_effect = {'type': 'ash',
+#	    'color': tcod.Color(_color, _color, _color),
+#	    'intensity': _intensity, 
+#	    'pos': list(pos),
+#	    'callback': lambda x: 1==1,
+#	    'draw_callback': draw_smoke,
+#	    'unregister_callback': delete_ash}
+#	
+#	register_effect(_effect)
 
 #def create_particle(pos, color, velocity):
 #	_effect = {'type': 'particle',
