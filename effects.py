@@ -24,7 +24,8 @@ def register_effect(effect):
 	WORLD_INFO['effectid'] += 1
 
 def unregister_effect(effect):
-	effect['unregister_callback'](effect)
+	if effect['unregister_callback']:
+		effect['unregister_callback'](effect)
 	
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
 	del EFFECTS[effect['id']]
@@ -130,29 +131,54 @@ def create_ash(pos):
 	    'pos': list(pos),
 	    'callback': lambda x: 1==1,
 	    'draw_callback': draw_ash,
-	    'unregister_callback': delete_ash}
+	    'unregister_callback': lambda ash: unregister_effect(ash)}
 	
 	register_effect(_effect)
 
 def draw_ash(pos, ash):
 	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
 
-def delete_ash(ash):
-	unregister_effect(ash)
+def create_smoke(pos):
+	_color = random.randint(50, 100)
+	_intensity = .3
+	
+	_effect = {'type': 'smoke',
+	    'color': tcod.Color(_color, _color, _color),
+	    'intensity': _intensity, 
+	    'pos': list(pos),
+	    'callback': lambda x: 1==1,
+	    'draw_callback': draw_smoke,
+	    'unregister_callback': None}
+	
+	register_effect(_effect)
 
-#def create_smoke(pos):
-#	_color = random.randint(50, 100)
-#	_intensity = numbers.clip(_color/float(25), .3, 1)
-#	
-#	_effect = {'type': 'ash',
-#	    'color': tcod.Color(_color, _color, _color),
-#	    'intensity': _intensity, 
-#	    'pos': list(pos),
-#	    'callback': lambda x: 1==1,
-#	    'draw_callback': draw_smoke,
-#	    'unregister_callback': delete_ash}
-#	
-#	register_effect(_effect)
+def draw_smoke(pos, smoke):
+	gfx.tint_tile(pos[0], pos[1], smoke['color'], smoke['intensity'])
+
+def create_vapor(pos, time, intensity):
+	_color = random.randint(200, 205)
+	
+	_effect = {'type': 'vapor',
+	           'age': time*(1-intensity),
+	           'age_max': time,
+	           'max_intensity': 0.3,
+	           'color': tcod.Color(_color, _color, _color),
+	           'pos': list(pos),
+	           'callback': process_vapor,
+	           'draw_callback': draw_vapor,
+	           'unregister_callback': None}
+	
+	register_effect(_effect)
+
+def process_vapor(vapor):
+	if vapor['age'] >= vapor['age_max']:
+		unregister_effect(vapor)
+		return False
+	
+	vapor['age'] += 1
+
+def draw_vapor(pos, vapor):
+	gfx.tint_tile(pos[0], pos[1], vapor['color'], numbers.clip(vapor['max_intensity']*(1-(vapor['age']/float(vapor['age_max']))), 0, vapor['max_intensity']))
 
 #def create_particle(pos, color, velocity):
 #	_effect = {'type': 'particle',

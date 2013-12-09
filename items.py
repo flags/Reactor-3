@@ -605,6 +605,9 @@ def collision_with_solid(item, pos):
 	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
 		item['velocity'][1] = -item['velocity'][1]*.8
 	
+	if 'max_speed' in item:
+		effects.create_vapor(pos, 5, numbers.clip(item['speed']/30, 0, 1))
+	
 	return False
 
 def create_effects(item, pos, real_z_pos, z_min):
