@@ -147,22 +147,27 @@ def escape(life, targets):
 		
 		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), lambda pos: _avoid_positions.append(pos))
 	
+	#What can we see?
+	_can_see_positions = []
+	fov.fov(life['pos'], sight.get_vision(life), lambda pos: _can_see_positions.append(pos))
+	
 	#If there are no visible targets, we could be running away from a position we were attacked from
 	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
 	
 	if _cover_exposed_at:
 		_avoid_exposed_cover_positions = set()
 		
-		for pos in _cover_exposed_at:
-			fov.fov(pos, sight.get_vision(life), lambda pos: _avoid_exposed_cover_positions.add(pos))
+		for pos in _cover_exposed_at[:]:
+			if pos in _can_see_positions:
+				print 'ok!!!'*20
+				_cover_exposed_at.remove(pos)
+				continue
+			
+			fov.fov(pos, int(round(sight.get_vision(life)*.25)), lambda pos: _avoid_exposed_cover_positions.add(pos))
 		
 		for pos in _avoid_exposed_cover_positions:
-			if pos in _avoid_positions:
-				_avoid_positions.remove(pos)
-	
-	#What can we see?
-	_can_see_positions = []
-	fov.fov(life['pos'], sight.get_vision(life), lambda pos: _can_see_positions.append(pos))
+			if not pos in _avoid_positions:
+				_avoid_positions.append(pos)
 	
 	#Overlay the two, finding positions we can see but the target can't
 	for pos in _can_see_positions[:]:
