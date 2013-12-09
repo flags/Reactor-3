@@ -125,8 +125,8 @@ def main():
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
-	for pos in SELECTED_TILES[0]:
-		gfx.refresh_view_position(pos[0]-CAMERA_POS[0], pos[1]-CAMERA_POS[1], 'map')
+	if SELECTED_TILES[0]:
+		gfx.refresh_view('map')
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
 		if EVENTS:
