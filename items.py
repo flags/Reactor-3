@@ -579,16 +579,20 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
-	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
+	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1 or pos[2]<0 or pos[2]>=MAP_SIZE[2]-1:
 		return True
 	
-	if maps.is_solid(pos) and item['velocity'][2]<0:
-		#TODO: Bounce
-		item['velocity'] = [0, 0, 0]
-		item['pos'] = pos
-		process_event(item, 'stop')
-		
-		return True
+	try:
+		if maps.is_solid(pos) and item['velocity'][2]<0:
+			#TODO: Bounce
+			item['velocity'] = [0, 0, 0]
+			item['pos'] = pos
+			process_event(item, 'stop')
+			
+			return True
+	except:
+		print pos, MAP_SIZE
+		raise Exception('Error')
 	
 	if item['velocity'][2]>=0:
 		_z = 1
