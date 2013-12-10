@@ -341,6 +341,12 @@ def ranged_combat(life, targets):
 	_target = get_closest_target(life, targets)
 	
 	if not _target:
+		for target_id in targets:
+			if brain.knows_alife_by_id(life, target_id)['escaped']:
+				continue
+			
+			brain.knows_alife_by_id(life, target_id)['escaped'] = 1
+		
 		logging.error('No target for ranged combat.')
 		return False
 	

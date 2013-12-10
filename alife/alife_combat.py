@@ -48,8 +48,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 				if _knows and judgement.can_trust(life, SETTINGS['controlling']):
 					if lfe.ticker(life, 'enter_combat_message', 3, fire=True):
 						logic.show_event('%s readies up.' % ' '.join(life['name']), life=life)
-				
-				#gfx.highlight_tiles(_can_see)
 		
 		RETURN_VALUE = STATE_CHANGE
 	

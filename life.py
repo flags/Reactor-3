@@ -3503,7 +3503,7 @@ def damage_from_item(life, item, damage):
 	if brain.knows_alife_by_id(life, _shot_by_alife['id']):
 		judgement.judge_life(life, _shot_by_alife['id'])
 	else:
-		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']])))
+		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']]['name'])))
 	
 	return True
 

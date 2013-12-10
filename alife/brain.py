@@ -307,8 +307,6 @@ def understand(life):
 	for module in CONSTANT_MODULES:
 		module.setup(life)
 	
-	print life['name'], 'need cover from', get_flag(life, 'cover_exposed_at')
-	
 	life['think_rate'] = life['think_rate_max']
 	
 	_goal, _tier, _plan = planner.get_next_goal(life)
