@@ -182,6 +182,7 @@ def escape(life, targets):
 			#TODO: Unhardcode 15
 			if numbers.distance(_target['last_seen_at'], pos)<10:
 				_can_see_positions.remove(pos)
+				break
 	
 	#Now scan for cover to prevent hiding in the open
 	for pos in _can_see_positions[:]:
