@@ -151,6 +151,8 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
+		
+	WORLD_INFO['map'] = []
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		#try:
