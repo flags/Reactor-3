@@ -122,8 +122,14 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	_avoid_goals = []
 	for zone in [zon.get_slice(z) for z in zones]:
-		for y in range(_top_left[1], _bot_right[1]):
-			for x in range(_top_left[0], _bot_right[0]):
+		_zone_top_left_x = numbers.clip(_top_left[0], zone['top_left'][0], zone['bot_right'][0])
+		_zone_top_left_y = numbers.clip(_top_left[1], zone['top_left'][1], zone['bot_right'][1])
+		
+		_zone_bot_right_x = numbers.clip(_bot_right[0], zone['top_left'][0], zone['bot_right'][0])
+		_zone_bot_right_y = numbers.clip(_bot_right[1], zone['top_left'][1], zone['bot_right'][1])
+		
+		for y in range(_zone_top_left_y, _zone_bot_right_y):
+			for x in range(_zone_top_left_x, _zone_bot_right_x):
 				if (x, y) in avoid_positions:
 					continue
 				
