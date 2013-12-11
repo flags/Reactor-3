@@ -582,17 +582,13 @@ def collision_with_solid(item, pos):
 	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1 or pos[2]<0 or pos[2]>=MAP_SIZE[2]-1:
 		return True
 	
-	try:
-		if maps.is_solid(pos) and item['velocity'][2]<0:
-			#TODO: Bounce
-			item['velocity'] = [0, 0, 0]
-			item['pos'] = pos
-			process_event(item, 'stop')
+	if maps.is_solid(pos) and item['velocity'][2]<0:
+		#TODO: Bounce
+		item['velocity'] = [0, 0, 0]
+		item['pos'] = pos
+		process_event(item, 'stop')
 			
-			return True
-	except:
-		print pos, MAP_SIZE
-		raise Exception('Error')
+		return True
 	
 	if item['velocity'][2]>=0:
 		_z = 1
@@ -601,13 +597,25 @@ def collision_with_solid(item, pos):
 	
 	if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	elif not pos[0]+1 >= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	
 	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:
 		item['velocity'][1] = -item['velocity'][1]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
 		item['velocity'][1] = -item['velocity'][1]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	
 	if 'max_speed' in item:
 		effects.create_vapor(pos, 5, numbers.clip(item['speed']/30, 0, 1))

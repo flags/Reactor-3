@@ -301,7 +301,10 @@ def generate_outlines(map_gen):
 	#Place dirt road leading to factories/swamp
 	#TODO: Actual location of factories/swamp
 	_dirt_path_start_key = alife.chunks.get_nearest_chunk_in_list((MAP_SIZE[0]/2, 150), map_gen['refs']['roads'])
-	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((MAP_SIZE[0]/2, 150)))
+	_dirt_path_end_x_pos = numbers.clip(alife.chunks.get_chunk(_dirt_path_start_key)['pos'][0]+random.randint(-50, 50),
+	                                    int(round(MAP_SIZE[0]*.25)),
+	                                    int(round(MAP_SIZE[0]*.75)))
+	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((_dirt_path_end_x_pos, 150)))
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:

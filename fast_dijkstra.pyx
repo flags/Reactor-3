@@ -48,6 +48,8 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	#Some notes before we begin:
 	#	* You can't get cython-created arrays out of this function
 	
+	#TODO: We need to associate goals with zones, otherwise OOB errors occur
+	
 	_init_time = time.time()
 	_avoid_positions = avoid_positions[:]
 	avoid_positions = []
@@ -128,8 +130,15 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if _open_map[x][y]>-3:
 					continue
 				
-				if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
-					continue
+				try:
+					if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+						continue
+				except:
+					print 'Dijkstra crash dump:'
+					print 'Zones:', zones
+					print 'Start pos:', start_pos
+					
+					raise Exception('Crash.')
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
 				

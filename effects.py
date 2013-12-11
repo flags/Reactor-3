@@ -6,6 +6,7 @@ import life as lfe
 
 import render_los
 import numbers
+import alife
 import items
 import tiles
 import maps
@@ -17,7 +18,7 @@ import time
 import sys
 
 def register_effect(effect):
-	effect['id'] = WORLD_INFO['effectid']
+	effect['id'] = str(WORLD_INFO['effectid'])
 	EFFECTS[effect['id']] = effect
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].append(effect['id'])
 	
@@ -140,20 +141,54 @@ def draw_ash(pos, ash):
 
 def create_smoke(pos):
 	_color = random.randint(50, 100)
-	_intensity = .3
+	_intensity = random.uniform(.4, .75)
 	
 	_effect = {'type': 'smoke',
-	    'color': tcod.Color(_color, _color, _color),
-	    'intensity': _intensity, 
-	    'pos': list(pos),
-	    'callback': lambda x: 1==1,
-	    'draw_callback': draw_smoke,
-	    'unregister_callback': None}
+	           'color': tcod.Color(_color, _color, _color),
+	           'intensity': 0,
+	           'max_intensity': _intensity,
+	           'disappear': False,
+	           'pos': list(pos),
+	           'float_pos': list(pos),
+	           'velocity': [random.uniform(-.3, .3), random.uniform(-.3, .3)],
+	           'callback': process_smoke,
+	           'draw_callback': draw_smoke,
+	           'unregister_callback': None}
 	
 	register_effect(_effect)
 
+def create_smoke_cloud(pos, size):
+	for new_pos in render_los.draw_circle(pos[0], pos[1], size):
+		if not alife.sight._can_see_position(pos, new_pos, distance=False):
+			continue
+		
+		create_smoke(new_pos)
+
+def process_smoke(smoke):
+	if smoke['disappear']:
+		smoke['intensity'] -= 0.1
+	else:
+		if smoke['intensity'] < smoke['max_intensity']:
+			smoke['intensity'] += 0.1
+		else:
+			smoke['disappear'] = True
+	
+	if smoke['intensity'] < 0:
+		unregister_effect(smoke)
+		
+		return False
+	
+	smoke['float_pos'][0] += smoke['velocity'][0]
+	smoke['float_pos'][1] += smoke['velocity'][1]
+	
+	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].remove(smoke['id'])
+	
+	smoke['pos'] = [int(round(smoke['float_pos'][0])), int(round(smoke['float_pos'][1]))]
+	
+	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].append(smoke['id'])
+
 def draw_smoke(pos, smoke):
-	gfx.tint_tile(pos[0], pos[1], smoke['color'], smoke['intensity'])
+	gfx.tint_tile(pos[0], pos[1], smoke['color'], numbers.clip(smoke['intensity'], 0, 1))
 
 def create_vapor(pos, time, intensity):
 	_color = random.randint(200, 205)

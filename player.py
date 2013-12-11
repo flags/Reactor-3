@@ -1080,7 +1080,7 @@ def handle_arm_item(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):
-	SETTINGS['following'] = entry['target']
+	life.focus_on(LIFE[entry['target']])
 	LIFE[SETTINGS['controlling']]['targeting'] = LIFE[entry['target']]['pos'][:]
 
 def inventory_fire(entry):

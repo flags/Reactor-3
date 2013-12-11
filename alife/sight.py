@@ -162,7 +162,7 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		
 		if len(_line) > max_length and distance:
 			_ret_line = []
-			continue		
+			continue
 		
 		for pos in _line:
 			_chunk = chunks.get_chunk_from_cache(pos)
