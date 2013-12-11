@@ -159,6 +159,9 @@ def create_smoke(pos, color=tcod.gray, age=0):
 
 def create_smoke_cloud(pos, size, color=tcod.gray, age=0, factor_distance=False):
 	for new_pos in render_los.draw_circle(pos[0], pos[1], size):
+		if not gfx.position_is_in_frame(pos):
+			continue
+		
 		if not alife.sight._can_see_position(pos, new_pos, distance=False):
 			continue
 		
