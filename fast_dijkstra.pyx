@@ -138,6 +138,9 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					print 'Zones:', zones
 					print 'Start pos:', start_pos
 					
+					if len(zones) == 2:
+						print 'Connected:', zon.can_path_to_zone(zones[0], zones[1])
+					
 					raise Exception('Crash.')
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)

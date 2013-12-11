@@ -13,6 +13,9 @@ def suicide():
 def kill(life_id):
 	life.kill(LIFE[life_id], 'suicide')
 
+def stop():
+	LIFE[SETTINGS['following']]['path'] = []
+
 def clean_slate():
 	for alife in LIFE.values():
 		if alife['id'] == SETTINGS['controlling'] or alife['dead']:

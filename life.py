@@ -517,7 +517,6 @@ def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
 	life['heard'] = []
 	life['actions'] = []
-	life['path'] = []
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
@@ -2792,8 +2791,13 @@ def draw_life_info():
 	tcod.console_set_default_foreground(0, tcod.light_blue)
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+1+len(life['seen']),
-	                   ' '.join(life['goap_plan']))
-	
+	                   ' '.join(life['goap_plan']))	
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+2+len(life['seen']),
+	                   ', '.join([str(p) for p in life['pos']])+' @ Zone %s' % zones.get_zone_at_coords(life['pos']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+3+len(life['seen']),
+	                   str(maps.get_chunk(get_current_chunk_id(life))['max_z']))
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)
 	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
