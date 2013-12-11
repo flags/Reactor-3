@@ -2,7 +2,11 @@
 
 python freeze.py py2exe
 mkdir dist\data
-xcopy data dist\data /E /Y
+mkdir dist\data\maps
+xcopy data\items dist\data\items /i /E /Y
+xcopy data\life dist\data\life /i /E /Y
+xcopy data\text dist\data\text /i /E /Y
+xcopy data\tiles dist\data\tiles /i /E /Y
 copy libtcod-mingw.dll dist
 copy SDL.dll dist
 copy terminal.png dist
