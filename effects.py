@@ -171,6 +171,15 @@ def create_smoke_cloud(pos, size, color=tcod.gray, age=0, factor_distance=False)
 		
 		create_smoke(new_pos, color=color, age=age*_age_mod)
 
+def create_smoke_streamer(pos, size, length, color=tcod.gray):
+	_direction = random.randint(0, 359)
+	_end_velocity = numbers.velocity(_direction, length)
+	_end_pos = [int(round(pos[0]+_end_velocity[0])), int(round(pos[1]+_end_velocity[1]))]
+	
+	for new_pos in render_los.draw_line(pos[0], pos[1], _end_pos[0], _end_pos[1]):
+		_new_pos = [new_pos[0], new_pos[1], pos[2]]
+		create_smoke_cloud(_new_pos, size, age=-numbers.distance(pos, new_pos)/float(length), color=color)
+
 def process_smoke(smoke):
 	if smoke['disappear']:
 		smoke['intensity'] -= 0.1
@@ -180,7 +189,7 @@ def process_smoke(smoke):
 		else:
 			smoke['disappear'] = True
 	
-	if smoke['intensity'] < 0:
+	if smoke['intensity'] < 0 and smoke['disappear']:
 		unregister_effect(smoke)
 		
 		return False

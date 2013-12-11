@@ -493,7 +493,16 @@ def explode(item):
 	
 	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
 	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=2)
-	effects.create_smoke_cloud(item['pos'], item['damage']['force']*6, age=.8, factor_distance=True)
+	effects.create_smoke_cloud(item['pos'],
+	                           item['damage']['force']*6,
+	                           age=.8,
+	                           factor_distance=True)
+	
+	for i in range(random.randint(1, 3)):
+		effects.create_smoke_streamer(item['pos'],
+		                              3+random.randint(0, 2),
+		                              (item['damage']['force']*2)+random.randint(3, 6),
+		                              color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
@@ -720,7 +729,7 @@ def tick_item(item_uid):
 		
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
 			if item['type'] == 'bullet':
-				effects.create_light(item['pos'], (255, 0, 0), 9, 0)
+				effects.create_light(item['pos'], (255, 0, 0), 9, 0, fade=0.1)
 			
 			logging.debug('Item #%s hit a wall.' % item['uid'])
 			
