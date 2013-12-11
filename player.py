@@ -729,6 +729,7 @@ def handle_input():
 				break
 		
 		life.focus_on(LIFE[str(_id)])
+		SELECTED_TILES[0] = []
 		FADE_TO_WHITE[0] = 0
 		gfx.refresh_view('map')
 
@@ -740,6 +741,7 @@ def handle_input():
 				break
 		
 		life.focus_on(LIFE[str(_id)])
+		SELECTED_TILES[0] = []
 		FADE_TO_WHITE[0] = 0
 		gfx.refresh_view('map')
 
@@ -1163,7 +1165,7 @@ def inventory_fire_action(entry):
 		     delay=numbers.clip(i, 0, 1)*3)
 		
 	LIFE[SETTINGS['controlling']]['targeting'] = None
-	SETTINGS['following'] = SETTINGS['controlling']
+	life.focus_on(LIFE[SETTINGS['controlling']])
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])

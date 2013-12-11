@@ -397,9 +397,16 @@ def create_player():
 	
 def create_region_spawns():
 	#Step 1: Army Outpost
-	
 	for outpost in WORLD_INFO['refs']['outposts']:
 		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+	
+	#Step 2: Bandit village
+	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
+	spawns.generate_life('bandit',
+	                     amount=random.randint(3, 5),
+	                     group=True,
+	                     group_motive='crime',
+	                     spawn_chunks=[_spawn_chunk])
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
 	#for i in range(1):

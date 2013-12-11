@@ -170,13 +170,13 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if SETTINGS['recording']:
-		if 10+SETTINGS['recording fps temp']:
-			SETTINGS['recording fps temp'] -= 1
-		else:
-			WORLD_INFO['d'] = WORLD_INFO['ticks']
+	if SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
+		#	if 10+SETTINGS['recording fps temp']:
+		#		SETTINGS['recording fps temp'] -= 1
+		#	else:
+		#		WORLD_INFO['d'] = WORLD_INFO['ticks']
 			gfx.screenshot()
-			SETTINGS['recording fps temp'] = SETTINGS['recording fps']
+	#		SETTINGS['recording fps temp'] = SETTINGS['recording fps']
 
 def loop():
 	while SETTINGS['running']:

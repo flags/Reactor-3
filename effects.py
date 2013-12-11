@@ -139,13 +139,13 @@ def create_ash(pos):
 def draw_ash(pos, ash):
 	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
 
-def create_smoke(pos):
-	_color = random.randint(50, 100)
+def create_smoke(pos, color=tcod.gray, age=0):
 	_intensity = random.uniform(.4, .75)
+	_color = tcod.color_lerp(color, tcod.white, random.uniform(0, 0.3))
 	
 	_effect = {'type': 'smoke',
-	           'color': tcod.Color(_color, _color, _color),
-	           'intensity': 0,
+	           'color': _color,
+	           'intensity': _intensity*age,
 	           'max_intensity': _intensity,
 	           'disappear': False,
 	           'pos': list(pos),
@@ -157,12 +157,16 @@ def create_smoke(pos):
 	
 	register_effect(_effect)
 
-def create_smoke_cloud(pos, size):
+def create_smoke_cloud(pos, size, color=tcod.gray, age=0, factor_distance=False):
 	for new_pos in render_los.draw_circle(pos[0], pos[1], size):
 		if not alife.sight._can_see_position(pos, new_pos, distance=False):
 			continue
 		
-		create_smoke(new_pos)
+		_age_mod = 1
+		if factor_distance:
+			_age_mod = 1-numbers.clip(numbers.distance(pos, new_pos)/float(size), 0.1, 1)
+		
+		create_smoke(new_pos, color=color, age=age*_age_mod)
 
 def process_smoke(smoke):
 	if smoke['disappear']:

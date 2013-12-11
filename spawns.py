@@ -18,12 +18,24 @@ SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}
 SOLDIER_BANNED_GOALS = ['discover']
 
+BANDIT_ITEMS = [{'white t-shirt': 1,
+                 'leather backpack': 1,
+                 'corn': 2,
+                 'soda': 2,
+                 'glock': 1,
+                 '9x19mm magazine': 1,
+                 '9x19mm round': 17}]
+BANDIT_STATS = {'firearms': 3+random.randint(0, 2)}
+
 LIFE_CLASSES = {'soldier': {'items': SOLDIER_ITEMS,
                             'stats': SOLDIER_STATS,
-                            'banned_goals': SOLDIER_BANNED_GOALS}}
+                            'banned_goals': SOLDIER_BANNED_GOALS},
+                'bandit': {'items': BANDIT_ITEMS,
+                           'stats': BANDIT_STATS,
+                           'banned_goals': []}}
 
 
-def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
+def generate_life(life_class, amount=1, group=False, group_motive='survival', spawn_chunks=[]):
 	_group_members = []
 	
 	if spawn_chunks:
@@ -49,6 +61,7 @@ def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
 			if not _group_members:
 				_alife['stats']['is_leader'] = True
 				_group = alife.groups.create_group(_alife)
+				alife.groups.set_motive(_alife, _group, 'crime')
 		
 			_group_members.append(_alife)
 	
@@ -58,6 +71,7 @@ def generate_life(life_class, amount=1, group=False, spawn_chunks=[]):
 				continue
 			
 			alife.groups.discover_group(m1, _group)
+			alife.groups.set_motive(m1, _group, 'crime')
 			alife.groups.add_member(_group_members[0], _group, m1['id'])
 			alife.groups.add_member(m1, _group, m1['id'])
 			m1['group'] = _group
