@@ -195,6 +195,8 @@ def loop():
 	worldgen.cleanup()
 
 if __name__ == '__main__':
+	profiles.version_check()
+	
 	#TODO: Replace with "module_sanity_check"
 	#Optional Cython-compiled modules
 	try:

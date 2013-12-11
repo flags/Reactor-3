@@ -175,6 +175,12 @@ def load_world(world):
 def save_world():
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+	
+	_config_directory, _worlds_directory = profiles.has_reactor3()
+	_version_file = os.path.join(_worlds_directory, WORLD_INFO['id'], 'version.txt')
+	
+	with open(_version_file, 'w') as version_file:
+		version_file.write(VERSION)
 
 	logging.debug('Saving items...')
 	items.save_all_items()
