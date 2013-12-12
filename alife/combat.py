@@ -286,6 +286,14 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
+def get_exposed_positions(life):
+	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
+	
+	if _cover_exposed_at:
+		return _cover_exposed_at
+	
+	return []
+
 def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)

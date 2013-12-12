@@ -158,7 +158,7 @@ def escape(life, targets):
 		_avoid_exposed_cover_positions = set()
 		
 		for pos in _cover_exposed_at[:]:
-			if pos in _can_see_positions:
+			if tuple(pos[:2]) in _can_see_positions:
 				print 'ok!!!'*20
 				_cover_exposed_at.remove(pos)
 				continue

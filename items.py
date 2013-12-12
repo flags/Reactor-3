@@ -494,7 +494,7 @@ def explode(item):
 	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
 	
 	if item['damage']['force']:
-		effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=2)
+		effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=3)
 		effects.create_smoke_cloud(item['pos'],
 			                       item['damage']['force']*6,
 			                       age=.8,
