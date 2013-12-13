@@ -62,18 +62,25 @@ def change_weather():
 	
 	WORLD_INFO['weather'].update(_weather)
 
+def get_current_weather():
+	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
+	
+	return WORLD_INFO['weather']['colors'][_current_weather]
+
 def get_lighting():
 	_time = numbers.clip(WORLD_INFO['real_time_of_day'], 0, len(WORLD_INFO['weather']['light_map'])-1)
 	return WORLD_INFO['weather']['light_map'][_time]
+
+def get_wind_velocity():
+	#return get_current_weather()['name']
+	return numbers.velocity(175, .8)
 
 def create_light_map(weather):
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])
 
 def get_weather_status():
-	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
-	
-	return WORLD_INFO['weather']['colors'][_current_weather]['name']
+	return get_current_weather()['name']
 
 def generate_effects(size):
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
@@ -101,6 +108,9 @@ def rain(size):
 		_y = random.randint(0, size[1]-1)
 		_skip = False
 		
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
+			continue
+		
 		for z in range(LIFE[SETTINGS['controlling']]['pos'][2]+1, MAP_SIZE[2]):
 			if maps.is_solid((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y, z)):
 				_skip = True
@@ -109,22 +119,27 @@ def rain(size):
 		if _skip:
 			continue
 		
-		if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
-			continue
-		
 		REFRESH_POSITIONS.append((_x, _y))
 		
 		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
 	
 	#"Wind"
-	
 	if logic.can_tick():
 		for i in range(random.randint(1, 4)):
 			_x = random.randint(0, size[0]-1)
 			_y = random.randint(0, size[1]-1)
+			_skip = False
 			
 			if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
 				continue
 			
-			effects.create_smoke((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y), color=tcod.white, grow=0.1, decay=0.03, direction=195, speed=0.8, max_opacity=.3)
+			for z in range(LIFE[SETTINGS['controlling']]['pos'][2]+1, MAP_SIZE[2]):
+				if maps.is_solid((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y, z)):
+					_skip = True
+					break
+		
+			if _skip:
+				continue
+			
+			effects.create_smoke((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y), color=tcod.white, grow=0.1, decay=0.03, direction=195, speed=random.uniform(0.35, 0.8), max_opacity=.3)
 	

@@ -6,6 +6,7 @@ import life as lfe
 
 import render_los
 import numbers
+import weather
 import alife
 import items
 import tiles
@@ -143,12 +144,12 @@ def clear_effect(effect):
 	if gfx.position_is_in_frame(effect['pos']):
 		gfx.refresh_view_position(effect['pos'][0]-CAMERA_POS[0], effect['pos'][1]-CAMERA_POS[1], 'map')
 
-def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1, speed=0.3, max_opacity=.75):
+def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1, speed=0.3, max_opacity=.75, interp_wind=True):
 	_intensity = random.uniform(max_opacity*.25, max_opacity)
 	_color = tcod.color_lerp(color, tcod.white, random.uniform(0, 0.3))
 	
 	if direction == -1:
-		_velocity = [random.uniform(-speed, speed), random.uniform(-speed, speed)]
+		_velocity = [random.uniform(-speed, speed), random.uniform(-speed, speed), 0]
 	else:
 		_velocity = numbers.velocity(direction, speed)
 	
@@ -161,7 +162,8 @@ def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1,
 	           'disappear': False,
 	           'pos': list(pos),
 	           'float_pos': list(pos),
-	           'velocity': [_velocity[0], _velocity[1]],
+	           'interp_wind': interp_wind,
+	           'velocity': [_velocity[0], _velocity[1], _velocity[2]],
 	           'callback': process_smoke,
 	           'draw_callback': draw_smoke,
 	           'unregister_callback': clear_effect}
@@ -204,6 +206,9 @@ def process_smoke(smoke):
 		unregister_effect(smoke)
 		
 		return False
+	
+	if smoke['interp_wind']:
+		smoke['velocity'] = numbers.lerp_velocity(smoke['velocity'], weather.get_wind_velocity(), 0.05)
 	
 	smoke['float_pos'][0] += smoke['velocity'][0]
 	smoke['float_pos'][1] += smoke['velocity'][1]
