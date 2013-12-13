@@ -3,8 +3,10 @@ from globals import *
 import libtcodpy as tcod
 import graphics as gfx
 
+import effects
 import numbers
 import alife
+import logic
 import maps
 
 import random
@@ -113,4 +115,16 @@ def rain(size):
 		REFRESH_POSITIONS.append((_x, _y))
 		
 		gfx.tint_tile(_x, _y, tcod.blue, random.uniform(0.1, 0.6))
+	
+	#"Wind"
+	
+	if logic.can_tick():
+		for i in range(random.randint(1, 4)):
+			_x = random.randint(0, size[0]-1)
+			_y = random.randint(0, size[1]-1)
+			
+			if not alife.sight.is_in_fov(LIFE[SETTINGS['controlling']], (CAMERA_POS[0]+_x, CAMERA_POS[1]+_y)):
+				continue
+			
+			effects.create_smoke((CAMERA_POS[0]+_x, CAMERA_POS[1]+_y), color=tcod.white, grow=0.1, decay=0.03, direction=195, speed=0.8, max_opacity=.3)
 	
