@@ -33,9 +33,14 @@ def distance(pos1, pos2, old=False):
 
 def velocity(direction, speed):
 	rad = direction*(pi/180)
-	velocity = numpy.multiply(numpy.array([cos(rad),sin(rad)]),speed)
+	velocity = numpy.multiply(numpy.array([cos(rad), sin(rad)]), speed)
 	
-	return [velocity[0],-velocity[1],0]
+	return [velocity[0], -velocity[1], 0]
+
+def lerp_velocity(velocity1, velocity2, interp):
+	return [lerp(velocity1[0], velocity2[0], interp),
+	        lerp(velocity1[1], velocity2[1], interp),
+	        lerp(velocity1[2], velocity2[2], interp)]
 
 def get_surface_area(structure):
 	if 'attaches_to' in structure:

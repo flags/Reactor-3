@@ -48,8 +48,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 				if _knows and judgement.can_trust(life, SETTINGS['controlling']):
 					if lfe.ticker(life, 'enter_combat_message', 3, fire=True):
 						logic.show_event('%s readies up.' % ' '.join(life['name']), life=life)
-				
-				#gfx.highlight_tiles(_can_see)
 		
 		RETURN_VALUE = STATE_CHANGE
 	
@@ -58,34 +56,15 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def ranged_attack(life):
-	_all_targets = judgement.get_threats(life, recent_only=True, ignore_escaped=2)
+	_all_targets = judgement.get_threats(life, ignore_escaped=1)
 	
 	combat.ranged_combat(life, _all_targets)
 
-#TODO: Use judgement.get_nearest_threat()
-def get_closest_target(life, targets):
-	_closest = {'dist': -1, 'life': None}
-	
-	for target in targets:
-		_know = brain.knows_alife_by_id(life, target)
-		_dist = numbers.distance(life['pos'], _know['last_seen_at'])
-		
-		if _dist<_closest['dist'] or not _closest['life']:
-			_closest['life'] = target
-			_closest['dist'] = _dist
-	
-	return _closest['life']
-
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	if brain.get_flag(life, 'combat_mode') == 'combat':
-		_all_targets = judgement.get_combat_targets(life, ignore_lost=True)
-	else:
-		_all_targets = judgement.get_threats(life, ignore_lost=True)
+	_all_targets = judgement.get_threats(life, ignore_escaped=1)
 	
 	if lfe.execute_raw(life, 'combat', 'ranged_ready', break_on_true=True, break_on_false=False):
-		#_closest_target = get_closest_target(life, _all_targets)
 		combat.ranged_combat(life, _all_targets)
 
 	if lfe.execute_raw(life, 'combat', 'melee_ready', break_on_true=True, break_on_false=False):
-		_closest_target = get_closest_target(life, _all_targets)
 		combat.melee_combat(life, _all_targets)

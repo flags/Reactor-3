@@ -6,6 +6,8 @@ import life as lfe
 
 import render_los
 import numbers
+import weather
+import alife
 import items
 import tiles
 import maps
@@ -17,17 +19,37 @@ import time
 import sys
 
 def register_effect(effect):
-	effect['id'] = WORLD_INFO['effectid']
+	effect['id'] = str(WORLD_INFO['effectid'])
 	EFFECTS[effect['id']] = effect
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].append(effect['id'])
 	
 	WORLD_INFO['effectid'] += 1
 
 def unregister_effect(effect):
-	effect['unregister_callback'](effect)
+	if effect['unregister_callback']:
+		effect['unregister_callback'](effect)
 	
 	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
 	del EFFECTS[effect['id']]
+
+def create_fire(pos, intensity=1):
+	intensity = numbers.clip(intensity, 1, 8)
+	
+	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
+		return False
+	
+	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
+		return False
+	
+	_effect = {'type': 'fire',
+	    'color': tcod.Color(255, 69, 0),
+	    'pos': list(pos),
+	    'intensity': intensity,
+	    'callback': calculate_fire,
+	    'draw_callback': draw_fire,
+	    'unregister_callback': delete_fire}
+	
+	register_effect(_effect)
 
 def draw_fire(pos, fire):
 	_intensity = fire['intensity']/float(8)
@@ -101,31 +123,6 @@ def delete_fire(fire):
 	if 'light' in fire:
 		delete_light(fire['light'])
 
-def create_fire(pos, intensity=1):
-	intensity = numbers.clip(intensity, 1, 8)
-	
-	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
-		return False
-	
-	if tiles.get_flag(tiles.get_tile(pos), 'burnt'):
-		return False
-	
-	_effect = {'type': 'fire',
-	    'color': tcod.Color(255, 69, 0),
-	    'pos': list(pos),
-	    'intensity': intensity,
-	    'callback': calculate_fire,
-	    'draw_callback': draw_fire,
-	    'unregister_callback': delete_fire}
-	
-	register_effect(_effect)
-
-def draw_ash(pos, ash):
-	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
-
-def delete_ash(ash):
-	unregister_effect(ash)
-
 def create_ash(pos):
 	_color = random.randint(0, 25)
 	_intensity = numbers.clip(_color/float(25), .3, 1)
@@ -136,9 +133,128 @@ def create_ash(pos):
 	    'pos': list(pos),
 	    'callback': lambda x: 1==1,
 	    'draw_callback': draw_ash,
-	    'unregister_callback': delete_ash}
+	    'unregister_callback': lambda ash: unregister_effect(ash)}
 	
 	register_effect(_effect)
+
+def draw_ash(pos, ash):
+	gfx.tint_tile(pos[0], pos[1], ash['color'], ash['intensity'])
+
+def clear_effect(effect):
+	if gfx.position_is_in_frame(effect['pos']):
+		gfx.refresh_view_position(effect['pos'][0]-CAMERA_POS[0], effect['pos'][1]-CAMERA_POS[1], 'map')
+
+def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1, speed=0.3, max_opacity=.75, interp_wind=True):
+	_intensity = random.uniform(max_opacity*.25, max_opacity)
+	_color = tcod.color_lerp(color, tcod.white, random.uniform(0, 0.3))
+	
+	if direction == -1:
+		_velocity = [random.uniform(-speed, speed), random.uniform(-speed, speed), 0]
+	else:
+		_velocity = numbers.velocity(direction, speed)
+	
+	_effect = {'type': 'smoke',
+	           'color': _color,
+	           'intensity': _intensity*age,
+	           'max_intensity': _intensity,
+	           'decay': decay,
+	           'grow': grow,
+	           'disappear': False,
+	           'pos': list(pos),
+	           'float_pos': list(pos),
+	           'interp_wind': interp_wind,
+	           'velocity': [_velocity[0], _velocity[1], _velocity[2]],
+	           'callback': process_smoke,
+	           'draw_callback': draw_smoke,
+	           'unregister_callback': clear_effect}
+	
+	register_effect(_effect)
+
+def create_smoke_cloud(pos, size, color=tcod.gray, age=0, factor_distance=False):
+	for new_pos in render_los.draw_circle(pos[0], pos[1], size):
+		if not gfx.position_is_in_frame(pos):
+			continue
+		 
+		if not alife.sight._can_see_position(pos, new_pos, distance=False):
+			continue
+		
+		_age_mod = 1
+		if factor_distance:
+			_age_mod = 1-numbers.clip(numbers.distance(pos, new_pos)/float(size), 0.1, 1)
+		
+		create_smoke(new_pos, color=color, age=age*_age_mod)
+
+def create_smoke_streamer(pos, size, length, color=tcod.gray):
+	_direction = random.randint(0, 359)
+	_end_velocity = numbers.velocity(_direction, length)
+	_end_pos = [int(round(pos[0]+_end_velocity[0])), int(round(pos[1]+_end_velocity[1]))]
+	
+	for new_pos in render_los.draw_line(pos[0], pos[1], _end_pos[0], _end_pos[1]):
+		_new_pos = [new_pos[0], new_pos[1], pos[2]]
+		create_smoke_cloud(_new_pos, size, age=-numbers.distance(pos, new_pos)/float(length), color=color)
+
+def process_smoke(smoke):
+	if smoke['disappear']:
+		smoke['intensity'] -= smoke['decay']
+	else:
+		if smoke['intensity'] < smoke['max_intensity']:
+			smoke['intensity'] += smoke['grow']
+		else:
+			smoke['disappear'] = True
+	
+	if smoke['intensity'] < 0 and smoke['disappear']:
+		unregister_effect(smoke)
+		
+		return False
+	
+	if smoke['interp_wind']:
+		smoke['velocity'] = numbers.lerp_velocity(smoke['velocity'], weather.get_wind_velocity(), 0.05)
+	
+	smoke['float_pos'][0] += smoke['velocity'][0]
+	smoke['float_pos'][1] += smoke['velocity'][1]
+	
+	_in_frame = gfx.position_is_in_frame(smoke['pos'])
+	_old_pos = smoke['pos'][:2]
+	
+	if _in_frame:
+		gfx.refresh_view_position(smoke['pos'][0]-CAMERA_POS[0], smoke['pos'][1]-CAMERA_POS[1], 'map')
+	
+	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].remove(smoke['id'])
+	
+	smoke['pos'] = [int(round(smoke['float_pos'][0])), int(round(smoke['float_pos'][1]))]
+	
+	if _in_frame and not smoke['pos'] == _old_pos:
+		gfx.refresh_view_position(smoke['pos'][0]-CAMERA_POS[0], smoke['pos'][1]-CAMERA_POS[1], 'map')
+		
+	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].append(smoke['id'])
+
+def draw_smoke(pos, smoke):
+	gfx.tint_tile(pos[0], pos[1], smoke['color'], numbers.clip(smoke['intensity'], 0, smoke['max_intensity']))
+
+def create_vapor(pos, time, intensity):
+	_color = random.randint(200, 205)
+	
+	_effect = {'type': 'vapor',
+	           'age': time*(1-intensity),
+	           'age_max': time,
+	           'max_intensity': 0.3,
+	           'color': tcod.Color(_color, _color, _color),
+	           'pos': list(pos),
+	           'callback': process_vapor,
+	           'draw_callback': draw_vapor,
+	           'unregister_callback': None}
+	
+	register_effect(_effect)
+
+def process_vapor(vapor):
+	if vapor['age'] >= vapor['age_max']:
+		unregister_effect(vapor)
+		return False
+	
+	vapor['age'] += 1
+
+def draw_vapor(pos, vapor):
+	gfx.tint_tile(pos[0], pos[1], vapor['color'], numbers.clip(vapor['max_intensity']*(1-(vapor['age']/float(vapor['age_max']))), 0, vapor['max_intensity']))
 
 #def create_particle(pos, color, velocity):
 #	_effect = {'type': 'particle',

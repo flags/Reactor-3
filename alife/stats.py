@@ -186,11 +186,14 @@ def battle_cry(life):
 		
 		lfe.say(life, _battle_cry_action, action=True)
 
+def get_melee_skill(life):
+	return numbers.clip((life['stats']['melee'])/10.0, 0.1, 1)
+
 def get_firearm_accuracy(life):
-	return numbers.clip((life['stats']['firearms'])/10.0, 0.1, 1)
+	return numbers.clip((life['stats']['firearms'])/10.0, 0.35, 1)
 
 def get_recoil_recovery_rate(life):
-	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)
+	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.4
 
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)

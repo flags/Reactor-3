@@ -29,9 +29,8 @@ import sys
 BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt',
-              'leather backpack',
+              'ALICE pack',
               'radio',
-              'frag grenade',
               'molotov']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
@@ -176,6 +175,12 @@ def load_world(world):
 def save_world():
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+	
+	_config_directory, _worlds_directory = profiles.has_reactor3()
+	_version_file = os.path.join(_worlds_directory, WORLD_INFO['id'], 'version.txt')
+	
+	with open(_version_file, 'w') as version_file:
+		version_file.write(VERSION)
 
 	logging.debug('Saving items...')
 	items.save_all_items()
@@ -371,12 +376,12 @@ def create_player():
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('mp5'))
-	life.add_item_to_inventory(PLAYER, items.create_item('mp5 magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('AK-74'))
+	life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm magazine'))
 	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
 	
-	for i in range(10):
-		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
+	for i in range(30):
+		life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm round'))
 	
 	#for item in RECRUIT_ITEMS:
 	#	life.add_item_to_inventory(PLAYER, items.create_item(item))
@@ -392,9 +397,16 @@ def create_player():
 	
 def create_region_spawns():
 	#Step 1: Army Outpost
-	pass
-	#for outpost in WORLD_INFO['refs']['outposts']:
-	#	spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+	for outpost in WORLD_INFO['refs']['outposts']:
+		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+	
+	#Step 2: Bandit village
+	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
+	spawns.generate_life('bandit',
+	                     amount=random.randint(3, 5),
+	                     group=True,
+	                     group_motive='crime',
+	                     spawn_chunks=[_spawn_chunk])
 	
 	#for town_seed in WORLD_INFO['refs']['town_seeds']:
 	#for i in range(1):

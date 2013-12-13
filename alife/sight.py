@@ -4,6 +4,7 @@ from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 import life as lfe
 
 import judgement
+import weather
 import chunks
 import brain
 import logic
@@ -23,8 +24,8 @@ def look(life):
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
 	
-	if life['think_rate'] % 3 and not 'player' in life:
-		return False
+	#if life['think_rate'] % 3 and not 'player' in life:
+	#	return False
 	
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
@@ -134,17 +135,10 @@ def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return 0
 	
-	#TODO: Fog? Smoke? Light?
-	#if logic.is_night():
-	#	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-1500:
-	#		_time = 1500-(WORLD_INFO['real_time_of_day']-(WORLD_INFO['length_of_day']-1500))
-	#	else:
-	#		_time = WORLD_INFO['real_time_of_day']
-	#	
-	#	_vision = numbers.clip(int(round(life['vision_max']*(_time/1500.0))), 5, life['vision_max'])
-	#	return _vision
+	_world_light = tcod.white-weather.get_lighting()
+	_light_percentage = numbers.clip((_world_light.r+_world_light.g+_world_light.b)/580.0, 0, 1)
 	
-	return life['vision_max']
+	return int(round(life['vision_max']*_light_percentage))
 
 #@profile
 def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
@@ -168,7 +162,7 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		
 		if len(_line) > max_length and distance:
 			_ret_line = []
-			continue		
+			continue
 		
 		for pos in _line:
 			_chunk = chunks.get_chunk_from_cache(pos)

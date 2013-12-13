@@ -15,16 +15,6 @@ Combat is a last resort, but it is by no means neglected in terms of development
 
 The game is developed in two parts: Engine and content. The engine still currently houses *some* content-specific features (for now), but forms most of its functionality by parsing external files that can be thought of as mods. Anything from controlling the body structure of an entity to its AI can be done outside of the game's code entirely.
 
-Screenshots
------------
-[Imgur gallery.]()
-
-If You're Reading This...
--------------------------
-This game has been in the works for roughly 10 months, but I chose to keep the repo private until I had at least something to show. The bad news is that there isn't much in the way of content yet (intentionally.) As I've said in the past, I wouldn't build content around a game that wasn't ready for it. I knew from the start that I would want to be able to make changes without fearing a breakage elsewhere, and having very little content has enabled that. What you're seeing here is an engine.
-
-In addition, I am enamored with the idea of a game that generates its own stories and its own content, and much like other games in the genre, I feel like I can accomplish something similar, but it will take time and dedication before I might ever see the payoff from it.
-
 Features
 ========
 
@@ -78,6 +68,7 @@ Controls
 * `d` - Drop item
 * `r` - Reload / fill mag or clip
 * `f` - Enter targeting mode (shoot)
+* `F (Shift-f)` - Set fire mode
 * `v` - Enter targeting mode (talk)
 * `V (Shift-v)` - Use radio
 * `k` - Open crafting menu

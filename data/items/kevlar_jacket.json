@@ -5,7 +5,7 @@
 "description": "A bulletproof jacket.",
 "attaches_to": "chest|stomach|lshoulder|rshoulder|lupperarm|rupperarm|lelbow|relbow|lforearm|rforearm",
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
-"size": "1x1",
+"size": "6x6",
 "capacity": "2x2",
-"thickness": 5,
-"material": "cloth"}
+"thickness": 12,
+"material": "kevlar"}

@@ -3,7 +3,7 @@
 "type": "bullet",
 "icon": ".",
 "description": "Long Rifle cartridge effective at mid to long range.",
-"speed": 32,
+"speed": 35,
 "recoil": 3,
 "drag": 0.05,
 "scatter_rate": 0.1,

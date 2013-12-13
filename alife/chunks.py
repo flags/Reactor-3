@@ -14,6 +14,7 @@ import time
 
 def generate_cache():
 	logging.debug('Generating chunk map cache...')
+	
 	for key in CHUNK_MAP_CACHE:
 		del CHUNK_MAP_CACHE[key]
 	

@@ -11,7 +11,7 @@ import brain
 import logging
 
 def tick(life):
-	_threats = judgement.get_threats(life, recent_only=True, ignore_escaped=2)
+	_threats = judgement.get_threats(life, ignore_escaped=2)
 	
 	for target in [LIFE[t] for t in _threats]:
 		if numbers.distance(life['pos'], brain.knows_alife(life, target)['last_seen_at']) >= sight.get_vision(life):

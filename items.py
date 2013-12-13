@@ -194,7 +194,7 @@ def create_item(name, position=[0,0,2], item=None):
 	return item['uid']
 
 def delete_item(item):
-	if item['owner']:
+	if item['uid'] in ITEMS and item['owner'] and item['uid'] in LIFE[item['owner']]['inventory']:
 		life.remove_item_from_inventory(LIFE[item['owner']], item['uid'])
 	
 	logging.debug('Deleting references to item %s' % item['uid'])
@@ -362,6 +362,9 @@ def draw_items(view_size=MAP_WINDOW_SIZE):
 	_view = gfx.get_view_by_name('map')
 	
 	for item_uid in LIFE[SETTINGS['following']]['seen_items']:
+		if not item_uid in ITEMS:
+			continue
+		
 		_item = ITEMS[item_uid]
 	
 		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):
@@ -489,7 +492,19 @@ def explode(item):
 	item['pos'] = get_pos(item['uid'])
 	
 	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
-	effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=2)
+	
+	if item['damage']['force']:
+		effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=3)
+		effects.create_smoke_cloud(item['pos'],
+			                       item['damage']['force']*6,
+			                       age=.8,
+			                       factor_distance=True)
+		
+		for i in range(random.randint(1, 3)):
+			effects.create_smoke_streamer(item['pos'],
+				                          3+random.randint(0, 2),
+				                          (item['damage']['force']*2)+random.randint(3, 6),
+				                          color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
@@ -499,6 +514,11 @@ def explode(item):
 	
 	#TODO: Dirty hack
 	for life_id in LIFE:
+		_limbs = LIFE[life_id]['body'].keys()
+		
+		if not _limbs:
+			continue
+		
 		_force = numbers.clip((item['damage']['force']*2)-numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
 		
 		if not _force:
@@ -510,8 +530,6 @@ def explode(item):
 		#TODO: Intelligent(?) limb groups?
 		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
 		
-		#for limb in random.sample(LIFE[life_id]['body'].keys(), _force-_distance):
-		_limbs = LIFE[life_id]['body'].keys()
 		for i in range(_force-_distance):
 			_limb = random.choice(_limbs)
 			
@@ -569,11 +587,11 @@ def explode(item):
 					_render_pos = gfx.get_render_position(pos)
 					gfx.refresh_view_position(_render_pos[0], _render_pos[1], 'map')
 	
-	if item['uid'] in ITEMS and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
-		delete_item(item)
+	#if item['uid'] in ITEMS and ITEMS[item['uid']]['owner'] and item['uid'] in LIFE[ITEMS[item['uid']]['owner']]['inventory']:
+	delete_item(item)
 
 def collision_with_solid(item, pos):
-	if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1 or pos[2]<0 or pos[2]>=MAP_SIZE[2]-1:
 		return True
 	
 	if maps.is_solid(pos) and item['velocity'][2]<0:
@@ -581,7 +599,7 @@ def collision_with_solid(item, pos):
 		item['velocity'] = [0, 0, 0]
 		item['pos'] = pos
 		process_event(item, 'stop')
-		
+			
 		return True
 	
 	if item['velocity'][2]>=0:
@@ -591,13 +609,28 @@ def collision_with_solid(item, pos):
 	
 	if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	elif not pos[0]+1 >= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
 		item['velocity'][0] = -item['velocity'][0]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	
 	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:
 		item['velocity'][1] = -item['velocity'][1]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
 	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
 		item['velocity'][1] = -item['velocity'][1]*.8
+		
+		if 'max_speed' in item:
+			effects.create_smoke_cloud(pos, 4)
+	
+	if 'max_speed' in item:
+		effects.create_vapor(pos, 5, numbers.clip(item['speed']/30, 0, 1))
 	
 	return False
 
@@ -698,8 +731,10 @@ def tick_item(item_uid):
 		
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
 			if item['type'] == 'bullet':
-				effects.create_light(item['pos'], (255, 0, 0), 9, 0)
-			print 'HIT WALL!' * 100
+				effects.create_light(item['pos'], (255, 0, 0), 9, 0, fade=0.1)
+			
+			logging.debug('Item #%s hit a wall.' % item['uid'])
+			
 			return False
 		
 		if item['type'] == 'bullet':
@@ -782,7 +817,6 @@ def tick_item(item_uid):
 	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
-	print 'SPEED', item['speed']
 
 def tick_all_items():
 	for item in ITEMS.keys():
