@@ -56,9 +56,9 @@ def change_fire_mode(weapon, mode):
 
 def get_stance_recoil_mod(life):
 	if life['stance'] == 'standing':
-		return 1
+		return 1.3
 	elif life['stance'] == 'crouching':
-		return .75
+		return .95
 	elif life['stance'] == 'crawling':
 		return .50
 
@@ -166,6 +166,8 @@ def fire(life, target, limb=None):
 	if gfx.position_is_in_frame(life['pos']):
 		effects.create_light(life['pos'], tcod.yellow, 7, 1, fade=3.5)
 		effects.create_light(_bullet['pos'], tcod.yellow, 7, 1, fade=0.65, follow_item=_bullet['uid'])
+		effects.create_smoke_cloud(life['pos'], 3, color=tcod.light_gray)
+		effects.create_smoke(life['pos'], color=tcod.yellow)
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 	del _bullet['parent']

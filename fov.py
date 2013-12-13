@@ -61,7 +61,6 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 				_d_x += 1
 				continue
 			
-			
 			_a_x = x + _sax
 			_a_y = y + _say
 			
@@ -70,14 +69,13 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 				continue
 			
 			_rad2 = size*size
+			_solid = maps.is_solid((_a_x, _a_y, z+1))
 			
 			if (_d_x * _d_x + _d_y * _d_y) < _rad2:
 				los_map[_sax+size, _say+size] = 1
 				
-				if callback:
+				if callback and not _solid:
 					callback((_a_x, _a_y))
-			
-			_solid = maps.is_solid((_a_x, _a_y, z+1))
 			
 			if not _solid:
 				_chunk = maps.get_chunk(alife.chunks.get_chunk_key_at((_a_x, _a_y)))
@@ -87,15 +85,9 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 						_chunk['items'].remove(item_uid)
 				
 				for item_uid in _chunk['items']:
-					try:
-						if items.is_blocking(item_uid):
-							_solid = True
-							break
-					except:
-						for item_uid in _chunk['items']:
-							print item_uid, item_uid in ITEMS
-						
-						raise Exception('Derp')
+					if items.is_blocking(item_uid):
+						_solid = True
+						break
 			
 			if _blocked:
 				if _solid:

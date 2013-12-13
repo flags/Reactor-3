@@ -1,7 +1,42 @@
-from globals import DATA_DIR
+from globals import DATA_DIR, VERSION
 
 import logging
+import shutil
 import os
+
+
+def version_check():
+	if not has_reactor3():
+		logging.debug('First run. Ignoring version check.')
+		
+		return False
+	
+	logging.debug('Checking current version against existing worlds...')
+	
+	_out_of_date_worlds = []
+	_config_directory, _worlds_directory = has_reactor3()
+	
+	for world_id in os.listdir(_worlds_directory):
+		_version_file = os.path.join(_worlds_directory, world_id, 'version.txt')
+		
+		if not os.path.exists(_version_file):
+			_out_of_date_worlds.append(world_id)
+			
+			continue
+		
+		with open(_version_file, 'r') as version_file:
+			if not version_file.readline().strip() == VERSION:
+				_out_of_date_worlds.append(world_id)
+				
+				continue
+	
+	if _out_of_date_worlds:
+		for world_id in _out_of_date_worlds:
+			shutil.rmtree(os.path.join(_worlds_directory, world_id))
+		
+		return False
+	
+	return True
 
 def get_home_directory():
 	return os.path.expanduser('~')

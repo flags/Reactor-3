@@ -16,5 +16,4 @@ def conditions(life):
 	return True
 
 def tick(life):
-	survival.manage_inventory(life)
-	#survival.manage_hands(life)
+	return survival.manage_inventory(life)

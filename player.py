@@ -698,6 +698,15 @@ def handle_input():
 		for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
 			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
 			_items.extend(items.get_items_at(__pos))
+			
+		#Sue me.
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+				continue
+			
+			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
+				if 'capacity' in ITEMS[item_uid]:
+					_items.append(ITEMS[item_uid])
 		
 		if menus.get_menu_by_name('Pick up')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Pick up'))
@@ -706,10 +715,8 @@ def handle_input():
 		create_open_item_menu(_items)
 	
 	if INPUT['b']:
-		#print LIFE[SETTINGS['following']]['actions']
-		#print life.create_recent_history(LIFE[SETTINGS['following']])
-		#life.print_life_table()
 		import weather
+		
 		weather.change_weather()
 		WORLD_INFO['time_scale'] = 12
 		WORLD_INFO['real_time_of_day'] = 1200
@@ -722,6 +729,7 @@ def handle_input():
 				break
 		
 		life.focus_on(LIFE[str(_id)])
+		SELECTED_TILES[0] = []
 		FADE_TO_WHITE[0] = 0
 		gfx.refresh_view('map')
 
@@ -733,6 +741,7 @@ def handle_input():
 				break
 		
 		life.focus_on(LIFE[str(_id)])
+		SELECTED_TILES[0] = []
 		FADE_TO_WHITE[0] = 0
 		gfx.refresh_view('map')
 
@@ -1073,7 +1082,7 @@ def handle_arm_item(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def target_view(entry):
-	SETTINGS['following'] = entry['target']
+	life.focus_on(LIFE[entry['target']])
 	LIFE[SETTINGS['controlling']]['targeting'] = LIFE[entry['target']]['pos'][:]
 
 def inventory_fire(entry):
@@ -1156,7 +1165,7 @@ def inventory_fire_action(entry):
 		     delay=numbers.clip(i, 0, 1)*3)
 		
 	LIFE[SETTINGS['controlling']]['targeting'] = None
-	SETTINGS['following'] = SETTINGS['controlling']
+	life.focus_on(LIFE[SETTINGS['controlling']])
 	SELECTED_TILES[0] = []
 	
 	menus.delete_menu(ACTIVE_MENU['menu'])
@@ -1228,8 +1237,6 @@ def create_look_list():
 		gfx.enable_panels()
 		return False
 	
-	gfx.disable_panels()
-	
 	_menu_items = []
 	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		if items.is_item_owned(item['uid']):
@@ -1243,6 +1250,8 @@ def create_look_list():
 	if not _menu_items:
 		gfx.message('There\'s nothing to look at.')
 		return False
+	
+	gfx.disable_panels()
 	
 	_i = menus.create_menu(title='Look at...',
 	    menu=_menu_items,
@@ -1982,7 +1991,24 @@ def create_wound_menu():
 				_title = True
 				
 			if wound['cut']:
-				_entries.append(menus.create_item('single', 'Cut', '%s' % wound['cut'], limb=wound['limb']))
+				if wound['cut']<=.5:
+					_status = 'Scraped'
+					_color = tcod.lighter_red
+				elif wound['cut']<=1:
+					_status = 'Cut'
+					_color = tcod.light_crimson
+				elif wound['cut']<=2:
+					_status = 'Gouged'
+					_color = tcod.crimson
+				else:
+					_status = 'Devastated'
+					_color = tcod.dark_crimson
+				
+				_entries.append(menus.create_item('single',
+				                                  'Cut',
+				                                  _status,
+				                                  limb=wound['limb'],
+				                                  color=(_color, tcod.white)))
 	
 	if not _entries:
 		gfx.message('You don\'t need medical attention.')

@@ -47,7 +47,8 @@ cdef create_map_array(val, size):
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
 	#Some notes before we begin:
 	#	* You can't get cython-created arrays out of this function
-	#	* I haven't found a way to create proper dynamically-sized arrays. I've locked them out at 500x500
+	
+	#TODO: We need to associate goals with zones, otherwise OOB errors occur
 	
 	_init_time = time.time()
 	_avoid_positions = avoid_positions[:]
@@ -100,12 +101,12 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	if start_pos[0]<_top_left[0]:
 		_top_left[0] = numbers.clip(start_pos[0]-TEMP_SIZE, 0, MAP_SIZE[0])
-	elif start_pos[0]>_bot_right[0]:
+	if start_pos[0]>_bot_right[0]:
 		_bot_right[0] = numbers.clip(start_pos[0]+TEMP_SIZE, 0, MAP_SIZE[0])
 	
 	if start_pos[1]<_top_left[1]:
 		_top_left[1] = numbers.clip(start_pos[1]-TEMP_SIZE, 0, MAP_SIZE[1])
-	elif start_pos[1]>_bot_right[1]:
+	if start_pos[1]>_bot_right[1]:
 		_bot_right[1] = numbers.clip(start_pos[1]+TEMP_SIZE, 0, MAP_SIZE[1])
 	
 	if SETTINGS['print dijkstra maps']:
@@ -121,24 +122,37 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	
 	_avoid_goals = []
 	for zone in [zon.get_slice(z) for z in zones]:
-		for y in range(_top_left[1], _bot_right[1]):
-			for x in range(_top_left[0], _bot_right[0]):
-				#print 'running first', time.time(), (_top_left[1], _bot_right[1]), (_top_left[0], _bot_right[0])
-				#print 'looping'
+		_zone_top_left_x = numbers.clip(_top_left[0], zone['top_left'][0], zone['bot_right'][0])
+		_zone_top_left_y = numbers.clip(_top_left[1], zone['top_left'][1], zone['bot_right'][1])
+		
+		_zone_bot_right_x = numbers.clip(_bot_right[0], zone['top_left'][0], zone['bot_right'][0])
+		_zone_bot_right_y = numbers.clip(_bot_right[1], zone['top_left'][1], zone['bot_right'][1])
+		
+		for y in range(_zone_top_left_y, _zone_bot_right_y):
+			for x in range(_zone_top_left_x, _zone_bot_right_x):
 				if (x, y) in avoid_positions:
 					continue
 				
 				if _open_map[x][y]>-3:
 					continue
 				
-				if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
-					continue
+				try:
+					if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+						continue
+				except:
+					print 'Dijkstra crash dump:'
+					print 'Zones:', zones
+					print 'Start pos:', start_pos
+					
+					if len(zones) == 2:
+						print 'Connected:', zon.can_path_to_zone(zones[0], zones[1])
+					
+					raise Exception('Crash.')
 				
 				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
 				
 				if avoid_chunks and _chunk_key in avoid_chunks:
 					_avoid_goals.append((x, y))
-					#continue
 					
 				_open_map[x][y] = 1
 				
@@ -156,23 +170,11 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if not _pass:
 					continue
 				
-				#if x<_top_left[0]:
-				#	_top_left[0] = x
-					
-				#if y<_top_left[1]:
-				#	_top_left[1] = y
-				
-				#if x>_bot_right[0]:
-				#	_bot_right[0] = x
-				
-				#if y>_bot_right[1]:
-				#	_bot_right[1] = y
-				
 				_chunk_keys[_chunk_key] = zone['id']
 	
 	_dijkstra_map_size_x = _bot_right[0]-_top_left[0]
 	_dijkstra_map_size_y = _bot_right[1]-_top_left[1]
-	#cdef float _dijkstra_map[500][500]
+	
 	cdef float *_dijkstra_map = <float *>malloc(500 * 500 * sizeof(float))
 	cdef float *_old_map = <float *>malloc(500 * 500 * sizeof(float))
 	
@@ -210,16 +212,12 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				
 				_lowest_score = _old_map[x + y * 500]
 				
-				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:#, (-1, -1), (1, -1), (-1, 1), (1, 1)]:
-				#for _n_y in range(-1, 2):
-					#_y = y+_n_y
+				for _n_x,_n_y in [(0, -1), (-1, 0), (1, 0), (0, 1)]:
 					_y = y+_n_y
 					
 					if _y<0 or _y>=_dijkstra_map_size_y:
 						continue
 					
-					#for _n_x in range(-1, 2):
-					#_x = x+_n_x
 					_x = x+_n_x
 					
 					if _x<0 or _x>=_dijkstra_map_size_x:
@@ -247,7 +245,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				_old_map[x + y * 500] *= -1.2	
 	
 	if SETTINGS['print dijkstra maps']:
-		for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
+		for y in range(0, _bot_right[1]-_top_left[1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
 				if [x+_top_left[0], y+_top_left[1]] == start_pos[:2]:
 					print 'X',
@@ -271,20 +269,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		return _score
 	
 	if return_score_in_range:
-		#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-		#	for x in range(0, _bot_right[0]-_top_left[0]):
-		#		if rolldown:
-		#			if _dijkstra_map[x + y * 500]>0:
-		#				print int(round(numbers.clip(_dijkstra_map[x + y * 500], 0, 9))),
-		#			else:
-		#				print '#',
-		#		else:
-		#			if _dijkstra_map[x + y * 500]<0:
-		#				print int(round(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9))),
-		#			else:
-		#				print '#',
-		#	
-		#	print
 		_positions = []
 		for y in range(0, _bot_right[1]-_top_left[1]):
 			for x in range(0, _bot_right[0]-_top_left[0]):
@@ -295,21 +279,6 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		free(_dijkstra_map)
 		
 		return _positions
-	
-	#for y in range(0, _bot_right[1]-_top_left[1]):#_map_info['size'][1]):
-	#	for x in range(0, _bot_right[0]-_top_left[0]):
-	#		if rolldown:
-	#			if _dijkstra_map[x + y * 500]>0:
-	#				print int(round(numbers.clip(_dijkstra_map[x + y * 500], 0, 9))),
-	#			else:
-	#				print '#',
-	#		else:
-	#			if _dijkstra_map[x + y * 500]<0:
-	#				print int(round(numbers.clip(-_dijkstra_map[x + y * 500], 0, 9))),
-	#			else:
-	#				print '#',
-	#	
-	#	print
 	
 	_path = []
 	_pos[0] = start_pos[0]-_top_left[0]
@@ -324,8 +293,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		_lowest_score = _old_map[_pos[0] + _pos[1] * 500]
 		_next_pos[0] = -1
 		_next_pos[1] = -1
-				
-		#for pos in [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
+		
 		for _n_y in range(-1, 2):
 			_y = _pos[1]+_n_y
 			

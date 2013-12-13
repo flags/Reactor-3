@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
+import render_los
 import maputils
 import language
 import drawing
@@ -29,7 +30,7 @@ MAX_BUILDING_SIZE = max([MAX_TOWNHOUSE_SIZE, MAX_WAREHOUSE_SIZE])
 TOWN_DISTANCE = 60*5
 TOWN_SIZE = 160
 FOREST_DISTANCE = 10
-OUTPOST_DISTANCE = 15*5
+OUTPOST_DISTANCE = 12*5
 OPEN_TILES = ['.']
 DOOR_TILES = ['D']
 DIRECTION_MAP = {'(-1, 0)': 'left', '(1, 0)': 'right', '(0, -1)': 'top', '(0, 1)': 'bot'}
@@ -137,7 +138,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'outposts': outposts,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': []},
+		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -168,6 +169,8 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	logging.debug('Generating outposts...')	
 	for i in range(map_gen['outposts']):
 		construct_outpost(map_gen)	
+	
+	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
 	
 	#Placeholder!
 	logging.debug('Placing region spawns...')
@@ -293,7 +296,15 @@ def generate_outlines(map_gen):
 		
 		_road['length'] = (_length/2, _length-2)
 		
-		place_road(map_gen, **_road)	
+		place_road(map_gen, **_road)
+	
+	#Place dirt road leading to factories/swamp
+	#TODO: Actual location of factories/swamp
+	_dirt_path_start_key = alife.chunks.get_nearest_chunk_in_list((MAP_SIZE[0]/2, 150), map_gen['refs']['roads'])
+	_dirt_path_end_x_pos = numbers.clip(alife.chunks.get_chunk(_dirt_path_start_key)['pos'][0]+random.randint(-50, 50),
+	                                    int(round(MAP_SIZE[0]*.25)),
+	                                    int(round(MAP_SIZE[0]*.75)))
+	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((_dirt_path_end_x_pos, 150)))
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -503,6 +514,23 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			break
 		
 		#take rest of _possible_next_dirs and make intersection?
+
+def place_dirt_path(map_gen, start_chunk, end_chunk):
+	_start_pos = list(alife.chunks.get_chunk(start_chunk)['pos'])
+	_start_pos[0]+=map_gen['chunk_size']/2
+	_start_pos[1]+=map_gen['chunk_size']/2
+	
+	_end_pos = alife.chunks.get_chunk(end_chunk)['pos']
+	
+	for pos in render_los.draw_line(_start_pos[0], _start_pos[1], _end_pos[0], _end_pos[1]):
+		_chunk_key = alife.chunks.get_chunk_key_at(pos)
+		map_gen['chunk_map'][_chunk_key]['type'] = 'road'
+		
+		if not _chunk_key in map_gen['refs']['dirt_road']:
+			map_gen['refs']['dirt_road'].append(_chunk_key)
+		
+		for pos_mod in render_los.draw_circle(pos[0], pos[1], 4):
+			create_tile(map_gen, pos_mod[0], pos_mod[1], 2, random.choice(tiles.DIRT_TILES))
 
 def place_factory(map_gen):
 	_existing_factories = map_gen['refs']['factories']
@@ -724,7 +752,8 @@ def place_forest(map_gen):
 			if random.randint(0, _height*18):
 				continue
 			
-			_actual_height = numbers.clip(_height, 2, 100)+(random.randint(2, 4))
+			_actual_height = numbers.clip(_height, 2, 100)+(random.randint(2, 4))			
+			
 			create_tree(map_gen, (x, y, 2), _actual_height)
 
 def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=True):
@@ -1573,6 +1602,8 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 		
 		for container in _placed_containers:
 			_storage.remove(container)
+	
+	return _building_chunk_map
 
 def construct_outpost(map_gen):
 	_chunk_keys = map_gen['chunk_map'].keys()
@@ -1581,7 +1612,26 @@ def construct_outpost(map_gen):
 	while _chunk_keys:
 		_chunk_key = _chunk_keys.pop(random.randint(0, len(_chunk_keys)-1))
 		_chunk = map_gen['chunk_map'][_chunk_key]
-		if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], map_gen['refs']['roads'])<OUTPOST_DISTANCE:
+		
+		_dirt_road_chunks = []
+		_dirt_road_end_pos = alife.chunks.get_chunk(map_gen['refs']['dirt_road'][len(map_gen['refs']['dirt_road'])-1])['pos']
+		
+		for chunk_key in map_gen['refs']['dirt_road']:
+			if numbers.distance(alife.chunks.get_chunk(chunk_key)['pos'], _dirt_road_end_pos)>6*5:
+				continue
+			
+			_dirt_road_chunks.append(chunk_key)
+		
+		if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _dirt_road_chunks)>OUTPOST_DISTANCE:
+			continue
+		
+		_continue = False
+		for _outpost_chunks in map_gen['refs']['outposts']:
+			if alife.chunks.get_distance_to_nearest_chunk_in_list(_chunk['pos'], _outpost_chunks)<15*5:
+				_continue = True
+				continue
+		
+		if _continue:
 			continue
 		
 		_outpost_chunk = _chunk
@@ -1596,9 +1646,11 @@ def construct_outpost(map_gen):
 		map_gen['chunk_map'][chunk_key]['type'] = 'outpost'
 	
 	_wall_chunks = []
+	_yard_chunks = []
 	for chunk_key in _building_chunks:	
 		for neighbor_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other', diagonal=True):
 			_wall_chunks.append(neighbor_key)
+			_yard_chunks.extend(get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_key]['pos'], 'other'))	
 	
 	_door_chunk_key = random.choice(_wall_chunks)
 	
@@ -1608,6 +1660,34 @@ def construct_outpost(map_gen):
 		
 		map_gen['chunk_map'][chunk_key]['type'] = 'wall'
 	
+	for chunk_key in _yard_chunks[:]:
+		_pos = map_gen['chunk_map'][chunk_key]['pos']
+		
+		for new_chunk_key in walker(map_gen, _pos, 8, return_keys=True):
+			if not new_chunk_key in _yard_chunks:
+				_yard_chunks.append(new_chunk_key)
+	
+	if _door_chunk_key in _yard_chunks:
+		_yard_chunks.remove(_door_chunk_key)
+	
+	for chunk_key in _yard_chunks:
+		if map_gen['chunk_map'][chunk_key]['type'] == 'wall':
+			continue
+		
+		_pos = map_gen['chunk_map'][chunk_key]['pos']
+		map_gen['chunk_map'][chunk_key]['type'] = 'outpost'
+		
+		for y in range(map_gen['chunk_size']):
+			for x in range(map_gen['chunk_size']):
+				create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+		
+		if not random.randint(0, 5):
+			for y in range(2, 4):
+				for x in range(2, 4):
+					for z in range(0, 2):
+						create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2+z, random.choice(tiles.WHITE_TILE_TILES))	
+	
+	
 	for chunk_key in _wall_chunks:
 		if chunk_key == _door_chunk_key:
 			continue
@@ -1616,8 +1696,6 @@ def construct_outpost(map_gen):
 		_xy_swap_y = -1
 		_pos = map_gen['chunk_map'][chunk_key]['pos']
 		_directions = [DIRECTION_MAP[k] for k in [str(direction_from_key_to_key(map_gen, chunk_key, k)) for k in get_neighbors_of_type(map_gen,  map_gen['chunk_map'][chunk_key]['pos'], 'wall') if not k == _door_chunk_key]]
-		
-		#print _directions
 		
 		if 'left' in _directions and 'right' in _directions or (len(_directions)==1 and ('left' in _directions or 'right' in _directions)):
 			_x_min = 0
@@ -1661,13 +1739,25 @@ def construct_outpost(map_gen):
 					_swapped = True
 				
 				if y<_y_min or y>_y_max:
-					print _swapped
 					continue
 				
 				create_tile(map_gen, _x, _y, 2, _tile)
 	
 	map_gen['refs']['outposts'].append(_building_chunks)
-	construct_building(map_gen, {'rooms': _building_chunks}, building_type='outpost', exterior_chunks=[_door_chunk_key])
+	_building_chunk_keys = construct_building(map_gen, {'rooms': _building_chunks}, building_type='outpost', exterior_chunks=[_door_chunk_key])
+	
+	for chunk_key in _building_chunks:
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'wall', diagonal=True):
+			for y in range(map_gen['chunk_size']):
+				for x in range(map_gen['chunk_size']):
+					_pos = list(map_gen['chunk_map'][neighbor_chunk_key]['pos'])
+					_pos[0] += x
+					_pos[1] += y
+					
+					if not map_gen['map'][_pos[0]][_pos[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+						continue
+					
+					create_tile(map_gen, _pos[0], _pos[1], 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
 
 def can_spawn_item(item):
 	if item['rarity']>random.uniform(0, 1.0):

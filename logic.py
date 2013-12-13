@@ -22,9 +22,15 @@ import logging
 import random
 import time
 
-def can_tick(ignore_tickrate=False):
+def can_tick(ignore_tickrate=False, ignore_pause=False):
 	if SETTINGS['controlling'] and not EVENTS and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
-		if SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
+		if life.is_target_of(LIFE[SETTINGS['controlling']]):
+			if not SETTINGS['paused']:
+				gfx.message('An enemy appears.', style='important')
+			
+			SETTINGS['paused'] = True
+			
+		if not ignore_pause and SETTINGS['paused'] and not LIFE[SETTINGS['controlling']]['actions'] and not LIFE[SETTINGS['controlling']]['dead']:
 			return False
 	
 	if not ignore_tickrate:
@@ -55,8 +61,8 @@ def can_tick(ignore_tickrate=False):
 	
 	return True
 
-def tick_all_objects(ignore_tickrate=False):
-	if not can_tick(ignore_tickrate=ignore_tickrate):
+def tick_all_objects(ignore_tickrate=False, ignore_pause=False):
+	if not can_tick(ignore_tickrate=ignore_tickrate, ignore_pause=ignore_pause):
 		return False
 	
 	if melee.process_fights():
@@ -222,8 +228,8 @@ def process_events():
 	if not _event:
 		return False
 	
-	if _event['time']:
-		_event['time'] -= 1
+	if _event['time']>0:
+		_event['time'] -= 0.1
 		return True
 	
 	return show_next_event()

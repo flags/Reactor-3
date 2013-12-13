@@ -121,10 +121,17 @@ def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
 	life['raw'] = alife.rawparse.read(os.path.join(LIFE_DIR, life['raw_name']+'.dat'))
 	
+	if not 'goap_goals_blacklist' in life:
+		life['goap_goals_blacklist'] = []
+	
 	life['goap_goals'] = {}
 	life['goap_actions'] = {}
 	life['goap_plan'] = {}
+	
 	alife.planner.parse_goap(life)
+	
+	for goal in life['goap_goals_blacklist']:
+		del life['goap_goals'][goal]
 
 def initiate_needs(life):
 	"""Creates innate needs for `life`."""
@@ -510,7 +517,6 @@ def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
 	life['heard'] = []
 	life['actions'] = []
-	life['path'] = []
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
@@ -1065,8 +1071,8 @@ def walk(life, to=None, path=None):
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 		
-		if life['recoil'] < get_max_speed(life):
-			life['recoil'] = get_max_speed(life)
+		if life['recoil'] < get_max_speed(life)*weapons.get_stance_recoil_mod(life):
+			life['recoil'] = get_max_speed(life)*weapons.get_stance_recoil_mod(life)
 	
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
@@ -1105,6 +1111,10 @@ def walk_path(life):
 			life['pos'][2] -= 1
 		
 		_next_chunk = chunks.get_chunk(chunks.get_chunk_key_at((_nfx, _nfy)))
+		for item_uid in _next_chunk['items'][:]:
+			if not item_uid in ITEMS:
+				_next_chunk['items'].remove(item_uid)
+		
 		for item_uid in _next_chunk['items']:
 			if items.is_blocking(item_uid):
 				activate_item(life, item_uid)
@@ -1258,7 +1268,7 @@ def perform_action(life):
 	if not _action in life['actions']:
 		return False
 
-	if action['delay']:
+	if action['delay']>0:
 		action['delay']-=1
 		
 		return False
@@ -1354,8 +1364,17 @@ def perform_action(life):
 		delete_action(life, action)
 		
 	elif _action['action'] == 'pickupitem':
+		#If we're looting someone...
+		if ITEMS[_action['item']]['owner'] and not life['id'] == ITEMS[_action['item']]['owner']:
+			if not LIFE[ITEMS[_action['item']]['owner']]['asleep']:
+				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
+				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
+			
+			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
+				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
+		
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
-		delete_action(life,action)
+		delete_action(life, action)
 		
 		set_animation(life, [',', 'x'], speed=6)
 		
@@ -1598,7 +1617,10 @@ def perform_action(life):
 		#	5001,
 		#	delay=weapons.get_recoil(life))
 		
-		delete_action(life, action)
+		try:
+			delete_action(life, action)
+		except:
+			logging.error('Action no longer in action queue: shoot')
 	
 	elif _action['action'] == 'bite':
 		damage.bite(life, _action['target'], _action['limb'])
@@ -2750,19 +2772,18 @@ def draw_life_info():
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
 	
 	#Health
-	_health_string = calculate_overall_health(life)
-	tcod.console_print(0, _health_position[0], _health_position[1], 'Health:')
+	_health_string = get_health_status(life)
 	
 	if _health_string == 'Fine':
 		tcod.console_set_default_foreground(0, tcod.lightest_green)
 	else:
 		tcod.console_set_default_foreground(0, tcod.lightest_red)
 	
-	tcod.console_print(0, _health_position[0]+8, _health_position[1], _health_string)
+	tcod.console_print(0, _health_position[0], _health_position[1], _health_string)
 	
 	#Weather
 	tcod.console_set_default_foreground(0, tcod.light_gray)
-	tcod.console_print(0, _health_position[0]+len(_health_string)+9,
+	tcod.console_print(0, _health_position[0]+len(_health_string)+1,
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
@@ -2770,8 +2791,13 @@ def draw_life_info():
 	tcod.console_set_default_foreground(0, tcod.light_blue)
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+1+len(life['seen']),
-	                   ' '.join(life['goap_plan']))
-	
+	                   ' '.join(life['goap_plan']))	
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+2+len(life['seen']),
+	                   ', '.join([str(p) for p in life['pos']])+' @ Zone %s' % zones.get_zone_at_coords(life['pos']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+3+len(life['seen']),
+	                   str(maps.get_chunk(get_current_chunk_id(life))['max_z']))
 	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
 	#_blood_g = numbers.clip(int(life['blood']),0,255)
 	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
@@ -2919,6 +2945,9 @@ def pass_out(life, length=None):
 	
 	logging.debug('%s passed out.' % life['name'][0])
 
+def get_pain_tolerance(life):
+	return .15*alife.stats.get_melee_skill(life)
+
 def get_total_pain(life):
 	_pain = 0
 	
@@ -2998,6 +3027,30 @@ def get_thirst_status(life):
 	else:
 		return 'Dehydrated'
 
+def get_health_status(life):
+	_string = []
+	
+	if get_total_pain(life)>=3.5:
+		_string.append('Faint')
+	elif get_total_pain(life)>=1.5:
+		_string.append('Wincing')
+	
+	if not get_hunger_status(life) == 'Satiated':
+		_string.append('Hungry')
+	
+	if not calculate_max_blood(life):
+		_string.append('Dying')
+	elif life['blood']/float(calculate_max_blood(life))<.50:
+		_string.append('Passing out')
+	elif life['blood']/float(calculate_max_blood(life))<.75:
+		_string.append('Dizzy')
+	
+	if _string:
+		return language.prettify_string_array(_string, 30)
+	
+	return 'Fine'
+
+
 def calculate_blood(life):
 	_blood = 0
 	
@@ -3020,20 +3073,6 @@ def calculate_blood(life):
 
 def calculate_max_blood(life):
 	return sum([l['size']*10 for l in life['body'].values()])
-
-def calculate_overall_health(life):
-	_string = []
-	
-	if get_total_pain(life)>4:
-		_string.append('Aching')
-	
-	if not get_hunger_status(life) == 'Satiated':
-		_string.append('Hungry')
-	
-	if _string:
-		return language.prettify_string_array(_string, 30)
-	
-	return 'Fine'
 
 def get_bleeding_limbs(life):
 	"""Returns list of bleeding limbs."""
@@ -3428,6 +3467,14 @@ def damage_from_item(life, item, damage):
 	memory(_shot_by_alife, 'shot', target=life['id'])
 	memory(life, 'shot_by', target=item['shot_by'])
 	
+	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
+	
+	if _cover_exposed_at:
+		if not tuple(life['pos'][:]) in _cover_exposed_at:
+			_cover_exposed_at.append(life['pos'][:])
+	else:
+		brain.flag(life, 'cover_exposed_at', value=[life['pos'][:]])
+	
 	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
 		if not sight.can_see_position(ai, life['pos']):
 			continue
@@ -3460,7 +3507,7 @@ def damage_from_item(life, item, damage):
 	if brain.knows_alife_by_id(life, _shot_by_alife['id']):
 		judgement.judge_life(life, _shot_by_alife['id'])
 	else:
-		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']])))
+		logging.warning('%s was shot by unknown target %s.' % (' '.join(life['name']), ' '.join(LIFE[_shot_by_alife['id']]['name'])))
 	
 	return True
 
@@ -3470,7 +3517,7 @@ def natural_healing(life):
 			continue
 		
 		_limb = get_limb(life, limb)	
-		_limb['pain'] = numbers.clip(_limb['pain']-0.05, 0, 100)
+		_limb['pain'] = numbers.clip(_limb['pain']-get_pain_tolerance(life), 0, 100)
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))

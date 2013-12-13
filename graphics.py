@@ -23,6 +23,9 @@ def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	elif '_inrow' in FONT:
 		_layout = tcod.FONT_LAYOUT_ASCII_INROW
 	
+	if '_tiles' in FONT:
+		_layout = _layout|tcod.FONT_TYPE_GRAYSCALE
+	
 	tcod.console_set_custom_font(_font_file, _layout)
 	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
 	
@@ -541,6 +544,9 @@ def draw_status_line():
 	_flashing_text = []
 	_non_flashing_text = []
 	
+	if not SETTINGS['following']:
+		return False
+	
 	if LIFE[SETTINGS['following']]['targeting']:
 		_flashing_text.append('Firing')
 	
@@ -656,12 +662,12 @@ def log(text):
 	CONSOLE_HISTORY.append(text)
 
 def message(text, style=None):
+	set_view_dirty('message_box')
+	
 	if MESSAGE_LOG and MESSAGE_LOG[len(MESSAGE_LOG)-1]['msg'] == text:
 		MESSAGE_LOG[len(MESSAGE_LOG)-1]['count'] += 1
 		return None
 	
-	
-	set_view_dirty('message_box')
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):
@@ -692,8 +698,8 @@ def position_is_in_frame(pos):
 	if not _view:
 		return False
 	
-	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['view_size'][0], 0, MAP_SIZE[0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['view_size'][1], 0, MAP_SIZE[1]):
+	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['view_size'][0]-1, 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['view_size'][1]-1, 0, MAP_SIZE[1]):
 		return True
 	
 	return False

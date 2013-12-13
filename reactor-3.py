@@ -61,6 +61,16 @@ def move_camera(pos, scroll=False):
 	if SETTINGS['controlling']:
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
+def draw_targeting():
+	if SETTINGS['following'] and not SETTINGS['controlling'] == SETTINGS['following']:
+		SELECTED_TILES[0] = [(p[0], p[1], 2) for p in LIFE[SETTINGS['following']]['path']]
+	
+	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
+		
+		SELECTED_TILES[0] = []
+		for pos in drawing.diag_line(LIFE[SETTINGS['controlling']]['pos'],LIFE[SETTINGS['controlling']]['targeting']):
+			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
+
 def death():
 	#TODO: Awful hack
 	if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
@@ -106,24 +116,37 @@ def main():
 
 	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
 		gfx.title('Sleeping: %s' % LIFE[SETTINGS['controlling']]['asleep'])
-		logic.tick_all_objects(ignore_tickrate=True)
+		logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
 		_played_moved = True
 	
 	if not _played_moved:
 		logic.tick_all_objects(ignore_tickrate=True)
 	
+	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
 	if SELECTED_TILES[0]:
 		gfx.refresh_view('map')
 	
+	_cam_x = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
+	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
-		_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
-		alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+		if EVENTS or MENUS:
+			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
+			alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
+	
+			_cam_x = numbers.clip(LIFE[SETTINGS['following']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
+			_cam_y = numbers.clip(LIFE[SETTINGS['following']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+			
+		else:
+			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['controlling']], judge=False, get_chunks=True)
+			alife.brain.flag(LIFE[SETTINGS['controlling']], 'visible_chunks', value=_visible_chunks)
+			
 		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
 	maps.render_lights()
-	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['following']]['fov'])
+	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
 	items.draw_items()
 	bullets.draw_bullets()
 	life.draw_life()
@@ -147,13 +170,13 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if SETTINGS['recording']:
-		if 10+SETTINGS['recording fps temp']:
-			SETTINGS['recording fps temp'] -= 1
-		else:
-			WORLD_INFO['d'] = WORLD_INFO['ticks']
+	if logic.can_tick():#not EVENTS and SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
+		#	if 10+SETTINGS['recording fps temp']:
+		#		SETTINGS['recording fps temp'] -= 1
+		#	else:
+		#		WORLD_INFO['d'] = WORLD_INFO['ticks']
 			gfx.screenshot()
-			SETTINGS['recording fps temp'] = SETTINGS['recording fps']
+	#		SETTINGS['recording fps temp'] = SETTINGS['recording fps']
 
 def loop():
 	while SETTINGS['running']:
@@ -172,6 +195,8 @@ def loop():
 	worldgen.cleanup()
 
 if __name__ == '__main__':
+	profiles.version_check()
+	
 	#TODO: Replace with "module_sanity_check"
 	#Optional Cython-compiled modules
 	try:

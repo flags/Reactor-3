@@ -286,32 +286,19 @@ def get_best_weapon(life):
 	
 	return _best_wep
 
-def melee_combat(life, targets):
-	_target = brain.knows_alife_by_id(life, targets[0])
+def get_exposed_positions(life):
+	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
 	
-	if not _target['escaped']:
-		if movement.travel_to_position(life, _target['last_seen_at']):
-			if sight.can_see_position(life, _target['life']['pos']):
-				lfe.clear_actions(life, matches=[{'action': 'move'}])
-				
-				lfe.add_action(life,{'action': 'bite',
-					'target': _target['life']['id'],
-					'limb': random.choice(_target['life']['body'].keys())},
-					5000,
-					delay=0)
-			else:
-				_target['escaped'] = 1
-			
-				for send_to in judgement.get_trusted(life):
-					speech.communicate(life,
-						'target_missing',
-						target=_target['life']['id'],
-						matches=[{'id': send_to}])
+	if _cover_exposed_at:
+		return _cover_exposed_at
+	
+	return []
 
 def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
+		#TODO: Dude, what?
 		movement.find_target(life, targets, call=False)
 		return False
 	
@@ -362,6 +349,12 @@ def ranged_combat(life, targets):
 	_target = get_closest_target(life, targets)
 	
 	if not _target:
+		for target_id in targets:
+			if brain.knows_alife_by_id(life, target_id)['escaped']:
+				continue
+			
+			brain.knows_alife_by_id(life, target_id)['escaped'] = 1
+		
 		logging.error('No target for ranged combat.')
 		return False
 	
@@ -377,7 +370,7 @@ def ranged_combat(life, targets):
 						'target_id': _target['life']['id'],
 						'limb': 'chest'},
 						5000,
-						delay=int(round(life['recoil']/stats.get_recoil_recovery_rate(life))))
+						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
 		else:
 			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 			

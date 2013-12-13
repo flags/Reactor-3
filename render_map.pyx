@@ -14,7 +14,7 @@ import time
 
 VERSION = 6
 
-def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
+def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _CAMERA_POS[2]
 	cdef int _MAP_SIZE[2]
 	cdef int _MAP_WINDOW_SIZE[2]
@@ -43,25 +43,31 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 	cdef int _x_mod = 0
 	cdef int _y_mod = 0
 	
+	if force_camera_pos:
+		_cam_pos = force_camera_pos[:]
+	else:
+		_cam_pos = SETTINGS['camera_track'][:]
+	
 	if not CAMERA_POS[0]:
 		_x_mod = SETTINGS['camera_track'][0]-view_size[0]/2
 	elif CAMERA_POS[0]+view_size[0]>=MAP_SIZE[0]:
 		_x_mod = (SETTINGS['camera_track'][0]+view_size[0]/2)-MAP_SIZE[0]
-	
+   
 	if not CAMERA_POS[1]:
 		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
 	elif CAMERA_POS[1]+view_size[1]>=MAP_SIZE[1]:
 		_y_mod = (SETTINGS['camera_track'][1]+view_size[1]/2)-MAP_SIZE[1]
 	
-	if not CAMERA_POS[1]:
-		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
+	
+	_camera_x_offset = CAMERA_POS[0]-_cam_pos[0]
+	_camera_y_offset = CAMERA_POS[1]-_cam_pos[1]
 	
 	los = None
 	if 'los' in kwargs:
 		los = kwargs['los']
-		_min_los_x = (los.shape[0]/2)-view_size[0]/2-_x_mod
+		_min_los_x = (los.shape[0]/2)-view_size[0]/2-_x_mod+_camera_x_offset
 		_max_los_x = los.shape[0]
-		_min_los_y = (los.shape[1]/2)-view_size[1]/2-_y_mod
+		_min_los_y = (los.shape[1]/2)-view_size[1]/2-_y_mod+_camera_y_offset
 		_max_los_y = los.shape[1]
 	
 	_view = get_view_by_name('map')
@@ -109,11 +115,16 @@ def render_map(map, view_size=MAP_WINDOW_SIZE, **kwargs):
 							_drawn = True
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
+							if time.time()%1>=0.75:
+								_back_color = tcod.black
+							else:
+								_back_color = tcod.white
+							
 							blit_char_to_view(_RENDER_X,
 								_RENDER_Y,
 								'X',
 								(tcod.darker_grey,
-									tcod.black),
+									_back_color),
 								'map')
 						else:
 							if _shadow > 2:

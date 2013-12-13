@@ -8,5 +8,5 @@
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
 "size": "9x9",
 "capacity": "9x9",
-"thickness": 9,
+"thickness": 3,
 "material": "cloth"}

@@ -249,7 +249,11 @@ def generate_world(combat_test=False):
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
 	if _settings['Map'] == 'Generate Map':
-		_settings['Map'] = mapgen.generate_map(size=(250, 250, 10), factories=1)['name']
+		_settings['Map'] = mapgen.generate_map(size=(250, 450, 10),
+		                                       towns=1,
+		                                       factories=0,
+		                                       outposts=2,
+		                                       forests=1)['name']
 	
 	if _settings['World Age'] == 'Day 0':
 		_ticks = 10

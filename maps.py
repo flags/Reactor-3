@@ -151,6 +151,8 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
+		
+	WORLD_INFO['map'] = []
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
 		#try:
@@ -563,7 +565,7 @@ def create_search_map(life, pos, size):
 			if _y >= MAP_SIZE[1]-1:
 				continue
 			
-			if not WORLD_INFO['map'][_x][_y][pos[2]] or WORLD_INFO['map'][_x][_y][pos[2]+1]:
+			if not is_solid((_x, _y, pos[2])) or is_solid((_x, _y, pos[2]+1)):
 				_map[y, x] = 0
 			else:
 				_map[y, x] = alife.judgement.judge_search_pos(life, (_x, _y))

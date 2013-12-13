@@ -359,6 +359,10 @@ def manage_inventory(life):
 			_equip_action,
 			401,
 			delay=lfe.get_item_access_time(life, _item))
+		
+		return True
+	
+	return False
 
 def explore_known_chunks(life):
 	#Our first order of business is to figure out exactly what we're looking for.
