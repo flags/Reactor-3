@@ -4,7 +4,6 @@ import graphics as gfx
 import life as lfe
 
 import numbers
-import bullets
 import effects
 import alife
 import items
