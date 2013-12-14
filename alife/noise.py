@@ -30,7 +30,7 @@ def update_targets_around_noise(life, noise):
 			continue
 		
 		target['last_seen_at'] = noise['pos'][:]
-		print 'UPDATED' * 100
+		print 'SOUND UPDATED' * 100
 
 def _spread(noise):
 	for alife in LIFE.values():

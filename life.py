@@ -1789,28 +1789,32 @@ def tick(life):
 	if calculate_velocity(life):
 		return False	
 	
-	if not 'player' in life:
-		brain.think(life)
-	else:
-		brain.sight.look(life)
-		alife.sound.listen(life)
-		
-		if life['job']:
-			alife.jobs.work(life)
-		
-		for context in life['contexts'][:]:
-			context['time'] -= 1
+	return True
+
+def tick_all_life():
+	_tick = []
+	for life in [LIFE[i] for i in LIFE]:
+		if 'player' in life:
+			brain.sight.look(life)
+			brain.sound.listen(life)
 			
-			if not context['time']:
-				if context['timeout_callback']:
-					context['timeout_callback'](context['from'])
-				else:
-					print 'No callback'
-				
-				life['contexts'].remove(context)
-				logging.info('Context removed!')
+			if life['job']:
+				alife.jobs.work(life)
+			
+			perform_action(life)
+			
+			continue
+		
+		if tick(life):
+			_tick.append(life)
 	
-	perform_action(life)
+	for life in _tick:
+		brain.parse(life)
+	
+	for life in _tick:
+		perform_action(life)
+		
+		brain.act(life)
 
 def attach_item_to_limb(body,id,limb):
 	"""Attaches item to limb. Returns True."""
@@ -3556,7 +3560,3 @@ def print_life_table():
 	for life in [LIFE[i] for i in LIFE]:
 		generate_life_info(life)
 		print '\n','%' * 16,'\n'
-
-def tick_all_life():
-	for life in [LIFE[i] for i in LIFE]:
-		tick(life)

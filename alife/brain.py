@@ -24,13 +24,15 @@ import copy
 
 CONSTANT_MODULES = [alife_needs]
 
-def think(life):
+def parse(life):
 	sight.look(life)
 	sound.listen(life)
 	memory.process(life)
 	judgement.judge(life)
 	judgement.judge_jobs(life)
 	survival.process(life)
+
+def act(life):
 	understand(life)
 	
 	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
