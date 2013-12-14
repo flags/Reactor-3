@@ -147,7 +147,6 @@ def main():
 	maps.render_lights()
 	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
 	items.draw_items()
-	bullets.draw_bullets()
 	life.draw_life()
 	
 	if LIFE[SETTINGS['controlling']]['dead'] and not EVENTS:
