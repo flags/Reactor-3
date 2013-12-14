@@ -134,6 +134,9 @@ def clear_scene():
 	
 	logging.debug('Cleared scene.')
 
+def view_exists(view):
+	return view in VIEWS
+
 def fade_view(view_name, fore_fade, back_fade):
 	_view = get_view_by_name(view_name)
 	_view['fade'] = [fore_fade, back_fade]
@@ -273,12 +276,14 @@ def prepare_map_views():
 	if get_active_view() == 'map':
 		return False
 	
-	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
-	create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
-	create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
-	create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
-	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
+	if not view_exists('map'):
+		create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
+		create_view(0, 0, CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], CONSOLE_WINDOW_SIZE[0], CONSOLE_WINDOW_SIZE[1], 0, 'console')
+		create_view(0, MAP_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], MESSAGE_WINDOW_SIZE[0], MESSAGE_WINDOW_SIZE[1], 0, 'message_box')
+		create_view(0, 0, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], 0, 'overlay', transparent=True)
+		create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_SIZE[0], WINDOW_SIZE[1], 0, 'chunk_map')
 	
+	clear_scene()
 	add_view_to_scene_by_name('map')
 	add_view_to_scene_by_name('message_box')
 	#add_view_to_scene_by_name('console')
@@ -288,6 +293,9 @@ def prepare_map_views():
 	#fade_view('overlay', 1, 1)
 
 	set_active_view('map')
+	
+	FADE_TO_WHITE[0] = 0.0	
+	fade_to_white(FADE_TO_WHITE[0])
 
 def prepare_terraform_views():
 	create_view(0, 0, WINDOW_SIZE[0], WINDOW_SIZE[1], MAP_SIZE[0], MAP_SIZE[1], 0, 'map', lighting=True)
