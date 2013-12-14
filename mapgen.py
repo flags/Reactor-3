@@ -1677,9 +1677,25 @@ def construct_outpost(map_gen):
 		_pos = map_gen['chunk_map'][chunk_key]['pos']
 		map_gen['chunk_map'][chunk_key]['type'] = 'outpost'
 		
+		#Dither
+		_dither_in = [direction_from_key_to_key(map_gen, chunk_key, key) for key in get_neighbors_of_type(map_gen, _pos, 'other')]
+		
 		for y in range(map_gen['chunk_size']):
 			for x in range(map_gen['chunk_size']):
-				create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+				
+				_continue = False
+				for _dither_dir in _dither_in:
+					if x < map_gen['chunk_size']+(_dither_dir[0]*(map_gen['chunk_size']/2)) or y < map_gen['chunk_size']+(_dither_dir[1]*(map_gen['chunk_size']/2)):
+						if not random.randint(0, 5):
+							_continue = True
+							break
+				
+				if _continue:
+					continue
+				
+				_tile = map_gen['map'][_pos[0]+x][_pos[1]+y][3]
+				if not _tile or (not _tile['id'] in tiles.GRASS_TILES and not _tile['id'] in tiles.FIELD_TILES):
+					create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
 		
 		if not random.randint(0, 5):
 			for y in range(2, 4):
