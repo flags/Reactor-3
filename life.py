@@ -500,7 +500,7 @@ def sanitize_know(life):
 			alife.brain.unflag_alife(life, entry['life'], 'search_map')
 
 def prepare_for_save(life):
-	_delete_keys = ['raw', 'actions', 'dialogs', 'fov']
+	_delete_keys = ['raw', 'dialogs', 'fov']
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
@@ -516,7 +516,6 @@ def prepare_for_save(life):
 def post_save(life):
 	'''This is for getting the entity back in working order after a save.'''
 	life['heard'] = []
-	life['actions'] = []
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
