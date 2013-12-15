@@ -39,6 +39,7 @@ ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOO
               'kitchen': {'floor_tiles': tiles.BROWN_FLOOR_TILES},
               'dining_room': {'floor_tiles': tiles.WHITE_TILE_TILES}}
 
+
 def create_building(buildings, building, chunk_size):
 	_top = False
 	_bot = False
@@ -1686,7 +1687,9 @@ def construct_outpost(map_gen):
 				_continue = False
 				for _dither_dir in _dither_in:
 					if x < map_gen['chunk_size']+(_dither_dir[0]*(map_gen['chunk_size']/2)) or y < map_gen['chunk_size']+(_dither_dir[1]*(map_gen['chunk_size']/2)):
-						if not random.randint(0, 5):
+						if not random.randint(0, 3):
+							create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+							
 							_continue = True
 							break
 				
@@ -1694,7 +1697,8 @@ def construct_outpost(map_gen):
 					continue
 				
 				_tile = map_gen['map'][_pos[0]+x][_pos[1]+y][3]
-				if not _tile or (not _tile['id'] in tiles.GRASS_TILES and not _tile['id'] in tiles.FIELD_TILES):
+				
+				if not _tile or (not _tile['id'] in [t['id'] for t in tiles.GRASS_TILES] and not _tile['id'] in [t['id'] for t in tiles.FIELD_TILES]):
 					create_tile(map_gen, _pos[0]+x, _pos[1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
 		
 		if not random.randint(0, 5):

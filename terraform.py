@@ -161,7 +161,8 @@ def handle_input():
 		pass
 	
 	elif INPUT['n']:
-		SUN_POS[2] -= 1
+		for alife in LIFE:
+			life.memory(alife, 'focus_on_chunk', chunk_key=life.get_current_chunk_id(LIFE[SETTINGS['controlling']]))
 	
 	elif INPUT['\r']:
 		if ACTIVE_MENU['menu'] == -1:

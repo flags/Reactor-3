@@ -168,7 +168,7 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if not EVENTS and SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
+	if logic.can_tick():#not EVENTS and SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
 		#	if 10+SETTINGS['recording fps temp']:
 		#		SETTINGS['recording fps temp'] -= 1
 		#	else:
