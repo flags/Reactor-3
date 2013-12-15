@@ -46,7 +46,9 @@ def end_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
 	LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
-	LIFE[_dialog['target']]['dialogs'].remove(dialog_id)
+	
+	if dialog_id in LIFE[_dialog['target']]['dialogs']:
+		LIFE[_dialog['target']]['dialogs'].remove(dialog_id)
 
 	if SETTINGS['controlling'] in [_dialog['started_by'], _dialog['target']]:
 		lfe.focus_on(LIFE[SETTINGS['controlling']])

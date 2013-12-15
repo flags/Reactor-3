@@ -362,9 +362,6 @@ def generate_life():
 			alife.stats.establish_trust(m1, m2['id'])
 	
 	alife.speech.inform_of_group_members(_group_members[0], None, _group)
-	
-	#for item in RECRUIT_ITEMS:
-	#	life.add_item_to_inventory(alife, items.create_item(item))
 
 def create_player():
 	PLAYER = life.create_life('human',
@@ -376,35 +373,28 @@ def create_player():
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('AK-74'))
-	life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm magazine'))
+	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
+	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
 	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
 	
-	for i in range(30):
-		life.add_item_to_inventory(PLAYER, items.create_item('5.45x39mm round'))
-	
-	#for item in RECRUIT_ITEMS:
-	#	life.add_item_to_inventory(PLAYER, items.create_item(item))
+	for i in range(17):
+		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
 	
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
-	
-	#_i = items.get_item_from_uid(items.create_item('burner', position=PLAYER['pos'][:]))
-	#items.move(_i, 180, 3)
 	
 	return PLAYER
 	
 def create_region_spawns():
 	#Step 1: Army Outpost
 	for outpost in WORLD_INFO['refs']['outposts']:
-		spawns.generate_life('soldier', amount=3, group=True, spawn_chunks=outpost)
+		generate_outpost(outpost)
 	
 	#Step 2: Bandit village
 	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
-	spawns.generate_life('bandit',
+	spawns.generate_group('bandit',
 	                     amount=random.randint(3, 5),
-	                     group=True,
 	                     group_motive='crime',
 	                     spawn_chunks=[_spawn_chunk])
 	
@@ -414,3 +404,6 @@ def create_region_spawns():
 	
 	#for i in range(1):
 	#	generate_wildlife()
+
+def generate_outpost(outpost_chunks):
+	spawns.generate_group('soldier', amount=5, spawn_chunks=outpost_chunks)

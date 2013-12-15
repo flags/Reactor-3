@@ -2,7 +2,9 @@ from globals import *
 
 import life as lfe
 
+import alife_group
 import alife_needs
+import alife_talk
 
 import snapshots
 import judgement
@@ -21,8 +23,10 @@ import logging
 import time
 import copy
 
+CONSTANT_MODULES = [alife_needs,
+                    alife_group,
+                    alife_talk]
 
-CONSTANT_MODULES = [alife_needs]
 
 def parse(life):
 	sight.look(life)
@@ -281,9 +285,6 @@ def remember_known_item(life, item_id):
 	return False
 
 def understand(life):
-	#for module in get_constant_modules(life):
-	#	module.tick(life, [], [], [], [], [])
-	
 	if SETTINGS['controlling']:
 		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
 		if _dist_to_player < 100:

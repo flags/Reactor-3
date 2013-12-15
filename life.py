@@ -1778,7 +1778,6 @@ def tick(life):
 		life['consciousness'] += 1
 	
 	perform_collisions(life)
-	alife.survival.generate_needs(life)
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
@@ -1795,6 +1794,7 @@ def tick_all_life():
 	_tick = []
 	for life in [LIFE[i] for i in LIFE]:
 		if 'player' in life:
+			tick(life)
 			brain.sight.look(life)
 			brain.sound.listen(life)
 			
@@ -1809,6 +1809,7 @@ def tick_all_life():
 			_tick.append(life)
 	
 	for life in _tick:
+		alife.survival.generate_needs(life)
 		brain.parse(life)
 	
 	for life in _tick:
@@ -2153,6 +2154,8 @@ def add_item_to_inventory(life, item_uid):
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
+			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			
 			return False
 		else:
 			life['inventory'].append(item_uid)
