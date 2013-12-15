@@ -61,7 +61,7 @@ def move_camera(pos, scroll=False):
 		alife.brain.flag(LIFE[SETTINGS['controlling']], 'redraw', value=pos[:])
 
 def draw_targeting():
-	if SETTINGS['following'] and not SETTINGS['controlling'] == SETTINGS['following']:
+	if SETTINGS['following'] and not SETTINGS['controlling'] == SETTINGS['following'] and LIFE[SETTINGS['following']]['path']:
 		SELECTED_TILES[0] = [(p[0], p[1], 2) for p in LIFE[SETTINGS['following']]['path']]
 	
 	if LIFE[SETTINGS['controlling']] and LIFE[SETTINGS['controlling']]['targeting']:
@@ -168,7 +168,7 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if logic.can_tick():#not EVENTS and SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
+	if not EVENTS and SETTINGS['recording'] and len(LIFE[SETTINGS['controlling']]['actions']):
 		#	if 10+SETTINGS['recording fps temp']:
 		#		SETTINGS['recording fps temp'] -= 1
 		#	else:
