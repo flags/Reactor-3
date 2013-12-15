@@ -2917,6 +2917,11 @@ def is_in_shelter(life):
 	
 	_chunk_key = get_current_chunk_id(life)
 	
+	if not _chunk_key in life['known_chunks']:
+		logging.warning('%s does not know about the current chunk.' % ' '.join(life['name']))
+		
+		return False
+	
 	if chunks.get_flag(life, _chunk_key, 'shelter') and list(life['pos'][:2]) in chunks.get_flag(life, _chunk_key, 'shelter_cover'):
 		return True
 	
