@@ -197,13 +197,13 @@ def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
 	_min_los_y = ((life['fov'].shape[1]/2)-view_size[1]/2)
 	_max_los_y = life['fov'].shape[1]
 	
-	_x = pos[0]-CAMERA_POS[0]
-	_y = pos[1]-CAMERA_POS[1]
+	_x = pos[0]-(life['pos'][0]-life['fov'].shape[0])-life['fov'].shape[0]/2
+	_y = pos[1]-(life['pos'][1]-life['fov'].shape[1])-life['fov'].shape[0]/2
 	
-	if _min_los_x+_x<0 or _min_los_x+_x>=_max_los_x or _min_los_y+_y<0 or _min_los_y+_y>=_max_los_y:
+	if _x<_min_los_x or _x>=_max_los_x or _y<_min_los_y or _y>=_max_los_y:
 		return False
 	
-	return life['fov'][_min_los_x+_x, _min_los_y+_y] == 1
+	return life['fov'][_x, _y] == 1
 
 def can_see_position(life, pos, distance=True, block_check=False, strict=False):
 	"""Returns `true` if the life can see a certain position."""
