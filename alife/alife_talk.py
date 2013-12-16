@@ -16,20 +16,8 @@ import jobs
 import logging
 import random
 
-ENTRY_SCORE = 0
-TIER = TIER_CONSTANT
 
-def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
-	#Note: We don't want to change the state because we're running this module alongside
-	#other modules that will (most likely) be changing states for us...
-	#Instead we're going to read the current state and react accordingly via flipping
-	#life['flags'] and spawning conversations based on that (and the state of course).
-	#The main focus is to provide effective output rather than a lot of it, so the less
-	#conversations we spawn the better.
-	
-	return RETURN_SKIP
-
-def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):
+def setup(life):
 	#TODO: Add these two values to an array called PANIC_STATES
 	#if not alife_seen:
 	#	return False

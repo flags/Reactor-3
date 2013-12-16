@@ -1778,7 +1778,6 @@ def tick(life):
 		life['consciousness'] += 1
 	
 	perform_collisions(life)
-	alife.survival.generate_needs(life)
 	
 	_current_known_chunk_id = get_current_known_chunk_id(life)
 	if _current_known_chunk_id:
@@ -1789,28 +1788,34 @@ def tick(life):
 	if calculate_velocity(life):
 		return False	
 	
-	if not 'player' in life:
-		brain.think(life)
-	else:
-		brain.sight.look(life)
-		alife.sound.listen(life)
-		
-		if life['job']:
-			alife.jobs.work(life)
-		
-		for context in life['contexts'][:]:
-			context['time'] -= 1
+	return True
+
+def tick_all_life():
+	_tick = []
+	for life in [LIFE[i] for i in LIFE]:
+		if 'player' in life:
+			tick(life)
+			brain.sight.look(life)
+			brain.sound.listen(life)
 			
-			if not context['time']:
-				if context['timeout_callback']:
-					context['timeout_callback'](context['from'])
-				else:
-					print 'No callback'
-				
-				life['contexts'].remove(context)
-				logging.info('Context removed!')
+			if life['job']:
+				alife.jobs.work(life)
+			
+			perform_action(life)
+			
+			continue
+		
+		if tick(life):
+			_tick.append(life)
 	
-	perform_action(life)
+	for life in _tick:
+		alife.survival.generate_needs(life)
+		brain.parse(life)
+	
+	for life in _tick:
+		perform_action(life)
+		
+		brain.act(life)
 
 def attach_item_to_limb(body,id,limb):
 	"""Attaches item to limb. Returns True."""
@@ -2149,6 +2154,8 @@ def add_item_to_inventory(life, item_uid):
 	
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
+			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			
 			return False
 		else:
 			life['inventory'].append(item_uid)
@@ -2913,6 +2920,11 @@ def is_in_shelter(life):
 	
 	_chunk_key = get_current_chunk_id(life)
 	
+	if not _chunk_key in life['known_chunks']:
+		logging.warning('%s does not know about the current chunk.' % ' '.join(life['name']))
+		
+		return False
+	
 	if chunks.get_flag(life, _chunk_key, 'shelter') and list(life['pos'][:2]) in chunks.get_flag(life, _chunk_key, 'shelter_cover'):
 		return True
 	
@@ -3556,7 +3568,3 @@ def print_life_table():
 	for life in [LIFE[i] for i in LIFE]:
 		generate_life_info(life)
 		print '\n','%' * 16,'\n'
-
-def tick_all_life():
-	for life in [LIFE[i] for i in LIFE]:
-		tick(life)

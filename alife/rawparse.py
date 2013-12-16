@@ -202,6 +202,8 @@ def create_function_map():
 		'hide': lambda life: alife_hide.tick(life),
 		'search_for_threat': lambda life: alife_search.tick(life),
 		'has_recoil': lambda life: life['recoil']>=4,
+		'has_focus_point': lambda life: len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))>0,
+		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

@@ -51,13 +51,12 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 	if not CAMERA_POS[0]:
 		_x_mod = SETTINGS['camera_track'][0]-view_size[0]/2
 	elif CAMERA_POS[0]+view_size[0]>=MAP_SIZE[0]:
-		_x_mod = (SETTINGS['camera_track'][0]+view_size[0]/2)-MAP_SIZE[0]
+		_x_mod = 0
    
 	if not CAMERA_POS[1]:
 		_y_mod = SETTINGS['camera_track'][1]-view_size[1]/2
 	elif CAMERA_POS[1]+view_size[1]>=MAP_SIZE[1]:
-		_y_mod = (SETTINGS['camera_track'][1]+view_size[1]/2)-MAP_SIZE[1]
-	
+		_y_mod = 0
 	
 	_camera_x_offset = CAMERA_POS[0]-_cam_pos[0]
 	_camera_y_offset = CAMERA_POS[1]-_cam_pos[1]

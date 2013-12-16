@@ -162,6 +162,20 @@ CONCRETE_FLOOR_2 = {'id':'concrete_floor_2',
 			 'type': 'building',
 			 'cost':2}
 
+BROKEN_CONCRETE_FLOOR_1 = {'id':'broken_concrete_floor_1',
+			 'icon':'-',
+			 'color': (tcod.Color(105, 105, 105), tcod.Color(90, 90, 90)),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':2}
+
+BROKEN_CONCRETE_FLOOR_2 = {'id':'broken_concrete_floor_2',
+			 'icon':'-',
+			 'color': (tcod.Color(90, 90, 90), tcod.Color(105, 105, 105)),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':2}
+
 ROAD_STRIPE_1 = {'id':'road_stripe_1',
 			 'icon':'.',
 			 'color':(tcod.yellow, tcod.yellow),
@@ -347,10 +361,13 @@ SAND_TILES = [SAND_TILE_1,
 			SAND_TILE_2]
 
 CONCRETE_TILES = [CONCRETE_TILE_1,
-			CONCRETE_TILE_2]
+                  CONCRETE_TILE_2]
 
 CONCRETE_FLOOR_TILES = [CONCRETE_FLOOR_1,
-			CONCRETE_FLOOR_2]
+                        CONCRETE_FLOOR_2]
+
+BROKEN_CONCRETE_FLOOR_TILES = [BROKEN_CONCRETE_FLOOR_1,
+                               BROKEN_CONCRETE_FLOOR_2]
 
 ROAD_STRIPES = [ROAD_STRIPE_1,
                 ROAD_STRIPE_2]
@@ -399,6 +416,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(SAND_TILES)
 	TEMP_TILES.extend(CONCRETE_TILES)
 	TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
+	TEMP_TILES.extend(BROKEN_CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(RED_BRICK_TILES)
 	TEMP_TILES.extend(WHITE_TILE_TILES)
 	TEMP_TILES.extend(TREE_STUMPS)

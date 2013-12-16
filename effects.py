@@ -25,11 +25,13 @@ def register_effect(effect):
 	
 	WORLD_INFO['effectid'] += 1
 
-def unregister_effect(effect):
+def unregister_effect(effect, remove_from_effect_map=True):
 	if effect['unregister_callback']:
 		effect['unregister_callback'](effect)
 	
-	EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
+	if remove_from_effect_map:
+		EFFECT_MAP[effect['pos'][0]][effect['pos'][1]].remove(effect['id'])
+	
 	del EFFECTS[effect['id']]
 
 def create_fire(pos, intensity=1):
@@ -225,7 +227,11 @@ def process_smoke(smoke):
 	
 	if _in_frame and not smoke['pos'] == _old_pos:
 		gfx.refresh_view_position(smoke['pos'][0]-CAMERA_POS[0], smoke['pos'][1]-CAMERA_POS[1], 'map')
-		
+	
+	if smoke['pos'][0]<0 or smoke['pos'][1]<0 or smoke['pos'][0]>=MAP_SIZE[0]-1 or smoke['pos'][1]>=MAP_SIZE[1]-1:
+		unregister_effect(smoke, remove_from_effect_map=False)
+		return False
+	
 	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].append(smoke['id'])
 
 def draw_smoke(pos, smoke):

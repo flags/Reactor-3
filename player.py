@@ -715,11 +715,14 @@ def handle_input():
 		create_open_item_menu(_items)
 	
 	if INPUT['b']:
-		import weather
-		
-		weather.change_weather()
-		WORLD_INFO['time_scale'] = 12
-		WORLD_INFO['real_time_of_day'] = 1200
+		if WORLD_INFO['time_scale'] == 12:
+			WORLD_INFO['time_scale'] = 1
+		else:
+			WORLD_INFO['time_scale'] = 12
+	
+	if INPUT['n']:
+		for alife in LIFE.values():
+			life.memory(alife, 'focus_on_chunk', chunk_key=life.get_current_chunk_id(LIFE[SETTINGS['controlling']]))
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])
@@ -818,13 +821,13 @@ def inventory_select(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	_item_uid = entry['id']
-	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
+	_item = life.get_inventory_item(LIFE[SETTINGS['following']], _item_uid)
 	_menu_items = []
 	
 	if 'storing' in _item and not 'is_item' in entry:
 		_stored_items = []
 		for _stored_item_uid in _item['storing']:
-			_stored_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _stored_item_uid)
+			_stored_item = life.get_inventory_item(LIFE[SETTINGS['following']], _stored_item_uid)
 			_i = menus.create_item('single',
 				_stored_item['name'],
 				None,

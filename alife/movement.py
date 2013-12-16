@@ -81,6 +81,11 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	
 	return False
 
+def travel_to_chunk(life, chunk_key):
+	_chunk_pos = maps.get_chunk(chunk_key)['pos']
+	
+	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2])
+
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)
