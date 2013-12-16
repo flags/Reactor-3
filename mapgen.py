@@ -139,7 +139,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'outposts': outposts,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
+		'refs': {'factories': [], 'villages': [], 'towns': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -163,9 +163,13 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	#for _factory in map_gen['refs']['factories']:
 		#construct_factory(map_gen, _factory)
 	
+	logging.debug('Building villages...')
+	for village in map_gen['refs']['villages']:
+		construct_village(map_gen, village)
+	
 	logging.debug('Building towns...')
-	for _town in map_gen['refs']['towns']:
-		construct_town(map_gen, _town)
+	for town in map_gen['refs']['towns']:
+		construct_town(map_gen, town)
 	
 	logging.debug('Generating outposts...')	
 	for i in range(map_gen['outposts']):
@@ -280,7 +284,7 @@ def generate_chunk_map(map_gen):
 			
 def generate_outlines(map_gen):
 	logging.debug('Placing roads and towns...')
-	place_road(map_gen, turnoffs=map_gen['towns'], turns=0, length=(35*map_gen['towns'], 35*map_gen['towns']), width=2)
+	place_road(map_gen, turnoffs=map_gen['towns'], turns=0, length=(65*map_gen['towns'], 65*map_gen['towns']), width=2)
 	
 	#logging.debug('Placing factories...')
 	#while len(map_gen['refs']['factories'])<map_gen['factories']:
@@ -306,6 +310,9 @@ def generate_outlines(map_gen):
 	                                    int(round(MAP_SIZE[0]*.25)),
 	                                    int(round(MAP_SIZE[0]*.75)))
 	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((_dirt_path_end_x_pos, 150)))
+	
+	logging.debug('Placing rookie village...')
+	place_village(map_gen, map_gen['chunk_map'][alife.chunks.get_nearest_chunk_in_list(((MAP_SIZE[0]/2)+random.randint(-30, 30), MAP_SIZE[1]-(20*5)), map_gen['refs']['roads'])]['pos'])
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -371,7 +378,7 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_segment = len(_road_segments)/(turnoffs-i)
 			_segment -= 10
 		else:
-			_segment = 5
+			_segment = 55
 		
 		_town_segments.append(_segment)
 	
@@ -409,19 +416,15 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_pos[1] += _next_dir[1]
 			
 			if _pos[0] >= map_gen['size'][0]/map_gen['chunk_size']:
-				print 'QUIT', width
 				return False
 			
 			if _pos[1] >= map_gen['size'][1]/map_gen['chunk_size']:
-				print 'QUIT', width
 				return False
 			
 			if _pos[0] < 0:
-				print 'QUIT', width
 				return False
 			
 			if _pos[1] < 0:
-				print 'QUIT', width
 				return False
 		
 			for _i in range(1, 1+width):
@@ -582,6 +585,47 @@ def place_factory(map_gen):
 		
 		map_gen['refs']['factories'].append(_walked)
 		break
+
+def place_village(map_gen, position, buildings=3, building_sizes=[], max_building_size=8):
+	_buildings = []
+	_open_chunks = []
+	
+	for chunk_key in get_all_connected_chunks_of_type(map_gen, alife.chunks.get_chunk_key_at(position), 'other', limit=((buildings*2)*(max_building_size))*2):
+		if not maps.get_chunk(chunk_key)['type'] == 'other':
+			continue
+		
+		_open_chunks.append(chunk_key)
+	
+	while buildings and _open_chunks:
+		_chunk_key = random.choice(_open_chunks)
+		_door_chunk_key = []
+		_open_chunks.remove(_chunk_key)
+		
+		if building_sizes:
+			_building_size = building_sizes.pop(0)
+		else:
+			_building_size = max_building_size
+		
+		_building_chunks = get_all_connected_chunks_of_type(map_gen, _chunk_key, 'other', limit=_building_size)
+		
+		if len(_building_chunks) < _building_size:
+			continue
+		
+		for chunk_key in _building_chunks:
+			map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		
+		for chunk_key in _building_chunks:
+			for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
+				_door_chunk_key = neighbor_chunk_key
+				break
+			
+			if _door_chunk_key:
+				break
+		
+		_buildings.append({'rooms': _building_chunks, 'exterior_chunks': [_door_chunk_key]})
+		buildings -= 1
+	
+	map_gen['refs']['villages'].append(_buildings)
 
 def place_town(map_gen, start_chunk_key=None, size=10):
 	#Find driveways
@@ -786,7 +830,7 @@ def get_neighbors_of_type(map_gen, pos, chunk_type, diagonal=False, return_keys=
 	
 	return _neighbors
 
-def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type):
+def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type, limit=99999):
 	_connected_chunks = [chunk_key]
 	_to_check = [chunk_key]
 	
@@ -799,6 +843,9 @@ def get_all_connected_chunks_of_type(map_gen, chunk_key, chunk_type):
 			
 			_to_check.append(neighbor)
 			_connected_chunks.append(neighbor)
+			
+			if len(_connected_chunks) == limit:
+				return _connected_chunks
 	
 	return _connected_chunks
 
@@ -1221,6 +1268,13 @@ def construct_factory(map_gen, town):
 							if not i and random.randint(0, 500) == 500:
 								effects.create_light((x, y, 2), (255, 255, 255), 5, 0.1)
 
+def construct_village(map_gen, buildings):
+	for building in buildings:
+		for chunk_key in building['rooms']:
+			map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		
+		construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=building['exterior_chunks'])		
+
 def construct_town(map_gen, town):
 	_buildings = []
 	_taken = []
@@ -1408,7 +1462,7 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 						_needs_to_connect.append(_direction)
 					elif _exits>1:
 						_can_connect_to.append(_direction)
-								
+				
 				if _needs_to_connect:
 					_occupied_chunks[chunk_key] = {'room': 'small1',
 						                          'interior': random.sample(_can_connect_to, random.randint(1, len(_can_connect_to))),

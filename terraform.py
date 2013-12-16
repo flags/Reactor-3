@@ -21,17 +21,18 @@ import maputils
 import profiles
 import weather
 import numbers
-import random
 import mapgen
 import items
 import zones
 import menus
-import time
 import maps
-import sys
 import smp
 
 import cProfile
+import random
+import time
+import sys
+
 
 #Optional Cython-compiled modules
 try:
@@ -73,7 +74,7 @@ def regenerate_world():
 	pre_setup_world()
 	
 	try:
-		mapgen.generate_map(size=(250, 450, 10),
+		mapgen.generate_map(size=(250, 650, 10),
 			                towns=1,
 			                factories=0,
 			                outposts=2,
