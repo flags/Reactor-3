@@ -144,7 +144,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'flags': {},
 		'map': maps.create_map(size=size),
 		'queued_roads': [],
-		'settings': {'back yards': True, 'town size': (20, 30)}}
+		'settings': {'back yards': True, 'town size': (20, 25)}}
 	
 	_map_size = maputils.get_map_size(map_gen['map'])
 	MAP_SIZE[0] = _map_size[0]
