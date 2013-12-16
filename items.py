@@ -724,7 +724,7 @@ def tick_item(item_uid):
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 		
-		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1]:
+		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1] or item['realpos'][2]<0 or item['realpos'][2]>=MAP_SIZE[2]-1:
 			logging.warning('Item OOM: %s', item['uid'])
 			delete_item(ITEMS[item_uid])
 			return False

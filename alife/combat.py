@@ -111,14 +111,6 @@ def _refill_feed(life, feed):
 		logging.warning('No hands free to load ammo!')
 		
 		return False
-	
-	#TODO: Actual programming
-	#if not lfe.get_held_items(life,matches=[{'id': feed['uid']}]) and (lfe.item_is_stored(life, feed['uid']) or feed['uid'] in life['inventory']) and lfe.find_action(life, matches=[{'action': 'removeandholditem'}]):
-	#	_hold = lfe.add_action(life,{'action': 'removeandholditem',
-	#		'item': feed['uid']},
-	#		200,
-	#		delay=0)
-	#	return False
 
 	if not lfe.get_held_items(life, matches=[{'id': feed['uid']}]) and lfe.item_is_stored(life, feed['uid']) and not lfe.find_action(life, matches=[{'action': 'removeandholditem'}]):
 		lfe.add_action(life,{'action': 'removeandholditem',
@@ -134,7 +126,6 @@ def _refill_feed(life, feed):
 	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
 		#TODO: What?
 		if not _loading_rounds:
-			print 'we not loadin'
 			return True
 		
 		return False

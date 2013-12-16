@@ -485,6 +485,17 @@ def manage_known_groups(life, group_id):
 		elif len(_known_members)<=3:
 			speech.announce(life, 'ask_for_group_list', group=known_group_id, group_id=known_group_id, ignore_if_said_in_last=3000)
 
+def manage_jobs(life, group_id):
+	_shelter = get_shelter(life, group_id)
+	
+	if not _shelter:
+		return False
+	
+	#What do we need to defend?
+	#TODO: Dirty hack...
+	#if stats.is_psychotic(life):
+	
+
 def manage_territory(life, group_id):
 	_shelter = get_shelter(life, group_id)
 	
