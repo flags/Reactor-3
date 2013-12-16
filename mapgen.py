@@ -146,6 +146,11 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'queued_roads': [],
 		'settings': {'back yards': True, 'town size': (20, 30)}}
 	
+	_map_size = maputils.get_map_size(map_gen['map'])
+	MAP_SIZE[0] = _map_size[0]
+	MAP_SIZE[1] = _map_size[1]
+	MAP_SIZE[2] = _map_size[2]
+	
 	WORLD_INFO['chunk_map'] = map_gen['chunk_map']
 	
 	#logging.debug('Creating height map...')
@@ -205,11 +210,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	map_gen['items'] = ITEMS
 	WORLD_INFO.update(map_gen)
-	
-	_map_size = maputils.get_map_size(WORLD_INFO['map'])
-	MAP_SIZE[0] = _map_size[0]
-	MAP_SIZE[1] = _map_size[1]
-	MAP_SIZE[2] = _map_size[2]
 	
 	if not skip_zoning:
 		logging.debug('Creating zone map...')
@@ -312,7 +312,10 @@ def generate_outlines(map_gen):
 	place_dirt_path(map_gen, _dirt_path_start_key, alife.chunks.get_chunk_key_at((_dirt_path_end_x_pos, 150)))
 	
 	logging.debug('Placing rookie village...')
-	place_village(map_gen, map_gen['chunk_map'][alife.chunks.get_nearest_chunk_in_list(((MAP_SIZE[0]/2)+random.randint(-30, 30), MAP_SIZE[1]-(20*5)), map_gen['refs']['roads'])]['pos'])
+	
+	place_village(map_gen, map_gen['chunk_map'][alife.chunks.get_nearest_chunk_in_list(((map_gen['size'][0]/2),
+	                                                                                    map_gen['size'][1]-(15*map_gen['chunk_size'])),
+	                                                                                   map_gen['refs']['roads'])]['pos'])
 	
 	logging.debug('Placing towns...')
 	for town_seed_chunk in map_gen['refs']['town_seeds']:
@@ -616,8 +619,9 @@ def place_village(map_gen, position, buildings=3, building_sizes=[], max_buildin
 		
 		for chunk_key in _building_chunks:
 			for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
-				_door_chunk_key = neighbor_chunk_key
-				break
+				if not neighbor_chunk_key in _building_chunks:
+					_door_chunk_key = neighbor_chunk_key
+					break
 			
 			if _door_chunk_key:
 				break
@@ -1270,10 +1274,7 @@ def construct_factory(map_gen, town):
 
 def construct_village(map_gen, buildings):
 	for building in buildings:
-		for chunk_key in building['rooms']:
-			map_gen['chunk_map'][chunk_key]['type'] = 'town'
-		
-		construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=building['exterior_chunks'])		
+		construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=building['exterior_chunks'])
 
 def construct_town(map_gen, town):
 	_buildings = []
