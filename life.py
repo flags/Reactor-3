@@ -437,6 +437,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	# down = chr(25)
 	
 	#ALife
+	_life['online'] = True
 	_life['know'] = {}
 	_life['know_items'] = {}
 	_life['known_items_type_cache'] = {}
@@ -1809,11 +1810,15 @@ def tick_all_life():
 			_tick.append(life)
 	
 	for life in _tick:
+		if not life['online']:
+			continue
+		
 		alife.survival.generate_needs(life)
 		brain.parse(life)
 	
 	for life in _tick:
-		perform_action(life)
+		if life['online']:
+			perform_action(life)
 		
 		brain.act(life)
 

@@ -646,6 +646,10 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
+		_online_alife = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']<30])
+		_online_alife_in_passive = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']>=30])
+		_offline_alife = len([l['id'] for l in LIFE.values() if not l['online']])
+		
 		_options = []
 		_options.append(menus.create_item('title', 'Testing', None))
 		_options.append(menus.create_item('list', 'Show camp ownership', str(len(WORLD_INFO['camps']))))
@@ -657,7 +661,7 @@ def handle_input():
 		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
 		_options.append(menus.create_item('single', 'Update chunk map', 'Generates chunk map'))
 		_options.append(menus.create_item('title', 'World Info', None))
-		_options.append(menus.create_item('single', 'ALife', '%s active (%s total)' % (len([l for l in LIFE.values() if not l['dead'] and not l['think_rate_max']>=30]), len([l for l in LIFE.values() if not l['dead']]))))
+		_options.append(menus.create_item('single', 'ALife', 'Online: %s (%s), Offline: %s' % (_online_alife, _online_alife_in_passive, _offline_alife)))
 		_options.append(menus.create_item('single', 'ALife memories', sum([len(l['memory']) for l in LIFE.values() if not l['dead']])))
 		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
 		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))
