@@ -249,7 +249,7 @@ def generate_world(combat_test=False):
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
 	if _settings['Map'] == 'Generate Map':
-		_settings['Map'] = mapgen.generate_map(size=(250, 450, 10),
+		_settings['Map'] = mapgen.generate_map(size=(250, 650, 10),
 		                                       towns=1,
 		                                       factories=0,
 		                                       outposts=2,

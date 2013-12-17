@@ -1,5 +1,6 @@
 from globals import *
 
+import worldgen
 import items
 import alife
 import life
@@ -8,6 +9,7 @@ import logging
 import random
 
 
+SOLDIER_SPECIES = 'human'
 SOLDIER_ITEMS = [{'kevlar jacket': 1},
                  {'ALICE pack': 1},
                  {'mp5': 1},
@@ -18,36 +20,62 @@ SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}
 SOLDIER_BANNED_GOALS = ['discover']
 
+BANDIT_SPECIES = 'human'
 BANDIT_ITEMS = [{'white t-shirt': 1},
-                 {'leather backpack': 1},
-                 {'radio': 1},
-                 {'corn': 2},
-                 {'soda': 2},
-                 {'glock': 1},
-                 {'9x19mm magazine': 1},
-                 {'9x19mm round': 17}]
+                {'leather backpack': 1},
+                {'radio': 1},
+                {'corn': 2},
+                {'soda': 2},
+                {'glock': 1},
+                {'9x19mm magazine': 1},
+                {'9x19mm round': 17}]
 BANDIT_STATS = {'firearms': 3+random.randint(0, 2),
                 'psychotic': True}
 
-LIFE_CLASSES = {'soldier': {'items': SOLDIER_ITEMS,
+LONER_SPECIES = 'human'
+LONER_ITEMS = [{'white t-shirt': 1},
+               {'leather backpack': 1},
+               {'radio': 1},
+               {'corn': 2},
+               {'soda': 2},
+               {'glock': 1},
+               {'9x19mm magazine': 1},
+               {'9x19mm round': 17}]
+LONER_STATS = {'firearms': 4+random.randint(0, 2)}
+
+LIFE_CLASSES = {'soldier': {'species': SOLDIER_SPECIES,
+                            'items': SOLDIER_ITEMS,
                             'stats': SOLDIER_STATS,
                             'banned_goals': SOLDIER_BANNED_GOALS},
-                'bandit': {'items': BANDIT_ITEMS,
+                'bandit': {'species': SOLDIER_SPECIES,
+                           'items': BANDIT_ITEMS,
                            'stats': BANDIT_STATS,
-                           'banned_goals': []}}
+                           'banned_goals': []},
+                'loner': {'species': LONER_SPECIES,
+                          'items': LONER_ITEMS,
+                          'stats': LONER_STATS,
+                          'banned_goals': []},
+                'feral dog': {'species': 'dog',
+                              'items': [],
+                              'stats': {},
+                              'banned_goals': []}}
 
 
-def generate_life(life_class, amount=1, spawn_chunks=[]):
+def generate_life(life_species, life_class, amount=1, spawn_chunks=[]):
 	_spawn_list = []
 	
 	if spawn_chunks:
 		_chunk_key = random.choice(spawn_chunks)
 		_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
 	else:
-		_spawn = get_spawn_point()
+		_spawn = worldgen.get_spawn_point()
 	
 	for i in range(amount):
-		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		if spawn_chunks:
+			_chunk_key = random.choice(spawn_chunks)
+			_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
+		
+		_alife = life.create_life(life_species, map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		
 		for item in LIFE_CLASSES[life_class]['items']:
 			print item
@@ -65,7 +93,7 @@ def generate_life(life_class, amount=1, spawn_chunks=[]):
 	return _spawn_list
 
 def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[]):
-	_group_members = generate_life(life_class, amount=amount, spawn_chunks=spawn_chunks)
+	_group_members = generate_life(LIFE_CLASSES[life_class]['species'], life_class, amount=amount, spawn_chunks=spawn_chunks)
 	
 	_group_members[0]['stats']['is_leader'] = True
 	_group = alife.groups.create_group(_group_members[0])
