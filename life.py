@@ -2888,7 +2888,11 @@ def draw_life_info():
 				tcod.console_set_default_foreground(0, tcod.gray)
 			
 			if 1 <= i <= len(_name):
-				tcod.console_set_default_foreground(0, tcod.green)
+				if i <= _bar_size:
+					tcod.console_set_default_foreground(0, tcod.green)
+				else:
+					tcod.console_set_default_foreground(0, tcod.dark_green)
+				
 				tcod.console_print(0, _action_queue_position[0]+i, _action_queue_position[1], _name[i-1])
 			else:
 				tcod.console_print(0, _action_queue_position[0]+i,_action_queue_position[1], '|')

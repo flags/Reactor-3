@@ -661,7 +661,7 @@ def handle_input():
 		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
 		_options.append(menus.create_item('single', 'Update chunk map', 'Generates chunk map'))
 		_options.append(menus.create_item('title', 'World Info', None))
-		_options.append(menus.create_item('single', 'ALife', 'Online: %s (%s), Offline: %s' % (_online_alife, _online_alife_in_passive, _offline_alife)))
+		_options.append(menus.create_item('single', 'ALife (%s)' % len(LIFE), 'Online: %s (%s), Offline: %s' % (_online_alife, _online_alife_in_passive, _offline_alife)))
 		_options.append(menus.create_item('single', 'ALife memories', sum([len(l['memory']) for l in LIFE.values() if not l['dead']])))
 		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
 		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))

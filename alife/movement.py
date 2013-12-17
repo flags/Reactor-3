@@ -86,6 +86,22 @@ def travel_to_chunk(life, chunk_key):
 	
 	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2])
 
+def guard_chunk(life, chunk_key):
+	if 'guard_time' in life['state_flags'] and life['state_flags']['guard_time']:
+		life['state_flags']['guard_time'] -= 1
+		
+		return False
+	
+	_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
+	_center_chunk_pos.append(2)
+	_patrol_chunk_key = random.choice(chunks.get_visible_chunks_from(_center_chunk_pos, alife.sight.get_vision(life)))
+	
+	travel_to_chunk(life, _patrol_chunk_key)
+	
+	life['state_flags']['guard_time'] = random.randint(45, 60)
+	
+	return False
+
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)

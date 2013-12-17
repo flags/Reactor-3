@@ -45,7 +45,8 @@ def get_dialog(dialog_id):
 def end_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
-	LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
+	if dialog_id in LIFE[_dialog['started_by']]['dialogs']:
+		LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
 	
 	if dialog_id in LIFE[_dialog['target']]['dialogs']:
 		LIFE[_dialog['target']]['dialogs'].remove(dialog_id)

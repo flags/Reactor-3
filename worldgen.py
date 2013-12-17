@@ -351,11 +351,13 @@ def create_region_spawns():
 		generate_outpost(outpost)
 	
 	#Step 2: Bandit village
-	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
-	spawns.generate_group('bandit',
-	                     amount=random.randint(3, 5),
-	                     group_motive='crime',
-	                     spawn_chunks=[_spawn_chunk])
+	for i in range(random.randint(2, 3)):
+		_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
+		
+		spawns.generate_group('bandit',
+			                 amount=random.randint(3, 5),
+			                 group_motive='crime',
+			                 spawn_chunks=[_spawn_chunk])
 	
 	#Step 3: Rookie village
 	_spawn_chunks = random.choice([t['rooms'] for t in WORLD_INFO['refs']['villages'][0]])
@@ -367,7 +369,21 @@ def create_region_spawns():
 	for member in _rookie_village_members:
 		alife.planner.remove_goal(member, 'discover')
 	
-	spawns.generate_group('feral dog', amount=random.randint(4, 6))
+	_dirt_road_start_chunk = maps.get_chunk(WORLD_INFO['refs']['dirt_road'][0])
+	_dirt_road_end_chunk =  maps.get_chunk(WORLD_INFO['refs']['dirt_road'][len(WORLD_INFO['refs']['dirt_road'])-1])
+	
+	for x in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
+		for y in range(_dirt_road_end_chunk['pos'][1], _dirt_road_start_chunk['pos'][1], WORLD_INFO['chunk_size']):
+			if x < _dirt_road_end_chunk['pos'][0]-(10*WORLD_INFO['chunk_size']) or x > _dirt_road_end_chunk['pos'][0]+(10*WORLD_INFO['chunk_size']):
+				continue
+			
+			if random.randint(0, 100):
+				continue
+			
+			_spawn_chunk = '%s,%s' % (x, y)
+	
+			for _alife in spawns.generate_group('feral dog', amount=random.randint(4, 6), spawn_chunks=[_spawn_chunk]):
+				life.memory(_alife, 'focus_on_chunk', chunk_key=_spawn_chunk)
 
 def generate_outpost(outpost_chunks):
 	spawns.generate_group('soldier', amount=5, spawn_chunks=outpost_chunks)

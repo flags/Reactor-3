@@ -297,10 +297,13 @@ def understand(life):
 			else:
 				life['think_rate_max'] = 1
 		else:
-			if _dist_to_player > 200 and life['online']:
+			if _dist_to_player >= OFFLINE_ALIFE_DISTANCE and life['online']:
 				life['online'] = False
 				logging.debug('[Agent] %s went offline (Reason: Away from viewer)' % ' '.join(life['name']))
 			elif life['think_rate_max']<30:
+				if _dist_to_player < OFFLINE_ALIFE_DISTANCE:
+					life['online'] = True
+				
 				logging.debug('[Agent] %s went passive (Reason: Away from viewer)' % ' '.join(life['name']))
 			
 			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
