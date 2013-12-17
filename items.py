@@ -367,11 +367,14 @@ def draw_items(view_size=MAP_WINDOW_SIZE):
 		
 		_item = ITEMS[item_uid]
 	
-		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):
-			continue
-		
 		_d_x = _item['pos'][0]-CAMERA_POS[0]
 		_d_y = _item['pos'][1]-CAMERA_POS[1]
+	
+		if _d_x < 0 or _d_x >= MAP_WINDOW_SIZE[0]-1 or _d_y < 0 or _d_y >= MAP_WINDOW_SIZE[1]-1:
+			continue
+	
+		if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], _item['pos']):
+			continue
 		
 		gfx.blit_char_to_view(_d_x,
 	        _d_y,

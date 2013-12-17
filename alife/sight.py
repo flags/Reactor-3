@@ -31,7 +31,6 @@ def look(life):
 		return False
 	
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
-		_a = time.time()
 		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
@@ -135,10 +134,15 @@ def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return 0
 	
+	if 'player' in life:
+		_fov_mod = 1
+	else:
+		_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
+	
 	_world_light = tcod.white-weather.get_lighting()
 	_light_percentage = numbers.clip((_world_light.r+_world_light.g+_world_light.b)/580.0, 0, 1)
 	
-	return int(round(life['vision_max']*_light_percentage))
+	return int(round((life['vision_max']*_light_percentage)*_fov_mod))
 
 #@profile
 def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
@@ -292,14 +296,6 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	return _cover
 
 def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
-	#Destktop
-	#New: 0.0127160549164
-	#Old: 0.0237522125244
-	
-	#Laptop:
-	#New: 0.0139999389648
-	#Old: 0.0350000858307
-	
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score': 9000}
 	

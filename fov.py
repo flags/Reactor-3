@@ -108,11 +108,12 @@ def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy,
 			break
 
 def fov(start_position, distance, callback=None):
-	_los = numpy.zeros((distance*2, distance*2))
-	_start = (start_position[0]-distance, start_position[1]-distance, start_position[2])
+	_distance = int(round(distance))
+	_los = numpy.zeros((_distance*2, _distance*2))
+	_start = (start_position[0]-_distance, start_position[1]-_distance, start_position[2])
 
 	for i in range(8):
-		light(_los, start_position, distance, 1, 1.0, 0.0, MULT[0][i],
+		light(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
 		      MULT[1][i], MULT[2][i], MULT[3][i], callback=callback);
 	
 	_los[_los.shape[0]/2,_los.shape[1]/2] = 1

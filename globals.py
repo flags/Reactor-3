@@ -77,6 +77,9 @@ TIER_URGENT = 3
 TIER_COMBAT = 4
 TIER_TACTIC = 5
 
+YARDS = 0.5
+METERS = 0.4572
+
 #Group stages
 STAGE_FORMING = 1
 STAGE_SETTLING = 2
@@ -174,8 +177,7 @@ SETTINGS = {'running': True,
 	'smp': None,
 	'map_slices': [],
 	'recording': False,
-	'recording fps': 0,
-	'recording fps temp': 0,
+	'distance unit': 'Yards',
 	'viewid': 1,
 	'active_view': 0,
     'refresh_los': False}

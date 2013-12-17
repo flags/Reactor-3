@@ -44,6 +44,16 @@ def setup(life):
 	
 			_potential_talking_targets.append(ai)
 	
+	if lfe.get_all_inventory_items(life, matches=[{'type': 'radio'}]):
+		for ai in life['know']:
+			if ai in _potential_talking_targets:
+				continue
+			
+			if not stats.can_talk_to(life, ai):
+				continue
+			
+			_potential_talking_targets.append(ai)
+	
 	#TODO: Score these
 	random.shuffle(_potential_talking_targets)
 	

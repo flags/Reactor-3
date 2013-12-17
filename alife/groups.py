@@ -263,7 +263,9 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 			
 	else:
 		_announce_to = _group['members'][:]
-		_announce_to.remove(life['id'])
+		
+		if life['id'] in _announce_to:
+			_announce_to.remove(life['id'])
 	#TODO: Could have an option here to form an emergency "combat" group
 	
 	for life_id in _announce_to:

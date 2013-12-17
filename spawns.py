@@ -20,6 +20,7 @@ SOLDIER_BANNED_GOALS = ['discover']
 
 BANDIT_ITEMS = [{'white t-shirt': 1},
                  {'leather backpack': 1},
+                 {'radio': 1},
                  {'corn': 2},
                  {'soda': 2},
                  {'glock': 1},
