@@ -289,7 +289,7 @@ def understand(life):
 		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
 		if _dist_to_player < 100:
 			if life['think_rate_max']>=30:
-				if _dist_to_player < 90:
+				if _dist_to_player < 75:
 					life['think_rate_max'] = 1
 					life['online'] = True
 					logging.debug('[Agent] %s brought online (Reason: Near viewer)' % ' '.join(life['name']))

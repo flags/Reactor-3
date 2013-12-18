@@ -384,7 +384,7 @@ def melee_combat(life, targets):
 		return False
 	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
-		_can_see = sight.can_see_position(life, _target['life']['pos'])
+		_can_see = sight.can_see_position(life, _target['life']['pos'], get_path=True)
 		
 		if _can_see:
 			if len(_can_see)>1:

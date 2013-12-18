@@ -3,14 +3,13 @@
 #Original implementation by bjorn.bergstrom@roguelikedevelopment.org
 #Source: http://roguebasin.roguelikedevelopment.org/index.php?title=FOV_using_recursive_shadowcasting
 
-#TODO: Move slope/math functions to numbers.py
-
 from globals import *
 
 import alife
 import items
 import maps
 
+import cython
 import numpy
 import time
 
@@ -18,23 +17,18 @@ MULT = [[1,  0,  0, -1, -1,  0,  0,  1],
         [0,  1, -1,  0,  0, -1,  1,  0],
         [0,  1,  1,  0,  0, -1, -1,  0],
         [1,  0,  0,  1, -1,  0,  0, -1]]
-BUFFER_MOD = .25
 
-def draw(los_map, size):
-	for y in range(size):
-		_x = ''
-		for x in range(size):
-			if los_map[x, y]:
-				_x+=str(int(los_map[x, y]))
-			else:
-				_x+=' '
-			
-		print _x
 
-def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy, callback=None):
-	if start_slope < end_slope:
+@cython.locals(size=cython.int, row=cython.int, _start_slope=cython.float, _end_slope=cython.float, xx=cython.int, xy=cython.int, yx=cython.int, yy=cython.int)
+def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, yy, callback=None):
+	if _start_slope < _end_slope:
 		return False
 	
+	cdef int i, x, y, z, _d_x, _d_y, _sax, _say, _a_x, _a_y
+	cdef float _l_slope, _r_slope, start_slope, end_slope
+	
+	start_slope = _start_slope
+	end_slope = _end_slope
 	x, y, z = world_pos
 	
 	_next_start_slope = start_slope
@@ -117,7 +111,5 @@ def fov(start_position, distance, callback=None):
 		      MULT[1][i], MULT[2][i], MULT[3][i], callback=callback);
 	
 	_los[_los.shape[0]/2,_los.shape[1]/2] = 1
-	
-	#draw(_los, distance*2)
 	
 	return _los

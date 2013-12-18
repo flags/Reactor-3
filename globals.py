@@ -193,6 +193,7 @@ LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
+ACTIVE_ITEMS = set()
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 ITEM_MAP = []

@@ -174,7 +174,7 @@ def fire(life, target, limb=None):
 	del _bullet['parent']
 	items.move(_bullet, direction, _bullet['max_speed'])
 	_bullet['start_velocity'] = _bullet['velocity'][:]
-	items.tick_item(_bullet['uid'])
+	items.tick_item(_bullet)
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:

@@ -64,4 +64,3 @@ def tick():
 		
 		if not WORLD_INFO['timers']:
 			break
-		

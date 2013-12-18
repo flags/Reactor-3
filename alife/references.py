@@ -78,7 +78,7 @@ def _find_best_unknown_reference(life, ref_type):
 	
 	return _best_reference
 
-def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False):
+def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False, threshold=-1):
 	_lowest = {'chunk_key': None, 'distance': 9000}
 
 	for _key in get_reference(reference_id):
@@ -97,6 +97,9 @@ def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_curr
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
 			_lowest['chunk_key'] = _key
+		
+		if threshold > -1 and _lowest['distance'] <= threshold:
+			break
 	
 	return _lowest['chunk_key']
 

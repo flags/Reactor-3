@@ -109,8 +109,8 @@ def guard_chunk(life, chunk_key):
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)
-	
 	_size = 30
+	
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
 	else:

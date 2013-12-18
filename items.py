@@ -666,11 +666,12 @@ def get_min_max_velocity(item):
 	
 	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
 
-def tick_item(item_uid):
-	item = ITEMS[item_uid]
-	
+def tick_item(item):
 	if 'CAN_BURN' in item['flags'] and item['burning'] and item['owner']:
 		life.burn(LIFE[item['owner']], item['burning'])
+	
+	if 'stored_in' in item or is_item_owned(item['uid']):
+		return False
 	
 	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
@@ -695,7 +696,7 @@ def tick_item(item_uid):
 		item['pos'][2] = int(round(item['realpos'][2]))
 		
 		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
-			delete_item(ITEMS[item_uid])
+			delete_item(item['uid'])
 			return False
 		
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
@@ -729,7 +730,7 @@ def tick_item(item_uid):
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1] or item['realpos'][2]<0 or item['realpos'][2]>=MAP_SIZE[2]-1:
 			logging.warning('Item OOM: %s', item['uid'])
-			delete_item(ITEMS[item_uid])
+			delete_item(item['uid'])
 			return False
 		
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
@@ -751,7 +752,9 @@ def tick_item(item_uid):
 					add_to_chunk(item)
 					life.damage_from_item(_life,item,60)
 					
-					delete_item(ITEMS[item_uid])
+					if item['uid'] in ITEMS:
+						delete_item(item)
+					
 					return False
 			
 		if _break:
@@ -796,7 +799,7 @@ def tick_item(item_uid):
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
-		delete_item(ITEMS[item_uid])
+		delete_item(item['uid'])
 		return False
 			
 	#elif _break:
@@ -822,5 +825,16 @@ def tick_item(item_uid):
 	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 
 def tick_all_items():
-	for item in ITEMS.keys():
-		tick_item(item)
+	if not WORLD_INFO['ticks'] % 16 or not ACTIVE_ITEMS:
+		if SETTINGS['controlling']:
+			for item in ITEMS.values():
+				if numbers.distance(item['pos'], LIFE[SETTINGS['controlling']]['pos'])>=OFFLINE_ALIFE_DISTANCE:
+					if item['uid'] in ACTIVE_ITEMS:
+						ACTIVE_ITEMS.remove(item['uid'])
+				elif item['uid'] in ACTIVE_ITEMS:
+					ACTIVE_ITEMS.add(item['uid'])
+		elif not ACTIVE_ITEMS:
+			ACTIVE_ITEMS.extend(ITEMS.keys())
+		
+	for item in ACTIVE_ITEMS:
+		tick_item(ITEM[item])
