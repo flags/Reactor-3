@@ -20,6 +20,10 @@ import fov
 import random
 
 def position_to_attack(life, target):
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'positioning for attack'}]):
+		if not lfe.ticker(life, 'attack_position', 4):
+			return False
+	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
@@ -73,7 +77,7 @@ def travel_to_position(life, pos, stop_on_sight=False):
 		return True
 	
 	_dest = lfe.path_dest(life)
-	if _dest and _dest[:2] == pos[:2]:
+	if _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
 	lfe.clear_actions(life)
@@ -157,6 +161,10 @@ def escape(life, targets):
 	_target_positions = []
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
+	
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
+		if not lfe.ticker(life, 'escaping', 4):
+			return False
 	
 	#What can the targets see?
 	for target_id in targets:

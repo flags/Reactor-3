@@ -23,7 +23,8 @@ def setup(life):
 	#	return False
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
-	if lfe.ticker(life, 'talk', 4, fire=True):
+	
+	if not lfe.ticker(life, 'talk', 4, fire=True):
 		return False
 	
 	_potential_talking_targets = []
