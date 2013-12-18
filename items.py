@@ -831,10 +831,10 @@ def tick_all_items():
 				if numbers.distance(item['pos'], LIFE[SETTINGS['controlling']]['pos'])>=OFFLINE_ALIFE_DISTANCE:
 					if item['uid'] in ACTIVE_ITEMS:
 						ACTIVE_ITEMS.remove(item['uid'])
-				elif item['uid'] in ACTIVE_ITEMS:
+				elif not item['uid'] in ACTIVE_ITEMS:
 					ACTIVE_ITEMS.add(item['uid'])
 		elif not ACTIVE_ITEMS:
-			ACTIVE_ITEMS.extend(ITEMS.keys())
+			ACTIVE_ITEMS.update(ITEMS.keys())
 		
 	for item in ACTIVE_ITEMS:
-		tick_item(ITEM[item])
+		tick_item(ITEMS[item])
