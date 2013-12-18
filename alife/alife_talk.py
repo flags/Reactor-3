@@ -23,6 +23,8 @@ def setup(life):
 	#	return False
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
+	if lfe.ticker(life, 'talk', 4, fire=True):
+		return False
 	
 	_potential_talking_targets = []
 	for ai in life['seen']:
@@ -136,4 +138,4 @@ def setup(life):
 			speech.communicate(life,
 				'share_item_info',
 				item=item['item'],
-				matches=[{'id': ai['life']['id']}])
+				matches=[ai['life']['id']])

@@ -656,7 +656,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 	_conversation.update(kvargs)
 	_for_player = False
 	
-	for ai in [LIFE[i] for i in LIFE]:
+	for ai in [LIFE[i] for i in matches]:
 		#TODO: Do we really need to support more than one match?
 		#TODO: can_hear
 		if ai['id'] == life['id']:
@@ -668,20 +668,6 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 				continue
-		
-		_does_match = True
-		for match in matches:
-			for key in match:
-				if not key in ai or not ai[key] == match[key]:
-					_does_match = False
-					#logging.debug('%s did not meet matches for this conversation' % ' '.join(ai['name']))
-					break
-		
-			if not _does_match:
-				break
-		
-		if not _does_match:
-			continue
 		
 		if 'player' in ai:
 			_for_player = True
@@ -1633,7 +1619,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
+		speech.communicate(life, _action['what'], matches=[_action['target']['id']])
 		delete_action(life, action)
 
 	elif _action['action'] == 'rest':
@@ -2024,7 +2010,7 @@ def get_all_inventory_items(life, matches=None, ignore_actions=False):
 			continue
 		
 		if matches:
-			if not perform_match(_item,matches):
+			if not perform_match(_item, matches):
 				continue
 		
 		_items.append(_item)

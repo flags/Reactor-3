@@ -209,12 +209,18 @@ def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
 	
 	return life['fov'][_x, _y] == 1
 
-def can_see_position(life, pos, distance=True, block_check=False, strict=False):
+def can_see_position(life, pos, distance=True, block_check=False, strict=False, get_path=False):
 	"""Returns `true` if the life can see a certain position."""
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
 	
-	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
+	if get_path:
+		return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
+
+	if is_in_fov(life, pos):
+		return True
+	
+	return False
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:
@@ -236,7 +242,7 @@ def view_blocked_by_life(life, position, allow=[]):
 	allow.append(life['id'])
 	
 	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
-	_can_see = can_see_position(life, position, block_check=True)
+	_can_see = can_see_position(life, position, block_check=True, get_path=True)
 	
 	if not _can_see:
 		return True

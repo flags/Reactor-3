@@ -333,7 +333,7 @@ def find_target(life, target, distance=5, follow=False, call=True):
 			if not _target['escaped']:
 				memory.create_question(life, target, 'GET_LOCATION')
 				
-			speech.communicate(life, 'call', matches=[{'id': target}])
+			speech.communicate(life, 'call', matches=[target])
 		
 		_target['escaped'] = 1
 		
@@ -358,7 +358,7 @@ def _find_alife_and_say(life, target_id, say):
 	_target = brain.knows_alife_by_id(life, target_id)
 	
 	if _find_alife(life, _target['life']['id']):
-		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], **say)
+		speech.communicate(life, _say['gist'], matches=[_target['life']['id']], **say)
 		lfe.memory(life,
 			'told about founder',
 			camp=_say['camp'],

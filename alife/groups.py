@@ -199,7 +199,7 @@ def distribute(life, message, filter_by=[], **kvargs):
 		if member in filter_by:
 			continue
 		
-		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
+		speech.communicate(life, message, radio=True, matches=[member], **kvargs)
 
 def add_job(life, group_id, job_id):
 	_group = get_group(life, group_id)

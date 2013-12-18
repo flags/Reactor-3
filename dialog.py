@@ -282,7 +282,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 				if not _return == None:
 					_dialog['flags'][_result.split('=')[0]] = _return
 	
-	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
+	alife.speech.communicate(life, 'dialog', matches=[_target], dialog_id=dialog_id, radio=_dialog['remote'])
 
 def reformat_text(life, target, dialog_id, text):
 	_dialog = get_dialog(dialog_id)

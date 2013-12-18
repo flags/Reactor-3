@@ -371,7 +371,7 @@ def ranged_combat(life, targets):
 				speech.communicate(life,
 			        'target_missing',
 			        target=_target['life']['id'],
-			        matches=[{'id': send_to}])
+			        matches=[send_to])
 	else:
 		print life['name'], 'waiting...'
 		return False
@@ -400,7 +400,7 @@ def melee_combat(life, targets):
 				speech.communicate(life,
 			        'target_missing',
 			        target=_target['life']['id'],
-			        matches=[{'id': send_to}])
+			        matches=[send_to])
 	else:
 		print life['name'], 'waiting...'
 		return False

@@ -1797,7 +1797,7 @@ def handle_select_workers(entry):
 	menus.activate_menu(_menu)
 
 def talk_to(entry):
-	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
+	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[entry['target']])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
