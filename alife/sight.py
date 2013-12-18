@@ -18,7 +18,15 @@ import numbers
 import logging
 import time
 
+
 #@profile
+def setup_look(life):
+	if not 'CAN_SEE' in life['life_flags']:
+		return False
+	
+	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
+		scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+
 def look(life):
 	for target_id in life['know']:
 		if life['know'][target_id]['last_seen_time']:
@@ -31,7 +39,11 @@ def look(life):
 		return False
 	
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
-		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		if SETTINGS['smp']:
+			_visible_chunks = post_scan_surroundings(life)
+		else:
+			_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+			
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	elif 'player' in life:
@@ -397,11 +409,26 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		_chunk_keys = set(_chunks)
 	else:
 		_chunk_keys = set()
-		life['fov'] = fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
-	
-	if ignore_chunks:
-		for chunk_key in ignore_chunks:
-			_chunk_keys.remove(chunk_key)
+		
+		if SETTINGS['smp']:
+			fov.fov(life['pos'], get_vision(life), get_chunks=True, life_id=life['id'])
+		else:
+			life['fov'] = fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
 	
 	return list(_chunk_keys)
-	#return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)
+
+def post_scan_surroundings(life):
+	_chunk_keys = set()
+	_los = False
+	_fov_job = FOV_JOBS[life['id']]
+	_map, _keys = _fov_job()
+	
+	if _los:
+		life['fov'] += _map
+	else:
+		life['fov'] = _map
+		_los = True
+	
+	_chunk_keys.update(_keys)
+	
+	return list(_chunk_keys)

@@ -5,24 +5,29 @@
 
 from globals import *
 
+import numbers
+import pyfov
 import alife
 import items
 import maps
 
+import cPickle
 import cython
 import numpy
 import time
 
 MULT = [[1,  0,  0, -1, -1,  0,  0,  1],
-        [0,  1, -1,  0,  0, -1,  1,  0],
-        [0,  1,  1,  0,  0, -1, -1,  0],
-        [1,  0,  0,  1, -1,  0,  0, -1]]
+	[0,  1, -1,  0,  0, -1,  1,  0],
+	[0,  1,  1,  0,  0, -1, -1,  0],
+	[1,  0,  0,  1, -1,  0,  0, -1]]
 
 
 @cython.locals(size=cython.int, row=cython.int, _start_slope=cython.float, _end_slope=cython.float, xx=cython.int, xy=cython.int, yx=cython.int, yy=cython.int)
-def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, yy, callback=None):
+def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, yy, source_map, map_size, chunk_map, get_chunks=False, callback=None):
+	_return_chunks = set()
+	
 	if _start_slope < _end_slope:
-		return False
+		return los_map, _return_chunks
 	
 	cdef int i, x, y, z, _d_x, _d_y, _sax, _say, _a_x, _a_y
 	cdef float _l_slope, _r_slope, start_slope, end_slope
@@ -58,12 +63,12 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 			_a_x = x + _sax
 			_a_y = y + _say
 			
-			if _a_x >= MAP_SIZE[0] or _a_y >= MAP_SIZE[1]:
+			if _a_x >= map_size[0] or _a_y >= map_size[1]:
 				_d_x += 1
 				continue
 			
 			_rad2 = size*size
-			_solid = maps.is_solid((_a_x, _a_y, z+1))
+			_solid = maps.is_solid((_a_x, _a_y, z+1), source_map=source_map)
 			
 			if (_d_x * _d_x + _d_y * _d_y) < _rad2:
 				los_map[_sax+size, _say+size] = 1
@@ -72,7 +77,8 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 					callback((_a_x, _a_y))
 			
 			if not _solid:
-				_chunk = maps.get_chunk(alife.chunks.get_chunk_key_at((_a_x, _a_y)))
+				_chunk_key = alife.chunks.get_chunk_key_at((_a_x, _a_y))
+				_chunk = chunk_map[_chunk_key]
 				
 				for item_uid in _chunk['items'][:]:
 					if not item_uid in ITEMS:
@@ -82,6 +88,9 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 					if items.is_blocking(item_uid):
 						_solid = True
 						break
+				
+				if get_chunks and not _chunk_key in _return_chunks:
+					_return_chunks.add(_chunk_key)
 			
 			if _blocked:
 				if _solid:
@@ -94,22 +103,58 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 			elif _solid:
 				_blocked = True
 				_next_start_slope = _r_slope
-				light(los_map, world_pos, size, i+1, start_slope, _l_slope, xx, xy, yx, yy)
+				_map, _chunk_keys = light(los_map, world_pos, size, i+1, start_slope, _l_slope, xx, xy, yx, yy, source_map, map_size, chunk_map, get_chunks=get_chunks, callback=callback)
+				
+				if get_chunks:
+					los_map += _map
+					_return_chunks.update(_chunk_keys)
 			
 			_d_x += 1
 		
 		if _blocked:
 			break
+	
+	return los_map, _return_chunks
 
-def fov(start_position, distance, callback=None):
+def fov(start_position, distance, get_chunks=False, life_id=None, callback=None):
 	_distance = int(round(distance))
 	_los = numpy.zeros((_distance*2, _distance*2))
 	_start = (start_position[0]-_distance, start_position[1]-_distance, start_position[2])
+	_chunk_keys = []
+	_rays = {}
+	
+	_collision_map = numpy.zeros((_distance*2, _distance*2))
+	
+	if get_chunks:
+		for y in range(start_position[1]-_distance, start_position[1]+_distance):
+			for x in range(start_position[0]-_distance, start_position[0]+_distance):
+				if x<0 or x>=MAP_SIZE[0]-1 or y<0 or y>=MAP_SIZE[1]-1:
+					continue
+				
+				if not maps.is_solid((x, y, start_position[2]+1)):
+					_collision_map[x-start_position[0], y-start_position[1]] = 1
+		
+		_active_items = [ITEMS[i] for i in ACTIVE_ITEMS if numbers.distance(ITEMS[i]['pos'], start_position)<=distance]
+	
+		#cPickle.dumps(_collision_map)
+		#_t = time.time()
+		#cPickle.dumps(_active_items)
+		#print 'took', time.time()-_t
 
 	for i in range(8):
-		light(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
-		      MULT[1][i], MULT[2][i], MULT[3][i], callback=callback);
-	
+		if get_chunks:
+			FOV_JOBS[life_id] = SETTINGS['smp'].submit(pyfov.old_light,
+				(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
+					MULT[1][i], MULT[2][i], MULT[3][i], _collision_map, MAP_SIZE, _active_items,),
+				(), ('pyfov',))
+			
+		else:
+			_map, _keys = light(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
+				MULT[1][i], MULT[2][i], MULT[3][i], WORLD_INFO['map'], MAP_SIZE, WORLD_INFO['chunk_map'], get_chunks=get_chunks, callback=callback)
+
 	_los[_los.shape[0]/2,_los.shape[1]/2] = 1
-	
+
+	if get_chunks:
+		return False
+
 	return _los

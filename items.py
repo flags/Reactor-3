@@ -218,6 +218,9 @@ def delete_item(item):
 	
 	cache.offload_item(item)
 	
+	if item['uid'] in ACTIVE_ITEMS:
+		ACTIVE_ITEMS.remove(item['uid'])
+	
 	del ITEMS[item['uid']]
 
 def add_to_chunk(item):
@@ -696,7 +699,7 @@ def tick_item(item):
 		item['pos'][2] = int(round(item['realpos'][2]))
 		
 		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
-			delete_item(item['uid'])
+			delete_item(item)
 			return False
 		
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
@@ -730,7 +733,7 @@ def tick_item(item):
 		
 		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1] or item['realpos'][2]<0 or item['realpos'][2]>=MAP_SIZE[2]-1:
 			logging.warning('Item OOM: %s', item['uid'])
-			delete_item(item['uid'])
+			delete_item(item)
 			return False
 		
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
@@ -799,7 +802,7 @@ def tick_item(item):
 
 	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
           or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
-		delete_item(item['uid'])
+		delete_item(item)
 		return False
 			
 	#elif _break:
@@ -836,5 +839,5 @@ def tick_all_items():
 		elif not ACTIVE_ITEMS:
 			ACTIVE_ITEMS.update(ITEMS.keys())
 		
-	for item in ACTIVE_ITEMS:
+	for item in ACTIVE_ITEMS.copy():
 		tick_item(ITEMS[item])

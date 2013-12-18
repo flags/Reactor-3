@@ -68,7 +68,6 @@ def draw_world_stats():
 
 def simulate_life(amount):
 	while amount:
-		#try:
 		logic.tick_all_objects()
 		#except Exception as e:
 		#logging.error('Crash: %s' % e)
@@ -346,6 +345,8 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	return False
+
 	#Step 1: Army Outpost
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)

@@ -194,6 +194,7 @@ LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
 ACTIVE_ITEMS = set()
+FOV_JOBS = {}
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 ITEM_MAP = []

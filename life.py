@@ -1777,10 +1777,10 @@ def tick(life):
 	
 	return True
 
-def tick_all_life():
+def tick_all_life(setup=False):
 	_tick = []
 	for life in [LIFE[i] for i in LIFE]:
-		if 'player' in life:
+		if 'player' in life and not setup:
 			tick(life)
 			brain.sight.look(life)
 			brain.sound.listen(life)
@@ -1799,8 +1799,14 @@ def tick_all_life():
 		if not life['online']:
 			continue
 		
-		alife.survival.generate_needs(life)
-		brain.parse(life)
+		if setup:
+			alife.sight.setup_look(life)
+		else:
+			alife.survival.generate_needs(life)
+			brain.parse(life)
+	
+	if setup:
+		return False
 	
 	for life in _tick:
 		if life['online']:
