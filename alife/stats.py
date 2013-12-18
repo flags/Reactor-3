@@ -66,7 +66,7 @@ def desires_first_contact_with(life, life_id):
 		
 		if _leader:
 			#TODO: #judgement Placeholder for future logic.
-			if _leader['last_seen_time'] <= 1000:
+			if numbers.distance(life['pos'], _leader['life']['pos']) < 100:
 				return False
 	
 	if life['stats']['motive_for_crime']>=4:

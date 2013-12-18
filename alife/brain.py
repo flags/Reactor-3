@@ -315,6 +315,7 @@ def understand(life):
 	
 	if life['think_rate']:
 		life['think_rate'] -= 1
+		
 		return False
 	
 	for module in CONSTANT_MODULES:

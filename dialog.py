@@ -327,6 +327,10 @@ def say_via_gist(life, dialog_id, gist, loop=False, **kwargs):
 
 def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
+	
+	if not _dialog['choices']:
+		return False
+	
 	_choice = _dialog['choices'][_dialog['cursor_index']]
 	
 	_loop = False

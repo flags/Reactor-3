@@ -140,7 +140,7 @@ def get_vision(life):
 		_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
 	
 	_world_light = tcod.white-weather.get_lighting()
-	_light_percentage = numbers.clip((_world_light.r+_world_light.g+_world_light.b)/580.0, 0, 1)
+	_light_percentage = numbers.clip(((_world_light.r+_world_light.g+_world_light.b)*.30)/200.0, 0, 1)
 	
 	return int(round((life['vision_max']*_light_percentage)*_fov_mod))
 

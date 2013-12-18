@@ -3542,7 +3542,6 @@ def natural_healing(life):
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
 		else:
-			print _limb['pain']
 			logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):

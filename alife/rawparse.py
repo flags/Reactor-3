@@ -199,6 +199,8 @@ def create_function_map():
 		'cover_exposed': lambda life: len(combat.get_exposed_positions(life))>0,
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
 		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
+		'melee_ready': lambda life: lfe.execute_raw(life, 'combat', 'melee_ready'),
+		'melee_attack': lambda life: alife_combat.melee_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),
 		'hide': lambda life: alife_hide.tick(life),
 		'search_for_threat': lambda life: alife_search.tick(life),
