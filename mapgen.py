@@ -135,7 +135,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'chunk_size': detail,
 		'noise_view_size': 100.0,
 		'noise_zoom': 4.0,
-		'town_fuzz': 50.0,
+		'town_fuzz': 75.0,#50.0,
 		'road_fuzz': 15.5,
 		'towns': towns,
 		'factories': factories,
@@ -282,42 +282,38 @@ def generate_noise_map(map_gen):
 				pass
 	
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
-	_occupied_chunk_keys = []
+	_highest_value = {'score': -1, 'chunk_key': None}
+		
+	for chunk_key in _town_seeds:
+		_score = _town_seeds[chunk_key]
+		
+		if not _highest_value['chunk_key'] or _score >= _highest_value['score']:
+			_highest_value['score'] = _score
+			_highest_value['chunk_key'] = chunk_key
 	
-	for i in range(3, 5):
-		_highest_value = {'score': -1, 'chunk_key': None}
+	_possible_building_chunks = get_all_connected_chunks_of_type(map_gen, _highest_value['chunk_key'], 'other')
+	for i in range(random.randint(5, 7)):
+		_exterior_chunk_key = random.choice(_possible_building_chunks)
+		_possible_building_chunks.remove(_exterior_chunk_key)
+		_building_chunks = []
 		
-		for chunk_key in _town_seeds:
-			_score = _town_seeds[chunk_key]
-			
-			if not _highest_value['chunk_key'] or _score >= _highest_value['score']:
-				_highest_value['score'] = _score
-				_highest_value['chunk_key'] = chunk_key
+		_building_chunks.extend(walker(map_gen, map_gen['chunk_map'][_exterior_chunk_key]['pos'], random.randint(4, 8), return_keys=True))
+		print _building_chunks
+		if _exterior_chunk_key in _building_chunks:
+			_building_chunks.remove(_exterior_chunk_key)
 		
-		_possible_building_chunks = get_all_connected_chunks_of_type(map_gen, _highest_value['chunk_key'], 'other')
-		_avoid_chunk_keys = []
-		for chunk_key in map_gen['chunk_map']:
-			if not chunk_key in _possible_building_chunks:
-				_avoid_chunk_keys.append(chunk_key)
-		
-		_building_rooms = []
-		for chunk_key in walker(map_gen, map_gen['chunk_map'][chunk_key]['pos'], random.randint(4, 5), avoid_chunks=_avoid_chunk_keys, return_keys=True):
-			if not _chunk_key in _town_seeds or _chunk_key in _occupied_chunk_keys:
-				continue
-			
+		for chunk_key in _building_chunks:
 			map_gen['chunk_map'][chunk_key]['type'] = 'town'
-			_building_rooms.append(chunk_key)
+			
+			if chunk_key in _possible_building_chunks:
+				_possible_building_chunks.remove(chunk_key)
 		
-		#_occupied_chunk_keys.extend(_building_rooms)
+		for chunk_key in _building_chunks:	
+			for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
+				if neighbor_chunk_key in _possible_building_chunks:
+					_possible_building_chunks.remove(neighbor_chunk_key)
 		
-		_exterior_chunk_keys = set()
-		for chunk_key in _building_rooms:
-			_exterior_chunk_keys.update(get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'))
-		
-		_ext = list(_exterior_chunk_keys)
-		print 'eyyyyyyyyyyy', _ext
-		construct_building(map_gen, {'rooms': _building_rooms}, exterior_chunks=[random.choice(_ext)])
-		
+		construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[_exterior_chunk_key])
 	
 	return _noise_map
 
@@ -920,7 +916,7 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, only_ch
 	
 	_walked = []
 	_last_dir = {'dir': None, 'times': 0}
-	for i in range(moves/map_gen['chunk_size']):
+	for i in range(moves):
 		_possible_dirs = []
 		
 		for _dir in _directions[:]:
@@ -971,8 +967,14 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=True, only_ch
 				if return_keys:
 					if not '%s,%s' % (__x, __y) in _walked:
 						_walked.append('%s,%s' % (__x, __y))
+						
+						if len(_walked) == moves:
+							return _walked
 				elif not (__x, __y) in _walked:
 					_walked.append((__x, __y))
+					
+					if len(_walked) == moves:
+						return _walked
 	
 	return _walked
 
