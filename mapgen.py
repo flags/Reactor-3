@@ -133,6 +133,10 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	map_gen = {'name': '%s.dat' % time.time(),
 		'size': size,
 		'chunk_size': detail,
+		'noise_view_size': 100.0,
+		'noise_zoom': 4.0,
+		'town_fuzz': 50.0,
+		'road_fuzz': 15.5,
 		'towns': towns,
 		'factories': factories,
 		'forests': forests,
@@ -158,7 +162,9 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	logging.debug('Creating chunk map...')
 	generate_chunk_map(map_gen)
 	logging.debug('Drawing outlines...')
-	generate_outlines(map_gen)
+	#generate_outlines(map_gen)
+	
+	generate_noise_map(map_gen)
 	
 	logging.debug('Creating roads...')
 	for chunk_key in map_gen['refs']['roads']:
@@ -177,8 +183,8 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		construct_town(map_gen, town)
 	
 	logging.debug('Generating outposts...')	
-	for i in range(map_gen['outposts']):
-		construct_outpost(map_gen)	
+	#for i in range(map_gen['outposts']):
+	#	construct_outpost(map_gen)	
 	
 	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
 	
@@ -196,8 +202,8 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	round_off_edges(map_gen)
 	
 	logging.debug('Placing forests...')
-	while len(map_gen['refs']['forests'])<map_gen['forests']:
-		map_gen['refs']['forests'].append(place_forest(map_gen))
+	#while len(map_gen['refs']['forests'])<map_gen['forests']:
+	#	map_gen['refs']['forests'].append(place_forest(map_gen))
 	
 	##place_hills(map_gen)
 	##print_map_to_console(map_gen)
@@ -236,32 +242,82 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	return map_gen
 
-def generate_noise_map(size):
-	noise = tcod.noise_new(2)
-	noise_dx = 0
-	noise_dy = 0
-	noise_octaves = 3.0
-	noise_zoom = 12.0
+def generate_noise_map(map_gen):
+	_size = (map_gen['size'][0], map_gen['size'][1])
+	_noise_map = numpy.zeros(_size[:2])
+	_noise = tcod.noise_new(4)
+	_noise_dx = 0
+	_noise_dy = 0
+	_noise_octaves = 3.0
+	_town_seeds = {}
 	
-	_noise_map = numpy.zeros(size[:2])
-	for y in range(size[1]-1):
-		for x in range(size[0]-1):
-			f = [noise_zoom * x / (2*size[0]) + noise_dx,
-			     noise_zoom * y / (2*size[1]) + noise_dy]
+	for y in range(0, _size[1], map_gen['chunk_size']):
+		for x in range(0, _size[0], map_gen['chunk_size']):
+			_chunk_key = '%s,%s' % (x, y)
+			_noise_values = [map_gen['noise_zoom'] * x / (2*map_gen['noise_view_size']) + _noise_dx,
+			          map_gen['noise_zoom'] * y / (2*map_gen['noise_view_size']) + _noise_dy]
+			_value = abs(tcod.noise_get(_noise, _noise_values, tcod.NOISE_SIMPLEX)/4.0)
+			_r = int(round(255*_value))
+			_g = int(round(255*_value))
+			_b = int(round(255*_value))
 			
-			#value = tcod.noise_get_fbm(noise, f, noise_octaves, tcod.NOISE_PERLIN)
-			#value = tcod.noise_get_turbulence(noise, f, noise_octaves, tcod.NOISE_PERLIN)
-			#value = tcod.noise_get_fbm(noise, f, noise_octaves, tcod.NOISE_SIMPLEX)
-			value = tcod.noise_get(noise, f, tcod.NOISE_PERLIN)
-			height = int((value + 1.0) / 2.0 * size[2])
+			_val = _r+_g+_b
 			
-			for z in range(height):
-				_noise_map[x, y] = height
-				#callback((x, y, z), value)
-				#_tile = tiles.create_tile(map_gen, random.choice(
-				#		[tiles.TALL_GRASS_TILE, tiles.SHORT_GRASS_TILE, tiles.GRASS_TILE]))
+			if _val <= map_gen['road_fuzz']:
+				for pos in drawing.draw_circle((x, y), random.randint(6, 8)):
+					if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
+						continue
+					
+					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.DIRT_TILES))
 				
-				#map_gen['map'][x][y][z] = _tile
+				if not _chunk_key in map_gen['refs']['dirt_road']:
+					map_gen['refs']['dirt_road'].append(_chunk_key)
+					map_gen['chunk_map'][_chunk_key]['type'] = 'road'
+				
+			elif _val >= map_gen['town_fuzz']:
+				if not _chunk_key in _town_seeds:
+					_town_seeds[_chunk_key] = _value
+				
+			elif map_gen['road_fuzz'] < _val < map_gen['town_fuzz']:
+				pass
+	
+	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
+	_occupied_chunk_keys = []
+	
+	for i in range(3, 5):
+		_highest_value = {'score': -1, 'chunk_key': None}
+		
+		for chunk_key in _town_seeds:
+			_score = _town_seeds[chunk_key]
+			
+			if not _highest_value['chunk_key'] or _score >= _highest_value['score']:
+				_highest_value['score'] = _score
+				_highest_value['chunk_key'] = chunk_key
+		
+		_possible_building_chunks = get_all_connected_chunks_of_type(map_gen, _highest_value['chunk_key'], 'other')
+		_avoid_chunk_keys = []
+		for chunk_key in map_gen['chunk_map']:
+			if not chunk_key in _possible_building_chunks:
+				_avoid_chunk_keys.append(chunk_key)
+		
+		_building_rooms = []
+		for chunk_key in walker(map_gen, map_gen['chunk_map'][chunk_key]['pos'], random.randint(4, 5), avoid_chunks=_avoid_chunk_keys, return_keys=True):
+			if not _chunk_key in _town_seeds or _chunk_key in _occupied_chunk_keys:
+				continue
+			
+			map_gen['chunk_map'][chunk_key]['type'] = 'town'
+			_building_rooms.append(chunk_key)
+		
+		#_occupied_chunk_keys.extend(_building_rooms)
+		
+		_exterior_chunk_keys = set()
+		for chunk_key in _building_rooms:
+			_exterior_chunk_keys.update(get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'))
+		
+		_ext = list(_exterior_chunk_keys)
+		print 'eyyyyyyyyyyy', _ext
+		construct_building(map_gen, {'rooms': _building_rooms}, exterior_chunks=[random.choice(_ext)])
+		
 	
 	return _noise_map
 
@@ -365,7 +421,7 @@ def chunks_in_line(pos1, pos2, avoid_chunk_types):
 	
 	return _chunk_keys
 
-def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs=0, turns=-1, width=1, can_create=0):
+def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs=0, turns=-1, width=1, can_create=0, first_segment=50):
 	_start_edge = 2#random.randint(0, 3)
 	_town_created = False
 	
@@ -381,7 +437,7 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_segment = len(_road_segments)/(turnoffs-i)
 			_segment -= 10
 		else:
-			_segment = 55
+			_segment = first_segment
 		
 		_town_segments.append(_segment)
 	
@@ -444,6 +500,8 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 				_chunk_key = '%s,%s' % ((_pos[0]+_x)*map_gen['chunk_size'], (_pos[1]+_y)*map_gen['chunk_size'])
 				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				map_gen['refs']['roads'].append(_chunk_key)
+				
+				print _chunk_key
 			
 			if i in _town_segments and len(map_gen['refs']['town_seeds'])<map_gen['towns']:
 				_possible_next_dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -1872,7 +1930,7 @@ def decorate_world(map_gen):
 		
 		create_road(map_gen, chunk_key, size=0, ground_tiles=tiles.CONCRETE_FLOOR_TILES)
 	
-	place_bushes(map_gen)
+	#place_bushes(map_gen)
 	
 	#backyards
 	for town in map_gen['refs']['towns']:

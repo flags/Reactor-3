@@ -6,9 +6,10 @@ import zones
 import fov as _fov
 
 import time
-import pp
 
 def init():
+	import pp
+	
 	SETTINGS['smp'] = pp.Server() 
 
 def test(life, key=None):
