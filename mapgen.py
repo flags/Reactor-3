@@ -297,8 +297,11 @@ def generate_noise_map(map_gen):
 		_possible_building_chunks.remove(_exterior_chunk_key)
 		_building_chunks = []
 		
-		_building_chunks.extend(walker(map_gen, map_gen['chunk_map'][_exterior_chunk_key]['pos'], random.randint(4, 8), return_keys=True))
-		print _building_chunks
+		_building_chunks.extend(walker(map_gen,
+		                               map_gen['chunk_map'][_exterior_chunk_key]['pos'],
+		                               random.randint(4, 8),
+		                               avoid_chunks=map_gen['refs']['dirt_road'],
+		                               return_keys=True))
 		if _exterior_chunk_key in _building_chunks:
 			_building_chunks.remove(_exterior_chunk_key)
 		
