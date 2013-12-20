@@ -257,9 +257,9 @@ def generate_noise_map(map_gen):
 			_noise_values = [map_gen['noise_zoom'] * x / (2*map_gen['noise_view_size']) + _noise_dx,
 			          map_gen['noise_zoom'] * y / (2*map_gen['noise_view_size']) + _noise_dy]
 			_value = abs(tcod.noise_get(_noise, _noise_values, tcod.NOISE_SIMPLEX)/4.0)
-			_r = int(round(255*_value))
-			_g = int(round(255*_value))
-			_b = int(round(255*_value))
+			_r = 255*_value
+			_g = 255*_value
+			_b = 255*_value
 			
 			_val = _r+_g+_b
 			
@@ -272,16 +272,18 @@ def generate_noise_map(map_gen):
 					
 					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.DIRT_TILES))
 					
-					if _fuzz_val < .6:
+					if _fuzz_val < .1:
+						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+					elif _fuzz_val < .65:
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_TILES))
-					elif _fuzz_val < .75:
-						if random.randint(0, 4):
-							create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_TILES))
-						else:
-							create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
-					elif _fuzz_val < .9 and random.randint(0, 7):
+					elif _fuzz_val < .7:
+						#if random.randint(0, 4):
+						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_TILES))
+						#else:
+						#	create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+					elif _fuzz_val < .8 and random.randint(0, 7):
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_TILES))
-					elif not random.randint(0, 2):
+					elif not random.randint(0, 6):
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_TILES))
 				
 				if not _chunk_key in map_gen['refs']['dirt_road']:
@@ -295,11 +297,31 @@ def generate_noise_map(map_gen):
 			elif map_gen['road_fuzz'] < _val < map_gen['town_fuzz']:
 				#if not _chunk_key in map_gen['refs']['forests']:
 				#	map_gen['refs']['forests'].append(_chunk_key)
-				if random.randint(0, 50):
+				_chance = random.uniform(0, 1)
+				if _chance<.9:
 					create_tree(map_gen, (numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1),
 					                      numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1), 2), random.randint(4, 7))
 					
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
+				
+				if _chance<.8:
+					for pos in drawing.draw_circle((x, y), random.randint(6, 8)):
+						if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
+							continue
+						
+						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+						_y = numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+						
+						if not map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+							continue
+						
+						create_tile(map_gen,
+							        _x,
+							        _y,
+							        2,
+							        random.choice(tiles.BUSH_TILES))
+					
+					#map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 	
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
 	_existing_building_chunks = map_gen['refs']['dirt_road'][:]
@@ -317,6 +339,7 @@ def generate_noise_map(map_gen):
 	_temp_town_seeds = _town_seeds.copy()
 	
 	for i in _keys:
+		break
 		_highest_value = {'score': -1, 'chunk_key': None}
 		_checked_seeds = []
 		_potential_plots = []
