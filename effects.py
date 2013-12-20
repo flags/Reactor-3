@@ -91,11 +91,11 @@ def calculate_fire(fire):
 				
 				_heat = tiles.get_flag(WORLD_INFO['map'][_x][_y][fire['pos'][2]], 'heat')
 				_current_burn = int(round(fire['intensity']))
-				_max_burn = int(round(_current_burn*.8))
+				_max_burn = int(round(_current_burn*.23))
 				
 				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.01), 0, 8))>=_raw_tile['burnable']:
 					if _raw_tile['burnable'] and _max_burn:
-						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(2, numbers.clip(2+_max_burn, 3, 8)))
+						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(1, numbers.clip(1+_max_burn, 2, 8)))
 	
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity

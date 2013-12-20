@@ -1489,10 +1489,13 @@ def perform_action(life):
 		
 		if _item['owner']:
 			_know = brain.remember_known_item(life, _action['item'])
-			_know['last_owned_by'] = _item['owner']
-			delete_action(life, action)
 			
-			return False
+			if _know:
+				_know['last_owned_by'] = _item['owner']
+				#delete_action(life, action)
+			
+			del _item['parent_id']
+			_item['owner'] = None
 		
 		if _hand['holding']:
 			if life.has_key('player'):
@@ -1848,6 +1851,7 @@ def can_throw(life):
 def throw_item(life, item_uid, target):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
 	_item = items.get_item_from_uid(remove_item_from_inventory(life, item_uid))
+	_item['pos'] = life['pos'][:]
 	
 	if 'drag' in _item:
 		_drag = _item['drag']

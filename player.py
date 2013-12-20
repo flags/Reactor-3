@@ -84,7 +84,7 @@ def handle_input():
 			
 			if _dialog['cursor_index'] > 0:
 				_dialog['cursor_index'] -= 1
-		elif LIFE[SETTINGS['controlling']]['pos'][1]>0:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
 
@@ -98,7 +98,7 @@ def handle_input():
 			
 			if _dialog['cursor_index'] < _dialog['max_cursor_index']-1:
 				_dialog['cursor_index'] += 1
-		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
 
@@ -108,7 +108,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]+=1
-		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 
@@ -118,7 +118,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]-=1
-		elif LIFE[SETTINGS['controlling']]['pos'][0]>0:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	

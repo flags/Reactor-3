@@ -267,7 +267,7 @@ def generate_noise_map(map_gen):
 				_fuzz_val = _val/map_gen['road_fuzz']
 				
 				for pos in drawing.draw_circle((x, y), random.randint(6, 8)):
-					if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
+					if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 						continue
 					
 					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.DIRT_TILES))
@@ -299,14 +299,19 @@ def generate_noise_map(map_gen):
 				#	map_gen['refs']['forests'].append(_chunk_key)
 				_chance = random.uniform(0, 1)
 				if _chance<.9:
-					create_tree(map_gen, (numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1),
-					                      numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1), 2), random.randint(4, 7))
+					_x = numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+					_y = numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+					
+					if not map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+						continue
+					
+					create_tree(map_gen, (_x, _y, 2), random.randint(4, 7))
 					
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 				
 				if _chance<.8:
 					for pos in drawing.draw_circle((x, y), random.randint(6, 8)):
-						if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1:
+						if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 							continue
 						
 						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
@@ -323,6 +328,7 @@ def generate_noise_map(map_gen):
 					
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 	
+	#Towns
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
 	_existing_building_chunks = map_gen['refs']['dirt_road'][:]
 	_ref_points = {0: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]),
@@ -457,6 +463,41 @@ def generate_noise_map(map_gen):
 		print 'Generating area:', i
 		for building in _buildings:
 			construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=[building['ext_chunks']])
+	
+	#Fields and farms
+	for cell in _cells:
+		if cell['size']<200:
+			continue
+		
+		for chunk_key in cell['chunk_keys']:
+			_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']
+			
+			for pos in drawing.draw_circle(_chunk_pos[:2], random.randint(6, 8)):
+				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+					continue
+				
+				if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+					continue
+				
+				create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.FIELD_TILES))
+		
+		_chunk_key = random.choice(cell['chunk_keys'])
+		_building_chunks = walker(map_gen,
+		                          map_gen['chunk_map'][_chunk_key]['pos'],
+		                          random.randint(5, 8),
+		                          avoid_chunks=map_gen['refs']['roads'],
+		                          only_chunk_types=['other'],
+		                          avoid_chunk_distance=4,
+		                          return_keys=True)
+		
+		for chunk_key in _building_chunks:
+			map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		
+		_exterior_chunk_keys = set()
+		for chunk_key in _building_chunks:
+			_exterior_chunk_keys.update(get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'))
+		
+		construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
 	
 	return _noise_map
 
