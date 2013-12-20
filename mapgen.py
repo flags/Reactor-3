@@ -136,7 +136,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'noise_view_size': 100.0,
 		'noise_zoom': 3.5,
 		'town_fuzz': 45.0,#50.0,
-		'road_fuzz': 20.5,
+		'road_fuzz': 15.5,
 		'towns': towns,
 		'factories': factories,
 		'forests': forests,
@@ -304,23 +304,24 @@ def generate_noise_map(map_gen):
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
 	_existing_building_chunks = map_gen['refs']['dirt_road'][:]
 	_ref_points = {0: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]),
-	                   'min_size': 40,
+	                   'min_size': 65,
 	                   'max_size': 900},
 	               1: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]/2),
-	                   'min_size': 40,
+	                   'min_size': 50,
 	                   'max_size': 900},
 	               2: {'anchor': (MAP_SIZE[0]/2, 0),
-	                   'min_size': 40,
+	                   'min_size': 50,
 	                   'max_size': 900}}
 	_keys = _ref_points.keys()
 	_keys.reverse()
+	_temp_town_seeds = _town_seeds.copy()
 	
 	for i in _keys:
 		_highest_value = {'score': -1, 'chunk_key': None}
 		_checked_seeds = []
 		_potential_plots = []
 		
-		for chunk_key in _town_seeds:
+		for chunk_key in _temp_town_seeds.keys():
 			if chunk_key in _checked_seeds:
 				continue
 			
@@ -328,12 +329,12 @@ def generate_noise_map(map_gen):
 				_potential_plots = get_all_connected_chunks_of_type(map_gen, chunk_key, 'other')
 			
 			if len(_potential_plots) < _ref_points[i]['min_size'] or len(_potential_plots) > _ref_points[i]['max_size']:
-				print 'rejected', len(_potential_plots)
+				del _temp_town_seeds[chunk_key]
+				
 				continue
 			
 			_chunk = map_gen['chunk_map'][chunk_key]
 			_score = numbers.distance(_chunk['pos'], _ref_points[i]['anchor'])
-			print _score/5, len(_potential_plots)
 			
 			if not _highest_value['chunk_key'] or _score < _highest_value['score']:
 				_highest_value['score'] = _score
@@ -343,14 +344,13 @@ def generate_noise_map(map_gen):
 				if _score <= 15:
 					break
 		
+		del _temp_town_seeds[_highest_value['chunk_key']]
+		
 		_checked_seeds.extend(_highest_value['potential_chunks'])
-				
-		
-		print i, _highest_value
-		
 		_possible_building_chunks = get_all_connected_chunks_of_type(map_gen, _highest_value['chunk_key'], 'other')
 		_max_buildings = numbers.clip((len(_possible_building_chunks)/2)/8, 5, 25)
 		_buildings = []
+		
 		while len(_buildings)<_max_buildings and _possible_building_chunks:
 			_exterior_chunk_key = random.choice(_possible_building_chunks)
 			_possible_building_chunks.remove(_exterior_chunk_key)
