@@ -321,57 +321,81 @@ def generate_noise_map(map_gen):
 							        2,
 							        random.choice(tiles.BUSH_TILES))
 					
-					#map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
+					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 	
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
 	_existing_building_chunks = map_gen['refs']['dirt_road'][:]
 	_ref_points = {0: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]),
-	                   'min_size': 65,
-	                   'max_size': 900},
+	                   'min_size': 70,
+	                   'max_size': 500,
+	                   'max_buildings': 25},
 	               1: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]/2),
-	                   'min_size': 50,
-	                   'max_size': 900},
+	                   'min_size': 200,
+	                   'max_size': 500,
+	                   'max_buildings': 25},
 	               2: {'anchor': (MAP_SIZE[0]/2, 0),
-	                   'min_size': 50,
-	                   'max_size': 900}}
-	_keys = _ref_points.keys()
-	_keys.reverse()
-	_temp_town_seeds = _town_seeds.copy()
+	                   'min_size': 200,
+	                   'max_size': 500,
+	                   'max_buildings': 25}}
+	_ref_keys = _ref_points.keys()
+	_ref_keys.reverse()
+	_temp_town_seeds = set(_town_seeds.keys())
+	_cells = []
 	
-	for i in _keys:
-		break
-		_highest_value = {'score': -1, 'chunk_key': None}
-		_checked_seeds = []
-		_potential_plots = []
+	#Find all cells first
+	while _temp_town_seeds:
+		_chunk_key = _temp_town_seeds.pop()
+		_top_left = MAP_SIZE[:]
+		_bot_right = [0, 0, 0]
+		_connected_chunk_keys = get_all_connected_chunks_of_type(map_gen, _chunk_key, 'other')
 		
-		for chunk_key in _temp_town_seeds.keys():
-			if chunk_key in _checked_seeds:
+		#TODO: Can't Sets handle this better?
+		for chunk_key in _connected_chunk_keys:
+			if chunk_key in _temp_town_seeds:
+				_temp_town_seeds.remove(chunk_key)
+			
+			_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']
+			
+			if _chunk_pos[0]<_top_left[0]:
+				_top_left[0] = _chunk_pos[0]
+			
+			if _chunk_pos[0]>_bot_right[0]:
+				_bot_right[0] = _chunk_pos[0]
+			
+			if _chunk_pos[1]<_top_left[1]:
+				_top_left[1] = _chunk_pos[1]
+			
+			if _chunk_pos[1]>_bot_right[1]:
+				_bot_right[1] = _chunk_pos[1]
+		
+		_cells.append({'size': len(_connected_chunk_keys),
+		               'type': None,
+		               'chunk_keys': _connected_chunk_keys,
+		               'top_left': _top_left,
+		               'bot_right': _bot_right,
+		               'center_pos': numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]})
+	
+	for i in _ref_keys:
+		_closest_cell = {'cell': None, 'distance': 0}
+		
+		for cell in _cells:
+			if not _ref_points[i]['min_size'] < cell['size'] <= _ref_points[i]['max_size']:
 				continue
 			
-			if not chunk_key in _potential_plots:
-				_potential_plots = get_all_connected_chunks_of_type(map_gen, chunk_key, 'other')
-			
-			if len(_potential_plots) < _ref_points[i]['min_size'] or len(_potential_plots) > _ref_points[i]['max_size']:
-				del _temp_town_seeds[chunk_key]
+			_distance = numbers.distance(_ref_points[i]['anchor'], cell['center_pos'])
+			if not _closest_cell['cell'] or _distance < _closest_cell['distance']:
+				_closest_cell['cell'] = cell
+				_closest_cell['distance'] = _distance
 				
-				continue
-			
-			_chunk = map_gen['chunk_map'][chunk_key]
-			_score = numbers.distance(_chunk['pos'], _ref_points[i]['anchor'])
-			
-			if not _highest_value['chunk_key'] or _score < _highest_value['score']:
-				_highest_value['score'] = _score
-				_highest_value['chunk_key'] = chunk_key
-				_highest_value['potential_chunks'] = _potential_plots
-				
-				if _score <= 15:
+				if not _distance:
 					break
 		
-		del _temp_town_seeds[_highest_value['chunk_key']]
+		if not _closest_cell['cell']:
+			raise Exception('No matching cells: %s' % str(_ref_points[i]))
 		
-		_checked_seeds.extend(_highest_value['potential_chunks'])
-		_possible_building_chunks = get_all_connected_chunks_of_type(map_gen, _highest_value['chunk_key'], 'other')
-		_max_buildings = numbers.clip((len(_possible_building_chunks)/2)/8, 5, 25)
+		_cells.remove(_closest_cell['cell'])
+		_max_buildings = numbers.clip((_closest_cell['cell']['size']/2)/8, 5, _ref_points[i]['max_buildings'])
+		_possible_building_chunks = _closest_cell['cell']['chunk_keys'][:]
 		_buildings = []
 		
 		while len(_buildings)<_max_buildings and _possible_building_chunks:
