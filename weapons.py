@@ -60,6 +60,8 @@ def get_stance_recoil_mod(life):
 		return .95
 	elif life['stance'] == 'crawling':
 		return .50
+	else:
+		1.0
 
 def get_recoil(life):
 	_guns = lfe.get_held_items(life,matches=[{'type': 'gun'}])
@@ -172,7 +174,7 @@ def fire(life, target, limb=None):
 	del _bullet['parent']
 	items.move(_bullet, direction, _bullet['max_speed'])
 	_bullet['start_velocity'] = _bullet['velocity'][:]
-	items.tick_item(_bullet['uid'])
+	items.tick_item(_bullet)
 	
 	for _life in [LIFE[i] for i in LIFE]:
 		if _life['pos'][0] == target[0] and _life['pos'][1] == target[1]:

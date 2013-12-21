@@ -437,6 +437,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	# down = chr(25)
 	
 	#ALife
+	_life['online'] = True
 	_life['know'] = {}
 	_life['know_items'] = {}
 	_life['known_items_type_cache'] = {}
@@ -655,7 +656,7 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 	_conversation.update(kvargs)
 	_for_player = False
 	
-	for ai in [LIFE[i] for i in LIFE]:
+	for ai in [LIFE[i] for i in matches]:
 		#TODO: Do we really need to support more than one match?
 		#TODO: can_hear
 		if ai['id'] == life['id']:
@@ -667,20 +668,6 @@ def create_conversation(life, gist, matches=[], radio=False, msg=None, **kvargs)
 		if not alife.sight.can_see_position(ai, life['pos']):
 			if not get_all_inventory_items(life, matches=[{'name': 'radio'}]):
 				continue
-		
-		_does_match = True
-		for match in matches:
-			for key in match:
-				if not key in ai or not ai[key] == match[key]:
-					_does_match = False
-					#logging.debug('%s did not meet matches for this conversation' % ' '.join(ai['name']))
-					break
-		
-			if not _does_match:
-				break
-		
-		if not _does_match:
-			continue
 		
 		if 'player' in ai:
 			_for_player = True
@@ -1502,10 +1489,13 @@ def perform_action(life):
 		
 		if _item['owner']:
 			_know = brain.remember_known_item(life, _action['item'])
-			_know['last_owned_by'] = _item['owner']
-			delete_action(life, action)
 			
-			return False
+			if _know:
+				_know['last_owned_by'] = _item['owner']
+				#delete_action(life, action)
+			
+			del _item['parent_id']
+			_item['owner'] = None
 		
 		if _hand['holding']:
 			if life.has_key('player'):
@@ -1632,7 +1622,7 @@ def perform_action(life):
 		delete_action(life,action)
 
 	elif _action['action'] == 'communicate':
-		speech.communicate(life, _action['what'], matches=[{'id': _action['target']['id']}])
+		speech.communicate(life, _action['what'], matches=[_action['target']['id']])
 		delete_action(life, action)
 
 	elif _action['action'] == 'rest':
@@ -1790,10 +1780,10 @@ def tick(life):
 	
 	return True
 
-def tick_all_life():
+def tick_all_life(setup=False):
 	_tick = []
 	for life in [LIFE[i] for i in LIFE]:
-		if 'player' in life:
+		if 'player' in life and not setup:
 			tick(life)
 			brain.sight.look(life)
 			brain.sound.listen(life)
@@ -1809,11 +1799,21 @@ def tick_all_life():
 			_tick.append(life)
 	
 	for life in _tick:
-		alife.survival.generate_needs(life)
-		brain.parse(life)
+		if not life['online']:
+			continue
+		
+		if setup:
+			alife.sight.setup_look(life)
+		else:
+			alife.survival.generate_needs(life)
+			brain.parse(life)
+	
+	if setup:
+		return False
 	
 	for life in _tick:
-		perform_action(life)
+		if life['online']:
+			perform_action(life)
 		
 		brain.act(life)
 
@@ -1851,6 +1851,7 @@ def can_throw(life):
 def throw_item(life, item_uid, target):
 	"""Removes item from inventory and sets its movement towards a target. Returns nothing."""
 	_item = items.get_item_from_uid(remove_item_from_inventory(life, item_uid))
+	_item['pos'] = life['pos'][:]
 	
 	if 'drag' in _item:
 		_drag = _item['drag']
@@ -2019,7 +2020,7 @@ def get_all_inventory_items(life, matches=None, ignore_actions=False):
 			continue
 		
 		if matches:
-			if not perform_match(_item,matches):
+			if not perform_match(_item, matches):
 				continue
 		
 		_items.append(_item)
@@ -2834,6 +2835,7 @@ def draw_life_info():
 	#
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		_icon = draw_life_icon(ai)
+		
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 
@@ -2848,7 +2850,6 @@ def draw_life_info():
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
-		
 		tcod.console_set_default_foreground(0, tcod.white)
 		
 		if ai['dead']:
@@ -2857,7 +2858,7 @@ def draw_life_info():
 			tcod.console_set_default_foreground(0, tcod.gray)
 			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, '%s - Asleep' % ' '.join(ai['name']))
 		else:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, ' '.join(ai['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, ' '.join(ai['name'])+language.get_real_distance_string(numbers.distance(life['pos'], ai['pos'])))
 		
 		_i += 1
 	
@@ -2883,7 +2884,11 @@ def draw_life_info():
 				tcod.console_set_default_foreground(0, tcod.gray)
 			
 			if 1 <= i <= len(_name):
-				tcod.console_set_default_foreground(0, tcod.green)
+				if i <= _bar_size:
+					tcod.console_set_default_foreground(0, tcod.green)
+				else:
+					tcod.console_set_default_foreground(0, tcod.dark_green)
+				
 				tcod.console_print(0, _action_queue_position[0]+i, _action_queue_position[1], _name[i-1])
 			else:
 				tcod.console_print(0, _action_queue_position[0]+i,_action_queue_position[1], '|')
@@ -3533,7 +3538,6 @@ def natural_healing(life):
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
 		else:
-			print _limb['pain']
 			logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):

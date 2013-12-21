@@ -77,6 +77,9 @@ TIER_URGENT = 3
 TIER_COMBAT = 4
 TIER_TACTIC = 5
 
+YARDS = 0.5
+METERS = 0.4572
+
 #Group stages
 STAGE_FORMING = 1
 STAGE_SETTLING = 2
@@ -139,6 +142,7 @@ MAX_MESSAGES_IN_DIALOG = 9
 TEXT_MAP = {}
 
 #Life constants
+OFFLINE_ALIFE_DISTANCE = 150
 LIFE_MAX_SPEED = 4
 LIFE_BLEED_RATE = .4 #Higher is faster
 LIFE_THINK_RATE = 6
@@ -174,8 +178,7 @@ SETTINGS = {'running': True,
 	'smp': None,
 	'map_slices': [],
 	'recording': False,
-	'recording fps': 0,
-	'recording fps temp': 0,
+	'distance unit': 'Yards',
 	'viewid': 1,
 	'active_view': 0,
     'refresh_los': False}
@@ -190,6 +193,8 @@ LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
 ITEMS = {}
+ACTIVE_ITEMS = set()
+FOV_JOBS = {}
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 ITEM_MAP = []

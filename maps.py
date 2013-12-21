@@ -235,11 +235,14 @@ def get_tile(pos):
 	
 	return False
 
-def is_solid(pos):
-	if not WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
+def is_solid(pos, source_map=None):
+	if not source_map:
+		source_map = WORLD_INFO['map']
+	
+	if not source_map[pos[0]][pos[1]][pos[2]]:
 		return False
 	
-	_raw_tile = tiles.get_raw_tile(WORLD_INFO['map'][pos[0]][pos[1]][pos[2]])
+	_raw_tile = tiles.get_raw_tile(source_map[pos[0]][pos[1]][pos[2]])
 	if 'not_solid' in _raw_tile and _raw_tile['not_solid']:
 		return False
 	

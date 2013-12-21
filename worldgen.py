@@ -68,7 +68,6 @@ def draw_world_stats():
 
 def simulate_life(amount):
 	while amount:
-		#try:
 		logic.tick_all_objects()
 		#except Exception as e:
 		#logging.error('Crash: %s' % e)
@@ -313,10 +312,7 @@ def generate_wildlife():
 def generate_life():
 	_spawn = get_spawn_point()
 	
-	
-	#if len(WORLD_INFO['groups'])>=3:
 	_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	#_alife['thirst'] = random.randint(_alife['thirst_max']/4, _alife['thirst_max']/3)
 	
 	if len(LIFE) == 1:
 		logging.warning('No leaders. Creating one manually...')
@@ -324,44 +320,6 @@ def generate_life():
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(_alife, items.create_item(item))
-	
-	return True
-
-	_group_members = []
-	
-	for i in range(3):
-		_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-		
-		for item in BASE_ITEMS:
-			life.add_item_to_inventory(_alife, items.create_item(item))
-		
-		for item in RECRUIT_ITEMS:
-			life.add_item_to_inventory(_alife, items.create_item(item))
-		
-		if not _group_members:
-			_alife['stats']['is_leader'] = True
-			_group = alife.groups.create_group(_alife)
-		
-		_group_members.append(_alife)
-	
-	for m1 in _group_members:
-		if m1['id'] == _group_members[0]['id']:
-			continue
-		
-		alife.groups.discover_group(m1, _group)
-		alife.groups.add_member(_group_members[0], _group, m1['id'])
-		alife.groups.add_member(m1, _group, m1['id'])
-		m1['group'] = _group
-		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
-	
-	for m1 in _group_members:
-		for m2 in _group_members:
-			if m1 == m2:
-				continue
-			
-			alife.stats.establish_trust(m1, m2['id'])
-	
-	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 
 def create_player():
 	PLAYER = life.create_life('human',
@@ -387,23 +345,45 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
+	return False
+	
 	#Step 1: Army Outpost
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
 	
 	#Step 2: Bandit village
 	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
+	
 	spawns.generate_group('bandit',
-	                     amount=random.randint(3, 5),
-	                     group_motive='crime',
-	                     spawn_chunks=[_spawn_chunk])
+                         amount=random.randint(5, 7),
+                         group_motive='crime',
+                         spawn_chunks=[_spawn_chunk])
 	
-	#for town_seed in WORLD_INFO['refs']['town_seeds']:
-	#for i in range(1):
-	#	generate_life()
+	#Step 3: Rookie village
+	_spawn_chunks = random.choice([t['rooms'] for t in WORLD_INFO['refs']['villages'][0]])
+	_rookie_village_members = spawns.generate_group('loner',
+	                                                amount=random.randint(7, 9),
+	                                                group_motive='survival',
+	                                                spawn_chunks=_spawn_chunks)
 	
-	#for i in range(1):
-	#	generate_wildlife()
+	for member in _rookie_village_members:
+		alife.planner.remove_goal(member, 'discover')
+	
+	_dirt_road_start_chunk = maps.get_chunk(WORLD_INFO['refs']['dirt_road'][0])
+	_dirt_road_end_chunk =  maps.get_chunk(WORLD_INFO['refs']['dirt_road'][len(WORLD_INFO['refs']['dirt_road'])-1])
+	
+	for x in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
+		for y in range(_dirt_road_end_chunk['pos'][1], _dirt_road_start_chunk['pos'][1], WORLD_INFO['chunk_size']):
+			if x < _dirt_road_end_chunk['pos'][0]-(10*WORLD_INFO['chunk_size']) or x > _dirt_road_end_chunk['pos'][0]+(10*WORLD_INFO['chunk_size']):
+				continue
+			
+			if random.randint(0, 125):
+				continue
+			
+			_spawn_chunk = '%s,%s' % (x, y)
+	
+			for _alife in spawns.generate_group('feral dog', amount=random.randint(4, 6), spawn_chunks=[_spawn_chunk]):
+				life.memory(_alife, 'focus_on_chunk', chunk_key=_spawn_chunk)
 
 def generate_outpost(outpost_chunks):
 	spawns.generate_group('soldier', amount=5, spawn_chunks=outpost_chunks)

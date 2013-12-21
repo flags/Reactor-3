@@ -74,7 +74,7 @@ def get_lighting():
 
 def get_wind_velocity():
 	#return get_current_weather()['name']
-	return numbers.velocity(175, .8)
+	return numbers.velocity(175+random.randint(-15, 15), .8)
 
 def create_light_map(weather):
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])

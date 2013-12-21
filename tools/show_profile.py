@@ -10,6 +10,6 @@ else:
 stats = pstats.Stats(profile)
 
 if 'highest' in sys.argv:
-	stats.sort_stats('cumulative').print_stats(20)
+	stats.sort_stats('cumtime').print_stats(20)
 else:
 	stats.strip_dirs().sort_stats(-1).print_stats()
