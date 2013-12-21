@@ -346,7 +346,7 @@ def create_player():
 	
 def create_region_spawns():
 	return False
-
+	
 	#Step 1: Army Outpost
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
