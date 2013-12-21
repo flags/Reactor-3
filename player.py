@@ -84,7 +84,7 @@ def handle_input():
 			
 			if _dialog['cursor_index'] > 0:
 				_dialog['cursor_index'] -= 1
-		elif LIFE[SETTINGS['controlling']]['pos'][1]>0:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
 
@@ -98,7 +98,7 @@ def handle_input():
 			
 			if _dialog['cursor_index'] < _dialog['max_cursor_index']-1:
 				_dialog['cursor_index'] += 1
-		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1:
+		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
 
@@ -108,7 +108,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]+=1
-		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 
@@ -118,7 +118,7 @@ def handle_input():
 			menus.item_changed(ACTIVE_MENU['menu'],MENUS[ACTIVE_MENU['menu']]['index'])
 		elif LIFE[SETTINGS['controlling']]['targeting']:
 			LIFE[SETTINGS['controlling']]['targeting'][0]-=1
-		elif LIFE[SETTINGS['controlling']]['pos'][0]>0:
+		elif LIFE[SETTINGS['controlling']]['pos'][0]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
 	
@@ -646,6 +646,10 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
+		_online_alife = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']<30])
+		_online_alife_in_passive = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']>=30])
+		_offline_alife = len([l['id'] for l in LIFE.values() if not l['online']])
+		
 		_options = []
 		_options.append(menus.create_item('title', 'Testing', None))
 		_options.append(menus.create_item('list', 'Show camp ownership', str(len(WORLD_INFO['camps']))))
@@ -657,7 +661,7 @@ def handle_input():
 		_options.append(menus.create_item('single', 'Reload map', 'Reloads map from disk'))
 		_options.append(menus.create_item('single', 'Update chunk map', 'Generates chunk map'))
 		_options.append(menus.create_item('title', 'World Info', None))
-		_options.append(menus.create_item('single', 'ALife', '%s active (%s total)' % (len([l for l in LIFE.values() if not l['dead'] and not l['think_rate_max']>=30]), len([l for l in LIFE.values() if not l['dead']]))))
+		_options.append(menus.create_item('single', 'ALife (%s)' % len(LIFE), 'Online: %s (%s), Offline: %s' % (_online_alife, _online_alife_in_passive, _offline_alife)))
 		_options.append(menus.create_item('single', 'ALife memories', sum([len(l['memory']) for l in LIFE.values() if not l['dead']])))
 		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
 		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))
@@ -1793,7 +1797,7 @@ def handle_select_workers(entry):
 	menus.activate_menu(_menu)
 
 def talk_to(entry):
-	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[{'id': entry['target']}])
+	speech.communicate(LIFE[SETTINGS['controlling']], 'call', matches=[entry['target']])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 

@@ -7,6 +7,7 @@ import alife_discover
 import alife_shelter
 import alife_search
 import alife_combat
+import alife_follow
 import alife_cover
 import alife_needs
 import alife_hide
@@ -101,7 +102,7 @@ def create_function_map():
 		'has_completed_task': lambda life, job_id: job_id in life['completed_jobs'],
 		'retrieve_from_memory': brain.retrieve_from_memory,
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
-		'has_usable_weapon': combat.has_potentially_usable_weapon,
+		'has_usable_weapon': combat.has_ready_weapon,#combat.has_potentially_usable_weapon,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
 		'create_item_need': survival.add_needed_item,
 		'group_needs_resources': lambda life, group_id: groups.needs_resources(group_id),
@@ -198,12 +199,16 @@ def create_function_map():
 		'cover_exposed': lambda life: len(combat.get_exposed_positions(life))>0,
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
 		'ranged_attack': lambda life: alife_combat.ranged_attack(life),
+		'melee_ready': lambda life: lfe.execute_raw(life, 'combat', 'melee_ready'),
+		'melee_attack': lambda life: alife_combat.melee_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),
 		'hide': lambda life: alife_hide.tick(life),
 		'search_for_threat': lambda life: alife_search.tick(life),
 		'has_recoil': lambda life: life['recoil']>=4,
 		'has_focus_point': lambda life: len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))>0,
 		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
+		'follow_target': alife_follow.tick,
+		'guard_focus_point': lambda life: movement.guard_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

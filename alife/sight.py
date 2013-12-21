@@ -18,7 +18,15 @@ import numbers
 import logging
 import time
 
+
 #@profile
+def setup_look(life):
+	if not 'CAN_SEE' in life['life_flags']:
+		return False
+	
+	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
+		scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+
 def look(life):
 	for target_id in life['know']:
 		if life['know'][target_id]['last_seen_time']:
@@ -31,8 +39,11 @@ def look(life):
 		return False
 	
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
-		_a = time.time()
-		_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+		if SETTINGS['smp']:
+			_visible_chunks = post_scan_surroundings(life)
+		else:
+			_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+			
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		brain.flag(life, 'visible_chunks', value=_visible_chunks)
 	elif 'player' in life:
@@ -135,10 +146,15 @@ def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return 0
 	
-	_world_light = tcod.white-weather.get_lighting()
-	_light_percentage = numbers.clip((_world_light.r+_world_light.g+_world_light.b)/580.0, 0, 1)
+	if 'player' in life:
+		_fov_mod = 1
+	else:
+		_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
 	
-	return int(round(life['vision_max']*_light_percentage))
+	_world_light = tcod.white-weather.get_lighting()
+	_light_percentage = numbers.clip(((_world_light.r+_world_light.g+_world_light.b)*.30)/200.0, 0, 1)
+	
+	return int(round((life['vision_max']*_light_percentage)*_fov_mod))
 
 #@profile
 def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False, distance=True):
@@ -205,12 +221,18 @@ def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
 	
 	return life['fov'][_x, _y] == 1
 
-def can_see_position(life, pos, distance=True, block_check=False, strict=False):
+def can_see_position(life, pos, distance=True, block_check=False, strict=False, get_path=False):
 	"""Returns `true` if the life can see a certain position."""
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
 	
-	return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
+	if get_path:
+		return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
+
+	if is_in_fov(life, pos):
+		return True
+	
+	return False
 
 def can_see_target(life, target_id):
 	if not target_id in LIFE:
@@ -232,7 +254,7 @@ def view_blocked_by_life(life, position, allow=[]):
 	allow.append(life['id'])
 	
 	_avoid_positions = [tuple(LIFE[i]['pos'][:2]) for i in [l for l in LIFE if not l in allow]]
-	_can_see = can_see_position(life, position, block_check=True)
+	_can_see = can_see_position(life, position, block_check=True, get_path=True)
 	
 	if not _can_see:
 		return True
@@ -292,14 +314,6 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	return _cover
 
 def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_starting=False):
-	#Destktop
-	#New: 0.0127160549164
-	#Old: 0.0237522125244
-	
-	#Laptop:
-	#New: 0.0139999389648
-	#Old: 0.0350000858307
-	
 	#Step 1: Locate cover
 	_cover = {'pos': None,'score': 9000}
 	
@@ -395,11 +409,26 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 		_chunk_keys = set(_chunks)
 	else:
 		_chunk_keys = set()
-		life['fov'] = fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
-	
-	if ignore_chunks:
-		for chunk_key in ignore_chunks:
-			_chunk_keys.remove(chunk_key)
+		
+		if SETTINGS['smp']:
+			fov.fov(life['pos'], get_vision(life), get_chunks=True, life_id=life['id'])
+		else:
+			life['fov'] = fov.fov(life['pos'], get_vision(life), callback=lambda pos: _chunk_keys.add(chunks.get_chunk_key_at(pos)))
 	
 	return list(_chunk_keys)
-	#return fast_scan_surroundings(life, initial=initial, _chunks=_chunks, ignore_chunks=ignore_chunks, judge=judge, get_chunks=get_chunks, visible_check=visible_check)
+
+def post_scan_surroundings(life):
+	_chunk_keys = set()
+	_los = False
+	_fov_job = FOV_JOBS[life['id']]
+	_map, _keys = _fov_job()
+	
+	if _los:
+		life['fov'] += _map
+	else:
+		life['fov'] = _map
+		_los = True
+	
+	_chunk_keys.update(_keys)
+	
+	return list(_chunk_keys)

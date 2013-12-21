@@ -45,7 +45,8 @@ def get_dialog(dialog_id):
 def end_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
-	LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
+	if dialog_id in LIFE[_dialog['started_by']]['dialogs']:
+		LIFE[_dialog['started_by']]['dialogs'].remove(dialog_id)
 	
 	if dialog_id in LIFE[_dialog['target']]['dialogs']:
 		LIFE[_dialog['target']]['dialogs'].remove(dialog_id)
@@ -281,7 +282,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 				if not _return == None:
 					_dialog['flags'][_result.split('=')[0]] = _return
 	
-	alife.speech.communicate(life, 'dialog', matches=[{'id': _target}], dialog_id=dialog_id, radio=_dialog['remote'])
+	alife.speech.communicate(life, 'dialog', matches=[_target], dialog_id=dialog_id, radio=_dialog['remote'])
 
 def reformat_text(life, target, dialog_id, text):
 	_dialog = get_dialog(dialog_id)
@@ -326,6 +327,10 @@ def say_via_gist(life, dialog_id, gist, loop=False, **kwargs):
 
 def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
+	
+	if not _dialog['choices']:
+		return False
+	
 	_choice = _dialog['choices'][_dialog['cursor_index']]
 	
 	_loop = False

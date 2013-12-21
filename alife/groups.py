@@ -7,6 +7,7 @@ import references
 import judgement
 import movement
 import survival
+import numbers
 import memory
 import action
 import combat
@@ -198,7 +199,7 @@ def distribute(life, message, filter_by=[], **kvargs):
 		if member in filter_by:
 			continue
 		
-		speech.communicate(life, message, radio=True, matches=[{'id': member}], **kvargs)
+		speech.communicate(life, message, radio=True, matches=[member], **kvargs)
 
 def add_job(life, group_id, job_id):
 	_group = get_group(life, group_id)
@@ -263,7 +264,9 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 			
 	else:
 		_announce_to = _group['members'][:]
-		_announce_to.remove(life['id'])
+		
+		if life['id'] in _announce_to:
+			_announce_to.remove(life['id'])
 	#TODO: Could have an option here to form an emergency "combat" group
 	
 	for life_id in _announce_to:
@@ -491,10 +494,43 @@ def manage_jobs(life, group_id):
 	if not _shelter:
 		return False
 	
-	#What do we need to defend?
-	#TODO: Dirty hack...
-	#if stats.is_psychotic(life):
+	if not get_stage(life, group_id) == STAGE_SETTLED:
+		return False
 	
+	if get_flag(life, life['group'], 'guard_chunk_keys'):
+		return False
+	
+	_guard_chunk_keys = []
+	_potential_guard_chunk_keys = []
+	_group_members = get_group(life, life['group'])['members']
+	_shelter_chunks = references.get_reference(_shelter)[:]
+	
+	#TODO: This is horrible... like the worst possible way to do this
+	for chunk_key in WORLD_INFO['chunk_map']:
+		if chunk_key in _shelter_chunks:
+			_shelter_chunks.remove(chunk_key)
+			continue
+		
+		if numbers.distance(life['pos'], chunks.get_chunk(chunk_key)['pos'])>50:
+			continue
+		
+		_potential_guard_chunk_keys.append(chunk_key)
+	
+	if not _potential_guard_chunk_keys:
+		return False
+	
+	for member_id in _group_members:
+		if member_id == life['id']:
+			continue
+		
+		_chunk_key = _potential_guard_chunk_keys.pop(random.randint(0, len(_potential_guard_chunk_keys)-1))
+		_guard_chunk_keys.append(_chunk_key)
+		lfe.memory(LIFE[member_id], 'focus_on_chunk', chunk_key=_chunk_key)
+		
+		if not _potential_guard_chunk_keys:
+			break
+	
+	flag(life, life['group'], 'guard_chunk_keys', _guard_chunk_keys)
 
 def manage_territory(life, group_id):
 	_shelter = get_shelter(life, group_id)

@@ -31,6 +31,22 @@ def prettify_string_array(array, max_length):
 def get_name(life):
 	return ' '.join(life['name'])
 
+def get_real_distance(distance):
+	"""Returns the real-life representation of a distance."""
+	
+	if SETTINGS['distance unit'] == 'Yards':
+		return distance*YARDS
+	else:
+		return distance*METERS
+
+def get_real_distance_string(distance):
+	_distance = get_real_distance(distance)
+	
+	if SETTINGS['distance unit'] == 'Yards':
+		return '%s yd' % _distance
+	
+	return '%s m' % _distance
+
 def get_name_ownership(life, pronoun=False):
 	if pronoun:
 		if life['type'] == 'humanoid':

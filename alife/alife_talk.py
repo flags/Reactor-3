@@ -24,6 +24,9 @@ def setup(life):
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
 	
+	if not lfe.ticker(life, 'talk', 4, fire=True):
+		return False
+	
 	_potential_talking_targets = []
 	for ai in life['seen']:
 		if not stats.can_talk_to(life, ai):
@@ -42,6 +45,16 @@ def setup(life):
 			#if ai['life']['state'] in ['hiding', 'hidden']:
 			#	continue
 	
+			_potential_talking_targets.append(ai)
+	
+	if lfe.get_all_inventory_items(life, matches=[{'type': 'radio'}]):
+		for ai in life['know']:
+			if ai in _potential_talking_targets:
+				continue
+			
+			if not stats.can_talk_to(life, ai):
+				continue
+			
 			_potential_talking_targets.append(ai)
 	
 	#TODO: Score these
@@ -126,4 +139,4 @@ def setup(life):
 			speech.communicate(life,
 				'share_item_info',
 				item=item['item'],
-				matches=[{'id': ai['life']['id']}])
+				matches=[ai['life']['id']])

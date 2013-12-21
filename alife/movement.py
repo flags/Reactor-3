@@ -20,6 +20,10 @@ import fov
 import random
 
 def position_to_attack(life, target):
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'positioning for attack'}]):
+		if not lfe.ticker(life, 'attack_position', 4):
+			return False
+	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
 	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
@@ -73,7 +77,7 @@ def travel_to_position(life, pos, stop_on_sight=False):
 		return True
 	
 	_dest = lfe.path_dest(life)
-	if _dest and _dest[:2] == pos[:2]:
+	if _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
 	lfe.clear_actions(life)
@@ -86,11 +90,27 @@ def travel_to_chunk(life, chunk_key):
 	
 	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2])
 
+def guard_chunk(life, chunk_key):
+	if 'guard_time' in life['state_flags'] and life['state_flags']['guard_time']:
+		life['state_flags']['guard_time'] -= 1
+		
+		return False
+	
+	_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
+	_center_chunk_pos.append(2)
+	_patrol_chunk_key = random.choice(chunks.get_visible_chunks_from(_center_chunk_pos, alife.sight.get_vision(life)))
+	
+	travel_to_chunk(life, _patrol_chunk_key)
+	
+	life['state_flags']['guard_time'] = random.randint(45, 60)
+	
+	return False
+
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)
-	
 	_size = 30
+	
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
 	else:
@@ -142,6 +162,10 @@ def escape(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
+		if not lfe.ticker(life, 'escaping', 4):
+			return False
+	
 	#What can the targets see?
 	for target_id in targets:
 		_target = brain.knows_alife_by_id(life, target_id)
@@ -150,11 +174,11 @@ def escape(life, targets):
 		if not _zone in _zones:
 			_zones.append(_zone)
 		
-		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), lambda pos: _avoid_positions.append(pos))
+		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), callback=lambda pos: _avoid_positions.append(pos))
 	
 	#What can we see?
 	_can_see_positions = []
-	fov.fov(life['pos'], sight.get_vision(life), lambda pos: _can_see_positions.append(pos))
+	fov.fov(life['pos'], sight.get_vision(life), callback=lambda pos: _can_see_positions.append(pos))
 	
 	#If there are no visible targets, we could be running away from a position we were attacked from
 	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
@@ -168,7 +192,7 @@ def escape(life, targets):
 				_cover_exposed_at.remove(pos)
 				continue
 			
-			fov.fov(pos, int(round(sight.get_vision(life)*.25)), lambda pos: _avoid_exposed_cover_positions.add(pos))
+			fov.fov(pos, int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_exposed_cover_positions.add(pos))
 		
 		for pos in _avoid_exposed_cover_positions:
 			if not pos in _avoid_positions:
@@ -298,7 +322,6 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	return False
 
 def find_target(life, target, distance=5, follow=False, call=True):
-	print 'tar get', target, life['state']
 	_target = brain.knows_alife_by_id(life, target)
 	_dist = numbers.distance(life['pos'], _target['last_seen_at'])
 	
@@ -318,7 +341,7 @@ def find_target(life, target, distance=5, follow=False, call=True):
 			if not _target['escaped']:
 				memory.create_question(life, target, 'GET_LOCATION')
 				
-			speech.communicate(life, 'call', matches=[{'id': target}])
+			speech.communicate(life, 'call', matches=[target])
 		
 		_target['escaped'] = 1
 		
@@ -343,7 +366,7 @@ def _find_alife_and_say(life, target_id, say):
 	_target = brain.knows_alife_by_id(life, target_id)
 	
 	if _find_alife(life, _target['life']['id']):
-		speech.communicate(life, _say['gist'], matches=[{'id': _target['life']['id']}], **say)
+		speech.communicate(life, _say['gist'], matches=[_target['life']['id']], **say)
 		lfe.memory(life,
 			'told about founder',
 			camp=_say['camp'],

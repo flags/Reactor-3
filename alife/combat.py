@@ -371,7 +371,7 @@ def ranged_combat(life, targets):
 				speech.communicate(life,
 			        'target_missing',
 			        target=_target['life']['id'],
-			        matches=[{'id': send_to}])
+			        matches=[send_to])
 	else:
 		print life['name'], 'waiting...'
 		return False
@@ -384,7 +384,7 @@ def melee_combat(life, targets):
 		return False
 	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
-		_can_see = sight.can_see_position(life, _target['life']['pos'])
+		_can_see = sight.can_see_position(life, _target['life']['pos'], get_path=True)
 		
 		if _can_see:
 			if len(_can_see)>1:
@@ -400,7 +400,7 @@ def melee_combat(life, targets):
 				speech.communicate(life,
 			        'target_missing',
 			        target=_target['life']['id'],
-			        matches=[{'id': send_to}])
+			        matches=[send_to])
 	else:
 		print life['name'], 'waiting...'
 		return False

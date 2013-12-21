@@ -68,6 +68,7 @@ def tick_all_objects(ignore_tickrate=False, ignore_pause=False):
 	if melee.process_fights():
 		return False
 	
+	life.tick_all_life(setup=True)
 	effects.calculate_all_effects()
 	tick_world()
 	timers.tick()

@@ -94,7 +94,6 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 				continue
 			
 			_view['light_buffer'][1][_RENDER_Y, _RENDER_X] = 0
-			
 			_drawn = False
 			_shadow = 2
 			for z in range(MAP_SIZE[2]-1,-1,-1):
@@ -106,12 +105,11 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 						else:
 							_shadow = 0
 						
-						#_los_x = _RENDER_X-((LOS_BUFFER[0].shape[0])-view_size[0]/2)
-						#_los_y = _RENDER_Y-((LOS_BUFFER[0].shape[1])-view_size[1]/2)
 						if not _visible:
 							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							darken_tile(_RENDER_X, _RENDER_Y, abs((_CAMERA_POS[2]-z))*10)
 							_drawn = True
+						
 					elif z == _CAMERA_POS[2]:
 						if (x,y,z) in SELECTED_TILES[0] and time.time()%1>=0.5:
 							if time.time()%1>=0.75:
@@ -120,25 +118,24 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 								_back_color = tcod.white
 							
 							blit_char_to_view(_RENDER_X,
-								_RENDER_Y,
-								'X',
-								(tcod.darker_grey,
-									_back_color),
-								'map')
+										_RENDER_Y,
+										'X',
+										(tcod.darker_grey, _back_color),
+										'map')
 						else:
 							if _shadow > 2:
 								darken_tile(_RENDER_X, _RENDER_Y, 15*(_shadow-2))
 							
-							blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
+							if map[x][y][z+1]:
+								blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z+1], 'map')
+							else:
+								blit_tile(_RENDER_X, _RENDER_Y, map[x][y][z], 'map')
 							
 							if SETTINGS['draw effects']:
 								if _visible:
 									effects.draw_splatter((x,y,z), (_RENDER_X,_RENDER_Y))
 									effects.draw_effect((x, y))
-					
-						#if _visible:
-						#	darken_tile(_RENDER_X, _RENDER_Y, 30)
-						
+			
 						if not _visible:
 							darken_tile(_RENDER_X, _RENDER_Y, 30)
 						
@@ -149,8 +146,9 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 								for _chunk in _visible_chunks:
 									if alife.chunks.position_is_in_chunk((x, y), _chunk):
 										darken_tile(_RENDER_X, _RENDER_Y, abs(90))
-									
+												
 						_drawn = True
+					
 					elif z < _CAMERA_POS[2] and SETTINGS['draw z-levels below']:
 						blit_tile(_RENDER_X,_RENDER_Y,map[x][y][z], 'map')
 						darken_tile(_RENDER_X,_RENDER_Y,abs((_CAMERA_POS[2]-z))*10)

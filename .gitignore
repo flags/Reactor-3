@@ -6,6 +6,8 @@
 *.xcf
 *.swp
 *.wpr
+*.gif
+*.ase
 *.patch
 *.lprof
 *.idea_wall
