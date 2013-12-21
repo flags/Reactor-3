@@ -252,6 +252,11 @@ def generate_noise_map(map_gen):
 	_town_seeds = {}
 	_trees = []
 	_bushes = []
+	_bush_exclude_tiles = [t['id'] for t in tiles.GRASS_TILES]
+	_bush_exclude_tiles.extend([t['id'] for t in tiles.DIRT_TILES])
+	_building_exclude_tiles = [t['id'] for t in tiles.GRASS_TILES]
+	_building_exclude_tiles.extend([t['id'] for t in tiles.BUSH_TILES])
+	_building_exclude_tiles.extend([t['id'] for t in tiles.DIRT_TILES])
 	
 	for y in range(0, _size[1], map_gen['chunk_size']):
 		for x in range(0, _size[0], map_gen['chunk_size']):
@@ -319,7 +324,7 @@ def generate_noise_map(map_gen):
 						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
 						_y = numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 						
-						if not map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+						if not map_gen['map'][_x][_y][2]['id'] in _bush_exclude_tiles:
 							continue
 						
 						_bushes.append((_x, _y, 2))
@@ -327,10 +332,13 @@ def generate_noise_map(map_gen):
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 	
 	for tree in _trees:
+		if not map_gen['map'][tree[0]][tree[1]][tree[2]]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+			continue
+		
 		create_tree(map_gen, tree[:3], tree[3])
 	
 	for bush in _bushes:
-		if not map_gen['map'][bush[0]][bush[1]][bush[2]]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+		if not map_gen['map'][bush[0]][bush[1]][bush[2]]['id'] in _bush_exclude_tiles:
 			continue
 		
 		create_tile(map_gen, bush[0], bush[1], bush[2], random.choice(tiles.BUSH_TILES))
@@ -592,16 +600,55 @@ def generate_noise_map(map_gen):
 		_silo_chunk = map_gen['chunk_map'][_silo_chunk_key]
 		_silo_chunk['type'] = 'silo'
 		
-		for y in range(_silo_chunk['pos'][1]-1, _silo_chunk['pos'][1]+map_gen['chunk_size']+2):
-			for x in range(_silo_chunk['pos'][0]-1, _silo_chunk['pos'][0]+map_gen['chunk_size']+2):
-				create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+		for y in range(_silo_chunk['pos'][1]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][1]+(map_gen['chunk_size']*2)+1):
+			for x in range(_silo_chunk['pos'][0]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][0]+(map_gen['chunk_size']*2)+1):
+				if x<0 or x>=MAP_SIZE[0] or y<0 or y>=MAP_SIZE[1]:
+					continue
 				
+				if not map_gen['map'][x][y][2]['id'] in [t['id'] for t in tiles.FIELD_TILES]:
+					if not random.randint(0, 4):
+						create_tile(map_gen, x, y, 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+					elif not random.randint(0, 4):
+						create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+				else:
+					create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+		
+		_breaks = []
+		_center = (_silo_chunk['pos'][0]+map_gen['chunk_size']/2, _silo_chunk['pos'][1]+map_gen['chunk_size']/2)
 		for z in range(1, 4):
-			for pos in drawing.draw_circle((_silo_chunk['pos'][0]+map_gen['chunk_size']/2, _silo_chunk['pos'][1]+map_gen['chunk_size']/2), 5):
+			for pos in drawing.draw_circle(_center, 10):
 				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 					continue
 				
-				create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
+				if not map_gen['map'][pos[0]][pos[1]][2]['id'] in _building_exclude_tiles:
+					create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
+				else:
+					_breaks.append({'pos': (pos[0], pos[1], 2+z),
+					                'distance': numbers.distance(_center, pos),
+					                'direction': numbers.direction_to(_center, pos)})
+		
+		for break_pos in _breaks:
+			_velocity = numbers.velocity(break_pos['direction'], numbers.clip(break_pos['distance']/5, 0.5, 1))
+			_velocity[0] = break_pos['pos'][0]+_velocity[0]
+			_velocity[1] = break_pos['pos'][1]+_velocity[1]
+			
+			for z in range(1, break_pos['pos'][2]):
+				_i = z/numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
+
+				_center_pos = numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
+				_center_pos = (int(round(_center_pos[0])), int(round(_center_pos[1])))
+				for pos in drawing.draw_circle(_center_pos, 4):
+					if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+						continue
+					
+					if map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.TREE_STUMPS]:
+						continue
+					
+					if not random.randint(0, 3):
+						print 'YESSSSSSSS ' * 3
+						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.WHITE_TILE_TILES))
+					else:
+						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
 	
 	return _noise_map
 
