@@ -38,6 +38,11 @@ ROOM_TYPES = {'bedroom': {'required': True, 'floor_tiles': tiles.DARK_GREEN_FLOO
               'bathroom': {'required': True, 'floor_tiles': tiles.BLUE_FLOOR_TILES},
               'kitchen': {'floor_tiles': tiles.BROWN_FLOOR_TILES},
               'dining_room': {'floor_tiles': tiles.WHITE_TILE_TILES}}
+BUSH_EXCLUDE_TILES = [t['id'] for t in tiles.GRASS_TILES]
+BUSH_EXCLUDE_TILES.extend([t['id'] for t in tiles.DIRT_TILES])
+BUILDING_EXCLUDE_TILES = [t['id'] for t in tiles.GRASS_TILES]
+BUILDING_EXCLUDE_TILES.extend([t['id'] for t in tiles.BUSH_TILES])
+BUILDING_EXCLUDE_TILES.extend([t['id'] for t in tiles.DIRT_TILES])
 
 
 def create_building(buildings, building, chunk_size):
@@ -242,21 +247,34 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	return map_gen
 
+def generate_chunk_map(map_gen):
+	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
+		for x1 in xrange(0, map_gen['size'][0], map_gen['chunk_size']):
+			_chunk_key = '%s,%s' % (x1, y1)
+			
+			map_gen['chunk_map'][_chunk_key] = {'pos': (x1, y1),
+				'ground': [],
+				'life': [],
+				'items': [],
+				'control': {},
+				'neighbors': [],
+				'reference': None,
+				'last_updated': None,
+				'flags': {},
+				'type': 'other',
+				'max_z': 2}
+
 def generate_noise_map(map_gen):
+	_cells = []
 	_size = (map_gen['size'][0], map_gen['size'][1])
 	_noise_map = numpy.zeros(_size[:2])
 	_noise = tcod.noise_new(4)
 	_noise_dx = 0
 	_noise_dy = 0
 	_noise_octaves = 3.0
-	_town_seeds = {}
+	_town_seeds = []
 	_trees = []
 	_bushes = []
-	_bush_exclude_tiles = [t['id'] for t in tiles.GRASS_TILES]
-	_bush_exclude_tiles.extend([t['id'] for t in tiles.DIRT_TILES])
-	_building_exclude_tiles = [t['id'] for t in tiles.GRASS_TILES]
-	_building_exclude_tiles.extend([t['id'] for t in tiles.BUSH_TILES])
-	_building_exclude_tiles.extend([t['id'] for t in tiles.DIRT_TILES])
 	
 	for y in range(0, _size[1], map_gen['chunk_size']):
 		for x in range(0, _size[0], map_gen['chunk_size']):
@@ -299,7 +317,7 @@ def generate_noise_map(map_gen):
 				
 			elif _val >= map_gen['town_fuzz']:
 				if not _chunk_key in _town_seeds:
-					_town_seeds[_chunk_key] = _value
+					_town_seeds.append(_chunk_key)
 				
 			elif map_gen['road_fuzz'] < _val < map_gen['town_fuzz']:
 				#if not _chunk_key in map_gen['refs']['forests']:
@@ -324,7 +342,7 @@ def generate_noise_map(map_gen):
 						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
 						_y = numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 						
-						if not map_gen['map'][_x][_y][2]['id'] in _bush_exclude_tiles:
+						if not map_gen['map'][_x][_y][2]['id'] in BUSH_EXCLUDE_TILES:
 							continue
 						
 						_bushes.append((_x, _y, 2))
@@ -338,42 +356,42 @@ def generate_noise_map(map_gen):
 		create_tree(map_gen, tree[:3], tree[3])
 	
 	for bush in _bushes:
-		if not map_gen['map'][bush[0]][bush[1]][bush[2]]['id'] in _bush_exclude_tiles:
+		if not map_gen['map'][bush[0]][bush[1]][bush[2]]['id'] in BUSH_EXCLUDE_TILES:
 			continue
 		
 		create_tile(map_gen, bush[0], bush[1], bush[2], random.choice(tiles.BUSH_TILES))
 	
 	#Towns
 	#TODO: Looks weird right now... we can eventually put more restraints here to return specifc chunks
-	_existing_building_chunks = map_gen['refs']['dirt_road'][:]
-	_ref_points = {0: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]),
-	                   'min_size': 70,
-	                   'max_size': 500,
-	                   'max_buildings': 25},
-	               1: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]/2),
-	                   'min_size': 200,
-	                   'max_size': 500,
-	                   'max_buildings': 25},
-	               2: {'anchor': (MAP_SIZE[0]/2, 0),
-	                   'min_size': 200,
-	                   'max_size': 500,
-	                   'max_buildings': 25}}
-	_ref_keys = _ref_points.keys()
-	_ref_keys.reverse()
-	_temp_town_seeds = set(_town_seeds.keys())
-	_cells = []
+	#_existing_building_chunks = map_gen['refs']['dirt_road'][:]
+	#_ref_points = {0: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]),
+	#                   'min_size': 70,
+	#                   'max_size': 500,
+	#                   'max_buildings': 25},
+	#               1: {'anchor': (MAP_SIZE[0]/2, MAP_SIZE[1]/2),
+	#                   'min_size': 200,
+	#                   'max_size': 500,
+	#                   'max_buildings': 25},
+	#               2: {'anchor': (MAP_SIZE[0]/2, 0),
+	#                   'min_size': 200,
+	#                   'max_size': 500,
+	#                   'max_buildings': 25}}
 	
-	#Find all cells first
-	while _temp_town_seeds:
-		_chunk_key = _temp_town_seeds.pop()
+	#_ref_keys = _ref_points.keys()
+	#_ref_keys.reverse()
+	#_temp_town_seeds = set(_town_seeds.keys())
+	#_cells = []
+	
+	#Find all cells
+	while _town_seeds:
+		_chunk_key = _town_seeds.pop()
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]
 		_connected_chunk_keys = get_all_connected_chunks_of_type(map_gen, _chunk_key, 'other')
 		
-		#TODO: Can't Sets handle this better?
 		for chunk_key in _connected_chunk_keys:
-			if chunk_key in _temp_town_seeds:
-				_temp_town_seeds.remove(chunk_key)
+			if chunk_key in _town_seeds:
+				_town_seeds.remove(chunk_key)
 			
 			_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']
 			
@@ -389,286 +407,291 @@ def generate_noise_map(map_gen):
 			if _chunk_pos[1]>_bot_right[1]:
 				_bot_right[1] = _chunk_pos[1]
 		
+		_center_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
+		_center_pos[0] = int(_center_pos[0])
+		_center_pos[1] = int(_center_pos[1])
 		_cells.append({'size': len(_connected_chunk_keys),
 		               'type': None,
 		               'chunk_keys': _connected_chunk_keys,
 		               'top_left': _top_left,
 		               'bot_right': _bot_right,
-		               'center_pos': numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]})
+		               'center_pos': _center_pos})
+		
+		#_cells.remove(_closest_cell['cell'])
+		#_max_buildings = numbers.clip((_closest_cell['cell']['size']/2)/8, 5, _ref_points[i]['max_buildings'])
+		#_possible_building_chunks = _closest_cell['cell']['chunk_keys'][:]
+		#_buildings = []
+		
+		#while len(_buildings)<_max_buildings and _possible_building_chunks:
+		#	_exterior_chunk_key = random.choice(_possible_building_chunks)
+		#	_possible_building_chunks.remove(_exterior_chunk_key)
+		#	_building_chunks = []
+		#	
+		#	_building_chunks.extend(walker(map_gen,
+		#		                           map_gen['chunk_map'][_exterior_chunk_key]['pos'],
+		#		                           random.randint(4, 8),
+		#		                           avoid_chunks=_existing_building_chunks,
+		#		                           only_chunk_types=['other'],
+		#		                           avoid_chunk_distance=4,
+		#		                           return_keys=True))
+		#	if _exterior_chunk_key in _building_chunks:
+		#		_building_chunks.remove(_exterior_chunk_key)
+		#		
+		#		if _exterior_chunk_key in _town_seeds:
+		#			del _town_seeds[_exterior_chunk_key]
+		#	
+		#	for chunk_key in _building_chunks:
+		#		map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		#		
+		#		if not chunk_key in _existing_building_chunks:
+		#			_existing_building_chunks.append(chunk_key)
+		#		
+		#		if chunk_key in _possible_building_chunks:
+		#			_possible_building_chunks.remove(chunk_key)
+		#		
+		#		if chunk_key in _town_seeds:
+		#			del _town_seeds[chunk_key]
+		#	
+		#	for chunk_key in _building_chunks:	
+		#		for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
+		#			if neighbor_chunk_key in _town_seeds:
+		#				del _town_seeds[neighbor_chunk_key]
+		#			
+		#			if not neighbor_chunk_key in _existing_building_chunks:
+		#				_existing_building_chunks.append(neighbor_chunk_key)
+		#			
+		#			if neighbor_chunk_key in _possible_building_chunks:
+		#				_possible_building_chunks.remove(neighbor_chunk_key)
+		#				
+		#				for sub_neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_chunk_key]['pos'], 'other', diagonal=True):
+		#					if not sub_neighbor_chunk_key in _existing_building_chunks:
+		#						_existing_building_chunks.append(sub_neighbor_chunk_key)
+		#				
+		#					if sub_neighbor_chunk_key in _possible_building_chunks:
+		#						_possible_building_chunks.remove(sub_neighbor_chunk_key)
+		#						
+		#					if sub_neighbor_chunk_key in _town_seeds:
+		#						del _town_seeds[sub_neighbor_chunk_key]
+		#	
+		#	if len(_building_chunks)<=4:
+		#		continue
+		#	
+		#	_buildings.append({'rooms': _building_chunks, 'ext_chunks': _exterior_chunk_key})
+		
+		#print 'Generating area:', i
+		#for building in _buildings:
+		#	construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=[building['ext_chunks']])
 	
-	for i in _ref_keys:
-		_closest_cell = {'cell': None, 'distance': 0}
-		
-		for cell in _cells:
-			if not _ref_points[i]['min_size'] < cell['size'] <= _ref_points[i]['max_size']:
-				continue
-			
-			_distance = numbers.distance(_ref_points[i]['anchor'], cell['center_pos'])
-			if not _closest_cell['cell'] or _distance < _closest_cell['distance']:
-				_closest_cell['cell'] = cell
-				_closest_cell['distance'] = _distance
-				
-				if not _distance:
-					break
-		
-		if not _closest_cell['cell']:
-			raise Exception('No matching cells: %s' % str(_ref_points[i]))
-		
-		_cells.remove(_closest_cell['cell'])
-		_max_buildings = numbers.clip((_closest_cell['cell']['size']/2)/8, 5, _ref_points[i]['max_buildings'])
-		_possible_building_chunks = _closest_cell['cell']['chunk_keys'][:]
-		_buildings = []
-		
-		while len(_buildings)<_max_buildings and _possible_building_chunks:
-			_exterior_chunk_key = random.choice(_possible_building_chunks)
-			_possible_building_chunks.remove(_exterior_chunk_key)
-			_building_chunks = []
-			
-			_building_chunks.extend(walker(map_gen,
-				                           map_gen['chunk_map'][_exterior_chunk_key]['pos'],
-				                           random.randint(4, 8),
-				                           avoid_chunks=_existing_building_chunks,
-				                           only_chunk_types=['other'],
-				                           avoid_chunk_distance=4,
-				                           return_keys=True))
-			if _exterior_chunk_key in _building_chunks:
-				_building_chunks.remove(_exterior_chunk_key)
-				
-				if _exterior_chunk_key in _town_seeds:
-					del _town_seeds[_exterior_chunk_key]
-			
-			for chunk_key in _building_chunks:
-				map_gen['chunk_map'][chunk_key]['type'] = 'town'
-				
-				if not chunk_key in _existing_building_chunks:
-					_existing_building_chunks.append(chunk_key)
-				
-				if chunk_key in _possible_building_chunks:
-					_possible_building_chunks.remove(chunk_key)
-				
-				if chunk_key in _town_seeds:
-					del _town_seeds[chunk_key]
-			
-			for chunk_key in _building_chunks:	
-				for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
-					if neighbor_chunk_key in _town_seeds:
-						del _town_seeds[neighbor_chunk_key]
-					
-					if not neighbor_chunk_key in _existing_building_chunks:
-						_existing_building_chunks.append(neighbor_chunk_key)
-					
-					if neighbor_chunk_key in _possible_building_chunks:
-						_possible_building_chunks.remove(neighbor_chunk_key)
-						
-						for sub_neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][neighbor_chunk_key]['pos'], 'other', diagonal=True):
-							if not sub_neighbor_chunk_key in _existing_building_chunks:
-								_existing_building_chunks.append(sub_neighbor_chunk_key)
-						
-							if sub_neighbor_chunk_key in _possible_building_chunks:
-								_possible_building_chunks.remove(sub_neighbor_chunk_key)
-								
-							if sub_neighbor_chunk_key in _town_seeds:
-								del _town_seeds[sub_neighbor_chunk_key]
-			
-			if len(_building_chunks)<=4:
-				continue
-			
-			_buildings.append({'rooms': _building_chunks, 'ext_chunks': _exterior_chunk_key})
-		
-		print 'Generating area:', i
-		for building in _buildings:
-			construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=[building['ext_chunks']])
+	_cell_types = {'Outpost': {'callback': generate_outpost,
+	                           'min_cells': 20,
+	                           'max_cells': 70},
+	               'Farm': {'callback': generate_farm,
+	                           'min_cells': 200,
+	                           'max_cells': 500}}
 	
 	#Fields and farms
 	for cell in _cells:
-		if cell['size']<200:
-			continue
 		
-		#Farmland (crops)
-		_farmland_chunks = cell['chunk_keys'][:]
-		for chunk_key in _farmland_chunks:
-			_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']
-			
-			for pos in drawing.draw_circle(_chunk_pos[:2], random.randint(6, 8)):
-				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
-					continue
+		#Find matching cell type
+		for cell_type in _cell_types.values():
+			if cell_type['min_cells'] < cell['size'] <= cell_type['max_cells']:
+				_matched = True
+				cell_type['callback'](map_gen, cell)
 				
-				if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
-					continue
-				
-				create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.FIELD_TILES))
-		
-		#Farmhouse
-		_chunk_key = random.choice(cell['chunk_keys'])
-		_building_chunks = walker(map_gen,
-		                          map_gen['chunk_map'][_chunk_key]['pos'],
-		                          random.randint(5, 8),
-		                          avoid_chunks=map_gen['refs']['roads'],
-		                          only_chunk_types=['other'],
-		                          avoid_chunk_distance=5*map_gen['chunk_size'],
-		                          return_keys=True)
-		
-		_yard_chunks = []
-		for chunk_key in _building_chunks:
-			map_gen['chunk_map'][chunk_key]['type'] = 'town'
-			
-			if chunk_key in _farmland_chunks:
-				_farmland_chunks.remove(chunk_key)
-			
-			for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other', diagonal=True):
-				if neighbor_chunk_key in _building_chunks:
-					continue
-				
-				if neighbor_chunk_key in _farmland_chunks:
-					_farmland_chunks.remove(neighbor_chunk_key)
-				
-				_yard_chunks.append(neighbor_chunk_key)
-				_center_pos = list(map_gen['chunk_map'][neighbor_chunk_key]['pos'][:2])
-				_center_pos[0] += map_gen['chunk_size']/2
-				_center_pos[1] += map_gen['chunk_size']/2
-				
-				for pos in drawing.draw_circle(_center_pos, random.randint(6, 8)):
-					if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
-						continue
-					
-					if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.FIELD_TILES]:
-						continue
-					
-					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
-		
-		_exterior_chunk_keys = set()
-		for chunk_key in _building_chunks:
-			_exterior_chunk_keys.update(get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'))
-		
-		#Outlining the farmhouse
-		_top_left = MAP_SIZE[:2]
-		_bot_right = [0, 0]
-		for chunk_key in _yard_chunks:
-			_chunk = map_gen['chunk_map'][chunk_key]
-			_chunk['type'] = 'yard'
-			
-			if _chunk['pos'][0] < _top_left[0]:
-				_top_left[0] = _chunk['pos'][0]
-			
-			if _chunk['pos'][1] < _top_left[1]:
-				_top_left[1] = _chunk['pos'][1]
-			
-			if _chunk['pos'][0] > _bot_right[0]:
-				_bot_right[0] = _chunk['pos'][0]
-			
-			if _chunk['pos'][1] > _bot_right[1]:
-				_bot_right[1] = _chunk['pos'][1]
-		
-		#Farmhouse fence
-		for y in range(_top_left[1], _bot_right[1]+1):
-			_y = y-_top_left[1]
-			
-			for x in range(_top_left[0], _bot_right[0]+1):
-				_x = x-_top_left[0]
-			
-				if not _x or not _y or x == _bot_right[0] or y == _bot_right[1]:
-					create_tile(map_gen, x+map_gen['chunk_size']/2, y+map_gen['chunk_size']/2, 2, random.choice(tiles.WOOD_TILES))
-		
-		construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
-		
-		#Silos
-		_potential_silo_chunks = []
-		_min_farmhouse_distance = 4*map_gen['chunk_size']
-		_max_farmhouse_distance = 8*map_gen['chunk_size']
-		
-		for chunk_key in _farmland_chunks:
-			_potential_silo_chunk = map_gen['chunk_map'][chunk_key]
-			
-			_continue = False
-			for farmhouse_chunk_key in _building_chunks:
-				_farmhouse_chunk = map_gen['chunk_map'][farmhouse_chunk_key]
-				_dist = numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
-				
-				if not _min_farmhouse_distance < _dist <= _max_farmhouse_distance:
-					_continue = True
-					break
-				
-			if _continue:
-				continue
-				
-			_potential_silo_chunks.append(chunk_key)
-		
-		if not _potential_silo_chunks:
-			raise Exception('No room for farm silo.')
-		
-		_silo_chunk_key = random.choice(_potential_silo_chunks)
-		_silo_chunk = map_gen['chunk_map'][_silo_chunk_key]
-		_silo_chunk['type'] = 'silo'
-		
-		for y in range(_silo_chunk['pos'][1]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][1]+(map_gen['chunk_size']*2)+1):
-			for x in range(_silo_chunk['pos'][0]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][0]+(map_gen['chunk_size']*2)+1):
-				if x<0 or x>=MAP_SIZE[0] or y<0 or y>=MAP_SIZE[1]:
-					continue
-				
-				if not map_gen['map'][x][y][2]['id'] in [t['id'] for t in tiles.FIELD_TILES]:
-					if not random.randint(0, 4):
-						create_tile(map_gen, x, y, 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
-					elif not random.randint(0, 4):
-						create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
-				else:
-					create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
-		
-		_breaks = []
-		_center = (_silo_chunk['pos'][0]+map_gen['chunk_size']/2, _silo_chunk['pos'][1]+map_gen['chunk_size']/2)
-		for z in range(1, 4):
-			for pos in drawing.draw_circle(_center, 10):
-				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
-					continue
-				
-				if not map_gen['map'][pos[0]][pos[1]][2]['id'] in _building_exclude_tiles:
-					create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
-				else:
-					_breaks.append({'pos': (pos[0], pos[1], 2+z),
-					                'distance': numbers.distance(_center, pos),
-					                'direction': numbers.direction_to(_center, pos)})
-		
-		for break_pos in _breaks:
-			_velocity = numbers.velocity(break_pos['direction'], numbers.clip(break_pos['distance']/5, 0.5, 1))
-			_velocity[0] = break_pos['pos'][0]+_velocity[0]
-			_velocity[1] = break_pos['pos'][1]+_velocity[1]
-			
-			for z in range(1, break_pos['pos'][2]):
-				_i = z/numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
+				break
+		else:
+			logging.debug('Cell has no matching cell type.')
 
-				_center_pos = numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
-				_center_pos = (int(round(_center_pos[0])), int(round(_center_pos[1])))
-				for pos in drawing.draw_circle(_center_pos, 4):
-					if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
-						continue
-					
-					if map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.TREE_STUMPS]:
-						continue
-					
-					if not random.randint(0, 3):
-						print 'YESSSSSSSS ' * 3
-						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.WHITE_TILE_TILES))
-					else:
-						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
+def generate_outpost(map_gen, cell):
+	_center_chunk_key = alife.chunks.get_chunk_key_at(cell['center_pos'])
+	_center_chunk = map_gen['chunk_map'][_center_chunk_key]
+	_outpost_chunk_keys = walker(map_gen,
+	                             _center_chunk['pos'],
+	                             random.randint(10, 14),
+	                             only_chunk_types=['other'],
+	                             avoid_chunk_distance=4*map_gen['chunk_size'],
+	                             return_keys=True)
 	
-	return _noise_map
+	for chunk_key in _outpost_chunk_keys:
+		map_gen['chunk_map'][chunk_key]['type'] = 'town'
+	
+	_exterior_chunk_keys = []
+	for chunk_key in _outpost_chunk_keys:
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'):
+			if neighbor_chunk_key in _exterior_chunk_keys:
+				continue
+			
+			_exterior_chunk_keys.append(neighbor_chunk_key)
+	
+	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
+	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
 
-def generate_chunk_map(map_gen):
-	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
-		for x1 in xrange(0, map_gen['size'][0], map_gen['chunk_size']):
-			_chunk_key = '%s,%s' % (x1, y1)
+def generate_farm(map_gen, cell):
+	#Farmland (crops)
+	_farmland_chunks = cell['chunk_keys'][:]
+	for chunk_key in _farmland_chunks:
+		_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']
+		
+		for pos in drawing.draw_circle(_chunk_pos[:2], random.randint(6, 8)):
+			if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+				continue
 			
-			map_gen['chunk_map'][_chunk_key] = {'pos': (x1, y1),
-				'ground': [],
-				'life': [],
-				'items': [],
-				'control': {},
-				'neighbors': [],
-				'reference': None,
-				'last_updated': None,
-				'flags': {},
-				'type': 'other',
-				'max_z': 2}
+			if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+				continue
 			
+			create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.FIELD_TILES))
+	
+	#Farmhouse
+	_chunk_key = random.choice(cell['chunk_keys'])
+	_building_chunks = walker(map_gen,
+                              map_gen['chunk_map'][_chunk_key]['pos'],
+                              random.randint(5, 8),
+                              avoid_chunks=map_gen['refs']['roads'],
+                              only_chunk_types=['other'],
+                              avoid_chunk_distance=5*map_gen['chunk_size'],
+                              return_keys=True)
+	
+	_yard_chunks = []
+	for chunk_key in _building_chunks:
+		map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		
+		if chunk_key in _farmland_chunks:
+			_farmland_chunks.remove(chunk_key)
+		
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other', diagonal=True):
+			if neighbor_chunk_key in _building_chunks:
+				continue
+			
+			if neighbor_chunk_key in _farmland_chunks:
+				_farmland_chunks.remove(neighbor_chunk_key)
+			
+			_yard_chunks.append(neighbor_chunk_key)
+			_center_pos = list(map_gen['chunk_map'][neighbor_chunk_key]['pos'][:2])
+			_center_pos[0] += map_gen['chunk_size']/2
+			_center_pos[1] += map_gen['chunk_size']/2
+			
+			for pos in drawing.draw_circle(_center_pos, random.randint(6, 8)):
+				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+					continue
+				
+				if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.FIELD_TILES]:
+					continue
+				
+				create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
+	
+	_exterior_chunk_keys = set()
+	for chunk_key in _building_chunks:
+		_exterior_chunk_keys.update(get_neighbors_of_type(map_gen, map_gen['chunk_map'][chunk_key]['pos'], 'other'))
+	
+	#Outlining the farmhouse
+	_top_left = MAP_SIZE[:2]
+	_bot_right = [0, 0]
+	for chunk_key in _yard_chunks:
+		_chunk = map_gen['chunk_map'][chunk_key]
+		_chunk['type'] = 'yard'
+		
+		if _chunk['pos'][0] < _top_left[0]:
+			_top_left[0] = _chunk['pos'][0]
+		
+		if _chunk['pos'][1] < _top_left[1]:
+			_top_left[1] = _chunk['pos'][1]
+		
+		if _chunk['pos'][0] > _bot_right[0]:
+			_bot_right[0] = _chunk['pos'][0]
+		
+		if _chunk['pos'][1] > _bot_right[1]:
+			_bot_right[1] = _chunk['pos'][1]
+	
+	#Farmhouse fence
+	for y in range(_top_left[1], _bot_right[1]+1):
+		_y = y-_top_left[1]
+		
+		for x in range(_top_left[0], _bot_right[0]+1):
+			_x = x-_top_left[0]
+		
+			if not _x or not _y or x == _bot_right[0] or y == _bot_right[1]:
+				create_tile(map_gen, x+map_gen['chunk_size']/2, y+map_gen['chunk_size']/2, 2, random.choice(tiles.WOOD_TILES))
+	
+	construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
+	
+	#Silos
+	_potential_silo_chunks = []
+	_min_farmhouse_distance = 4*map_gen['chunk_size']
+	_max_farmhouse_distance = 8*map_gen['chunk_size']
+	
+	for chunk_key in _farmland_chunks:
+		_potential_silo_chunk = map_gen['chunk_map'][chunk_key]
+		
+		_continue = False
+		for farmhouse_chunk_key in _building_chunks:
+			_farmhouse_chunk = map_gen['chunk_map'][farmhouse_chunk_key]
+			_dist = numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
+			
+			if not _min_farmhouse_distance < _dist <= _max_farmhouse_distance:
+				_continue = True
+				break
+			
+		if _continue:
+			continue
+			
+		_potential_silo_chunks.append(chunk_key)
+	
+	if not _potential_silo_chunks:
+		raise Exception('No room for farm silo.')
+	
+	_silo_chunk_key = random.choice(_potential_silo_chunks)
+	_silo_chunk = map_gen['chunk_map'][_silo_chunk_key]
+	_silo_chunk['type'] = 'silo'
+	
+	for y in range(_silo_chunk['pos'][1]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][1]+(map_gen['chunk_size']*2)+1):
+		for x in range(_silo_chunk['pos'][0]-(map_gen['chunk_size'])-1, _silo_chunk['pos'][0]+(map_gen['chunk_size']*2)+1):
+			if x<0 or x>=MAP_SIZE[0] or y<0 or y>=MAP_SIZE[1]:
+				continue
+			
+			if not map_gen['map'][x][y][2]['id'] in [t['id'] for t in tiles.FIELD_TILES]:
+				if not random.randint(0, 4):
+					create_tile(map_gen, x, y, 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+				elif not random.randint(0, 4):
+					create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+			else:
+				create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+	
+	_breaks = []
+	_center = (_silo_chunk['pos'][0]+map_gen['chunk_size']/2, _silo_chunk['pos'][1]+map_gen['chunk_size']/2)
+	for z in range(1, 4):
+		for pos in drawing.draw_circle(_center, 10):
+			if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+				continue
+			
+			if not map_gen['map'][pos[0]][pos[1]][2]['id'] in BUILDING_EXCLUDE_TILES:
+				create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
+			else:
+				_breaks.append({'pos': (pos[0], pos[1], 2+z),
+			                    'distance': numbers.distance(_center, pos),
+			                    'direction': numbers.direction_to(_center, pos)})
+	
+	for break_pos in _breaks:
+		_velocity = numbers.velocity(break_pos['direction'], numbers.clip(break_pos['distance']/5, 0.5, 1))
+		_velocity[0] = break_pos['pos'][0]+_velocity[0]
+		_velocity[1] = break_pos['pos'][1]+_velocity[1]
+		
+		for z in range(1, break_pos['pos'][2]):
+			_i = z/numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
+
+			_center_pos = numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
+			_center_pos = (int(round(_center_pos[0])), int(round(_center_pos[1])))
+			for pos in drawing.draw_circle(_center_pos, 4):
+				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
+					continue
+				
+				if map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.TREE_STUMPS]:
+					continue
+				
+				if not random.randint(0, 3):
+					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.WHITE_TILE_TILES))
+				else:
+					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
+
 def generate_outlines(map_gen):
 	logging.debug('Placing roads and towns...')
 	place_road(map_gen, turnoffs=map_gen['towns'], turns=0, length=(65*map_gen['towns'], 65*map_gen['towns']), width=2)
