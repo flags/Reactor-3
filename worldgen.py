@@ -345,11 +345,11 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
-	return False
-	
 	#Step 1: Army Outpost
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
+	
+	return False
 	
 	#Step 2: Bandit village
 	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])

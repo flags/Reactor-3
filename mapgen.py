@@ -302,10 +302,7 @@ def generate_noise_map(map_gen):
 					elif _fuzz_val < .65:
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_TILES))
 					elif _fuzz_val < .7:
-						#if random.randint(0, 4):
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_TILES))
-						#else:
-						#	create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
 					elif _fuzz_val < .8 and random.randint(0, 7):
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_TILES))
 					elif not random.randint(0, 6):
@@ -462,10 +459,12 @@ def generate_outpost(map_gen, cell):
 			if neighbor_chunk_key in _exterior_chunk_keys:
 				continue
 			
-			_exterior_chunk_keys.append(neighbor_chunk_key)
+			_exterior_chunk_keys.append(neighbor_chunk_key)	
 	
 	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
 	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
+	
+	map_gen['refs']['outposts'].append(_outpost_chunk_keys)
 
 def generate_farm(map_gen, cell):
 	#Farmland (crops)
