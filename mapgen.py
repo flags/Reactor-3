@@ -394,21 +394,35 @@ def generate_noise_map(map_gen):
 		               'chunk_keys': _connected_chunk_keys,
 		               'top_left': _top_left,
 		               'bot_right': _bot_right,
-		               'center_pos': _center_pos})
+		               'center_pos': _center_pos[:]})
 	
 	_cell_types = {'Outpost': {'callback': generate_outpost,
 	                           'min_cells': 20,
-	                           'max_cells': 70},
+	                           'max_cells': 70,
+	                           'difficulty_min': 0.1,
+	                           'difficulty_max': 0.75},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
-	                           'max_cells': 500}}
-	_empty_cell_types = {'Forest': generate_forest}
+	                           'max_cells': 500,
+	                           'difficulty_min': 0.0,
+	                           'difficulty_max': 0.55}}
+	_empty_cell_types = {'Forest': generate_forest}	
+	_zone_entry_position = (125, 125)
+	_npp_position = (map_gen['size'][0]-120, map_gen['size'][1]-120)
+	_difficulty_distance = numbers.distance(_zone_entry_position, _npp_position)
+	
+	map_gen['zone_entry_chunk_key'] = '%s,%s' % (_zone_entry_position[0], _zone_entry_position[1])
 	
 	#Fields and farms
 	for cell in _cells:
 		
 		#Find matching cell type
 		for cell_type in _cell_types.values():
+			_difficulty_percentage = numbers.clip(numbers.distance(cell['center_pos'], _zone_entry_position)/float(_difficulty_distance), 0, 1)
+			print _difficulty_percentage, _difficulty_distance
+			if not cell_type['difficulty_min'] < _difficulty_percentage <= cell_type['difficulty_max']:
+				continue
+			
 			if cell_type['min_cells'] < cell['size'] <= cell_type['max_cells']:
 				_matched = True
 				cell_type['callback'](map_gen, cell)
