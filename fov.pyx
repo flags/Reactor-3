@@ -85,7 +85,7 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 						_chunk['items'].remove(item_uid)
 				
 				for item_uid in _chunk['items']:
-					if items.is_blocking(item_uid):
+					if items.is_blocking(item_uid) and ITEMS[item_uid]['pos'][:2] == [_a_x, _a_y]:
 						_solid = True
 						break
 				
@@ -126,6 +126,22 @@ def fov(start_position, distance, get_chunks=False, life_id=None, callback=None)
 	_collision_map = numpy.zeros((_distance*2, _distance*2))
 	
 	if get_chunks:
+		_chunks_with_items = {}
+		
+		for y in range(start_position[1]-_distance, start_position[1]+_distance, WORLD_INFO['chunk_size']):
+			for x in range(start_position[0]-_distance, start_position[0]+_distance, WORLD_INFO['chunk_size']):
+				if x<0 or x>=MAP_SIZE[0]-1 or y<0 or y>=MAP_SIZE[1]-1:
+					continue
+				
+				_chunk_key = alife.chunks.get_chunk_key_at((x, y))
+				
+				for item_uid in maps.get_chunk(_chunk_key)['items']:
+					if items.is_blocking(item_uid) and ITEMS[item_uid]['pos'][:2] == [x, y]:
+						if _chunk_key in _chunks_with_items:
+							_chunks_with_items[_chunk_key].append(item_uid)
+						else:
+							_chunks_with_items[_chunk_key] = [item_uid]
+		
 		for y in range(start_position[1]-_distance, start_position[1]+_distance):
 			for x in range(start_position[0]-_distance, start_position[0]+_distance):
 				if x<0 or x>=MAP_SIZE[0]-1 or y<0 or y>=MAP_SIZE[1]-1:
@@ -133,8 +149,21 @@ def fov(start_position, distance, get_chunks=False, life_id=None, callback=None)
 				
 				if not maps.is_solid((x, y, start_position[2]+1)):
 					_collision_map[x-start_position[0], y-start_position[1]] = 1
-		
-		_active_items = [ITEMS[i] for i in ACTIVE_ITEMS if numbers.distance(ITEMS[i]['pos'], start_position)<=distance]
+					
+					continue
+				
+				_chunk_key = alife.chunks.get_chunk_key_at((x, y))
+				
+				if _chunk_key in _chunks_with_items:
+					for item_uid in _chunks_with_items[_chunk_key][:]:
+						if ITEMS[item_uid]['pos'][:2] == [x, y]:
+							_collision_map[x-start_position[0], y-start_position[1]] = 1
+							_chunks_with_items[_chunk_key].remove(item_uid)
+							
+							break
+					
+					if not _chunks_with_items[_chunk_key]:
+						del _chunks_with_items[_chunk_key]
 	
 		#cPickle.dumps(_collision_map)
 		#_t = time.time()
@@ -145,7 +174,7 @@ def fov(start_position, distance, get_chunks=False, life_id=None, callback=None)
 		if get_chunks:
 			FOV_JOBS[life_id] = SETTINGS['smp'].submit(pyfov.old_light,
 				(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
-					MULT[1][i], MULT[2][i], MULT[3][i], _collision_map, MAP_SIZE, _active_items,),
+					MULT[1][i], MULT[2][i], MULT[3][i], _collision_map, MAP_SIZE,),
 				(), ('pyfov',))
 			
 		else:
