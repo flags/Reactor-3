@@ -31,6 +31,26 @@ def prettify_string_array(array, max_length):
 def get_name(life):
 	return ' '.join(life['name'])
 
+def get_real_direction(direction):
+	if abs(direction)<22 or abs(direction-360)<22:
+		return 'east'
+	elif abs(direction-45)<22:
+		return 'northeast'
+	elif abs(direction-90)<22:
+		return 'north'
+	elif abs(direction-135)<22:
+		return 'northwest'
+	elif abs(direction-180)<22:
+		return 'west'
+	elif abs(direction-225)<22:
+		return 'southwest'
+	elif abs(direction-270)<22:
+		return 'south'
+	elif abs(direction-315)<22:
+		return 'southeast'
+	else:
+		return 'east'
+
 def get_real_distance(distance):
 	"""Returns the real-life representation of a distance."""
 	
@@ -41,11 +61,15 @@ def get_real_distance(distance):
 
 def get_real_distance_string(distance):
 	_distance = get_real_distance(distance)
+	_mods = ''
+	
+	if not _distance == 1:
+		_mods = 's'
 	
 	if SETTINGS['distance unit'] == 'Yards':
-		return '%s yd' % _distance
+		return '%s yd%s' % (_distance, _mods)
 	
-	return '%s m' % _distance
+	return '%s m%s' % (_distance, _mods)
 
 def get_name_ownership(life, pronoun=False):
 	if pronoun:

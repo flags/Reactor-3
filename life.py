@@ -2832,33 +2832,34 @@ def draw_life_info():
 	
 	#tcod.console_set_default_foreground(0, tcod.light_grey)
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
-	#
+	
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+		if ai['dead']:
+			continue
+		
+		_state = ai['state']
 		_icon = draw_life_icon(ai)
 		
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
-
-		if ai['dead']:
-			_state = 'dead'
-		else:
-			_state = ai['state']
 		
 		if _state == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
+		_character_string = '%s (%s, %s)' % (' '.join(ai['name']),
+		                                 language.get_real_distance_string(numbers.distance(life['pos'], ai['pos'])),
+		                                 language.get_real_direction(numbers.direction_to(life['pos'], ai['pos'])))
+		
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
 		tcod.console_set_default_foreground(0, tcod.white)
 		
-		if ai['dead']:
-			continue
-		elif ai['asleep']:
+		if ai['asleep']:
 			tcod.console_set_default_foreground(0, tcod.gray)
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, '%s - Asleep' % ' '.join(ai['name']))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, '%s - Asleep' % _character_string)
 		else:
-			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, ' '.join(ai['name'])+language.get_real_distance_string(numbers.distance(life['pos'], ai['pos'])))
+			tcod.console_print(0, MAP_WINDOW_SIZE[0]+1+_xmod, _i, _character_string)
 		
 		_i += 1
 	
