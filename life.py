@@ -2056,7 +2056,13 @@ def get_all_known_camps(life, matches={}):
 
 def get_item_access_time(life, item_uid):
 	_item = ITEMS[item_uid]
-	_size = numbers.clip(_item['size'], 0, 6)
+	_size = _item['size']
+	
+	if 'attaches_to' in _item:
+		_size = _size/len(_item['attaches_to'])
+	
+	_size = numbers.clip(_size, 0, 6)	
+	
 	_owned = items.is_item_owned(item_uid)
 	_equipped = item_is_equipped(life, item_uid, check_hands=True)
 	
@@ -2069,13 +2075,13 @@ def get_item_access_time(life, item_uid):
 			#Injury?
 			
 			if 'capacity' in _item:
-				print 'equipped, in container:', int(round(_size+(10*(_item['capacity']/float(_item['max_capacity'])))))
-				return int(round(_size+(10*(_item['capacity']/float(_item['max_capacity'])))))
+				print 'equipped, in container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
+				return int(round(_size+(7*(_item['capacity']/float(_item['max_capacity'])))))
 			
-			print 'equipped:', _size
 			return int(round(_size))
 	else:
 		print 'OFF-GROUND:', _size
+		
 		return int(round(_size))
 
 def activate_item(life, item_uid):

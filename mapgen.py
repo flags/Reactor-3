@@ -378,7 +378,7 @@ def generate_noise_map(map_gen):
 	_cell_types = {'Outpost': {'callback': generate_outpost,
 	                           'min_cells': 20,
 	                           'max_cells': 150,
-	                           'difficulty_min': 0.1,
+	                           'difficulty_min': 0.35,
 	                           'difficulty_max': 0.75,
 	                           'avoid_types': {'Outpost': 250}},
 	               'Farm': {'callback': generate_farm,
