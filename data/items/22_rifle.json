@@ -12,5 +12,4 @@
 "firemode": 0,
 "accuracy": 6,
 "material": "metal",
-"thickness": 3,
-"effects": {"rusted": {}}}
+"thickness": 3}

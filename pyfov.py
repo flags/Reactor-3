@@ -1,4 +1,4 @@
-def old_light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy, collision_map, map_size, active_items):
+def old_light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy, collision_map, map_size):
 	_return_chunks = set()
 	
 	if start_slope < end_slope:
@@ -45,11 +45,6 @@ def old_light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx,
 		
 			if not _solid:
 				_chunk_key = '%s,%s' % ((_a_x/5)*5, (_a_y/5)*5)
-				
-				for item in active_items:
-					if item['blocking']:
-						_solid = True
-						break
 		
 				if not _chunk_key in _return_chunks:
 					_return_chunks.add(_chunk_key)
@@ -65,7 +60,7 @@ def old_light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx,
 			elif _solid:
 				_blocked = True
 				_next_start_slope = _r_slope
-				_map, _chunk_keys = old_light(los_map, world_pos, size, i+1, start_slope, _l_slope, xx, xy, yx, yy, collision_map, map_size, active_items)
+				_map, _chunk_keys = old_light(los_map, world_pos, size, i+1, start_slope, _l_slope, xx, xy, yx, yy, collision_map, map_size)
 				
 				los_map += _map
 				_return_chunks.update(_chunk_keys)
