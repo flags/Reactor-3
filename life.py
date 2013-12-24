@@ -1874,10 +1874,10 @@ def throw_item(life, item_uid, target):
 	else:
 		say('@n throws %s.' % items.get_name(_item))
 
-def is_item_in_storage(life, item):
+def is_item_in_storage(life, item_uid):
 	"""Returns True if item is in storage, else False."""
 	for container in get_all_storage(life):
-		if item in container['storing']:
+		if item_uid in container['storing']:
 			return True
 	
 	return False
@@ -2054,43 +2054,29 @@ def get_all_known_camps(life, matches={}):
 	
 	return _camps
 
-def _get_item_access_time(life, item):
-	"""Returns the amount of time it takes to get an item from inventory."""
-	#TODO: Where's it at on the body? How long does it take to get to it?
-	if isinstance(item, dict):
-		logging.debug('%s is getting access time for non-inventory item #%s' % (' '.join(life['name']), item['uid']))
-		
-		#TODO: We kinda do this twice...
-		_time = 0
-		if 'max_capacity' in item:
-			_time += item['capacity']
-		
-		if life['stance'] == 'standing':
-			return item['size']+_time
-		elif life['stance'] == 'crouching':
-			return (item['size']+_time) * .8
-		elif life['stance'] == 'crawling':
-			return (item['size']+_time) * .6
+def get_item_access_time(life, item_uid):
+	_item = ITEMS[item_uid]
+	_size = numbers.clip(_item['size'], 0, 6)
+	_owned = items.is_item_owned(item_uid)
+	_equipped = item_is_equipped(life, item_uid, check_hands=True)
 	
-	_item = get_inventory_item(life,item)
-	
-	if item_is_equipped(life,item):
-		_time = _item['size']
-		
-		if 'max_capacity' in _item:
-			_time += _item['capacity']
-		
-		return _time
-	
-	_stored = item_is_stored(life,item)
-	if _stored:
-		return get_item_access_time(life,_stored['uid'])+_item['size']
-	
-	return _item['size']
-
-def get_item_access_time(life, item):
-	#TODO: Don't breathe this!
-	return numbers.clip(_get_item_access_time(life, item),1,999)/2
+	if _owned:
+		if 'stored_in' in _item:
+			_score = _size+get_item_access_time(life, _item['stored_in'])
+			print 'in container:', _score
+			return int(round(_score))
+		elif _equipped:
+			#Injury?
+			
+			if 'capacity' in _item:
+				print 'equipped, in container:', int(round(_size+(10*(_item['capacity']/float(_item['max_capacity'])))))
+				return int(round(_size+(10*(_item['capacity']/float(_item['max_capacity'])))))
+			
+			print 'equipped:', _size
+			return int(round(_size))
+	else:
+		print 'OFF-GROUND:', _size
+		return int(round(_size))
 
 def activate_item(life, item_uid):
 	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)
@@ -2227,12 +2213,10 @@ def consume(life, item_id):
 		logging.warning('%s is already eating.' % ' '.join(life['name']))
 		return False
 	
-	_item = items.get_item_from_uid(item_id)
-	
 	add_action(life, {'action': 'consumeitem',
 		'item': item_id},
 		200,
-		delay=get_item_access_time(life, _item))
+		delay=get_item_access_time(life, item_uid))
 	
 	return True
 

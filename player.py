@@ -849,9 +849,6 @@ def inventory_select(entry):
 		menus.activate_menu(_i)
 	else:
 		handle_inventory_item_select(entry)
-	
-	#for _key in ITEM_TYPES[key]:
-	#	_menu_items.append(menus.create_item('single',_key,ITEM_TYPES[key][_key]))
 
 def handle_inventory_item_select(entry):
 	_item_uid = entry['id']
@@ -939,12 +936,14 @@ def inventory_unequip(entry):
 	item = entry['item']['uid']
 	
 	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']],item)
+	_delay = life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']['uid'])
+	_delay += life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['container'])
 	
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'storeitem',
 		'item': item,
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
+		delay=_delay)
 	
 	gfx.message('You begin storing %s.' % items.get_name(_item))
 	
@@ -972,8 +971,6 @@ def inventory_unequip_action(entry):
 			container=container['uid'],
 			item=_item))
 	
-	print _menu
-	
 	if not _menu:
 		gfx.message('You have nowhere to store this item!')
 		
@@ -998,7 +995,7 @@ def inventory_drop(entry):
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'dropitem',
 		'item': item['uid']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item['uid']))
 	
 	gfx.message('You start to drop %s.' % _name)
 	
@@ -1011,7 +1008,7 @@ def inventory_eat(entry):
 	life.add_action(LIFE[SETTINGS['controlling']],{'action': 'consumeitem',
 		'item': item['uid']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], item['uid']))
 	
 	if item['type'] == 'food':
 		gfx.message('You start to eat %s.' % items.get_name(item))
@@ -1429,7 +1426,7 @@ def pick_up_item_from_ground(entry):
 			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'pickupequipitem',
 				'item': entry['item']},
 				200,
-				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item['uid']))
 		
 		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
 			if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
@@ -1442,7 +1439,7 @@ def pick_up_item_from_ground(entry):
 				'item': entry['item'],
 				'hand': entry['values'][entry['value']]},
 				200,
-				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item))
+				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item['uid']))
 		
 		return True
 	
@@ -1457,7 +1454,7 @@ def pick_up_item_from_ground(entry):
 		'item': entry['item'],
 		'container': entry['container']},
 		200,
-		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], items.get_item_from_uid(entry['item'])))
+		delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], entry['item']))
 	
 	return True
 
