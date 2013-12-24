@@ -115,11 +115,6 @@ def get_ranged_combat_rating_of_target(life, life_id):
 		else:
 			_score += item['accuracy']
 	
-	if target['state'] in ['cover', 'hiding', 'hidden']:
-		_score /= 2
-	elif target['state'] == 'combat':
-		_score *= 1.2
-	
 	return _score
 
 def get_ranged_combat_rating_of_self(life):
@@ -177,11 +172,10 @@ def get_tension_with(life, life_id):
 	if not _target['last_seen_time'] and _target['dead']:
 		return 0
 	
-	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
-	_score = abs(numbers.clip(get_trust(life, life_id), -10, 0))
-	_score += get_ranged_combat_rating_of_target(life, life_id)
+	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, sight.get_vision(life))
+	_tension = get_ranged_combat_rating_of_target(life, life_id)/float(get_ranged_combat_rating_of_self(life))
 	
-	return abs(((15-_distance)/15.0)*_score)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
+	return abs(((sight.get_vision(life)-_distance)/float(sight.get_vision(life)))*_tension)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
 
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)

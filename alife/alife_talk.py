@@ -24,30 +24,31 @@ def setup(life):
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
 	
-	if not lfe.ticker(life, 'talk', 4, fire=True):
-		return False
-	
 	_potential_talking_targets = []
 	for ai in life['seen']:
 		if not stats.can_talk_to(life, ai):
 			continue
 		
+		print '\n\n', life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)
+		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
-		elif judgement.get_tension_with(life, ai)>=5:
+		elif judgement.get_tension_with(life, ai)<=.6:
 			stats.react_to_tension(life, ai)
 	
 		else:
 			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
 				continue
 	
-			#TODO: Not always true.
-			#if ai['life']['state'] in ['hiding', 'hidden']:
-			#	continue
-	
 			_potential_talking_targets.append(ai)
 	
+	if not _potential_talking_targets:
+		if not lfe.ticker(life, 'talk', 6):
+			return False
+	
+	print 'checkin for radio'
 	if lfe.get_all_inventory_items(life, matches=[{'type': 'radio'}]):
+		print life['name'], 'has readiooooooooooooo'
 		for ai in life['know']:
 			if ai in _potential_talking_targets:
 				continue
