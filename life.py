@@ -2069,18 +2069,18 @@ def get_item_access_time(life, item_uid):
 	if _owned:
 		if 'stored_in' in _item:
 			_score = _size+get_item_access_time(life, _item['stored_in'])
-			print 'in container:', _score
+			print _item['name'], 'in container:', _score
 			return int(round(_score))
 		elif _equipped:
 			#Injury?
 			
 			if 'capacity' in _item:
-				print 'equipped, in container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
-				return int(round(_size+(7*(_item['capacity']/float(_item['max_capacity'])))))
+				print _item['name'], 'equipped, is container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
+				return int(round(_size+(_size*(_item['capacity']/float(_item['max_capacity'])))))
 			
 			return int(round(_size))
 	else:
-		print 'OFF-GROUND:', _size
+		print _item['name'], 'OFF-GROUND:', _size
 		
 		return int(round(_size))
 
