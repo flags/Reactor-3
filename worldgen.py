@@ -248,14 +248,19 @@ def get_spawn_point_around(pos, area=5):
 	
 	return (_x, _y)
 
-def get_spawn_point(randomize=False):
+def get_spawn_point(randomize=False, zone_entry_point=False):
+	if zone_entry_point:
+		_pos = random.choice(WORLD_INFO['chunk_map'][WORLD_INFO['zone_entry_chunk_key']]['ground'])
+		
+		return [_pos[0], _pos[1], 2]
+	
 	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
 		for road in WORLD_INFO['reference_map']['roads']:
 			for chunk_key in alife.references.get_reference(road):
 				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
 				
-				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:
+				if len(mapgen.get_neighbors_of_type(WORLD_INFO, chunk_key, 'any')) <= 3:
 					_entry_road_keys.append(chunk_key)
 		
 		if _entry_road_keys:
@@ -324,7 +329,7 @@ def generate_life():
 def create_player():
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
-		position=get_spawn_point())
+		position=get_spawn_point(zone_entry_point=True))
 	PLAYER['stats'].update(historygen.create_background(life))
 	PLAYER['player'] = True
 	
