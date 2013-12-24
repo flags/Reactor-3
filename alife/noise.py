@@ -11,6 +11,7 @@ import judgement
 import numbers
 import sight
 
+import logging
 import random
 
 FAR_TEXT = ['You hear @t to the @d.']
@@ -31,7 +32,7 @@ def update_targets_around_noise(life, noise):
 			continue
 		
 		target['last_seen_at'] = noise['pos'][:]
-		print 'SOUND UPDATED' * 100
+		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(target['life']['name'])))
 
 def _spread(noise):
 	for alife in LIFE.values():

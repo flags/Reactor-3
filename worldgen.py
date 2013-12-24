@@ -260,7 +260,7 @@ def get_spawn_point(randomize=False, zone_entry_point=False):
 			for chunk_key in alife.references.get_reference(road):
 				_pos = WORLD_INFO['chunk_map'][chunk_key]['pos']
 				
-				if len(mapgen.get_neighbors_of_type(WORLD_INFO, _pos, 'any')) <= 3:
+				if len(mapgen.get_neighbors_of_type(WORLD_INFO, chunk_key, 'any')) <= 3:
 					_entry_road_keys.append(chunk_key)
 		
 		if _entry_road_keys:
