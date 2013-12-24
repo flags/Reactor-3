@@ -268,7 +268,7 @@ def view_blocked_by_life(life, position, allow=[]):
 def get_visiblity_of_position(life, pos):
 	_distance = numbers.distance(life['pos'], pos)
 	
-	return 1-(_distance/float(get_vision(life)))
+	return 1-numbers.clip((_distance/float(get_vision(life))), 0, 1)
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()

@@ -2,6 +2,7 @@
 #and this module utilizes that in places.
 #
 #This is for simulating noises (that aren't voices)
+
 from globals import *
 
 import graphics as gfx
@@ -24,6 +25,8 @@ def create(position, volume, close_text, far_text, **sound):
 	_spread(_noise)
 
 def update_targets_around_noise(life, noise):
+	_most_likely_target = {'target': None, 'last_seen_time': 0}
+	
 	for target in life['know'].values():
 		if not target['escaped']:
 			continue
@@ -31,8 +34,20 @@ def update_targets_around_noise(life, noise):
 		if numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:
 			continue
 		
-		target['last_seen_at'] = noise['pos'][:]
-		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(target['life']['name'])))
+		if judgement.is_target_threat(life, target['life']['id']):
+			if not _most_likely_target['target'] or target['last_seen_time'] < _most_likely_target['last_seen_time']:
+				_most_likely_target['last_seen_time'] = target['last_seen_time']
+				_most_likely_target['target'] = target
+			
+			#target['escaped'] = 1
+			#target['last_seen_at'] = noise['pos'][:]
+	
+	if _most_likely_target['target']:
+		print '/' * 50
+		_most_likely_target['target']['escaped'] = 1
+		_most_likely_target['target']['last_seen_at'] = noise['pos'][:]
+		_most_likely_target['target']['last_seen_time'] = 1
+		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(_most_likely_target['target']['life']['name'])))
 
 def _spread(noise):
 	for alife in LIFE.values():

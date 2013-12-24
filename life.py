@@ -2068,7 +2068,7 @@ def get_item_access_time(life, item_uid):
 	
 	if _owned:
 		if 'stored_in' in _item:
-			_score = _size+get_item_access_time(life, _item['stored_in'])
+			_score = _size+get_item_access_time(LIFE[_item['owner']], _item['stored_in'])
 			print _item['name'], 'in container:', _score
 			return int(round(_score))
 		elif _equipped:
@@ -2932,6 +2932,9 @@ def get_damage(life):
 	return _damage		
 
 def pass_out(life, length=None):
+	if life['dead']:
+		return False
+	
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
@@ -3313,8 +3316,8 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	_current_condition = get_limb_condition(life, limb)
 	
-	if _previous_condition-_current_condition>=.50:
-		pass_out(life, length=25*(1-_current_condition))
+	if amount>=1.5:
+		pass_out(life, length=25*amount)
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
@@ -3371,7 +3374,7 @@ def get_limb_stability(life, limb):
 def get_limb_condition(life, limb):
 	_limb = get_limb(life, limb)
 	
-	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/_limb['max_thickness'])
+	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/float(_limb['max_thickness']))
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -3473,12 +3476,13 @@ def damage_from_item(life, item, damage):
 	else:
 		brain.flag(life, 'cover_exposed_at', value=[life['pos'][:]])
 	
-	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-		if not sight.can_see_position(ai, life['pos']):
-			continue
-		
-		if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
-			memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
+	#Useful, but unused
+	#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+	#	if not sight.can_see_position(ai, life['pos']):
+	#		continue
+	#	
+	#	if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
+	#		memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
@@ -3493,7 +3497,7 @@ def damage_from_item(life, item, damage):
 	_dam_message = dam.bullet_hit(life, item, _hit_limb)
 	
 	if 'player' in _shot_by_alife:
-		if sight.get_visiblity_of_position(_shot_by_alife, life['pos']) <= .75:
+		if sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
 			gfx.message(_dam_message, style='player_combat_good')
 			logic.show_event(_dam_message, time=35, life=life, priority=True)
 	elif 'player' in life:

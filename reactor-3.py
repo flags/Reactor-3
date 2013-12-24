@@ -109,14 +109,31 @@ def death():
 		return False
 
 def main():
+	_played_moved = False
+	_refresh_map = False
+	
 	get_input()
 	handle_input()
-	_played_moved = False
+	
+	if not LIFE[SETTINGS['controlling']]['dead']:
+		if LIFE[SETTINGS['controlling']]['asleep']:
+			gfx.fade_to_black(255)
+			gfx.start_of_frame()
+			gfx.end_of_frame()
+	
+		while LIFE[SETTINGS['controlling']]['asleep']:
+			_played_moved = True
+			_refresh_map = True
 
-	while LIFE[SETTINGS['controlling']]['asleep'] and not LIFE[SETTINGS['controlling']]['dead']:
-		gfx.title('Sleeping: %s' % LIFE[SETTINGS['controlling']]['asleep'])
-		logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
-		_played_moved = True
+			gfx.title('Sleeping')
+			logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
+			
+			print LIFE[SETTINGS['controlling']]['asleep']
+			if LIFE[SETTINGS['controlling']]['dead']:
+				break
+	
+	if _refresh_map:
+		gfx.refresh_view('map')
 	
 	if not _played_moved:
 		logic.tick_all_objects(ignore_tickrate=True)
@@ -124,11 +141,9 @@ def main():
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
 	
+	#TODO: Deselect so we can get rid of this call
 	if SELECTED_TILES[0]:
 		gfx.refresh_view('map')
-	
-	_cam_x = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
-	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 	
 	if not SETTINGS['last_camera_pos'] == SETTINGS['camera_track'][:]:
 		if EVENTS or MENUS:
@@ -143,6 +158,9 @@ def main():
 			alife.brain.flag(LIFE[SETTINGS['controlling']], 'visible_chunks', value=_visible_chunks)
 			
 		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
+	
+	_cam_x = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
+	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 	
 	maps.render_lights()
 	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
@@ -162,7 +180,7 @@ def main():
 	
 	gfx.draw_status_line()
 	gfx.draw_console()
-	gfx.start_of_frame()	
+	gfx.start_of_frame()
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:

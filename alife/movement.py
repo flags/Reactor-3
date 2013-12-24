@@ -313,7 +313,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			'item': _highest['item']['uid'],
 			'hand': random.choice(_empty_hand)},
 			200,
-			delay=lfe.get_item_access_time(life, _highest['item']))
+			delay=lfe.get_item_access_time(life, _highest['item']['uid']))
 		lfe.lock_item(life, _highest['item']['uid'])
 	else:
 		lfe.clear_actions(life)
