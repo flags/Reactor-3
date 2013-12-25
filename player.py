@@ -1561,7 +1561,6 @@ def handle_options_menu(entry):
 		maps._render_los(MAP,PLAYER['pos'],cython=CYTHON_ENABLED)
 	elif key == 'Update chunk map':
 		maps.update_chunk_map()
-		maps.smooth_chunk_map()
 	elif key == 'Show camp ownership':
 		camps.debug_camps()
 	elif key == 'Drop cache':

@@ -502,22 +502,23 @@ def react_to_tension(life, life_id):
 		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
 			return False
 	
-	_has_warned_previously = speech.has_sent(life, life_id, 'confront')
-	_target = brain.knows_alife_by_id(life, life_id)
-	
-	if _has_warned_previously:
-		_warned = brain.get_alife_flag(life, life_id, 'warned') 
-		if _warned:
-			brain.flag_alife(life, life_id, 'warned', value=_warned+1)
-			
-			if _warned+1>100 and WORLD_INFO['ticks']-speech.has_sent(life, life_id, 'confront')>60:
-				speech.start_dialog(life, life_id, 'confront_again')
-				speech.send(life, life_id, 'confront')
-			elif _warned+1>150:
-				speech.start_dialog(life, life_id, 'confront_break')
-		else:
-			brain.flag_alife(life, life_id, 'warned', value=1)
-	else:
+	#_has_warned_previously = speech.has_sent(life, life_id, 'confront')
+	#_target = brain.knows_alife_by_id(life, life_id)
+	#
+	#if _has_warned_previously:
+	#	_warned = brain.get_alife_flag(life, life_id, 'warned') 
+	#	if _warned:
+	#		brain.flag_alife(life, life_id, 'warned', value=_warned+1)
+	#		
+	#		if _warned+1>100 and WORLD_INFO['ticks']-speech.has_sent(life, life_id, 'confront')>60:
+	#			speech.start_dialog(life, life_id, 'confront_again')
+	#			speech.send(life, life_id, 'confront')
+	#		elif _warned+1>150:
+	#			speech.start_dialog(life, life_id, 'confront_break')
+	#	else:
+	#		brain.flag_alife(life, life_id, 'warned', value=1)
+	#else:
+	if not speech.has_sent(life, life_id, 'confront'):
 		speech.start_dialog(life, life_id, 'confront')
 		speech.send(life, life_id, 'confront')
 

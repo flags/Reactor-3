@@ -197,14 +197,11 @@ def handle_input():
 	elif INPUT['s']:
 		items.save_all_items()
 		
-		gfx.title('Generating Chunk Map (1/2)')
+		gfx.title('Generating Chunk Map')
 		maps.update_chunk_map()
-		gfx.title('Generating Chunk Map (2/2)')
-		maps.smooth_chunk_map()
 		
 		gfx.title('Zoning...')
 		zones.create_zone_map()
-		maps.generate_reference_maps()
 		
 		gfx.title('Saving...')
 		maps.save_map(str(time.time()))

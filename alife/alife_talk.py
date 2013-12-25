@@ -42,6 +42,10 @@ def setup(life):
 			_potential_talking_targets.append(ai)
 	
 	if not _potential_talking_targets:
+		if life['dialogs']:
+			_dialog = life['dialogs'][0]
+			dialog.process(life, _dialog)
+		
 		if not lfe.ticker(life, 'talk', 6):
 			return False
 	
