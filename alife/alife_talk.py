@@ -29,9 +29,11 @@ def setup(life):
 		if not stats.can_talk_to(life, ai):
 			continue
 		
+		#print life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)
+		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
-		elif judgement.get_tension_with(life, ai)<=.7:
+		elif 0<judgement.get_tension_with(life, ai)<=.7:
 			stats.react_to_tension(life, ai)
 		else:
 			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):

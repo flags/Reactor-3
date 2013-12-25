@@ -293,7 +293,6 @@ def find_shelter(life, group_id):
 	_shelter = judgement.get_best_shelter(life)
 	
 	if _shelter:
-		print ':DDDDDDDDDDDDDD', chunks.get_chunk(_shelter)['reference']
 		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
 	else:

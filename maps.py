@@ -576,7 +576,7 @@ def update_chunk_map():
 				'items': [],
 				'control': {},
 				'flags': {},
-				'reference': None,
+				'reference': WORLD_INFO['chunk_map'][_chunk_key]['reference'],
 				'type': _chunk_type,
 				'max_z': 0}
 			

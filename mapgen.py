@@ -204,6 +204,10 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	decorate_world(map_gen)
 	
 	map_gen['items'] = ITEMS
+	
+	logging.debug('Creating reference map...')
+	generate_reference_maps(map_gen)
+	
 	WORLD_INFO.update(map_gen)
 	
 	if not skip_zoning:
@@ -216,9 +220,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	if not skip_chunking:
 		maps.update_chunk_map()
-	
-	logging.debug('Creating reference map...')
-	generate_reference_maps(map_gen)
 	
 	if not skip_chunking and not skip_chunking:
 		items.save_all_items()
@@ -254,11 +255,19 @@ def generate_reference_maps(map_gen):
 	map_gen['reference_map']['buildings'] = []
 	
 	map_gen['references']['1'] = map_gen['refs']['roads']
+	
+	for chunk_key in map_gen['refs']['roads']:
+		map_gen['chunk_map'][chunk_key]['reference'] = '1'
+	
 	_ref_id = 2
 	
 	for building in map_gen['refs']['buildings']:
 		map_gen['references'][str(_ref_id)] = building
 		map_gen['reference_map']['buildings'].append(str(_ref_id))
+		
+		for chunk_key in building:
+			map_gen['chunk_map'][chunk_key]['reference'] = str(_ref_id)
+			print chunk_key, map_gen['chunk_map'][chunk_key]['reference']
 		
 		_ref_id += 1
 	
