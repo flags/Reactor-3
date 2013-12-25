@@ -29,8 +29,6 @@ def setup(life):
 		if not stats.can_talk_to(life, ai):
 			continue
 		
-		print '\n\n', life['name'], LIFE[ai]['name'], 'tension', brain.knows_alife_by_id(life, ai)['last_seen_time'], judgement.get_tension_with(life, ai)
-		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
 		elif judgement.get_tension_with(life, ai)<=.7:
@@ -49,9 +47,7 @@ def setup(life):
 		if not lfe.ticker(life, 'talk', 6):
 			return False
 	
-	print 'checkin for radio'
 	if lfe.get_all_inventory_items(life, matches=[{'type': 'radio'}]):
-		print life['name'], 'has radiooooooooooooo'
 		for ai in life['know']:
 			if ai in _potential_talking_targets:
 				continue

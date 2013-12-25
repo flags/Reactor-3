@@ -286,7 +286,7 @@ def remember_known_item(life, item_id):
 	return False
 
 def understand(life):
-	if SETTINGS['controlling']:
+	if SETTINGS['controlling'] and 1 == 2:
 		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
 		if _dist_to_player < 100:
 			if life['think_rate_max']>=30:

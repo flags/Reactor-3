@@ -166,7 +166,7 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if not _target['alignment'] == 'neutral' or not _target['last_seen_at']:
+	if not _target['alignment'] in ['trust', 'neutral'] or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
@@ -933,6 +933,7 @@ def get_best_shelter(life):
 			else:
 				print life['name'],'cant get to shelter in time'
 	
+	print life['name'], life['group'], [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]
 	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
 		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
 		_score = numbers.distance(life['pos'], chunk_center)

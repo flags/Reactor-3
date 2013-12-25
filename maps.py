@@ -117,7 +117,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			for x in range(MAP_SIZE[0]):
 				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
-				logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+				#logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
 			
 			logging.info('Map \'%s\' saved to disk.' % map_name)			
 			
