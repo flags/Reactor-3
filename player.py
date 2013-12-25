@@ -45,7 +45,7 @@ def handle_input():
 			
 			if LIFE[SETTINGS['controlling']]['actions']:
 				LIFE[SETTINGS['controlling']]['actions'] = []
-		else:
+		elif INPUT['\x1b']:
 			SETTINGS['running'] = False
 		
 		gfx.refresh_view('map')
@@ -646,9 +646,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
-		_online_alife = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']<30])
-		_online_alife_in_passive = len([l['id'] for l in LIFE.values() if l['online'] and l['think_rate_max']>=30])
-		_offline_alife = len([l['id'] for l in LIFE.values() if not l['online']])
+		_online_alife = len([l['id'] for l in LIFE.values() if l['online'] and not l['dead'] and l['think_rate_max']<30])
+		_online_alife_in_passive = len([l['id'] for l in LIFE.values() if l['online'] and not l['dead'] and l['think_rate_max']>=30])
+		_offline_alife = len([l['id'] for l in LIFE.values() if not l['online'] and not l['dead']])
 		
 		_options = []
 		_options.append(menus.create_item('title', 'Testing', None))

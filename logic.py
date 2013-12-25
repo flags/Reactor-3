@@ -36,10 +36,10 @@ def can_tick(ignore_tickrate=False, ignore_pause=False):
 	if not ignore_tickrate:
 		if process_events():
 			return False
-	elif EVENTS:
+	elif EVENTS and not ignore_pause:
 		return False
 	
-	if SETTINGS['controlling'] and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
+	if SETTINGS['controlling'] and not ignore_pause and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if MENUS:
 			return False
 		

@@ -128,7 +128,7 @@ def main():
 			gfx.title('Sleeping')
 			logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
 			
-			print LIFE[SETTINGS['controlling']]['asleep']
+			print LIFE[SETTINGS['controlling']]['asleep'], LIFE[SETTINGS['controlling']]['dead']
 			if LIFE[SETTINGS['controlling']]['dead']:
 				break
 	

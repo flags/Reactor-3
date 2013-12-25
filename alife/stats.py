@@ -355,74 +355,36 @@ def is_intimidated(life):
 	return False
 
 def is_confident(life):
-	#First we'll take a look at the environment
-	#Friendlies should be in some state of combat to be a positive influence
-	#Enemies will be looked at in terms of their observed health
-	_friendlies = []
-	_targets = []
-	_total_friendly_score = judgement.get_ranged_combat_rating_of_self(life)
-	_total_enemy_score = 0
+	_friendly_confidence = 0
+	_threat_confidence = 0
 	
-	#Who do we like? Where are they?
-	#Let's find these and then generate a "safety map"
 	for target_id in judgement.get_trusted(life, visible=False):
 		_knows = brain.knows_alife_by_id(life, target_id)
 		
-		if _knows:
-			if _knows['last_seen_time'] > 100:
-				continue
-			
-			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
-				_friendlies.append(target_id)
-				
-				_zones = [zones.get_zone_at_coords(life['pos'])]
-				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
-				
-				if not _z in _zones:
-					_zones.append(_z)
-				
-				_distance = zones.dijkstra_map(life['pos'], [_knows['last_seen_at']], _zones, return_score=True)
-				_distance = numbers.clip(_distance, 0, 100)
-				
-				_combat_rating = judgement.get_ranged_combat_rating_of_target(life, target_id)
-				if _knows['last_seen_time']:
-					_distance = numbers.clip(_distance+_knows['last_seen_time'], 0, 100)
-					
-				_score = _combat_rating*((100-_distance+_combat_rating)/100.0)
-				
-				_total_friendly_score += numbers.clip(_score, 0, _combat_rating)
+		if _knows['dead'] or _knows['asleep']:
+			continue
+		
+		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
+		
+		if _knows['last_seen_time']:
+			_friendly_confidence += _recent_mod
+		else:
+			_friendly_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
 	
-	for target_id in judgement.get_combat_targets(life):
+	for target_id in judgement.get_threats(life, ignore_escaped=True):
 		_knows = brain.knows_alife_by_id(life, target_id)
 		
-		if _knows and _knows['last_seen_time'] <= 200:
-			if numbers.distance(life['pos'], _knows['last_seen_at'])<sight.get_vision(life):
-				_targets.append(target_id)
-				
-				_zones = [zones.get_zone_at_coords(life['pos'])]
-				_z = zones.get_zone_at_coords(_knows['last_seen_at'])
-				
-				if not _z in _zones:
-					_zones.append(_z)
-				
-				_distance = zones.dijkstra_map(life['pos'], [_knows['last_seen_at']], _zones, return_score=True)
-				_distance = numbers.clip(_distance, 0, 100)
-				
-				_combat_rating = judgement.get_ranged_combat_rating_of_target(life, target_id)
-				if _knows['last_seen_time']:
-					_distance = numbers.clip(_distance+_knows['last_seen_time'], 0, 100)
-					
-				_score = _combat_rating*((100-_distance+_combat_rating)/100.0)
-				
-				_total_enemy_score += numbers.clip(_score, 0, _combat_rating)
-				#_z = zones.get_zone_at_coords(_knows['last_seen_at'])
-				#if not _z in _f_zones:
-				#	_f_zones.append(_z)
+		if _knows['dead'] or _knows['asleep']:
+			continue
+		
+		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
+		
+		if _knows['last_seen_time']:
+			_threat_confidence += 2*_recent_mod
+		else:
+			_threat_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
 	
-	if _total_friendly_score>=_total_enemy_score:
-		return True
-	
-	return False
+	return _friendly_confidence > _threat_confidence
 
 def is_threat_too_close(life):
 	_nearest_threat = judgement.get_nearest_threat(life)
@@ -540,8 +502,6 @@ def react_to_tension(life, life_id):
 		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
 			return False
 	
-	print life['name'], 'tension with', LIFE[life_id]['name']
-	
 	_has_warned_previously = speech.has_sent(life, life_id, 'confront')
 	_target = brain.knows_alife_by_id(life, life_id)
 	
@@ -569,7 +529,11 @@ def get_goal_alignment_for_target(life, life_id):
 	_malicious = 100
 	
 	if is_psychotic(life):
-		return 'hostile'
+		if life['group']:
+			if not life['group'] == LIFE[life_id]['group']:
+				return 'hostile'
+		else:
+			return 'hostile'
 	
 	_malicious*=life['stats']['motive_for_crime']/10.0	
 	

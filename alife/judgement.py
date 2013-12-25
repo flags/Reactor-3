@@ -246,11 +246,11 @@ def is_scared(life):
 	
 	return False
 
-def get_trusted(life, visible=True, invert=False, only_recent=False):
+def get_trusted(life, visible=True, only_recent=False):
 	_trusted = []
 	
 	for target in life['know'].values():
-		if not can_trust(life, target['life']['id']) == invert:
+		if can_trust(life, target['life']['id']):
 			if only_recent and target['last_seen_time']>=150:
 				continue
 			
@@ -260,9 +260,6 @@ def get_trusted(life, visible=True, invert=False, only_recent=False):
 			_trusted.append(target['life']['id'])
 	
 	return _trusted
-
-def get_untrusted(life, visible=True):
-	return get_trusted(life, visible=visible, invert=True)
 
 def judge(life):
 	_threats = []

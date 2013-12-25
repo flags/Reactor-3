@@ -33,9 +33,8 @@ def setup(life):
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
-		elif judgement.get_tension_with(life, ai)<=.6:
+		elif judgement.get_tension_with(life, ai)<=.7:
 			stats.react_to_tension(life, ai)
-	
 		else:
 			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
 				continue
@@ -48,7 +47,7 @@ def setup(life):
 	
 	print 'checkin for radio'
 	if lfe.get_all_inventory_items(life, matches=[{'type': 'radio'}]):
-		print life['name'], 'has readiooooooooooooo'
+		print life['name'], 'has radiooooooooooooo'
 		for ai in life['know']:
 			if ai in _potential_talking_targets:
 				continue

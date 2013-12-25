@@ -108,6 +108,7 @@ def look(life):
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 				life['know'][ai['id']]['escaped'] = False
 				life['know'][ai['id']]['state'] = ai['state']
+				life['know'][ai['id']]['state_tier'] = ai['state_tier']
 				
 				if brain.alife_has_flag(life, ai['id'], 'search_map'):
 					brain.unflag_alife(life, ai['id'], 'search_map')

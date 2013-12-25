@@ -193,6 +193,7 @@ def meet_alife(life, target):
 		'escaped': False,
 		'asleep': False,
 		'state': None,
+		'state_tier': None,
 		'group': None,
 		'dead': False,
 		'snapshot': {},

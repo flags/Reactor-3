@@ -2063,12 +2063,16 @@ def get_item_access_time(life, item_uid):
 	
 	_size = numbers.clip(_size, 0, 6)	
 	
-	_owned = items.is_item_owned(item_uid)
+	if 'owner' in _item:
+		_owner = _item['owner']
+	else:
+		_owner = False
+	
 	_equipped = item_is_equipped(life, item_uid, check_hands=True)
 	
-	if _owned:
+	if _owner:
 		if 'stored_in' in _item:
-			_score = _size+get_item_access_time(LIFE[_item['owner']], _item['stored_in'])
+			_score = _size+get_item_access_time(LIFE[_owner], _item['stored_in'])
 			print _item['name'], 'in container:', _score
 			return int(round(_score))
 		elif _equipped:
@@ -3502,8 +3506,8 @@ def damage_from_item(life, item, damage):
 			logic.show_event(_dam_message, time=35, life=life, priority=True)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
-	else:
-		say(life, _dam_message, action=True)
+	elif sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
+		say(life, _dam_message, action=True, event=False)
 	
 	create_and_update_self_snapshot(life)
 	
@@ -3524,8 +3528,8 @@ def natural_healing(life):
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
-		else:
-			logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
+		#else:
+		#	logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

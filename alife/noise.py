@@ -51,6 +51,9 @@ def update_targets_around_noise(life, noise):
 
 def _spread(noise):
 	for alife in LIFE.values():
+		if alife['dead']:
+			continue
+		
 		if sight.can_see_position(alife, noise['pos']):
 			continue
 		
