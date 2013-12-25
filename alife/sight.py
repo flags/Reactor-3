@@ -28,15 +28,12 @@ def setup_look(life):
 		scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 
 def look(life):
+	if not 'CAN_SEE' in life['life_flags']:
+		return False
+	
 	for target_id in life['know']:
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
-	
-	#if life['think_rate'] % 3 and not 'player' in life:
-	#	return False
-	
-	if not 'CAN_SEE' in life['life_flags']:
-		return False
 	
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		if SETTINGS['smp']:
@@ -66,6 +63,10 @@ def look(life):
 		if not _last_nearby_alife == _nearby_alife:
 			brain.flag(life, '_nearby_alife', value=_nearby_alife)
 		else:
+			for target_id in life['seen']:
+				if life['know'][target_id]['last_seen_time']:
+					life['know'][target_id]['last_seen_time'] = 0
+			
 			return False
 		
 		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]

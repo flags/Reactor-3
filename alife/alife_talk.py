@@ -29,7 +29,7 @@ def setup(life):
 		if not stats.can_talk_to(life, ai):
 			continue
 		
-		print '\n\n', life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)
+		print '\n\n', life['name'], LIFE[ai]['name'], 'tension', brain.knows_alife_by_id(life, ai)['last_seen_time'], judgement.get_tension_with(life, ai)
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)

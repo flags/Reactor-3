@@ -99,13 +99,13 @@ def death():
 	
 	FADE_TO_WHITE[0] += 1.2
 	
-	if _time_since_death>=120:
-		worldgen.save_world()
-		worldgen.reset_world()
+	if _time_since_death>=200:
+		#worldgen.save_world()
+		#worldgen.reset_world()
 
 		gfx.clear_scene()
 		
-		SETTINGS['running'] = 1
+		SETTINGS['running'] = 0
 		return False
 
 def main():

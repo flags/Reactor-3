@@ -1679,7 +1679,7 @@ def can_die_via_critical_injury(life):
 
 def hunger(life):
 	if life['hunger']>0:
-		life['hunger'] -= 1
+		life['hunger'] -= 0.25
 	else:
 		kill(life, 'starvation')
 		return False
@@ -1688,7 +1688,7 @@ def hunger(life):
 
 def thirst(life):
 	if life['thirst']>0:
-		life['thirst'] -= 1
+		life['thirst'] -= 0.50
 	else:
 		kill(life, 'dehydration')
 		return False
