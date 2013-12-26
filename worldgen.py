@@ -76,30 +76,30 @@ def simulate_life(amount):
 		
 		amount -= 1
 
-def generate_world(source_map, life_density='Sparse', wildlife_density='Sparse', simulate_ticks=1000, combat_test=False, save=True, thread=True):
+def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse', simulate_ticks=1000, combat_test=False, save=True, thread=True):
 	WORLD_INFO['inittime'] = time.time()
 	WORLD_INFO['start_age'] = simulate_ticks
-	WORLD_INFO['life_density'] = life_density
-	WORLD_INFO['wildlife_density'] = wildlife_density
+	WORLD_INFO['dynamic_spawns'] = dynamic_spawns
+	WORLD_INFO['wildlife_spawns'] = wildlife_spawns
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
 	
 	random.seed(WORLD_INFO['seed'])
 	
-	if WORLD_INFO['life_density'] == 'Sparse':
-		WORLD_INFO['life_spawn_interval'] = [0, (1000, 1200)]
-	elif WORLD_INFO['life_density'] == 'Medium':
-		WORLD_INFO['life_spawn_interval'] = [0, (800, 999)]
-	elif WORLD_INFO['life_density'] == 'Heavy':
-		WORLD_INFO['life_spawn_interval'] = [0, (600, 799)]
+	if WORLD_INFO['dynamic_spawns'] == 'Sparse':
+		WORLD_INFO['dynamic_spawn_interval'] = [350, (1000, 1200)]
+	elif WORLD_INFO['dynamic_spawns'] == 'Medium':
+		WORLD_INFO['dynamic_spawn_interval'] = [350, (800, 999)]
+	elif WORLD_INFO['dynamic_spawns'] == 'Heavy':
+		WORLD_INFO['dynamic_spawn_interval'] = [350, (600, 799)]
 	else:
-		WORLD_INFO['life_spawn_interval'] = [-1, (600, 799)]
+		WORLD_INFO['dynamic_spawn_interval'] = [-1, (600, 799)]
 	
-	if WORLD_INFO['wildlife_density'] == 'Sparse':
+	if WORLD_INFO['wildlife_spawns'] == 'Sparse':
 		WORLD_INFO['wildlife_spawn_interval'] = [2500, (770, 990)]
-	elif WORLD_INFO['wildlife_density'] == 'Medium':
+	elif WORLD_INFO['wildlife_spawns'] == 'Medium':
 		WORLD_INFO['wildlife_spawn_interval'] = [2500, (550, 700)]
-	elif WORLD_INFO['wildlife_density'] == 'Heavy':
+	elif WORLD_INFO['wildlife_spawns'] == 'Heavy':
 		WORLD_INFO['wildlife_spawn_interval'] = [2500, (250, 445)]
 	else:
 		WORLD_INFO['wildlife_spawn_interval'] = [-1, (250, 445)]

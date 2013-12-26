@@ -327,10 +327,12 @@ def find_target(life, target, distance=5, follow=False, call=True):
 	
 	_can_see = sight.can_see_target(life, target)
 	if _can_see and _dist<=distance:
-		if not follow:
+		if follow:
 			return True
 		
 		lfe.stop(life)
+		
+		return True
 	
 	if _target['escaped'] == 1:
 		search_for_target(life, target)

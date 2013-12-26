@@ -488,7 +488,6 @@ def has_attacked_self(life, life_id):
 	return len(lfe.get_memory(life, matches={'text': 'shot_by', 'target': life_id}))>0
 
 def react_to_attack(life, life_id):
-	#if not speech.discussed(life, ai['life'], ''):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
 	if not _knows['alignment'] == 'hostile':
@@ -498,27 +497,39 @@ def react_to_attack(life, life_id):
 		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'])
 
 def react_to_tension(life, life_id):
+	if brain.knows_alife_by_id(life, life_id)['alignment'] in ['hostile']:
+		return False
+	
 	if life['group'] and not groups.is_leader(life, life['group'], life['id']) and groups.get_leader(life, life['group']):
 		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
 			return False
 	
-	#_has_warned_previously = speech.has_sent(life, life_id, 'confront')
-	#_target = brain.knows_alife_by_id(life, life_id)
-	#
-	#if _has_warned_previously:
-	#	_warned = brain.get_alife_flag(life, life_id, 'warned') 
-	#	if _warned:
-	#		brain.flag_alife(life, life_id, 'warned', value=_warned+1)
-	#		
-	#		if _warned+1>100 and WORLD_INFO['ticks']-speech.has_sent(life, life_id, 'confront')>60:
-	#			speech.start_dialog(life, life_id, 'confront_again')
-	#			speech.send(life, life_id, 'confront')
-	#		elif _warned+1>150:
-	#			speech.start_dialog(life, life_id, 'confront_break')
-	#	else:
-	#		brain.flag_alife(life, life_id, 'warned', value=1)
-	#else:
-	if not speech.has_sent(life, life_id, 'confront'):
+	_disarm = brain.get_alife_flag(life, life_id, 'disarm')
+	
+	if _disarm:
+		#For now...
+		if not sight.can_see_position(life, LIFE[life_id]['pos']):
+			groups.announce(life, life['group'], 'attacked_by_hostile', target_id=life_id)
+			
+			return False
+		
+		for item_uid in lfe.get_all_visible_items(LIFE[life_id]):
+			if ITEMS[item_uid]['type'] == 'gun':
+				break
+		else:
+			brain.unflag_alife(life, life_id, 'disarm')
+			speech.start_dialog(life, life_id, 'clear_drop_weapon')
+			
+			return False
+		
+		_time_elapsed = WORLD_INFO['ticks']-_disarm
+		
+		if _time_elapsed>135 and not speech.has_sent(life, life_id, 'threaten'):
+			speech.start_dialog(life, life_id, 'threaten')
+			speech.send(life, life_id, 'threaten')
+		elif _time_elapsed>185:
+			speech.start_dialog(life, life_id, 'establish_hostile')
+	elif not speech.has_sent(life, life_id, 'confront'):
 		speech.start_dialog(life, life_id, 'confront')
 		speech.send(life, life_id, 'confront')
 

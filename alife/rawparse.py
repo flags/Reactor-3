@@ -209,6 +209,8 @@ def create_function_map():
 		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'follow_target': alife_follow.tick,
 		'guard_focus_point': lambda life: movement.guard_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
+		'disarm': lambda life, life_id: brain.flag_alife(life, life_id, 'disarm', value=WORLD_INFO['ticks']),
+		'is_disarming': lambda life, life_id: brain.get_alife_flag(life, life_id, 'disarm')>0,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

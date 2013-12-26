@@ -149,7 +149,7 @@ def get_introduction_message(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
 	if _target['alignment'] == 'hostile':
-		return ['You will die, scumbag!']
+		return ['Enemy spotted!']
 	
 	_alignment = stats.get_goal_alignment_for_target(life, life_id)
 	
