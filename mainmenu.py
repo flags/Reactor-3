@@ -271,8 +271,8 @@ def generate_world(combat_test=False):
 	maps.load_map(_settings['Map'])
 	
 	worldgen.generate_world(WORLD_INFO['map'],
-		life_density=_settings['Dynamic Spawns'],
-		wildlife_density=_settings['Wildlife Density'],
+		dynamic_spawns=_settings['Dynamic Spawns'],
+		wildlife_spawns=_settings['Wildlife Density'],
 		simulate_ticks=_ticks,
 		save=True,
 		thread=True,

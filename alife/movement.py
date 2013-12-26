@@ -313,7 +313,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			'item': _highest['item']['uid'],
 			'hand': random.choice(_empty_hand)},
 			200,
-			delay=lfe.get_item_access_time(life, _highest['item']))
+			delay=lfe.get_item_access_time(life, _highest['item']['uid']))
 		lfe.lock_item(life, _highest['item']['uid'])
 	else:
 		lfe.clear_actions(life)
@@ -327,10 +327,12 @@ def find_target(life, target, distance=5, follow=False, call=True):
 	
 	_can_see = sight.can_see_target(life, target)
 	if _can_see and _dist<=distance:
-		if not follow:
+		if follow:
 			return True
 		
 		lfe.stop(life)
+		
+		return True
 	
 	if _target['escaped'] == 1:
 		search_for_target(life, target)

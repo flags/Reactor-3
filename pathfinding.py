@@ -45,10 +45,8 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	_path['map'] -= 2
 	
 	#KEY:
-	#0: Unwalkable (can't walk there, too low/high)
+	#0: Unwalkable
 	#1: Walkable
-	#2: Travels up
-	#3: Travels down
 	
 	for zone in [zns.get_slice(z) for z in zones]:
 		for _open_pos in zone['map']:
@@ -60,18 +58,12 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	_path['hmap'][_path['start'][1], _path['start'][0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]
 
-	#init time 0.00857901573181
-	#      old 0.0220770835876
-	#      new 0.000559091567993
-	#print 'init time',time.time()-_stime
-	
-	#print 'init:',time.time()-_stime
 	return walk_path({}, _path)
 
 def walk_path(life, path):
 	if path['map'][path['end'][1], path['end'][0]] == -2:
 		logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
-		#print path['map'][path['end'][1]][path['end'][0]]
+
 		return False
 
 	node = path['olist'][0]
@@ -92,7 +84,7 @@ def walk_path(life, path):
 			break
 
 		_clist.append(node)
-		_lowest = {'pos':None,'f':9000}
+		_lowest = {'pos': None, 'f': 9000}
 
 		for adj in getadj(path, node):
 			if not adj in _olist:
@@ -114,7 +106,6 @@ def walk_path(life, path):
 				_olist.append(adj)
 
 		for o in _olist:			
-			#_lowest check
 			if _fmap[o[1],o[0]] < _lowest['f']:
 				_lowest['pos'] = o
 				_lowest['f'] = _fmap[o[1],o[0]]

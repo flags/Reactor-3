@@ -1679,7 +1679,7 @@ def can_die_via_critical_injury(life):
 
 def hunger(life):
 	if life['hunger']>0:
-		life['hunger'] -= 1
+		life['hunger'] -= 0.25
 	else:
 		kill(life, 'starvation')
 		return False
@@ -1688,7 +1688,7 @@ def hunger(life):
 
 def thirst(life):
 	if life['thirst']>0:
-		life['thirst'] -= 1
+		life['thirst'] -= 0.50
 	else:
 		kill(life, 'dehydration')
 		return False
@@ -1874,10 +1874,10 @@ def throw_item(life, item_uid, target):
 	else:
 		say('@n throws %s.' % items.get_name(_item))
 
-def is_item_in_storage(life, item):
+def is_item_in_storage(life, item_uid):
 	"""Returns True if item is in storage, else False."""
 	for container in get_all_storage(life):
-		if item in container['storing']:
+		if item_uid in container['storing']:
 			return True
 	
 	return False
@@ -2054,43 +2054,39 @@ def get_all_known_camps(life, matches={}):
 	
 	return _camps
 
-def _get_item_access_time(life, item):
-	"""Returns the amount of time it takes to get an item from inventory."""
-	#TODO: Where's it at on the body? How long does it take to get to it?
-	if isinstance(item, dict):
-		logging.debug('%s is getting access time for non-inventory item #%s' % (' '.join(life['name']), item['uid']))
-		
-		#TODO: We kinda do this twice...
-		_time = 0
-		if 'max_capacity' in item:
-			_time += item['capacity']
-		
-		if life['stance'] == 'standing':
-			return item['size']+_time
-		elif life['stance'] == 'crouching':
-			return (item['size']+_time) * .8
-		elif life['stance'] == 'crawling':
-			return (item['size']+_time) * .6
+def get_item_access_time(life, item_uid):
+	_item = ITEMS[item_uid]
+	_size = _item['size']
 	
-	_item = get_inventory_item(life,item)
+	if 'attaches_to' in _item:
+		_size = _size/len(_item['attaches_to'])
 	
-	if item_is_equipped(life,item):
-		_time = _item['size']
+	_size = numbers.clip(_size, 0, 6)	
+	
+	if 'owner' in _item:
+		_owner = _item['owner']
+	else:
+		_owner = False
+	
+	_equipped = item_is_equipped(life, item_uid, check_hands=True)
+	
+	if _owner:
+		if 'stored_in' in _item:
+			_score = _size+get_item_access_time(LIFE[_owner], _item['stored_in'])
+			print _item['name'], 'in container:', _score
+			return int(round(_score))
+		elif _equipped:
+			#Injury?
+			
+			if 'capacity' in _item:
+				print _item['name'], 'equipped, is container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
+				return int(round(_size+(_size*(_item['capacity']/float(_item['max_capacity'])))))
+			
+			return int(round(_size))
+	else:
+		print _item['name'], 'OFF-GROUND:', _size
 		
-		if 'max_capacity' in _item:
-			_time += _item['capacity']
-		
-		return _time
-	
-	_stored = item_is_stored(life,item)
-	if _stored:
-		return get_item_access_time(life,_stored['uid'])+_item['size']
-	
-	return _item['size']
-
-def get_item_access_time(life, item):
-	#TODO: Don't breathe this!
-	return numbers.clip(_get_item_access_time(life, item),1,999)/2
+		return int(round(_size))
 
 def activate_item(life, item_uid):
 	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)
@@ -2227,12 +2223,10 @@ def consume(life, item_id):
 		logging.warning('%s is already eating.' % ' '.join(life['name']))
 		return False
 	
-	_item = items.get_item_from_uid(item_id)
-	
 	add_action(life, {'action': 'consumeitem',
 		'item': item_id},
 		200,
-		delay=get_item_access_time(life, _item))
+		delay=get_item_access_time(life, item_uid))
 	
 	return True
 
@@ -2942,6 +2936,9 @@ def get_damage(life):
 	return _damage		
 
 def pass_out(life, length=None):
+	if life['dead']:
+		return False
+	
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
@@ -3323,8 +3320,8 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	_current_condition = get_limb_condition(life, limb)
 	
-	if _previous_condition-_current_condition>=.50:
-		pass_out(life, length=25*(1-_current_condition))
+	if amount>=1.5:
+		pass_out(life, length=25*amount)
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
@@ -3381,7 +3378,7 @@ def get_limb_stability(life, limb):
 def get_limb_condition(life, limb):
 	_limb = get_limb(life, limb)
 	
-	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/_limb['max_thickness'])
+	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/float(_limb['max_thickness']))
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -3483,12 +3480,13 @@ def damage_from_item(life, item, damage):
 	else:
 		brain.flag(life, 'cover_exposed_at', value=[life['pos'][:]])
 	
-	for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-		if not sight.can_see_position(ai, life['pos']):
-			continue
-		
-		if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
-			memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
+	#Useful, but unused
+	#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
+	#	if not sight.can_see_position(ai, life['pos']):
+	#		continue
+	#	
+	#	if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
+	#		memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
@@ -3503,13 +3501,13 @@ def damage_from_item(life, item, damage):
 	_dam_message = dam.bullet_hit(life, item, _hit_limb)
 	
 	if 'player' in _shot_by_alife:
-		if sight.get_visiblity_of_position(_shot_by_alife, life['pos']) <= .75:
+		if sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
 			gfx.message(_dam_message, style='player_combat_good')
 			logic.show_event(_dam_message, time=35, life=life, priority=True)
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
-	else:
-		say(life, _dam_message, action=True)
+	elif sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
+		say(life, _dam_message, action=True, event=False)
 	
 	create_and_update_self_snapshot(life)
 	
@@ -3530,8 +3528,8 @@ def natural_healing(life):
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
-		else:
-			logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
+		#else:
+		#	logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

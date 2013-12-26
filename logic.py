@@ -36,10 +36,10 @@ def can_tick(ignore_tickrate=False, ignore_pause=False):
 	if not ignore_tickrate:
 		if process_events():
 			return False
-	elif EVENTS:
+	elif EVENTS and not ignore_pause:
 		return False
 	
-	if SETTINGS['controlling'] and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
+	if SETTINGS['controlling'] and not ignore_pause and not sum([abs(i) for i in LIFE[SETTINGS['controlling']]['velocity']]):
 		if MENUS:
 			return False
 		
@@ -99,14 +99,14 @@ def tick_world():
 		
 		WORLD_INFO['time_of_day'] = 'day'
 	
-	if WORLD_INFO['life_spawn_interval'][0]>0:
-		WORLD_INFO['life_spawn_interval'][0] -= 1
-	elif not WORLD_INFO['life_spawn_interval'][0]:
+	if WORLD_INFO['dynamic_spawn_interval'][0]>0:
+		WORLD_INFO['dynamic_spawn_interval'][0] -= 1
+	elif not WORLD_INFO['dynamic_spawn_interval'][0]:
 		worldgen.generate_life()
 			
-		WORLD_INFO['life_spawn_interval'][0] = random.randint(WORLD_INFO['life_spawn_interval'][1][0], WORLD_INFO['life_spawn_interval'][1][1])
+		WORLD_INFO['dynamic_spawn_interval'][0] = random.randint(WORLD_INFO['dynamic_spawn_interval'][1][0], WORLD_INFO['dynamic_spawn_interval'][1][1])
 		
-		logging.info('Reset life spawn clock: %s' % WORLD_INFO['life_spawn_interval'][0])
+		logging.info('Reset life spawn clock: %s' % WORLD_INFO['dynamic_spawn_interval'][0])
 	
 	if WORLD_INFO['wildlife_spawn_interval'][0]>0:
 		WORLD_INFO['wildlife_spawn_interval'][0] -= 1

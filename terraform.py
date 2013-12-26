@@ -74,7 +74,7 @@ def regenerate_world():
 	pre_setup_world()
 	
 	try:
-		mapgen.generate_map(size=(450, 650, 10),
+		mapgen.generate_map(size=(450, 450, 10),
 			                towns=1,
 			                factories=0,
 			                outposts=2,
@@ -197,14 +197,11 @@ def handle_input():
 	elif INPUT['s']:
 		items.save_all_items()
 		
-		gfx.title('Generating Chunk Map (1/2)')
+		gfx.title('Generating Chunk Map')
 		maps.update_chunk_map()
-		gfx.title('Generating Chunk Map (2/2)')
-		maps.smooth_chunk_map()
 		
 		gfx.title('Zoning...')
 		zones.create_zone_map()
-		maps.generate_reference_maps()
 		
 		gfx.title('Saving...')
 		maps.save_map(str(time.time()))

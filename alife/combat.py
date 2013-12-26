@@ -229,9 +229,6 @@ def has_potentially_usable_weapon(life):
 		
 		if weapon_is_working(life, weapon['uid']):
 			return True
-		
-		#if not have_feed_and_ammo_for_weapon(life, weapon['uid']):
-		#	continue
 	
 	return False
 

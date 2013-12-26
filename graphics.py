@@ -436,8 +436,19 @@ def fade_to_white(amt):
 	
 	for x in range(MAP_WINDOW_SIZE[0]):
 		for y in range(MAP_WINDOW_SIZE[1]):
-			darken_tile(x, y, 0)
+			#darken_tile(x, y, 0)
 			lighten_tile(x, y, amt)
+
+def fade_to_black(amt):
+	amt = int(round(amt))
+	
+	if amt > 255:
+		amt = 255
+	
+	for x in range(MAP_WINDOW_SIZE[0]):
+		for y in range(MAP_WINDOW_SIZE[1]):
+			darken_tile(x, y, 255)
+			lighten_tile(x, y, 0)
 
 def draw_cursor(cursor,camera,tile,char_buffer=MAP_CHAR_BUFFER,rgb_fore_buffer=MAP_RGB_FORE_BUFFER,rgb_back_buffer=MAP_RGB_BACK_BUFFER):
 	if time.time()%1>=0.5:

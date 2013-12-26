@@ -41,8 +41,8 @@ def flag(life, camp_id, flag, value):
 def create_all_camps():
 	for camp_key in WORLD_INFO['reference_map']['buildings']:
 		_camp_id = str(WORLD_INFO['campid'])
-		
 		_camp_reference = WORLD_INFO['references'][camp_key]
+		
 		for chunk_key in _camp_reference:
 			chunks.flag_global(chunk_key, 'camp', _camp_id)
 			

@@ -9,6 +9,7 @@ import numbers
 import drawing
 import effects
 import weather
+import mapgen
 import logic
 import items
 import zones
@@ -86,26 +87,17 @@ def save_map(map_name, base_dir=DATA_DIR):
 		if 'old_pos' in light:
 			del light['old_pos']
 
-	#For debug
-	#for key in WORLD_INFO:
-	#	print key
-	#	json.dumps(WORLD_INFO[key])
-	#for item in WORLD_INFO['items']:
-	#	print item
-	#	print WORLD_INFO['items'][item]
-	#	json.dumps(WORLD_INFO['items'][item])
-
 	with open(os.path.join(_map_dir,map_name), 'w') as _map_file:
 		try:
 			_map = WORLD_INFO['map']
 			_slices = WORLD_INFO['slices']
 			_chunk_map = WORLD_INFO['chunk_map']
+			_weather_light_map = None
 			
 			del WORLD_INFO['map']
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
 			
-			_weather_light_map = None
 			if 'light_map' in WORLD_INFO['weather']:
 				_weather_light_map = WORLD_INFO['weather']['light_map']
 				del WORLD_INFO['weather']['light_map']
@@ -122,9 +114,10 @@ def save_map(map_name, base_dir=DATA_DIR):
 				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
 			
 			logging.debug('Writing map to disk...')
+			
 			for x in range(MAP_SIZE[0]):
 				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
-				logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+				#logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
 			
 			logging.info('Map \'%s\' saved to disk.' % map_name)			
 			
@@ -147,7 +140,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 			
 			raise e
 
-def load_map(map_name, base_dir=DATA_DIR, like_new=False):
+def load_map(map_name, base_dir=DATA_DIR):
 	_map_dir = os.path.join(base_dir,'maps')
 	if not map_name.count('.dat'):
 		map_name+='.dat'
@@ -183,27 +176,14 @@ def load_map(map_name, base_dir=DATA_DIR, like_new=False):
 		
 		reload_slices()
 		
-		if like_new:
-			update_chunk_map()
-			smooth_chunk_map()
-		else:
-			WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
+		WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
 		alife.chunks.generate_cache()
 		
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
 		
-		#if not WORLD_INFO['lights']:
-		#	logging.warning('World has no lights. Creating one manually.')
-		#	effects.create_light((MAP_SIZE[0]/2, MAP_SIZE[1]/2, MAP_SIZE[2]-2), (255, 255, 255), 1, 0)
-		#except Exception as e:
-		#	raise e
-		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
-		
-		#with open('ref_dump.txt', 'w') as w:
-		#	w.write(json.dumps(WORLD_INFO['reference_map'], indent=3))
 		
 		for x in range(MAP_SIZE[0]):
 			for y in range(MAP_SIZE[1]):
@@ -595,10 +575,8 @@ def update_chunk_map():
 				'life': [],
 				'items': [],
 				'control': {},
-				'neighbors': [],
 				'flags': {},
-				'reference': None,
-				'last_updated': None,
+				'reference': WORLD_INFO['chunk_map'][_chunk_key]['reference'],
 				'type': _chunk_type,
 				'max_z': 0}
 			
@@ -643,114 +621,6 @@ def update_chunk_map():
 	
 	WORLD_INFO['chunk_map'].update(_chunk_map)
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
-			
-def smooth_chunk_map():
-	_stime = time.time()
-	_runs = 0
-	_chunk_map = copy.deepcopy(WORLD_INFO['chunk_map'])
-	_change = True
-	
-	while _change:
-		_change = False
-		_runs += 1
-		
-		for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
-			for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
-				_current_chunk_key = '%s,%s' % (x1, y1)
-				_current_chunk = _chunk_map[_current_chunk_key]
-				_neighbors = []
-				
-				for pos in [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]:
-					x2 = x1+(pos[0]*WORLD_INFO['chunk_size'])
-					y2 = y1+(pos[1]*WORLD_INFO['chunk_size'])
-					
-					if x2>=MAP_SIZE[0] or x2<0 or y2>=MAP_SIZE[1] or y2<0:
-						continue
-					
-					_neighbor_chunk_key = '%s,%s' % (x2, y2)
-					_neighbor_chunk = _chunk_map[_neighbor_chunk_key]
-					_neighbors.append(_neighbor_chunk_key)
-				
-				for _neighbor_chunk_key in _neighbors:
-					_neighbor_chunk = _chunk_map[_neighbor_chunk_key]
-					
-					if _current_chunk['type'] == _neighbor_chunk['type']:
-						if not _neighbor_chunk_key in _current_chunk['neighbors']:
-							_current_chunk['neighbors'].append(_neighbor_chunk_key)
-							_change = True
-				
-				_chunk_map[_current_chunk_key] = _current_chunk
-	
-	WORLD_INFO['chunk_map'].update(_chunk_map)	
-	logging.info('Chunk map smoothing completed in %.2f seconds (%s runs).' % (time.time()-_stime, _runs))
-
-def find_all_linked_chunks(chunk_key, check=[]):
-	_linked_chunks = []
-	_unchecked_chunks = [chunk_key]
-	
-	_check = []
-	for _entry in check:
-		_check.extend(_entry)
-	
-	if chunk_key in _check:
-		return []
-	
-	while _unchecked_chunks:
-		_current_chunk_key = _unchecked_chunks.pop()
-		_linked_chunks.append(_current_chunk_key)
-		_current_chunk = get_chunk(_current_chunk_key)
-		
-		for neighbor_chunk_key in _current_chunk['neighbors']:
-			if neighbor_chunk_key in _unchecked_chunks or neighbor_chunk_key in _linked_chunks or neighbor_chunk_key in _check:
-				continue
-			
-			_neighbor_chunk = get_chunk(neighbor_chunk_key)
-			
-			if not _neighbor_chunk['type'] == _current_chunk['type']:
-				continue
-			
-			_unchecked_chunks.append(neighbor_chunk_key)
-	
-	return _linked_chunks
-
-def generate_reference_maps():
-	_stime = time.time()
-	WORLD_INFO['references'] = {}
-	WORLD_INFO['reference_map']['roads'] = []
-	WORLD_INFO['reference_map']['buildings'] = []
-	_ref_id = 1
-	
-	for y1 in range(0, MAP_SIZE[1], WORLD_INFO['chunk_size']):
-		for x1 in range(0, MAP_SIZE[0], WORLD_INFO['chunk_size']):
-			_current_chunk_key = '%s,%s' % (x1, y1)
-			_current_chunk = get_chunk(_current_chunk_key)
-			
-			if _current_chunk['reference']:
-				continue
-			
-			if _current_chunk['type'] == 'road':
-				_ret = find_all_linked_chunks(_current_chunk_key)
-				if _ret:
-					WORLD_INFO['references'][str(_ref_id)] = _ret
-					WORLD_INFO['reference_map']['roads'].append(str(_ref_id))
-					
-					for _chunk_key in _ret:
-						get_chunk(_chunk_key)['reference'] = str(_ref_id)
-			elif _current_chunk['type'] in ['building', 'town', 'outpost']:
-				_ret = find_all_linked_chunks(_current_chunk_key)
-				if _ret:
-					WORLD_INFO['references'][str(_ref_id)] = _ret
-					WORLD_INFO['reference_map']['buildings'].append(str(_ref_id))
-					
-					for _chunk_key in _ret:
-						get_chunk(_chunk_key)['reference'] = str(_ref_id)
-			
-			_ref_id += 1
-	
-	logging.debug('Reference map created in %.2f seconds.' % (time.time()-_stime))
-	logging.debug('\tRoads:\t\t %s' % (len(WORLD_INFO['reference_map']['roads'])))
-	logging.debug('\tBuildings:\t %s' % (len(WORLD_INFO['reference_map']['buildings'])))
-	logging.debug('\tTotal:\t %s' % len(WORLD_INFO['references']))
 
 def draw_chunk_map(life=None, show_faction_ownership=False):
 	_x_min = numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
