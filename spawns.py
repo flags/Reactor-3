@@ -15,6 +15,7 @@ SOLDIER_ITEMS = [{'kevlar jacket': 1},
                  {'mp5': 1},
                  {'9x19mm magazine': 1},
                  {'9x19mm round': 15},
+                 {'radio': 1},
                  {'frag grenade': 3}]
 SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}

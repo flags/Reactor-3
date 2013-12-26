@@ -392,6 +392,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['targeting'] = None
 	_life['pain_tolerance'] = 15
 	_life['asleep'] = 0
+	_life['asleep_reason'] = ''
 	_life['blood'] = calculate_max_blood(_life)
 	_life['consciousness'] = 100
 	_life['dead'] = False
@@ -2218,13 +2219,13 @@ def remove_item_from_inventory(life, item_id):
 def is_consuming(life):
 	return find_action(life, matches=[{'action': 'consumeitem'}])
 
-def consume(life, item_id):
+def consume(life, item_uid):
 	if is_consuming(life):
 		logging.warning('%s is already eating.' % ' '.join(life['name']))
 		return False
 	
 	add_action(life, {'action': 'consumeitem',
-		'item': item_id},
+		'item': item_uid},
 		200,
 		delay=get_item_access_time(life, item_uid))
 	
@@ -2788,13 +2789,13 @@ def draw_life_info():
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
 	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
 	
-	_longest_state = 7
+	_longest_state = 3
 	_visible_life = []
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		if ai['dead']:
 			_state = 'dead'
 		else:
-			_state = ai['state']
+			_state = judgement.get_target_state(life, ai['id'])
 		
 		_state_len = len(_state)
 		
@@ -2811,7 +2812,7 @@ def draw_life_info():
 		if ai['dead']:
 			continue
 		
-		_state = ai['state']
+		_state = judgement.get_target_state(life, ai['id'])
 		_icon = draw_life_icon(ai)
 		
 		tcod.console_set_default_foreground(0, _icon[1])
@@ -2935,7 +2936,7 @@ def get_damage(life):
 	
 	return _damage		
 
-def pass_out(life, length=None):
+def pass_out(life, length=None, reason='Passed out'):
 	if life['dead']:
 		return False
 	
@@ -2944,6 +2945,7 @@ def pass_out(life, length=None):
 	
 	collapse(life)
 	life['asleep'] = length
+	life['asleep_reason'] = reason
 	
 	if 'player' in life:
 		gfx.message('You pass out!',style='damage')
@@ -3321,7 +3323,7 @@ def add_pain_to_limb(life, limb, amount=1):
 	_current_condition = get_limb_condition(life, limb)
 	
 	if amount>=1.5:
-		pass_out(life, length=25*amount)
+		pass_out(life, length=25*amount, reason='Unconscious')
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 

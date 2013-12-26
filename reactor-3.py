@@ -85,11 +85,11 @@ def death():
 		_c = _string[i]
 		gfx.lighten_tile(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i, MAP_WINDOW_SIZE[1]/2, _col)
 		gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
-	                   MAP_WINDOW_SIZE[1]/2,
-	                   _c,
-	                   (tcod.Color(_col, 0, 0),
-	                    tcod.Color(255-_col, 255-_col, 255-_col)),
-	                   'map')
+		                      MAP_WINDOW_SIZE[1]/2,
+		                      _c,
+		                      (tcod.Color(_col, 0, 0),
+		                       tcod.Color(255-_col, 255-_col, 255-_col)),
+		                      'map')
 	
 	if _time_since_death>=25:
 		_fade = numbers.clip((_time_since_death)/100.0, 0, 1)
@@ -100,12 +100,12 @@ def death():
 	FADE_TO_WHITE[0] += 1.2
 	
 	if _time_since_death>=200:
-		#worldgen.save_world()
-		#worldgen.reset_world()
+		worldgen.save_world()
+		worldgen.reset_world()
 
 		gfx.clear_scene()
 		
-		SETTINGS['running'] = 0
+		SETTINGS['running'] = 1
 		return False
 
 def main():
@@ -125,10 +125,9 @@ def main():
 			_played_moved = True
 			_refresh_map = True
 
-			gfx.title('Sleeping')
+			gfx.title(LIFE[SETTINGS['controlling']]['asleep_reason'])
 			logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
 			
-			print LIFE[SETTINGS['controlling']]['asleep'], LIFE[SETTINGS['controlling']]['dead']
 			if LIFE[SETTINGS['controlling']]['dead']:
 				break
 	

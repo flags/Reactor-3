@@ -33,7 +33,7 @@ def setup(life):
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
-		elif 0<judgement.get_tension_with(life, ai)<=.7:
+		elif 0<judgement.get_tension_with(life, ai)<=judgement.get_max_tension_with(life, ai):
 			stats.react_to_tension(life, ai)
 		else:
 			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
