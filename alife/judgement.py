@@ -104,7 +104,7 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 
 def get_ranged_combat_rating_of_target(life, life_id):
 	target = LIFE[life_id]
-	_score = 0
+	_score = 1
 	
 	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target) if i in ITEMS]:
 		if not logic.matches(item, {'type': 'gun'}):
@@ -114,11 +114,6 @@ def get_ranged_combat_rating_of_target(life, life_id):
 			_score += item['accuracy']/2
 		else:
 			_score += item['accuracy']
-	
-	if target['state'] in ['cover', 'hiding', 'hidden']:
-		_score /= 2
-	elif target['state'] == 'combat':
-		_score *= 1.2
 	
 	return _score
 
@@ -171,17 +166,16 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if not _target['alignment'] == 'neutral' or not _target['last_seen_at']:
+	if _target['alignment'] in ['trust'] or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
 		return 0
 	
-	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, 15)
-	_score = abs(numbers.clip(get_trust(life, life_id), -10, 0))
-	_score += get_ranged_combat_rating_of_target(life, life_id)
+	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, sight.get_vision(life))
+	_tension = get_ranged_combat_rating_of_target(life, life_id)/float(get_ranged_combat_rating_of_self(life))
 	
-	return abs(((15-_distance)/15.0)*_score)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
+	return abs(((sight.get_vision(life)-_distance)/float(sight.get_vision(life)))*_tension)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
 
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
@@ -252,11 +246,11 @@ def is_scared(life):
 	
 	return False
 
-def get_trusted(life, visible=True, invert=False, only_recent=False):
+def get_trusted(life, visible=True, only_recent=False):
 	_trusted = []
 	
 	for target in life['know'].values():
-		if not can_trust(life, target['life']['id']) == invert:
+		if can_trust(life, target['life']['id']):
 			if only_recent and target['last_seen_time']>=150:
 				continue
 			
@@ -266,9 +260,6 @@ def get_trusted(life, visible=True, invert=False, only_recent=False):
 			_trusted.append(target['life']['id'])
 	
 	return _trusted
-
-def get_untrusted(life, visible=True):
-	return get_trusted(life, visible=visible, invert=True)
 
 def judge(life):
 	_threats = []
@@ -650,7 +641,6 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 		#	if _item:
 		#		_score += _item['score']
 
-	chunks.flag(life, chunk_id, 'last_updated', WORLD_INFO['ticks'])
 	life['known_chunks'][chunk_id]['score'] = _score
 	
 	return _score
@@ -943,6 +933,7 @@ def get_best_shelter(life):
 			else:
 				print life['name'],'cant get to shelter in time'
 	
+	print life['name'], life['group'], [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]
 	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
 		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
 		_score = numbers.distance(life['pos'], chunk_center)

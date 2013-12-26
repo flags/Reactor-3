@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
+import mapgen
 import chunks
 import maps
 
@@ -146,11 +147,10 @@ def path_along_reference(life, ref_type):
 		return False
 
 	_starting_chunk_key = find_nearest_key_in_reference(life, _best_reference)
-	_starting_chunk = maps.get_chunk(_starting_chunk_key)
 	_chunk_path_keys = []
 	_directions = {}
 	
-	for neighbor_key in _starting_chunk['neighbors']:
+	for neighbor_key in mapgen.get_neighbors_of_type(WORLD_INFO, _starting_chunk_key, ref_type, diagonal=True):
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
 		

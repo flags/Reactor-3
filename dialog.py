@@ -251,9 +251,9 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'loop': loop}
 	
 	if _dialog['remote']:
-		print ' '.join(life['name'])+' (radio):', _text
+		print ' '.join(life['name'])+'(%s) (radio):' % life['group'], _text
 	else:
-		print ' '.join(life['name'])+':', _text
+		print ' '.join(life['name'])+'(%s):' % life['group'], _text
 	
 	_dialog['messages'].append(_message)
 	
