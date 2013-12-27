@@ -11,6 +11,7 @@ import numbers
 import weather
 import timers
 import dialog
+import spawns
 import melee
 import cache
 import menus
@@ -102,7 +103,7 @@ def tick_world():
 	if WORLD_INFO['dynamic_spawn_interval'][0]>0:
 		WORLD_INFO['dynamic_spawn_interval'][0] -= 1
 	elif not WORLD_INFO['dynamic_spawn_interval'][0]:
-		worldgen.generate_life()
+		spawns.generate_life(random.choice(['loner', 'bandit']))
 			
 		WORLD_INFO['dynamic_spawn_interval'][0] = random.randint(WORLD_INFO['dynamic_spawn_interval'][1][0], WORLD_INFO['dynamic_spawn_interval'][1][1])
 		

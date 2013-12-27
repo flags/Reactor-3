@@ -62,7 +62,8 @@ LIFE_CLASSES = {'soldier': {'species': SOLDIER_SPECIES,
                               'banned_goals': []}}
 
 
-def generate_life(life_species, life_class, amount=1, spawn_chunks=[]):
+def generate_life(life_class, amount=1, spawn_chunks=[]):
+	_life_species = LIFE_CLASSES[life_class]['species']
 	_spawn_list = []
 	
 	if spawn_chunks:
@@ -76,7 +77,7 @@ def generate_life(life_species, life_class, amount=1, spawn_chunks=[]):
 			_chunk_key = random.choice(spawn_chunks)
 			_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
 		
-		_alife = life.create_life(life_species, map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		_alife = life.create_life(_life_species, map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
 		
 		for item in LIFE_CLASSES[life_class]['items']:
 			print item
@@ -94,7 +95,7 @@ def generate_life(life_species, life_class, amount=1, spawn_chunks=[]):
 	return _spawn_list
 
 def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[]):
-	_group_members = generate_life(LIFE_CLASSES[life_class]['species'], life_class, amount=amount, spawn_chunks=spawn_chunks)
+	_group_members = generate_life(life_class, amount=amount, spawn_chunks=spawn_chunks)
 	
 	_group_members[0]['stats']['is_leader'] = True
 	_group = alife.groups.create_group(_group_members[0])

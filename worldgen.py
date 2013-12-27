@@ -314,18 +314,6 @@ def generate_wildlife():
 	
 	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 
-def generate_life():
-	_spawn = get_spawn_point()
-	
-	_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	
-	if len(LIFE) == 1:
-		logging.warning('No leaders. Creating one manually...')
-		_alife['stats']['is_leader'] = True
-	
-	for item in BASE_ITEMS:
-		life.add_item_to_inventory(_alife, items.create_item(item))
-
 def create_player():
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],

@@ -1983,6 +1983,7 @@ def create_wound_menu():
 		menus.delete_menu(menus.get_menu_by_name('Wounds'))
 		return False
 	
+	_has_wound = False
 	_entries = []
 	
 	for limb in LIFE[SETTINGS['controlling']]['body'].values():
@@ -2012,9 +2013,11 @@ def create_wound_menu():
 				                                  _status,
 				                                  limb=wound['limb'],
 				                                  color=(_color, tcod.white)))
+				_has_wound = True
 	
-	if not _entries:
+	if not _has_wound:
 		gfx.message('You don\'t need medical attention.')
+		
 		return False
 	
 	_i = menus.create_menu(title='Wounds (%s)' % len(_entries),
@@ -2046,7 +2049,7 @@ def heal_wound(entry):
 			if key == 'limb':
 				continue
 			
-			if wound[key]:
+			if wound[key]>0:
 				_remove = False
 				break
 		

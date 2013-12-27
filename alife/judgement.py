@@ -164,7 +164,9 @@ def get_target_state(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	_mods = []
 	
-	if life['state_tier'] >= TIER_COMBAT:
+	if _target['asleep']:
+		_mods.append('unconscious')
+	elif life['state_tier'] >= TIER_COMBAT:
 		_mods.append('alert')
 	elif get_tension(life) >= .3:
 		_mods.append('nervous')
