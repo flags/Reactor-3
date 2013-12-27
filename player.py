@@ -1861,23 +1861,9 @@ def radio_menu(entry):
 			return True
 		
 	elif key == 'Create group':
-		_g = groups.create_group(LIFE[SETTINGS['controlling']],)
-		_j = jobs.create_job(LIFE[SETTINGS['controlling']], 'Gather', description='Gather for new group.', gist='create_group')
+		_g = groups.create_group(LIFE[SETTINGS['controlling']])
 		
-		jobs.add_task(_j, '0', 'move_to_chunk',
-		              action.make_small_script(function='find_target',
-		                                       kwargs={'target': SETTINGS['controlling'],
-		                                               'distance': 5}),
-		              delete_on_finish=False)
-		jobs.add_task(_j, '1', 'talk',
-		              action.make_small_script(function='start_dialog',
-		                                       kwargs={'target': SETTINGS['controlling'], 'gist': 'form_group'}),
-		              requires=['0'],
-		              delete_on_finish=False)
-		
-		groups.flag(_g, 'job_gather', _j)
-		
-		return create_announce_group_menu(job_id=_j)
+		return create_announce_group_menu()
 	elif key == 'Announce group':
 		return create_announce_group_menu(job_id=groups.get_flag(LIFE[SETTINGS['controlling']]['group'], 'job_gather'))
 	elif key == 'Locate':
@@ -1915,7 +1901,7 @@ def radio_menu(entry):
 
 def create_radio_menu():
 	_phrases = []
-	_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
+	#_phrases.append(menus.create_item('single', 'Distress', 'Radio for help.'))
 	
 	if LIFE[SETTINGS['controlling']]['know']:
 		_phrases.append(menus.create_item('single', 'Call', 'Contact someone.'))
