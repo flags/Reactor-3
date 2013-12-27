@@ -36,7 +36,9 @@ def setup(life):
 		elif 0<judgement.get_tension_with(life, ai)<=judgement.get_max_tension_with(life, ai):
 			stats.react_to_tension(life, ai)
 		else:
-			if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
+			#if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
+			#	continue
+			if not stats.desires_conversation_with(life, ai):
 				continue
 	
 			_potential_talking_targets.append(ai)
@@ -66,8 +68,8 @@ def setup(life):
 		if life['dialogs']:
 			break
 		
-		if stats.desires_first_contact_with(life, target):
-			memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=-1)
+		#if stats.desires_first_contact_with(life, target):
+		#	memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=-1)
 		
 		if memory.get_questions_for_target(life, target):
 			_question = memory.ask_target_question(life, target)

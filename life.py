@@ -2538,18 +2538,18 @@ def draw_life_icon(life):
 		if _knows:
 			if LIFE[SETTINGS['controlling']]['group']:
 				if _knows['group'] == LIFE[SETTINGS['controlling']]['group']:
-					_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 10)
+					_icon[1] = tcod.color_lerp(tcod.lightest_green, tcod.green, 1)
 				elif groups.group_exists(LIFE[SETTINGS['controlling']], _knows['group']):
 					_alignment = groups.get_alignment(LIFE[SETTINGS['controlling']], _knows['group'])
 					
 					if _alignment == 'trust':
-						_icon[1] = tcod.color_lerp(tcod.lightest_blue, tcod.sea, 10)
+						_icon[1] = tcod.color_lerp(tcod.lightest_blue, tcod.sea, 1)
 					elif _alignment == 'hostile':
 						_icon[1] = tcod.crimson
 			
 			if not _icon[1]:
 				if _knows['alignment'] in ['trust', 'feign_trust']:
-					_icon[1] = tcod.color_lerp(tcod.lightest_yellow, tcod.yellow, 5)
+					_icon[1] = tcod.color_lerp(tcod.lightest_yellow, tcod.yellow, 1)
 				elif _knows['alignment'] == 'neutral':
 					_icon[1] = tcod.light_gray
 				else:
