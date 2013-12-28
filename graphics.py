@@ -578,16 +578,19 @@ def draw_status_line():
 		else:
 			_non_flashing_text.append('Paused')
 	
+	if not LIFE[SETTINGS['following']]['stance'] == 'standing':
+		_non_flashing_text.append(LIFE[SETTINGS['following']]['stance'].title())
+	
 	blit_string(0,
-		MAP_WINDOW_SIZE[1]-1,
-		' '.join(_non_flashing_text),
-	     'map')
+	            MAP_WINDOW_SIZE[1]-1,
+	            ' - '.join(_non_flashing_text),
+	            'map')
 	
 	if time.time()%1>=0.5:
 		blit_string(len(_non_flashing_text)+1,
-			MAP_WINDOW_SIZE[1]-1,
-			' '.join(_flashing_text),
-		     'map')
+		            MAP_WINDOW_SIZE[1]-1,
+		            ' - '.join(_flashing_text),
+		             'map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:

@@ -342,16 +342,19 @@ def create_region_spawns():
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
 	
+	for town in WORLD_INFO['refs']['towns']:
+		_spawn_chunk = random.choice(town)
+		
+		while maps.get_chunk(_spawn_chunk)['type'] == 'town':
+			_spawn_chunk = random.choice(town)
+	
+		spawns.generate_group('bandit',
+	                         amount=random.randint(5, 7),
+	                         group_motive='crime',
+	                         spawn_chunks=[_spawn_chunk])
+	
 	return False
-	
-	#Step 2: Bandit village
-	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
-	
-	spawns.generate_group('bandit',
-                         amount=random.randint(5, 7),
-                         group_motive='crime',
-                         spawn_chunks=[_spawn_chunk])
-	
+
 	#Step 3: Rookie village
 	_spawn_chunks = random.choice([t['rooms'] for t in WORLD_INFO['refs']['villages'][0]])
 	_rookie_village_members = spawns.generate_group('loner',

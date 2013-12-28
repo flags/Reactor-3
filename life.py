@@ -3327,6 +3327,34 @@ def add_pain_to_limb(life, limb, amount=1):
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
+def heal_would(life, wound, heal_with):
+	
+	item = items.get_item_from_uid(life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id))
+	
+	_remove_wounds = []
+	for wound in LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
+		if not injury in wound:
+			continue
+		
+		wound[injury] -= item['thickness']
+		LIFE[SETTINGS['controlling']]['body'][limb][injury] -= item['thickness']
+		
+		_remove = True
+		for key in wound:
+			if key == 'limb':
+				continue
+			
+			if wound[key]>0:
+				_remove = False
+				break
+		
+		if _remove:
+			_remove_wounds.append(wound)
+	
+	for wound in _remove_wounds:
+		LIFE[SETTINGS['controlling']]['body'][limb]['wounds'].remove(wound)
+		gfx.message('Your %s has healed.' % wound['limb'])
+
 def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	_msg = []

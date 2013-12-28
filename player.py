@@ -389,7 +389,9 @@ def handle_input():
 				return False
 	
 	if INPUT['V']:
-		if menus.get_menu_by_name('Radio')==-1:
+		if menus.get_menu_by_name('Radio')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Radio'))
+		else:
 			return create_radio_menu()
 
 	if INPUT['m']:
@@ -639,7 +641,10 @@ def handle_input():
 		#	_stats.append(menus.create_item('single', key.title(), LIFE[SETTINGS['controlling']]['stats'][key]))
 	
 	if INPUT['w']:
-		create_wound_menu()
+		if menus.get_menu_by_name('Wounds')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Wounds'))
+		else:
+			create_wound_menu()
 	
 	if INPUT['O']:
 		if menus.get_menu_by_name('Debug (Developer)')>-1:
@@ -1965,10 +1970,6 @@ def create_crafting_menu():
 	menus.activate_menu(_menu)
 
 def create_wound_menu():
-	if menus.get_menu_by_name('Wounds')>-1:
-		menus.delete_menu(menus.get_menu_by_name('Wounds'))
-		return False
-	
 	_has_wound = False
 	_entries = []
 	
@@ -1976,29 +1977,30 @@ def create_wound_menu():
 		_title = False
 		
 		for wound in limb['wounds']:
+			_limb = life.get_limb(LIFE[SETTINGS['controlling']], wound['limb'])
+			
 			if not _title:					
 				_entries.append(menus.create_item('title', wound['limb'], None))
 				_title = True
-				
+			
 			if wound['cut']:
-				if wound['cut']<=.5:
+				_cut_amount = wound['cut']/float(_limb['size'])
+				
+				if _cut_amount <= .2:
 					_status = 'Scraped'
-					_color = tcod.lighter_red
-				elif wound['cut']<=1:
+				elif _cut_amount <= .45:
 					_status = 'Cut'
-					_color = tcod.light_crimson
-				elif wound['cut']<=2:
+				elif _cut_amount <= .7:
 					_status = 'Gouged'
-					_color = tcod.crimson
 				else:
 					_status = 'Devastated'
-					_color = tcod.dark_crimson
 				
 				_entries.append(menus.create_item('single',
 				                                  'Cut',
 				                                  _status,
 				                                  limb=wound['limb'],
-				                                  color=(_color, tcod.white)))
+				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, _cut_amount),
+				                                         tcod.color_lerp(tcod.white, tcod.crimson, _cut_amount/2))))
 				_has_wound = True
 	
 	if not _has_wound:
@@ -2016,37 +2018,13 @@ def create_wound_menu():
 	menus.activate_menu(_i)		
 
 def heal_wound(entry):
-	limb = entry['limb']
-	injury = entry['injury']
-	item_id = entry['item_id']
+	life.add_action(life, {'action': 'heal_wound',
+	                       'item_uid': entry['item_uid'],
+	                       'limb': entry['limb'],
+	                       'injury': entry['injury']},
+	                9999)
 	
-	item = items.get_item_from_uid(life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id))
-	
-	_remove_wounds = []
-	for wound in LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
-		if not injury in wound:
-			continue
-		
-		wound[injury] -= item['thickness']
-		LIFE[SETTINGS['controlling']]['body'][limb][injury] -= item['thickness']
-		
-		_remove = True
-		for key in wound:
-			if key == 'limb':
-				continue
-			
-			if wound[key]>0:
-				_remove = False
-				break
-		
-		if _remove:
-			_remove_wounds.append(wound)
-	
-	for wound in _remove_wounds:
-		LIFE[SETTINGS['controlling']]['body'][limb]['wounds'].remove(wound)
-		gfx.message('Your %s has healed.' % wound['limb'])
-	
-	items.delete_item(item)	
+	items.delete_item(ITEMS[entry['item_uid']])	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	
@@ -2061,7 +2039,7 @@ def wound_examine(entry):
 	
 	if injury == 'cut':
 		for item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'fabric'}]):
-			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_id=item['uid']))
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_uid=item['uid']))
 	
 	if not _entries:
 		gfx.message('You have nothing to treat the %s with.' % injury)
