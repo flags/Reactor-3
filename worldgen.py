@@ -327,6 +327,7 @@ def create_player():
 	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
 	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
 	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
+	life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
 	
 	for i in range(17):
 		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))

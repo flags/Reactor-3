@@ -390,7 +390,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['states'] = []
 	_life['gravity'] = 0.05
 	_life['targeting'] = None
-	_life['pain_tolerance'] = 15
+	_life['pain_tolerance'] = .15
+	_life['pain_threshold'] = 4
 	_life['asleep'] = 0
 	_life['asleep_reason'] = ''
 	_life['blood'] = calculate_max_blood(_life)
@@ -1340,7 +1341,39 @@ def perform_action(life):
 		else:
 			say(life,'@n starts to crawl.',action=True)
 		
-		delete_action(life,action)
+		delete_action(life, action)
+	
+	elif _action['action'] == 'heal_limb':
+		_item = items.get_item_from_uid(remove_item_from_inventory(life, _action['item_uid']))
+		_check_wounds = []
+		
+		items.delete_item(_item)
+		
+		for wound in life['body'][_action['limb']]['wounds']:
+			if _item['material'] == 'cloth':
+				_cut = wound['cut']
+				
+				wound['cut'] -= _item['thickness']
+				life['body'][wound['limb']]['cut'] -= _item['thickness']
+				
+				_item['thickness'] -= _cut
+				_check_wounds.append(wound)
+				
+				if 'player' in life:
+					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
+				
+				logging.debug('%s applies %s to their %s.' % (' '.join(life['name']), items.get_name(_item), wound['limb']))
+		
+		for wound in _check_wounds:
+			if wound['cut'] > 0 or wound['lodged_item'] or wound['artery_ruptured']:
+				continue
+			
+			life['body'][wound['limb']]['wounds'].remove(wound)
+			
+			if 'player' in life:
+				gfx.message('Your %s has healed.' % wound['limb'])
+		
+		delete_action(life, action)
 	
 	elif _action['action'] == 'activate_item':
 		items.activate(ITEMS[_action['item_uid']])
@@ -1750,8 +1783,8 @@ def tick(life):
 		
 		return True
 	
-	if get_total_pain(life)>life['pain_tolerance']:		
-		life['consciousness'] -= get_total_pain(life)-life['pain_tolerance']
+	if get_total_pain(life)>life['pain_threshold']:
+		life['consciousness'] = numbers.clip(life['consciousness']-get_total_pain(life), 0, 100)
 		
 		if life['consciousness'] <= 0:
 			life['consciousness'] = 0
@@ -1763,7 +1796,7 @@ def tick(life):
 			
 			return False
 	elif life['consciousness']<100:
-		life['consciousness'] += 1
+		life['consciousness'] += life['pain_tolerance']
 	
 	perform_collisions(life)
 	
@@ -2234,7 +2267,7 @@ def consume(life, item_uid):
 def can_consume(life, item_id):
 	item = get_inventory_item(life, item_id)
 	
-	if item['type'] in ['food', 'drink']:
+	if item['type'] in ['food', 'drink', 'medicine']:
 		return True
 	
 	return False
@@ -2255,8 +2288,10 @@ def consume_item(life, item_id):
 	if 'player' in life:
 		if item['type'] == 'food':
 			gfx.message('You finsh eating.')
-		else:
+		elif item['type'] == 'drink':
 			gfx.message('You finsh drinking.')
+		elif item['type'] == 'medicine':
+			gfx.message('You swallow the medicine. It\'s bitter!')
 
 def get_max_carry_size(life):
 	_greatest = 0
@@ -2955,7 +2990,7 @@ def pass_out(life, length=None, reason='Passed out'):
 	logging.debug('%s passed out.' % life['name'][0])
 
 def get_pain_tolerance(life):
-	return .15*alife.stats.get_melee_skill(life)
+	return life['pain_tolerance']*alife.stats.get_melee_skill(life)
 
 def get_total_pain(life):
 	_pain = 0
@@ -2969,27 +3004,22 @@ def calculate_hunger(life):
 	_remove = []
 	
 	for _food in [items.fetch_item(i) for i in life['eaten']]:
-		if _food['sustenance']:
-			_food['sustenance'] -= 1
-			
-			if _food['type'] == 'food':
-				life['hunger'] += _food['value']
-			elif _food['type'] == 'drink':
-				life['thirst'] += _food['value']
-			else:
-				logging.error('Item \'%(name)s\' of type \'%(type)s\' was eaten.' % _food)
-				logging.debug('What in the world did you eat?')
-			
-			if 'modifiers' in _food:
-				for _mod in _food['modifiers']:
-					if not _mod in life:
-						logging.error('Invalid modifier \'%s\' in \'%s\'.' % (_mod, _food['name']))
-						continue
+		if 'modifiers' in _food:
+			for modifier in _food['modifiers']:
+				if 'add' in modifier:
+					if not 'active' in modifier:
+						life[modifier['value']] += modifier['add']
+						modifier['active'] = True
+				elif 'increase' in modifier:
+					life[modifier['value']] += modifier['increase']
+				
+				if modifier['effective_for']>0:
+					modifier['effective_for'] -= 1
+				elif not _food in _remove:
+					if 'add' in modifier:
+						life[modifier['value']] -= modifier['add']
 					
-					life[_mod] += _food['modifiers'][_mod]
-			
-		else:
-			_remove.append(_food)
+					_remove.append(_food)
 	
 	for _item in _remove:
 		life['eaten'].remove(_item['uid'])
@@ -3043,6 +3073,9 @@ def get_health_status(life):
 		_string.append('Faint')
 	elif get_total_pain(life)>=1.5:
 		_string.append('Wincing')
+	
+	if get_bleeding_limbs(life):
+		_string.append('Bleeding')
 	
 	if not get_hunger_status(life) == 'Satiated':
 		_string.append('Hungry')
@@ -3327,33 +3360,10 @@ def add_pain_to_limb(life, limb, amount=1):
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
-def heal_would(life, wound, heal_with):
+def heal_limb(life, limb, item_uid):
+	_delay = (life['body'][limb]['size']+ITEMS[item_uid]['size']) * 10
 	
-	item = items.get_item_from_uid(life.remove_item_from_inventory(LIFE[SETTINGS['controlling']], item_id))
-	
-	_remove_wounds = []
-	for wound in LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
-		if not injury in wound:
-			continue
-		
-		wound[injury] -= item['thickness']
-		LIFE[SETTINGS['controlling']]['body'][limb][injury] -= item['thickness']
-		
-		_remove = True
-		for key in wound:
-			if key == 'limb':
-				continue
-			
-			if wound[key]>0:
-				_remove = False
-				break
-		
-		if _remove:
-			_remove_wounds.append(wound)
-	
-	for wound in _remove_wounds:
-		LIFE[SETTINGS['controlling']]['body'][limb]['wounds'].remove(wound)
-		gfx.message('Your %s has healed.' % wound['limb'])
+	add_action(life, {'action': 'heal_limb', 'limb': limb, 'item_uid': item_uid}, 9999, delay=_delay)
 
 def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]

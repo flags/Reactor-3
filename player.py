@@ -216,7 +216,7 @@ def handle_input():
 			return False
 		
 		_food = []
-		for _item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'food'}, {'type': 'drink'}]):
+		for _item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'food'}, {'type': 'drink'}, {'type': 'medicine'}]):
 			_food.append(menus.create_item('single',
 				items.get_name(_item),
 				None,
@@ -1017,8 +1017,11 @@ def inventory_eat(entry):
 	
 	if item['type'] == 'food':
 		gfx.message('You start to eat %s.' % items.get_name(item))
-	else:
+	elif item['type'] == 'drink':
 		gfx.message('You start to drink %s.' % items.get_name(item))
+	elif item['type'] == 'medicine':
+		gfx.message('You start to take %s.' % items.get_name(item))
+	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
 def inventory_throw(entry):
@@ -1999,8 +2002,8 @@ def create_wound_menu():
 				                                  'Cut',
 				                                  _status,
 				                                  limb=wound['limb'],
-				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, _cut_amount),
-				                                         tcod.color_lerp(tcod.white, tcod.crimson, _cut_amount/2))))
+				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)),
+				                                         tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)/2))))
 				_has_wound = True
 	
 	if not _has_wound:
@@ -2018,18 +2021,12 @@ def create_wound_menu():
 	menus.activate_menu(_i)		
 
 def heal_wound(entry):
-	life.add_action(life, {'action': 'heal_wound',
-	                       'item_uid': entry['item_uid'],
-	                       'limb': entry['limb'],
-	                       'injury': entry['injury']},
-	                9999)
+	life.heal_limb(LIFE[SETTINGS['controlling']], entry['limb'], entry['item_uid'])
 	
-	items.delete_item(ITEMS[entry['item_uid']])	
+	gfx.message('You start applying %s to your %s.' % (items.get_name(ITEMS[entry['item_uid']]), entry['limb']))
+	
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
-	
-	if LIFE[SETTINGS['controlling']]['body'][limb]['wounds']:
-		create_wound_menu()
 
 def wound_examine(entry):
 	injury = entry['key'].lower()
@@ -2039,7 +2036,7 @@ def wound_examine(entry):
 	
 	if injury == 'cut':
 		for item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'fabric'}]):
-			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, injury=injury, item_uid=item['uid']))
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, item_uid=item['uid']))
 	
 	if not _entries:
 		gfx.message('You have nothing to treat the %s with.' % injury)
