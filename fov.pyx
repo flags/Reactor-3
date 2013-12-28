@@ -23,7 +23,7 @@ MULT = [[1,  0,  0, -1, -1,  0,  0,  1],
 
 
 @cython.locals(size=cython.int, row=cython.int, _start_slope=cython.float, _end_slope=cython.float, xx=cython.int, xy=cython.int, yx=cython.int, yy=cython.int)
-cdef light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, yy, source_map, map_size, chunk_map, callback=None):
+def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, yy, source_map, map_size, chunk_map, callback=None):
 	_return_chunks = set()
 	
 	if _start_slope < _end_slope:
