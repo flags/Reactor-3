@@ -247,7 +247,6 @@ def generate_reference_maps(map_gen):
 		
 		for chunk_key in building:
 			map_gen['chunk_map'][chunk_key]['reference'] = str(_ref_id)
-			print chunk_key, map_gen['chunk_map'][chunk_key]['reference']
 		
 		_ref_id += 1
 	
@@ -686,7 +685,9 @@ def generate_town(map_gen, cell):
 	_max_building_size = 6
 	_potential_building_chunks = cell['chunk_keys'][:]
 	_potential_street_chunks = []
+	_yard_chunks = []
 	_buildings = []
+	_avoid_positions = []
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
@@ -698,6 +699,7 @@ def generate_town(map_gen, cell):
 		_potential_room_chunks = walker(map_gen, _chunk['pos'], random.randint(_min_building_size, _max_building_size), allow_diagonal_moves=False)
 		_room_chunks = []
 		_potential_exterior_chunks = []
+		_potential_yard_chunks = []
 		
 		for chunk_key in _potential_room_chunks:
 			if not chunk_key in _potential_building_chunks:
@@ -711,54 +713,85 @@ def generate_town(map_gen, cell):
 			
 			continue
 		
+		#Fence
 		for chunk_key in _room_chunks:
 			_chunk = map_gen['chunk_map'][chunk_key]
 			_chunk['type'] = 'town'
 			_potential_building_chunks.remove(chunk_key)
 			
 			if _chunk['pos'][0] < _top_left[0]:
-				_top_left[0] = _chunk['pos'][0]-1
+				_top_left[0] = _chunk['pos'][0]-3
 			
 			if _chunk['pos'][1] < _top_left[1]:
-				_top_left[1] = _chunk['pos'][1]-1
+				_top_left[1] = _chunk['pos'][1]-3
 			
 			if _chunk['pos'][0]+map_gen['chunk_size'] > _bot_right[0]:
-				_bot_right[0] = _chunk['pos'][0]+map_gen['chunk_size']+1
+				_bot_right[0] = _chunk['pos'][0]+map_gen['chunk_size']+3
 			
 			if _chunk['pos'][1]+map_gen['chunk_size'] > _bot_right[1]:
-				_bot_right[1] = _chunk['pos'][1]+map_gen['chunk_size']+1
+				_bot_right[1] = _chunk['pos'][1]+map_gen['chunk_size']+3
 		
 		for y in range(_top_left[1], _bot_right[1]):
 			for x in range(_top_left[0], _bot_right[0]):
 				if x<0 or x>=MAP_SIZE[0] or y<0 or y>=MAP_SIZE[1]:
 					continue
 				
-				create_tile(map_gen, x, y, 2, random.choice(tiles.BROKEN_CONCRETE_FLOOR_TILES))
+				_x = x-_top_left[0]
+				_y = y-_top_left[1]
+				
+				_avoid_positions.append((x, y))
+				
+				if _x == 1 or _x == _bot_right[0]-_top_left[0]-2 or _y == 1 or _y == _bot_right[1]-_top_left[1]-2:
+					for z in range(0, 2):
+						create_tile(map_gen, x, y, 2+z, random.choice(tiles.WOOD_TILES))
 		
+		#Mark exterior chunks.
 		for chunk_key in _room_chunks:
-			for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'other', diagonal=True):
-				_potential_exterior_chunks.append(neighbor_chunk_key)
+			for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'other'):
+				if not neighbor_chunk_key in _potential_exterior_chunks:
+					_potential_exterior_chunks.append(neighbor_chunk_key)
 				
-				if not neighbor_chunk_key in _potential_building_chunks:
-					continue
-				
-				_potential_street_chunks.append(neighbor_chunk_key)
-				_potential_building_chunks.remove(neighbor_chunk_key)
+				if neighbor_chunk_key in _potential_building_chunks:
+					_potential_building_chunks.remove(neighbor_chunk_key)
 		
-		_buildings.append({'rooms': _room_chunks, 'exterior_chunk': random.choice(_potential_exterior_chunks)})
+		#Once more, but catching all corners now.
+		for chunk_key in _room_chunks:
+			for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'any', diagonal=True):
+				if neighbor_chunk_key in _potential_building_chunks:
+					_potential_building_chunks.remove(neighbor_chunk_key)
+				
+				_potential_yard_chunks.append(neighbor_chunk_key)
+			
+				for sub_neighbor_chunk_key in get_neighbors_of_type(map_gen, neighbor_chunk_key, 'any', diagonal=True):
+					if sub_neighbor_chunk_key in _potential_building_chunks:
+						_potential_building_chunks.remove(sub_neighbor_chunk_key)
+					
+					if not sub_neighbor_chunk_key in _potential_street_chunks:
+						_potential_street_chunks.append(sub_neighbor_chunk_key)
+		
+		_ext_chunk_key = None
+		for chunk_key in _potential_exterior_chunks:
+			if len(get_neighbors_of_type(map_gen, chunk_key, 'town'))>=2:
+				_ext_chunk_key = chunk_key
+				
+				break
+		
+		if not _ext_chunk_key:
+			_ext_chunk_key = random.choice(_potential_exterior_chunks)
+		
+		_buildings.append({'rooms': _room_chunks[:], 'exterior_chunk': _ext_chunk_key})
 	
 	for building in _buildings:
 		construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=[building['exterior_chunk']])
 	
 	#Roads
 	for chunk_key in _potential_street_chunks:
-		map_gen['chunk_map'][chunk_key]['type'] = 'road'
-
 		create_splotch(map_gen,
 		               map_gen['chunk_map'][chunk_key]['pos'],
 		               random.randint(5, 7),
 		               tiles.CONCRETE_TILES,
-		               avoid_tiles=tiles.GRASS_TILES,
+		               only_tiles=tiles.GRASS_TILES,
+		               avoid_positions=_avoid_positions,
 		               pos_is_chunk_key=True)
 	
 	#Sidewalks
@@ -767,10 +800,18 @@ def generate_town(map_gen, cell):
 		               map_gen['chunk_map'][chunk_key]['pos'],
 		               random.randint(9, 11),
 		               tiles.CONCRETE_FLOOR_TILES,
-		               avoid_tiles=tiles.GRASS_TILES,
+		               only_tiles=tiles.GRASS_TILES,
+		               avoid_positions=_avoid_positions,
 		               pos_is_chunk_key=True)
 
-def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], only_tiles=[], pos_is_chunk_key=False):
+	#for chunk_key in _yard_chunks:
+	#	create_splotch(map_gen,
+	#	               map_gen['chunk_map'][chunk_key]['pos'],
+	#	               random.randint(4, 6),
+	#	               tiles.GRASS_TILES,
+	#	               pos_is_chunk_key=True)
+
+def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], only_tiles=[], avoid_chunks=[], avoid_positions=[], pos_is_chunk_key=False):
 	if pos_is_chunk_key:
 		position = list(position)
 		position[0] += map_gen['chunk_size']/2
@@ -780,7 +821,13 @@ def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], only_tiles=[]
 		if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 			continue
 		
-		if avoid_tiles and not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in avoid_tiles]:
+		if alife.chunks.get_chunk_key_at(pos) in avoid_chunks:
+			continue
+		
+		if pos in avoid_positions:
+			continue
+		
+		if avoid_tiles and map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in avoid_tiles]:
 			continue
 		
 		if only_tiles and not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in only_tiles]:
@@ -904,8 +951,6 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 				_chunk_key = '%s,%s' % ((_pos[0]+_x)*map_gen['chunk_size'], (_pos[1]+_y)*map_gen['chunk_size'])
 				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				map_gen['refs']['roads'].append(_chunk_key)
-				
-				print _chunk_key
 			
 			if i in _town_segments and len(map_gen['refs']['town_seeds'])<map_gen['towns']:
 				_possible_next_dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -1077,10 +1122,6 @@ def walker(map_gen, pos, moves, brush_size=1, allow_diagonal_moves=False, only_c
 			
 			if _last_dir['times'] >= 3 and _next_pos == _last_dir['dir']:
 				continue
-
-			#if _next_pos in _walked:
-			#	print 'stopped2'
-			#	continue
 			
 			if _next_pos[0]<0 or _next_pos[0]>=map_gen['size'][0]-map_gen['chunk_size'] or _next_pos[1]<0 or _next_pos[1]>=map_gen['size'][1]-map_gen['chunk_size']:
 				continue
@@ -1569,28 +1610,6 @@ def decorate_world(map_gen):
 	for fence in _possible_fences:
 		create_road(map_gen, fence, size=2, height=3, chunk_type='driveway', ground_tiles=tiles.WOOD_TILES)
 
-MAP_KEY = {'o': '.',
-           't': 't'}
-
-def print_chunk_map_to_console(map_gen):
-	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
-		for x1 in xrange(0, map_gen['size'][0], map_gen['chunk_size']):
-			_chunk_key = '%s,%s' % (x1, y1)
-			_key = map_gen['chunk_map'][_chunk_key]['type'][0]
-			
-			if _key in  MAP_KEY:
-				print MAP_KEY[_key],
-			else:
-				print _key,
-		
-		print 
-
-def print_map_to_console(map_gen):
-	for y1 in xrange(0, map_gen['size'][1]):
-		for x1 in xrange(0, map_gen['size'][0]):
-			print tiles.get_raw_tile(map_gen['map'][x1][y1][2])['icon'],
-		
-		print
 
 if __name__ == '__main__':
 	SETTINGS['running'] = False
