@@ -174,7 +174,12 @@ def main():
 	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 	
 	maps.render_lights()
-	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
+	
+	if '--worldmap' in sys.argv:
+		render_map.render_map(WORLD_INFO['map'], force_camera_pos=(_cam_x, _cam_y, 2))
+	else:
+		render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
+	
 	items.draw_items()
 	life.draw_life()
 	
@@ -198,13 +203,11 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if SETTINGS['recording'] and logic.can_tick():
-		#	if 10+SETTINGS['recording fps temp']:
-		#		SETTINGS['recording fps temp'] -= 1
-		#	else:
-		#		WORLD_INFO['d'] = WORLD_INFO['ticks']
-			gfx.screenshot()
-	#		SETTINGS['recording fps temp'] = SETTINGS['recording fps']
+	if (SETTINGS['recording'] and logic.can_tick()) or '--worldmap' in sys.argv:
+		gfx.screenshot()
+		
+		if '--worldmap' in sys.argv:
+			SETTINGS['running'] = False
 
 def loop():
 	while SETTINGS['running']:
