@@ -71,45 +71,55 @@ def draw_targeting():
 			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
 
 def death():
-	#TODO: Awful hack
-	if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
-		LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
+	FADE_TO_WHITE[0] += .5
 	
-	gfx.fade_to_white(FADE_TO_WHITE[0])
-	
+	_time_since_death = FADE_TO_WHITE[0]
+	_time_alive = numbers.clip((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']), 0.1, 9999)
 	_string = 'You die.'
-	_time_since_death = WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']
+	_sub_string = LIFE[SETTINGS['controlling']]['cause_of_death']
 	_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
 	
-	for i in range(len(_string)):
-		_c = _string[i]
-		gfx.lighten_tile(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i, MAP_WINDOW_SIZE[1]/2, _col)
-		gfx.blit_char_to_view(MAP_WINDOW_SIZE[0]/2-(len(_string)/2)+i,
-	                   MAP_WINDOW_SIZE[1]/2,
-	                   _c,
-	                   (tcod.Color(_col, 0, 0),
-	                    tcod.Color(255-_col, 255-_col, 255-_col)),
-	                   'map')
+	if _time_alive == 1:
+		_sub_sub_string = 'Lived 1 day'
+	else:
+		_sub_sub_string = 'Lived %s days' % (_time_alive)
 	
-	if _time_since_death>=25:
-		_fade = numbers.clip((_time_since_death)/100.0, 0, 1)
-		_summary = 'Lived %s days.' % ((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']))
-		gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
-		gfx.fade_view('overlay', _fade, 0)
+	gfx.fade_to_black(1)	
 	
-	FADE_TO_WHITE[0] += 1.2
+	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_string)/2,
+	                MAP_WINDOW_SIZE[1]/2,
+	                _string,
+	                'map',
+	                fore_color=tcod.Color(_col, 0, 0),
+	                back_color=tcod.Color(0, 0, 0))
 	
-	if _time_since_death>=200:
-		#worldgen.save_world()
-		#worldgen.reset_world()
+	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_sub_string)/2,
+	                (MAP_WINDOW_SIZE[1]/2)+2,
+	                _sub_string,
+	                'map',
+	                fore_color=tcod.Color(int(round(_col*.75)), int(round(_col*.75)), int(round(_col*.75))),
+	                back_color=tcod.Color(0, 0, 0))
+	
+	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_sub_sub_string)/2,
+	                (MAP_WINDOW_SIZE[1]/2)+4,
+	                _sub_sub_string,
+	                'map',
+	                fore_color=tcod.Color(int(round(_col*.75)), int(round(_col*.75)), int(round(_col*.75))),
+	                back_color=tcod.Color(0, 0, 0))
+	
+	if _time_since_death>=350:
+		worldgen.save_world()
+		worldgen.reset_world()
 
 		gfx.clear_scene()
 		
-		SETTINGS['running'] = 0
+		SETTINGS['running'] = 1
 		return False
+	
+	return True
 
 def main():
-	_played_moved = False
+	_player_moved = False
 	_refresh_map = False
 	
 	get_input()
@@ -125,17 +135,18 @@ def main():
 			_played_moved = True
 			_refresh_map = True
 
-			gfx.title('Sleeping')
+			gfx.title(LIFE[SETTINGS['controlling']]['asleep_reason'])
 			logic.tick_all_objects(ignore_tickrate=True, ignore_pause=True)
 			
-			print LIFE[SETTINGS['controlling']]['asleep'], LIFE[SETTINGS['controlling']]['dead']
 			if LIFE[SETTINGS['controlling']]['dead']:
 				break
+	else:
+		_player_moved = True
 	
 	if _refresh_map:
 		gfx.refresh_view('map')
 	
-	if not _played_moved:
+	if not _player_moved:
 		logic.tick_all_objects(ignore_tickrate=True)
 	
 	draw_targeting()
@@ -163,12 +174,18 @@ def main():
 	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 	
 	maps.render_lights()
-	render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
+	
+	if '--worldmap' in sys.argv:
+		render_map.render_map(WORLD_INFO['map'], force_camera_pos=(_cam_x, _cam_y, 2))
+	else:
+		render_map.render_map(WORLD_INFO['map'], los=LIFE[SETTINGS['controlling']]['fov'], force_camera_pos=(_cam_x, _cam_y, 2))
+	
 	items.draw_items()
 	life.draw_life()
 	
 	if LIFE[SETTINGS['controlling']]['dead'] and not EVENTS:
-		death()
+		if not death():
+			return False
 	
 	if SETTINGS['draw life info'] and SETTINGS['following']:
 		life.draw_life_info()
@@ -186,13 +203,11 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if SETTINGS['recording'] and logic.can_tick():
-		#	if 10+SETTINGS['recording fps temp']:
-		#		SETTINGS['recording fps temp'] -= 1
-		#	else:
-		#		WORLD_INFO['d'] = WORLD_INFO['ticks']
-			gfx.screenshot()
-	#		SETTINGS['recording fps temp'] = SETTINGS['recording fps']
+	if (SETTINGS['recording'] and logic.can_tick()) or '--worldmap' in sys.argv:
+		gfx.screenshot()
+		
+		if '--worldmap' in sys.argv:
+			SETTINGS['running'] = False
 
 def loop():
 	while SETTINGS['running']:

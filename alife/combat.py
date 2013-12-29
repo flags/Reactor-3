@@ -34,12 +34,7 @@ def weapon_equipped_and_ready(life):
 	_loaded_feed = None
 	for weapon in get_equipped_weapons(life):
 		if weapon_is_working(life, weapon):
-			_loaded_feed = True
-			break
-
-	if _loaded_feed:
-		#logging.warning('%s has feed with no ammo!' % (' '.join(life['name'])))
-		return True
+			return True
 	
 	return False
 

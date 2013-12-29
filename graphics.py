@@ -12,6 +12,8 @@ import logging
 import random
 import numpy
 import time
+import sys
+
 
 def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	global ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
@@ -26,8 +28,14 @@ def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	if '_tiles' in FONT:
 		_layout = _layout|tcod.FONT_TYPE_GRAYSCALE
 	
+	if '--worldmap' in sys.argv:
+		MAP_WINDOW_SIZE[0] = 450
+		MAP_WINDOW_SIZE[1] = 450
+		WINDOW_SIZE[0] = 450
+		WINDOW_SIZE[1] = 450
+	
 	tcod.console_set_custom_font(_font_file, _layout)
-	tcod.console_init_root(WINDOW_SIZE[0],WINDOW_SIZE[1],WINDOW_TITLE,renderer=RENDERER)
+	tcod.console_init_root(WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_TITLE, renderer=RENDERER)
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
@@ -563,6 +571,9 @@ def draw_status_line():
 	_flashing_text = []
 	_non_flashing_text = []
 	
+	if LIFE[SETTINGS['following']]['dead']:
+		return False
+	
 	if not SETTINGS['following']:
 		return False
 	
@@ -578,16 +589,19 @@ def draw_status_line():
 		else:
 			_non_flashing_text.append('Paused')
 	
+	if not LIFE[SETTINGS['following']]['stance'] == 'standing':
+		_non_flashing_text.append(LIFE[SETTINGS['following']]['stance'].title())
+	
 	blit_string(0,
-		MAP_WINDOW_SIZE[1]-1,
-		' '.join(_non_flashing_text),
-	     'map')
+	            MAP_WINDOW_SIZE[1]-1,
+	            ' - '.join(_non_flashing_text),
+	            'map')
 	
 	if time.time()%1>=0.5:
 		blit_string(len(_non_flashing_text)+1,
-			MAP_WINDOW_SIZE[1]-1,
-			' '.join(_flashing_text),
-		     'map')
+		            MAP_WINDOW_SIZE[1]-1,
+		            ' - '.join(_flashing_text),
+		             'map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:

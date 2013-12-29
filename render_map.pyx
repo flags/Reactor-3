@@ -85,10 +85,10 @@ def render_map(map, force_camera_pos=None, view_size=MAP_WINDOW_SIZE, **kwargs):
 
 			if _min_los_x+_RENDER_X<0 or _min_los_x+_RENDER_X>=_max_los_x or _min_los_y+_RENDER_Y<0 or _min_los_y+_RENDER_Y>=_max_los_y:
 				_visible = False
-			elif not 'los' in kwargs:
-				_visible = True
-			else:
+			elif 'los' in kwargs:
 				_visible = los[_min_los_x+_RENDER_X, _min_los_y+_RENDER_Y]
+			else:
+				_visible = True
 			
 			if _TEMP_MAP_CHAR_BUFFER[_RENDER_Y,_RENDER_X]:
 				continue
