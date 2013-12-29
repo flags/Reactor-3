@@ -213,14 +213,13 @@ def switch_to_world_gen():
 	
 	_menu_items = []
 	_menu_items.append(menus.create_item('list', 'Map', _maps))
-	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks']))
+	_menu_items.append(menus.create_item('list', 'World Age', ['Day 0','1 Week', '2 Weeks', '3 Weeks', '4 Weeks', '5 Weeks'], enabled=False))
 	_menu_items.append(menus.create_item('list', 'Dynamic Spawns', ['None', 'Sparse', 'Medium', 'Heavy']))
-	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['None', 'Sparse', 'Medium', 'Heavy']))
-	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many']))
-	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong']))
+	_menu_items.append(menus.create_item('list', 'Wildlife Density', ['None', 'Sparse', 'Medium', 'Heavy'], enabled=False))
+	_menu_items.append(menus.create_item('list', 'Artifacts', ['Few', 'Normal', 'Many'], enabled=False))
+	_menu_items.append(menus.create_item('list', 'Economy', ['Weak', 'Stable', 'Strong'], enabled=False))
 	_menu_items.append(menus.create_item('spacer', '-', None))
 	_menu_items.append(menus.create_item('single', 'Generate', None))
-	_menu_items.append(menus.create_item('single', 'Combat Test', None, enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='World Generation',

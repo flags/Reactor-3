@@ -75,7 +75,7 @@ def death():
 	if not 'time_of_death' in LIFE[SETTINGS['controlling']]:
 		LIFE[SETTINGS['controlling']]['time_of_death'] = WORLD_INFO['ticks']
 	
-	gfx.fade_to_white(FADE_TO_WHITE[0])
+	gfx.fade_to_black(255)
 	
 	_string = 'You die.'
 	_time_since_death = WORLD_INFO['ticks']-LIFE[SETTINGS['controlling']]['time_of_death']
@@ -97,8 +97,6 @@ def death():
 		gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_summary)/2, (MAP_WINDOW_SIZE[1]/2)+2, _summary, fore_color=tcod.crimson, view_name='overlay')
 		gfx.fade_view('overlay', _fade, 0)
 	
-	FADE_TO_WHITE[0] += 1.2
-	
 	if _time_since_death>=200:
 		worldgen.save_world()
 		worldgen.reset_world()
@@ -109,7 +107,7 @@ def death():
 		return False
 
 def main():
-	_played_moved = False
+	_player_moved = False
 	_refresh_map = False
 	
 	get_input()
@@ -130,11 +128,13 @@ def main():
 			
 			if LIFE[SETTINGS['controlling']]['dead']:
 				break
+	else:
+		_player_moved = True
 	
 	if _refresh_map:
 		gfx.refresh_view('map')
 	
-	if not _played_moved:
+	if not _player_moved:
 		logic.tick_all_objects(ignore_tickrate=True)
 	
 	draw_targeting()
