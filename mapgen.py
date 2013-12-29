@@ -171,26 +171,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	
 	generate_noise_map(map_gen)
 	
-	logging.debug('Creating roads...')
-	for chunk_key in map_gen['refs']['roads']:
-		create_road(map_gen, chunk_key)
-	
-	#logging.debug('Building factories...')
-	#for _factory in map_gen['refs']['factories']:
-		#construct_factory(map_gen, _factory)
-	
-	logging.debug('Building villages...')
-	for village in map_gen['refs']['villages']:
-		construct_village(map_gen, village)
-	
-	logging.debug('Building towns...')
-	for town in map_gen['refs']['towns']:
-		construct_town(map_gen, town)
-	
-	logging.debug('Generating outposts...')	
-	#for i in range(map_gen['outposts']):
-	#	construct_outpost(map_gen)	
-	
 	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
 	
 	#Placeholder!
@@ -707,6 +687,8 @@ def generate_town(map_gen, cell):
 	_potential_building_chunks = cell['chunk_keys'][:]
 	_potential_street_chunks = []
 	_buildings = []
+	
+	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
 	while _potential_building_chunks:
 		_top_left = MAP_SIZE[:2]

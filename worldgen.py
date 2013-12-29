@@ -314,18 +314,6 @@ def generate_wildlife():
 	
 	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 
-def generate_life():
-	_spawn = get_spawn_point()
-	
-	_alife = life.create_life('human', map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
-	
-	if len(LIFE) == 1:
-		logging.warning('No leaders. Creating one manually...')
-		_alife['stats']['is_leader'] = True
-	
-	for item in BASE_ITEMS:
-		life.add_item_to_inventory(_alife, items.create_item(item))
-
 def create_player():
 	PLAYER = life.create_life('human',
 		name=['Tester','Toaster'],
@@ -339,6 +327,7 @@ def create_player():
 	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
 	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
 	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
+	life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
 	
 	for i in range(17):
 		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
@@ -354,16 +343,19 @@ def create_region_spawns():
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
 	
+	for town in WORLD_INFO['refs']['towns']:
+		_spawn_chunk = random.choice(town)
+		
+		while maps.get_chunk(_spawn_chunk)['type'] == 'town':
+			_spawn_chunk = random.choice(town)
+	
+		spawns.generate_group('bandit',
+	                         amount=random.randint(5, 7),
+	                         group_motive='crime',
+	                         spawn_chunks=[_spawn_chunk])
+	
 	return False
-	
-	#Step 2: Bandit village
-	_spawn_chunk = random.choice(WORLD_INFO['refs']['dirt_road'])
-	
-	spawns.generate_group('bandit',
-                         amount=random.randint(5, 7),
-                         group_motive='crime',
-                         spawn_chunks=[_spawn_chunk])
-	
+
 	#Step 3: Rookie village
 	_spawn_chunks = random.choice([t['rooms'] for t in WORLD_INFO['refs']['villages'][0]])
 	_rookie_village_members = spawns.generate_group('loner',

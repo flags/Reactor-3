@@ -160,6 +160,21 @@ def can_trust(life, life_id):
 	
 	return False
 
+def get_target_state(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	_mods = []
+	
+	if _target['asleep']:
+		_mods.append('unconscious')
+	elif life['state_tier'] >= TIER_COMBAT:
+		_mods.append('alert')
+	elif get_tension(life) >= .3:
+		_mods.append('nervous')
+	elif life['state_tier'] < TIER_COMBAT:
+		_mods.append('relaxed')
+	
+	return _mods[0].title()+' '.join(_mods[1:])
+
 def get_tension(life):
 	return brain.retrieve_from_memory(life, 'tension')
 
@@ -176,6 +191,17 @@ def get_tension_with(life, life_id):
 	_tension = get_ranged_combat_rating_of_target(life, life_id)/float(get_ranged_combat_rating_of_self(life))
 	
 	return abs(((sight.get_vision(life)-_distance)/float(sight.get_vision(life)))*_tension)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
+
+def get_max_tension_with(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	if _target['alignment'] == 'trust' or not _target['last_seen_at']:
+		return 0
+	
+	if _target['alignment'] in ['hostile', 'scared']:
+		return 1
+	
+	return .75
 
 def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
