@@ -1698,6 +1698,7 @@ def kill(life, injury):
 	drop_all_items(life)
 	life['dead'] = True
 	life['stance'] = 'crawling'
+	life['time_of_death'] = WORLD_INFO['ticks']
 	timers.remove_by_owner(life)
 
 def can_die_via_critical_injury(life):

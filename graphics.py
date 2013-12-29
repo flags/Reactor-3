@@ -563,6 +563,9 @@ def draw_status_line():
 	_flashing_text = []
 	_non_flashing_text = []
 	
+	if LIFE[SETTINGS['following']]['dead']:
+		return False
+	
 	if not SETTINGS['following']:
 		return False
 	
