@@ -71,18 +71,23 @@ def draw_targeting():
 			SELECTED_TILES[0].append((pos[0],pos[1],LIFE[SETTINGS['controlling']]['pos'][2]))
 
 def death():
+	_player = LIFE[SETTINGS['controlling']]
 	FADE_TO_WHITE[0] += .5
 	
 	_time_since_death = FADE_TO_WHITE[0]
-	_time_alive = numbers.clip((LIFE[SETTINGS['controlling']]['time_of_death']-LIFE[SETTINGS['controlling']]['created'])/float(WORLD_INFO['length_of_day']), 0.1, 9999)
+	_time_alive = round(numbers.clip((_player['time_of_death']-_player['created'])/float(WORLD_INFO['length_of_day']), 0.1, 9999), 2)
 	_string = 'You die.'
-	_sub_string = LIFE[SETTINGS['controlling']]['cause_of_death']
+	_sub_string = _player['cause_of_death']
 	_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
+	
 	
 	if _time_alive == 1:
 		_sub_sub_string = 'Lived 1 day'
 	else:
-		_sub_sub_string = 'Lived %0.1f days' % (_time_alive)
+		if _time_alive < 1:
+			_sub_sub_string = 'Lived %0.1f day' % (_time_alive)
+		else:
+			_sub_sub_string = 'Lived %0.1f days' % (_time_alive)
 	
 	gfx.fade_to_black(1)	
 	

@@ -2,6 +2,7 @@
 "prefix": "a",
 "type": "bullet",
 "icon": ".",
+"color": [[94, 75, 47], null],
 "description": "Long Rifle cartridge effective at mid to long range.",
 "speed": 35,
 "recoil": 3,

@@ -337,16 +337,6 @@ def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 		#RGB_LIGHT_BUFFER[0] *= LOS_BUFFER[0]
 		#RGB_LIGHT_BUFFER[1] *= LOS_BUFFER[0]
 		#RGB_LIGHT_BUFFER[2] *= LOS_BUFFER[0]
-		
-		if logic.can_tick():
-			if light['fade']:
-				light['brightness'] -= light['fade']
-			
-			if light['brightness'] <= 0:
-				_remove_lights.append(light)
-	
-	for light in _remove_lights:
-		effects.delete_light(light)
 
 def diffuse_light(source_light):
 	light = source_light[0]+source_light[1]

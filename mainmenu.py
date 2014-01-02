@@ -151,6 +151,9 @@ def switch_to_main_menu():
 	clear()
 
 def switch_to_start_game():
+	while menus.delete_active_menu():
+		continue
+	
 	_menu_items = []
 	_menu_items.append(menus.create_item('single', 'Existing Character', None, enabled=SETTINGS['controlling']))
 	_menu_items.append(menus.create_item('single', 'New Character', None))

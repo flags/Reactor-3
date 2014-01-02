@@ -7,6 +7,7 @@ import graphics
 import numbers
 import timers
 import items
+import alife
 
 import logging
 import random
@@ -45,6 +46,7 @@ def own_language(life, message):
 def bullet_hit(life, bullet, limb):
 	_owner = LIFE[bullet['shot_by']]
 	_actual_limb = lfe.get_limb(life, limb)
+	_items_to_check = []
 	
 	if 'player' in _owner:
 		if bullet['aim_at_limb'] == limb:
@@ -55,18 +57,19 @@ def bullet_hit(life, bullet, limb):
 			_msg = ['The round misses slightly']
 		_detailed = True
 	else:
-		_msg = ['%s shoots' % language.get_name(_owner)]
+		#if alife.sight.get_visiblity_of_position(life, _owner['pos']) >= .4:
+		#	_msg = ['%s\'s %s' % (language.get_name(_owner), bullet['name'])]
+		#else:
+		_msg = ['%s hits your %s' % (limb, items.get_name(bullet))]
 	
-	_items_to_check = []
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})
 		_item = items.get_item_from_uid(item_uid)
 		
 		if 'storing' in _item:
 			for item_in_container_uid in _item['storing']:
-				print '*' * 100
 				_chance_of_hitting_item = bullet['size']*(_item['capacity']/float(_item['max_capacity']))
-				print 'percent chance of hitting item:', 1-_chance_of_hitting_item
+				
 				if random.uniform(0, 1)<_chance_of_hitting_item:
 					continue
 				

@@ -174,6 +174,10 @@ def delete_menu(id, abort=False):
 def delete_active_menu(abort=True):
 	if MENUS:
 		delete_menu(ACTIVE_MENU['menu'], abort=abort)
+		
+		return True
+	
+	return False
 
 def get_menu(id):
 	return MENUS[id]
