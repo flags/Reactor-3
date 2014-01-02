@@ -5,6 +5,7 @@ import graphics as gfx
 import damage as dam
 import pathfinding
 import scripting
+import crafting
 import language
 import contexts
 import drawing
@@ -30,6 +31,7 @@ import json
 import fov
 import sys
 import os
+
 
 try:
 	import render_los
@@ -1372,6 +1374,14 @@ def perform_action(life):
 			
 			if 'player' in life:
 				gfx.message('Your %s has healed.' % wound['limb'])
+		
+		delete_action(life, action)
+	
+	elif _action['action'] == 'craft':
+		_item = items.get_item_from_uid(remove_item_from_inventory(life, _action['item_uid']))
+		_recipe = _item['craft'][_action['recipe_id']]
+		
+		crafting.execute_recipe(life, _item, _recipe)
 		
 		delete_action(life, action)
 	
