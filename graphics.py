@@ -544,7 +544,7 @@ def draw_message_box():
 		elif msg['style'] == 'player_combat_bad':
 			_fore_color = tcod.crimson
 		else:
-			_fore_color = tcod.Color(200, 200, 200)
+			_fore_color = tcod.Color(160, 160, 160)
 		
 		_c = 9*((_i>0)+1)
 		_back_color = tcod.Color(_c, _c, _c)

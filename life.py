@@ -2281,7 +2281,6 @@ def consume_item(life, item_id):
 	
 	life['eaten'].append(item_id)
 	remove_item_from_inventory(life, item_id)
-	items.delete_item(ITEMS[item_id])
 	
 	alife.speech.announce(life, 'consume_item', public=True)
 	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
@@ -3023,6 +3022,7 @@ def calculate_hunger(life):
 					_remove.append(_food)
 	
 	for _item in _remove:
+		items.delete_item(ITEMS[_item['uid']])
 		life['eaten'].remove(_item['uid'])
 	
 	if get_hunger_status(life) == 'Satiated':

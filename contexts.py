@@ -35,7 +35,6 @@ def _create_context_from_phrase(life, phrase):
 		if dialog.get_last_message(phrase['dialog_id'])['text']:
 			logic.show_event(dialog.get_last_message(phrase['dialog_id'])['text'], life=phrase['from'])
 		
-		#if lfe.has_dialog(LIFE[SETTINGS['controlling']]):
 		if dialog.is_turn_to_talk(LIFE[SETTINGS['controlling']], phrase['dialog_id']):
 			dialog.process(LIFE[SETTINGS['controlling']], phrase['dialog_id'])
 	
