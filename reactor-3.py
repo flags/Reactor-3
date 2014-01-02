@@ -82,7 +82,7 @@ def death():
 	if _time_alive == 1:
 		_sub_sub_string = 'Lived 1 day'
 	else:
-		_sub_sub_string = 'Lived %s days' % (_time_alive)
+		_sub_sub_string = 'Lived %0.1f days' % (_time_alive)
 	
 	gfx.fade_to_black(1)	
 	

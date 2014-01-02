@@ -544,7 +544,7 @@ def draw_message_box():
 		elif msg['style'] == 'player_combat_bad':
 			_fore_color = tcod.crimson
 		else:
-			_fore_color = tcod.white
+			_fore_color = tcod.Color(200, 200, 200)
 		
 		_c = 9*((_i>0)+1)
 		_back_color = tcod.Color(_c, _c, _c)
@@ -601,7 +601,7 @@ def draw_status_line():
 		blit_string(len(_non_flashing_text)+1,
 		            MAP_WINDOW_SIZE[1]-1,
 		            ' - '.join(_flashing_text),
-		             'map')
+		            'map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:

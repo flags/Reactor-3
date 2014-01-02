@@ -329,6 +329,7 @@ def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
 	if not _dialog['choices']:
+		print 'No choice'
 		return False
 	
 	_choice = _dialog['choices'][_dialog['cursor_index']]

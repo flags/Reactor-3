@@ -741,7 +741,9 @@ def generate_town(map_gen, cell):
 				_x = x-_top_left[0]
 				_y = y-_top_left[1]
 				
-				if not _x or _x == _bot_right[0]-_top_left[0]-1 or not _y or _y == _bot_right[1]-_top_left[1]-1:
+				if (_x == 0 or _x == _bot_right[0]-_top_left[0]-1) and (_y >= 0 and _y < _bot_right[1]-_top_left[1]):
+					_fence_positions.append((x, y))
+				elif (_y == 0 or _y == _bot_right[1]-_top_left[1]-1) and (_x >= 0 and _x < _bot_right[0]-_top_left[0]):
 					_fence_positions.append((x, y))
 				else:
 					if _x == -1 or _y == -1 or _x == _bot_right[0]-_top_left[0] or _y == _bot_right[1]-_top_left[1]:
@@ -783,6 +785,26 @@ def generate_town(map_gen, cell):
 		if not _ext_chunk_key:
 			_ext_chunk_key = random.choice(_potential_exterior_chunks)
 		
+		#Concrete by door
+		_chunk = map_gen['chunk_map'][_ext_chunk_key]
+		_chunk['type'] = 'sidewalk'
+		
+		for y in range(0, map_gen['chunk_size']):
+			for x in range(0, map_gen['chunk_size']):
+				create_tile(map_gen, _chunk['pos'][0]+x, _chunk['pos'][1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+				
+		for chunk_key in get_neighbors_of_type(map_gen, _ext_chunk_key, 'other'):
+			_chunk = map_gen['chunk_map'][chunk_key]
+			
+			for y in range(0, map_gen['chunk_size']):
+				for x in range(0, map_gen['chunk_size']):
+					_x = _chunk['pos'][0]+x
+					_y = _chunk['pos'][1]+y
+					
+					if (_x, _y) in _fence_positions:
+						_fence_positions.remove((_x, _y))
+						_avoid_positions.append((_x, _y))
+		
 		_buildings.append({'rooms': _room_chunks[:], 'exterior_chunk': _ext_chunk_key})
 	
 	for building in _buildings:
@@ -806,21 +828,31 @@ def generate_town(map_gen, cell):
 		               only_tiles=tiles.GRASS_TILES,
 		               pos_is_chunk_key=True)
 	
-	for pos in _fence_positions:
-		for z in range(0, 2):
-			create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WOOD_TILES))
-	
 	for pos in _avoid_positions:
-		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES] and not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.WOOD_TILES]:
+		if pos in _fence_positions or pos in _sidewalk_positions:
+			continue
+		
+		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES]:
 			continue
 		
 		create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
 	
 	for pos in _sidewalk_positions:
-		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES] and not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.WOOD_TILES]:
+		if pos in _avoid_positions:
+			continue
+		
+		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES]:
 			continue
 		
 		create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
+	
+	for pos in _fence_positions:
+		#Avoid building fences in yards of other chunks
+		if pos in _avoid_positions:
+			continue
+		
+		for z in range(0, 2):
+			create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WOOD_TILES))
 	
 	#for chunk_key in _yard_chunks:
 	#	create_splotch(map_gen,
