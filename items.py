@@ -738,7 +738,7 @@ def tick_item(item):
 		
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
 			if item['type'] == 'bullet':
-				effects.create_light(item['pos'], (255, 0, 0), 9, 0, fade=0.1)
+				effects.create_light(item['pos'], (255, 0, 0), 9, 1, fade=4.5)
 			
 			logging.debug('Item #%s hit a wall.' % item['uid'])
 			
@@ -753,7 +753,7 @@ def tick_item(item):
 					remove_from_chunk(item)
 					item['pos'] = [pos[0],pos[1],_life['pos'][2]]
 					add_to_chunk(item)
-					life.damage_from_item(_life,item,60)
+					life.damage_from_item(_life, item)
 					
 					if item['uid'] in ITEMS:
 						delete_item(item)
