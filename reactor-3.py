@@ -85,7 +85,7 @@ def death():
 		_sub_sub_string = 'Lived 1 day'
 	else:
 		if _time_alive < 1:
-			_sub_sub_string = 'Lived %0.1f day' % (_time_alive)
+			_sub_sub_string = 'Lived less than a day'
 		else:
 			_sub_sub_string = 'Lived %0.1f days' % (_time_alive)
 	

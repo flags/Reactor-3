@@ -57,10 +57,7 @@ def bullet_hit(life, bullet, limb):
 			_msg = ['The round misses slightly']
 		_detailed = True
 	else:
-		#if alife.sight.get_visiblity_of_position(life, _owner['pos']) >= .4:
-		#	_msg = ['%s\'s %s' % (language.get_name(_owner), bullet['name'])]
-		#else:
-		_msg = ['%s hits your %s' % (limb, items.get_name(bullet))]
+		_msg = ['%s hits your %s' % (items.get_name(bullet), limb)]
 	
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})

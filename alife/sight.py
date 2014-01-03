@@ -48,15 +48,14 @@ def look(life):
 		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 	else:
 		#This is for optimizing. Be careful if you mess with this...
-		_nearby_alife = []
+		_nearby_alife = {}
+		
 		for alife in LIFE.values():
 			if alife['id'] == life['id']:
 				continue
 			
 			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
-				_nearby_alife.append(alife['pos'][:])
-		
-		_nearby_alife.sort()
+				_nearby_alife[alife['id']] = {'pos': alife['pos'][:], 'stance': alife['stance']}
 		
 		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
 		
@@ -91,35 +90,50 @@ def look(life):
 			if not is_in_fov(life, ai['pos']):
 				continue
 			
-			life['seen'].append(ai['id'])
+			if not ai['id'] in life['know']:
+				brain.meet_alife(life, ai)
 			
-			if ai['id'] in life['know']:
-				if life['think_rate'] == life['think_rate_max']:
-					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
-					judgement.judge_life(life, ai['id'])
-				
-				if ai['dead']:
-					if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
-						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
-					life['know'][ai['id']]['dead'] = True
-				elif ai['asleep']:
-					life['know'][ai['id']]['asleep'] = True
-				
-				life['know'][ai['id']]['last_seen_time'] = 0
-				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
-				life['know'][ai['id']]['escaped'] = False
-				life['know'][ai['id']]['state'] = ai['state']
-				life['know'][ai['id']]['state_tier'] = ai['state_tier']
-				
-				if brain.alife_has_flag(life, ai['id'], 'search_map'):
-					brain.unflag_alife(life, ai['id'], 'search_map')
-				
-				_chunk_id = lfe.get_current_chunk_id(ai)
-				judgement.judge_chunk(life, _chunk_id, seen=True)
-				
+			_visibility = get_visiblity_of_position(life, ai['pos'])
+			
+			if ai['stance'] == 'standing':
+				_min_visibility = .15
+			elif ai['stance'] == 'crouching':
+				_min_visibility = .35
+			elif ai['stance'] == 'crawling':
+				_min_visibility = .5
+			
+			if WORLD_INFO['map'][ai['pos'][0]][ai['pos'][1]][ai['pos'][2]+1]:
+				_min_visibility *= .5
+			
+			if _visibility < _min_visibility:
 				continue
 			
-			brain.meet_alife(life, ai)
+			life['seen'].append(ai['id'])
+			
+			if life['think_rate'] == life['think_rate_max']:
+				lfe.create_and_update_self_snapshot(LIFE[ai['id']])
+				judgement.judge_life(life, ai['id'])
+			
+			if ai['dead']:
+				if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
+					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+				life['know'][ai['id']]['dead'] = True
+			elif ai['asleep']:
+				life['know'][ai['id']]['asleep'] = True
+			elif not ai['asleep']:
+				life['know'][ai['id']]['asleep'] = False
+			
+			life['know'][ai['id']]['last_seen_time'] = 0
+			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
+			life['know'][ai['id']]['escaped'] = False
+			life['know'][ai['id']]['state'] = ai['state']
+			life['know'][ai['id']]['state_tier'] = ai['state_tier']
+			
+			if brain.alife_has_flag(life, ai['id'], 'search_map'):
+				brain.unflag_alife(life, ai['id'], 'search_map')
+			
+			_chunk_id = lfe.get_current_chunk_id(ai)
+			judgement.judge_chunk(life, _chunk_id, seen=True)
 	
 		for item in [ITEMS[i] for i in chunk['items'] if i in ITEMS]:
 			if not is_in_fov(life, item['pos']):

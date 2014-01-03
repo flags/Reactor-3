@@ -2805,9 +2805,12 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, tcod.gray)
 		tcod.console_print(0, _holding_position[0], _holding_position[1], 'Holding nothing.')
 	
-	#Stance
+	#Stance and Visibility
 	tcod.console_set_default_foreground(0, tcod.light_gray)
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
+	
+	if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]+1]:
+		tcod.console_print(0, _stance_position[0]+len(life['stance'])+1, _stance_position[1], '(Covered)')
 	
 	#Health
 	_health_string = get_health_status(life)
@@ -2825,17 +2828,9 @@ def draw_life_info():
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
-	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
-	#_blood_g = numbers.clip(int(life['blood']),0,255)
-	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
-	#_nutrition_str = language.prettify_string_array([get_hunger_status(life), get_thirst_status(life)], 30)
-	#_hunger_str = get_thirst_status(life)
-	#tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
-	
 	_longest_state = 3
 	_visible_life = []
+	
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		if ai['dead']:
 			_state = 'dead'
@@ -2849,9 +2844,6 @@ def draw_life_info():
 	
 	_i = 5
 	_xmod = _longest_state+3
-	
-	#tcod.console_set_default_foreground(0, tcod.light_grey)
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
 	
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		if ai['dead']:
@@ -3497,7 +3489,7 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 	
 	return _scatter
 
-def damage_from_item(life, item, damage):
+def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	

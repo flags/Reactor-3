@@ -331,6 +331,7 @@ def generate_noise_map(map_gen):
 							continue
 						
 						_bushes.append((_x, _y, 2))
+						_bushes.append((_x, _y, 3))
 					
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 	
@@ -341,7 +342,7 @@ def generate_noise_map(map_gen):
 		create_tree(map_gen, tree[:3], tree[3])
 	
 	for bush in _bushes:
-		if not map_gen['map'][bush[0]][bush[1]][bush[2]]['id'] in BUSH_EXCLUDE_TILES:
+		if not map_gen['map'][bush[0]][bush[1]][2]['id'] in BUSH_EXCLUDE_TILES:
 			continue
 		
 		create_tile(map_gen, bush[0], bush[1], bush[2], random.choice(tiles.BUSH_TILES))

@@ -562,9 +562,6 @@ def manage_territory(life, group_id):
 		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:
 			continue
 		
-		print 'L@@K'* 20
-		print life['name'], LIFE[seen_life_id]['name'], _target['alignment']
-		
 		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
 
 def manage_combat(life, group_id):
