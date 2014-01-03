@@ -94,18 +94,9 @@ def look(life):
 				brain.meet_alife(life, ai)
 			
 			_visibility = get_visiblity_of_position(life, ai['pos'])
+			_stealth_coverage = get_stealth_coverage(ai)
 			
-			if ai['stance'] == 'standing':
-				_min_visibility = .15
-			elif ai['stance'] == 'crouching':
-				_min_visibility = .35
-			elif ai['stance'] == 'crawling':
-				_min_visibility = .5
-			
-			if WORLD_INFO['map'][ai['pos'][0]][ai['pos'][1]][ai['pos'][2]+1]:
-				_min_visibility *= .5
-			
-			if _visibility < _min_visibility:
+			if _visibility < 1-_stealth_coverage:
 				continue
 			
 			life['seen'].append(ai['id'])
@@ -285,6 +276,24 @@ def get_visiblity_of_position(life, pos):
 	_distance = numbers.distance(life['pos'], pos)
 	
 	return 1-numbers.clip((_distance/float(get_vision(life))), 0, 1)
+
+def get_stealth_coverage(life):
+	_coverage = 1.0
+	
+	if life['stance'] == 'standing':
+		_stealth_mod = 1.0
+	elif life['stance'] == 'crouching':
+		_stealth_mod = 0.75
+	else:
+		_stealth_mod = 0.55
+	
+	_stealth_mod *= numbers.clip(len(brain.get_flag(life, 'visible_chunks'))/100.0, 0, 1.0)
+	
+	for z in range(1, 6):
+		if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]+z]:
+			_coverage *= _stealth_mod
+	
+	return numbers.clip(_coverage, 0.0, 1.0)
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()

@@ -2809,8 +2809,18 @@ def draw_life_info():
 	tcod.console_set_default_foreground(0, tcod.light_gray)
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
 	
-	if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]+1]:
-		tcod.console_print(0, _stance_position[0]+len(life['stance'])+1, _stance_position[1], '(Covered)')
+	_stealth_coverage = sight.get_stealth_coverage(life)
+	
+	if _stealth_coverage <= .25:
+		_covered_string = 'Hidden'
+	elif _stealth_coverage <= .45:
+		_covered_string = 'Lurking'
+	elif _stealth_coverage <= .65:
+		_covered_string = 'Spying'
+	else:
+		_covered_string = 'Visible'
+	
+	tcod.console_print(0, _stance_position[0]+len(life['stance'])+1, _stance_position[1], '(%s)' % _covered_string)
 	
 	#Health
 	_health_string = get_health_status(life)
