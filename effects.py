@@ -274,8 +274,20 @@ def draw_vapor(pos, vapor):
 #	register_effect(_effect)
 
 def calculate_all_effects():
+	_remove_lights = []
+	
 	for effect in EFFECTS.values():
 		effect['callback'](effect)
+	
+	for light in WORLD_INFO['lights']:
+		if light['fade']:
+			light['brightness'] -= light['fade']
+		
+		if light['brightness'] <= 0:
+			_remove_lights.append(light)
+
+	for light in _remove_lights:
+		delete_light(light)
 
 def update_effect(effect):
 	_x = effect['pos'][0]-CAMERA_POS[0]

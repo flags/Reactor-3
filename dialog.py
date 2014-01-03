@@ -329,6 +329,7 @@ def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
 	if not _dialog['choices']:
+		print 'No choice'
 		return False
 	
 	_choice = _dialog['choices'][_dialog['cursor_index']]
@@ -350,7 +351,9 @@ def process_dialog_for_player(dialog_id, loop=False):
 	_dialog['choices'] = []
 	_dialog['loop_choices'] = []
 	_dialog['cursor_index'] = 0	
-	_last_message = get_last_message(dialog_id)
+	_last_message = get_last_message(dialog_id)	
+	
+	print 'loo8888888888888888888888op', LIFE[_last_message['from']]['name'], dialog_id
 	
 	if loop:
 		end_dialog(dialog_id)

@@ -761,7 +761,10 @@ def handle_input():
 		create_look_list()
 	
 	if INPUT['k']:
-		create_crafting_menu()
+		if menus.get_menu_by_name('Crafting')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Crafting'))
+		else:
+			create_crafting_menu()
 
 	if INPUT['1']:
 		if LIFE[SETTINGS['controlling']]:
@@ -1928,6 +1931,7 @@ def create_radio_menu():
 			_phrases.append(menus.create_item('title', 'Group (Member)', None))
 			_phrases.append(menus.create_item('single', 'Locate', 'Find leader location.'))
 			_phrases.append(menus.create_item('single', 'Suggest location', 'Suggest shelter location.'))
+			
 			if LIFE[SETTINGS['controlling']]['group']:
 				_phrases.append(menus.create_item('single', 'Jobs', 'Ask for work.', enabled=len(groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])['members'])>1))
 	
@@ -1940,22 +1944,82 @@ def create_radio_menu():
 	
 	menus.activate_menu(_menu)
 
+def craft_menu_action(entry):
+	_player = LIFE[SETTINGS['controlling']]
+	_item = ITEMS[entry['item_uid']]
+	_recipe = entry['recipe']
+	
+	crafting.perform_recipe(_player, _item, _recipe)
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
+
 def craft_menu_response(entry):
-	key = entry['key']
+	_player = LIFE[SETTINGS['controlling']]
+	_item = ITEMS[entry['item_uid']]
+	_menu_items = []
 	
-	if entry['action'] == 'dismantle':
-		crafting.dismantle_item(LIFE[SETTINGS['controlling']], entry['item_uid'])
+	for recipe in _item['craft']:
+		_difficulty = 0
+		_difficulty_string = ''
+		
+		if recipe['type'] == 'create_item':
+			if not crafting.meets_requirements(_player, recipe['requirements']):
+				continue
+			
+			_difficulty = crafting.get_recipe_difficulty(_player, _item, recipe)
+			
+			if _difficulty<=-3:
+				_difficulty_string = 'Hard'
+				_menu_item_color = tcod.crimson
+			elif _difficulty<0:
+				_difficulty_string = 'Doable'
+				_menu_item_color = tcod.light_green
+			else:
+				_difficulty_string = 'Easy'
+				_menu_item_color = tcod.green
+			
+			_menu_items.append(menus.create_item('single',
+			                                     recipe['name'],
+			                                     _difficulty_string,
+			                                     item_uid=_item['uid'],
+			                                     recipe=recipe,
+			                                     color=(_menu_item_color, tcod.color_lerp(tcod.white, _menu_item_color, .5))))
 	
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	_menu = menus.create_menu(title='Craft',
+	                          menu=_menu_items,
+	                          padding=(1,1),
+	                          position=(1,1),
+	                          format_str='$k: $v',
+	                          on_select=craft_menu_action)
+	
+	menus.activate_menu(_menu)
+	
+	#menus.delete_menu(ACTIVE_MENU['menu'])
 
 def create_crafting_menu():
 	_items = []
-	for item in [items.get_item_from_uid(i) for i in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']])]:
-		_items.append(menus.create_item('single',
-			item['name'],
-			None,
-			item_uid=item['uid'],
-		    action='dismantle'))
+	_item_names = {}
+	
+	for item in [items.get_item_from_uid(i) for i in crafting.get_items_for_crafting(LIFE[SETTINGS['controlling']])]:
+		if item['name'] in _item_names:
+			_item_names[item['name']]['values'][_item_names[item['name']]['value']] += 1
+			
+			continue
+		
+		_menu_item = menus.create_item('single',
+		                               item['name'],
+		                               1,
+		                               item_uid=item['uid'])
+		_items.append(_menu_item)
+		_item_names[item['name']] = _menu_item
+		
+	#for item in [items.get_item_from_uid(i) for i in crafting.get_items_for_dismantle(LIFE[SETTINGS['controlling']])]:
+	#	_items.append(menus.create_item('single',
+	#	                                item['name'],
+	#	                                None,
+	#	                                item_uid=item['uid'],
+	#	                                action='dismantle'))
 	
 	if _items:
 		_items.insert(0, menus.create_item('title', 'Dismantle', None, enabled=False))
@@ -1964,11 +2028,11 @@ def create_crafting_menu():
 		return False
 	
 	_menu = menus.create_menu(title='Crafting',
-		menu=_items,
-		padding=(1,1),
-		position=(1,1),
-		format_str='$k',
-		on_select=craft_menu_response)
+	                          menu=_items,
+	                          padding=(1,1),
+	                          position=(1,1),
+	                          format_str='($vx) $k',
+	                          on_select=craft_menu_response)
 	
 	menus.activate_menu(_menu)
 

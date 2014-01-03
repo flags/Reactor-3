@@ -1,4 +1,4 @@
-New in version 0.6.5:
+New in version 0.7:
 	* AI states now controlled by the GOAP planner.
 	* Entirely new ALife behaviors.
 	* Optimized ALife logic
@@ -18,6 +18,8 @@ New in version 0.6.5:
 	* Faster, more detailed world generation.
 	* Rewrote damage model.
 		* The size and material of an item now play a role in damage calculations.
+	* Better crafting.
+		* Success determined by skills.
 	* Groups are no longer tracked by the world.
 		* Instead, individuals track their interpretations of what the group is.
 	* NPCs can now learn more details about others and items.

@@ -5,6 +5,7 @@ import graphics as gfx
 import damage as dam
 import pathfinding
 import scripting
+import crafting
 import language
 import contexts
 import drawing
@@ -30,6 +31,7 @@ import json
 import fov
 import sys
 import os
+
 
 try:
 	import render_los
@@ -1375,6 +1377,14 @@ def perform_action(life):
 		
 		delete_action(life, action)
 	
+	elif _action['action'] == 'craft':
+		_item = items.get_item_from_uid(remove_item_from_inventory(life, _action['item_uid']))
+		_recipe = _item['craft'][_action['recipe_id']]
+		
+		crafting.execute_recipe(life, _item, _recipe)
+		
+		delete_action(life, action)
+	
 	elif _action['action'] == 'activate_item':
 		items.activate(ITEMS[_action['item_uid']])
 		
@@ -2281,7 +2291,6 @@ def consume_item(life, item_id):
 	
 	life['eaten'].append(item_id)
 	remove_item_from_inventory(life, item_id)
-	items.delete_item(ITEMS[item_id])
 	
 	alife.speech.announce(life, 'consume_item', public=True)
 	logging.info('%s consumed %s.' % (' '.join(life['name']), items.get_name(item)))
@@ -2796,9 +2805,22 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, tcod.gray)
 		tcod.console_print(0, _holding_position[0], _holding_position[1], 'Holding nothing.')
 	
-	#Stance
+	#Stance and Visibility
 	tcod.console_set_default_foreground(0, tcod.light_gray)
 	tcod.console_print(0, _stance_position[0], _stance_position[1], life['stance'].title())
+	
+	_stealth_coverage = sight.get_stealth_coverage(life)
+	
+	if _stealth_coverage <= .25:
+		_covered_string = 'Hidden'
+	elif _stealth_coverage <= .45:
+		_covered_string = 'Lurking'
+	elif _stealth_coverage <= .65:
+		_covered_string = 'Spying'
+	else:
+		_covered_string = 'Visible'
+	
+	tcod.console_print(0, _stance_position[0]+len(life['stance'])+1, _stance_position[1], '(%s)' % _covered_string)
 	
 	#Health
 	_health_string = get_health_status(life)
@@ -2816,17 +2838,9 @@ def draw_life_info():
 	                   _health_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
-	#_blood_r = numbers.clip(300-int(life['blood']),0,255)
-	#_blood_g = numbers.clip(int(life['blood']),0,255)
-	#_blood_str = 'Blood: %s' % numbers.clip(int(life['blood']), 0, 999)
-	#_nutrition_str = language.prettify_string_array([get_hunger_status(life), get_thirst_status(life)], 30)
-	#_hunger_str = get_thirst_status(life)
-	#tcod.console_set_default_foreground(0, tcod.Color(_blood_r,_blood_g,0))
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1,len(_info)+1, _blood_str)
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+len(_blood_str)+2, len(_info)+1, _nutrition_str)
-	
 	_longest_state = 3
 	_visible_life = []
+	
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		if ai['dead']:
 			_state = 'dead'
@@ -2840,9 +2854,6 @@ def draw_life_info():
 	
 	_i = 5
 	_xmod = _longest_state+3
-	
-	#tcod.console_set_default_foreground(0, tcod.light_grey)
-	#tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, len(_info)+3, '  State' + ' '*(_xmod-7) + 'Targets')
 	
 	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
 		if ai['dead']:
@@ -3023,6 +3034,7 @@ def calculate_hunger(life):
 					_remove.append(_food)
 	
 	for _item in _remove:
+		items.delete_item(ITEMS[_item['uid']])
 		life['eaten'].remove(_item['uid'])
 	
 	if get_hunger_status(life) == 'Satiated':
@@ -3487,7 +3499,7 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 	
 	return _scatter
 
-def damage_from_item(life, item, damage):
+def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	

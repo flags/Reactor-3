@@ -275,12 +275,16 @@ LEAF_2 = {'id': 'leaf_2',
 BUSH_1 = {'id': 'bush_1',
             'icon': '\'',
             'color': (tcod.darker_chartreuse, tcod.Color(54, 108, 0)),
-            'burnable': True}
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
 
 BUSH_2 = {'id': 'bush_2',
             'icon': '`',
             'color': (tcod.Color(64, 128, 0), tcod.Color(39, 79, 0)),
-            'burnable': True}
+            'burnable': True,
+            'translucent': True,
+            'not_solid': True}
 
 ROOF_DARK = {'id': 'roof_dark',
             'icon': '^',

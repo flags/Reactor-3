@@ -9,7 +9,7 @@ Reactor 3 (R3) is a roguelike. You might be familiar with a few games in the gen
 
 R3 is a game about survival in a hostile, unforgiving environment. It takes place in the Chernobyl Exclusion Zone, where (in an alternate timeline) another disaster occurs, further corrupting the area. It is rumored that the items formed from the spike of radiation can be sold for high amounts of money on the black market.
 
-At its core, R3 is less about combat and more about reputation. The NPCs maintain their own interpretation of the world based on randomly generated personality traits and stats, and can act independently or in groups to accomplish tasks based on this intepretation. Bandits will attack on sight, while others will ask deeper questions before confrontation begins (Am I in danger? What have I heard about this person? etc)
+At its core, R3 is less about combat and more about reputation. The NPCs maintain their own interpretation of the world based on unique personality traits and stats, and can act independently or in groups to accomplish tasks based on this intepretation. Bandits will attack on sight, while others will ask deeper questions before confrontation begins (Am I in danger? What have I heard about this person? etc.)
 
 Combat is a last resort, but it is by no means neglected in terms of development. A full damage model is simulated, ranging from minor cuts and scrapes to full dismemberment depending on the type of injury. For example, a bullet fired towards someone wearing a backback will result in either the bullet tearing through it, or possibly colliding and causing damage to an item inside of it.
 
@@ -17,6 +17,10 @@ The game is developed in two parts: Engine and content. The engine still current
 
 Features
 ========
+
+* Huge randomized world. Explore military bases, abandoned towns,
+* Full ballistics system.
+* 
 
 ALife
 -----

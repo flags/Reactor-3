@@ -330,7 +330,7 @@ def understand(life):
 		lfe.change_goal(life, _goal, _tier, _plan)
 	else:
 		lfe.change_goal(life, 'idle', TIER_RELAXED, [])
-		logging.error('%s has no possible goal.' % ' '.join(life['name']))
+		#logging.error('%s has no possible goal.' % ' '.join(life['name']))
 		return False
 	
 	planner.think(life)
