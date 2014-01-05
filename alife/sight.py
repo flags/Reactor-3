@@ -287,7 +287,14 @@ def get_stealth_coverage(life):
 	else:
 		_stealth_mod = 0.55
 	
-	_stealth_mod *= numbers.clip(len(brain.get_flag(life, 'visible_chunks'))/100.0, 0, 1.0)
+	_visible_chunk_keys = brain.get_flag(life, 'visible_chunks')
+	
+	if _visible_chunk_keys:
+		_visible_chunks = len(_visible_chunk_keys)
+	else:
+		_visible_chunks = 100
+	
+	_stealth_mod *= numbers.clip(_visible_chunks/100.0, 0, 1.0)
 	
 	for z in range(1, 6):
 		if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]+z]:
