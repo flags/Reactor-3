@@ -2627,7 +2627,13 @@ def draw_life():
 			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
 			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
 			
-			if not alife.sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
+			if not sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
+				continue
+			
+			_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
+			_stealth_coverage = sight.get_stealth_coverage(life)
+			
+			if _visibility < 1-_stealth_coverage:
 				continue
 			
 			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:

@@ -150,7 +150,7 @@ def fire(life, target, limb=None):
 	
 	direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
 	
-	alife.noise.create(life['pos'], 120, '%s fire' % weapon['name'], 'something discharge')
+	alife.noise.create(life['pos'], 120, '%s fire' % weapon['name'], 'something discharge', target=life['id'])
 	
 	#TODO: Clean this up...
 	_bullet = items.get_item_from_uid(_feed['rounds'].pop())
