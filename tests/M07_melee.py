@@ -11,12 +11,13 @@ _LIFE = {'score': 0,
          'seen': ['1', '2'],
          'stats': {'melee': 5},
          'stance_ticks': 0,
-         'stances': {'punching': {'level': 6, 'attack': {'force': 2}},
-                     'deflect': {'level': 5, 'defend': {'force': .3}},
+         'stances': {'punching': {'level': 9, 'attack': {'force': 1}},
+                     'deflect': {'level': 6, 'defend': {'force': 1}},
                      'standing': {'level': 5, 'move': 1.0},
-                     'off_balance': {'level': 4, 'stunned': True},
+                     'off_balance': {'level': 6, 'stunned': True, 'repeat': 'knocked_over'},
                      'crouching': {'level': 4, 'exposed_limbs': ['head', 'neck', 'chest'], 'move': 0.5},
-                     'sweep_kick': {'level': 3, 'attack': {'force': 5}},
+                     'sweep_kick': {'level': 2, 'attack': {'force': 3}},
+                     'stomp': {'level': 4, 'attack': {'force': 7}, 'target_limbs': ['head', 'neck', 'chest']},
                      'crawling': {'level': 2, 'exposed_limbs': ['head', 'neck', 'chest'], 'move': 0.3},
                      'knocked_over': {'level': 1, 'stunned': True}}}
 p1 = copy.deepcopy(_LIFE)
@@ -37,8 +38,8 @@ def get_stance(life, stance):
 def get_current_stance(life):
 	return get_stance(life, life['stance'])
 
-def _get_quickest(life, thing, penalty=0, limit=5):
-	_best_stance = {'stances': None, 'level': -1}
+def _get_quickest(life, thing, target_id=None, penalty=0, limit=5):
+	_best_stance = {'stances': [], 'level': -1}
 	
 	for stance_name in life['stances']:
 		_stance = get_stance(life, stance_name)
@@ -47,6 +48,28 @@ def _get_quickest(life, thing, penalty=0, limit=5):
 			continue
 		
 		_delay = abs((get_current_stance(life)['level']-penalty)-_stance['level'])
+		
+		if 'target_limbs' in _stance and target_id:
+			_target_stance = get_current_stance(LIFE[target_id])
+			
+			_continue = False
+			if 'exposed_limbs' in _target_stance:
+				for target_limb in _stance['target_limbs']:
+					#TODO: ENABLE THIS
+					#if not target_limb in LIFE[target_id]['body']:
+					#	continue
+					
+					if target_limb in _target_stance['exposed_limbs']:
+						_delay -= 1
+					else:
+						_continue = True
+						
+						break
+			else:
+				continue
+			
+			if _continue:
+				continue
 		
 		if _delay>limit:
 			continue
@@ -66,8 +89,8 @@ def _get_quickest(life, thing, penalty=0, limit=5):
 def get_quickest_move(life, limit=5):
 	return _get_quickest(life, 'move', limit=limit)
 
-def get_quickest_attack(life, limit=5):
-	return _get_quickest(life, 'attack', limit=limit)
+def get_quickest_attack(life, target_id, limit=5):
+	return _get_quickest(life, 'attack', target_id=target_id, limit=limit)
 
 def get_quickest_defend(life, limit=3):
 	return _get_quickest(life, 'defend', limit=limit)
@@ -85,10 +108,17 @@ def enter_stance(life, stance, forced=False, **kwargs):
 	if forced:
 		life['stance_flags']['forced'] = True
 	
-	print life['name'], 'is changing stance:', stance, life['stance_flags']
+	print life['name'], '->', stance, _time
 
 def stun(life, force=0):
-	return enter_stance(life, get_quickest_stunned(life, penalty=force), forced=True)
+	_current_stance = get_current_stance(life)
+	
+	if 'repeat' in _current_stance:
+		_next_stance = 'knocked_over'
+	else:
+		_next_stance = get_quickest_stunned(life, penalty=force)
+	
+	return enter_stance(life, _next_stance, forced=True)
 
 def attack(life, target_id, stance):
 	print life['name'], 'hit', LIFE[target_id]['name']+':', stance
@@ -115,12 +145,17 @@ def think(life):
 			continue
 		
 		_target = LIFE[life_id]
-		_stance = get_current_stance(_target)
+		_current_target_stance = get_current_stance(_target)
 		
-		if 'attack' in _stance:
+		if _target['next_stance']:
+			_next_target_stance = get_stance(_target, _target['next_stance'])
+		else:
+			_next_target_stance = None
+		
+		if _next_target_stance and 'attack' in _next_target_stance:
 			_incoming.append({'target_id': life_id, 'time': _target['stance_ticks']})
-		elif not 'defend' in _stance or not random.randint(0, life['stats']['melee']):
-			if 'defend' in _stance:
+		elif not 'defend' in _current_target_stance or not random.randint(0, life['stats']['melee']):
+			if 'defend' in _current_target_stance:
 				print life['name'], 'tries to break', LIFE[life_id]['name'] 
 			
 			_targets.append({'target_id': life_id})
@@ -134,7 +169,7 @@ def think(life):
 				break
 			
 			if incoming_attack['time'] < life['stance_ticks'] and random.randint(0, life['stats']['melee']):
-				_has_counter_attack = get_quickest_attack(life, limit=incoming_attack['time'])
+				_has_counter_attack = get_quickest_attack(life, incoming_attack['target_id'], limit=incoming_attack['time'])
 				
 				if _has_counter_attack:
 					print life['name'], 'is countering', LIFE[incoming_attack['target_id']]['name']
@@ -143,11 +178,12 @@ def think(life):
 				_has_defend = get_quickest_defend(life, limit=incoming_attack['time'])
 				
 				if _has_defend:
-					print life['name'], 'is defending against', LIFE[incoming_attack['target_id']]['name']
-					return enter_stance(life, _has_defend, target_id=incoming_attack['target_id'])
+					if not 'defend' in get_current_stance(life) and not (life['next_stance'] and 'defend' in get_stance(life, life['next_stance'])):
+						print life['name'], 'is defending against', LIFE[incoming_attack['target_id']]['name']
+						return enter_stance(life, _has_defend, target_id=incoming_attack['target_id'])
 		
 		if life['next_stance']:
-			#print life['name'], life['next_stance'], life['stance_ticks']
+			#print life['name'], '...', life['next_stance'], life['stance_ticks']
 			
 			life['stance_ticks'] -= 1
 			
@@ -157,6 +193,8 @@ def think(life):
 			life['stance_ticks'] = 0
 			life['stance'] = life['next_stance']
 			life['next_stance'] = None
+			
+			print life['name'], '=', life['stance'], life['stance_flags']
 			
 			_stance = get_current_stance(life)
 			_flags = life['stance_flags'].copy()
@@ -181,7 +219,7 @@ def think(life):
 				return enter_stance(life, get_quickest_move(life))
 				
 			for target in _targets:
-				return enter_stance(life, get_quickest_attack(life), target_id=target['target_id'])
+				return enter_stance(life, get_quickest_attack(life, target['target_id']), target_id=target['target_id'])
 
 for i in range(24):
 	think(p1)
