@@ -2633,7 +2633,9 @@ def draw_life():
 			_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
 			_stealth_coverage = sight.get_stealth_coverage(life)
 			
-			if _visibility < 1-_stealth_coverage:
+			
+			
+			if not 'player' in life and _visibility > _stealth_coverage:
 				continue
 			
 			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:

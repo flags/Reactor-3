@@ -383,17 +383,17 @@ def generate_noise_map(map_gen):
 		               'center_pos': _center_pos[:]})
 	
 	_cell_types = {'Outpost': {'callback': generate_outpost,
-	                           'min_cells': 20,
-	                           'max_cells': 150,
-	                           'difficulty_min': 0.35,
-	                           'difficulty_max': 0.75,
-	                           'avoid_types': {'Outpost': 250}},
+	                           'min_cells': 10,
+	                           'max_cells': 350,
+	                           'difficulty_min': 0.25,
+	                           'difficulty_max': 0.95,
+	                           'avoid_types': {'Outpost': 150}},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
 	                           'max_cells': 500,
 	                           'difficulty_min': 0.0,
 	                           'difficulty_max': 0.85,
-	                           'avoid_types': {'Farm': 350}},
+	                           'avoid_types': {'Farm': 250}},
 	               'Town': {'callback': generate_town,
 	                           'min_cells': 350,
 	                           'max_cells': 1000,
@@ -1466,22 +1466,25 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 				     {'item': 'sneakers', 'rarity': 1.0},
 				     {'item': 'white t-shirt', 'rarity': 1.0},
 				     {'item': 'white cloth', 'rarity': 0.4},
-			         {'item': 'glock', 'rarity': 0.25},
-			         {'item': '9x19mm magazine', 'rarity': 0.3}]
+			          {'item': 'glock', 'rarity': 0.25},
+			          {'item': '9x19mm magazine', 'rarity': 0.3}]
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
 		elif _room == 'bathroom':
+			_storage_items = [{'item': 'aspirin', 'rarity': 1.0}]
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			_floor_tiles = tiles.BLUE_FLOOR_TILES
 		elif _room == 'bedroom':
 			_items = [{'item': 'bed', 'rarity': 1.0},
 			          {'item': 'wooden dresser', 'rarity': 0.5}]
 			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
 				     {'item': 'leather backpack', 'rarity': 0.65},
+			          {'item': 'chest holster', 'rarity': 0.65},
 				     {'item': 'sneakers', 'rarity': 1.0},
 				     {'item': 'white t-shirt', 'rarity': 1.0},
-				     {'item': 'white cloth', 'rarity': 0.4},
-			         {'item': 'glock', 'rarity': 0.25},
-			         {'item': '9x19mm magazine', 'rarity': 0.3}]
+			          {'item': 'white cloth', 'rarity': 0.4},
+			          {'item': 'glock', 'rarity': 0.25},
+			          {'item': '9x19mm magazine', 'rarity': 0.3}]
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			_floor_tiles = tiles.DARK_BLUE_FLOOR_TILES
 		elif _room == 'small1':
@@ -1490,15 +1493,15 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 			_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
 			_items = [{'item': 'bed', 'rarity': 1.0}]
 			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-				     {'item': 'leather backpack', 'rarity': 0.65},
-				     {'item': 'sneakers', 'rarity': 1.0},
-				     {'item': 'white t-shirt', 'rarity': 1.0},
-				     {'item': 'white cloth', 'rarity': 0.4}]
+			                  {'item': 'leather backpack', 'rarity': 0.65},
+			                  {'item': 'sneakers', 'rarity': 1.0},
+			                  {'item': 'white t-shirt', 'rarity': 1.0},
+			                  {'item': 'white cloth', 'rarity': 0.4}]
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 		elif _room == 'landing':
 			_items = [{'item': 'coat rack', 'rarity': 1.0}]
 			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
-			          {'item': 'sneakers', 'rarity': 1.0}]
+			                  {'item': 'sneakers', 'rarity': 1.0}]
 			
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			          
