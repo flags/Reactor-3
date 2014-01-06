@@ -255,6 +255,12 @@ def can_see_target(life, target_id):
 	if not _can_see:
 		return False
 	
+	_visibility = get_visiblity_of_position(life, LIFE[target_id]['pos'])
+	_stealth_coverage = get_stealth_coverage(LIFE[target_id])
+	
+	if _visibility < 1-_stealth_coverage:
+		return False
+	
 	return _can_see
 
 def view_blocked_by_life(life, position, allow=[]):
