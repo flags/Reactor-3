@@ -401,7 +401,7 @@ def generate_noise_map(map_gen):
 	                           'difficulty_max': 0.99}}
 	_empty_cell_types = {'Forest': generate_forest}	
 	_zone_entry_position = (125, 125)
-	_npp_position = (map_gen['size'][0]-120, map_gen['size'][1]-120)
+	_npp_position = (map_gen['size'][0]-25, map_gen['size'][1]-25)
 	_difficulty_distance = numbers.distance(_zone_entry_position, _npp_position)
 	_occupied_cells = {}
 	
@@ -439,7 +439,7 @@ def generate_noise_map(map_gen):
 			
 			_difficulty_percentage = numbers.clip(numbers.distance(cell['center_pos'], _zone_entry_position)/float(_difficulty_distance), 0, 1)
 			if not _cell_type['difficulty_min'] < _difficulty_percentage <= _cell_type['difficulty_max']:
-				logging.debug('Rejected cell (difficulty): %s' % cell_type)
+				logging.debug('Rejected cell (difficulty): %s (%s)' % (cell_type, _difficulty_percentage))
 				
 				continue
 			

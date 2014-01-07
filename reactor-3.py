@@ -46,11 +46,44 @@ import sys
 
 CYTHON_ENABLED = True
 
+
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
-	CAMERA_POS[0] = numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
-	CAMERA_POS[1] = numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
-	CAMERA_POS[2] = pos[2]
+	
+	if SETTINGS['controlling']:
+		_life = LIFE[SETTINGS['controlling']]
+		_top_left = MAP_SIZE[:]
+		_bot_right = [0, 0, 0]
+		
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if LIFE[life_id]['pos'][0] < _top_left[0]:
+				_top_left[0] = LIFE[life_id]['pos'][0]
+			
+			if LIFE[life_id]['pos'][1] < _top_left[1]:
+				_top_left[1] = LIFE[life_id]['pos'][1]
+			
+			if LIFE[life_id]['pos'][0] > _bot_right[0]:
+				_bot_right[0] = LIFE[life_id]['pos'][0]
+			
+			if LIFE[life_id]['pos'][1] > _bot_right[1]:
+				_bot_right[1] = LIFE[life_id]['pos'][1]
+			
+			_target_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)
+			pos = numbers.lerp_velocity(pos, _target_pos, .2)
+			
+			brain.flag(_life, 'camera_lean', value=_target_pos[:])
+			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
+		
+		if not LIFE[SETTINGS['controlling']]['seen']:
+			if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<10:
+				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), .2)
+			else:
+				brain.unflag(_life, 'camera_lean')
+				brain.unflag(_life, 'camera_lean_time')
+	
+	CAMERA_POS[0] = int(round(numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
+	CAMERA_POS[1] = int(round(numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
+	CAMERA_POS[2] = int(round(pos[2]))
 	
 	if not _orig_pos == CAMERA_POS:
 		gfx.refresh_view('map')
