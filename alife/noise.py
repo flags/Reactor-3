@@ -11,6 +11,7 @@ import language
 import judgement
 import numbers
 import sight
+import brain
 
 import logging
 import random
@@ -21,11 +22,25 @@ def create(position, volume, close_text, far_text, **sound):
 	_noise = {'pos': position,
 	          'volume': volume,
 	          'text': (close_text, far_text)}
+	_noise.update(sound)
 	
 	_spread(_noise)
 
 def update_targets_around_noise(life, noise):
 	_most_likely_target = {'target': None, 'last_seen_time': 0}
+	
+	if 'target' in noise and not life['id'] == noise['target']:
+		_visiblity = numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
+		_visiblity = numbers.clip(_visiblity+(numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
+		
+		print 'vis', life['name'], _visiblity, sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos'])
+		
+		if _visiblity >= sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos']):
+			brain.meet_alife(life, LIFE[noise['target']])
+			
+			life['know'][noise['target']]['escaped'] = 1
+			life['know'][noise['target']]['last_seen_at'] = noise['pos'][:]
+			life['know'][noise['target']]['last_seen_time'] = 0
 	
 	for target in life['know'].values():
 		if not target['escaped']:
@@ -54,8 +69,9 @@ def _spread(noise):
 		if alife['dead']:
 			continue
 		
+		_can_see = False
 		if sight.can_see_position(alife, noise['pos']):
-			continue
+			_can_see = True
 		
 		_dist = numbers.distance(noise['pos'], alife['pos'])
 		
@@ -69,10 +85,11 @@ def _spread(noise):
 		
 		#TODO: Check walls between positions
 		#TODO: Add memory
-		if _dist >=noise['volume']/2:
-			if 'player' in alife:
-				gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string))
-		else:
-			if 'player' in alife:
-				gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string))
+		if not _can_see:
+			if _dist >=noise['volume']/2:
+				if 'player' in alife:
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string))
+			else:
+				if 'player' in alife:
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string))
 				
