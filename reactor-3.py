@@ -56,6 +56,9 @@ def move_camera(pos, scroll=False):
 		_bot_right = [0, 0, 0]
 		
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if LIFE[life_id]['dead']:
+				continue
+			
 			if LIFE[life_id]['pos'][0] < _top_left[0]:
 				_top_left[0] = LIFE[life_id]['pos'][0]
 			
@@ -69,14 +72,17 @@ def move_camera(pos, scroll=False):
 				_bot_right[1] = LIFE[life_id]['pos'][1]
 			
 			_target_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)
-			pos = numbers.lerp_velocity(pos, _target_pos, .2)
+			pos = numbers.lerp_velocity(pos, _target_pos, .35)[:2]
+			pos.append(2)
 			
 			brain.flag(_life, 'camera_lean', value=_target_pos[:])
 			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
 		
 		if not LIFE[SETTINGS['controlling']]['seen']:
-			if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<10:
-				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), .2)
+			if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
+				_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/20.0, 0, .35)
+				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+				pos.append(2)
 			else:
 				brain.unflag(_life, 'camera_lean')
 				brain.unflag(_life, 'camera_lean_time')

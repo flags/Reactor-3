@@ -386,7 +386,7 @@ def generate_noise_map(map_gen):
 	                           'min_cells': 10,
 	                           'max_cells': 350,
 	                           'difficulty_min': 0.25,
-	                           'difficulty_max': 0.95,
+	                           'difficulty_max': 1.0,
 	                           'avoid_types': {'Outpost': 150}},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
@@ -398,7 +398,7 @@ def generate_noise_map(map_gen):
 	                           'min_cells': 350,
 	                           'max_cells': 1000,
 	                           'difficulty_min': 0.0,
-	                           'difficulty_max': 0.99}}
+	                           'difficulty_max': 1.0}}
 	_empty_cell_types = {'Forest': generate_forest}	
 	_zone_entry_position = (125, 125)
 	_npp_position = (map_gen['size'][0]-25, map_gen['size'][1]-25)

@@ -32,3 +32,5 @@ Factor weather into visiblity
 
 "Scan" mode. Over a number of ticks, a heatmap is generated of the
 	best places to hide in the surrounding area
+
+When weapons are dropped, the magazines inside the guns are not disowned.

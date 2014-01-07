@@ -74,7 +74,7 @@ def regenerate_world():
 	pre_setup_world()
 	
 	try:
-		mapgen.generate_map(size=(450, 450, 10),
+		mapgen.generate_map(size=(650, 650, 10),
 			                towns=1,
 			                factories=0,
 			                outposts=2,
