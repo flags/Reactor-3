@@ -1,4 +1,4 @@
-from globals import *
+from globals import WORLD_INFO
 
 import worldgen
 import items
@@ -62,11 +62,17 @@ LIFE_CLASSES = {'soldier': {'species': SOLDIER_SPECIES,
                               'banned_goals': []}}
 
 
-def generate_life(life_class, amount=1, spawn_chunks=[]):
+def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
 	_life_species = LIFE_CLASSES[life_class]['species']
 	_spawn_list = []
 	
-	if spawn_chunks:
+	if position:
+		_spawn = position[:]
+		
+		if not len(_spawn) == 3:
+			_spawn.append(2)
+		
+	elif spawn_chunks:
 		_chunk_key = random.choice(spawn_chunks)
 		_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
 	else:
@@ -77,7 +83,7 @@ def generate_life(life_class, amount=1, spawn_chunks=[]):
 			_chunk_key = random.choice(spawn_chunks)
 			_spawn = random.choice(alife.chunks.get_chunk(_chunk_key)['ground'])
 		
-		_alife = life.create_life(_life_species, map=WORLD_INFO['map'], position=[_spawn[0], _spawn[1], 2])
+		_alife = life.create_life(_life_species, position=[_spawn[0], _spawn[1], 2])
 		
 		for item in LIFE_CLASSES[life_class]['items']:
 			print item
@@ -122,3 +128,8 @@ def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[
 	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 	
 	return _group_members
+
+def get_spawn_in_ref(ref_type):
+	_chunk_key = random.choice(random.choice(WORLD_INFO['refs'][ref_type]))
+	
+	return random.choice(WORLD_INFO['chunk_map'][_chunk_key]['ground'])

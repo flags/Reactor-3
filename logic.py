@@ -5,6 +5,7 @@ import graphics as gfx
 import alife as alfe
 
 import encounters
+import situations
 import worldgen
 import effects
 import numbers
@@ -117,6 +118,8 @@ def tick_world():
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+	situations.execute_scheme()
 	
 	cache.scan_cache()
 	

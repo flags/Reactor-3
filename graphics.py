@@ -704,7 +704,7 @@ def message(text, style=None):
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):
-	message('%s: %s' % (' '.join(source['name']), text), style='radio')
+	message('%s: %s' % (source, text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	if not SETTINGS['running']:

@@ -5,6 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import historygen
+import situations
 import profiles
 import effects
 import weather
@@ -28,10 +29,7 @@ import sys
 
 BASE_ITEMS = ['sneakers',
               'blue jeans',
-              'white t-shirt',
-              'ALICE pack',
-              'radio',
-              'molotov']
+              'white t-shirt']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
 for i in range(10):
@@ -107,6 +105,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	weather.change_weather()
 	create_region_spawns()
 	randomize_item_spawns()
+	situations.form_scheme()
 	
 	alife.camps.create_all_camps()
 	
@@ -324,13 +323,13 @@ def create_player():
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
 	
-	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
-	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
-	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
-	life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
+	#life.add_item_to_inventory(PLAYER, items.create_item('glock'))
+	#life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
+	#life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
+	#life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
 	
-	for i in range(17):
-		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
+	#for i in range(17):
+	#	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
 	

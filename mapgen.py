@@ -148,7 +148,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		'outposts': outposts,
 		'underground': underground,
 		'chunk_map': {},
-		'refs': {'factories': [], 'villages': [], 'towns': [], 'buildings': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
+		'refs': {'factories': [], 'villages': [], 'towns': [], 'farms': [], 'buildings': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
 		'buildings': load_tiles('buildings.txt', detail),
 		'flags': {},
 		'map': maps.create_map(size=size),
@@ -517,6 +517,8 @@ def generate_forest(map_gen, cell):
 
 def generate_farm(map_gen, cell):
 	#Farmland (crops)
+	map_gen['refs']['farms'].append(cell['chunk_keys'][:])
+	
 	_farmland_chunks = cell['chunk_keys'][:]
 	for chunk_key in _farmland_chunks:
 		_chunk_pos = map_gen['chunk_map'][chunk_key]['pos']

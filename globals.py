@@ -61,7 +61,8 @@ WORLD_INFO = {'map': [],
 	'chunk_size': 5,
 	'lights': [],
 	'timers': [],
-	'weather': {}}
+	'weather': {},
+    'scheme': []}
 
 #Return values
 STATE_CHANGE = 2
@@ -92,7 +93,7 @@ SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
 FPS = 60
 FPS_TERRAFORM = 100
-LOW_FPS = 15
+TOTAL_PLANNED_SCHEME_EVENTS = 5
 FONT = 'terminal8x8_gs_as_incol.png'
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]
