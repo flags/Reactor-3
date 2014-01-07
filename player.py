@@ -1967,7 +1967,7 @@ def craft_menu_response(entry):
 			if not crafting.meets_requirements(_player, recipe['requirements']):
 				continue
 			
-			_difficulty = crafting.get_recipe_difficulty(_player, _item, recipe)
+			_difficulty = -crafting.get_recipe_difficulty(_player, _item, recipe)
 			
 			if _difficulty<=-3:
 				_difficulty_string = 'Hard'

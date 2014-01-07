@@ -501,7 +501,7 @@ def react_to_tension(life, life_id):
 		return False
 	
 	if life['group'] and not groups.is_leader(life, life['group'], life['id']) and groups.get_leader(life, life['group']):
-		if sight.can_see_target(life, groups.get_leader(life, life['group'])):
+		if sight.can_see_target(life, groups.get_leader(life, life['group'])) and sight.can_see_target(LIFE[life_id], groups.get_leader(life, life['group'])):
 			return False
 	
 	_disarm = brain.get_alife_flag(life, life_id, 'disarm')

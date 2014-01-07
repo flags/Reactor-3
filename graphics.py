@@ -15,7 +15,7 @@ import time
 import sys
 
 
-def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
+def init_libtcod(terraform=False, window_size=WINDOW_SIZE, map_view_size=MAP_WINDOW_SIZE):
 	global ITEM_WINDOW, CONSOLE_WINDOW, MESSAGE_WINDOW, PREFAB_WINDOW, X_CUTOUT_WINDOW, Y_CUTOUT_WINDOW
 	
 	_font_file = os.path.join(DATA_DIR, 'tiles', FONT)
@@ -31,11 +31,11 @@ def init_libtcod(terraform=False, map_view_size=MAP_WINDOW_SIZE):
 	if '--worldmap' in sys.argv:
 		MAP_WINDOW_SIZE[0] = 450
 		MAP_WINDOW_SIZE[1] = 450
-		WINDOW_SIZE[0] = 450
-		WINDOW_SIZE[1] = 450
+		window_size[0] = 450
+		window_size[1] = 450
 	
 	tcod.console_set_custom_font(_font_file, _layout)
-	tcod.console_init_root(WINDOW_SIZE[0], WINDOW_SIZE[1], WINDOW_TITLE, renderer=RENDERER)
+	tcod.console_init_root(window_size[0], window_size[1], WINDOW_TITLE, renderer=RENDERER)
 	
 	if terraform:
 		PREFAB_WINDOW = tcod.console_new(PREFAB_WINDOW_SIZE[0],PREFAB_WINDOW_SIZE[1])
