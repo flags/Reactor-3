@@ -78,14 +78,15 @@ def move_camera(pos, scroll=False):
 			brain.flag(_life, 'camera_lean', value=_target_pos[:])
 			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
 		
-		if not LIFE[SETTINGS['controlling']]['seen']:
-			if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
-				_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/20.0, 0, .35)
-				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
-				pos.append(2)
-			else:
-				brain.unflag(_life, 'camera_lean')
-				brain.unflag(_life, 'camera_lean_time')
+		if brain.get_flag(_life, 'camera_lean'):
+			if not LIFE[SETTINGS['controlling']]['seen']:
+				if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
+					_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/20.0, 0, .35)
+					pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+					pos.append(2)
+				else:
+					brain.unflag(_life, 'camera_lean')
+					brain.unflag(_life, 'camera_lean_time')
 	
 	CAMERA_POS[0] = int(round(numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
 	CAMERA_POS[1] = int(round(numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
@@ -191,7 +192,8 @@ def main():
 		gfx.refresh_view('map')
 	
 	if not _player_moved:
-		logic.tick_all_objects(ignore_tickrate=True)
+		if logic.tick_all_objects(ignore_tickrate=True):
+			_player_moved = True
 	
 	draw_targeting()
 	move_camera(SETTINGS['camera_track'])
@@ -247,7 +249,7 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if (SETTINGS['recording'] and logic.can_tick()) or '--worldmap' in sys.argv:
+	if (SETTINGS['recording'] and _player_moved and not EVENTS) or '--worldmap' in sys.argv:
 		gfx.screenshot()
 		
 		if '--worldmap' in sys.argv:
