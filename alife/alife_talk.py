@@ -23,6 +23,7 @@ def setup(life):
 	#	return False
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
+	_needs_help = stats.is_injured(life)
 	
 	_potential_talking_targets = []
 	for ai in life['seen']:
@@ -38,6 +39,15 @@ def setup(life):
 		else:
 			#if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
 			#	continue
+			if 'player' in LIFE[ai]:
+				if _needs_help:
+					if stats.desires_help_from(life, ai):
+						speech.ask_for_help(life, ai)
+						
+				#if stats.is_injured(life):
+				#	if judgement.can_trust(life, ai):
+				#		print 'CHEEKI BREEKI'
+			
 			if not stats.desires_conversation_with(life, ai):
 				continue
 	

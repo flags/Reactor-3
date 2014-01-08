@@ -137,6 +137,9 @@ def desires_to_create_camp(life):
 	
 	return False
 
+def desires_help_from(life, life_id):
+	return judgement.can_trust(life, life_id)
+
 def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
 		return False
@@ -353,6 +356,9 @@ def is_intimidated(life):
 			return True
 	
 	return False
+
+def is_injured(life):
+	return len(lfe.get_bleeding_limbs(life)) > 0
 
 def is_confident(life):
 	_friendly_confidence = 0

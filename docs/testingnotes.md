@@ -35,4 +35,7 @@ Factor weather into visiblity
 
 When weapons are dropped, the magazines inside the guns are not disowned.dd
 
-[US]Noob Friendly || MassDrop
+healed_by memory to boost leadership?
+	then "Thanks!"
+	Changes in relationships after memories
+		Would make combat affect ALife behavior more

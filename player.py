@@ -644,7 +644,36 @@ def handle_input():
 		if menus.get_menu_by_name('Wounds')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Wounds'))
 		else:
-			create_wound_menu()
+			create_wound_menu(SETTINGS['controlling'])
+	
+	if INPUT['W']:
+		if menus.get_menu_by_name('Heal')>-1:
+			menus.delete_menu(menus.get_menu_by_name('Heal'))
+			return False
+		
+		_pos = LIFE[SETTINGS['controlling']]['pos']
+		_items = []
+			
+		#Sue me.
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+				continue
+			
+			_items.append(menus.create_item('single', ' '.join(LIFE[life_id]['name']), None, target=life_id))
+		
+		if not _items:
+			gfx.message('There\'s nobody to heal nearby.')
+			
+			return False
+		
+		_i = menus.create_menu(title='Heal',
+			menu=_items,
+			padding=(1,1),
+			position=(1,1),
+			format_str='$k',
+			on_select=create_target_wound_menu)
+		
+		menus.activate_menu(_i)
 	
 	if INPUT['O']:
 		if menus.get_menu_by_name('Debug (Developer)')>-1:
@@ -708,7 +737,7 @@ def handle_input():
 			__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
 			_items.extend(items.get_items_at(__pos))
 			
-		#Sue me.
+		#Sue me again.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
 			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
@@ -2036,15 +2065,15 @@ def create_crafting_menu():
 	
 	menus.activate_menu(_menu)
 
-def create_wound_menu():
+def create_wound_menu(target):
 	_has_wound = False
 	_entries = []
 	
-	for limb in LIFE[SETTINGS['controlling']]['body'].values():
+	for limb in LIFE[target]['body'].values():
 		_title = False
 		
 		for wound in limb['wounds']:
-			_limb = life.get_limb(LIFE[SETTINGS['controlling']], wound['limb'])
+			_limb = life.get_limb(LIFE[target], wound['limb'])
 			
 			if not _title:					
 				_entries.append(menus.create_item('title', wound['limb'], None))
@@ -2065,6 +2094,7 @@ def create_wound_menu():
 				_entries.append(menus.create_item('single',
 				                                  'Cut',
 				                                  _status,
+				                                  target=target,
 				                                  limb=wound['limb'],
 				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)),
 				                                         tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)/2))))
@@ -2084,26 +2114,34 @@ def create_wound_menu():
 	
 	menus.activate_menu(_i)		
 
+def create_target_wound_menu(entry):
+	create_wound_menu(entry['target'])
+
 def heal_wound(entry):
-	life.heal_limb(LIFE[SETTINGS['controlling']], entry['limb'], entry['item_uid'])
+	_target = entry['target']
 	
-	gfx.message('You start applying %s to your %s.' % (items.get_name(ITEMS[entry['item_uid']]), entry['limb']))
+	life.heal_limb(LIFE[SETTINGS['controlling']], entry['limb'], entry['item_uid'], target=_target)
 	
-	menus.delete_menu(ACTIVE_MENU['menu'])
-	menus.delete_menu(ACTIVE_MENU['menu'])
+	if _target == SETTINGS['controlling']:
+		gfx.message('You start applying %s to your %s.' % (items.get_name(ITEMS[entry['item_uid']]), entry['limb']))
+	else:
+		gfx.message('You start applying %s to %s\'s %s.' % (items.get_name(ITEMS[entry['item_uid']]), ' '.join(LIFE[_target]['name']), entry['limb']))
+	
+	while MENUS:
+		menus.delete_menu(ACTIVE_MENU['menu'])
 
 def wound_examine(entry):
-	injury = entry['key'].lower()
-	limb = entry['limb']
-	
+	_target = entry['target']
+	_injury = entry['key'].lower()
+	_limb = entry['limb']
 	_entries = []
 	
-	if injury == 'cut':
+	if _injury == 'cut':
 		for item in life.get_all_inventory_items(LIFE[SETTINGS['controlling']], matches=[{'type': 'fabric'}]):
-			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=limb, item_uid=item['uid']))
+			_entries.append(menus.create_item('single', item['name'], item['thickness'], limb=_limb, item_uid=item['uid'], target=_target))
 	
 	if not _entries:
-		gfx.message('You have nothing to treat the %s with.' % injury)
+		gfx.message('You have nothing to treat the %s with.' % _injury)
 		return False
 	
 	_menu = menus.create_menu(title='Heal',

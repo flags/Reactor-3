@@ -1346,33 +1346,34 @@ def perform_action(life):
 		delete_action(life, action)
 	
 	elif _action['action'] == 'heal_limb':
+		_target = LIFE[_action['target']]
 		_item = items.get_item_from_uid(remove_item_from_inventory(life, _action['item_uid']))
 		_check_wounds = []
 		
 		items.delete_item(_item)
 		
-		for wound in life['body'][_action['limb']]['wounds']:
+		for wound in _target['body'][_action['limb']]['wounds']:
 			if _item['material'] == 'cloth':
 				_cut = wound['cut']
 				
 				wound['cut'] -= _item['thickness']
-				life['body'][wound['limb']]['cut'] -= _item['thickness']
+				_target['body'][wound['limb']]['cut'] -= _item['thickness']
 				
 				_item['thickness'] -= _cut
 				_check_wounds.append(wound)
 				
-				if 'player' in life:
+				if 'player' in _target:
 					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
 				
-				logging.debug('%s applies %s to their %s.' % (' '.join(life['name']), items.get_name(_item), wound['limb']))
+				logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))
 		
 		for wound in _check_wounds:
 			if wound['cut'] > 0 or wound['lodged_item'] or wound['artery_ruptured']:
 				continue
 			
-			life['body'][wound['limb']]['wounds'].remove(wound)
+			_target['body'][wound['limb']]['wounds'].remove(wound)
 			
-			if 'player' in life:
+			if 'player' in _target:
 				gfx.message('Your %s has healed.' % wound['limb'])
 		
 		delete_action(life, action)
@@ -3381,10 +3382,13 @@ def add_pain_to_limb(life, limb, amount=1):
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
-def heal_limb(life, limb, item_uid):
+def heal_limb(life, limb, item_uid, target=None):
+	if not target:
+		target = life['id']
+	
 	_delay = (life['body'][limb]['size']+ITEMS[item_uid]['size']) * 10
 	
-	add_action(life, {'action': 'heal_limb', 'limb': limb, 'item_uid': item_uid}, 9999, delay=_delay)
+	add_action(life, {'action': 'heal_limb', 'limb': limb, 'item_uid': item_uid, 'target': target}, 9999, delay=_delay)
 
 def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]

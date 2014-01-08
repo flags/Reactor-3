@@ -377,3 +377,8 @@ def update_location_of_target_from_target(life, life_id, target_id):
 		logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), _known['last_seen_at']))
 	else:
 		print 'Got out of date info!' * 20
+
+def ask_for_help(life, life_id):
+	_bleeding_limbs = len(lfe.get_bleeding_limbs(life))
+	
+	memory.create_question(life, life_id, 'hurt', ignore_if_said_in_last=-1, recent_time=8)

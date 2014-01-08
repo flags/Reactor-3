@@ -186,6 +186,7 @@ def meet_alife(life, target):
 		'trust': 0,
 		'alignment': 'neutral',
 		'last_seen_time': -1,
+	    'time_visible': 0,
 		'met_at_time': WORLD_INFO['ticks'],
 		'last_seen_at': None,
 		'last_encounter_time': 0,

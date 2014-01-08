@@ -88,6 +88,9 @@ def look(life):
 				life['know'][target_id]['last_seen_time'] += 1
 			
 			if not is_in_fov(life, ai['pos']):
+				if ai['id'] in life['know']:
+					life['know'][ai['id']]['time_visible'] = 0
+				
 				continue
 			
 			if not ai['id'] in life['know']:
@@ -114,6 +117,7 @@ def look(life):
 			elif not ai['asleep']:
 				life['know'][ai['id']]['asleep'] = False
 			
+			life['know'][ai['id']]['time_visible'] += 1
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			life['know'][ai['id']]['escaped'] = False
