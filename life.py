@@ -2195,6 +2195,10 @@ def add_item_to_inventory(life, item_uid):
 	if not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
 			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			item['pos'] = life['pos'][:]
+			
+			del item['parent_id']
+			item['owner'] = None
 			
 			return False
 		else:
@@ -2769,6 +2773,7 @@ def draw_life_info():
 	_action_queue_position = (_min_x+len(_stance)+2, 1)
 	_stance_position = (_min_x, _action_queue_position[1])
 	_health_position = (_min_x, _stance_position[1]+2)
+	_weather_position = (_min_x, _health_position[1]+1)
 	_debug_position = (_min_x, _health_position[1]+1)
 	
 	if life['asleep']:
@@ -2843,8 +2848,8 @@ def draw_life_info():
 	
 	#Weather
 	tcod.console_set_default_foreground(0, tcod.light_gray)
-	tcod.console_print(0, _health_position[0]+len(_health_string)+1,
-	                   _health_position[1],
+	tcod.console_print(0, _weather_position[0],
+	                   _weather_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
 	_longest_state = 3

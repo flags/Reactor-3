@@ -353,8 +353,6 @@ def process_dialog_for_player(dialog_id, loop=False):
 	_dialog['cursor_index'] = 0	
 	_last_message = get_last_message(dialog_id)	
 	
-	print 'loo8888888888888888888888op', LIFE[_last_message['from']]['name'], dialog_id
-	
 	if loop:
 		end_dialog(dialog_id)
 		return False
