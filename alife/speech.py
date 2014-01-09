@@ -365,11 +365,6 @@ def update_location_of_target_from_target(life, life_id, target_id):
 	if _target_known['last_seen_time'] == -1:
 		return False
 	
-	print life['name'], LIFE[life_id]['name'], LIFE[target_id]['name']
-	
-	print life['name'], _known['last_seen_time'], LIFE[life_id]['name'], _target_known['last_seen_time']
-	print _known['last_seen_at']
-	
 	if _target_known['last_seen_time'] < _known['last_seen_time'] or not _known['last_seen_at']:
 		_known['last_seen_at'] = _target_known['last_seen_at']
 		_known['last_seen_time'] = _target_known['last_seen_time']
@@ -378,7 +373,9 @@ def update_location_of_target_from_target(life, life_id, target_id):
 	else:
 		print 'Got out of date info!' * 20
 
-def ask_for_help(life, life_id):
-	_bleeding_limbs = len(lfe.get_bleeding_limbs(life))
+def change_alignment(life, life_id, alignment):
+	_alignment = 'establish_%s' % alignment
 	
-	memory.create_question(life, life_id, 'hurt', ignore_if_said_in_last=-1, recent_time=8)
+	if not speech.has_sent(life, life_id, _alignment):
+		speech.start_dialog(life, life_id, _alignment)
+		speech.send(life, life_id, _alignment)

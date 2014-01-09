@@ -1364,8 +1364,12 @@ def perform_action(life):
 				
 				if 'player' in _target:
 					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
-				
-				logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))
+				elif 'player' in life:
+					memory(_target, 'healed_by', target=life['id'])
+					
+					logging.debug('%s applies %s to %s\'s %s.' % (' '.join(life['name']), items.get_name(_item), ' '.join(_target['name']), wound['limb']))
+				else:
+					logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))
 		
 		for wound in _check_wounds:
 			if wound['cut'] > 0 or wound['lodged_item'] or wound['artery_ruptured']:

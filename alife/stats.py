@@ -88,6 +88,7 @@ def desires_conversation_with(life, life_id):
 		return False
 	
 	if not judgement.can_trust(life, life_id):
+		print 'Cannot trust', LIFE[life_id]['name']
 		return False
 	
 	return True
@@ -138,7 +139,7 @@ def desires_to_create_camp(life):
 	return False
 
 def desires_help_from(life, life_id):
-	return judgement.can_trust(life, life_id)
+	return judgement.can_trust(life, life_id) or judgement.get_tension_with(life, life_id)<=judgement.get_max_tension_with(life, life_id)
 
 def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
@@ -538,6 +539,23 @@ def react_to_tension(life, life_id):
 	elif not speech.has_sent(life, life_id, 'confront'):
 		speech.start_dialog(life, life_id, 'confront')
 		speech.send(life, life_id, 'confront')
+
+def ask_for_help(life, life_id):
+	_bleeding_limbs = len(lfe.get_bleeding_limbs(life))
+	
+	if not speech.has_sent(life, life_id, 'hurt'):
+		speech.start_dialog(life, life_id, 'hurt')
+		speech.send(life, life_id, 'hurt')
+
+def wants_alignment_change(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	for memory in lfe.get_memory(life, matches={'text': 'healed_by'}):
+		if memory['target'] == life_id:
+			if _target['alignment'] == 'feign_trust':
+				return 'trust'
+	
+	return None
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)
