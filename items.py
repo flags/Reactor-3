@@ -545,9 +545,8 @@ def explode(item):
 			
 			#_limb = random.choice(LIFE[life_id]['body'].keys())
 			
-			#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
 			if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
-				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
+				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'])
 			
 			#for _limb in _limbs:
 			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force*2))

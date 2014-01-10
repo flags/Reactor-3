@@ -87,15 +87,12 @@ def listen(life):
 	
 				#SITUATION 1: We believe it
 				if _believes == event['from']['id']:
-					print 'OK'
 					lfe.memory(life, 'heard about attack',
 						attacker=event['attacker'],
 						target=event['from']['id'])
 					lfe.memory(life, 'target attacked victim',
 						target=event['attacker'],
-						victim=event['from']['id'],
-						trust=-15,
-						danger=5)
+						victim=event['from']['id'])
 					
 					if event['last_seen_at']:
 						_target['last_seen_at'] = event['last_seen_at'][:]
@@ -104,12 +101,9 @@ def listen(life):
 					
 					judgement.judge_life(life, event['attacker'])
 				else:
-					print 'NO'
 					lfe.memory(life, 'reject under_attack: attacker is trusted',
 						attacker=event['attacker'],
-						target=event['from']['id'],
-					    trust=-10,
-					    danger=10)
+						target=event['from']['id'])
 		
 		elif event['gist'] == 'bit':
 			#React to attack... this needs to be a function in stats.py
@@ -127,9 +121,7 @@ def listen(life):
 				if _trust_target and not _trust_sender and 1==4:
 					lfe.memory(life, 'trusted target attacked by',
 					           victim=event['target'],
-					           target=event['from']['id'],
-					           trust=-5,
-					           danger=3)
+					           target=event['from']['id'])
 
 		elif event['gist'] == 'consume_item':
 			lfe.memory(life, 'consume_item', target=event['from']['id'])
@@ -140,9 +132,7 @@ def listen(life):
 		
 		elif event['gist'] == 'order_attack':
 			lfe.memory(life, 'ordered to attack',
-			           target=event['target'],
-			           trust=-5,
-			           danger=3)
+			           target=event['target'])
 		
 		elif event['gist'] == 'threw_an_item':
 			print 'CHECK THIS HERE' * 100

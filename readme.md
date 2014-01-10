@@ -77,6 +77,7 @@ Controls
 * `V (Shift-v)` - Use radio
 * `k` - Open crafting menu
 * `w` - Open medical menu
+* `W (Shift-w)` - Open medical menu (heal someone)
 * `C (Shift-c)` - Stand up
 * `c` - Crouch
 * `Z (Shift-z)` - Prone

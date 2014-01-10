@@ -831,6 +831,14 @@ def memory(life, gist, *args, **kvargs):
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
 	
+		if 'trust' in kvargs:
+			brain.knows_alife_by_id(life, kvargs['target'])['trust'] += kvargs['trust']
+			
+			logging.debug('%s changed trust in %s: %s -> %s' % (' '.join(life['name']),
+			                                                    ' '.join(LIFE[kvargs['target']]['name']),
+			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']-1,
+			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']))
+	
 	return _entry['id']
 
 def has_dialog(life):
@@ -1365,8 +1373,6 @@ def perform_action(life):
 				if 'player' in _target:
 					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
 				elif 'player' in life:
-					memory(_target, 'healed_by', target=life['id'])
-					
 					logging.debug('%s applies %s to %s\'s %s.' % (' '.join(life['name']), items.get_name(_item), ' '.join(_target['name']), wound['limb']))
 				else:
 					logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))
@@ -3533,7 +3539,7 @@ def damage_from_item(life, item):
 	_shot_by_alife = LIFE[item['shot_by']]
 	
 	if not _rand_limb:
-		memory(life, 'shot at by (missed)', target=item['shot_by'], danger=3, trust=-10)
+		memory(life, 'shot at by (missed)', target=item['shot_by'])
 		create_and_update_self_snapshot(life)
 		
 		if 'player' in _shot_by_alife:

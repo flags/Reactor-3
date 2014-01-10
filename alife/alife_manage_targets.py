@@ -21,9 +21,7 @@ def add_raid_targets(life):
 			lfe.memory(life,
 			           'target_is_raiding',
 			           target=raider['id'],
-			           camp=life['camp'],
-			           danger=2,
-			           trust=-10)
+			           camp=life['camp'])
 
 
 def tick(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen, source_map):

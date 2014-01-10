@@ -376,7 +376,7 @@ def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True,
 	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 
 def get_target_to_follow(life):
-	_highest = {'id': None, 'score': 1}
+	_highest = {'id': None, 'score': 0}
 	
 	for target_id in get_trusted(life, visible=False, only_recent=False):
 		if not lfe.execute_raw(life, 'follow', 'follow_target_if', life_id=target_id):
@@ -396,7 +396,7 @@ def get_target_to_follow(life):
 		if life['group'] and groups.is_leader(life, life['group'], target_id):
 			_score += 1
 	
-		if _score >= _highest['score']:
+		if _score > _highest['score']:
 			_highest['id'] = target_id
 			_highest['score'] = _score
 	
