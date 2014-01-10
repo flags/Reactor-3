@@ -33,8 +33,6 @@ def update_targets_around_noise(life, noise):
 		_visiblity = numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
 		_visiblity = numbers.clip(_visiblity+(numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
 		
-		print 'vis', life['name'], _visiblity, sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos'])
-		
 		if _visiblity >= sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos']):
 			brain.meet_alife(life, LIFE[noise['target']])
 			
@@ -53,15 +51,12 @@ def update_targets_around_noise(life, noise):
 			if not _most_likely_target['target'] or target['last_seen_time'] < _most_likely_target['last_seen_time']:
 				_most_likely_target['last_seen_time'] = target['last_seen_time']
 				_most_likely_target['target'] = target
-			
-			#target['escaped'] = 1
-			#target['last_seen_at'] = noise['pos'][:]
 	
 	if _most_likely_target['target']:
-		print '/' * 50
 		_most_likely_target['target']['escaped'] = 1
 		_most_likely_target['target']['last_seen_at'] = noise['pos'][:]
 		_most_likely_target['target']['last_seen_time'] = 1
+		
 		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(_most_likely_target['target']['life']['name'])))
 
 def _spread(noise):
