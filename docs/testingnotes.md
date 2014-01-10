@@ -39,3 +39,4 @@ healed_by memory to boost leadership?
 	then "Thanks!"
 	Changes in relationships after memories
 		Would make combat affect ALife behavior more
+

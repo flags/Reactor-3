@@ -32,29 +32,19 @@ def setup(life):
 		
 		_relationship_change = stats.wants_alignment_change(life, ai)
 		
-		if 'player' in LIFE[ai]:
-			print life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai), judgement.get_max_tension_with(life, ai)
+		#if 'player' in LIFE[ai]:
+		#	print life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)>judgement.get_max_tension_with(life, ai), _relationship_change
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
 		elif judgement.get_tension_with(life, ai)>judgement.get_max_tension_with(life, ai):
 			stats.react_to_tension(life, ai)
 		elif _needs_help:
-			print 'HELP ME', stats.desires_help_from(life, ai)
 			if stats.desires_help_from(life, ai):
 				stats.ask_for_help(life, ai)
 		elif _relationship_change:
 			speech.change_alignment(life, ai, _relationship_change)
 		else:
-			#if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
-			#	continue
-			#if 'player' in LIFE[ai]:
-				
-						
-				#if stats.is_injured(life):
-				#	if judgement.can_trust(life, ai):
-				#		print 'CHEEKI BREEKI'
-			
 			if not stats.desires_conversation_with(life, ai):
 				continue
 	

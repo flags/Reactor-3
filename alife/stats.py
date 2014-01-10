@@ -88,7 +88,6 @@ def desires_conversation_with(life, life_id):
 		return False
 	
 	if not judgement.can_trust(life, life_id):
-		print 'Cannot trust', LIFE[life_id]['name']
 		return False
 	
 	return True

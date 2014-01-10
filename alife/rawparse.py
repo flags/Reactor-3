@@ -174,7 +174,7 @@ def create_function_map():
 		'get_introduction_message': speech.get_introduction_message,
 		'get_introduction_gist': speech.get_introduction_gist,
 		'establish_trust': stats.establish_trust,
-		'establish_feign_trust': stats.establish_trust,
+		'establish_feign_trust': stats.establish_feign_trust,
 		'establish_aggressive': stats.establish_aggressive,
 		'establish_hostile': stats.establish_hostile,
 		'establish_scared': stats.establish_scared,

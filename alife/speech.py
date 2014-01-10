@@ -374,8 +374,8 @@ def update_location_of_target_from_target(life, life_id, target_id):
 		print 'Got out of date info!' * 20
 
 def change_alignment(life, life_id, alignment):
-	_alignment = 'establish_%s' % alignment
+	_alignment = '%s_to_%s' % (brain.knows_alife_by_id(life, life_id)['alignment'], alignment)
 	
-	if not speech.has_sent(life, life_id, _alignment):
-		speech.start_dialog(life, life_id, _alignment)
-		speech.send(life, life_id, _alignment)
+	if not has_sent(life, life_id, _alignment):
+		start_dialog(life, life_id, _alignment)
+		send(life, life_id, _alignment)

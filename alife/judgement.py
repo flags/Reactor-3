@@ -185,7 +185,7 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if _target['alignment'] in ['trust'] or not _target['last_seen_at']:
+	if _target['alignment'] in ['trust', 'feign_trust'] or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
@@ -201,6 +201,9 @@ def get_max_tension_with(life, life_id):
 	
 	if _target['alignment'] == 'trust' or not _target['last_seen_at']:
 		return 0
+	
+	if _target['alignment'] == 'feign_trust':
+		return .85
 	
 	if _target['alignment'] in ['hostile', 'scared']:
 		return 1
