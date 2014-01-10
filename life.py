@@ -834,8 +834,9 @@ def memory(life, gist, *args, **kvargs):
 		if 'trust' in kvargs:
 			brain.knows_alife_by_id(life, kvargs['target'])['trust'] += kvargs['trust']
 			
-			logging.debug('%s changed trust in %s: %s -> %s' % (' '.join(life['name']),
+			logging.debug('%s changed trust in %s (%s): %s -> %s' % (' '.join(life['name']),
 			                                                    ' '.join(LIFE[kvargs['target']]['name']),
+			                                                    gist,
 			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']-1,
 			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']))
 	
@@ -1373,6 +1374,8 @@ def perform_action(life):
 				if 'player' in _target:
 					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
 				elif 'player' in life:
+					memory(_target, 'healed_by', target=life['id'], trust=1)
+					
 					logging.debug('%s applies %s to %s\'s %s.' % (' '.join(life['name']), items.get_name(_item), ' '.join(_target['name']), wound['limb']))
 				else:
 					logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))

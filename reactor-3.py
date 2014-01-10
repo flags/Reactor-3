@@ -59,6 +59,9 @@ def move_camera(pos, scroll=False):
 			if LIFE[life_id]['dead']:
 				continue
 			
+			if brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life_id)['alignment'] in ['trust', 'feign']:
+				continue
+			
 			if LIFE[life_id]['pos'][0] < _top_left[0]:
 				_top_left[0] = LIFE[life_id]['pos'][0]
 			
