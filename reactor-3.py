@@ -115,6 +115,8 @@ def draw_targeting():
 
 def death():
 	_player = LIFE[SETTINGS['controlling']]
+	
+	maps.reset_lights()
 	FADE_TO_WHITE[0] += .5
 	
 	_time_since_death = FADE_TO_WHITE[0]
