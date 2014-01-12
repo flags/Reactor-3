@@ -382,4 +382,4 @@ def create_region_spawns():
 				life.memory(_alife, 'focus_on_chunk', chunk_key=_spawn_chunk)
 
 def generate_outpost(outpost_chunks):
-	spawns.generate_group('soldier', amount=5, spawn_chunks=outpost_chunks)
+	spawns.generate_group('soldier', amount=5, group_motive='military', spawn_chunks=outpost_chunks)

@@ -105,14 +105,14 @@ def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[
 	
 	_group_members[0]['stats']['is_leader'] = True
 	_group = alife.groups.create_group(_group_members[0])
-	alife.groups.set_motive(_group_members[0], _group, 'crime')
+	alife.groups.set_motive(_group_members[0], _group, group_motive)
 	
 	for m1 in _group_members:
 		if m1['id'] == _group_members[0]['id']:
 			continue
 		
 		alife.groups.discover_group(m1, _group)
-		alife.groups.set_motive(m1, _group, 'crime')
+		alife.groups.set_motive(m1, _group, group_motive)
 		alife.groups.add_member(_group_members[0], _group, m1['id'])
 		alife.groups.add_member(m1, _group, m1['id'])
 		m1['group'] = _group

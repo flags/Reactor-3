@@ -43,6 +43,28 @@ def drop_cache(item_names):
 	gfx.message('You see something parachuting to the ground.')
 	print _chunk['pos']
 
+def get_player_situation():
+	if not SETTINGS['player']:
+		return False
+	
+	_life = LIFE[SETTINGS['player']]
+	
+	_situation = {}
+	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
+	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
+	
+	return _situation
+
+def get_group_leader_with_motive(group_motive):
+	for life in LIFE.values():
+		if not life['online'] or not life['group'] or SETTINGS['controlling'] == life['id']:
+			continue
+		
+		if alife.groups.get_motive(life, life['group']) == group_motive:
+			return life['id']
+	
+	return None
+
 def spawn_life(life_type, position, event_time, **kwargs):
 	_life = {'type': life_type, 'position': position[:]}
 	_life.update(**kwargs)
@@ -63,29 +85,34 @@ def broadcast(messages, event_time):
 		_time += int(round(len(entry['text'])*1.25))
 
 def form_scheme():
-	while len(WORLD_INFO['scheme']) < TOTAL_PLANNED_SCHEME_EVENTS:
-		if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
-			if 1==1:#random.randint(0, 5):
-				_spawn_pos = spawns.get_spawn_in_ref('farms')
-				_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), _spawn_pos))
-				
-				spawn_life('loner', _spawn_pos, 35, injuries={'llowerleg': {'cut': 1}})
+	_player_situation = get_player_situation()
+	
+	if _player_situation['armed']:
+		_military_group_leader = get_group_leader_with_motive('military')
+		
+		if _military_group_leader:
+			_messages = [{'text': 'We'}]
+	
+	if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
+		if 1==1:#random.randint(0, 5):
+			_spawn_pos = spawns.get_spawn_in_ref('farms')
+			_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), _spawn_pos))
+			
+			spawn_life('loner', _spawn_pos, 35, injuries={'llowerleg': {'cut': 1}})
 
-				_messages = [{'text': 'Hello? Can anyone hear me?'},
-				             {'text': 'Bandits robbed me and left me to bleed out...'},
-				             {'text': 'I\'m by a farm to the %s.' % _real_direction},
-				             {'text': 'They might still be around. Please hurry!'}]
-				broadcast(_messages, 40)
-			else: #TODO: Get group
-				_bandit_raid_direction = 'north'
-				
-				_messages = [{'text': 'This is %s of %s, broadcasting to all.', 'source': 'Group Leader'},
-				             {'text': 'We\'re in dire need of help near <location>.', 'source': 'Group Leader'},
-				             {'text': 'A group of bandits is approaching from the %s.' % _bandit_raid_direction, 'source': 'Group Leader'},
-				             {'text': 'If you are able to fight, please! We need fighters!', 'source': 'Group Leader'}]
-				broadcast(_messages, 40)
-				
-			break
+			_messages = [{'text': 'Hello? Can anyone hear me?'},
+		                 {'text': 'Bandits robbed me and left me to bleed out...'},
+		                 {'text': 'I\'m by a farm to the %s.' % _real_direction},
+		                 {'text': 'They might still be around. Please hurry!'}]
+			broadcast(_messages, 40)
+		else: #TODO: Get group
+			_bandit_raid_direction = 'north'
+			
+			_messages = [{'text': 'This is %s of %s, broadcasting to all.', 'source': 'Group Leader'},
+		                 {'text': 'We\'re in dire need of help near <location>.', 'source': 'Group Leader'},
+		                 {'text': 'A group of bandits is approaching from the %s.' % _bandit_raid_direction, 'source': 'Group Leader'},
+		                 {'text': 'If you are able to fight, please! We need fighters!', 'source': 'Group Leader'}]
+			broadcast(_messages, 40)
 
 def execute_scheme():
 	if not WORLD_INFO['scheme']:
@@ -104,7 +131,6 @@ def execute_scheme():
 		
 		if 'injuries' in _event['life']:
 			for limb in _event['life']['injuries']:
-				#for injury in _event['life']['injuries'][limb].values():
 				lfe.add_wound(_life, limb, **_event['life']['injuries'][limb])
 	
 	WORLD_INFO['scheme'].pop(0)
