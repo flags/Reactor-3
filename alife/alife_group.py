@@ -29,6 +29,7 @@ def setup(life):
 	groups.find_and_announce_shelter(life, life['group'])
 	groups.manage_jobs(life, life['group'])
 	groups.manage_territory(life, life['group'])
+	groups.manage_raid(life, life['group'])
 	#groups.manage_resources(life, life['group'])
 	#groups.manage_known_groups(life, life['group'])
 	#groups.manage_combat(life, life['group'])

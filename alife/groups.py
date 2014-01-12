@@ -245,7 +245,7 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 				
 				if stats.is_same_species(life, life_id):
 					_announce_to.append(life_id)
-		elif _group['claimed_motive'] == 'crime':
+		elif _group['claimed_motive'] in ['crime', 'military']:
 			_announce_to = judgement.get_trusted(life, visible=False)
 
 			for life_id in _announce_to[:]:
@@ -296,7 +296,7 @@ def find_shelter(life, group_id):
 		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
 	else:
-		if not get_stage(life, group_id) == STAGE_SETTLING:
+		if not get_stage(life, group_id) in [STAGE_SETTLING, STAGE_RAIDING]:
 			set_stage(life, group_id, STAGE_SETTLING)
 			announce(life, group_id, 'update_group_stage')
 
@@ -563,6 +563,20 @@ def manage_territory(life, group_id):
 			continue
 		
 		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
+
+def manage_raid(life, group_id):
+	if not get_stage(life, group_id) == STAGE_RAIDING:
+		return False
+	
+	_raid_chunk_key = get_flag(life, group_id, 'raid_chunk')
+	
+	if get_flag(life, group_id, 'announced_raid_location') == _raid_chunk_key:
+		return False
+	
+	announce(life, group_id, 'raid_location', chunk_key=_raid_chunk_key)
+	flag(life, group_id, 'announced_raid_location', _raid_chunk_key)
+	
+	print 'RAID LOCATION SET'
 
 def manage_combat(life, group_id):
 	if get_stage(life, group_id) == STAGE_RAIDING:

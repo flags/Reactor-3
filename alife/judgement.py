@@ -393,8 +393,8 @@ def get_target_to_follow(life):
 		
 		_score += _known_target['trust']
 			
-		if life['group'] and groups.is_leader(life, life['group'], target_id):
-			_score += 1
+		#if life['group'] and groups.is_leader(life, life['group'], target_id):
+		#	_score += 1
 	
 		if _score > _highest['score']:
 			_highest['id'] = target_id

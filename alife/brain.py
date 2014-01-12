@@ -322,6 +322,8 @@ def understand(life):
 	
 	for module in CONSTANT_MODULES:
 		module.setup(life)
+		
+	#print life['name'], len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))
 	
 	life['think_rate'] = life['think_rate_max']
 	

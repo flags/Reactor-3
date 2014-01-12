@@ -44,10 +44,10 @@ def drop_cache(item_names):
 	print _chunk['pos']
 
 def get_player_situation():
-	if not SETTINGS['player']:
+	if not SETTINGS['controlling']:
 		return False
 	
-	_life = LIFE[SETTINGS['player']]
+	_life = LIFE[SETTINGS['controlling']]
 	
 	_situation = {}
 	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
@@ -55,9 +55,9 @@ def get_player_situation():
 	
 	return _situation
 
-def get_group_leader_with_motive(group_motive):
+def get_group_leader_with_motive(group_motive, online=False):
 	for life in LIFE.values():
-		if not life['online'] or not life['group'] or SETTINGS['controlling'] == life['id']:
+		if not (life['online'] or not online) or not life['group'] or not alife.groups.is_leader(life, life['group'], life['id']) or SETTINGS['controlling'] == life['id']:
 			continue
 		
 		if alife.groups.get_motive(life, life['group']) == group_motive:
@@ -70,6 +70,13 @@ def spawn_life(life_type, position, event_time, **kwargs):
 	_life.update(**kwargs)
 	         
 	WORLD_INFO['scheme'].append({'life': _life, 'time': event_time})
+
+def order_group(life, group_id, stage, event_time, **kwargs):
+	#alife.groups.get_group(life, group_id)
+	
+	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': event_time})
+	
+	print 'WE DID IT!!!!!!!!!!'
 
 def broadcast(messages, event_time):
 	_time = event_time
@@ -86,12 +93,21 @@ def broadcast(messages, event_time):
 
 def form_scheme():
 	_player_situation = get_player_situation()
+	if WORLD_INFO['scheme']:
+		return False
 	
-	if _player_situation['armed']:
-		_military_group_leader = get_group_leader_with_motive('military')
+	#if _player_situation['armed']:
+	_military_group_leader = get_group_leader_with_motive('military')
+	_bandit_group_leader = get_group_leader_with_motive('crime', online=False)
+	
+	print _military_group_leader, get_group_leader_with_motive('crime', online=False), 'look here' * 10
+	
+	#TODO: Actual bandit camp location
+	if _military_group_leader and _bandit_group_leader:
+		_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
+		order_group(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], STAGE_RAIDING, 30, chunk_key=_bandit_group_location)
 		
-		if _military_group_leader:
-			_messages = [{'text': 'We'}]
+	return False
 	
 	if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
 		if 1==1:#random.randint(0, 5):
@@ -132,5 +148,13 @@ def execute_scheme():
 		if 'injuries' in _event['life']:
 			for limb in _event['life']['injuries']:
 				lfe.add_wound(_life, limb, **_event['life']['injuries'][limb])
+	
+	if 'group' in _event:
+		if 'stage' in _event:
+			alife.groups.set_stage(LIFE[_event['member']], _event['group'], _event['stage'])
+			print LIFE[_event['member']]['name'],'WE ARE ALIVE' * 100, _event['flags']['chunk_key']
+			
+			if _event['stage'] == STAGE_RAIDING:
+				alife.groups.flag(LIFE[_event['member']], _event['group'], 'raid_chunk', _event['flags']['chunk_key'])
 	
 	WORLD_INFO['scheme'].pop(0)

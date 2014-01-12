@@ -192,6 +192,8 @@ def execute(life, func):
 		else:
 			break
 	
+	if func == 'set_raid_location':
+		print 'CHECKS OUT' * 100
 	if _self_call:
 		if FUNCTION_MAP[func]() == _true:
 			return True

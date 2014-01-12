@@ -759,8 +759,10 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		for alife in LIFE.values():
-			life.memory(alife, 'focus_on_chunk', chunk_key=life.get_current_chunk_id(LIFE[SETTINGS['controlling']]))
+		import situations
+		
+		WORLD_INFO['scheme'] = []
+		situations.form_scheme()
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

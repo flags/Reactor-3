@@ -119,6 +119,7 @@ def tick_world():
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
 	
+	#situations.form_scheme()
 	situations.execute_scheme()
 	
 	cache.scan_cache()
