@@ -72,11 +72,7 @@ def spawn_life(life_type, position, event_time, **kwargs):
 	WORLD_INFO['scheme'].append({'life': _life, 'time': event_time})
 
 def order_group(life, group_id, stage, event_time, **kwargs):
-	#alife.groups.get_group(life, group_id)
-	
 	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': event_time})
-	
-	print 'WE DID IT!!!!!!!!!!'
 
 def broadcast(messages, event_time):
 	_time = event_time
@@ -100,12 +96,13 @@ def form_scheme():
 	_military_group_leader = get_group_leader_with_motive('military')
 	_bandit_group_leader = get_group_leader_with_motive('crime', online=False)
 	
-	print _military_group_leader, get_group_leader_with_motive('crime', online=False), 'look here' * 10
+	print LIFE[_military_group_leader]['name'], get_group_leader_with_motive('crime', online=False), 'look here' * 10
 	
 	#TODO: Actual bandit camp location
 	if _military_group_leader and _bandit_group_leader:
 		_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
 		order_group(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], STAGE_RAIDING, 30, chunk_key=_bandit_group_location)
+		alife.groups.declare_group_hostile(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], LIFE[_military_group_leader]['group'])
 		
 	return False
 	
@@ -152,9 +149,8 @@ def execute_scheme():
 	if 'group' in _event:
 		if 'stage' in _event:
 			alife.groups.set_stage(LIFE[_event['member']], _event['group'], _event['stage'])
-			print LIFE[_event['member']]['name'],'WE ARE ALIVE' * 100, _event['flags']['chunk_key']
 			
 			if _event['stage'] == STAGE_RAIDING:
-				alife.groups.flag(LIFE[_event['member']], _event['group'], 'raid_chunk', _event['flags']['chunk_key'])
+				alife.groups.raid(LIFE[_event['member']], _event['group'], _event['flags']['chunk_key'])
 	
 	WORLD_INFO['scheme'].pop(0)

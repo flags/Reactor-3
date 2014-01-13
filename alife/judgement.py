@@ -391,10 +391,10 @@ def get_target_to_follow(life):
 		if _known_target['escaped'] == 2:
 			continue
 		
-		_score += _known_target['trust']
+		#_score += _known_target['trust']
 			
-		#if life['group'] and groups.is_leader(life, life['group'], target_id):
-		#	_score += 1
+		if life['group'] and groups.is_leader(life, life['group'], target_id) and groups.get_stage(life, life['group']) == STAGE_RAIDING:
+			_score += 1
 	
 		if _score > _highest['score']:
 			_highest['id'] = target_id

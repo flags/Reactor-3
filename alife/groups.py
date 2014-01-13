@@ -335,6 +335,9 @@ def set_leader(life, group_id, life_id):
 	lfe.memory(LIFE[life_id], 'claimed to be the leader of group', group=group_id)
 	logging.debug('%s claims to be the leader of group #%s' % (' '.join(LIFE[life_id]['name']), group_id))
 
+def raid(life, group_id, chunk_key):
+	flag(life, group_id, 'raid_chunk', chunk_key)
+
 def set_motive(life, group_id, motive):
 	update_group_memory(life, group_id, 'claimed_motive', motive)
 
@@ -575,8 +578,9 @@ def manage_raid(life, group_id):
 	
 	announce(life, group_id, 'raid_location', chunk_key=_raid_chunk_key)
 	flag(life, group_id, 'announced_raid_location', _raid_chunk_key)
+	lfe.memory(life, 'focus_on_chunk', chunk_key=_raid_chunk_key)
 	
-	print 'RAID LOCATION SET'
+	print 'RAID LOCATION SET' * 100
 
 def manage_combat(life, group_id):
 	if get_stage(life, group_id) == STAGE_RAIDING:

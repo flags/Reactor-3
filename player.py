@@ -1471,9 +1471,9 @@ def pick_up_item_from_ground(entry):
 				delay=life.get_item_access_time(LIFE[SETTINGS['controlling']], _item['uid']))
 		
 		elif entry['values'][entry['value']] in LIFE[SETTINGS['controlling']]['hands']:
-			if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
-				gfx.message('You can\'t lift the %s.' % _item['name'])
-				return False
+			#if not life.can_carry_item(LIFE[SETTINGS['controlling']], entry['item']):
+			#	gfx.message('You can\'t lift the %s.' % _item['name'])
+			#	return False
 			
 			gfx.message('You start to pick up %s.' % items.get_name(_item))
 			
