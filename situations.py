@@ -72,10 +72,10 @@ def spawn_life(life_type, position, event_time, **kwargs):
 	WORLD_INFO['scheme'].append({'life': _life, 'time': event_time})
 
 def order_group(life, group_id, stage, event_time, **kwargs):
-	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': event_time})
+	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': WORLD_INFO['ticks']+event_time})
 
 def broadcast(messages, event_time):
-	_time = event_time
+	_time = WORLD_INFO['ticks']+event_time
 	
 	for entry in messages:
 		if 'source' in entry:
@@ -88,52 +88,79 @@ def broadcast(messages, event_time):
 		_time += int(round(len(entry['text'])*1.25))
 
 def form_scheme():
-	_player_situation = get_player_situation()
 	if WORLD_INFO['scheme']:
 		return False
 	
+	_player_situation = get_player_situation()
+	
 	#if _player_situation['armed']:
-	_military_group_leader = get_group_leader_with_motive('military')
-	_bandit_group_leader = get_group_leader_with_motive('crime', online=False)
+	_i = random.randint(0, 3)+10
 	
-	print LIFE[_military_group_leader]['name'], get_group_leader_with_motive('crime', online=False), 'look here' * 10
-	
-	#TODO: Actual bandit camp location
-	if _military_group_leader and _bandit_group_leader:
-		_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
-		order_group(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], STAGE_RAIDING, 30, chunk_key=_bandit_group_location)
-		alife.groups.declare_group_hostile(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], LIFE[_military_group_leader]['group'])
+	if _i == 1:
+		_military_group_leader = get_group_leader_with_motive('military')
+		_bandit_group_leader = get_group_leader_with_motive('crime', online=False)
 		
-	return False
+		#TODO: Actual bandit camp location
+		if _military_group_leader and _bandit_group_leader:
+			_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
+			order_group(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], STAGE_RAIDING, 30, chunk_key=_bandit_group_location)
+			alife.groups.discover_group(LIFE[_military_group_leader], LIFE[_bandit_group_leader]['group'])
+			alife.groups.declare_group_hostile(LIFE[_military_group_leader], LIFE[_military_group_leader]['group'], LIFE[_bandit_group_leader]['group'])
 	
-	if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
-		if 1==1:#random.randint(0, 5):
-			_spawn_pos = spawns.get_spawn_in_ref('farms')
-			_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), _spawn_pos))
-			
-			spawn_life('loner', _spawn_pos, 35, injuries={'llowerleg': {'cut': 1}})
+	elif _i == 2:
+		_spawn_pos = spawns.get_spawn_in_ref('farms')
+		_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), _spawn_pos))
+		
+		spawn_life('loner', _spawn_pos, 35, injuries={'llowerleg': {'cut': 1}})
 
-			_messages = [{'text': 'Hello? Can anyone hear me?'},
-		                 {'text': 'Bandits robbed me and left me to bleed out...'},
-		                 {'text': 'I\'m by a farm to the %s.' % _real_direction},
-		                 {'text': 'They might still be around. Please hurry!'}]
+		_messages = [{'text': 'Hello? Can anyone hear me?'},
+	                 {'text': 'Bandits robbed me and left me to bleed out...'},
+	                 {'text': 'I\'m by a farm to the %s.' % _real_direction},
+	                 {'text': 'They might still be around. Please hurry!'}]
+		broadcast(_messages, 40)
+	
+	elif 1 == 1:
+		_bandit_group_leader = get_group_leader_with_motive('crime')
+		_military_group_leader = get_group_leader_with_motive('military', online=False)
+		
+		if _military_group_leader and _bandit_group_leader:
+			_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
+			_military_group_location = lfe.get_current_chunk_id(LIFE[_military_group_leader])
+			order_group(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], STAGE_RAIDING, 300, chunk_key=_military_group_location)
+			alife.groups.discover_group(LIFE[_bandit_group_leader], LIFE[_military_group_leader]['group'])
+			alife.groups.declare_group_hostile(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], LIFE[_military_group_leader]['group'])
+
+			_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), alife.chunks.get_chunk(_military_group_location)['pos']))
+		
+			_messages = [{'text': 'Attention all neutral and bandit squads.'},
+				         {'text': 'We finally got solid contact on military in the %s compound.' % _real_direction},
+				         {'text': 'We\'re located near coords %s and heading out soon.' % (', '.join(_bandit_group_location.split(',')))}]
 			broadcast(_messages, 40)
-		else: #TODO: Get group
-			_bandit_raid_direction = 'north'
+		
+	#if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
+		#if 1==1:#random.randint(0, 5):
 			
-			_messages = [{'text': 'This is %s of %s, broadcasting to all.', 'source': 'Group Leader'},
-		                 {'text': 'We\'re in dire need of help near <location>.', 'source': 'Group Leader'},
-		                 {'text': 'A group of bandits is approaching from the %s.' % _bandit_raid_direction, 'source': 'Group Leader'},
-		                 {'text': 'If you are able to fight, please! We need fighters!', 'source': 'Group Leader'}]
-			broadcast(_messages, 40)
+		#else: #TODO: Get group
+		#	_bandit_raid_direction = 'north'
+		#	
+		#	_messages = [{'text': 'This is %s of %s, broadcasting to all.', 'source': 'Group Leader'},
+		#                 {'text': 'We\'re in dire need of help near <location>.', 'source': 'Group Leader'},
+		#                 {'text': 'A group of bandits is approaching from the %s.' % _bandit_raid_direction, 'source': 'Group Leader'},
+		#                 {'text': 'If you are able to fight, please! We need fighters!', 'source': 'Group Leader'}]
+		#	broadcast(_messages, 40)
 
 def execute_scheme():
 	if not WORLD_INFO['scheme']:
 		return False
 	
-	_event = WORLD_INFO['scheme'][0]
+	_event = None
 	
-	if _event['time'] > WORLD_INFO['ticks']:
+	for event in WORLD_INFO['scheme']:
+		if event['time'] <= WORLD_INFO['ticks']:
+			_event = event
+			break
+	
+	if not _event:
 		return False
 	
 	if 'radio' in _event:

@@ -54,6 +54,7 @@ def move_camera(pos, scroll=False):
 		_life = LIFE[SETTINGS['controlling']]
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]
+		_seen = False
 		
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
 			if LIFE[life_id]['dead']:
@@ -61,6 +62,8 @@ def move_camera(pos, scroll=False):
 			
 			if brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life_id)['alignment'] in ['trust', 'feign']:
 				continue
+			
+			_seen = True
 			
 			if LIFE[life_id]['pos'][0] < _top_left[0]:
 				_top_left[0] = LIFE[life_id]['pos'][0]
@@ -82,9 +85,9 @@ def move_camera(pos, scroll=False):
 			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
 		
 		if brain.get_flag(_life, 'camera_lean'):
-			if not LIFE[SETTINGS['controlling']]['seen']:
+			if not _seen:
 				if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
-					_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/20.0, 0, .35)
+					_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .35)
 					pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
 					pos.append(2)
 				else:
