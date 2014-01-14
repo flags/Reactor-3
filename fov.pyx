@@ -6,7 +6,6 @@
 from globals import *
 
 import numbers
-import pyfov
 import alife
 import items
 import maps
