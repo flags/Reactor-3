@@ -182,7 +182,11 @@ SETTINGS = {'running': True,
 	'distance unit': 'Yards',
 	'viewid': 1,
 	'active_view': 0,
-    'refresh_los': False}
+	'refresh_los': False,
+     'glitch_text': '',
+     'glitch_text_fade': False,
+     'glitch_text_time': 0,
+     'glitch_text_time_max': 0}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
@@ -271,7 +275,7 @@ INPUT = {'up':False,
 		'v':False,
 		'V':False,
 		'w':False,
-        'W': False,
+     	'W':False,
 		'x':False,
 		'y':False,
 		'z':False,
@@ -286,8 +290,8 @@ INPUT = {'up':False,
 		'8':False,
 		'9':False,
 		'0':False,
-		'm1': False,
-		'm2': False}
+		'm1':False,
+		'm2':False}
 		
 #Colors
 GREEN_ALT = tcod.Color(0,130,0)

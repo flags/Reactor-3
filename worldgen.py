@@ -27,6 +27,7 @@ import time
 import json
 import sys
 
+
 BASE_ITEMS = ['sneakers',
               'blue jeans',
               'white t-shirt']
@@ -34,6 +35,7 @@ RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
+
 
 class Runner(threading.Thread):
 	def __init__(self, amount):
@@ -169,6 +171,9 @@ def load_world(world):
 	#maps.render_map_slices()
 	
 	logging.info('World loaded.')
+	
+	if SETTINGS['controlling']:
+		gfx.glitch_text('You wake up from a deep sleep.')
 
 def save_world():
 	gfx.title('Saving...')

@@ -763,6 +763,8 @@ def handle_input():
 		
 		WORLD_INFO['scheme'] = []
 		situations.form_scheme()
+		
+		gfx.glitch_text('Testing')
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])
