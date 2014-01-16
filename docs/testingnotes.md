@@ -33,14 +33,19 @@ Factor weather into visiblity
 "Scan" mode. Over a number of ticks, a heatmap is generated of the
 	best places to hide in the surrounding area
 
-When weapons are dropped, the magazines inside the guns are not disowned.dd
+When weapons are dropped, the magazines inside the guns are not disowned.
 
 healed_by memory to boost leadership?
 	then "Thanks!"
 	Changes in relationships after memories
 		Would make combat affect ALife behavior more
 		
-		
+When rendering items, render the most important one on top (gun -> health kit -> ammo)
 		
 AI: What should I do?
 
+
+
+Content:
+	Lock weapon crates: Use small explosives to open them, etc
+		It's a "task" to open them. Gives the player something to do
