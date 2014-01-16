@@ -2333,7 +2333,7 @@ def get_max_carry_size(life):
 	return _greatest
 
 def can_carry_item(life, item_uid):
-	if items.get_item_from_uid(item_uid)['size'] < get_max_carry_size(life):
+	if items.get_item_from_uid(item_uid)['size'] <= get_max_carry_size(life):
 		return True
 	
 	return False

@@ -604,14 +604,21 @@ def draw_status_line():
 		            'map')
 	
 	if SETTINGS['glitch_text']:
-		_glitch_progress = SETTINGS['glitch_text_time']/float(SETTINGS['glitch_text_time_max'])
+		_max_glitch_progress = SETTINGS['glitch_text_time_max']/2
+		_glitch_progress = SETTINGS['glitch_text_time']/float(_max_glitch_progress)
 		_i = 0
 		
 		for c in SETTINGS['glitch_text']:
-			if _i/float(len(SETTINGS['glitch_text']))<_glitch_progress:#*((_i+1)/float(len(SETTINGS['glitch_text']))):
+			_g = random.randint(120, 150)
+			_gray = tcod.Color(_g, _g, _g)
+			
+			if random.randint(0, 1):
+				_gray = random.choice([tcod.dark_pink, tcod.dark_purple, tcod.dark_red])
+			
+			if _i/float(len(SETTINGS['glitch_text']))<_glitch_progress:
 				blit_char_to_view(_i+1, 1, c, (tcod.white, None), 'map')
 			else:
-				blit_char_to_view(_i+1, 1, chr(random.randint(0, 255)), random.choice([(tcod.white, None), (tcod.gray, None)]), 'map')
+				blit_char_to_view(_i+1, 1, chr(random.randint(0, 255)), (_gray, None), 'map')
 			
 			_i += 1
 		
@@ -624,6 +631,8 @@ def draw_status_line():
 			SETTINGS['glitch_text_fade'] = True
 		elif not SETTINGS['glitch_text_time']:
 			SETTINGS['glitch_text'] = ''
+			
+			refresh_view('map')
 			
 
 def draw_selected_tile_in_item_window(pos):
@@ -756,7 +765,7 @@ def glitch_text(text, change_text_only=False):
 	
 	SETTINGS['glitch_text_fade'] = False
 	SETTINGS['glitch_text_time'] = 0
-	SETTINGS['glitch_text_time_max'] = 50
+	SETTINGS['glitch_text_time_max'] = 50+len(text)*2
 
 def position_is_in_frame(pos):
 	_view = get_active_view()
