@@ -107,7 +107,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	weather.change_weather()
 	create_region_spawns()
 	randomize_item_spawns()
-	situations.form_scheme()
+	situations.form_scheme(force=True)
 	
 	alife.camps.create_all_camps()
 	
@@ -171,9 +171,6 @@ def load_world(world):
 	#maps.render_map_slices()
 	
 	logging.info('World loaded.')
-	
-	if SETTINGS['controlling']:
-		gfx.glitch_text('You wake up from a deep sleep.')
 
 def save_world():
 	gfx.title('Saving...')
@@ -337,6 +334,7 @@ def create_player():
 	#	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
+	situations.create_intro_story()
 	
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	

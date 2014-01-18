@@ -74,8 +74,9 @@ def spawn_life(life_type, position, event_time, **kwargs):
 def order_group(life, group_id, stage, event_time, **kwargs):
 	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': WORLD_INFO['ticks']+event_time})
 
-def broadcast(messages, event_time):
+def broadcast(messages, event_time, glitch=False):
 	_time = WORLD_INFO['ticks']+event_time
+	_i = 0
 	
 	for entry in messages:
 		if 'source' in entry:
@@ -83,12 +84,36 @@ def broadcast(messages, event_time):
 		else:
 			_source = '???'		
 		
-		WORLD_INFO['scheme'].append({'radio': [_source, entry['text']], 'time': _time})
+		if glitch:
+			if 'change_only' in entry:
+				_change = entry['change_only']
+			else:
+				_change = False
+			
+			_delay = (50*numbers.clip(_i, 0, 1))+(len(entry['text'])*2)*_i
+			print 'TIME', _time+_delay
+			WORLD_INFO['scheme'].append({'glitch': entry['text'], 'change': _change, 'time': _time+_delay})
+		else:
+			WORLD_INFO['scheme'].append({'radio': [_source, entry['text']], 'time': _time})
 		
+		_i += 1
 		_time += int(round(len(entry['text'])*1.25))
 
-def form_scheme():
-	if WORLD_INFO['scheme']:
+def create_intro_story():
+	_i = 1#random.randint(0, 2)
+	_player = LIFE[SETTINGS['controlling']]
+	
+	if _i == 1:
+		broadcast([{'text': 'You wake up from a deep sleep.'},
+		           {'text': 'You wonder where you are.', 'change_only': True},
+		           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
+		
+		#lol
+		#_story = WORLD_INFO['scheme'].pop()
+		#WORLD_INFO.insert(0, _story)
+
+def form_scheme(force=False):
+	if WORLD_INFO['scheme'] and not force:
 		return False
 	
 	_player_situation = get_player_situation()
@@ -165,6 +190,9 @@ def execute_scheme():
 	
 	if 'radio' in _event:
 		gfx.message('%s: %s' % (_event['radio'][0], _event['radio'][1]), style='radio')
+	
+	if 'glitch' in _event:
+		gfx.glitch_text(_event['glitch'], change_text_only=_event['change'])
 	
 	if 'life' in _event:
 		_life = spawns.generate_life(_event['life']['type'], position=_event['life']['position'])[0]

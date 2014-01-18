@@ -194,8 +194,9 @@ def switch_to_select_world():
 def switch_to_spawn_point():
 	#TODO: List of camps
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp'))
-	_menu_items.append(menus.create_item('single', 'Chase', 'You are being trailed!'))
+	_menu_items.append(menus.create_item('single', 'Random', 'Randomized story'))
+	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp', enabled=False))
+	_menu_items.append(menus.create_item('single', 'Chase', 'You are being trailed!', enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Spawn Point',
@@ -277,8 +278,7 @@ def generate_world(combat_test=False):
 		wildlife_spawns=_settings['Wildlife Density'],
 		simulate_ticks=_ticks,
 		save=True,
-		thread=True,
-	    combat_test=combat_test)
+		thread=True)
 
 def main_menu_select(entry):
 	key = entry['key']

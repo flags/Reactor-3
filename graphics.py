@@ -622,18 +622,18 @@ def draw_status_line():
 			
 			_i += 1
 		
-		if SETTINGS['glitch_text_fade']:
-			SETTINGS['glitch_text_time'] -= 1
-		else:
-			SETTINGS['glitch_text_time'] += 1
-		
-		if SETTINGS['glitch_text_time']>SETTINGS['glitch_text_time_max']:
-			SETTINGS['glitch_text_fade'] = True
-		elif not SETTINGS['glitch_text_time']:
-			SETTINGS['glitch_text'] = ''
+		if not SETTINGS['paused']:
+			if SETTINGS['glitch_text_fade']:
+				SETTINGS['glitch_text_time'] -= 1
+			else:
+				SETTINGS['glitch_text_time'] += 1
 			
-			refresh_view('map')
-			
+			if SETTINGS['glitch_text_time']>SETTINGS['glitch_text_time_max']:
+				SETTINGS['glitch_text_fade'] = True
+			elif SETTINGS['glitch_text_fade'] and SETTINGS['glitch_text_time']<=0:
+				SETTINGS['glitch_text'] = ''
+				
+				refresh_view('map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
@@ -761,6 +761,14 @@ def glitch_text(text, change_text_only=False):
 	SETTINGS['glitch_text'] = text
 	
 	if change_text_only:
+		refresh_view('map')
+		
+		if SETTINGS['glitch_text_fade']:
+			SETTINGS['glitch_text_fade'] = False
+		
+		if SETTINGS['glitch_text_time'] > SETTINGS['glitch_text_time_max']/2:
+			SETTINGS['glitch_text_time'] = SETTINGS['glitch_text_time_max']/2
+		
 		return True
 	
 	SETTINGS['glitch_text_fade'] = False
