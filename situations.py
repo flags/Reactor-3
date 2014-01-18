@@ -91,7 +91,7 @@ def broadcast(messages, event_time, glitch=False):
 				_change = False
 			
 			_delay = (50*numbers.clip(_i, 0, 1))+(len(entry['text'])*2)*_i
-			print 'TIME', _time+_delay
+			
 			WORLD_INFO['scheme'].append({'glitch': entry['text'], 'change': _change, 'time': _time+_delay})
 		else:
 			WORLD_INFO['scheme'].append({'radio': [_source, entry['text']], 'time': _time})
@@ -105,15 +105,30 @@ def create_intro_story():
 	
 	if _i == 1:
 		broadcast([{'text': 'You wake up from a deep sleep.'},
-		           {'text': 'You wonder where you are.', 'change_only': True},
 		           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
-		#lol
-		#_story = WORLD_INFO['scheme'].pop()
-		#WORLD_INFO.insert(0, _story)
+		_spawn_items = ['leather backpack', 'glock', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm magazine']
+		
+		for item_name in _spawn_items:
+			lfe.add_item_to_inventory(_player, items.create_item(item_name))
+		
+		_player['pos'] = spawns.get_spawn_in_ref('farms')
+		
+		#Dead dude
+		_dead_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
+		_dead_guy['dead'] = True
+		
+		for i in range(random.randint(15, 20)):
+			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
+
+		#Wounded running away
+		if random.randint(0, 1):
+			_wounded_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
+			alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'scared'
+			alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'scared'
 
 def form_scheme(force=False):
-	if WORLD_INFO['scheme'] and not force:
+	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:
 		return False
 	
 	_player_situation = get_player_situation()
@@ -145,13 +160,13 @@ def form_scheme(force=False):
 		broadcast(_messages, 40)
 	
 	elif 1 == 1:
-		_bandit_group_leader = get_group_leader_with_motive('crime')
+		_bandit_group_leader = get_group_leader_with_motive('crime', online=True)
 		_military_group_leader = get_group_leader_with_motive('military', online=False)
 		
 		if _military_group_leader and _bandit_group_leader:
 			_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
 			_military_group_location = lfe.get_current_chunk_id(LIFE[_military_group_leader])
-			order_group(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], STAGE_RAIDING, 300, chunk_key=_military_group_location)
+			order_group(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], STAGE_RAIDING, 1500, chunk_key=_military_group_location)
 			alife.groups.discover_group(LIFE[_bandit_group_leader], LIFE[_military_group_leader]['group'])
 			alife.groups.declare_group_hostile(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], LIFE[_military_group_leader]['group'])
 
@@ -208,4 +223,4 @@ def execute_scheme():
 			if _event['stage'] == STAGE_RAIDING:
 				alife.groups.raid(LIFE[_event['member']], _event['group'], _event['flags']['chunk_key'])
 	
-	WORLD_INFO['scheme'].pop(0)
+	WORLD_INFO['scheme'].remove(_event)

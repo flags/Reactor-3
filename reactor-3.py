@@ -60,7 +60,7 @@ def move_camera(pos, scroll=False):
 			if LIFE[life_id]['dead']:
 				continue
 			
-			if brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life_id)['alignment'] in ['trust', 'feign']:
+			if brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life_id)['alignment'] in ['trust', 'feign_trust']:
 				continue
 			
 			_seen = True

@@ -62,7 +62,8 @@ WORLD_INFO = {'map': [],
 	'lights': [],
 	'timers': [],
 	'weather': {},
-    'scheme': []}
+	'scheme': [],
+	'last_scheme_time': 9000}
 
 #Return values
 STATE_CHANGE = 2
@@ -183,10 +184,10 @@ SETTINGS = {'running': True,
 	'viewid': 1,
 	'active_view': 0,
 	'refresh_los': False,
-     'glitch_text': '',
-     'glitch_text_fade': False,
-     'glitch_text_time': 0,
-     'glitch_text_time_max': 0}
+	'glitch_text': '',
+	'glitch_text_fade': False,
+	'glitch_text_time': 0,
+	'glitch_text_time_max': 0}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']

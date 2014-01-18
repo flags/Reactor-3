@@ -100,36 +100,36 @@ SEA_CARPET_2 = {'id':'sea_carpet_2',
 			 'cost':-1}
 
 FIELD_TILE_1 = {'id': 'field_1',
-			 'icon': '~',
-			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'icon': '-',
+			 'color': (tcod.gold, tcod.Color(222,184,135)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 FIELD_TILE_2 = {'id': 'field_2',
-			 'icon': '\'',
-			 'color': (tcod.Color(210, 170, 153), tcod.Color(211, 181, 168)),
+			 'icon': '~',
+			 'color': (tcod.gold, tcod.Color(210,180,140)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 FIELD_TILE_3 = {'id': 'field_3',
-			 'icon': ';',
-			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'icon': '=',
+			 'color': (tcod.dark_yellow, tcod.Color(222,184,135)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 WHEAT_TILE_1 = {'id': 'wheat_1',
-            'icon': '|',
-            'color': (tcod.Color(232, 210, 169), tcod.Color(210, 170, 153)),
+            'icon': '=',
+            'color': (tcod.gold, tcod.Color(139, 69, 19)),
             'burnable': True,
             'translucent': True,
             'not_solid': True}
 
 WHEAT_TILE_2 = {'id': 'wheat_2',
-            'icon': '!',
-            'color': (tcod.Color(245, 222, 179), tcod.Color(211, 181, 168)),
+            'icon': '~',
+            'color': (tcod.dark_yellow, tcod.Color(160, 82, 45)),
             'burnable': True,
             'translucent': True,
             'not_solid': True}

@@ -107,7 +107,6 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	weather.change_weather()
 	create_region_spawns()
 	randomize_item_spawns()
-	situations.form_scheme(force=True)
 	
 	alife.camps.create_all_camps()
 	
@@ -242,12 +241,6 @@ def randomize_item_spawns():
 		for i in range(0, 1+random.randint(0, 3)):
 			_rand_pos = random.choice(_chunk['ground'])
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
-
-def get_spawn_point_around(pos, area=5):
-	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
-	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
-	
-	return (_x, _y)
 
 def get_spawn_point(randomize=False, zone_entry_point=False):
 	if zone_entry_point:

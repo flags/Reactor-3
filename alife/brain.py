@@ -205,6 +205,7 @@ def meet_alife(life, target):
 		'flags': {}}
 	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
+	return life['know'][target['id']]
 
 def update_known_life(life, life_id, flag, value):
 	_knows = knows_alife_by_id(life, life_id)

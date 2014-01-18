@@ -1,6 +1,7 @@
-from globals import WORLD_INFO
+from globals import WORLD_INFO, MAP_SIZE
 
 import worldgen
+import numbers
 import items
 import alife
 import life
@@ -131,5 +132,12 @@ def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[
 
 def get_spawn_in_ref(ref_type):
 	_chunk_key = random.choice(random.choice(WORLD_INFO['refs'][ref_type]))
+	_pos = random.choice(WORLD_INFO['chunk_map'][_chunk_key]['ground'])
 	
-	return random.choice(WORLD_INFO['chunk_map'][_chunk_key]['ground'])
+	return [_pos[0], _pos[1], 2]
+
+def get_spawn_point_around(pos, area=5):
+	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
+	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
+	
+	return (_x, _y, 2)

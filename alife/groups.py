@@ -301,6 +301,9 @@ def find_shelter(life, group_id):
 			announce(life, group_id, 'update_group_stage')
 
 def find_and_announce_shelter(life, group_id):
+	if get_stage(life, group_id) in [STAGE_RAIDING]:
+		return False
+	
 	_shelter = get_shelter(life, group_id)
 	
 	if get_motive(life, group_id) == 'crime' and logic.is_night():
