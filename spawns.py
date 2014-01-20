@@ -136,8 +136,8 @@ def get_spawn_in_ref(ref_type):
 	
 	return [_pos[0], _pos[1], 2]
 
-def get_spawn_point_around(pos, area=5):
-	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
-	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
+def get_spawn_point_around(pos, area=5, min_area=0):
+	_x = numbers.clip(pos[0]+random.randint(-area, area), min_area, MAP_SIZE[0]-1)
+	_y = numbers.clip(pos[1]+random.randint(-area, area), min_area, MAP_SIZE[1]-1)
 	
 	return (_x, _y, 2)

@@ -18,10 +18,11 @@ import random
 
 FAR_TEXT = ['You hear @t to the @d.']
 
-def create(position, volume, close_text, far_text, **sound):
+def create(position, volume, close_text, far_text, skip_on_visual=True, **sound):
 	_noise = {'pos': position,
 	          'volume': volume,
-	          'text': (close_text, far_text)}
+	          'text': (close_text, far_text),
+	          'skip_on_visual': skip_on_visual}
 	_noise.update(sound)
 	
 	_spread(_noise)
@@ -80,7 +81,7 @@ def _spread(noise):
 		
 		#TODO: Check walls between positions
 		#TODO: Add memory
-		if not _can_see:
+		if not _can_see or not noise['skip_on_visual']:
 			if _dist >=noise['volume']/2:
 				if 'player' in alife:
 					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string))

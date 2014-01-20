@@ -122,10 +122,22 @@ def create_intro_story():
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
 
 		#Wounded running away
-		if random.randint(0, 1):
-			_wounded_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
-			alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'scared'
-			alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'scared'
+		#if random.randint(0, 1):
+		_wounded_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
+		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'scared'
+		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'scared'
+		
+		for item_name in _spawn_items:
+			lfe.add_item_to_inventory(_wounded_guy, items.create_item(item_name))
+		
+		#Good guys coming in
+		_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=40))
+		for ai in spawns.generate_group('loner', amount=4, spawn_chunks=[_group_spawn_chunk]):
+			_target = alife.brain.meet_alife(ai, _wounded_guy)
+			_target['last_seen_time'] = 1
+			_target['escaped'] = 1
+			_target['last_seen_at'] = _wounded_guy['pos'][:]
+			alife.stats.establish_hostile(ai, _wounded_guy['id'])
 
 def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:
@@ -133,6 +145,7 @@ def form_scheme(force=False):
 	
 	_player_situation = get_player_situation()
 	
+	return False
 	#if _player_situation['armed']:
 	_i = random.randint(0, 3)+10
 	
@@ -166,7 +179,7 @@ def form_scheme(force=False):
 		if _military_group_leader and _bandit_group_leader:
 			_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
 			_military_group_location = lfe.get_current_chunk_id(LIFE[_military_group_leader])
-			order_group(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], STAGE_RAIDING, 1500, chunk_key=_military_group_location)
+			order_group(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], STAGE_RAIDING, 500, chunk_key=_military_group_location)
 			alife.groups.discover_group(LIFE[_bandit_group_leader], LIFE[_military_group_leader]['group'])
 			alife.groups.declare_group_hostile(LIFE[_bandit_group_leader], LIFE[_bandit_group_leader]['group'], LIFE[_military_group_leader]['group'])
 

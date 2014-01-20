@@ -122,7 +122,9 @@ def add_member(life, group_id, life_id):
 			
 			_target['group'] = group_id
 		else:
-			brain.meet_alife(life, LIFE[life_id])
+			_target = brain.meet_alife(life, LIFE[life_id])
+		
+		stats.establish_trust(life, life_id)
 	elif life['id'] == life_id and life['group'] and not life['group'] == group_id:
 		remove_member(life, life['group'], life_id)
 	

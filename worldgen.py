@@ -338,15 +338,24 @@ def create_region_spawns():
 	for outpost in WORLD_INFO['refs']['outposts']:
 		generate_outpost(outpost)
 	
+	#return False
+
+	_survival = True
 	for town in WORLD_INFO['refs']['towns']:
 		_spawn_chunk = random.choice(town)
 		
 		while maps.get_chunk(_spawn_chunk)['type'] == 'town':
 			_spawn_chunk = random.choice(town)
 	
+		if _survival:
+			_type = 'survival'
+			_survival = False
+		else:
+			_type = 'crime'
+	
 		spawns.generate_group('bandit',
-	                         amount=random.randint(5, 7),
-	                         group_motive='crime',
+	                         amount=random.randint(4, 6),
+	                         group_motive=_type,
 	                         spawn_chunks=[_spawn_chunk])
 	
 	return False

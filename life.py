@@ -3395,8 +3395,11 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	_current_condition = get_limb_condition(life, limb)
 	
-	if amount>=1.5:
+	if amount>=1.2:
 		pass_out(life, length=25*amount, reason='Unconscious')
+	elif amount>=.3:
+		#say(life, '@n cries out in pain!', action=True, event=False)
+		noise.create(life['pos'], 30, '%s cry out in pain' % ' '.join(life['name']), 'shouting', target=life['id'], skip_on_visual=False)
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 

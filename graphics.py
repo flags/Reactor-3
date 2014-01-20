@@ -769,7 +769,8 @@ def glitch_text(text, change_text_only=False):
 		if SETTINGS['glitch_text_time'] > SETTINGS['glitch_text_time_max']/2:
 			SETTINGS['glitch_text_time'] = SETTINGS['glitch_text_time_max']/2
 		
-		return True
+		if SETTINGS['glitch_text_time']:
+			return True
 	
 	SETTINGS['glitch_text_fade'] = False
 	SETTINGS['glitch_text_time'] = 0

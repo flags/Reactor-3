@@ -112,7 +112,6 @@ def bullet_hit(life, bullet, limb):
 	if limb in life['body']:
 		_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
-	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
 	_ret_string = own_language(life, _msg)
 	
 	if _ret_string.endswith('!'):
@@ -129,6 +128,7 @@ def bite(life, target_id, limb):
 	
 	if numbers.distance(life['pos'], target['pos'])>1:
 		_msg.append('bites the air')
+		
 		return ' '.join(_msg)+'.'
 	
 	_items_to_check = []
