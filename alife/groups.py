@@ -588,6 +588,35 @@ def manage_raid(life, group_id):
 	print 'RAID LOCATION SET' * 100
 
 def manage_combat(life, group_id):
+	_existing_targets = get_flag(life, group_id, 'targets')
+	
+	if not _existing_targets:
+		_existing_targets = {}
+	
+	_checked_targets = []
+	for target_id in judgement.get_threats(life):
+		if target_id in _existing_targets:
+			_existing_targets[target_id]['time'] = 0
+		else:
+			_existing_targets[target_id] = {'time': 0, 'pos': brain.knows_alife_by_id(life, target_id)['last_seen_at'][:]}
+		
+		_checked_targets.append(target_id)
+
+	_confident = stats.is_confident(life)
+
+	for target_id in _existing_targets:
+		if target_id in _checked_targets:
+			continue
+		
+		_existing_targets[target_id] += 1
+		
+		if _existing_targets[target_id]>100:
+			del _existing_targets[target_id]
+			
+			continue
+
+#Might still work? Unsure... old code here
+def manage_combat_old(life, group_id):
 	if get_stage(life, group_id) == STAGE_RAIDING:
 		prepare_for_raid(life, group_id)
 		return False

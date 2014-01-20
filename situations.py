@@ -104,8 +104,8 @@ def create_intro_story():
 	_player = LIFE[SETTINGS['controlling']]
 	
 	if _i == 1:
-		broadcast([{'text': 'You wake up from a deep sleep.'},
-		           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
+		#broadcast([{'text': 'You wake up from a deep sleep.'},
+		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
 		_spawn_items = ['leather backpack', 'glock', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm magazine']
 		
@@ -122,22 +122,34 @@ def create_intro_story():
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
 
 		#Wounded running away
-		#if random.randint(0, 1):
-		_wounded_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
-		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'scared'
-		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'scared'
+		_wounded_guy = spawns.generate_group('loner', amount=1)[0]
+		_wounded_guy['pos'] = spawns.get_spawn_point_around(_player['pos'])
+		
+		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'trust'
+		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'trust'
+		
+		#alife.speech.start_dialog(_wounded_guy, _player['id'], 'incoming_targets', force=True)
+		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets')
+		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 		
 		for item_name in _spawn_items:
 			lfe.add_item_to_inventory(_wounded_guy, items.create_item(item_name))
 		
-		#Good guys coming in
-		_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=40))
+		#Group nearby
+		_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
 		for ai in spawns.generate_group('loner', amount=4, spawn_chunks=[_group_spawn_chunk]):
-			_target = alife.brain.meet_alife(ai, _wounded_guy)
-			_target['last_seen_time'] = 1
-			_target['escaped'] = 1
-			_target['last_seen_at'] = _wounded_guy['pos'][:]
-			alife.stats.establish_hostile(ai, _wounded_guy['id'])
+			for target in [_player, _wounded_guy]:
+				_target = alife.brain.meet_alife(ai, target)
+				_target['last_seen_time'] = 1
+				_target['escaped'] = 1
+				_target['last_seen_at'] = target['pos'][:]
+				alife.stats.establish_hostile(ai, target['id'])
+				
+				_group_target = alife.brain.meet_alife(target, ai)
+				_group_target['last_seen_time'] = 1
+				_group_target['escaped'] = 1
+				_group_target['last_seen_at'] = ai['pos'][:]
+				alife.stats.establish_hostile(target, ai['id'])
 
 def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:

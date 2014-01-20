@@ -2923,6 +2923,15 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+3+_i,
 	                   str(maps.get_chunk(get_current_chunk_id(life))['max_z']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+4+_i,
+	                   life['state'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+5+_i,
+	                   'Has targets: '+str(len(alife.judgement.get_threats(life, ignore_escaped=1))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+6+_i,
+	                   'Confident: '+str(alife.stats.is_confident(life)))
 	
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
@@ -2964,22 +2973,14 @@ def draw_life_info():
 def is_target_of(life):
 	_targets = []
 	
-	if not brain.get_flag(life, 'visible_chunks'):
-		return False
-	
-	for chunk_key in brain.get_flag(life, 'visible_chunks'):
-		for ai in  [LIFE[ai] for ai in maps.get_chunk(chunk_key)['life']]:
-			if life['id'] == ai['id'] or ai['dead']:
-				continue
-			
-			if not alife.sight.can_see_position(life, ai['pos']):
-				continue
-			
-			_targets = judgement.get_combat_targets(ai)
-			if _targets and life['id'] in [l for l in _targets]:
-				_targets.append(ai)
-				break
-	
+	for ai in  [LIFE[ai] for ai in life['seen']]:
+		if life['id'] == ai['id'] or ai['dead']:
+			continue
+		
+		if judgement.is_target_threat(ai, life['id']):
+			_targets.append(ai)
+			break
+
 	return _targets
 
 def is_in_shelter(life):

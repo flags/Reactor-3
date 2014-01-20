@@ -1,6 +1,7 @@
 from globals import WORLD_INFO, MAP_SIZE
 
 import worldgen
+import drawing
 import numbers
 import items
 import alife
@@ -137,7 +138,21 @@ def get_spawn_in_ref(ref_type):
 	return [_pos[0], _pos[1], 2]
 
 def get_spawn_point_around(pos, area=5, min_area=0):
-	_x = numbers.clip(pos[0]+random.randint(-area, area), min_area, MAP_SIZE[0]-1)
-	_y = numbers.clip(pos[1]+random.randint(-area, area), min_area, MAP_SIZE[1]-1)
+	_positions = []
 	
-	return (_x, _y, 2)
+	for next_pos in drawing.draw_circle(pos, area):
+		if numbers.distance(pos, next_pos) < min_area:
+			continue
+		
+		if next_pos[0]>=MAP_SIZE[0]-1 or next_pos[1]>=MAP_SIZE[1]-1 or next_pos[0]<0 or next_pos[1]<0:
+			
+			continue
+		
+		print alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(next_pos))['ground']
+		if list(next_pos) in alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(next_pos))['ground']:
+			_pos = list(next_pos[:2])
+			_pos.append(2)
+			
+			_positions.append(_pos)
+		
+	return random.choice(_positions)

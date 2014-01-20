@@ -365,7 +365,6 @@ def ranged_combat(life, targets):
 			        target=_target['life']['id'],
 			        matches=[send_to])
 	else:
-		print life['name'], 'waiting...'
 		return False
 
 def melee_combat(life, targets):
@@ -394,5 +393,4 @@ def melee_combat(life, targets):
 			        target=_target['life']['id'],
 			        matches=[send_to])
 	else:
-		print life['name'], 'waiting...'
 		return False

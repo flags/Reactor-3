@@ -5,7 +5,7 @@ import life as lfe
 import logging
 import os
 
-def add_goal(life, goal_name, desire, tier, loop_until, set_flags):
+def add_goal(life, goal_name, desire, require, tier, loop_until, set_flags):
 	if tier == 'relaxed':
 		_tier = TIER_RELAXED
 	elif tier == 'survival':
@@ -21,6 +21,7 @@ def add_goal(life, goal_name, desire, tier, loop_until, set_flags):
 		_tier = TIER_RELAXED
 	
 	life['goap_goals'][goal_name] = {'desire': desire.split(','),
+	                                 'require': require.split(','),
 	                                 'tier': _tier,
 	                                 'loop_until': loop_until.split(','),
 	                                 'set_flags': set_flags.split(',')}
@@ -50,6 +51,7 @@ def parse_goap(life):
 	_action_name = ''
 	_goal_name = ''
 	_desire = ''
+	_require = ''
 	_tier = ''
 	_loop_until = ''
 	_set_flags = ''
@@ -69,6 +71,8 @@ def parse_goap(life):
 				_tier = line.partition(':')[2].strip()			
 			elif line.startswith('desire'):
 				_desire = line.partition(':')[2].strip()
+			elif line.startswith('require'):
+				_require = line.partition(':')[2].strip()
 			elif line.startswith('set_flags'):
 				_set_flags = line.partition(':')[2].strip()
 			elif line.startswith('loop_until'):
@@ -81,10 +85,11 @@ def parse_goap(life):
 				_non_critical = line.partition(':')[2].strip()
 			elif not line:
 				if _goal_name:
-					add_goal(life, _goal_name, _desire, _tier, _loop_until, _set_flags)
+					add_goal(life, _goal_name, _desire, _require, _tier, _loop_until, _set_flags)
 					
 					_goal_name = ''
 					_desire = ''
+					_require = ''
 					_tier = ''
 					_loop_until = ''
 					_set_flags = ''
@@ -99,7 +104,6 @@ def parse_goap(life):
 					_execute = ''
 					_satisfies = ''
 					_non_critical = False
-				
 
 def find_actions_that_satisfy(life, desires):
 	_valid_actions = []
@@ -216,14 +220,30 @@ def get_next_goal(life):
 	for goal in life['goap_goals']:
 		_break = False
 		
+		if len(life['goap_goals'][goal]['require'][0]):
+			for requirement in life['goap_goals'][goal]['require']:
+				_requirement = requirement
+				
+				if _requirement.startswith('!'):
+					_requirement = _requirement[1:]
+					_true = False
+				else:
+					_true = True
+				
+				if not FUNCTION_MAP[_requirement](life) == _true:
+					_break = True
+					break
+		
+		if _break:
+			continue
+		
 		for desire in life['goap_goals'][goal]['desire']:
 			if '*' in desire:
 				continue
 			
 			if execute(life, desire):
-				#print life['name'], 'skipping', goal, 'because of', desire
-				
 				_loop = False
+				
 				if life['goap_goals'][goal]['loop_until'] and len(life['goap_goals'][goal]['loop_until'][0]):
 					_loop = True
 					

@@ -37,6 +37,7 @@ CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 
 def create_function_map():
 	FUNCTION_MAP.update({'is_family': stats.is_family,
+		'name': lambda life: ' '.join(life['name']),
 		'is_same_species': stats.is_same_species,
 		'can_trust': judgement.can_trust,
 		'is_dangerous': judgement.is_target_dangerous,

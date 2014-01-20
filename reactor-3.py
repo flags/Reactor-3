@@ -50,7 +50,7 @@ CYTHON_ENABLED = True
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	
-	if SETTINGS['controlling']:
+	if SETTINGS['controlling'] and SETTINGS['controlling'] == SETTINGS['following'] and not life.has_dialog(LIFE[SETTINGS['controlling']]):
 		_life = LIFE[SETTINGS['controlling']]
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]
