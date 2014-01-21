@@ -867,21 +867,13 @@ def inventory_select(entry):
 	_menu_items = []
 	
 	if 'storing' in _item and not 'is_item' in entry:
-		_stored_items = []
-		for _stored_item_uid in _item['storing']:
-			_stored_item = life.get_inventory_item(LIFE[SETTINGS['following']], _stored_item_uid)
-			_i = menus.create_item('single',
-				_stored_item['name'],
-				None,
-				id=_stored_item_uid)
-			
-			_stored_items.append(_i)
+		_stored_items = life.get_custom_fancy_inventory_menu_items(LIFE[SETTINGS['following']], _item['storing'])
 		
 		_i = menus.create_menu(title=items.get_name(_item),
 		                       menu=_stored_items,
 		                       padding=(1,1),
 		                       position=(1,1),
-		                       format_str='$k',
+		                       format_str='[$i] $k',
 		                       on_select=inventory_select,
 		                       action=MENUS[ACTIVE_MENU['menu']]['action'])
 		menus.activate_menu(_i)
@@ -893,8 +885,9 @@ def handle_inventory_item_select(entry):
 	_item = life.get_inventory_item(LIFE[SETTINGS['controlling']], _item_uid)
 	_menu_items = []
 	
-	if MENUS[ACTIVE_MENU['menu']]['action']:#'action' in entry and entry['action']:
+	if MENUS[ACTIVE_MENU['menu']]['action']:
 		entry['key'] = MENUS[ACTIVE_MENU['menu']]['action']
+		
 		return handle_inventory_item_select_action(entry)
 	
 	if life.item_is_equipped(LIFE[SETTINGS['controlling']], _item_uid):

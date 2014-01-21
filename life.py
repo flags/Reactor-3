@@ -2680,7 +2680,30 @@ def draw_life():
 				rgb_fore_buffer=_view['col_buffer'][0],
 				rgb_back_buffer=_view['col_buffer'][1])
 
-def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,check_hands=False,matches=None):
+def get_custom_fancy_inventory_menu_items(life, item_uids, title_item_uid=None):
+	_menu_items = []
+	
+	for item_uid in item_uids:
+		item = ITEMS[item_uid]
+		
+		_menu_items.append(menus.create_item('single',
+		                                     items.get_name(item),
+		                                     None,
+		                                     icon=item['icon'],
+		                                     id=item_uid,
+		                                     is_item=True,
+		                                     color=(tcod.color_lerp(tcod.gray, item['color'][0], 0.30), tcod.white)))
+	
+	if _menu_items and title_item_uid:
+		_title_item = ITEMS[title_item_uid]
+		_menu_items.insert(0, menus.create_item('title',
+		                                        _title_item['name'],
+		                                        None,
+		                                        icon=_title_item['icon']))
+	
+	return _menu_items
+
+def get_fancy_inventory_menu_items(life, show_equipped=True, show_containers=True, check_hands=False, matches=None):
 	"""Returns list of menu items with "fancy formatting".
 	
 	`show_equipped` decides whether equipped items are shown (default True)
@@ -2693,7 +2716,6 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 	_storage = {}
 	
 	#TODO: Time it would take to remove
-	#_items.extend(life['inventory'].keys())
 	for item_uid in life['inventory']:
 		if show_equipped and item_is_equipped(life, item_uid):
 			_equipped_items.append(item_uid)
