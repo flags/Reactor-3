@@ -603,17 +603,31 @@ def manage_combat(life, group_id):
 		_checked_targets.append(target_id)
 
 	_confident = stats.is_confident(life)
+	_enemy_focal_pos = None
 
 	for target_id in _existing_targets:
+		if not _enemy_focal_pos:
+			_enemy_focal_pos = _existing_targets[target_id]['pos'][:]
+		else:
+			_enemy_focal_pos = numbers.lerp_velocity(_enemy_focal_pos, _existing_targets[target_id]['pos'], 0.5)
+		
 		if target_id in _checked_targets:
 			continue
 		
-		_existing_targets[target_id] += 1
+		_existing_targets[target_id]['time'] += 1
 		
-		if _existing_targets[target_id]>100:
+		if _existing_targets[target_id]['time']>100:
 			del _existing_targets[target_id]
 			
 			continue
+	
+	if not _enemy_focal_pos:
+		return False
+	
+	print life['name']
+	print '%s ***** IN COMBAT *****' % group_id
+	print '%s Enemy located near: %s' % (group_id, _enemy_focal_pos)
+	print '%s ***** IN COMBAT *****' % group_id
 
 #Might still work? Unsure... old code here
 def manage_combat_old(life, group_id):

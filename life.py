@@ -1724,6 +1724,10 @@ def kill(life, injury):
 	life['stance'] = 'crawling'
 	life['time_of_death'] = WORLD_INFO['ticks']
 	timers.remove_by_owner(life)
+	
+	if 'player' in life:
+		while EVENTS:
+			EVENTS.pop()
 
 def can_die_via_critical_injury(life):
 	for limb in life['body']:
@@ -3398,8 +3402,10 @@ def add_pain_to_limb(life, limb, amount=1):
 	
 	if amount>=1.2:
 		pass_out(life, length=25*amount, reason='Unconscious')
+		
+		if not 'player' in life:
+			say(life, '@n is knocked out!', action=True, event=False)
 	elif amount>=.3:
-		#say(life, '@n cries out in pain!', action=True, event=False)
 		noise.create(life['pos'], 30, '%s cry out in pain' % ' '.join(life['name']), 'shouting', target=life['id'], skip_on_visual=False)
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
@@ -3539,6 +3545,7 @@ def damage_from_item(life, item):
 	
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
+		_rand_limb.append(random.choice(life['body'].keys()))
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]
 	
@@ -3615,8 +3622,6 @@ def natural_healing(life):
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
-		#else:
-		#	logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']
