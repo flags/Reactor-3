@@ -298,7 +298,7 @@ def find_shelter(life, group_id):
 		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
 	else:
-		if not get_stage(life, group_id) in [STAGE_SETTLING, STAGE_RAIDING, STAGE_ATTACKING]:
+		if get_stage(life, group_id) in [STAGE_FORMING]:
 			set_stage(life, group_id, STAGE_SETTLING)
 			announce(life, group_id, 'update_group_stage')
 
@@ -622,7 +622,8 @@ def manage_combat(life, group_id):
 			continue
 	
 	if not _enemy_focal_pos:
-		set_stage(life, group_id, STAGE_FORMING)
+		if get_stage(life, group_id) == STAGE_ATTACKING:
+			set_stage(life, group_id, STAGE_FORMING)
 		
 		return False
 	
