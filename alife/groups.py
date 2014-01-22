@@ -298,7 +298,7 @@ def find_shelter(life, group_id):
 		set_shelter(life, group_id, chunks.get_chunk(_shelter)['reference'])
 		announce(life, group_id, 'found_shelter')
 	else:
-		if not get_stage(life, group_id) in [STAGE_SETTLING, STAGE_RAIDING]:
+		if not get_stage(life, group_id) in [STAGE_SETTLING, STAGE_RAIDING, STAGE_ATTACKING]:
 			set_stage(life, group_id, STAGE_SETTLING)
 			announce(life, group_id, 'update_group_stage')
 
@@ -573,7 +573,7 @@ def manage_territory(life, group_id):
 		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
 
 def manage_raid(life, group_id):
-	if not get_stage(life, group_id) == STAGE_RAIDING:
+	if not get_stage(life, group_id) in [STAGE_RAIDING, STAGE_ATTACKING]:
 		return False
 	
 	_raid_chunk_key = get_flag(life, group_id, 'raid_chunk')
@@ -622,12 +622,23 @@ def manage_combat(life, group_id):
 			continue
 	
 	if not _enemy_focal_pos:
+		set_stage(life, group_id, STAGE_FORMING)
+		
 		return False
 	
 	print life['name']
 	print '%s ***** IN COMBAT *****' % group_id
 	print '%s Enemy located near: %s' % (group_id, _enemy_focal_pos)
 	print '%s ***** IN COMBAT *****' % group_id
+	
+	if not get_stage(life, group_id) == STAGE_ATTACKING:
+		speech.announce_combat_to_group(life, group_id)
+		set_stage(life, group_id, STAGE_ATTACKING)
+	
+	if not lfe.ticker(life, 'group_command_rate', 3):
+		print 'Thinking'
+		return False
+	
 
 #Might still work? Unsure... old code here
 def manage_combat_old(life, group_id):

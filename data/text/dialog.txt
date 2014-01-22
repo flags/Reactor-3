@@ -231,6 +231,12 @@ FOUND_SHELTER:@ALWAYS:"I've found us a place to stay.":>END
 PREPARE_FOR_RAID:@ALWAYS:"We might be heading out soon.":>END
 HURT:@ALWAYS:"I'm bleeding...":>END
 HURT:@ALWAYS:"Medic!":>END
+GROUP_PREPARE_FOR_COMBAT_LARGE:@IS_CONFIDENT:"Assume combat positions!":>END
+GROUP_PREPARE_FOR_COMBAT_LARGE:!@IS_CONFIDENT:"Prepare to engage!":>END
+GROUP_PREPARE_FOR_COMBAT_SMALL:@IS_CONFIDENT:"Be on the lookout!":>END
+GROUP_PREPARE_FOR_COMBAT_SMALL:!@IS_CONFIDENT:"Damnit! Gear up!":>END
+GROUP_PREPARE_FOR_COMBAT_PARTNER:@IS_CONFIDENT:"We've got this.":>END
+GROUP_PREPARE_FOR_COMBAT_PARTNER:!@IS_CONFIDENT:"Fuck! We got company...":>END
 
 #Schemes
 INCOMING_TARGETS:!@HAS_THREATS:"You're awake! You should get out of here.":>INCOMING_TARGETS_2

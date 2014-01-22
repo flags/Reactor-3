@@ -1,6 +1,7 @@
 from globals import *
 from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 
+import numpy as np
 import life as lfe
 
 import judgement
@@ -219,6 +220,9 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 	return _ret_line
 
 def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
+	if not isinstance(life['fov'], np.ndarray):
+		return False
+	
 	_min_los_x = ((life['fov'].shape[0]/2)-view_size[0]/2)
 	_max_los_x = life['fov'].shape[0]
 	_min_los_y = ((life['fov'].shape[1]/2)-view_size[1]/2)

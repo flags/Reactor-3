@@ -315,7 +315,7 @@ def world_select_select(entry):
 def spawn_menu_select(entry):
 	key = entry['key']
 	
-	if key == 'Zone Entry Point':
+	if key in ['Zone Entry Point', 'Random']:
 		worldgen.create_player()
 		start_game()
 	elif key == 'Back':

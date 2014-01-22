@@ -478,7 +478,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 
 def ticker(life, name, time, fire=False):
 	if name in life['tickers']:
-		if life['tickers'][name]:
+		if life['tickers'][name]>0:
 			life['tickers'][name] -= 1
 			return False
 		else:
@@ -487,6 +487,10 @@ def ticker(life, name, time, fire=False):
 	else:
 		life['tickers'][name] = time
 		return fire
+
+def clear_ticker(life, name):
+	if name in life['tickers']:
+		del life['tickers'][name]
 
 def focus_on(life):
 	SETTINGS['following'] = life['id']

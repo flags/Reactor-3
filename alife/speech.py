@@ -379,3 +379,13 @@ def change_alignment(life, life_id, alignment):
 	if not has_sent(life, life_id, _alignment):
 		start_dialog(life, life_id, _alignment)
 		send(life, life_id, _alignment)
+
+def announce_combat_to_group(life, group_id):
+	_number_of_members = len(groups.get_group(life, group_id)['members'])
+	
+	if _number_of_members>=5:
+		groups.announce(life, group_id, 'group_prepare_for_combat_large')
+	elif _number_of_members>2:
+		groups.announce(life, group_id, 'group_prepare_for_combat_small')
+	else:
+		groups.announce(life, group_id, 'group_prepare_for_combat_partner')
