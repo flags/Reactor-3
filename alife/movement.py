@@ -9,6 +9,7 @@ import combat
 import speech
 import chunks
 import memory
+import logic
 import alife
 import zones
 import sight
@@ -96,14 +97,16 @@ def guard_chunk(life, chunk_key):
 		
 		return False
 	
-	print life['name'], 'guard'
 	_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
 	_center_chunk_pos.append(2)
 	_patrol_chunk_key = random.choice(chunks.get_visible_chunks_from(_center_chunk_pos, alife.sight.get_vision(life)))
 	
 	travel_to_chunk(life, _patrol_chunk_key)
 	
-	life['state_flags']['guard_time'] = random.randint(45, 60)
+	if 'player' in life:
+		logic.show_event('<Movement Order>', pos=_center_chunk_pos)
+	else:
+		life['state_flags']['guard_time'] = random.randint(45, 60)
 	
 	return False
 

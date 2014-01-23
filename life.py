@@ -434,6 +434,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['tickers'] = {}
 	_life['think_rate_max'] = LIFE_THINK_RATE
 	_life['think_rate'] = random.randint(0, _life['think_rate_max'])
+	_life['time_of_death'] = -1000
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -1699,7 +1700,7 @@ def kill(life, injury):
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
 		else:
-			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+			say(life, '@n dies.', action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
@@ -1707,7 +1708,7 @@ def kill(life, injury):
 			gfx.message('You die from %s.' % life['cause_of_death'])
 			del life['player']
 		else:
-			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+			say(life, '@n dies.', action=True)
 		
 	logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
@@ -2594,6 +2595,10 @@ def draw_life_icon(life):
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
+		
+		if 'time_of_death' in life and WORLD_INFO['ticks']-life['time_of_death']<=18 and time.time() % 1>=(WORLD_INFO['ticks']-life['time_of_death'])/18.0:
+			_icon[0] = chr(3)
+		
 		return _icon
 	
 	_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))

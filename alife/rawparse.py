@@ -214,6 +214,7 @@ def create_function_map():
 	    'drop_weapon': lambda life: lfe.drop_item(life, lfe.get_held_items(life, matches={'type': 'gun'})[0]),
 		'is_disarming': lambda life, life_id: brain.get_alife_flag(life, life_id, 'disarm')>0,
 		'set_raid_location': lambda life, **kwargs: lfe.memory(life, 'focus_on_chunk', chunk_key=kwargs['chunk_key']),
+		'move_to_chunk': lambda life, **kwargs:  movement.guard_chunk(life, kwargs['chunk_key']),
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

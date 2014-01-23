@@ -250,7 +250,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'skip': False,
 	            'loop': loop}
 	
-	if _dialog['remote']:
+	if _dialog['remote'] and not alife.sight.can_see_target(life, _target):
 		print ' '.join(life['name'])+'(%s) (radio):' % life['group'], _text
 	else:
 		print ' '.join(life['name'])+'(%s):' % life['group'], _text

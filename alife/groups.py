@@ -640,6 +640,32 @@ def manage_combat(life, group_id):
 		print 'Thinking'
 		return False
 	
+	_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 0), life['vision_max']*1.5)
+	_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
+	_orig_visible_chunks = _visible_chunks[:]
+	
+	#TODO: Check distance to threat
+	for hostile_chunk_key in _hostile_chunks:
+		if hostile_chunk_key in _visible_chunks:
+			_visible_chunks.remove(hostile_chunk_key)
+		
+	#TODO: Additional stages: PLANNING, EXECUTING
+	if _visible_chunks:
+		order_spread_out(life, group_id, _visible_chunks)
+	else:
+		_distant_chunk = {'distance': 0, 'chunk_key': None}
+		
+		print 'CHECK ME', _orig_visible_chunks
+		for chunk_key in _orig_visible_chunks:
+			_distance = numbers.distance((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1]))), chunks.get_chunk(chunk_key)['pos'])
+			
+			if _distance>_distant_chunk['distance']:
+				_distant_chunk['distance'] = _distance
+				_distance['chunk_key'] = chunk_key
+		
+		order_move_to(life, group_id, _distant_chunk['chunk_key'])
+		return False
+	
 
 #Might still work? Unsure... old code here
 def manage_combat_old(life, group_id):
@@ -826,6 +852,24 @@ def order_to_loot(life, group_id, add_leader=False):
 			     job_id=_job_id,
 		         order=True,
 			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
+
+def order_spread_out(life, group_id, chunk_keys, filter_by=None):
+	_group = get_group(life, group_id)
+	
+	for life_id in _group['members']:
+		if life['id'] == life_id:
+			continue
+		
+		speech.start_dialog(life, life_id, 'order_move_to_chunk', chunk_key=random.choice(chunk_keys), remote=True)
+
+def order_move_to(life, group_id, chunk_key, filter_by=None):
+	_group = get_group(life, group_id)
+	
+	for life_id in _group['members']:
+		if life['id'] == life_id:
+			continue
+		
+		speech.start_dialog(life, life_id, 'order_fall_back', chunk_key=chunk_key, remote=True)
 
 def is_leader(life, group_id, life_id):
 	_group = get_group(life, group_id)
