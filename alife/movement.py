@@ -97,16 +97,15 @@ def guard_chunk(life, chunk_key):
 		
 		return False
 	
-	_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
-	_center_chunk_pos.append(2)
-	
 	if 'player' in life:
+		_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
+		_center_chunk_pos.append(2)
+		
 		logic.show_event('<Movement Order>', pos=_center_chunk_pos)
 	else:
-		_patrol_chunk_key = random.choice(chunks.get_visible_chunks_from(_center_chunk_pos, alife.sight.get_vision(life)))
 		life['state_flags']['guard_time'] = random.randint(45, 60)
 		
-		travel_to_chunk(life, _patrol_chunk_key)
+		travel_to_chunk(life, chunk_key)
 	
 	return False
 

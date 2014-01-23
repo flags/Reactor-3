@@ -303,7 +303,7 @@ def find_shelter(life, group_id):
 			announce(life, group_id, 'update_group_stage')
 
 def find_and_announce_shelter(life, group_id):
-	if get_stage(life, group_id) in [STAGE_RAIDING]:
+	if get_stage(life, group_id) >= STAGE_RAIDING:
 		return False
 	
 	_shelter = get_shelter(life, group_id)
@@ -590,6 +590,7 @@ def manage_raid(life, group_id):
 def manage_combat(life, group_id):
 	_existing_friendlies = get_flag(life, group_id, 'friendlies')
 	_existing_targets = get_flag(life, group_id, 'targets')
+	_last_focal_point = get_flag(life, group_id, 'last_focal_point')
 	
 	if not _existing_friendlies:
 		_existing_friendlies = {}
@@ -631,7 +632,21 @@ def manage_combat(life, group_id):
 			
 			continue
 	
-	if not _enemy_focal_pos:
+	_hostile_chunks = get_flag(life, group_id, 'hostile_chunks')
+	_visible_chunks = get_flag(life, group_id, 'visible_chunks')
+	
+	if _enemy_focal_pos:
+		if not _last_focal_point or numbers.distance(_enemy_focal_pos, _last_focal_point)>30:
+			_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
+			_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
+			
+			flag(life, group_id, 'hostile_chunks', _hostile_chunks)
+			flag(life, group_id, 'visible_chunks', _visible_chunks)
+			flag(life, group_id, 'last_focal_point', _enemy_focal_pos)
+		#elif not _last_focal_point:
+		#	flag(life, group_id, 'last_focal_point', _enemy_focal_pos)
+			
+	else:
 		if get_stage(life, group_id) == STAGE_ATTACKING:
 			set_stage(life, group_id, STAGE_FORMING)
 		
@@ -652,8 +667,6 @@ def manage_combat(life, group_id):
 		print 'Thinking'
 		return False
 	
-	_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
-	_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
 	_orig_visible_chunks = _visible_chunks[:]
 	
 	#TODO: Check distance to threat
