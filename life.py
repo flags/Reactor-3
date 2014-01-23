@@ -2596,7 +2596,7 @@ def draw_life_icon(life):
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
 		
-		if 'time_of_death' in life and WORLD_INFO['ticks']-life['time_of_death']<=18 and time.time() % 1>=(WORLD_INFO['ticks']-life['time_of_death'])/18.0:
+		if 'time_of_death' in life and WORLD_INFO['ticks']-life['time_of_death']<=18 and time.time() % 1>=1-((WORLD_INFO['ticks']-life['time_of_death'])/18.0):
 			_icon[0] = chr(3)
 		
 		return _icon

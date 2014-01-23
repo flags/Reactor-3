@@ -500,7 +500,7 @@ def react_to_attack(life, life_id):
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
 	if life['group']:
-		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'])
+		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'], ignore_if_said_in_last=150)
 
 def react_to_tension(life, life_id):
 	if brain.knows_alife_by_id(life, life_id)['alignment'] in ['hostile']:

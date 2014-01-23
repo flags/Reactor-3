@@ -588,10 +588,20 @@ def manage_raid(life, group_id):
 	print 'RAID LOCATION SET' * 100
 
 def manage_combat(life, group_id):
+	_existing_friendlies = get_flag(life, group_id, 'friendlies')
 	_existing_targets = get_flag(life, group_id, 'targets')
+	
+	if not _existing_friendlies:
+		_existing_friendlies = {}
 	
 	if not _existing_targets:
 		_existing_targets = {}
+	
+	for life_id in get_group(life, group_id)['members']:
+		if not life_id in _existing_friendlies:
+			_existing_friendlies[life_id] = {'updated': -900}
+	
+	flag(life, group_id, 'friendlies', _existing_friendlies)
 	
 	_checked_targets = []
 	for target_id in judgement.get_threats(life):
@@ -625,6 +635,8 @@ def manage_combat(life, group_id):
 		if get_stage(life, group_id) == STAGE_ATTACKING:
 			set_stage(life, group_id, STAGE_FORMING)
 		
+		flag(life, group_id, 'friendlies', None)
+		
 		return False
 	
 	print life['name']
@@ -640,7 +652,7 @@ def manage_combat(life, group_id):
 		print 'Thinking'
 		return False
 	
-	_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 0), life['vision_max']*1.5)
+	_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
 	_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
 	_orig_visible_chunks = _visible_chunks[:]
 	
@@ -650,22 +662,28 @@ def manage_combat(life, group_id):
 			_visible_chunks.remove(hostile_chunk_key)
 		
 	#TODO: Additional stages: PLANNING, EXECUTING
-	if _visible_chunks:
-		order_spread_out(life, group_id, _visible_chunks)
+	if _visible_chunks and stats.is_confident(life):
+		for target_id in order_spread_out(life, group_id, _visible_chunks, filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
+			_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 	else:
-		_distant_chunk = {'distance': 0, 'chunk_key': None}
+		_distant_chunk = {'distance': -1, 'chunk_key': None}
 		
-		print 'CHECK ME', _orig_visible_chunks
 		for chunk_key in _orig_visible_chunks:
 			_distance = numbers.distance((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1]))), chunks.get_chunk(chunk_key)['pos'])
+			_distance *= numbers.clip(numbers.distance(life['pos'], _enemy_focal_pos), 1, 35)/35.0
+			
+			if chunk_key in _visible_chunks:
+				_distance *= 2
 			
 			if _distance>_distant_chunk['distance']:
 				_distant_chunk['distance'] = _distance
-				_distance['chunk_key'] = chunk_key
+				_distant_chunk['chunk_key'] = chunk_key
 		
-		order_move_to(life, group_id, _distant_chunk['chunk_key'])
+		if _distant_chunk['chunk_key']:
+			for target_id in order_move_to(life, group_id, _distant_chunk['chunk_key'], filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
+				_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
+		
 		return False
-	
 
 #Might still work? Unsure... old code here
 def manage_combat_old(life, group_id):
@@ -855,21 +873,24 @@ def order_to_loot(life, group_id, add_leader=False):
 
 def order_spread_out(life, group_id, chunk_keys, filter_by=None):
 	_group = get_group(life, group_id)
+	_ordered_targets = []
 	
 	for life_id in _group['members']:
-		if life['id'] == life_id:
+		if not filter_by(life_id):
 			continue
 		
+		if life['id'] == life_id:
+			movement.guard_chunk(life, random.choice(chunk_keys))
+			
+			continue
+		
+		_ordered_targets.append(life_id)
 		speech.start_dialog(life, life_id, 'order_move_to_chunk', chunk_key=random.choice(chunk_keys), remote=True)
+	
+	return _ordered_targets
 
 def order_move_to(life, group_id, chunk_key, filter_by=None):
-	_group = get_group(life, group_id)
-	
-	for life_id in _group['members']:
-		if life['id'] == life_id:
-			continue
-		
-		speech.start_dialog(life, life_id, 'order_fall_back', chunk_key=chunk_key, remote=True)
+	return order_spread_out(life, group_id, [chunk_key], filter_by=filter_by)
 
 def is_leader(life, group_id, life_id):
 	_group = get_group(life, group_id)
