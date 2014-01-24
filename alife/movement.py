@@ -97,17 +97,22 @@ def guard_chunk(life, chunk_key):
 		
 		return False
 	
+	life['state_flags']['guard_time'] = random.randint(45, 60)
+	
+	travel_to_chunk(life, chunk_key)
+	
+	return False
+
+def set_focus_point(life, chunk_key):
+	lfe.delete_memory(life, matches={'text': 'focus_on_chunk'})
+	
+	lfe.memory(life, 'focus_on_chunk', chunk_key=chunk_key)
+	
 	if 'player' in life:
 		_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
 		_center_chunk_pos.append(2)
 		
 		logic.show_event('<Movement Order>', pos=_center_chunk_pos)
-	else:
-		life['state_flags']['guard_time'] = random.randint(45, 60)
-		
-		travel_to_chunk(life, chunk_key)
-	
-	return False
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded

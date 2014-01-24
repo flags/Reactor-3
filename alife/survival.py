@@ -401,7 +401,8 @@ def explore_unknown_chunks(life):
 	_chunk_key = references.path_along_reference(life, 'roads')
 	
 	if not _chunk_key:
-		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
+		_best_reference = WORLD_INFO['reference_map']['roads'][0]
+		
 		if not _best_reference:
 			return False
 		

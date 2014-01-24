@@ -208,11 +208,11 @@ def execute(life, func):
 
 def execute_plan(life, plan):
 	for action in plan:
-		try:
-			if not FUNCTION_MAP[life['goap_actions'][action]['execute']](life):
-				break
-		except KeyError:
-			raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
+		#try:
+		if not FUNCTION_MAP[life['goap_actions'][action]['execute']](life):
+			break
+		#except KeyError:
+		#	raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
 
 def get_next_goal(life):
 	_next_goal = {'highest': None, 'goal': None, 'plan': None}

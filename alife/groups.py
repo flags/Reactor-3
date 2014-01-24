@@ -587,6 +587,7 @@ def manage_raid(life, group_id):
 	
 	print 'RAID LOCATION SET' * 100
 
+#@profile
 def manage_combat(life, group_id):
 	_existing_friendlies = get_flag(life, group_id, 'friendlies')
 	_existing_targets = get_flag(life, group_id, 'targets')
@@ -633,12 +634,12 @@ def manage_combat(life, group_id):
 			continue
 	
 	_hostile_chunks = get_flag(life, group_id, 'hostile_chunks')
-	_visible_chunks = get_flag(life, group_id, 'visible_chunks')
+	_visible_chunks = brain.get_flag(life, 'visible_chunks')#get_flag(life, group_id, 'visible_chunks')
 	
 	if _enemy_focal_pos:
 		if not _last_focal_point or numbers.distance(_enemy_focal_pos, _last_focal_point)>30:
 			_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
-			_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
+			#_visible_chunks = lfe.get_#chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
 			
 			flag(life, group_id, 'hostile_chunks', _hostile_chunks)
 			flag(life, group_id, 'visible_chunks', _visible_chunks)
@@ -676,6 +677,7 @@ def manage_combat(life, group_id):
 		
 	#TODO: Additional stages: PLANNING, EXECUTING
 	if _visible_chunks and stats.is_confident(life):
+		print life['name'], 'Spread out!'
 		for target_id in order_spread_out(life, group_id, _visible_chunks, filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
 			_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 	else:
@@ -693,6 +695,7 @@ def manage_combat(life, group_id):
 				_distant_chunk['chunk_key'] = chunk_key
 		
 		if _distant_chunk['chunk_key']:
+			print life['name'], 'Move to!'
 			for target_id in order_move_to(life, group_id, _distant_chunk['chunk_key'], filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
 				_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 		
@@ -893,7 +896,7 @@ def order_spread_out(life, group_id, chunk_keys, filter_by=None):
 			continue
 		
 		if life['id'] == life_id:
-			movement.guard_chunk(life, random.choice(chunk_keys))
+			movement.set_focus_point(life, random.choice(chunk_keys))
 			
 			continue
 		
