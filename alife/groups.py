@@ -587,7 +587,6 @@ def manage_raid(life, group_id):
 	
 	print 'RAID LOCATION SET' * 100
 
-#@profile
 def manage_combat(life, group_id):
 	_existing_friendlies = get_flag(life, group_id, 'friendlies')
 	_existing_targets = get_flag(life, group_id, 'targets')
@@ -637,21 +636,24 @@ def manage_combat(life, group_id):
 	_visible_chunks = brain.get_flag(life, 'visible_chunks')#get_flag(life, group_id, 'visible_chunks')
 	
 	if _enemy_focal_pos:
+		lfe.clear_ticker(life, 'group_command_reset')
+		
 		if not _last_focal_point or numbers.distance(_enemy_focal_pos, _last_focal_point)>30:
 			_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
-			#_visible_chunks = lfe.get_#chunks.get_visible_chunks_from(life['pos'], life['vision_max']*1.5)
 			
 			flag(life, group_id, 'hostile_chunks', _hostile_chunks)
 			flag(life, group_id, 'visible_chunks', _visible_chunks)
 			flag(life, group_id, 'last_focal_point', _enemy_focal_pos)
-		#elif not _last_focal_point:
-		#	flag(life, group_id, 'last_focal_point', _enemy_focal_pos)
 			
 	else:
-		if get_stage(life, group_id) == STAGE_ATTACKING and lfe.ticker(life, 'group_command_reset', 6):
-			set_stage(life, group_id, STAGE_FORMING)
+		_ticker = lfe.ticker(life, 'group_command_reset', 48)
 		
-		flag(life, group_id, 'friendlies', None)
+		if get_stage(life, group_id) == STAGE_ATTACKING and _ticker:
+			set_stage(life, group_id, STAGE_FORMING)
+			flag(life, group_id, 'friendlies', None)
+			flag(life, 'strategy', None)
+		elif not _ticker:
+			manage_strategy(life, group_id)
 		
 		return False
 	
@@ -700,6 +702,44 @@ def manage_combat(life, group_id):
 				_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 		
 		return False
+
+def manage_strategy(life, group_id):
+	_last_strat = get_flag(life, group_id, 'strategy')
+	
+	if _last_strat and _last_strat['ready'] and WORLD_INFO['ticks']-_last_strat['updated']<100:
+		return False
+	
+	if _last_strat:
+		_strat = _last_strat
+	else:
+		_strat = {'ready': False, 'gear_track': {}}
+		
+	flag(life, group_id, 'strategy', _strat)
+	
+	_gear_track = _strat['gear_track']
+	_group = get_group(life, group_id)
+	_members_combat_ready = 0
+	
+	#Get inventory...
+	for member_id in _group['members']:
+		#TODO: Handle this
+		if member_id == life['id']:
+			continue
+		
+		if not member_id in _gear_track:
+			_gear_track[member_id] = {'has_weapon': len(lfe.get_all_equipped_items(life, matches={'type': 'gun'}))>0,
+			                          'has_ammo': False,
+			                          'asked': []}
+		
+		_track = _gear_track[member_id]
+		
+		if _track['has_weapon']:
+			if _track['has_ammo']:
+				_members_combat_ready.append(member_id)
+		elif not 'order_equip_weapon' in _track['asked']:
+			_track['asked'].append('order_equip_weapon')
+			
+			memory.create_question(life, member_id, 'order_equip_weapon')
 
 #Might still work? Unsure... old code here
 def manage_combat_old(life, group_id):
