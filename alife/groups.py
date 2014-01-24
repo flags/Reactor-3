@@ -647,7 +647,7 @@ def manage_combat(life, group_id):
 		#	flag(life, group_id, 'last_focal_point', _enemy_focal_pos)
 			
 	else:
-		if get_stage(life, group_id) == STAGE_ATTACKING:
+		if get_stage(life, group_id) == STAGE_ATTACKING and lfe.ticker(life, 'group_command_reset', 6):
 			set_stage(life, group_id, STAGE_FORMING)
 		
 		flag(life, group_id, 'friendlies', None)
