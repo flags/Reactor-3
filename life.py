@@ -3053,14 +3053,15 @@ def pass_out(life, length=None, reason='Passed out'):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
+	clear_actions(life)
 	collapse(life)
 	life['asleep'] = length
 	life['asleep_reason'] = reason
 	
 	if 'player' in life:
 		gfx.message('You pass out!',style='damage')
-	else:
-		say(life, '@n passes out.', action=True, event=False)
+	#lse:
+	#say(life, '@n passes out.', action=True, event=False)
 	
 	logging.debug('%s passed out.' % life['name'][0])
 

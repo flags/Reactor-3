@@ -164,7 +164,7 @@ def create_function_map():
 		'inform_of_group': speech.inform_of_group,
 		'force_inform_of_group': speech.force_inform_of_group,
 		'inform_of_items': lambda life, life_id, **kwargs: speech.inform_of_items(life, life_id, kwargs['items']),
-		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', life['pos'][:]),
+		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', LIFE[life_id]['pos'][:]),
 		'has_questions_for_target': lambda life, life_id: len(memory.get_questions_for_target(life, life_id))>0,
 		'has_orders_for_target': lambda life, life_id: len(memory.get_orders_for_target(life, life_id))>0,
 		'ask_target_question': memory.ask_target_question,
