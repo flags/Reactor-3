@@ -42,7 +42,7 @@ def announce(life, gist, public=False, trusted=False, group=None, filter_if=None
 		if not stats.can_talk_to(life, target['id']):
 			continue
 		
-		if filter_if and filter_if(life):
+		if filter_if and filter_if(target['id']):
 			return False
 		
 		_radio = False
