@@ -2096,13 +2096,13 @@ def get_all_unequipped_items(life, check_hands=True, matches=[], invert=False):
 	_unequipped_items = []
 	
 	for entry in life['inventory']:
-		item = get_inventory_item(life,entry)
+		item = get_inventory_item(life, entry)
 		
 		if matches:
 			if not perform_match(item, matches):
 				continue					
 		
-		if item_is_equipped(life,entry, check_hands=check_hands) == invert:
+		if item_is_equipped(life, entry, check_hands=check_hands) == invert:
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
@@ -2564,7 +2564,7 @@ def get_items_attached_to_limb(life, limb):
 	
 	return _limb['holding']	
 
-def item_is_equipped(life,id,check_hands=False):
+def item_is_equipped(life, item_uid,check_hands=False):
 	"""Returns limb where item is equipped. Returns False othewise.
 	
 	The `check_hands` keyword argument indicates whether hands will be checked (default False)
@@ -2574,7 +2574,7 @@ def item_is_equipped(life,id,check_hands=False):
 		if not check_hands and _limb in life['hands']:
 			continue
 		
-		if id in get_limb(life,_limb)['holding']:
+		if item_uid in get_limb(life, _limb)['holding']:
 			return True
 	
 	return False

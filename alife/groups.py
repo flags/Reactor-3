@@ -77,6 +77,17 @@ def discover_group(life, group_id):
 	
 	return False
 
+def get_group_size(life, group_id):
+	_number_of_members = len(get_group(life, group_id)['members'])
+	
+	if _number_of_members>=5:
+		return 'large'
+	
+	if _number_of_members>2:
+		return 'small'
+	
+	return 'partner'
+
 def update_group_memory(life, group_id, flag, value):
 	_previous_value = life['known_groups'][group_id][flag]
 	life['known_groups'][group_id][flag] = value
@@ -651,23 +662,17 @@ def manage_combat(life, group_id):
 		if get_stage(life, group_id) == STAGE_ATTACKING and _ticker:
 			set_stage(life, group_id, STAGE_FORMING)
 			flag(life, group_id, 'friendlies', None)
-			flag(life, 'strategy', None)
+			flag(life, group_id, 'strategy', None)
 		elif not _ticker:
 			manage_strategy(life, group_id)
 		
 		return False
-	
-	print life['name']
-	print '%s ***** IN COMBAT *****' % group_id
-	print '%s Enemy located near: %s' % (group_id, _enemy_focal_pos)
-	print '%s ***** IN COMBAT *****' % group_id
 	
 	if not get_stage(life, group_id) == STAGE_ATTACKING:
 		speech.announce_combat_to_group(life, group_id)
 		set_stage(life, group_id, STAGE_ATTACKING)
 	
 	if not lfe.ticker(life, 'group_command_rate', 3):
-		print 'Thinking'
 		return False
 	
 	_orig_visible_chunks = _visible_chunks[:]
@@ -679,7 +684,6 @@ def manage_combat(life, group_id):
 		
 	#TODO: Additional stages: PLANNING, EXECUTING
 	if _visible_chunks and stats.is_confident(life):
-		print life['name'], 'Spread out!'
 		for target_id in order_spread_out(life, group_id, _visible_chunks, filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
 			_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 	else:
@@ -697,7 +701,6 @@ def manage_combat(life, group_id):
 				_distant_chunk['chunk_key'] = chunk_key
 		
 		if _distant_chunk['chunk_key']:
-			print life['name'], 'Move to!'
 			for target_id in order_move_to(life, group_id, _distant_chunk['chunk_key'], filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
 				_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 		
@@ -727,13 +730,28 @@ def manage_strategy(life, group_id):
 			continue
 		
 		if not member_id in _gear_track:
-			_gear_track[member_id] = {'has_weapon': len(lfe.get_all_equipped_items(life, matches={'type': 'gun'}))>0,
+			_gear_track[member_id] = {'has_weapon': len(lfe.get_all_equipped_items(LIFE[member_id], matches=[{'type': 'gun'}]))>0,
 			                          'has_ammo': False,
-			                          'asked': []}
+			                          'asked': [],
+			                          'mia': False}
 		
 		_track = _gear_track[member_id]
+
+		if brain.knows_alife_by_id(life, member_id)['last_seen_time'] <= 100:
+			if 'mia_check' in _track['asked']:
+				_track['asked'].remove('mia_check')
+			
+			_track['mia'] = False
+		else:
+			_track['mia'] = True
 		
-		if _track['has_weapon']:
+		if _track['mia']:
+			if not 'mia_check' in _track['asked']:
+				_track['asked'].append('mia_check')
+				_size = get_group_size(life, group_id)
+				
+				memory.create_question(life, member_id, 'order_status_report_%s' % _size)
+		elif _track['has_weapon']:
 			if _track['has_ammo']:
 				_members_combat_ready.append(member_id)
 		elif not 'order_equip_weapon' in _track['asked']:

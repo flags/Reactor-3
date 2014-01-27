@@ -36,6 +36,7 @@ import numpy
 import tiles
 import menus
 import logic
+import locks
 import items
 import life
 import time
@@ -50,7 +51,7 @@ CYTHON_ENABLED = True
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	
-	if SETTINGS['controlling'] and SETTINGS['controlling'] == SETTINGS['following'] and not life.has_dialog(LIFE[SETTINGS['controlling']]) or EVENTS:
+	if SETTINGS['controlling'] and locks.is_locked('camera_free'):
 		_life = LIFE[SETTINGS['controlling']]
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]
@@ -313,6 +314,7 @@ if __name__ == '__main__':
 	tiles.create_all_tiles()
 	language.load_strings()
 	alife.rawparse.create_function_map()
+	locks.create_lock('camera_free', locked=True)
 	
 	gfx.init_libtcod()
 	#smp.init()

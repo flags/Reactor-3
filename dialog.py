@@ -6,6 +6,7 @@ import life as lfe
 import language
 import numbers
 import drawing
+import locks
 import menus
 import logic
 import alife
@@ -355,6 +356,8 @@ def process_dialog_for_player(dialog_id, loop=False):
 	
 	if loop:
 		end_dialog(dialog_id)
+		locks.lock('camera_free')
+		
 		return False
 	
 	for response in get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['next_gist']):
@@ -379,7 +382,9 @@ def process(life, dialog_id):
 	
 	if _last_message['next_gist'] == 'end':
 		end_dialog(dialog_id)
+		locks.lock('camera_free')
 	elif 'player' in life:
+		locks.unlock('camera_free', reason='Process dialog')
 		process_dialog_for_player(dialog_id, loop=_last_message['loop'])
 	else:
 		say_via_gist(life, dialog_id, _last_message['next_gist'], loop=_last_message['loop'])
@@ -390,6 +395,8 @@ def draw_dialog(dialog_id):
 	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
+	
+	locks.unlock('camera_free')
 	
 	if len(_line_of_sight)<=1:
 		_center_pos = LIFE[_dialog['started_by']]['pos']

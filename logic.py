@@ -14,6 +14,7 @@ import timers
 import dialog
 import spawns
 import melee
+import locks
 import cache
 import menus
 import items
@@ -154,7 +155,9 @@ def draw_event():
 	if not _event:
 		return False
 	
+	locks.unlock('camera_free')
 	gfx.camera_track(_event['pos'])
+	
 	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
 		_lines = list(_event['text'].partition(','))
 		
@@ -212,6 +215,8 @@ def show_next_event():
 	
 	if not EVENTS:
 		life.focus_on(LIFE[SETTINGS['following']])
+		locks.lock('camera_free', reason='No more events')
+		
 		return False
 	
 	return True

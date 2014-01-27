@@ -65,6 +65,8 @@ WORLD_INFO = {'map': [],
 	'scheme': [],
 	'last_scheme_time': 9000}
 
+LOCKS = {}
+
 #Return values
 STATE_CHANGE = 2
 STATE_UNCHANGED = 3
