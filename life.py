@@ -1699,16 +1699,16 @@ def kill(life, injury):
 		
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
-		else:
-			say(life, '@n dies.', action=True)
+		#else:
+		#	say(life, '@n dies.', action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
 			del life['player']
-		else:
-			say(life, '@n dies.', action=True)
+		#else:
+		#	say(life, '@n dies.', action=True)
 		
 	logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
