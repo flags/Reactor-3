@@ -500,7 +500,12 @@ def react_to_attack(life, life_id):
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
 	if life['group']:
-		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'], ignore_if_said_in_last=150)
+		groups.announce(life,
+		                life['group'],
+		                'attacked_by_hostile',
+		                target_id=_knows['life']['id'],
+		                filter_if=lambda life_id: brain.knows_alife_by_id(life, life_id)['last_seen_time']<=30,
+		                ignore_if_said_in_last=150)
 
 def react_to_tension(life, life_id):
 	if brain.knows_alife_by_id(life, life_id)['alignment'] in ['hostile']:
@@ -515,7 +520,11 @@ def react_to_tension(life, life_id):
 	if _disarm:
 		#For now...
 		if not sight.can_see_position(life, LIFE[life_id]['pos']):
-			groups.announce(life, life['group'], 'attacked_by_hostile', target_id=life_id)
+			groups.announce(life,
+			                life['group'],
+			                'attacked_by_hostile',
+			                filter_if=lambda life_id: brain.knows_alife_by_id(life, life_id)['last_seen_time']<=30,
+			                target_id=life_id)
 			
 			return False
 		

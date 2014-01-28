@@ -43,7 +43,7 @@ def announce(life, gist, public=False, trusted=False, group=None, filter_if=None
 			continue
 		
 		if filter_if and filter_if(target['id']):
-			return False
+			continue
 		
 		_radio = False
 		if not sight.can_see_position(life, target['pos']):

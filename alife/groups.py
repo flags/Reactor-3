@@ -245,7 +245,7 @@ def process_events(life, group_id):
 def get_alignment(life, group_id):
 	return get_group_memory(life, group_id, 'alignment')
 
-def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=[], **kwargs):
+def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=None, **kwargs):
 	_group = get_group(life, _group_id)
 	
 	if consider_motive:
@@ -283,7 +283,7 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 	#TODO: Could have an option here to form an emergency "combat" group
 	
 	for life_id in _announce_to:
-		if filter_if and filter_if(LIFE[life_id]):
+		if filter_if and filter_if(life_id):
 			continue
 		
 		#_sent = speech.has_sent(life, life_id, gist)
@@ -323,7 +323,7 @@ def find_and_announce_shelter(life, group_id):
 		if _shelter:
 			set_shelter(life, group_id, None)
 			announce(life, group_id, 'update_group_shelter',
-				    filter_if=lambda alife: not get_shelter(alife, group_id))
+				    filter_if=lambda alife_id: not get_shelter(LIFE[alife_id], group_id))
 			
 		#print 'MOTIVATED BY CRIME' * 20
 		
@@ -335,7 +335,7 @@ def find_and_announce_shelter(life, group_id):
 		
 		if references.is_in_reference(life['pos'], references.get_reference(_shelter)):
 			announce(life, group_id, 'update_group_shelter',
-				    filter_if=lambda alife: get_shelter(alife, group_id)==_shelter)
+				    filter_if=lambda alife_id: get_shelter(LIFE[alife_id], group_id)==_shelter)
 	else:
 		find_shelter(life, group_id)
 
@@ -688,6 +688,7 @@ def manage_combat(life, group_id):
 			_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 	else:
 		_distant_chunk = {'distance': -1, 'chunk_key': None}
+		_unchecked_members = get_group(life, group_id)['members'][:]
 		
 		for chunk_key in _orig_visible_chunks:
 			_distance = numbers.distance((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1]))), chunks.get_chunk(chunk_key)['pos'])
@@ -695,6 +696,15 @@ def manage_combat(life, group_id):
 			
 			if chunk_key in _visible_chunks:
 				_distance *= 2
+			
+			for member_id in _unchecked_members:
+				if life['id'] == member_id:
+					continue
+				
+				_target = brain.knows_alife_by_id(life, member_id)
+				
+				if _target['last_seen_time'] <= 25 and chunks.get_chunk_key_at(_target['last_seen_at']) == chunk_key:
+					_distance *= (2.5*numbers.clip(_target['last_seen_time'], 0, 25)/25.0)
 			
 			if _distance>_distant_chunk['distance']:
 				_distant_chunk['distance'] = _distance
@@ -773,7 +783,7 @@ def manage_combat_old(life, group_id):
 			_known_group_members = get_group_memory(life, known_group_id, 'members')
 			
 			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id,
-			         filter_if=lambda alife: group_exists(alife, known_group_id))
+			         filter_if=lambda alife_id: group_exists(LIFE[alife_id], known_group_id))
 			
 			if _known_group_members:
 				update_group_memory(life, known_group_id, 'shelter', get_possible_group_location(life, known_group_id))
@@ -864,7 +874,7 @@ def prepare_for_raid(life, group_id):
 	#_target_group = get_flag(life, group_id, 'raid_target')
 	
 	announce(life, group_id, 'combat_ready', ignore_if_said_in_last=1000,
-	         filter_if=lambda alife: brain.get_alife_flag(life, alife['id'], 'combat_ready'))
+	         filter_if=lambda alife_id: brain.get_alife_flag(life, LIFE[alife_id], 'combat_ready'))
 
 def declare_group_hostile(life, group_id, target_group_id):
 	stats.declare_group_hostile(life, target_group_id)
@@ -942,7 +952,7 @@ def order_to_loot(life, group_id, add_leader=False):
 			     'job',
 			     'We need more resources.',
 			     job_id=_job_id,
-		         order=True,
+		          order=True,
 			     filter_if=[action.make_small_script(function='has_needs_to_meet')])
 
 def order_spread_out(life, group_id, chunk_keys, filter_by=None):
