@@ -313,7 +313,7 @@ def understand(life):
 	else:
 		life['think_rate_max'] = 5
 	
-	if not life['online']:
+	if not life['online'] or life['asleep']:
 		return False
 	
 	if life['think_rate']:

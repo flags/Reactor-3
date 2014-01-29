@@ -118,12 +118,18 @@ def create_intro_story():
 		_dead_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
 		_dead_guy['dead'] = True
 		
+		if _player['pos'] == _dead_guy['pos']:
+			_dead_guy['pos'][1] += 1
+		
 		for i in range(random.randint(15, 20)):
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
 
 		#Wounded running away
 		_wounded_guy = spawns.generate_group('loner', amount=1)[0]
 		_wounded_guy['pos'] = spawns.get_spawn_point_around(_player['pos'])
+		
+		if _wounded_guy['pos'] == _dead_guy['pos']:
+			_wounded_guy['pos'][0] -= 1
 		
 		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'trust'
 		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'trust'

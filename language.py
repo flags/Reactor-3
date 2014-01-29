@@ -147,7 +147,6 @@ def generate_place_name():
 	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
 
 def generate_scheme_title():
-	print len(TEXT_MAP['nouns'])
 	return TEXT_MAP['nouns'][random.randint(0, len(TEXT_MAP['nouns'])-1)]
 
 def generate_first_and_last_name_from_species(species):
