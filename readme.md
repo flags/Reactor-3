@@ -1,19 +1,20 @@
-![Reactor3](https://raw.github.com/flags/Reactor-3/master/art/pngs/minilogo.png)
 Reactor 3
 =========
-Reactor 3 is an action roguelike in the same vein as IVAN - A Violent Road to Death and S.T.A.L.K.E.R.: Shadow of Chernobyl.
 
 What is Reactor 3?
--------------------
-Reactor 3 (R3) is a roguelike. You might be familiar with a few games in the genre, like Dwarf Fortress, NetHack, or DCSS, while also borrowing elements from Fallout and S.T.A.L.K.E.R..
+------------------
+Reactor 3 is best described as a mix S.T.A.L.K.E.R. and Fallout with the additon of procedurally generated elements.
+There is a heavy emphasis on NPC interaction, squad tactics, and survival, with each action you make shaping the Zone,
+an unstable area surrounding the Chernobyl Nuclear Power Plant. The Zone itself is a living entity, causing erratic
+weather events and transforming the local wildlife into hostile mutants.
 
-R3 is a game about survival in a hostile, unforgiving environment. It takes place in the Chernobyl Exclusion Zone, where (in an alternate timeline) another disaster occurs, further corrupting the area. It is rumored that the items formed from the spike of radiation can be sold for high amounts of money on the black market.
+R3 is brutally difficult and unforgiving, punishing those who choose a run-'n-gun playstyle over non-combat solutions.
+Combat is heavily grounded in reality, modeling minor injuries like scrapes and cuts to full dismemberment. The player's
+inventory is also treated as it should; each item must be either held, worn, or stored away in a container (backpack,
+pocket, etc,) which encourages the player to not only pick and choose between what they carry, but also how they carry
+it (a pistol would be stored in a holster for quicker access, for example.)
 
-At its core, R3 is less about combat and more about reputation. The NPCs maintain their own interpretation of the world based on unique personality traits and stats, and can act independently or in groups to accomplish tasks based on this intepretation. Bandits will attack on sight, while others will ask deeper questions before confrontation begins (Am I in danger? What have I heard about this person? etc.)
-
-Combat is a last resort, but it is by no means neglected in terms of development. A full damage model is simulated, ranging from minor cuts and scrapes to full dismemberment depending on the type of injury. For example, a bullet fired towards someone wearing a backback will result in either the bullet tearing through it, or possibly colliding and causing damage to an item inside of it.
-
-The game is developed in two parts: Engine and content. The engine still currently houses *some* content-specific features (for now), but forms most of its functionality by parsing external files that can be thought of as mods. Anything from controlling the body structure of an entity to its AI can be done outside of the game's code entirely.
+Join a faction and take over the Zone
 
 Features
 ========

@@ -683,7 +683,7 @@ def manage_combat(life, group_id):
 		
 	#TODO: Additional stages: PLANNING, EXECUTING
 	if _visible_chunks and stats.is_confident(life):
-		for target_id in order_spread_out(life, group_id, _visible_chunks, filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
+		for target_id in order_spread_out(life, group_id, _visible_chunks, filter_by=lambda life_id: WORLD_INFO['ticks']-_existing_friendlies[life_id]['updated']>100):
 			_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 	else:
 		_distant_chunk = {'distance': -1, 'chunk_key': None}
@@ -703,14 +703,14 @@ def manage_combat(life, group_id):
 				_target = brain.knows_alife_by_id(life, member_id)
 				
 				if _target['last_seen_time'] <= 25 and chunks.get_chunk_key_at(_target['last_seen_at']) == chunk_key:
-					_distance *= (2.5*numbers.clip(_target['last_seen_time'], 0, 25)/25.0)
+					_distance *= (2.5*(1-(numbers.clip(_target['last_seen_time'], 0, 25)/25.0)))
 			
 			if _distance>_distant_chunk['distance']:
 				_distant_chunk['distance'] = _distance
 				_distant_chunk['chunk_key'] = chunk_key
 		
 		if _distant_chunk['chunk_key']:
-			for target_id in order_move_to(life, group_id, _distant_chunk['chunk_key'], filter_by=lambda target_id: WORLD_INFO['ticks']-_existing_friendlies[target_id]['updated']>100):
+			for target_id in order_move_to(life, group_id, _distant_chunk['chunk_key'], filter_by=lambda life_id: WORLD_INFO['ticks']-_existing_friendlies[life_id]['updated']>100):
 				_existing_friendlies[target_id]['updated'] = WORLD_INFO['ticks']
 		
 		return False
@@ -962,13 +962,17 @@ def order_spread_out(life, group_id, chunk_keys, filter_by=None):
 		if not filter_by(life_id):
 			continue
 		
-		if life['id'] == life_id:
+		if life_id == life['id']:
 			movement.set_focus_point(life, random.choice(chunk_keys))
 			
 			continue
 		
 		_ordered_targets.append(life_id)
-		speech.start_dialog(life, life_id, 'order_move_to_chunk', chunk_key=random.choice(chunk_keys), remote=True)
+		
+		if lfe.get_current_chunk_id(LIFE[life_id]) in chunk_keys:
+			speech.start_dialog(life, life_id, 'order_wait_%s' % get_group_size(life, group_id), remote=True)
+		else:
+			speech.start_dialog(life, life_id, 'order_move_to_chunk', chunk_key=random.choice(chunk_keys), remote=True)
 	
 	return _ordered_targets
 
