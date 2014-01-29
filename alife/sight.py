@@ -6,6 +6,7 @@ import life as lfe
 
 import judgement
 import weather
+import groups
 import chunks
 import brain
 import logic
@@ -112,6 +113,11 @@ def look(life):
 			if ai['dead']:
 				if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
 					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+				
+				if life['know'][ai['id']]['group']:
+					groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
+					life['know'][ai['id']]['group'] = None
+				
 				life['know'][ai['id']]['dead'] = True
 			elif ai['asleep']:
 				life['know'][ai['id']]['asleep'] = True

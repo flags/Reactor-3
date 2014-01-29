@@ -656,7 +656,6 @@ def create_effects(item, pos, real_z_pos, z_min):
 						                              item['size']/2,
 						                              random.randint(item['size']*2, (item['size']*2)+5))
 				if 'BURNING' in item['flags']:
-					print 'OK 2 B OK'
 					if random.randint(0, 50)<=25:
 						effects.create_smoke_cloud([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
 						                              random.randint(item['size'], (item['size'])+3),
