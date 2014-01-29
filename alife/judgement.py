@@ -155,8 +155,8 @@ def can_trust(life, life_id):
 	if _knows['alignment'] == 'aggressive':
 		return False
 	
-	if _knows['trust']>=life['stats']['trustiness']:
-		return True
+	#if _knows['trust']>=life['stats']['trustiness']:
+	#	return True
 	
 	return False
 

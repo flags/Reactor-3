@@ -24,6 +24,7 @@ UPDATE_CAMP_RATE = 5
 #Map stuff
 WORLD_INFO = {'map': [],
 	'id': None,
+	'title': '',
 	'seed': 0,
 	'time': 0,
 	'real_time_of_day': 6000,

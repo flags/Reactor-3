@@ -386,7 +386,7 @@ def is_confident(life):
 		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
 		
 		if _knows['last_seen_time']:
-			_threat_confidence += 2*_recent_mod
+			_threat_confidence += _recent_mod
 		else:
 			_threat_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
 	

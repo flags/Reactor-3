@@ -6,6 +6,7 @@ import life as lfe
 
 import historygen
 import situations
+import language
 import profiles
 import effects
 import weather
@@ -83,6 +84,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	WORLD_INFO['wildlife_spawns'] = wildlife_spawns
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
+	WORLD_INFO['title'] = 'Operation %s' % language.generate_scheme_title().title()
 	
 	random.seed(WORLD_INFO['seed'])
 	

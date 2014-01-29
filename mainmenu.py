@@ -243,6 +243,8 @@ def start_game():
 	
 	while MENUS:
 		menus.delete_active_menu()
+	
+	graphics.glitch_text(WORLD_INFO['title'])
 
 def generate_world(combat_test=False):
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]

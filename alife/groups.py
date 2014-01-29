@@ -624,7 +624,6 @@ def manage_combat(life, group_id):
 		
 		_checked_targets.append(target_id)
 
-	_confident = stats.is_confident(life)
 	_enemy_focal_pos = None
 
 	for target_id in _existing_targets:

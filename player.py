@@ -750,6 +750,11 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Pick up'))
 			return False
 		
+		if not _items:
+			gfx.message('There\'s nothing to pick up.')
+			
+			return False
+		
 		create_open_item_menu(_items)
 	
 	if INPUT['b']:
@@ -759,9 +764,10 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		import situations
+		#import situations
 		
-		situations.form_scheme(force=True)
+		#situations.form_scheme(force=True)
+		items.create_item('burner', position=LIFE[SETTINGS['controlling']]['pos'][:])
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

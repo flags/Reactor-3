@@ -23,6 +23,7 @@ try:
 except:
 	import json
 
+
 def load_item(item):
 	with open(os.path.join(ITEM_DIR, item),'r') as e:
 		try:
@@ -648,8 +649,19 @@ def create_effects(item, pos, real_z_pos, z_min):
 				if 'BLOODY' in item['flags']:
 					if random.randint(0,50)<=35:
 						effects.create_splatter('blood', [pos[0]+random.randint(-2, 2), pos[1]+random.randint(-2, 2), _z_level])
-			
-				break
+				
+				if 'SMOKING' in item['flags']:
+					if random.randint(0, 50)<=25:
+						effects.create_smoke_streamer([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
+						                              item['size']/2,
+						                              random.randint(item['size']*2, (item['size']*2)+5))
+				if 'BURNING' in item['flags']:
+					print 'OK 2 B OK'
+					if random.randint(0, 50)<=25:
+						effects.create_smoke_cloud([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
+						                              random.randint(item['size'], (item['size'])+3),
+						                              color=tcod.light_crimson)
+				#break
 
 def get_min_max_velocity(item):
 	if item['velocity'][0]>0:
@@ -674,6 +686,9 @@ def tick_item(item):
 	
 	if 'stored_in' in item or is_item_owned(item['uid']):
 		return False
+	
+	if 'SMOKING' in item['flags']:
+		create_effects(item, item['pos'], item['pos'][2], 2)
 	
 	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:

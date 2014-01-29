@@ -49,3 +49,8 @@ AI: What should I do?
 Content:
 	Lock weapon crates: Use small explosives to open them, etc
 		It's a "task" to open them. Gives the player something to do
+
+
+
+Do not clear orders until group leader allows it
+	i.e., when the AI hits a guard point it should not be cleared (they should wait there)
