@@ -190,6 +190,7 @@ def create_item(name, position=[0,0,2], item=None):
 	
 	add_to_chunk(item)
 	ITEMS[item['uid']] = item
+	ACTIVE_ITEMS.add(item['uid'])
 	
 	WORLD_INFO['itemid'] += 1
 	return item['uid']

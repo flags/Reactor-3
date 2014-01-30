@@ -140,6 +140,7 @@ def create_function_map():
 		'is_target_group_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='hostile',
 		'is_target_group_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='neutral',
 		'is_group_hostile': lambda life, **kwargs: groups.get_group_memory(life, kwargs['group_id'], 'alignment')=='hostile',
+		'is_injured': lambda life: len(lfe.get_cut_limbs(life)) or len(lfe.get_bleeding_limbs(life)),
 		'inform_of_group_members': speech.inform_of_group_members,
 		'update_group_members': speech.update_group_members,
 		'get_group_flag': groups.get_flag,

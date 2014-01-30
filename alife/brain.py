@@ -211,6 +211,10 @@ def update_known_life(life, life_id, flag, value):
 	_knows = knows_alife_by_id(life, life_id)
 	_knows[flag] = value
 	
+	if 'player' in life:
+		if flag == 'last_seen_at':
+			logic.show_event('<Updated location of %s>' % (' '.join(LIFE[life_id]['name'])), pos=value, delay=2)
+	
 	logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), value))
 
 def has_met_in_person(life, target):

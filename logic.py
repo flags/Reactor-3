@@ -210,7 +210,17 @@ def show_next_event():
 	if not EVENTS:
 		return False
 	
-	EVENTS.pop(0)
+	_event = None
+	
+	for event in EVENTS:
+		if not event['delay']:
+			_event = event
+			break
+	
+	if not _event:
+		return False
+	
+	EVENTS.remove(_event)
 	gfx.refresh_view('map')
 	
 	if not EVENTS:

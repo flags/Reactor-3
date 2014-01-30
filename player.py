@@ -55,6 +55,8 @@ def handle_input():
 			return False
 		
 		_menu_items = [menus.create_item('single', 'Attack', 'Focus attack on target.')]
+		_menu_items.append(menus.create_item('single', 'Health', 'Check health of...'))
+		_menu_items.append(menus.create_item('single', 'Location', 'Get location of...'))
 	
 		_menu = menus.create_menu(title='Command',
 			menu=_menu_items,
@@ -141,8 +143,17 @@ def handle_input():
 		return False
 	
 	if INPUT['.'] or (SETTINGS['controlling'] and INPUT['5']):
-		if not logic.show_next_event():
-			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'rest'},200)
+		_skip = False
+		
+		for event in EVENTS:
+			if not event['delay']:
+				_skip = True
+				break
+				
+		if not _skip:
+			life.add_action(LIFE[SETTINGS['controlling']], {'action': 'rest'}, 200)
+		else:
+			logic.show_next_event()
 	
 	if INPUT[' ']:
 		if SETTINGS['paused']:
@@ -362,7 +373,7 @@ def handle_input():
 		if not LIFE[SETTINGS['controlling']]['targeting']:
 			_menu_items = menus.create_target_list()
 	
-			if not _menu_items:
+			if not len(_menu_items)>1:
 				gfx.message('There\'s nobody to talk to.')
 				return False
 		
@@ -1833,6 +1844,7 @@ def talk_to(entry):
 	menus.delete_menu(ACTIVE_MENU['menu'])
 	menus.delete_menu(ACTIVE_MENU['menu'])
 
+#TODO: General function
 def order_attack(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
@@ -1842,10 +1854,29 @@ def order_attack(entry):
 	menus.delete_active_menu()
 	menus.delete_active_menu()
 
+def order_status(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	speech.start_dialog(LIFE[SETTINGS['controlling']], entry['target'], 'order_health_report_partner')
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
+
+def order_location(entry):
+	key = entry['key']
+	value = entry['values'][entry['value']]
+	
+	speech.start_dialog(LIFE[SETTINGS['controlling']], entry['target'], 'order_status_report_partner')
+	
+	menus.delete_active_menu()
+	menus.delete_active_menu()
+
 def send_command(entry):
 	key = entry['key']
 	value = entry['values'][entry['value']]
 	
+	#TODO: General function
 	if key == 'Attack':
 		_menu_items = menus.create_target_list()
 		
@@ -1857,7 +1888,30 @@ def send_command(entry):
 		                          on_select=order_attack)
 		
 		menus.activate_menu(_menu)
-		#_attackers.append(menus.create_item('list', ' '.join(worker['name']), ['Free', 'Assigned'], workers=_workers))
+	elif key == 'Health':
+		_group = groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])
+		_menu_items = menus._create_target_list(_group['members'])
+		
+		_menu = menus.create_menu(title='Check on...',
+		                          menu=_menu_items,
+		                          padding=(1,1),
+		                          position=(1,1),
+		                          format_str='$k',
+		                          on_select=order_status)
+		
+		menus.activate_menu(_menu)
+	elif key == 'Location':
+		_group = groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])
+		_menu_items = menus._create_target_list(_group['members'])
+		
+		_menu = menus.create_menu(title='Get location of...',
+		                          menu=_menu_items,
+		                          padding=(1,1),
+		                          position=(1,1),
+		                          format_str='$k',
+		                          on_select=order_location)
+		
+		menus.activate_menu(_menu)
 
 def radio_menu(entry):
 	key = entry['key']

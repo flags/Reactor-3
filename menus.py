@@ -316,16 +316,65 @@ def is_any_menu_getting_input():
 	
 	return False
 
-def create_target_list():
+def _create_target_list(target_list):
 	_menu_items = []
-	for target_id in LIFE[SETTINGS['controlling']]['seen']:
-		if LIFE[target_id]['dead']:
+	_near_targets = []
+	_group_targets = []
+	
+	if LIFE[SETTINGS['controlling']]['group']:
+		_group = alife.groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])
+	else:
+		_group = None
+	
+	for target_id in target_list:
+		if LIFE[target_id]['dead'] or target_id == SETTINGS['controlling']:
+			continue
+		
+		if target_id in LIFE[SETTINGS['controlling']]['seen']:
+			_near_targets.append(target_id)
+		
+		if target_id in _group['members']:
+			_group_targets.append(target_id)
+	
+	if _near_targets:
+		_menu_items.append(create_item('title', 'Near', None))
+		
+		for target_id in _near_targets:
+			if not _menu_items:
+				SETTINGS['following'] = target_id
+			
+			_color = life.draw_life_icon(LIFE[target_id])[1]
+			_menu_items.append(create_item('single',
+			                               ' '.join(LIFE[target_id]['name']),
+			                               None,
+			                               target=target_id,
+			                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
+	
+	if _group_targets:
+		_menu_items.append(create_item('title', 'Group', None))
+		
+		for target_id in _group_targets:
+			if not _menu_items:
+				SETTINGS['following'] = target_id
+			
+			_color = life.draw_life_icon(LIFE[target_id])[1]
+			_menu_items.append(create_item('single',
+			                               ' '.join(LIFE[target_id]['name']),
+			                               None,
+			                               target=target_id,
+			                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
+	
+	_menu_items.append(create_item('title', 'All', None))
+	
+	for target_id in target_list:
+		if target_id == SETTINGS['controlling']:
 			continue
 		
 		if not _menu_items:
 			SETTINGS['following'] = target_id
 		
 		_color = life.draw_life_icon(LIFE[target_id])[1]
+		
 		_menu_items.append(create_item('single',
 		                               ' '.join(LIFE[target_id]['name']),
 		                               None,
@@ -333,3 +382,6 @@ def create_target_list():
 		                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
 	
 	return _menu_items
+
+def create_target_list():
+	return _create_target_list(LIFE[SETTINGS['controlling']]['seen'])

@@ -2646,38 +2646,61 @@ def draw_life_icon(life):
 
 def draw_life():
 	_view = gfx.get_view_by_name('map')
+	_life = LIFE[SETTINGS['following']]
+	_group = _life['group']
+	_view_list = {life_id: {'pos': LIFE[life_id]['pos']} for life_id in _life['seen'][:]}
+	_view_list[_life['id']] = {'pos': _life['pos']}
 	
-	for life in [LIFE[i] for i in LIFE]:
-		_icon,_fore_color,_back_color = draw_life_icon(life)
+	if _group:
+		for member_id in alife.groups.get_group(_life, _group)['members']:
+			if member_id in _view_list:
+				continue
+			
+			_member = brain.knows_alife_by_id(_life, member_id)
+			
+			_view_list[member_id] = {'pos': _member['last_seen_at'],
+			                         'icon': '?',
+			                         'blink_rate': numbers.clip(_member['last_seen_time']/50.0, 0, 1)}
+	
+	for entry in _view_list:
+		_target = entry
+		_icon,_fore_color,_back_color = draw_life_icon(LIFE[_target])
 		
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
-			_x = life['pos'][0] - CAMERA_POS[0]
-			_y = life['pos'][1] - CAMERA_POS[1]
+		_pos = _view_list[entry]['pos']
+		
+		if _pos[0] >= CAMERA_POS[0] and _pos[0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			_pos[1] >= CAMERA_POS[1] and _pos[1] < CAMERA_POS[1]+_view['draw_size'][1]:
+			_x = _pos[0] - CAMERA_POS[0]
+			_y = _pos[1] - CAMERA_POS[1]
 			
-			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
-			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
+			_p_x = LIFE[entry]['prev_pos'][0] - CAMERA_POS[0]
+			_p_y = LIFE[entry]['prev_pos'][1] - CAMERA_POS[1]
 			
-			if not sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
-				continue
-			
-			_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
-			_stealth_coverage = sight.get_stealth_coverage(life)
-			
-			
-			
-			if not 'player' in life and _visibility > _stealth_coverage:
-				continue
+			#if not _group or not life['id'] in alife.groups.get_group(LIFE[_player], _group):
+			#	if not sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
+			#		continue
+			#
+			#	_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
+			#	_stealth_coverage = sight.get_stealth_coverage(life)
+			#	
+			#	if not 'player' in life and _visibility > _stealth_coverage:
+			#		continue
 			
 			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
-				if not life['pos'] == life['prev_pos']:
+				if not _pos == LIFE[entry]['prev_pos']:
 					gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
-			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
-				if time.time()%.5>.25:
+			if SETTINGS['camera_track'] == _pos and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
+				if time.time()%.5<.25:
 					_back_color = tcod.black
 				else:
 					_back_color = tcod.white
+			
+			if 'icon' in _view_list[entry]:
+				if time.time()%1<_view_list[entry]['blink_rate']:
+					_icon = _view_list[entry]['icon']
+				else:
+					_icon = LIFE[_target]['icon']
 			
 			gfx.refresh_view_position(_x, _y, 'map')
 			gfx.blit_char(_x,
