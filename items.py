@@ -175,7 +175,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['realpos'] = list(position)
 	item['velocity'] = [0.0, 0.0, 0.0]
 	item['friction'] = 0
-	item['gravity'] = WORLD_INFO['world gravity']
+	item['gravity'] = WORLD_INFO['world_gravity']
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
@@ -600,8 +600,6 @@ def explode(item):
 def collision_with_solid(item, pos):
 	_x_diff = numbers.clip(item['pos'][0]-pos[0], -1, 1)
 	_y_diff = numbers.clip(item['pos'][1]-pos[1], -1, 1)
-	#print _x_diff, '*'*10
-	#print item['pos'], pos
 	
 	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
@@ -624,10 +622,12 @@ def collision_with_solid(item, pos):
 	else:
 		_z = -1
 	
+	_is_solid = (pos[0], pos[1], pos[2]+_z)
+	
 	#if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
 	#	item['velocity'][0] = -item['velocity'][0]*.8
 	#
-	if _x_diff<0 and maps.is_solid(pos):
+	if _x_diff<0 and _is_solid:
 		item['pos'][0] = pos[0]+_x_diff
 		item['realpos'][0] = float(pos[0])+_x_diff
 		
@@ -636,9 +636,9 @@ def collision_with_solid(item, pos):
 		
 		print '*** bounce ***', _x_diff, item['pos'], pos
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
-	elif _x_diff>0 and maps.is_solid(pos):
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
+	elif _x_diff>0 and _is_solid:
 		item['pos'][0] = pos[0]+_x_diff
 		item['realpos'][0] = float(pos[0])+_x_diff
 		
@@ -647,10 +647,10 @@ def collision_with_solid(item, pos):
 		
 		print '*** bounce ***', _x_diff, item['pos'], pos
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
 	
-	if _y_diff<0 and maps.is_solid(pos):
+	if _y_diff<0 and _is_solid:
 		item['pos'][1] = pos[1]+_y_diff
 		item['realpos'][1] = float(pos[1])+_y_diff
 		
@@ -659,9 +659,9 @@ def collision_with_solid(item, pos):
 		
 		print '*** bounce ***', _x_diff, item['pos'], pos
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
-	elif _y_diff>0 and maps.is_solid(pos):
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
+	elif _y_diff>0 and _is_solid:
 		item['pos'][1] = pos[1]+_x_diff
 		item['realpos'][1] = float(pos[1])+_x_diff
 		
@@ -670,11 +670,8 @@ def collision_with_solid(item, pos):
 		
 		print '*** bounce ***', _x_diff, item['pos'], pos
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
-	
-	if 'max_speed' in item:
-		effects.create_vapor(pos, 5, numbers.clip(item['speed']/30, 0, 1))
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
 	
 	return maps.is_solid(pos)
 
@@ -698,7 +695,8 @@ def create_effects(item, pos, real_z_pos, z_min):
 						effects.create_smoke_cloud([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
 						                              random.randint(item['size'], (item['size'])+3),
 						                              color=tcod.light_crimson)
-				#break
+				if 'max_speed' in item and is_moving(item):
+					effects.create_vapor(item['pos'], 5, numbers.clip(item['speed']/20, 0, 1))
 
 def get_min_max_velocity(item):
 	if item['velocity'][0]>0:
@@ -722,8 +720,6 @@ def is_moving(item):
 	return sum([abs(v) for v in item['velocity']])>0
 
 def tick_effects(item):
-	return False
-
 	if 'CAN_BURN' in item['flags'] and item['burning'] and item['owner']:
 		life.burn(LIFE[item['owner']], item['burning'])
 	
@@ -734,6 +730,11 @@ def tick_effects(item):
 
 def tick_item(item):
 	_z_max = numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
+	
+	if item['type'] == 'bullet':
+		_gravity = 0
+	else:
+		_gravity = item['gravity']
 	
 	if not is_moving(item):
 		return False
@@ -752,7 +753,7 @@ def tick_item(item):
 		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 	
 	if not _line:
-		item['velocity'][2] -= item['gravity']
+		item['velocity'][2] -= _gravity
 		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 		item['pos'][2] = int(round(item['realpos'][2]))
 		
@@ -767,7 +768,9 @@ def tick_item(item):
 	
 	for pos in _line:
 		item['realpos'][2] += item['velocity'][2]
-		item['velocity'][2] -= item['velocity'][2]*item['gravity']
+		
+		if _gravity:
+			item['velocity'][2] -= item['velocity'][2]*_gravity
 		
 		if 'drag' in item:
 			_drag = item['drag']
@@ -793,13 +796,9 @@ def tick_item(item):
 			return False
 		
 		#TODO: Don't just stop the object
-		if collision_with_solid(item, (pos[0], pos[1], int(round(item['realpos'][2])))):
-			if item['type'] == 'bullet':
-				effects.create_light(item['pos'], (255, 0, 0), 9, 1, fade=4.5)
-			
-			logging.debug('Item #%s hit a solid.' % item['uid'])
-			
-			return False
+		collision_with_solid(item, (pos[0], pos[1], int(round(item['realpos'][2]))))
+		
+		tick_effects(item)
 		
 		#TODO: Don't do this here... maybe a callback or something
 		if item['type'] == 'bullet':
@@ -817,7 +816,6 @@ def tick_item(item):
 						delete_item(item)
 					
 					return False
-			
 		#if _break:
 		#	break
 	

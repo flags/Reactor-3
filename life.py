@@ -1159,7 +1159,7 @@ def perform_collisions(life):
 			if life.has_key('player'):
 				gfx.message('You begin to fall...')
 		
-		life['gravity'] = WORLD_INFO['world gravity']
+		life['gravity'] = WORLD_INFO['world_gravity']
 			
 	#elif life['gravity']:
 	#	life['gravity'] = 0
@@ -1170,7 +1170,7 @@ def perform_collisions(life):
 	#		gfx.message('You land.')
 	
 	#if life['gravity']:
-	#	life['realpos'][2] -= WORLD_INFO['world gravity']
+	#	life['realpos'][2] -= WORLD_INFO['world_gravity']
 	#	life['pos'][2] = int(life['realpos'][2])
 	
 	return False

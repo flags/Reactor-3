@@ -333,7 +333,7 @@ def _create_target_list(target_list):
 		if target_id in LIFE[SETTINGS['controlling']]['seen']:
 			_near_targets.append(target_id)
 		
-		if target_id in _group['members']:
+		if _group and target_id in _group['members']:
 			_group_targets.append(target_id)
 	
 	if _near_targets:
