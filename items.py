@@ -598,13 +598,14 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
-	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1 or pos[2]<0 or pos[2]>=MAP_SIZE[2]-1:
-		return True
-	
 	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
-		item['pos'] = pos
+		#item['pos'] = pos
+		
+		_x_diff = item['pos'][0]-pos[0]
+		_y_diff = item['pos'][1]-pos[1]
+		
 		process_event(item, 'stop')
 			
 		return True
@@ -680,7 +681,11 @@ def get_min_max_velocity(item):
 	
 	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
 
-def tick_item(item):
+#TODO: Move this
+def is_moving(item):
+	return sum([abs(v) for v in item['velocity']])>0
+
+def tick_effects(item):
 	if 'CAN_BURN' in item['flags'] and item['burning'] and item['owner']:
 		life.burn(LIFE[item['owner']], item['burning'])
 	
@@ -689,35 +694,38 @@ def tick_item(item):
 	
 	if 'SMOKING' in item['flags']:
 		create_effects(item, item['pos'], item['pos'][2], 2)
+
+def tick_item(item):
+	_z_max = numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
 	
-	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
+	if not is_moving(item):
 		return False
 	
 	_x = item['pos'][0]
 	_y = item['pos'][1]
-	
-	#_view = gfx.get_view_by_name('map')
-	#if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+	_break = False
+	_line = drawing.diag_line(item['pos'], (int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
+
+	#Refresh even if we're not moving far enough to switch tiles
 	if gfx.position_is_in_frame((_x, _y)):
 		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 	
 	item['realpos'][0] += item['velocity'][0]
 	item['realpos'][1] += item['velocity'][1]
-	_break = False
-	_line = drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
 	
 	if not _line:
 		item['velocity'][2] -= item['gravity']
 		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 		item['pos'][2] = int(round(item['realpos'][2]))
 		
-		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
+		if maps.is_oob(item['pos']):
 			delete_item(item)
+			
 			return False
 		
-		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
 		if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
+			print 'COL'
 			pos = item['pos'][:]
 			_break = True
 		
@@ -735,29 +743,31 @@ def tick_item(item):
 			
 		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
-		if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
-			item['velocity'][0] = 0
-		
-		if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
-			item['velocity'][1] = 0
+		if abs(item['velocity'][0])<.35:
+			item['velocity'][0] = 0.0
+			
+		if abs(item['velocity'][1])<.35:
+			item['velocity'][1] = 0.0
 		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 		
-		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1] or item['realpos'][2]<0 or item['realpos'][2]>=MAP_SIZE[2]-1:
-			logging.warning('Item OOM: %s', item['uid'])
+		if maps.is_oob(pos) or maps.is_oob(item['realpos']):
 			delete_item(item)
+			
 			return False
 		
+		#TODO: Don't just stop the object
 		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
 			if item['type'] == 'bullet':
 				effects.create_light(item['pos'], (255, 0, 0), 9, 1, fade=4.5)
 			
-			logging.debug('Item #%s hit a wall.' % item['uid'])
+			logging.debug('Item #%s hit a solid.' % item['uid'])
 			
 			return False
 		
+		#TODO: Don't do this here... maybe a callback or something
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
 				if _life['id'] == item['shot_by'] or _life['dead']:
@@ -776,17 +786,6 @@ def tick_item(item):
 			
 		if _break:
 			break
-		
-		#_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-		#if MAP[pos[0]][pos[1]][_z_max]:
-		#	item['velocity'][0] = 0
-		#	item['velocity'][1] = 0
-		#	item['velocity'][2] = 0
-		#	item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-		#
-		#	print 'LANDED',item['pos']	
-		#	_break = True
-		#	break
 	
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 		if collision_with_solid(item, [pos[0], pos[1], _z_min]):
@@ -814,21 +813,18 @@ def tick_item(item):
 	if gfx.position_is_in_frame((_x, _y)):
 		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 
-	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
-          or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
+	if maps.is_oob(item['pos']):
 		delete_item(item)
+		
 		return False
-			
-	#elif _break:
-	#	maps.refresh_chunk(life.get_current_chunk_id(item))
 
 	_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 	
-	if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
-		item['velocity'][0] = 0
-	
-	if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
-		item['velocity'][1] = 0
+	if abs(item['velocity'][0])<.35:
+		item['velocity'][0] = 0.0
+			
+	if abs(item['velocity'][1])<.35:
+		item['velocity'][1] = 0.0
 	
 	#TODO: This isn't gravity...
 	if 'drag' in item:
@@ -854,4 +850,5 @@ def tick_all_items():
 			ACTIVE_ITEMS.update(ITEMS.keys())
 		
 	for item in ACTIVE_ITEMS.copy():
+		tick_effects(ITEMS[item])
 		tick_item(ITEMS[item])

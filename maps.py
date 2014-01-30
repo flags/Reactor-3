@@ -228,6 +228,9 @@ def is_solid(pos, source_map=None):
 	
 	return True
 
+def is_oob(pos):
+	return pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1] or pos[2]<0 or pos[2]>=MAP_SIZE[2]
+
 def position_is_in_map(pos):
 	if pos[0] >= 0 and pos[0] <= MAP_SIZE[0]-1 and pos[1] >= 0 and pos[1] <= MAP_SIZE[1]-1:
 		return True

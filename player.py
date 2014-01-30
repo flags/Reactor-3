@@ -778,7 +778,8 @@ def handle_input():
 		#import situations
 		
 		#situations.form_scheme(force=True)
-		items.create_item('burner', position=LIFE[SETTINGS['controlling']]['pos'][:])
+		_i = items.create_item('burner', position=LIFE[SETTINGS['controlling']]['pos'][:])
+		items.move(ITEMS[_i], 0, 5, _velocity=1)
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])
