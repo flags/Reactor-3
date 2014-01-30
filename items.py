@@ -780,11 +780,16 @@ def tick_item(item):
 			
 		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
-		if abs(item['velocity'][0])<.35:
+		if abs(item['velocity'][0])<.5:
 			item['velocity'][0] = 0.0
 			
-		if abs(item['velocity'][1])<.35:
+		if abs(item['velocity'][1])<.5:
 			item['velocity'][1] = 0.0
+		
+		if not is_moving(item):
+			if item['type'] == 'bullet':
+				delete_item(item)
+				return False
 		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
@@ -799,10 +804,13 @@ def tick_item(item):
 		collision_with_solid(item, (pos[0], pos[1], int(round(item['realpos'][2]))))
 		
 		tick_effects(item)
-		
+				
 		#TODO: Don't do this here... maybe a callback or something
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
+				if not _life['online']:
+					continue
+				
 				if _life['id'] == item['shot_by'] or _life['dead']:
 					continue					
 				
