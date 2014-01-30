@@ -2658,6 +2658,9 @@ def draw_life():
 			
 			_member = brain.knows_alife_by_id(_life, member_id)
 			
+			if not _member['last_seen_at']:
+				continue
+			
 			_view_list[member_id] = {'pos': _member['last_seen_at'],
 			                         'icon': '?',
 			                         'blink_rate': numbers.clip(_member['last_seen_time']/50.0, 0, 1)}

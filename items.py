@@ -650,13 +650,25 @@ def collision_with_solid(item, pos):
 		if 'max_speed' in item:
 			effects.create_smoke_cloud(pos, 4)
 	
-	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:
-		item['velocity'][1] = -item['velocity'][1]*.8
+	if _y_diff<0 and maps.is_solid(pos):
+		item['pos'][1] = pos[1]+_y_diff
+		item['realpos'][1] = float(pos[1])+_y_diff
+		
+		if not item['velocity'][1]<0:
+			item['velocity'][1] = -item['velocity'][1]*.8
+		
+		print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		if 'max_speed' in item:
 			effects.create_smoke_cloud(pos, 4)
-	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
-		item['velocity'][1] = -item['velocity'][1]*.8
+	elif _y_diff>0 and maps.is_solid(pos):
+		item['pos'][1] = pos[1]+_x_diff
+		item['realpos'][1] = float(pos[1])+_x_diff
+		
+		if not item['velocity'][1]>0:
+			item['velocity'][1] = -item['velocity'][1]*.8
+		
+		print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		if 'max_speed' in item:
 			effects.create_smoke_cloud(pos, 4)
@@ -718,8 +730,7 @@ def tick_effects(item):
 	if 'stored_in' in item or is_item_owned(item['uid']):
 		return False
 	
-	if 'SMOKING' in item['flags']:
-		create_effects(item, item['pos'], item['pos'][2], 2)
+	create_effects(item, item['pos'], item['pos'][2], 2)
 
 def tick_item(item):
 	_z_max = numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
@@ -752,12 +763,7 @@ def tick_item(item):
 		
 		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
 		
-		if collision_with_solid(item, [int(round(item['realpos'][0])), int(round(item['realpos'][1])), _z_min]):
-			print 'COL'
-		else:
-			print 'col2'
-		
-		create_effects(item, item['pos'], item['realpos'][2], _z_min)
+		collision_with_solid(item, [int(round(item['realpos'][0])), int(round(item['realpos'][1])), _z_min])
 	
 	for pos in _line:
 		item['realpos'][2] += item['velocity'][2]
