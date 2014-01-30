@@ -780,10 +780,10 @@ def tick_item(item):
 			
 		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
-		if abs(item['velocity'][0])<.5:
+		if abs(item['velocity'][0])<=1:
 			item['velocity'][0] = 0.0
 			
-		if abs(item['velocity'][1])<.5:
+		if abs(item['velocity'][1])<=1:
 			item['velocity'][1] = 0.0
 		
 		if not is_moving(item):
