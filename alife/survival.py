@@ -390,23 +390,18 @@ def explore_known_chunks(life):
 		return False
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])
+	
 	lfe.clear_actions(life)
 	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	
 	return True
 
+#@profile
 def explore_unknown_chunks(life):
 	if life['path']:
 		return True
 	
 	_chunk_key = references.path_along_reference(life, 'roads')
-	
-	if not _chunk_key:
-		_best_reference = WORLD_INFO['reference_map']['roads'][0]
-		
-		if not _best_reference:
-			return False
-		
-		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True, threshold=15)
 	
 	if not _chunk_key:
 		return False

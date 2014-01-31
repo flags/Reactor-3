@@ -541,8 +541,11 @@ def judge_shelter(life, chunk_id):
 		for pos in chunk['ground']:
 			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
 				WORLD_INFO['map'][pos[0]][pos[1]][z]
+				
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
+					
+					break
 		
 		if not _cover:
 			return 0

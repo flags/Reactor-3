@@ -29,6 +29,7 @@ def setup_look(life):
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 
+@profile
 def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False

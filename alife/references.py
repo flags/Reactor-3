@@ -5,6 +5,7 @@ import life as lfe
 import judgement
 import mapgen
 import chunks
+import alife
 import maps
 
 import numbers
@@ -83,7 +84,18 @@ def _find_best_unknown_reference(life, ref_type):
 def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False, threshold=-1):
 	_lowest = {'chunk_key': None, 'distance': 9000}
 
-	for _key in get_reference(reference_id):
+	#Dirty hack here...
+	#We can use the list of visible chunks to find the nearest key in the reference
+	#This is actually SLOWER if the NPC can't see any keys in the reference and a search
+	#has to be done (the way we're doing it now.)
+	
+	_reference = get_reference(reference_id)
+	
+	for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
+		if not chunk_key in _reference:
+			continue
+
+	for _key in _reference:
 		if unknown and _key in life['known_chunks']:
 			continue
 		
@@ -142,15 +154,9 @@ def find_least_populated_key_in_reference(life, reference):
 	return _lowest['chunk_key']
 
 def path_along_reference(life, ref_type):
-	_reference = _find_best_unknown_reference(life, ref_type)
-	_best_reference = _reference['reference']
-
-	if not _best_reference:
-		print 'NO BEST', ref_type
-		return False
-	
-	_starting_chunk_key = _reference['chunk_key']
-
+	_reference = WORLD_INFO['references'][WORLD_INFO['reference_map']['roads'][0]]
+	_visible_chunks = alife.brain.get_flag(life, 'visible_chunks')
+	_starting_chunk_key = alife.chunks.get_nearest_chunk_in_list(life['pos'], _reference, check_these_chunks_first=_visible_chunks)
 	_chunk_path_keys = []
 	_directions = {}
 	
