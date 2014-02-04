@@ -29,7 +29,7 @@ def setup_look(life):
 	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
 		scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
 
-@profile
+#@profile
 def look(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return False
@@ -38,46 +38,55 @@ def look(life):
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
 	
-	if life['path'] or not brain.get_flag(life, 'visible_chunks'):
-		if SETTINGS['smp']:
-			_visible_chunks = post_scan_surroundings(life)
+	if 'player' in life:
+		if life['path'] or not brain.get_flag(life, 'visible_chunks'):
+			if SETTINGS['smp']:
+				_visible_chunks = post_scan_surroundings(life)
+			else:
+				_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+				
+			_chunks = [maps.get_chunk(c) for c in _visible_chunks]
+			brain.flag(life, 'visible_chunks', value=_visible_chunks)
+		elif 'player' in life:
+			_visible_chunks = brain.get_flag(life, 'visible_chunks')
+			_chunks = [maps.get_chunk(c) for c in _visible_chunks]
 		else:
-			_visible_chunks = scan_surroundings(life, judge=False, get_chunks=True, ignore_chunks=0)
+			#This is for optimizing. Be careful if you mess with this...
+			_nearby_alife = {}
 			
-		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
-		brain.flag(life, 'visible_chunks', value=_visible_chunks)
-	elif 'player' in life:
-		_visible_chunks = brain.get_flag(life, 'visible_chunks')
-		_chunks = [maps.get_chunk(c) for c in _visible_chunks]
-	else:
-		#This is for optimizing. Be careful if you mess with this...
-		_nearby_alife = {}
-		
-		for alife in LIFE.values():
-			if alife['id'] == life['id']:
-				continue
+			for alife in LIFE.values():
+				if alife['id'] == life['id']:
+					continue
+				
+				if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
+					_nearby_alife[alife['id']] = {'pos': alife['pos'][:], 'stance': alife['stance']}
 			
-			if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
-				_nearby_alife[alife['id']] = {'pos': alife['pos'][:], 'stance': alife['stance']}
-		
-		_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
-		
-		if not _last_nearby_alife == _nearby_alife:
-			brain.flag(life, '_nearby_alife', value=_nearby_alife)
-		else:
-			for target_id in life['seen']:
-				if life['know'][target_id]['last_seen_time']:
-					life['know'][target_id]['last_seen_time'] = 0
+			_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
 			
-			return False
-		
-		_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
+			if not _last_nearby_alife == _nearby_alife:
+				brain.flag(life, '_nearby_alife', value=_nearby_alife)
+			else:
+				for target_id in life['seen']:
+					if life['know'][target_id]['last_seen_time']:
+						life['know'][target_id]['last_seen_time'] = 0
+				
+				return False
+			
+			_chunks = [maps.get_chunk(c) for c in brain.get_flag(life, 'visible_chunks')]
 	
 	life['seen'] = []
 	life['seen_items'] = []
 	
 	for item_uid in life['know_items']:
 		life['know_items'][item_uid]['last_seen_time'] += 1
+	
+	for target_id in life['know']:
+		life['know'][target_id]['last_seen_time'] += 1
+	
+	if not 'player' in life:
+		quick_look(life)
+		
+		return False
 	
 	for chunk in _chunks:
 		judgement.judge_chunk_visually(life, '%s,%s' % (chunk['pos'][0], chunk['pos'][1]))
@@ -86,9 +95,6 @@ def look(life):
 		for ai in [LIFE[i] for i in chunk['life']]:
 			if ai['id'] == life['id']:
 				continue
-			
-			for target_id in life['know']:
-				life['know'][target_id]['last_seen_time'] += 1
 			
 			if not is_in_fov(life, ai['pos']):
 				if ai['id'] in life['know']:
@@ -160,6 +166,116 @@ def look(life):
 			life['know_items'][item['uid']]['last_owned_by'] = None
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
 			life['know_items'][item['uid']]['lost'] = False
+
+@profile
+def quick_look(life):
+	_life = []
+	_items = []
+	_current_chunk = lfe.get_current_chunk_id(life)
+	_current_chunk_pos = chunks.get_chunk(_current_chunk)['pos']
+	_x_chunk_min = numbers.clip(_current_chunk_pos[0]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_min = numbers.clip(_current_chunk_pos[1]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_x_chunk_max = numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_max = numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	
+	#print _x_chunk_min, _x_chunk_max, _y_chunk_min, _y_chunk_max
+	
+	for y in range(_x_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
+		for x in range(_x_chunk_min, _x_chunk_max, WORLD_INFO['chunk_size']):
+			_chunk_key = '%s,%s' % (x, y)
+			_chunk = chunks.get_chunk(_chunk_key)
+			
+			for life_id in _chunk['life']:
+				ai = LIFE[life_id]
+				
+				if life_id == life['id']:
+					continue
+				
+				if not can_see_position(life, LIFE[life_id]['pos']):
+					continue
+				
+				#if not is_in_fov(life, ai['pos']):
+				#	if ai['id'] in life['know']:
+				#		life['know'][ai['id']]['time_visible'] = 0
+				#	
+				#	continue
+				
+				_visibility = get_visiblity_of_position(life, ai['pos'])
+				_stealth_coverage = get_stealth_coverage(ai)
+				
+				if _visibility < 1-_stealth_coverage:
+					continue
+				
+				if not ai['id'] in life['know']:
+					brain.meet_alife(life, ai)
+				
+				life['know'][ai['id']]['time_visible'] = 0
+				life['seen'].append(ai['id'])
+				
+				if life['think_rate'] == life['think_rate_max']:
+					lfe.create_and_update_self_snapshot(LIFE[ai['id']])
+					judgement.judge_life(life, ai['id'])
+				
+				if ai['dead']:
+					if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
+						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+					
+					if life['know'][ai['id']]['group']:
+						groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
+						life['know'][ai['id']]['group'] = None
+					
+					life['know'][ai['id']]['dead'] = True
+				elif ai['asleep']:
+					life['know'][ai['id']]['asleep'] = True
+				elif not ai['asleep']:
+					life['know'][ai['id']]['asleep'] = False
+				
+				life['know'][ai['id']]['time_visible'] += 1
+				life['know'][ai['id']]['last_seen_time'] = 0
+				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
+				life['know'][ai['id']]['escaped'] = False
+				life['know'][ai['id']]['state'] = ai['state']
+				life['know'][ai['id']]['state_tier'] = ai['state_tier']
+				
+				if brain.alife_has_flag(life, ai['id'], 'search_map'):
+					brain.unflag_alife(life, ai['id'], 'search_map')
+				
+				_chunk_id = lfe.get_current_chunk_id(ai)
+				judgement.judge_chunk(life, _chunk_id, seen=True)
+				
+				_life.append(life_id)
+			
+			for item_uid in _chunk['items']:
+				item = ITEMS[item_uid]
+				
+				if not item['uid'] in life['know_items']:
+					continue
+	
+				if items.is_item_owned(item['uid']):
+					continue
+				
+				#	#TODO: This doesn't work because we are specifically checking chunks
+				#	if item['owner'] and lfe.item_is_equipped(LIFE[item['owner']], item['uid']):
+				#		life['know_items'][item['uid']]['last_seen_at'] = LIFE[item['owner']]['pos']
+				#		life['know_items'][item['uid']]['last_owned_by'] = item['owner']
+				#		life['know_items'][item['uid']]['last_seen_time'] = 0
+				#	
+				#	continue
+				
+				if not can_see_position(life, item['pos']):
+					continue
+				
+				if not item['uid'] in life['know_items']:
+					brain.remember_item(life, item)
+				
+				life['seen_items'].append(item['uid'])
+				life['know_items'][item['uid']]['last_seen_at'] = item['pos'][:]
+				life['know_items'][item['uid']]['last_seen_time'] = 0
+				life['know_items'][item['uid']]['last_owned_by'] = None
+				life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
+				life['know_items'][item['uid']]['lost'] = False
+				
+				_items.append(item_uid)
 
 def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
