@@ -790,3 +790,19 @@ This is only for house interiors. Exteriors are done on a slightly smaller scale
 	SATISFIES: KNOWS_ABOUT_ITEM
 	DESIRES: HAS_NON_RELAXED_GOAL
 	LOOP_UNTIL: HAS_WANTED_ITEMS
+
+Overwatch
+--------
+
+Moods:
+
+* Rest: Default setting. Overwatch creates no story events.
+* Hurt: Events designed to put the player in danger.
+* Unstable: Random events are drawn from a hat.
+
+Event pool:
+
+* Explosion nearby: An anomaly explodes into existence nearby.
+* Firefight nearby: Two or more wandering NPCs engage in combat.
+* Ambush: Two ore more hidden NPCs attack the player.
+* Rescue: A neutral NPC is attacked and radios for help.

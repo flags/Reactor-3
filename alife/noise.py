@@ -42,7 +42,7 @@ def update_targets_around_noise(life, noise):
 			life['know'][noise['target']]['last_seen_time'] = 0
 	
 	for target in life['know'].values():
-		if not target['escaped']:
+		if not target['escaped'] or not target['last_seen_at']:
 			continue
 		
 		if numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:

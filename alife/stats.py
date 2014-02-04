@@ -138,7 +138,7 @@ def desires_to_create_camp(life):
 	return False
 
 def desires_help_from(life, life_id):
-	return judgement.can_trust(life, life_id) or judgement.get_tension_with(life, life_id)<=judgement.get_max_tension_with(life, life_id)
+	return judgement.can_trust(life, life_id) and judgement.get_tension_with(life, life_id)<=judgement.get_max_tension_with(life, life_id)
 
 def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):

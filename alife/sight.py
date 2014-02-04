@@ -82,6 +82,9 @@ def look(life):
 	
 	for target_id in life['know']:
 		life['know'][target_id]['last_seen_time'] += 1
+		
+		if life['know'][target_id]['last_seen_time']>=10 and not life['know'][target_id]['escaped']:
+			life['know'][target_id]['escaped'] = 1
 	
 	if not 'player' in life:
 		quick_look(life)

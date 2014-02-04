@@ -104,7 +104,6 @@ def guard_chunk(life, chunk_key):
 	return False
 
 def set_focus_point(life, chunk_key):
-	print life['name'], 'delete focus point'
 	lfe.delete_memory(life, matches={'text': 'focus_on_chunk'})
 	
 	lfe.memory(life, 'focus_on_chunk', chunk_key=chunk_key)
@@ -120,8 +119,6 @@ def search_for_target(life, target_id):
 	_know = brain.knows_alife_by_id(life, target_id)
 	_size = 30
 	_timer = brain.get_flag(life, 'search_time')
-	
-	print _timer
 	
 	if _timer>0 or life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
 		if _timer>0 and not (life['path'] or lfe.find_action(life, matches=[{'action': 'move'}])):
@@ -209,8 +206,8 @@ def escape(life, targets):
 		
 		for pos in _cover_exposed_at[:]:
 			if tuple(pos[:2]) in _can_see_positions:
-				print 'ok!!!'*20
 				_cover_exposed_at.remove(pos)
+				
 				continue
 			
 			fov.fov(pos, int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_exposed_cover_positions.add(pos))

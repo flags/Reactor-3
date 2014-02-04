@@ -104,6 +104,7 @@ def create_function_map():
 		'retrieve_from_memory': brain.retrieve_from_memory,
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
 		'has_usable_weapon': lambda life: not combat.has_ready_weapon(life) == False,
+		'has_potentially_usable_weapon': lambda life: combat.has_potentially_usable_weapon(life) == True,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
 		'create_item_need': survival.add_needed_item,
 		'group_needs_resources': lambda life, group_id: groups.needs_resources(group_id),

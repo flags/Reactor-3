@@ -219,7 +219,7 @@ def have_feed_and_ammo_for_weapon(life, weapon_uid):
 def has_potentially_usable_weapon(life):
 	for weapon in get_weapons(life):
 		if get_feeds_for_weapon(life, weapon['uid']):
-			if len(get_all_ammo_for_weapon(life, weapon['uid']))>=5:
+			if len(get_all_ammo_for_weapon(life, weapon['uid'])):
 				return True
 		
 		if weapon_is_working(life, weapon['uid']):

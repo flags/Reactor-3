@@ -83,8 +83,8 @@ def setup(life):
 			speech.start_dialog(life, target, _question['gist'], **_question['args'])
 		elif memory.get_orders_for_target(life, target):
 			speech.start_dialog(life, target, 'give_order')
-		elif stats.wants_group_member(life, target):
-			memory.create_question(life, target, 'recruit', ignore_if_said_in_last=-1, group_id=life['group'])
+		#elif stats.wants_group_member(life, target):
+		#	memory.create_question(life, target, 'recruit', ignore_if_said_in_last=-1, group_id=life['group'])
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]

@@ -107,14 +107,25 @@ def evaluate_overwatch_mood():
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['injury']
+	_hardship += _stats['human_encounters']*2
 	_hardship *= _mod
 	
 	_success = 0
 	
-	if _hardship-_success >= 5:
-		_stats['mood'] = 'rest'
-	else:
-		_stats['mood'] = 'hurt'
+	if _stats['mood'] == 'rest':
+		if _mod > _stats['rest_level']:
+			return False
+		
+		_stats['mood'] = random.choice(['rest', 'hurt'])
+	elif _stats['mood'] == 'hurt':
+		if _hardship-_success >= 5:
+			_stats['mood'] = 'rest'
+
+def record_encounter(amount):
+	WORLD_INFO['overwatch']['human_encounters'] += amount
+	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	
+	logging.debug('[Overwatch] encounter (%s)' % amount)
 
 def record_loss(amount):
 	WORLD_INFO['overwatch']['loss_experienced'] += amount
@@ -191,8 +202,14 @@ def form_scheme(force=False):
 		return False
 	
 	_player_situation = get_player_situation()
+	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	
-	return False
+	if _overwatch_mood == 'rest':
+		return False
+	
+	#if _overwatch_mood == 'hurt':
+	
+	
 	#if _player_situation['armed']:
 	_i = random.randint(0, 3)+10
 	

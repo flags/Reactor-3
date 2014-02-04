@@ -4,6 +4,7 @@ from alife import *
 import graphics as gfx
 import damage as dam
 import pathfinding
+import situations
 import scripting
 import crafting
 import language
@@ -2975,6 +2976,8 @@ def draw_life_info():
 		
 		_i += 1
 	
+	#print life['name'], life['seen'], alife.judgement.get_visible_threats(life)
+	
 	#Debug info
 	tcod.console_set_default_foreground(0, tcod.light_blue)
 	tcod.console_print(0, _debug_position[0],
@@ -2994,7 +2997,22 @@ def draw_life_info():
 	                   'Has targets: '+str(len(alife.judgement.get_threats(life, ignore_escaped=1))>0))
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+6+_i,
+	                   'Has visible targets: '+str(len(alife.judgement.get_visible_threats(life))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+7+_i,
+	                   'Has lost targets: '+str(len(judgement.get_threats(life, escaped_only=True, ignore_escaped=2))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+8+_i,
 	                   'Confident: '+str(alife.stats.is_confident(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+9+_i,
+	                   'Potentially usable weapon: '+str(alife.combat.has_potentially_usable_weapon(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+10+_i,
+	                   'Usable weapon: '+str(not alife.combat.has_ready_weapon(life) == False))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+11+_i,
+	                   'Think rate: '+str(life['think_rate']))
 	
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
@@ -3492,7 +3510,7 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
 		
-		alife.situations.add_injury(1)
+		situations.record_injury(1)
 	
 	if pain:
 		add_pain_to_limb(life, limb, amount=pain)

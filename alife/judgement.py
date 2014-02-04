@@ -446,6 +446,9 @@ def get_invisible_threats(life):
 def get_visible_threats(life, _inverse=False):
 	_targets = []
 	
+	if not life['seen']:
+		return []
+	
 	for target_id in get_threats(life):
 		if not target_id in life['seen'] == _inverse:
 			_targets.append(target_id)
