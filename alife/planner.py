@@ -234,10 +234,10 @@ def get_next_goal(life):
 				if not FUNCTION_MAP[_requirement](life) == _true:
 					_break = True
 					break
-				elif SETTINGS['following'] == life['id']:
-					print '[state_%s] Requirement passed: %s (wanted %s)' % (goal, _requirement, _true)
-					print FUNCTION_MAP[_requirement](life)
-					print 'vis threats', life['seen'], alife.judgement.get_visible_threats(life)
+				#elif SETTINGS['following'] == life['id']:
+				#	print '[state_%s] Requirement passed: %s (wanted %s)' % (goal, _requirement, _true)
+				#	print FUNCTION_MAP[_requirement](life)
+				#	print 'vis threats', [LIFE[l]['name'] for l in life['seen']], alife.judgement.get_visible_threats(life)
 		
 		if _break:
 			continue

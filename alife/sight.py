@@ -4,6 +4,7 @@ from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 import numpy as np
 import life as lfe
 
+import situations
 import judgement
 import weather
 import groups
@@ -193,6 +194,9 @@ def quick_look(life):
 			
 			for life_id in _chunk['life']:
 				ai = LIFE[life_id]
+				
+				if ai['dead']:
+					continue
 				
 				if life_id == life['id']:
 					continue

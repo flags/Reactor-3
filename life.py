@@ -1321,6 +1321,8 @@ def perform_action(life):
 					                       avoid_positions=_avoid_positions,
 					                       avoid_chunks=_avoid_chunks)
 				
+				#print life['name'], 'DIJKSTRA MAP', _action['reason'], life['pos'], _path
+				
 				if not _path:
 					life['state_flags']['failed_dijkstra'] = WORLD_INFO['ticks']
 				
@@ -1608,7 +1610,8 @@ def perform_action(life):
 		
 		delete_action(life,action)
 		
-	elif _action['action'] == 'reload':	
+	elif _action['action'] == 'reload':
+		print life['name'], 'reloading' * 10
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
 		_ammo = remove_item_from_inventory(life, _action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
@@ -2932,7 +2935,7 @@ def draw_life_info():
 	_longest_state = 3
 	_visible_life = []
 	
-	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+	for ai in [LIFE[i] for i in life['seen']]:
 		if ai['dead']:
 			_state = 'dead'
 		else:
@@ -2946,7 +2949,7 @@ def draw_life_info():
 	_i = 5
 	_xmod = _longest_state+3
 	
-	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+	for ai in [LIFE[i] for i in life['seen']]:
 		if ai['dead']:
 			continue
 		

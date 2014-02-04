@@ -217,16 +217,17 @@ def get_nearest_position_in_chunk(position, chunk_id):
 def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 	_nearest_chunk = {'chunk_key': None, 'distance': -1}
 	
-	for chunk_key in check_these_chunks_first:
-		if not chunk_key in chunks:
-			continue
-		
-		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-		_dist = numbers.distance(pos, chunk_center)
-		
-		if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
-			_nearest_chunk['distance'] = _dist
-			_nearest_chunk['chunk_key'] = chunk_key
+	if check_these_chunks_first:
+		for chunk_key in check_these_chunks_first:
+			if not chunk_key in chunks:
+				continue
+			
+			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+			_dist = numbers.distance(pos, chunk_center)
+			
+			if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
+				_nearest_chunk['distance'] = _dist
+				_nearest_chunk['chunk_key'] = chunk_key
 	
 	if _nearest_chunk['chunk_key']:
 		return _nearest_chunk

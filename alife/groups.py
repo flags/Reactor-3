@@ -644,7 +644,15 @@ def manage_combat(life, group_id):
 			continue
 	
 	_hostile_chunks = get_flag(life, group_id, 'hostile_chunks')
-	_visible_chunks = brain.get_flag(life, 'visible_chunks')#get_flag(life, group_id, 'visible_chunks')
+	_previous_visible_chunks = brain.get_flag(life, 'group_combat_vis_chunks')
+	
+	if _previous_visible_chunks and _previous_visible_chunks['from_pos'] == life['pos']:
+		_visible_chunks = _previous_visible_chunks['visible_chunks']
+	else:
+		_visible_chunks = chunks.get_visible_chunks_from(life['pos'], life['vision_max']*.75)
+		
+		brain.flag(life, 'group_combat_vis_chunks', value={'from_pos': life['pos'][:],
+		                                                   'visible_chunks': _visible_chunks})
 	
 	if _enemy_focal_pos:
 		lfe.clear_ticker(life, 'group_command_reset')

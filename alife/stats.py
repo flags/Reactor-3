@@ -361,6 +361,9 @@ def is_injured(life):
 	return len(lfe.get_bleeding_limbs(life)) > 0
 
 def is_confident(life):
+	if 'player' in life:
+		return False
+	
 	_friendly_confidence = 0
 	_threat_confidence = 0
 	
@@ -370,7 +373,7 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
+		_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
 		
 		if _knows['last_seen_time']:
 			_friendly_confidence += _recent_mod
@@ -383,7 +386,7 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
+		_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
 		
 		if _knows['last_seen_time']:
 			_threat_confidence += _recent_mod

@@ -180,8 +180,13 @@ def escape(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
+	if not alife.judgement.get_visible_threats(life):
+		return False
+	
+	#print life['name'], 'not saving time', alife.judgement.get_visible_threats(life)
+	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
-		if not lfe.ticker(life, 'escaping', 4):
+		if not lfe.ticker(life, 'escaping', 64):
 			return False
 	
 	#What can the targets see?
@@ -235,46 +240,6 @@ def escape(life, targets):
 	for pos in _can_see_positions[:]:
 		if chunks.get_chunk(chunks.get_chunk_key_at(pos))['max_z'] == 2:
 			_can_see_positions.remove(pos)
-	
-	#for target_id in targets:
-		#_target = brain.knows_alife_by_id(life, target_id)
-		#_target_positions.append(_target['last_seen_at'][:])
-		#_zone = zones.get_zone_at_coords(_target['last_seen_at'])
-		
-		#if not _zone in _zones:
-		#	_zones.append(_zone)
-		
-		#for chunk_key in chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])):
-		#	if chunk_key in _visible_target_chunks:
-		#		continue
-			
-		#	_visible_target_chunks.append(chunk_key)
-	
-	#for friendly_id in life['seen']:
-	#	_chunk_key = lfe.get_current_chunk_id(LIFE[friendly_id])
-	#	
-	#	if not _chunk_key in _visible_target_chunks:
-	#		_visible_target_chunks.append(_chunk_key)
-	
-	#if not _target_positions:
-	#	return False
-	
-	#TODO: #combat: For lower limit in return_score_in_range, use range of weapon
-	#_cover = zones.dijkstra_map(life['pos'],
-	#                            _avoid_positions,
-	#                            _zones,
-	#                            avoid_chunks=[],
-	#                            return_score_in_range=[1, 5]) # sight.get_vision(life)
-	#_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-	#if not _cover:
-	#	return False
-	
-	#_zones = [zones.get_zone_at_coords(life['pos'])]
-	#for _pos in _cover:
-	#	_zone = zones.get_zone_at_coords(_pos)
-		
-	#	if not _zone in _zones:
-	#		_zones.append(_zone)
 	
 	if not _can_see_positions:
 		return False
