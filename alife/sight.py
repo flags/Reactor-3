@@ -370,7 +370,7 @@ def can_see_position(life, pos, distance=True, block_check=False, strict=False, 
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
 	
-	if get_path:
+	if get_path or not 'player' in life:
 		return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)
 
 	if is_in_fov(life, pos):
