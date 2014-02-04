@@ -71,7 +71,7 @@ def position_to_attack(life, target):
 	return True
 
 def travel_to_position(life, pos, stop_on_sight=False):
-	if stop_on_sight and sight.can_see_position(life, pos):
+	if stop_on_sight and sight.can_see_position(life, pos, get_path=True):
 		return True
 	
 	if not numbers.distance(life['pos'], pos):
@@ -104,6 +104,7 @@ def guard_chunk(life, chunk_key):
 	return False
 
 def set_focus_point(life, chunk_key):
+	print life['name'], 'delete focus point'
 	lfe.delete_memory(life, matches={'text': 'focus_on_chunk'})
 	
 	lfe.memory(life, 'focus_on_chunk', chunk_key=chunk_key)
@@ -118,6 +119,15 @@ def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)
 	_size = 30
+	_timer = brain.get_flag(life, 'search_time')
+	
+	print _timer
+	
+	if _timer>0 or life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
+		if _timer>0 and not (life['path'] or lfe.find_action(life, matches=[{'action': 'move'}])):
+			brain.flag(life, 'search_time', _timer-1)
+		
+		return False
 	
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
@@ -127,8 +137,9 @@ def search_for_target(life, target_id):
 		
 		lfe.stop(life)
 		lfe.walk_to(life, _know['last_seen_at'][:2])
-	
-	if life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
+		
+		brain.flag(life, 'search_time', 12)
+		
 		return False
 	
 	_lowest = {'score': -1, 'pos': None}
@@ -150,10 +161,10 @@ def search_for_target(life, target_id):
 			if not _search_map[y, x]:
 				continue
 			
-			if sight.can_see_position(life, (_x, _y)):
+			if sight.can_see_position(life, (_x, _y), get_path=True):
 				_search_map[y, x] = 0
 			
-			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
+			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] < _lowest['score']):
 				_lowest['score'] = _search_map[y, x]
 				_lowest['pos'] = (_x, _y, x, y)
 
@@ -162,6 +173,8 @@ def search_for_target(life, target_id):
 		
 		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
 			_search_map[_y, _x] = 0
+		
+		brain.flag(life, 'search_time', numbers.distance(life['pos'], (x, y))*.75)
 	else:
 		_know['escaped'] = 2
 

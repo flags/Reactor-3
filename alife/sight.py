@@ -118,12 +118,15 @@ def look(life):
 				judgement.judge_life(life, ai['id'])
 			
 			if ai['dead']:
-				if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
-					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+				if 'player' in life and not life['know'][ai['id']]['dead']:
+					if life['know'][ai['id']]['last_seen_time']>16:
+						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
+				
 				
 				if life['know'][ai['id']]['group']:
 					groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
 					life['know'][ai['id']]['group'] = None
+					situations.record_loss(1)
 				
 				life['know'][ai['id']]['dead'] = True
 			elif ai['asleep']:
@@ -167,7 +170,7 @@ def look(life):
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
 			life['know_items'][item['uid']]['lost'] = False
 
-@profile
+#@profile
 def quick_look(life):
 	_life = []
 	_items = []
@@ -246,6 +249,9 @@ def quick_look(life):
 				_life.append(life_id)
 			
 			for item_uid in _chunk['items']:
+				if not item_uid in ITEMS:
+					continue
+				
 				item = ITEMS[item_uid]
 				
 				if not item['uid'] in life['know_items']:

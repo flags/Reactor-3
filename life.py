@@ -585,11 +585,12 @@ def change_goal(life, goal, tier, plan):
 	life['state_tier'] = tier
 	
 	life['states'].append(goal)
+	
 	if len(life['states'])>SETTINGS['state history size']:
 		life['states'].pop(0)
 	
-	if groups.is_leader_of_any_group(life):
-		speech.announce(life, 'group_leader_state_change', group=life['group'])
+	#if groups.is_leader_of_any_group(life):
+	#	speech.announce(life, 'group_leader_state_change', group=life['group'])
 
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,
@@ -1805,6 +1806,7 @@ def tick(life):
 			logging.debug('%s woke up.' % life['name'][0])
 			
 			if 'player' in life:
+				tcod.sys_set_fps(FPS)
 				gfx.message('You wake up.')
 			else:
 				say(life,'@n wakes up.',action=True, event=False)
@@ -3085,6 +3087,8 @@ def pass_out(life, length=None, reason='Passed out'):
 	life['asleep_reason'] = reason
 	
 	if 'player' in life:
+		tcod.sys_set_fps(1000)
+		
 		gfx.message('You pass out!',style='damage')
 	#lse:
 	#say(life, '@n passes out.', action=True, event=False)
@@ -3487,6 +3491,8 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 			return ', '.join(_msg)
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
+		
+		alife.situations.add_injury(1)
 	
 	if pain:
 		add_pain_to_limb(life, limb, amount=pain)

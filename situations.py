@@ -10,7 +10,9 @@ import spawns
 import alife
 import items
 
+import logging
 import random
+
 
 def create_heli_crash(kind):
 	while 1:
@@ -98,6 +100,33 @@ def broadcast(messages, event_time, glitch=False):
 		
 		_i += 1
 		_time += int(round(len(entry['text'])*1.25))
+
+def evaluate_overwatch_mood():
+	_stats = WORLD_INFO['overwatch']
+	_mod = _stats['last_updated']/float(WORLD_INFO['ticks'])
+	
+	_hardship = _stats['loss_experienced']
+	_hardship += _stats['injury']
+	_hardship *= _mod
+	
+	_success = 0
+	
+	if _hardship-_success >= 5:
+		_stats['mood'] = 'rest'
+	else:
+		_stats['mood'] = 'hurt'
+
+def record_loss(amount):
+	WORLD_INFO['overwatch']['loss_experienced'] += amount
+	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	
+	logging.debug('[Overwatch] Loss (%s)' % amount)
+
+def record_injury(amount):
+	WORLD_INFO['overwatch']['injury'] += amount
+	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	
+	logging.debug('[Overwatch] injury (%s)' % amount)
 
 def create_intro_story():
 	_i = 1#random.randint(0, 2)

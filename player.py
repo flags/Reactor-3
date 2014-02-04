@@ -1152,6 +1152,7 @@ def inventory_fire(entry):
 	
 	if not life.is_holding(LIFE[SETTINGS['controlling']],entry['id']):
 		_hand = life.can_throw(LIFE[SETTINGS['controlling']])
+		
 		if not _hand:
 			gfx.message('Both of your hands are full.')
 		
@@ -1162,6 +1163,7 @@ def inventory_fire(entry):
 	
 	if not _menu_items:
 		gfx.message('You have nothing to aim at!')
+		
 		return False
 
 	_i = menus.create_menu(title='Aim at...',

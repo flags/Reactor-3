@@ -217,6 +217,7 @@ def create_function_map():
 		'set_raid_location': lambda life, **kwargs: lfe.memory(life, 'focus_on_chunk', chunk_key=kwargs['chunk_key']),
 		'move_to_chunk': lambda life, **kwargs:  movement.set_focus_point(life, kwargs['chunk_key']),
 		'recruiting': lambda life, life_id: speech.send(life, life_id, 'recruit'),
+		'is_raiding': lambda life: life['group'] and groups.get_stage(life, life['group']) == STAGE_ATTACKING,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

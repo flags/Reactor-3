@@ -91,10 +91,6 @@ def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_curr
 	
 	_reference = get_reference(reference_id)
 	
-	for chunk_key in alife.brain.get_flag(life, 'visible_chunks'):
-		if not chunk_key in _reference:
-			continue
-
 	for _key in _reference:
 		if unknown and _key in life['known_chunks']:
 			continue

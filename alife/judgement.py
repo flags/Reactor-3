@@ -497,8 +497,8 @@ def target_is_combat_ready(life, life_id):
 	return False
 
 def _calculate_danger(life, target):
-	if target['life']['asleep']:
-		return 0
+	#if target['life']['asleep']:
+	#	return 0
 	
 	_danger = 0	
 	

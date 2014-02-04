@@ -364,6 +364,9 @@ def _create_target_list(target_list):
 			                               target=target_id,
 			                               color=(_color, tcod.color_lerp(_color, tcod.white, 0.5))))
 	
+	if not target_list:
+		return []
+	
 	_menu_items.append(create_item('title', 'All', None))
 	
 	for target_id in target_list:

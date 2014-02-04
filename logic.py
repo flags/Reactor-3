@@ -122,6 +122,7 @@ def tick_world():
 	
 	situations.form_scheme()
 	situations.execute_scheme()
+	situations.evaluate_overwatch_mood()
 	
 	cache.scan_cache()
 	

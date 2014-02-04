@@ -64,6 +64,7 @@ WORLD_INFO = {'map': [],
 	'timers': [],
 	'weather': {},
 	'scheme': [],
+    'overwatch': {'loss_experienced': 0, 'injury': 0, 'human_encounters': 0, 'mood': 'docile', 'last_updated': 0},
 	'last_scheme_time': 9000}
 
 LOCKS = {}
