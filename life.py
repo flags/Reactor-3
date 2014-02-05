@@ -593,6 +593,13 @@ def change_goal(life, goal, tier, plan):
 	#if groups.is_leader_of_any_group(life):
 	#	speech.announce(life, 'group_leader_state_change', group=life['group'])
 
+def set_pos(life, pos):
+	maps.leave_chunk(get_current_chunk_id(life), life['id'])
+	
+	life['pos'] = pos[:]
+	
+	maps.enter_chunk(get_current_chunk_id(life), life['id'])
+
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,
 		'speed': speed,

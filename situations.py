@@ -166,7 +166,7 @@ def create_intro_story():
 
 		#Wounded running away
 		_wounded_guy = spawns.generate_group('loner', amount=1)[0]
-		_wounded_guy['pos'] = spawns.get_spawn_point_around(_player['pos'])
+		lfe.set_pos(_wounded_guy, spawns.get_spawn_point_around(_player['pos']))
 		
 		if _wounded_guy['pos'] == _dead_guy['pos']:
 			_wounded_guy['pos'][0] -= 1

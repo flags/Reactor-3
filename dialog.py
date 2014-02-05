@@ -55,7 +55,7 @@ def end_dialog(dialog_id):
 	if SETTINGS['controlling'] in [_dialog['started_by'], _dialog['target']]:
 		lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
-	logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
+	#logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
 
 def get_flag(dialog_id, flag):
 	return get_dialog(dialog_id)['flags'][flag.lower()]

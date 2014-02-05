@@ -33,7 +33,7 @@ def create_question(life, life_id, gist, ignore_if_said_in_last=0, recent_time=0
 	speech.send(life, life_id, gist)
 	_target['questions'].append(_question)
 	
-	logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))
+	#logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))
 
 def create_order(life, life_id, order, message, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)

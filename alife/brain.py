@@ -70,11 +70,13 @@ def alife_has_flag(life, target_id, flag):
 	return False
 
 def flag_alife(life, target_id, flag, value=True):
-	logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	#logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	
 	life['know'][target_id]['flags'][flag] = value
 
 def unflag_alife(life, target_id, flag):
-	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	#logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	
 	del life['know'][target_id]['flags'][flag] 
 
 def alife_has_flag(life, target_id, flag):

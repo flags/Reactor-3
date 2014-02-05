@@ -69,10 +69,12 @@ def reload_weapon(life, weapon_uid):
 	_feed = _get_feed(life, _weapon)
 	
 	if not _feed:
+		print life['name']
 		logging.error('No feed for weapon, but trying to reload anyway.')
 		return False
 	
 	_refill = _refill_feed(life, _feed)
+	
 	if _refill:
 		load_feed(life, weapon_uid, _feed['uid'])
 	
@@ -91,7 +93,7 @@ def load_feed(life, weapon_uid, feed_uid):
 	return True
 
 def _get_feed(life, weapon):
-	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=False)
+	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=True)
 
 	_highest_feed = {'rounds': -1, 'feed': None}
 	for feed in [lfe.get_inventory_item(life, _feed['uid']) for _feed in _feeds]:
@@ -155,6 +157,7 @@ def _equip_weapon(life, weapon_uid, feed_uid):
 	#TODO: Need to refill ammo?
 	if not weapons.get_feed(_weapon):
 		#TODO: How much time should we spend loading rounds if we're in danger?
+		
 		if _refill_feed(life, _feed):
 			load_feed(life, _weapon['uid'], _feed['uid'])
 	else:
