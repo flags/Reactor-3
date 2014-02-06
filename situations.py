@@ -178,9 +178,6 @@ def create_intro_story():
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets')
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 		
-		for item_name in _spawn_items:
-			lfe.add_item_to_inventory(_wounded_guy, items.create_item(item_name))
-		
 		#Group nearby
 		_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
 		for ai in spawns.generate_group('loner', amount=4, spawn_chunks=[_group_spawn_chunk]):

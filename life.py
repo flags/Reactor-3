@@ -2094,7 +2094,7 @@ def get_all_inventory_items(life, matches=None, ignore_actions=False):
 	for item_id in life['inventory']:
 		_item = items.get_item_from_uid(item_id)
 		
-		if not ignore_actions and find_action(life, matches=[{'item': item_id}]):
+		if ignore_actions and find_action(life, matches=[{'item': item_id}]):
 			continue
 		
 		if matches:

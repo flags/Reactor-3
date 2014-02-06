@@ -93,7 +93,7 @@ def load_feed(life, weapon_uid, feed_uid):
 	return True
 
 def _get_feed(life, weapon):
-	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=True)
+	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=False)
 
 	_highest_feed = {'rounds': -1, 'feed': None}
 	for feed in [lfe.get_inventory_item(life, _feed['uid']) for _feed in _feeds]:
@@ -119,12 +119,10 @@ def _refill_feed(life, feed):
 
 	#TODO: No check for ammo type.
 	
-	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
-	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
-		#TODO: What?
-		if not _loading_rounds:
-			return True
-		
+	_loading_rounds = len(lfe.find_action(life, matches=[{'action': 'refillammo'}]))
+	_bullets_in_inventory = len(lfe.get_all_inventory_items(life, matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))
+	
+	if _loading_rounds:# >= _bullets_in_inventory:
 		return False
 	
 	if len(lfe.find_action(life,matches=[{'action': 'refillammo'}])):
@@ -132,7 +130,7 @@ def _refill_feed(life, feed):
 	
 	_rounds = len(feed['rounds'])
 	
-	if _rounds>=feed['maxrounds']:
+	if _rounds>=feed['maxrounds'] or (not _bullets_in_inventory and _rounds):
 		print 'Full?'
 		return True
 	
@@ -188,7 +186,7 @@ def get_equipped_weapons(life):
 	return lfe.get_held_items(life, matches=[{'type': 'gun'}])
 
 def get_weapons(life):
-	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=True)
+	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=False)
 
 def get_loose_ammo_for_weapon(life, weapon_uid):
 	_weapon = ITEMS[weapon_uid]

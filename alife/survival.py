@@ -340,6 +340,9 @@ def manage_inventory(life):
 				if rawparse.raw_has_section(life, 'items') and rawparse.raw_section_has_identifier(life, 'items', item['type']):
 					_action = lfe.execute_raw(life, 'items', item['type'])
 					
+					if item['type'] == 'gun' and lfe.get_all_equipped_items(life, matches=[{'type': 'gun'}]):
+						continue
+					
 					if _action == 'equip':
 						if _known_item['score'] > _item_to_equip['score']:
 							_item_to_equip['score'] = _known_item['score']

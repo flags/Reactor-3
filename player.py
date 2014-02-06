@@ -533,7 +533,7 @@ def handle_input():
 		_non_empty_ammo = []
 		_empty_ammo = []
 		
-		for weapon in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'gun'}]):
+		for weapon in life.get_all_inventory_items(LIFE[SETTINGS['following']],matches=[{'type': 'gun'}]):
 			_feed_uid = weapons.get_feed(weapon)
 			
 			if _feed_uid:
@@ -551,7 +551,7 @@ def handle_input():
 					icon=weapon['icon'],
 					id=weapon['uid']))
 		
-		for ammo in life.get_all_inventory_items(LIFE[SETTINGS['controlling']],matches=[{'type': 'magazine'},{'type': 'clip'}]):
+		for ammo in life.get_all_inventory_items(LIFE[SETTINGS['following']],matches=[{'type': 'magazine'},{'type': 'clip'}]):
 			#TODO: Make `parent` an actual key.
 			if 'parent' in ammo:
 				continue
@@ -775,11 +775,8 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		#import situations
-		
-		#situations.form_scheme(force=True)
-		_i = items.create_item('burner', position=LIFE[SETTINGS['controlling']]['pos'][:])
-		items.move(ITEMS[_i], 0, 5, _velocity=1)
+		for alife in LIFE.values():
+			print alife['name'], len(life.get_all_inventory_items(alife, matches=[{'type': 'gun'}]))
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

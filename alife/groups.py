@@ -92,7 +92,7 @@ def update_group_memory(life, group_id, flag, value):
 	_previous_value = life['known_groups'][group_id][flag]
 	life['known_groups'][group_id][flag] = value
 	
-	logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
+	#logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
 
 def get_group_memory(life, group_id, flag):
 	if not group_id in life['known_groups']:

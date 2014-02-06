@@ -322,6 +322,9 @@ def understand(life):
 	if not life['online'] or life['asleep']:
 		return False
 	
+	if not len(lfe.find_action(life, matches=[{'action': 'move'}])) and len(life['actions']):
+		return False
+	
 	if life['think_rate']:
 		life['think_rate'] -= 1
 		

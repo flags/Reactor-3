@@ -88,7 +88,6 @@ def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
 		_alife = life.create_life(_life_species, position=[_spawn[0], _spawn[1], 2])
 		
 		for item in LIFE_CLASSES[life_class]['items']:
-			print item
 			for i in range(item.values()[0]):
 				life.add_item_to_inventory(_alife, items.create_item(item.keys()[0]))
 		
@@ -148,7 +147,6 @@ def get_spawn_point_around(pos, area=5, min_area=0):
 			
 			continue
 		
-		print alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(next_pos))['ground']
 		if list(next_pos) in alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(next_pos))['ground']:
 			_pos = list(next_pos[:2])
 			_pos.append(2)
