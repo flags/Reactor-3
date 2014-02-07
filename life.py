@@ -586,7 +586,7 @@ def change_goal(life, goal, tier, plan):
 	life['state_flags'] = {}
 	life['state_tier'] = tier
 	
-	#clear_actions(life)
+	#stop(life)
 	
 	life['states'].append(goal)
 	
@@ -1214,7 +1214,7 @@ def clear_actions(life,matches=[]):
 		clear_actions_matching(life, matches=[{'action': 'dijkstra_move'}])
 		return True
 
-def find_action(life, matches=[{}]):
+def find_action(life, matches=[{}], invert=False):
 	_matching_actions = []
 	
 	for action in [action['action'] for action in life['actions']]:
@@ -1893,10 +1893,10 @@ def tick_all_life(setup=False):
 		return False
 	
 	for life in _tick:
+		brain.act(life)
+		
 		if life['online']:
 			perform_action(life)
-		
-		brain.act(life)
 
 def attach_item_to_limb(body,id,limb):
 	"""Attaches item to limb. Returns True."""

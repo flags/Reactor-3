@@ -181,8 +181,6 @@ def get_zone_at_coords(pos):
 		if _splice['_map'][_p[0]][_p[1]]:
 			return _splice['id']
 	
-	print 'No zone at', pos
-	
 	return None
 
 def get_slice(zone_id):

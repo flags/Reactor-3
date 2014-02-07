@@ -199,6 +199,9 @@ def get_group_stage_message(life):
 	if _group_stage == STAGE_SETTLING:
 		return ['Keep an eye out for places to camp.', 'Look for possible camps!', 'Let\'s find a camp, guys.']
 	
+	if _group_stage == STAGE_ATTACKING:
+		return ['Be ready to engage!']
+	
 	return 'HE LIVES'
 
 def get_known_group(life, life_id):

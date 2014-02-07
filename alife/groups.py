@@ -365,7 +365,8 @@ def get_stage(life, group_id):
 def set_stage(life, group_id, stage):
 	update_group_memory(life, group_id, 'stage', stage)
 	
-	announce(life, group_id, 'update_group_stage')
+	if is_leader(life, group_id, life['id']):
+		announce(life, group_id, 'update_group_stage')
 
 def get_combat_score(life, group_id, potential=False):
 	_group = get_group(life, group_id)
@@ -827,6 +828,7 @@ def manage_combat_old(life, group_id):
 				if _distance<=100:
 					set_stage(life, group_id, STAGE_SETTLING)
 					set_shelter(life, group_id, None)
+					
 			#if get_stage(life, group_id) == STAGE_SETTLED:
 			#	set_stage(life, group_id, STAGE_RAIDING)
 			#	

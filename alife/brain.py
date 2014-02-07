@@ -323,6 +323,10 @@ def understand(life):
 		return False
 	
 	if not len(lfe.find_action(life, matches=[{'action': 'move'}])) and len(life['actions']):
+		life['path'] = []
+		
+		logging.debug('Is this OK?')
+		
 		return False
 	
 	if life['think_rate']:
@@ -338,6 +342,9 @@ def understand(life):
 	life['think_rate'] = life['think_rate_max']
 	
 	_goal, _tier, _plan = planner.get_next_goal(life)
+	
+	if life['name'][0].startswith('Alex'):
+		print 'Thinking...', life['pos']
 	
 	if _goal:
 		lfe.change_goal(life, _goal, _tier, _plan)

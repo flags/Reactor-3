@@ -179,8 +179,8 @@ def escape(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	if not alife.judgement.get_visible_threats(life):
-		return False
+	#if not alife.judgement.get_visible_threats(life):
+	#	return False
 	
 	#print life['name'], 'not saving time', alife.judgement.get_visible_threats(life)
 	
