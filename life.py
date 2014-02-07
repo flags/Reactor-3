@@ -581,9 +581,12 @@ def change_goal(life, goal, tier, plan):
 		return False
 	
 	logging.debug('%s set new goal: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], goal, tier))
+	
 	life['state'] = goal
 	life['state_flags'] = {}
 	life['state_tier'] = tier
+	
+	#clear_actions(life)
 	
 	life['states'].append(goal)
 	
@@ -1064,7 +1067,7 @@ def walk_to(life, position):
 	clear_actions(life)
 	add_action(life,{'action': 'move',
           'to': position},
-          200)
+          100)
 
 def walk(life, to=None, path=None):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
@@ -1084,8 +1087,8 @@ def walk(life, to=None, path=None):
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 		
-		if life['recoil'] < get_max_speed(life)*weapons.get_stance_recoil_mod(life):
-			life['recoil'] = get_max_speed(life)*weapons.get_stance_recoil_mod(life)
+		if life['recoil'] < get_max_speed(life)*(weapons.get_stance_recoil_mod(life)*.25):
+			life['recoil'] = get_max_speed(life)*(weapons.get_stance_recoil_mod(life)*.25)
 	
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
@@ -1203,12 +1206,12 @@ def clear_actions_matching(life,matches):
 def clear_actions(life,matches=[]):
 	"""Clears all actions and prints a cancellation message for the highest scoring action."""
 	
-	if matches:
-		clear_actions_matching(life,matches)
+	if len(matches):
+		clear_actions_matching(life, matches)
 		return True
 	else:
-		clear_actions_matching(life,matches=[{'action': 'move'}])
-		clear_actions_matching(life,matches=[{'action': 'dijkstra_move'}])
+		clear_actions_matching(life, matches=[{'action': 'move'}])
+		clear_actions_matching(life, matches=[{'action': 'dijkstra_move'}])
 		return True
 
 def find_action(life, matches=[{}]):
@@ -3023,12 +3026,15 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+11+_i,
 	                   'Think rate: '+str(life['think_rate']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+12+_i,
+	                   'High recoil: '+str(life['recoil']>=2.1))
 	
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
 		tcod.console_set_default_foreground(0, tcod.yellow)
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % life['recoil'])
 	
 	#Drawing the action queue
 	tcod.console_set_default_foreground(0, tcod.white)

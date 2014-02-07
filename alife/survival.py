@@ -281,6 +281,12 @@ def manage_hands(life):
 		judgement.judge_item(life, item['uid'])
 		_known_item = brain.get_remembered_item(life, item['uid'])
 		
+		for weapon in combat.get_equipped_weapons(life):
+			if item['type'] == ITEMS[weapon]['feed'] and item['rounds']:
+				combat.load_feed(life, weapon, item['uid'])
+				
+				return True
+		
 		if _known_item['score']:#judgement.get_score_of_highest_scoring_item(life):
 			continue
 		
@@ -396,8 +402,7 @@ def explore_known_chunks(life):
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	lfe.walk_to(life, _pos_in_chunk)
 	
 	return True
 

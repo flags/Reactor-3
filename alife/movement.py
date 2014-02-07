@@ -81,8 +81,7 @@ def travel_to_position(life, pos, stop_on_sight=False):
 	if _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+	lfe.walk_to(life, pos[:2])
 	
 	return False
 
@@ -299,8 +298,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			delay=lfe.get_item_access_time(life, _highest['item']['uid']))
 		lfe.lock_item(life, _highest['item']['uid'])
 	else:
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+		lfe.walk_to(life, _highest['item']['pos'][:2])
 	
 	return False
 
@@ -333,10 +331,7 @@ def find_target(life, target, distance=5, follow=False, call=True):
 		return False
 	
 	if not lfe.path_dest(life) == tuple(_target['last_seen_at'][:2]):
-		lfe.clear_actions(life)
-		lfe.add_action(life,
-			          {'action': 'move','to': _target['last_seen_at'][:2]},
-			          200)
+		lfe.walk_to(life, _target['last_seen_at'][:2])
 	
 	return False
 

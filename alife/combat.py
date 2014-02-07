@@ -18,6 +18,7 @@ import numbers
 import logging
 import random
 
+
 def weapon_is_working(life, item_uid):
 	_weapon = ITEMS[item_uid]
 	_feed_uid = weapons.get_feed(_weapon)
@@ -69,8 +70,8 @@ def reload_weapon(life, weapon_uid):
 	_feed = _get_feed(life, _weapon)
 	
 	if not _feed:
-		print life['name']
 		logging.error('No feed for weapon, but trying to reload anyway.')
+		
 		return False
 	
 	_refill = _refill_feed(life, _feed)
@@ -342,7 +343,7 @@ def ranged_combat(life, targets):
 		logging.error('No target for ranged combat.')
 		return False
 	
-	if not life['path'] or not numbers.distance(lfe.path_dest(life), _target['last_seen_at']) == 0:
+	if not life['path'] or (_target['last_seen_at'] and numbers.distance(lfe.path_dest(life), _target['last_seen_at']) >= 15):
 		movement.position_to_attack(life, _target['life']['id'])
 	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True) and not sight.view_blocked_by_life(life, _target['last_seen_at'], allow=[_target['life']['id']]):
@@ -353,7 +354,7 @@ def ranged_combat(life, targets):
 						'target': _target['last_seen_at'],
 						'target_id': _target['life']['id'],
 						'limb': 'chest'},
-						5000,
+						300,
 						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
 		else:
 			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
