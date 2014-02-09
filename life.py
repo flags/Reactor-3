@@ -1218,16 +1218,15 @@ def find_action(life, matches=[{}], invert=False):
 	_matching_actions = []
 	
 	for action in [action['action'] for action in life['actions']]:
-		_break = False
-		
 		for match in matches:
-			for key in match:
+			_break = False
+			for key in match:	
 				if not key in action or not action[key] == match[key]:
 					_break = True
 					break
 			
 			if _break:
-				break
+				continue
 				
 			_matching_actions.append(action)
 	
@@ -3378,7 +3377,8 @@ def remove_limb(life, limb, no_children=False):
 	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
 
 def sever_limb(life, limb, impact_velocity):
-	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
+	if life['group'] and SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['group'] == life['group']:
+		say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
@@ -3699,7 +3699,8 @@ def damage_from_item(life, item):
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	elif sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
-		say(life, _dam_message, action=True, event=False)
+		if life['group'] and SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['group'] == life['group']:
+			say(life, _dam_message, action=True, event=False)
 	
 	create_and_update_self_snapshot(life)
 	

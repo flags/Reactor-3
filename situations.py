@@ -179,9 +179,14 @@ def create_intro_story():
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 		
 		#Group nearby
-		_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
-		for ai in spawns.generate_group('loner', amount=4, spawn_chunks=[_group_spawn_chunk]):
-			for target in [_player, _wounded_guy]:
+		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
+		_bandit_group = spawns.generate_group('soldier', amount=4, spawn_chunks=[_bandit_group_spawn_chunk])
+		
+		_friendly_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=20))
+		_friendly_group = spawns.generate_group('loner', amount=4, spawn_chunks=[_friendly_group_spawn_chunk])
+		
+		for ai in _bandit_group:
+			for target in _friendly_group:
 				_target = alife.brain.meet_alife(ai, target)
 				_target['last_seen_time'] = 1
 				_target['escaped'] = 1

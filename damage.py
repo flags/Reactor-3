@@ -57,7 +57,7 @@ def bullet_hit(life, bullet, limb):
 			_msg = ['The round misses slightly']
 		_detailed = True
 	else:
-		_msg = ['%s hits your %s' % (items.get_name(bullet), limb)]
+		_msg = ['%s hits %s\'s %s' % (items.get_name(bullet), life['name'][0], limb)]
 	
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})

@@ -181,7 +181,7 @@ def meet_alife(life, target):
 		raise Exception('Life \'%s\' learned about itself. Stopping.' % ' '.join(life['name']))
 	
 	if target['id'] in life['know']:
-		return False
+		return life['know'][target['id']]
 	
 	life['know'][target['id']] = {'life': target,
 		'danger': 0,
@@ -322,10 +322,11 @@ def understand(life):
 	if not life['online'] or life['asleep']:
 		return False
 	
-	if not len(lfe.find_action(life, matches=[{'action': 'move'}])) and len(life['actions']):
+	if len(life['actions'])-len(lfe.find_action(life, matches=[{'action': 'move'}, {'action': 'dijkstra_move'}]))>0:
+		lfe.clear_actions(life)
 		life['path'] = []
 		
-		logging.debug('Is this OK?')
+		#logging.debug('Is this OK?')
 		
 		return False
 	

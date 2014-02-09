@@ -51,7 +51,7 @@ CYTHON_ENABLED = True
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	
-	if SETTINGS['controlling'] and locks.is_locked('camera_free'):
+	if SETTINGS['controlling'] and SETTINGS['following'] == SETTINGS['controlling'] and locks.is_locked('camera_free'):
 		_life = LIFE[SETTINGS['controlling']]
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]

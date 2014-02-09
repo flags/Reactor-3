@@ -398,6 +398,9 @@ def is_confident(life):
 def is_threat_too_close(life):
 	_nearest_threat = judgement.get_nearest_threat(life)
 	
+	if not _nearest_threat:
+		return False
+	
 	_knows = brain.knows_alife_by_id(life, _nearest_threat)
 	
 	if not _nearest_threat:

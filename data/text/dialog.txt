@@ -262,7 +262,8 @@ RAID_LOCATION:@ALWAYS:"We're moving out!":>ACCEPT_RAID_LOCATION
 ACCEPT_RAID_LOCATION:@ALWAYS:"Loud and clear!":>END,^@SET_RAID_LOCATION
 FOUND_SHELTER:@ALWAYS:"I've found us a place to stay.":>END
 PREPARE_FOR_RAID:@ALWAYS:"We might be heading out soon.":>END
-HURT:@ALWAYS:"I'm bleeding...":>END
+HURT:@HAS_THREATS:"I'm hit!":>END
+HURT:!@HAS_THREATS:"I'm bleeding...":>END
 HURT:@ALWAYS:"Medic!":>END
 GROUP_PREPARE_FOR_COMBAT_LARGE:@IS_CONFIDENT:"Assume combat positions!":>END
 GROUP_PREPARE_FOR_COMBAT_LARGE:!@IS_CONFIDENT:"Prepare to engage!":>END

@@ -282,7 +282,7 @@ def manage_hands(life):
 		_known_item = brain.get_remembered_item(life, item['uid'])
 		
 		for weapon in combat.get_equipped_weapons(life):
-			if item['type'] == ITEMS[weapon]['feed'] and item['rounds']:
+			if item['type'] == ITEMS[weapon]['feed'] and len(item['rounds'])>=5:
 				combat.load_feed(life, weapon, item['uid'])
 				
 				return True
