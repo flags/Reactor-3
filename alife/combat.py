@@ -285,6 +285,7 @@ def get_closest_target(life, targets):
 	else:
 		#TODO: Dude, what?
 		movement.find_target(life, targets, call=False)
+		
 		return False
 	
 	_targets_too_far = []
@@ -343,30 +344,78 @@ def ranged_combat(life, targets):
 		logging.error('No target for ranged combat.')
 		return False
 	
-	if not life['path'] or (_target['last_seen_at'] and numbers.distance(lfe.path_dest(life), _target['last_seen_at']) >= 15):
-		movement.position_to_attack(life, _target['life']['id'])
+	_weapons = get_equipped_weapons(life)
 	
-	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True) and not sight.view_blocked_by_life(life, _target['last_seen_at'], allow=[_target['life']['id']]):
-		print life['name'], 'g2g'
-		if sight.can_see_position(life, _target['life']['pos']):
-			if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
-				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
-					lfe.add_action(life,{'action': 'shoot',
-						'target': _target['last_seen_at'],
-						'target_id': _target['life']['id'],
-						'limb': 'chest'},
-						300,
-						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+	if _weapons:
+		_engage_distance = numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*7.5)), 3, sight.get_vision(life))
+	else:
+		_engage_distance = 15
+	
+	#print _engage_distance
+	
+	_path_dest = lfe.path_dest(life)
+	
+	if not _path_dest:
+		_path_dest = life['pos'][:]
+	
+	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
+	
+	#Get us near the target
+	if _target['last_seen_at'] and numbers.distance(_path_dest, _target['last_seen_at']) >= numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
+		movement.position_to_attack(life, _target['life']['id'])
+		
+	elif sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
+		if _target_distance	<= _engage_distance:
+			if sight.can_see_position(life, _target['life']['pos']):
+				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):	
+					lfe.clear_actions(life)
+					
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
+						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
+							lfe.add_action(life,{'action': 'shoot',
+								                 'target': _target['last_seen_at'],
+								                 'target_id': _target['life']['id'],
+								                 'limb': 'chest'},
+								                 300,
+								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+				else:
+					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
+					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
+					_friendly_positions.append(life['pos'][:])
+					
+					lfe.add_action(life, {'action': 'dijkstra_move',
+								          'rolldown': True,
+								          'zones': _friendly_zones,
+								          'goals': [_target['life']['pos']],
+								          'avoid_positions': _friendly_positions,
+								          'return_score_in_range': (_engage_distance-3, _engage_distance),
+								          'reason': 'combat_position'},
+								   100)
+			else:
+				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
+				
+				_target['escaped'] = 1
+				
+				for send_to in judgement.get_trusted(life):
+					speech.communicate(life,
+					                   'target_missing',
+					                   target=_target['life']['id'],
+					                   matches=[send_to])
 		else:
-			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
+			_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
+			_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
+			_friendly_positions.append(life['pos'][:])
 			
-			_target['escaped'] = 1
-			
-			for send_to in judgement.get_trusted(life):
-				speech.communicate(life,
-			        'target_missing',
-			        target=_target['life']['id'],
-			        matches=[send_to])
+			lfe.add_action(life, {'action': 'dijkstra_move',
+		                          'rolldown': False,
+		                          'zones': _friendly_zones,
+		                          'goals': [_target['life']['pos']],
+		                          'avoid_positions': _friendly_positions,
+		                          'return_score_in_range': (_engage_distance-3, _engage_distance*1.7),
+		                          'reason': 'combat_position',
+		                          'debug': True},
+		                   100)
+		
 	else:
 		return False
 

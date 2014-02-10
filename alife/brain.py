@@ -326,8 +326,6 @@ def understand(life):
 		lfe.clear_actions(life)
 		life['path'] = []
 		
-		#logging.debug('Is this OK?')
-		
 		return False
 	
 	if life['think_rate']:
@@ -337,21 +335,17 @@ def understand(life):
 	
 	for module in CONSTANT_MODULES:
 		module.setup(life)
-		
-	#print life['name'], len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))
 	
 	life['think_rate'] = life['think_rate_max']
 	
 	_goal, _tier, _plan = planner.get_next_goal(life)
-	
-	if life['name'][0].startswith('Alex'):
-		print 'Thinking...', life['pos']
 	
 	if _goal:
 		lfe.change_goal(life, _goal, _tier, _plan)
 	else:
 		lfe.change_goal(life, 'idle', TIER_RELAXED, [])
 		#logging.error('%s has no possible goal.' % ' '.join(life['name']))
+		
 		return False
 	
 	planner.think(life)

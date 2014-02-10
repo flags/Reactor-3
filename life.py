@@ -1296,6 +1296,9 @@ def perform_action(life):
 	elif _action['action'] == 'dijkstra_move':
 		_path = []
 		
+		if _action['reason'] == 'combat_position':
+			print 'HELLO' * 100, path_dest(life)
+		
 		if not path_dest(life):
 			if 'failed_dijkstra' in life['state_flags']:
 				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
@@ -1303,6 +1306,11 @@ def perform_action(life):
 				else:
 					walk_to(life, _action['goals'][0][:2])
 			else:
+				if 'return_score_in_range' in _action:
+					_return_score_in_range = _action['return_score_in_range']
+				else:
+					_return_score_in_range = None
+				
 				if 'avoid_positions' in _action:
 					_avoid_positions = _action['avoid_positions']
 				else:
@@ -1328,8 +1336,11 @@ def perform_action(life):
 					                       rolldown=_action['rolldown'],
 					                       max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 					                       avoid_positions=_avoid_positions,
+				                           return_score_in_range=_return_score_in_range,
 					                       avoid_chunks=_avoid_chunks)
 				
+				if _action['reason'] == 'combat_position':
+					print 'HELLO' * 100
 				#print life['name'], 'DIJKSTRA MAP', _action['reason'], life['pos'], _path
 				
 				if not _path:
