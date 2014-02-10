@@ -1296,9 +1296,6 @@ def perform_action(life):
 	elif _action['action'] == 'dijkstra_move':
 		_path = []
 		
-		if _action['reason'] == 'combat_position':
-			print 'HELLO' * 100, path_dest(life)
-		
 		if not path_dest(life):
 			if 'failed_dijkstra' in life['state_flags']:
 				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
@@ -1483,6 +1480,14 @@ def perform_action(life):
 	elif _action['action'] == 'equipitem':
 		_name = items.get_name(get_inventory_item(life, _action['item']))
 		
+		_stored = item_is_stored(life, _action['item'])
+
+		if _stored:
+			if 'player' in life:
+				gfx.message('You remove %s from your %s.' % (_name, _stored['name']))
+			else:
+				pass
+		
 		if not equip_item(life, _action['item']):
 			delete_action(life, action)
 			
@@ -1492,14 +1497,6 @@ def perform_action(life):
 				gfx.message('You can\'t hold %s.' % _name)
 			
 			return False
-		
-		_stored = item_is_stored(life, _action['item'])
-
-		if _stored:
-			if 'player' in life:
-				gfx.message('You remove %s from your %s.' % (_name, _stored['name']))
-			else:
-				pass
 		
 		if 'player' in life:
 			#if ITEMS[_action['item']]['type'] == 'gun':
@@ -1561,7 +1558,7 @@ def perform_action(life):
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
 		_id = direct_add_item_to_inventory(life,_action['item'])
-		equip_item(life,_id)
+		equip_item(life, _id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
 	
@@ -1747,7 +1744,8 @@ def kill(life, injury):
 		_walk_direction = numbers.direction_to(life['prev_pos'], life['pos'])
 		push(life, _walk_direction, 2)
 	
-	drop_all_items(life)
+	#drop_all_items(life)
+	
 	life['dead'] = True
 	life['stance'] = 'crawling'
 	life['time_of_death'] = WORLD_INFO['ticks']

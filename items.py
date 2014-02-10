@@ -294,7 +294,7 @@ def get_pos(item_uid):
 	
 	return item['pos']
 
-def get_items_at(position):
+def get_items_at(position, check_bodies=False):
 	"""Returns list of all items at a given position."""
 	_items = []
 	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))
@@ -307,6 +307,16 @@ def get_items_at(position):
 		
 		if tuple(item['pos']) == tuple(position):
 			_items.append(item)
+	
+	if check_bodies:
+		for life_id in alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))['life']:
+			if not LIFE[life_id]['dead']:
+				continue
+			
+			if not tuple(position[:2]) == tuple(LIFE[life_id]['pos'][:2]):
+				continue
+			
+			_items.extend([ITEMS[i] for i in life.get_all_equipped_items(LIFE[life_id])])
 	
 	return _items
 

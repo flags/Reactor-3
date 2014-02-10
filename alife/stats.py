@@ -380,7 +380,7 @@ def is_confident(life):
 		else:
 			_friendly_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
 	
-	for target_id in judgement.get_threats(life, ignore_escaped=True):
+	for target_id in judgement.get_threats(life, ignore_escaped=False):
 		_knows = brain.knows_alife_by_id(life, target_id)
 		
 		if _knows['dead'] or _knows['asleep']:

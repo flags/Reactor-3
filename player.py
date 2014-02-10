@@ -728,7 +728,7 @@ def handle_input():
 		life.crawl(LIFE[SETTINGS['controlling']])
 	
 	if INPUT[',']:
-		_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'])
+		_items = items.get_items_at(LIFE[SETTINGS['controlling']]['pos'], check_bodies=True)
 		
 		if not _items:
 			gfx.message('There is nothing here to pick up.')

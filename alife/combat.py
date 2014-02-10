@@ -367,7 +367,7 @@ def ranged_combat(life, targets):
 	elif sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
 		if _target_distance	<= _engage_distance:
 			if sight.can_see_position(life, _target['life']['pos']):
-				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):	
+				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
 					
 					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>=2:

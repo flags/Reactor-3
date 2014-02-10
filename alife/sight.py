@@ -40,7 +40,7 @@ def look(life):
 			life['know'][target_id]['last_seen_time'] += 1
 			life['know'][target_id]['time_visible'] = 0
 		else:
-			life['know'][target_id]['time_visible'] += 0
+			life['know'][target_id]['time_visible'] += 1
 	
 	if 'player' in life:
 		if life['path'] or not brain.get_flag(life, 'visible_chunks'):
