@@ -2622,9 +2622,7 @@ def draw_life_icon(life):
 	
 	_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
 	
-	if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
-		_icon[0] = STATE_ICONS[life['state']]
-	elif _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
+	if _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
 		_icon[0] = chr(3)
 	
 	if not life['id'] == SETTINGS['controlling']:
@@ -2660,6 +2658,14 @@ def draw_life_icon(life):
 	
 	if 'player' in life:
 		_icon[1] = tcod.white
+		
+		for item in [ITEMS[i] for i in get_all_equipped_items(life)]:
+			print item['name'], item['color'][0]
+			if not item['color'][0] == tcod.white:
+				_icon['color'][1] = tcod.color_lerp(_icon['color'][1], item['color'][0], 0.5)
+				
+			else:
+				print 'DURRRRRRRRR'
 	
 	return _icon
 
