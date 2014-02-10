@@ -1880,6 +1880,9 @@ def send_command(entry):
 	if key == 'Attack':
 		_menu_items = menus.create_target_list()
 		
+		if not _menu_items:
+			return False
+		
 		_menu = menus.create_menu(title='Select Target',
 		                          menu=_menu_items,
 		                          padding=(1,1),
@@ -1892,6 +1895,9 @@ def send_command(entry):
 		_group = groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])
 		_menu_items = menus._create_target_list(_group['members'])
 		
+		if not _menu_items:
+			return False
+		
 		_menu = menus.create_menu(title='Check on...',
 		                          menu=_menu_items,
 		                          padding=(1,1),
@@ -1903,6 +1909,9 @@ def send_command(entry):
 	elif key == 'Location':
 		_group = groups.get_group(LIFE[SETTINGS['controlling']], LIFE[SETTINGS['controlling']]['group'])
 		_menu_items = menus._create_target_list(_group['members'])
+		
+		if not _menu_items:
+			return False
 		
 		_menu = menus.create_menu(title='Get location of...',
 		                          menu=_menu_items,

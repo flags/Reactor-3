@@ -25,6 +25,8 @@ SOLDIER_BANNED_GOALS = ['discover']
 
 BANDIT_SPECIES = 'human'
 BANDIT_ITEMS = [{'white t-shirt': 1},
+                {'brown hoodie': 1},
+                {'fall camo pants': 1},
                 {'leather backpack': 1},
                 {'radio': 1},
                 {'corn': 2},

@@ -147,7 +147,10 @@ def create_intro_story():
 		#broadcast([{'text': 'You wake up from a deep sleep.'},
 		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
-		_spawn_items = ['leather backpack', 'glock', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm round', '9x19mm magazine']
+		_spawn_items = ['leather backpack', 'glock', '9x19mm magazine']
+		
+		for i in range(14):
+			_spawn_items.append('9x19mm round')
 		
 		for item_name in _spawn_items:
 			lfe.add_item_to_inventory(_player, items.create_item(item_name))
@@ -163,29 +166,23 @@ def create_intro_story():
 		
 		for i in range(random.randint(15, 20)):
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
-
-		#Wounded running away
-		_wounded_guy = spawns.generate_group('loner', amount=1)[0]
-		lfe.set_pos(_wounded_guy, spawns.get_spawn_point_around(_player['pos']))
-		
-		if _wounded_guy['pos'] == _dead_guy['pos']:
-			_wounded_guy['pos'][0] -= 1
-		
-		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'trust'
-		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'trust'
-		
-		#alife.speech.start_dialog(_wounded_guy, _player['id'], 'incoming_targets', force=True)
-		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets')
-		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 		
 		#Group nearby
 		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
-		_bandit_group = spawns.generate_group('soldier', amount=4, spawn_chunks=[_bandit_group_spawn_chunk])
+		_bandit_group = spawns.generate_group('bandit', amount=3, spawn_chunks=[_bandit_group_spawn_chunk])
 		
 		_friendly_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=20))
-		_friendly_group = spawns.generate_group('loner', amount=4, spawn_chunks=[_friendly_group_spawn_chunk])
+		_friendly_group = spawns.generate_group('loner', amount=1, spawn_chunks=[_friendly_group_spawn_chunk])
 		
 		for ai in _bandit_group:
+			_target = alife.brain.meet_alife(ai, _player)
+			_target['last_seen_time'] = 1
+			_target['escaped'] = 1
+			_target['last_seen_at'] = _player['pos'][:]
+			alife.stats.establish_hostile(ai, _player['id'])
+			
+			alife.stats.establish_hostile(_player, ai['id'])
+			
 			for target in _friendly_group:
 				_target = alife.brain.meet_alife(ai, target)
 				_target['last_seen_time'] = 1
@@ -198,6 +195,19 @@ def create_intro_story():
 				_group_target['escaped'] = 1
 				_group_target['last_seen_at'] = ai['pos'][:]
 				alife.stats.establish_hostile(target, ai['id'])
+		
+		#Wounded running away
+		_wounded_guy = _friendly_group[0]
+		
+		if _wounded_guy['pos'] == _dead_guy['pos']:
+			_wounded_guy['pos'][0] -= 1
+		
+		alife.brain.meet_alife(_wounded_guy, _player)['alignment'] = 'trust'
+		alife.brain.meet_alife(_player, _wounded_guy)['alignment'] = 'trust'
+		
+		#alife.speech.start_dialog(_wounded_guy, _player['id'], 'incoming_targets', force=True)
+		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets')
+		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 
 def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:

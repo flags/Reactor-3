@@ -1339,8 +1339,6 @@ def perform_action(life):
 				                           return_score_in_range=_return_score_in_range,
 					                       avoid_chunks=_avoid_chunks)
 				
-				if _action['reason'] == 'combat_position':
-					print 'HELLO' * 100
 				#print life['name'], 'DIJKSTRA MAP', _action['reason'], life['pos'], _path
 				
 				if not _path:

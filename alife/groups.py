@@ -554,6 +554,9 @@ def manage_jobs(life, group_id):
 	flag(life, life['group'], 'guard_chunk_keys', _guard_chunk_keys)
 
 def manage_territory(life, group_id):
+	if get_stage(life, group_id) == STAGE_ATTACKING:
+		return False
+	
 	_shelter = get_shelter(life, group_id)
 	
 	if not _shelter:

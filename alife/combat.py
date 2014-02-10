@@ -370,7 +370,7 @@ def ranged_combat(life, targets):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):	
 					lfe.clear_actions(life)
 					
-					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>=2:
 						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
 							lfe.add_action(life,{'action': 'shoot',
 								                 'target': _target['last_seen_at'],
@@ -378,6 +378,8 @@ def ranged_combat(life, targets):
 								                 'limb': 'chest'},
 								                 300,
 								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+					else:
+						print 'TESTING'*15, _target['time_visible']
 				else:
 					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
 					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
@@ -388,7 +390,6 @@ def ranged_combat(life, targets):
 								          'zones': _friendly_zones,
 								          'goals': [_target['life']['pos']],
 								          'avoid_positions': _friendly_positions,
-								          'return_score_in_range': (_engage_distance-3, _engage_distance),
 								          'reason': 'combat_position'},
 								   100)
 			else:
@@ -411,7 +412,6 @@ def ranged_combat(life, targets):
 		                          'zones': _friendly_zones,
 		                          'goals': [_target['life']['pos']],
 		                          'avoid_positions': _friendly_positions,
-		                          'return_score_in_range': (_engage_distance-3, _engage_distance*1.7),
 		                          'reason': 'combat_position',
 		                          'debug': True},
 		                   100)

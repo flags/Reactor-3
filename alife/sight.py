@@ -38,6 +38,9 @@ def look(life):
 	for target_id in life['know']:
 		if life['know'][target_id]['last_seen_time']:
 			life['know'][target_id]['last_seen_time'] += 1
+			life['know'][target_id]['time_visible'] = 0
+		else:
+			life['know'][target_id]['time_visible'] += 0
 	
 	if 'player' in life:
 		if life['path'] or not brain.get_flag(life, 'visible_chunks'):
@@ -204,12 +207,6 @@ def quick_look(life):
 				if not can_see_position(life, LIFE[life_id]['pos']):
 					continue
 				
-				#if not is_in_fov(life, ai['pos']):
-				#	if ai['id'] in life['know']:
-				#		life['know'][ai['id']]['time_visible'] = 0
-				#	
-				#	continue
-				
 				_visibility = get_visiblity_of_position(life, ai['pos'])
 				_stealth_coverage = get_stealth_coverage(ai)
 				
@@ -219,7 +216,6 @@ def quick_look(life):
 				if not ai['id'] in life['know']:
 					brain.meet_alife(life, ai)
 				
-				life['know'][ai['id']]['time_visible'] = 0
 				life['seen'].append(ai['id'])
 				
 				if life['think_rate'] == life['think_rate_max']:

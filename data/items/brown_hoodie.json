@@ -1,0 +1,12 @@
+{"name": "brown hoodie",
+"prefix": "a",
+"type": "clothing",
+"icon": "H",
+"color": [[94, 75, 47], null],
+"description": "A brown pull-over jacket with hood.",
+"attaches_to": "lshoulder|rshoulder|chest|stomach|lupperarm|lelbow|lforearm|rupperarm|relbow|rforearm|head",
+"flags": "CAN_WEAR|CANSTACK|CAN_BURN|CAN_SOAK",
+"craft": [{"name": "Make cloth", "type": "create_item", "requirements": [], "time": 20, "difficulty": {"engineering": 3}, "create_item": {"white cloth": {"failure": {"amount": 2}, "partial_success": {"amount": 6}, "success": {"amount": 8}}}, "strings": {"failure": "You struggle tearing the cloth, destroying it.", "partial_success": "You rip some of the cloth, wasting it.", "success": "You tear the cloth evenly."}}],
+"size": "2x2",
+"thickness": 1,
+"material": "cloth"}
