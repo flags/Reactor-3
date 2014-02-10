@@ -2462,9 +2462,6 @@ def drop_item(life, item_id):
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
 	
-	#for item in get_all_storage(life):
-	#	drop_item(life, item['uid'])
-	
 	for item_uid in get_all_equipped_items(life):
 		drop_item(life, item_uid)
 
