@@ -56,6 +56,8 @@ def bullet_hit(life, bullet, limb):
 		else:
 			_msg = ['The round misses slightly']
 		_detailed = True
+	elif 'player' in life:
+		_msg = ['The round hits']
 	else:
 		_msg = ['%s hits %s\'s %s' % (items.get_name(bullet), life['name'][0], limb)]
 	

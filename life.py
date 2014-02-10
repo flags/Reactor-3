@@ -2462,8 +2462,8 @@ def drop_item(life, item_id):
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
 	
-	for item in get_all_storage(life):
-		drop_item(life, item['uid'])
+	#for item in get_all_storage(life):
+	#	drop_item(life, item['uid'])
 	
 	for item_uid in get_all_equipped_items(life):
 		drop_item(life, item_uid)
@@ -3538,6 +3538,7 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		situations.record_injury(1)
 	
 	if pain:
+		situations.record_injury(1)
 		add_pain_to_limb(life, limb, amount=pain)
 	
 	if force_velocity:

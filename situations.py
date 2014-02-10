@@ -103,7 +103,7 @@ def broadcast(messages, event_time, glitch=False):
 
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
-	_mod = _stats['last_updated']/float(WORLD_INFO['ticks'])
+	_mod = 1-(_stats['last_updated']/float(WORLD_INFO['ticks']))
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['injury']
@@ -118,7 +118,7 @@ def evaluate_overwatch_mood():
 		
 		_stats['mood'] = random.choice(['rest', 'hurt'])
 	elif _stats['mood'] == 'hurt':
-		if _hardship-_success >= 5:
+		if _hardship-_success >= 3:
 			_stats['mood'] = 'rest'
 
 def record_encounter(amount):
@@ -215,6 +215,8 @@ def form_scheme(force=False):
 	
 	_player_situation = get_player_situation()
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
+	
+	print _overwatch_mood
 	
 	if _overwatch_mood == 'rest':
 		return False
