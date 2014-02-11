@@ -101,41 +101,52 @@ def broadcast(messages, event_time, glitch=False):
 		_i += 1
 		_time += int(round(len(entry['text'])*1.25))
 
-def evaluate_overwatch_mood():
+def get_overwatch_hardship():
 	_stats = WORLD_INFO['overwatch']
-	_mod = 1-(_stats['last_updated']/float(WORLD_INFO['ticks']))
+	
+	_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['injury']
 	_hardship += _stats['human_encounters']*2
 	_hardship *= _mod
 	
+	return _hardship
+
+def evaluate_overwatch_mood():
+	_stats = WORLD_INFO['overwatch']
+	_hardship = get_overwatch_hardship()
+	
+	#print _hardship, _mod, _stats['rest_level'], (_stats['last_updated']/float(WORLD_INFO['ticks']))
+	
 	_success = 0
 	
-	if _stats['mood'] == 'rest':
-		if _mod > _stats['rest_level']:
-			return False
-		
-		_stats['mood'] = random.choice(['rest', 'hurt'])
-	elif _stats['mood'] == 'hurt':
-		if _hardship-_success >= 3:
-			_stats['mood'] = 'rest'
+	#if _stats['mood'] == 'rest':
+	#	if _mod > _stats['rest_level']:
+	#		return False
+	#	
+	#	_stats['mood'] = random.choice(['rest', 'hurt'])
+	#elif _stats['mood'] == 'hurt':
+	if _hardship-_success >= 3:
+		_stats['mood'] = 'rest'
+	else:
+		_stats['mood'] = 'hurt'
 
 def record_encounter(amount):
 	WORLD_INFO['overwatch']['human_encounters'] += amount
-	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
 	
 	logging.debug('[Overwatch] encounter (%s)' % amount)
 
 def record_loss(amount):
 	WORLD_INFO['overwatch']['loss_experienced'] += amount
-	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
 	
 	logging.debug('[Overwatch] Loss (%s)' % amount)
 
 def record_injury(amount):
 	WORLD_INFO['overwatch']['injury'] += amount
-	WORLD_INFO['last_updated'] = WORLD_INFO['ticks']
+	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
 	
 	logging.debug('[Overwatch] injury (%s)' % amount)
 
@@ -216,7 +227,7 @@ def form_scheme(force=False):
 	_player_situation = get_player_situation()
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	
-	print _overwatch_mood
+	#print _overwatch_mood
 	
 	if _overwatch_mood == 'rest':
 		return False

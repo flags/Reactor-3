@@ -1745,6 +1745,8 @@ def kill(life, injury):
 		push(life, _walk_direction, 2)
 	
 	#drop_all_items(life)
+	for item_id in get_held_items(life):
+		drop_item(life, item_id)
 	
 	life['dead'] = True
 	life['stance'] = 'crawling'
@@ -2660,12 +2662,8 @@ def draw_life_icon(life):
 		_icon[1] = tcod.white
 		
 		for item in [ITEMS[i] for i in get_all_equipped_items(life)]:
-			print item['name'], item['color'][0]
-			if not item['color'][0] == tcod.white:
-				_icon['color'][1] = tcod.color_lerp(_icon['color'][1], item['color'][0], 0.5)
-				
-			else:
-				print 'DURRRRRRRRR'
+			if not item['color'][0] == tcod.white and item['type'] == 'clothing':
+				_icon[1] = tcod.color_lerp(_icon[1], item['color'][0], 0.2)
 	
 	return _icon
 
@@ -3038,6 +3036,9 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+12+_i,
 	                   'High recoil: '+str(life['recoil']>=2.1))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+13+_i,
+	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], situations.get_overwatch_hardship()))
 	
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:

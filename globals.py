@@ -68,7 +68,7 @@ WORLD_INFO = {'map': [],
                    'injury': 0,
                    'human_encounters': 0,
                    'mood': 'rest',
-                   'rest_level': 0,
+                   'rest_level': .7,
                    'last_updated': 0},
 	'last_scheme_time': 9000}
 
