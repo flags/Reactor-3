@@ -166,14 +166,14 @@ def create_intro_story():
 		for item_name in _spawn_items:
 			lfe.add_item_to_inventory(_player, items.create_item(item_name))
 		
-		_player['pos'] = spawns.get_spawn_in_ref('farms')
+		lfe.set_pos(_player, spawns.get_spawn_in_ref('farms'))
 		
 		#Dead dude
 		_dead_guy = lfe.create_life('human', position=spawns.get_spawn_point_around(_player['pos']))
 		_dead_guy['dead'] = True
 		
 		if _player['pos'] == _dead_guy['pos']:
-			_dead_guy['pos'][1] += 1
+			lfe.set_pos(_dead_guy, [_dead_guy['pos'][0], _dead_guy['pos'][1], _dead_guy['pos'][2]+1])
 		
 		for i in range(random.randint(15, 20)):
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)

@@ -141,7 +141,6 @@ def look(life):
 			elif not ai['asleep']:
 				life['know'][ai['id']]['asleep'] = False
 			
-			life['know'][ai['id']]['time_visible'] += 1
 			life['know'][ai['id']]['last_seen_time'] = 0
 			life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 			life['know'][ai['id']]['escaped'] = False
@@ -188,9 +187,11 @@ def quick_look(life):
 	_x_chunk_max = numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
 	_y_chunk_max = numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
 	
-	#print _x_chunk_min, _x_chunk_max, _y_chunk_min, _y_chunk_max
+	if life['name'][0].startswith('Ven'):
+		print 'derp'
+		print _x_chunk_min, _x_chunk_max, _y_chunk_min, _y_chunk_max
 	
-	for y in range(_x_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
+	for y in range(_y_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
 		for x in range(_x_chunk_min, _x_chunk_max, WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x, y)
 			_chunk = chunks.get_chunk(_chunk_key)
@@ -236,7 +237,6 @@ def quick_look(life):
 				elif not ai['asleep']:
 					life['know'][ai['id']]['asleep'] = False
 				
-				life['know'][ai['id']]['time_visible'] += 1
 				life['know'][ai['id']]['last_seen_time'] = 0
 				life['know'][ai['id']]['last_seen_at'] = ai['pos'][:]
 				life['know'][ai['id']]['escaped'] = False
@@ -290,10 +290,10 @@ def get_vision(life):
 	if not 'CAN_SEE' in life['life_flags']:
 		return 0
 	
-	if 'player' in life:
-		_fov_mod = 1
-	else:
-		_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
+	#if 'player' in life:
+	_fov_mod = 1
+	#else:
+	#	_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
 	
 	_world_light = tcod.white-weather.get_lighting()
 	_light_percentage = numbers.clip(((_world_light.r+_world_light.g+_world_light.b)*.30)/200.0, 0, 1)

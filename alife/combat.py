@@ -19,6 +19,14 @@ import logging
 import random
 
 
+def get_engage_distance(life):
+	_weapons = get_equipped_weapons(life)
+	
+	if _weapons:
+		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*7.5)), 3, sight.get_vision(life))
+	else:
+		return sight.get_vision(life)/2
+
 def weapon_is_working(life, item_uid):
 	_weapon = ITEMS[item_uid]
 	_feed_uid = weapons.get_feed(_weapon)
@@ -344,12 +352,7 @@ def ranged_combat(life, targets):
 		logging.error('No target for ranged combat.')
 		return False
 	
-	_weapons = get_equipped_weapons(life)
-	
-	if _weapons:
-		_engage_distance = numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*7.5)), 3, sight.get_vision(life))
-	else:
-		_engage_distance = 15
+	_engage_distance = get_engage_distance(life)
 	
 	#print _engage_distance
 	
@@ -361,7 +364,7 @@ def ranged_combat(life, targets):
 	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	#Get us near the target
-	if _target['last_seen_at'] and numbers.distance(_path_dest, _target['last_seen_at']) >= numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
+	if _target['last_seen_at'] and numbers.distance(_path_dest, _target['last_seen_at']) >= _engage_distance:#numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
 		movement.position_to_attack(life, _target['life']['id'])
 		
 	elif sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
@@ -378,20 +381,21 @@ def ranged_combat(life, targets):
 								                 'limb': 'chest'},
 								                 300,
 								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
-					else:
-						print 'TESTING'*15, _target['time_visible']
 				else:
 					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
 					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
 					_friendly_positions.append(life['pos'][:])
 					
-					lfe.add_action(life, {'action': 'dijkstra_move',
-								          'rolldown': True,
-								          'zones': _friendly_zones,
-								          'goals': [_target['life']['pos']],
-								          'avoid_positions': _friendly_positions,
-								          'reason': 'combat_position'},
-								   100)
+					if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
+						lfe.add_action(life, {'action': 'dijkstra_move',
+							                    'rolldown': True,
+							                    'zones': _friendly_zones,
+							                    'goals': [_target['life']['pos'][:]],
+							                    'orig_goals': [_target['life']['pos'][:]],
+							                    'avoid_positions': _friendly_positions,
+							                    'reason': 'combat_position'},
+							             100)
+						print '1'
 			else:
 				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 				
@@ -402,19 +406,22 @@ def ranged_combat(life, targets):
 					                   'target_missing',
 					                   target=_target['life']['id'],
 					                   matches=[send_to])
-		else:
-			_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
-			_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
-			_friendly_positions.append(life['pos'][:])
+		#else:
+			#_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
+			#_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
+			#_friendly_positions.append(life['pos'][:])
 			
-			lfe.add_action(life, {'action': 'dijkstra_move',
-		                          'rolldown': False,
-		                          'zones': _friendly_zones,
-		                          'goals': [_target['life']['pos']],
-		                          'avoid_positions': _friendly_positions,
-		                          'reason': 'combat_position',
-		                          'debug': True},
-		                   100)
+			#if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
+			#	lfe.add_action(life, {'action': 'dijkstra_move',
+			#		                'rolldown': True,
+			#		                'zones': _friendly_zones,
+			#		                'goals': [_target['life']['pos'][:]],
+			#		                'orig_goals': [_target['life']['pos'][:]],
+			#		                'avoid_positions': _friendly_positions,
+			#		                'reason': 'combat_position'},
+			#		         100)
+			#	
+			#	print '2'
 		
 	else:
 		return False

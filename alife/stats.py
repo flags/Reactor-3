@@ -415,6 +415,17 @@ def is_threat_too_close(life):
 	
 	return False
 
+def has_threat_in_combat_range(life):
+	_engage_distance = combat.get_engage_distance(life)
+	
+	for target_id in judgement.get_threats(life):
+		_target = brain.knows_alife_by_id(life, target_id)
+		
+		if numbers.distance(life['pos'], _target['last_seen_at']) <= _engage_distance:
+			return True
+	
+	return False
+
 def is_same_species(life, life_id):
 	if life['species'] == LIFE[life_id]['species']:
 		return True

@@ -599,7 +599,7 @@ def change_goal(life, goal, tier, plan):
 def set_pos(life, pos):
 	maps.leave_chunk(get_current_chunk_id(life), life['id'])
 	
-	life['pos'] = pos[:]
+	life['pos'] = list(pos[:])
 	
 	maps.enter_chunk(get_current_chunk_id(life), life['id'])
 
