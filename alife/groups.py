@@ -580,7 +580,7 @@ def manage_territory(life, group_id):
 	for seen_life_id in life['seen']:
 		_target = brain.knows_alife_by_id(life, seen_life_id)
 		
-		if not _target or _target['alignment'] == 'trust' or not _target['last_seen_at'] or _target['dead']:
+		if not _target or _target['alignment'] in ['trust', 'hostile'] or not _target['last_seen_at'] or _target['dead']:
 			continue
 		
 		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:

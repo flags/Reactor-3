@@ -241,6 +241,9 @@ def escape(life, targets):
 			_can_see_positions.remove(pos)
 	
 	if not _can_see_positions:
+		if life['pos'] in _cover_exposed_at:
+			_cover_exposed_at.remove(life['pos'])
+		
 		return False
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
