@@ -187,10 +187,6 @@ def quick_look(life):
 	_x_chunk_max = numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
 	_y_chunk_max = numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
 	
-	if life['name'][0].startswith('Ven'):
-		print 'derp'
-		print _x_chunk_min, _x_chunk_max, _y_chunk_min, _y_chunk_max
-	
 	for y in range(_y_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
 		for x in range(_x_chunk_min, _x_chunk_max, WORLD_INFO['chunk_size']):
 			_chunk_key = '%s,%s' % (x, y)

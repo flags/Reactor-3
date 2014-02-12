@@ -3039,7 +3039,9 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+13+_i,
 	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], situations.get_overwatch_hardship()))
-	
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+14+_i,
+	                   'Threat in range: '+str(alife.stats.has_threat_in_combat_range(life)))
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']

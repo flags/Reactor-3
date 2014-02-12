@@ -373,12 +373,19 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
-		
 		if _knows['last_seen_time']:
-			_friendly_confidence += _recent_mod
+			if brain.get_alife_flag(life, target_id, 'threat_score'):
+				_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
+				_score = brain.get_alife_flag(life, target_id, 'threat_score')
+				_friendly_confidence += _score*_recent_mod
+			else:
+				_friendly_confidence += 1
 		else:
-			_friendly_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
+			_score = judgement.get_ranged_combat_rating_of_target(life, target_id)
+			
+			brain.flag_alife(life, target_id, 'threat_score', value=_score)
+			
+			_friendly_confidence += _score
 	
 	for target_id in judgement.get_threats(life, ignore_escaped=False):
 		_knows = brain.knows_alife_by_id(life, target_id)
@@ -386,12 +393,23 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
-		
 		if _knows['last_seen_time']:
-			_threat_confidence += _recent_mod
+			if brain.get_alife_flag(life, target_id, 'threat_score'):
+				if _knows['last_seen_time']>50:
+					_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 600)/600.0)
+				else:
+					_recent_mod = 1
+				
+				_score = brain.get_alife_flag(life, target_id, 'threat_score')
+				_threat_confidence += _score*_recent_mod
+			else:
+				_threat_confidence += 1
 		else:
-			_threat_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
+			_score = judgement.get_ranged_combat_rating_of_target(life, target_id)
+			
+			brain.flag_alife(life, target_id, 'threat_score', value=_score)
+			
+			_threat_confidence += _score
 	
 	return _friendly_confidence > _threat_confidence
 

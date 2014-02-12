@@ -158,7 +158,7 @@ def create_intro_story():
 		#broadcast([{'text': 'You wake up from a deep sleep.'},
 		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
-		_spawn_items = ['leather backpack', 'glock', '9x19mm magazine']
+		_spawn_items = []
 		
 		for i in range(14):
 			_spawn_items.append('9x19mm round')
@@ -180,10 +180,10 @@ def create_intro_story():
 		
 		#Group nearby
 		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
-		_bandit_group = spawns.generate_group('bandit', amount=3, spawn_chunks=[_bandit_group_spawn_chunk])
+		_bandit_group = spawns.generate_group('bandit', amount=2, spawn_chunks=[_bandit_group_spawn_chunk])
 		
 		_friendly_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=20))
-		_friendly_group = spawns.generate_group('loner', amount=1, spawn_chunks=[_friendly_group_spawn_chunk])
+		_friendly_group = spawns.generate_group('loner_riflemen', amount=2, spawn_chunks=[_friendly_group_spawn_chunk])
 		
 		for ai in _bandit_group:
 			_target = alife.brain.meet_alife(ai, _player)

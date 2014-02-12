@@ -57,6 +57,9 @@ def get_flag(life, group_id, flag):
 	
 	return get_group(life, group_id)['flags'][flag]
 
+def has_flag(life, group_id, flag):
+	return flag in get_group(life, group_id)['flags']
+
 def discover_group(life, group_id):
 	if not group_id in life['known_groups']:
 		life['known_groups'][group_id] = {'id': group_id,
@@ -604,6 +607,14 @@ def manage_raid(life, group_id):
 	print 'RAID LOCATION SET' * 100
 
 def manage_combat(life, group_id):
+	if has_flag(life, group_id, 'confident'):
+		_was_confident = get_flag(life, group_id, 'confident')
+		
+		if _was_confident == stats.is_confident(life) and not lfe.ticker(life, 'decision_wait', 16):
+			return False
+	
+	flag(life, group_id, 'confident', stats.is_confident(life))
+	
 	_existing_friendlies = get_flag(life, group_id, 'friendlies')
 	_existing_targets = get_flag(life, group_id, 'targets')
 	_last_focal_point = get_flag(life, group_id, 'last_focal_point')

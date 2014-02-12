@@ -179,12 +179,10 @@ def escape(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	#if not alife.judgement.get_visible_threats(life):
-	#	return False
-	
-	#print life['name'], 'not saving time', alife.judgement.get_visible_threats(life)
+	print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
+		print life['name'], 'walking'
 		if not lfe.ticker(life, 'escaping', 64):
 			return False
 	
@@ -249,13 +247,16 @@ def escape(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
 		return True
 	
-	lfe.stop(life)
+	print life['path']
+	#lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
 	                      'rolldown': True,
 	                      'zones': _zones,
 	                      'goals': _can_see_positions[:],
 	                      'reason': 'escaping'},
-	               999)
+	               200)
+	
+	print life['name'], 'here', tuple(life['pos'][:2]) in _can_see_positions
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
