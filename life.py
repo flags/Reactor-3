@@ -1024,7 +1024,7 @@ def push(life, direction, speed, friction=0.05, _velocity=0):
 	life['friction'] = friction
 	life['velocity'] = velocity
 	life['realpos'] = life['pos'][:]
-	life['path'] = []
+	stop(life)
 	
 	logging.debug('%s flies off in an arc! (%s)' % (' '.join(life['name']), life['velocity']))
 
@@ -1065,6 +1065,7 @@ def calculate_velocity(life):
 
 def walk_to(life, position):
 	clear_actions(life)
+	
 	add_action(life,{'action': 'move',
           'to': position},
           100)
@@ -3042,6 +3043,9 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+14+_i,
 	                   'Threat in range: '+str(alife.stats.has_threat_in_combat_range(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+15+_i,
+	                   'Blood: %0.1f' % life['blood'])
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
@@ -3245,7 +3249,6 @@ def get_health_status(life):
 	
 	return 'Fine'
 
-
 def calculate_blood(life):
 	_blood = 0
 	
@@ -3253,13 +3256,17 @@ def calculate_blood(life):
 		return 0
 	
 	for limb in life['body'].values():
-		if limb['bleeding']>0:
-			#print limb_is_cut
-			limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
-			limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
-			_blood += limb['bleeding']
+		if not limb['bleeding']:
+			continue
+		
+		limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
+		limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
+		_blood += limb['bleeding']
 	
-	life['blood'] -= _blood*LIFE_BLEED_RATE
+	if _blood:
+		life['blood'] -= _blood*LIFE_BLEED_RATE
+	else:
+		life['blood'] += 0.005
 	
 	if not life['asleep'] and _blood*LIFE_BLEED_RATE>=1.2:
 		pass_out(life)

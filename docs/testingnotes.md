@@ -54,3 +54,8 @@ Content:
 
 Do not clear orders until group leader allows it
 	i.e., when the AI hits a guard point it should not be cleared (they should wait there)
+
+
+"Are you armed?"
+"Negative"
+"Stay behind us, then!"

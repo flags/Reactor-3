@@ -258,6 +258,7 @@ def process_events():
 
 def matches(dict1, dict2):
 	_break = False
+	
 	for key in dict2:
 		if not key in dict1 or not dict1[key] == dict2[key]:
 			return False

@@ -72,6 +72,8 @@ def position_to_attack(life, target):
 
 def travel_to_position(life, pos, stop_on_sight=False):
 	if stop_on_sight and sight.can_see_position(life, pos, get_path=True):
+		lfe.stop(life)
+		
 		return True
 	
 	if not numbers.distance(life['pos'], pos):
@@ -131,7 +133,6 @@ def search_for_target(life, target_id):
 		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 		
-		lfe.stop(life)
 		lfe.walk_to(life, _know['last_seen_at'][:2])
 		
 		brain.flag(life, 'search_time', 12)
@@ -167,7 +168,7 @@ def search_for_target(life, target_id):
 	if _lowest['pos']:
 		x, y, _x, _y = _lowest['pos']
 		
-		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=False):
 			_search_map[_y, _x] = 0
 		
 		brain.flag(life, 'search_time', numbers.distance(life['pos'], (x, y))*.75)
@@ -179,7 +180,7 @@ def escape(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
+	#print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
 		print life['name'], 'walking'
@@ -217,6 +218,10 @@ def escape(life, targets):
 		for pos in _avoid_exposed_cover_positions:
 			if not pos in _avoid_positions:
 				_avoid_positions.append(pos)
+	else:
+		print 'Something went wrong'
+		
+		return False
 	
 	#Overlay the two, finding positions we can see but the target can't
 	for pos in _can_see_positions[:]:
