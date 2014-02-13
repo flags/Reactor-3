@@ -181,9 +181,9 @@ def escape(life, targets):
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
 	#print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
+	print life['name'], life['path']
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
-		print life['name'], 'walking'
 		if not lfe.ticker(life, 'escaping', 64):
 			return False
 	
@@ -200,6 +200,8 @@ def escape(life, targets):
 	#What can we see?
 	_can_see_positions = []
 	fov.fov(life['pos'], sight.get_vision(life), callback=lambda pos: _can_see_positions.append(pos))
+	
+	print _avoid_positions[0], _can_see_positions[0]
 	
 	#If there are no visible targets, we could be running away from a position we were attacked from
 	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
@@ -218,10 +220,6 @@ def escape(life, targets):
 		for pos in _avoid_exposed_cover_positions:
 			if not pos in _avoid_positions:
 				_avoid_positions.append(pos)
-	else:
-		print 'Something went wrong'
-		
-		return False
 	
 	#Overlay the two, finding positions we can see but the target can't
 	for pos in _can_see_positions[:]:
@@ -243,7 +241,7 @@ def escape(life, targets):
 		if chunks.get_chunk(chunks.get_chunk_key_at(pos))['max_z'] == 2:
 			_can_see_positions.remove(pos)
 	
-	if not _can_see_positions:
+	if not _can_see_positions and _cover_exposed_at:
 		if life['pos'] in _cover_exposed_at:
 			_cover_exposed_at.remove(life['pos'])
 		
@@ -252,7 +250,6 @@ def escape(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
 		return True
 	
-	print life['path']
 	#lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
 	                      'rolldown': True,
@@ -260,8 +257,6 @@ def escape(life, targets):
 	                      'goals': _can_see_positions[:],
 	                      'reason': 'escaping'},
 	               200)
-	
-	print life['name'], 'here', tuple(life['pos'][:2]) in _can_see_positions
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}

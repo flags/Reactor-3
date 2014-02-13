@@ -54,6 +54,7 @@ def get_player_situation():
 	_situation = {}
 	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
 	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
+	_situation['group'] = _life['group']
 	
 	return _situation
 
@@ -224,15 +225,15 @@ def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:
 		return False
 	
-	_player_situation = get_player_situation()
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
-	
-	#print _overwatch_mood
 	
 	if _overwatch_mood == 'rest':
 		return False
 	
-	#if _overwatch_mood == 'hurt':
+	_player_situation = get_player_situation()
+	
+	if _overwatch_mood == 'hurt':
+		return hurt_player(_player_situation)
 	
 	
 	#if _player_situation['armed']:
@@ -326,3 +327,7 @@ def execute_scheme():
 				alife.groups.raid(LIFE[_event['member']], _event['group'], _event['flags']['chunk_key'])
 	
 	WORLD_INFO['scheme'].remove(_event)
+
+def hurt_player(situation):
+	print situation
+	
