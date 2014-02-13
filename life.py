@@ -3046,6 +3046,9 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+15+_i,
 	                   'Blood: %0.1f' % life['blood'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+16+_i,
+	                   'Path length: %s' % len(life['path']))
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']

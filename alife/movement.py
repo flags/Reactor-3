@@ -175,16 +175,13 @@ def search_for_target(life, target_id):
 	else:
 		_know['escaped'] = 2
 
-def escape(life, targets):
-	_target_positions = []
+def hide(life, targets):
 	_avoid_positions = []
+	_can_see_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	#print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
-	print life['name'], life['path']
-	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
-		if not lfe.ticker(life, 'escaping', 64):
+	if life['path']:
+		if not lfe.ticker(life, 'escaping', 20):
 			return False
 	
 	#What can the targets see?
@@ -198,10 +195,7 @@ def escape(life, targets):
 		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), callback=lambda pos: _avoid_positions.append(pos))
 	
 	#What can we see?
-	_can_see_positions = []
 	fov.fov(life['pos'], sight.get_vision(life), callback=lambda pos: _can_see_positions.append(pos))
-	
-	print _avoid_positions[0], _can_see_positions[0]
 	
 	#If there are no visible targets, we could be running away from a position we were attacked from
 	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
@@ -225,6 +219,7 @@ def escape(life, targets):
 	for pos in _can_see_positions[:]:
 		if pos in _avoid_positions:
 			_can_see_positions.remove(pos)
+			
 			continue
 	
 		#Get rid of positions that are too close
@@ -234,6 +229,7 @@ def escape(life, targets):
 			#TODO: Unhardcode 15
 			if numbers.distance(_target['last_seen_at'], pos)<10:
 				_can_see_positions.remove(pos)
+				
 				break
 	
 	#Now scan for cover to prevent hiding in the open
@@ -246,17 +242,41 @@ def escape(life, targets):
 			_cover_exposed_at.remove(life['pos'])
 		
 		return False
+
+	_target_positions = []
+	_closest = 100
+	for target_id in targets:
+		_target = brain.knows_alife_by_id(life, target_id)
+		
+		_target_positions.append(tuple(_target['last_seen_at'][:2]))
+		
+		_distance = numbers.distance(life['pos'], _target['last_seen_at'])
+		
+		if _distance < _closest:
+			_closest = _distance
+
+	if not _can_see_positions:
+		print life['name'], 'No good positions'
+		
+		return False
+
+	#Restore the old way of doing this!
+
+	_best_position = {'pos': None, 'distance': _closest}
+	for pos in zones.dijkstra_map(life['pos'], _can_see_positions, _zones, return_score_in_range=(5, 8)):
+		for target_position in _target_positions:
+			_distance = numbers.distance(pos, target_position)
+			
+			if _distance>_best_position['distance']:
+				_best_position['distance'] = _distance
+				_best_position['pos'] = pos[:]
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
-		return True
+	if not _best_position['pos']:
+		print life['name'], 'No good place to move'
+		
+		return False
 	
-	#lfe.stop(life)
-	lfe.add_action(life, {'action': 'dijkstra_move',
-	                      'rolldown': True,
-	                      'zones': _zones,
-	                      'goals': _can_see_positions[:],
-	                      'reason': 'escaping'},
-	               200)
+	travel_to_position(life, _best_position['pos'])
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
