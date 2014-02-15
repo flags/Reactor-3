@@ -175,6 +175,32 @@ def search_for_target(life, target_id):
 	else:
 		_know['escaped'] = 2
 
+def escape(life, targets):
+	_avoid_positions = []
+	_zones = [zones.get_zone_at_coords(life['pos'])]
+	
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escape'}]):
+		if lfe.ticker(life, 'escape_refresh', 16):
+			lfe.stop(life)
+		else:
+			return False
+	
+	for target_id in targets:
+		_target = brain.knows_alife_by_id(life, target_id)
+		_zone = zones.get_zone_at_coords(_target['last_seen_at'])
+		
+		if not _zone in _zones:
+			_zones.append(_zone)
+		
+		_avoid_positions.append(_target['last_seen_at'])
+	
+	lfe.add_action(life, {'action': 'dijkstra_move',
+	                      'rolldown': False,
+	                      'zones': _zones,
+	                      'goals': _avoid_positions,
+	                      'reason': 'escape'},
+	               100)
+
 def hide(life, targets):
 	_avoid_positions = []
 	_can_see_positions = []

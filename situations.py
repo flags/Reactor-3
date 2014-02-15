@@ -155,6 +155,8 @@ def create_intro_story():
 	_i = 1#random.randint(0, 2)
 	_player = LIFE[SETTINGS['controlling']]
 	
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+	
 	if _i == 1:
 		#broadcast([{'text': 'You wake up from a deep sleep.'},
 		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
@@ -191,8 +193,8 @@ def create_intro_story():
 			_target['last_seen_time'] = 1
 			_target['escaped'] = 1
 			_target['last_seen_at'] = _player['pos'][:]
-			alife.stats.establish_hostile(ai, _player['id'])
 			
+			alife.stats.establish_hostile(ai, _player['id'])
 			alife.stats.establish_hostile(_player, ai['id'])
 			
 			for target in _friendly_group:
@@ -222,10 +224,13 @@ def create_intro_story():
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 
 def form_scheme(force=False):
-	if (WORLD_INFO['scheme'] or (WORLD_INFO['last_scheme_time']-WORLD_INFO['ticks'])<400) and not force:
+	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<400) and not force:
+		print 'no', WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time']
 		return False
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
+	
+	print _overwatch_mood
 	
 	if _overwatch_mood == 'rest':
 		return False
@@ -329,5 +334,57 @@ def execute_scheme():
 	WORLD_INFO['scheme'].remove(_event)
 
 def hurt_player(situation):
-	print situation
+	print situation['group']
+	if not SETTINGS['controlling']:
+		return False
 	
+	_player = LIFE[SETTINGS['controlling']]
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+	
+	print '&&&&&' * 10
+	print 'HURT'
+	print '&&&&&' * 10
+	
+	if situation['group']:
+		if situation['armed']:
+			_bandit_group_leader = get_group_leader_with_motive('crime', online=True)
+			_military_group_leader = get_group_leader_with_motive('military', online=False)
+			
+			if not _military_group_leader:
+				_military_group_leader = spawns.generate_group('soldier', amount=3, spawn_chunks=[spawns.get_spawn_in_ref('outposts', chunk_key=True)])[0]
+			
+			if not _bandit_group_leader:
+				_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_military_group_leader['pos'], area=80, min_area=40))
+				_bandit_group_leader = spawns.generate_group('bandit', amount=5, spawn_chunks=[_chunk_key])[0]
+			
+			_bandit_group_location = lfe.get_current_chunk_id(_bandit_group_leader)
+			_military_group_location = lfe.get_current_chunk_id(_military_group_leader)
+			order_group(_bandit_group_leader, _bandit_group_leader['group'], STAGE_RAIDING, 500, chunk_key=_military_group_location)
+			alife.groups.discover_group(_bandit_group_leader, _military_group_leader['group'])
+			alife.groups.declare_group_hostile(_bandit_group_leader, _bandit_group_leader['group'], _military_group_leader['group'])
+
+			_real_direction = language.get_real_direction(numbers.direction_to((MAP_SIZE[0]/2, MAP_SIZE[1]/2), alife.chunks.get_chunk(_military_group_location)['pos']))
+		
+			_messages = [{'text': 'Attention all neutral and bandit squads.'},
+		                 {'text': 'We finally got solid contact on military in the %s compound.' % _real_direction},
+		                 {'text': 'We\'re located near coords %s and heading out soon.' % (', '.join(_bandit_group_location.split(',')))}]
+			broadcast(_messages, 40)
+			
+			print situation['group']
+			_player_group_leader = LIFE[alife.groups.get_leader(_player, situation['group'])]
+			
+			for friendly_member in alife.groups.get_group(_player_group_leader, situation['group'])['members']:
+				for hostile_member in alife.groups.get_group(_military_group_leader, _military_group_leader['group'])['members']:
+					_target = alife.brain.meet_alife(LIFE[friendly_member], LIFE[hostile_member])
+					_target['last_seen_time'] = 1
+					_target['escaped'] = 1
+					_target['last_seen_at'] = LIFE[hostile_member]['pos'][:]
+					alife.stats.establish_hostile(LIFE[friendly_member], hostile_member)
+			
+			for hostile_member in alife.groups.get_group(_military_group_leader, _military_group_leader['group'])['members']:		
+				for friendly_member in alife.groups.get_group(_player_group_leader, situation['group'])['members']:
+					_target = alife.brain.meet_alife(LIFE[hostile_member], LIFE[friendly_member])
+					_target['last_seen_time'] = 1
+					_target['escaped'] = 1
+					_target['last_seen_at'] = LIFE[friendly_member]['pos'][:]
+					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)

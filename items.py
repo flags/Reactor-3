@@ -308,15 +308,19 @@ def get_items_at(position, check_bodies=False):
 		if tuple(item['pos']) == tuple(position):
 			_items.append(item)
 	
+	#TODO: This is awful
 	if check_bodies:
-		for life_id in alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))['life']:
-			if not LIFE[life_id]['dead']:
+		#for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
+		#	__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
+		#	_items.extend(items.get_items_at(__pos))
+			
+		#Sue me again.
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
-			if not tuple(position[:2]) == tuple(LIFE[life_id]['pos'][:2]):
-				continue
-			
-			_items.extend([ITEMS[i] for i in life.get_all_equipped_items(LIFE[life_id])])
+			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
+				_items.append(ITEMS[item_uid])
 	
 	return _items
 

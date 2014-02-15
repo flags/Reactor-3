@@ -5,12 +5,12 @@ import life as lfe
 import alife_manage_items
 import alife_discover
 import alife_shelter
+import alife_escape
 import alife_search
 import alife_combat
 import alife_follow
 import alife_cover
 import alife_needs
-import alife_hide
 
 import references
 import judgement
@@ -205,7 +205,7 @@ def create_function_map():
 		'melee_ready': lambda life: lfe.execute_raw(life, 'combat', 'melee_ready'),
 		'melee_attack': lambda life: alife_combat.melee_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),
-		'hide': lambda life: alife_hide.tick(life),
+		'hide': lambda life: alife_escape.tick(life),
 		'search_for_threat': lambda life: alife_search.tick(life),
 		'has_low_recoil': lambda life: life['recoil']>=.5,
 		'has_medium_recoil': lambda life: life['recoil']>=1.5,

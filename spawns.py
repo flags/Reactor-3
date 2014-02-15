@@ -145,8 +145,12 @@ def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[
 	
 	return _group_members
 
-def get_spawn_in_ref(ref_type):
+def get_spawn_in_ref(ref_type, chunk_key=False):
 	_chunk_key = random.choice(random.choice(WORLD_INFO['refs'][ref_type]))
+	
+	if chunk_key:
+		return _chunk_key
+	
 	_pos = random.choice(WORLD_INFO['chunk_map'][_chunk_key]['ground'])
 	
 	return [_pos[0], _pos[1], 2]
