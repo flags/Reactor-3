@@ -70,7 +70,7 @@ def position_to_attack(life, target):
 	
 	return True
 
-def travel_to_position(life, pos, stop_on_sight=False):
+def travel_to_position(life, pos, stop_on_sight=False, force=False):
 	if stop_on_sight and sight.can_see_position(life, pos, get_path=True):
 		lfe.stop(life)
 		
@@ -80,7 +80,7 @@ def travel_to_position(life, pos, stop_on_sight=False):
 		return True
 	
 	_dest = lfe.path_dest(life)
-	if _dest and tuple(_dest[:2]) == tuple(pos[:2]):
+	if not force and _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
 	lfe.walk_to(life, pos[:2])
@@ -120,10 +120,17 @@ def search_for_target(life, target_id):
 	_know = brain.knows_alife_by_id(life, target_id)
 	_size = 30
 	_timer = brain.get_flag(life, 'search_time')
+	_chunk_path = alife.brain.get_flag(life, 'chunk_path')
 	
-	if _timer>0 or life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
-		if _timer>0 and not (life['path'] or lfe.find_action(life, matches=[{'action': 'move'}])):
-			brain.flag(life, 'search_time', _timer-1)
+	if _chunk_path:
+		travel_to_position(life, _chunk_path['end'], force=True)
+		
+		return False
+	
+	print life['name'], 'yeah', _chunk_path
+	
+	if _timer>0:
+		brain.flag(life, 'search_time', _timer-1)
 		
 		return False
 	
@@ -171,7 +178,7 @@ def search_for_target(life, target_id):
 		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=False):
 			_search_map[_y, _x] = 0
 		
-		brain.flag(life, 'search_time', numbers.distance(life['pos'], (x, y))*.75)
+		brain.flag(life, 'search_time', numbers.clip(numbers.distance(life['pos'], (x, y))*.75, 5, 16))
 	else:
 		_know['escaped'] = 2
 

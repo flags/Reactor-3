@@ -159,7 +159,7 @@ def get_spawn_point_around(pos, area=5, min_area=0):
 	_positions = []
 	
 	for next_pos in drawing.draw_circle(pos, area):
-		if numbers.distance(pos, next_pos) < min_area:
+		if numbers.distance(pos, next_pos, old=True) < min_area:
 			continue
 		
 		if next_pos[0]>=MAP_SIZE[0]-1 or next_pos[1]>=MAP_SIZE[1]-1 or next_pos[0]<0 or next_pos[1]<0:

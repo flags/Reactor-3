@@ -334,16 +334,11 @@ def execute_scheme():
 	WORLD_INFO['scheme'].remove(_event)
 
 def hurt_player(situation):
-	print situation['group']
 	if not SETTINGS['controlling']:
 		return False
 	
 	_player = LIFE[SETTINGS['controlling']]
 	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
-	
-	print '&&&&&' * 10
-	print 'HURT'
-	print '&&&&&' * 10
 	
 	if situation['group']:
 		if situation['armed']:
@@ -354,7 +349,7 @@ def hurt_player(situation):
 				_military_group_leader = spawns.generate_group('soldier', amount=3, spawn_chunks=[spawns.get_spawn_in_ref('outposts', chunk_key=True)])[0]
 			
 			if not _bandit_group_leader:
-				_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_military_group_leader['pos'], area=80, min_area=40))
+				_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_military_group_leader['pos'], area=150, min_area=100))
 				_bandit_group_leader = spawns.generate_group('bandit', amount=5, spawn_chunks=[_chunk_key])[0]
 			
 			_bandit_group_location = lfe.get_current_chunk_id(_bandit_group_leader)
@@ -369,8 +364,8 @@ def hurt_player(situation):
 		                 {'text': 'We finally got solid contact on military in the %s compound.' % _real_direction},
 		                 {'text': 'We\'re located near coords %s and heading out soon.' % (', '.join(_bandit_group_location.split(',')))}]
 			broadcast(_messages, 40)
+			record_encounter(len(alife.groups.get_group(_military_group_leader, _military_group_leader['group'])['members']))
 			
-			print situation['group']
 			_player_group_leader = LIFE[alife.groups.get_leader(_player, situation['group'])]
 			
 			for friendly_member in alife.groups.get_group(_player_group_leader, situation['group'])['members']:
