@@ -182,7 +182,7 @@ def create_intro_story():
 			effects.create_splatter('blood', spawns.get_spawn_point_around(_dead_guy['pos'], area=2), intensity=8)
 		
 		#Group nearby
-		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=30, area=60))
+		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=60, area=90))
 		_bandit_group = spawns.generate_group('bandit', amount=2, spawn_chunks=[_bandit_group_spawn_chunk])
 		
 		_friendly_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=20))

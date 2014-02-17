@@ -160,7 +160,7 @@ def fire(life, target, limb=None):
 	_bullet['shot_by'] = life['id']
 	_bullet['aim_at_limb'] = limb
 	
-	life['recoil'] += _bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life))
+	life['recoil'] = numbers.clip(life['recoil']+_bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life)), 0, 5)
 	
 	items.add_to_chunk(_bullet)
 	
