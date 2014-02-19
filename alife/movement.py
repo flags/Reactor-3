@@ -34,41 +34,38 @@ def position_to_attack(life, target, engage_distance):
 	if _can_see and len(_can_see)>engage_distance:
 		print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
 		
-		if sight.view_blocked_by_life(life, _target_positions[0], allow=[target]):
-			print 'fcuk'
-		else:
-			_avoid_positions = []
-			for life_id in life['seen']:
-				if life_id == target or life['id'] == life_id:
-					continue
-				
-				if alife.judgement.can_trust(life, life_id):
-					_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
-				else:
-					_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
+		_avoid_positions = []
+		for life_id in life['seen']:
+			if life_id == target or life['id'] == life_id:
+				continue
 			
-			_cover = _target_positions
-			
-			_zones = []
-			for pos in _cover:
-				_zone = zones.get_zone_at_coords(pos)
-				
-				if not _zone in _zones:
-					_zones.append(_zone)
-			
-			if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:], 'avoid_positions': _avoid_positions}]):
-				lfe.stop(life)
-				lfe.add_action(life, {'action': 'dijkstra_move',
-					                  'rolldown': True,
-					                  'goals': _cover[:],
-					                  'orig_goals': _cover[:],
-					                  'avoid_positions': _avoid_positions,
-					                  'reason': 'positioning for attack'},
-					           999)
-				
-				return False
+			if alife.judgement.can_trust(life, life_id):
+				_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
 			else:
-				return False
+				_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
+		
+		_cover = _target_positions
+		
+		_zones = []
+		for pos in _cover:
+			_zone = zones.get_zone_at_coords(pos)
+			
+			if not _zone in _zones:
+				_zones.append(_zone)
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:], 'avoid_positions': _avoid_positions}]):
+			lfe.stop(life)
+			lfe.add_action(life, {'action': 'dijkstra_move',
+		                          'rolldown': True,
+		                          'goals': _cover[:],
+		                          'orig_goals': _cover[:],
+		                          'avoid_positions': _avoid_positions,
+		                          'reason': 'positioning for attack'},
+		                   999)
+			
+			return False
+		else:
+			return False
 	elif life['path']:
 		lfe.stop(life)
 	else:
