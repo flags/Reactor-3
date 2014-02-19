@@ -10,7 +10,7 @@ stance_mod = 1.0
 aim_difficulty = 1.8
 firearms_skill_mod = 0.55
 hit_certainty_mod = 0.6
-bullets = 5
+bullets = 10
 simulaton_ticks = 8
 
 def load_weapon(weapon_file):
@@ -51,9 +51,9 @@ def simulate(firearms_skill, recoil=0.0):
 		deviation = (bullet_deviation*aim_difficulty)*deviation_mod
 		bullet_direction = random.uniform(-deviation, deviation)
 		
-		######################
-		## THIS DOES RECOIL ##
-		######################
+		########################
+		## ENABLE FOR RELEASE ##
+		########################
 		#recoil = clip(recoil+(_weapon['recoil']*stance_mod), 0.0, 1.0)
 		
 		_end_pos = bullet_trajectory(bullet_pos, bullet_direction)
@@ -71,18 +71,21 @@ def simulate(firearms_skill, recoil=0.0):
 	#print
 	#print 'dir', bullet_direction, 'dev', bullet_deviation, 'rec', recoil
 	
-	return _hits/float(bullets)
+	return _hits/float(bullets), _deviations
 
-_path = 'C:\\cygwin\\home\\Luke\\code\\Reactor-3\\data\\items\\22_rifle.json'
+_path = '/home/luke/code/Reactor-3/data/items/glock.json'
 load_weapon(_path)
 
-#_accuracies = []
+_accuracies = []
 	
 for i in range(1, 10+1):
 	print 'Skill: %s\t' % i
 	
 	for r in range(0, 5):
 		recoil = r/5.0
-		_accuracies = simulate(i, recoil=recoil)
+		_accuracy, _deviations = simulate(i, recoil=recoil)
+		_accuracies.append(_accuracy)
 	
-		print '\tAccuracy=%0.4f, recoil=%0.4f' % (_accuracies, recoil)
+		print '\trecoil=%0.4f, accuracy=%0.4f, avg. deviation=%0.4f' % (recoil, _accuracy, sum(_deviations)/float(len(_deviations)))
+
+print _weapon['name'], 'accuracy:', sum(_accuracies)/float(len(_accuracies))
