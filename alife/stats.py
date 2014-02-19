@@ -196,7 +196,7 @@ def get_firearm_accuracy(life):
 	return numbers.clip((life['stats']['firearms'])/10.0, 0.35, 1)
 
 def get_recoil_recovery_rate(life):
-	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.4
+	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.2
 
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
@@ -364,7 +364,7 @@ def is_confident(life):
 	if 'player' in life:
 		return False
 	
-	_friendly_confidence = 0
+	_friendly_confidence = judgement.get_ranged_combat_rating_of_target(life, life['id'])
 	_threat_confidence = 0
 	
 	for target_id in judgement.get_trusted(life, visible=False):
@@ -373,7 +373,7 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		if _knows['last_seen_time']:
+		if _knows['last_seen_time']>30:
 			if brain.get_alife_flag(life, target_id, 'threat_score'):
 				_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
 				_score = brain.get_alife_flag(life, target_id, 'threat_score')
@@ -405,7 +405,7 @@ def is_confident(life):
 			else:
 				_threat_confidence += 1
 		else:
-			_score = judgement.get_ranged_combat_rating_of_target(life, target_id)
+			_score = judgement.get_ranged_combat_rating_of_target(life, target_id, inventory_check=False)
 			
 			brain.flag_alife(life, target_id, 'threat_score', value=_score)
 			

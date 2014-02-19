@@ -388,6 +388,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['seen'] = []
 	_life['seen_items'] = []
 	_life['state'] = 'idle'
+	_life['state_action'] = ''
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
 	_life['states'] = []
@@ -404,7 +405,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
-	_life['recoil'] = 0
+	_life['recoil'] = 0.0
 	_life['stance'] = 'standing'
 	_life['stances'] = {'tackle': 7,
 	                    'leap': 6,
@@ -1090,8 +1091,8 @@ def walk(life, to=None, path=None):
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 		
-		if life['recoil'] < get_max_speed(life)*(weapons.get_stance_recoil_mod(life)*.25):
-			life['recoil'] = get_max_speed(life)*(weapons.get_stance_recoil_mod(life)*.25)
+		if life['recoil']<.5:
+			life['recoil'] = .5
 	
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
@@ -1812,7 +1813,7 @@ def tick(life):
 		if not thirst(life):
 			return False
 	
-	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0, 10)
+	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0.0, 1.0)
 	
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
@@ -3038,7 +3039,7 @@ def draw_life_info():
 	                   'Think rate: '+str(life['think_rate']))
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+12+_i,
-	                   'High recoil: '+str(life['recoil']>=2.1))
+	                   'High recoil: '+str(life['recoil']>=.75))
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+13+_i,
 	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], situations.get_overwatch_hardship()))

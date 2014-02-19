@@ -197,7 +197,9 @@ SETTINGS = {'running': True,
 	'glitch_text': '',
 	'glitch_text_fade': False,
 	'glitch_text_time': 0,
-	'glitch_text_time_max': 0}
+	'glitch_text_time_max': 0,
+	'aim_difficulty': 1.8,
+	'firearms_skill_mod': 0.55}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']

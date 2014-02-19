@@ -55,11 +55,11 @@ def change_fire_mode(weapon, mode):
 
 def get_stance_recoil_mod(life):
 	if life['stance'] == 'standing':
-		return 1.3
+		return 1.0
 	elif life['stance'] == 'crouching':
-		return .95
+		return .70
 	elif life['stance'] == 'crawling':
-		return .50
+		return .25
 	else:
 		1.0
 
@@ -148,7 +148,13 @@ def fire(life, target, limb=None):
 		_ooa = True
 		return False
 	
-	direction = numbers.direction_to(life['pos'],target)+(random.uniform(-life['recoil'], life['recoil']))
+	_bullet_deviation = (1-weapon['accuracy'])+life['recoil']
+	_deviation_mod = SETTINGS['aim_difficulty']*(1-((life['stats']['firearms']/10.0)*SETTINGS['firearms_skill_mod']))
+	_direction_deviation = (_bullet_deviation*SETTINGS['aim_difficulty'])*_deviation_mod
+	
+	life['recoil'] = numbers.clip(life['recoil']+(weapon['recoil']*get_stance_recoil_mod(life)), 0.0, 1.0)
+	
+	_bullet_direction = numbers.direction_to(life['pos'], target)+(random.uniform(-_direction_deviation, _direction_deviation))
 	
 	alife.noise.create(life['pos'], 120, '%s fire' % weapon['name'], 'something discharge', target=life['id'])
 	
@@ -160,8 +166,6 @@ def fire(life, target, limb=None):
 	_bullet['shot_by'] = life['id']
 	_bullet['aim_at_limb'] = limb
 	
-	life['recoil'] = numbers.clip(life['recoil']+_bullet['recoil']*(weapon['recoil']*get_stance_recoil_mod(life)), 0, 5)
-	
 	items.add_to_chunk(_bullet)
 	
 	if gfx.position_is_in_frame(life['pos']) or 'player' in life:
@@ -172,7 +176,7 @@ def fire(life, target, limb=None):
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 	del _bullet['parent']
-	items.move(_bullet, direction, _bullet['max_speed'])
+	items.move(_bullet, _bullet_direction, _bullet['max_speed'])
 	_bullet['start_velocity'] = _bullet['velocity'][:]
 	items.tick_item(_bullet)
 	

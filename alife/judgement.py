@@ -102,14 +102,14 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	
 	return _score
 
-def get_ranged_combat_rating_of_target(life, life_id):
+def get_ranged_combat_rating_of_target(life, life_id, inventory_check=True):
 	target = LIFE[life_id]
 	_score = 1
 	_score_mod = 1
 	
 	_items = [ITEMS[i] for i in lfe.get_all_visible_items(target) if i in ITEMS and logic.matches(ITEMS[i], {'type': 'gun'})]
 	
-	if not _items:
+	if not _items and inventory_check:
 		_items = [i for i in lfe.get_all_inventory_items(target) if i['uid'] in ITEMS and logic.matches(i, {'type': 'gun'})]
 		_score_mod = .5
 	
@@ -118,6 +118,9 @@ def get_ranged_combat_rating_of_target(life, life_id):
 			_score += item['accuracy']/2
 		else:
 			_score += item['accuracy']
+	
+	if _score:
+		_score += 2*(life['stats']['firearms']/10.0)
 	
 	return _score*_score_mod
 

@@ -29,4 +29,4 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 def tick(life):
 	_threats = judgement.get_threats(life, limit_distance=sight.get_vision(life))
 	
-	movement.escape(life, _threats)
+	return movement.escape(life, _threats)

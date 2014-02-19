@@ -23,7 +23,7 @@ def get_engage_distance(life):
 	_weapons = get_equipped_weapons(life)
 	
 	if _weapons:
-		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*7.5)), 3, sight.get_vision(life))
+		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*25)), 3, sight.get_vision(life))
 	else:
 		return sight.get_vision(life)/2
 
@@ -364,11 +364,14 @@ def ranged_combat(life, targets):
 	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	#Get us near the target
-	if _target['last_seen_at'] and numbers.distance(_path_dest, _target['last_seen_at']) >= _engage_distance:#numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
-		movement.position_to_attack(life, _target['life']['id'])
+	if _target['last_seen_at'] and numbers.distance(life['pos'], _target['last_seen_at']) >= _engage_distance:#numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
+		movement.position_to_attack(life, _target['life']['id'], _engage_distance)
 		
-	elif sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
+	elif sight.can_see_position(life, _target['last_seen_at']):
+		print life['name'], 'vis'
+		
 		if _target_distance	<= _engage_distance:
+			print life['name'], '\teng'
 			if sight.can_see_position(life, _target['life']['pos']):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
@@ -407,6 +410,7 @@ def ranged_combat(life, targets):
 					                   target=_target['life']['id'],
 					                   matches=[send_to])
 		#else:
+			#print life['name']
 			#_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
 			#_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
 			#_friendly_positions.append(life['pos'][:])

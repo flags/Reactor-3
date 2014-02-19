@@ -36,8 +36,9 @@ def remove_goal(life, goal_name):
 	if not goal_name in life['goap_goals_blacklist']:
 		life['goap_goals_blacklist'].append(goal_name)
 
-def add_action(life, action_name, desire, satisfies, loop_until, execute, set_flags, non_critical):
+def add_action(life, action_name, desire, require, satisfies, loop_until, execute, set_flags, non_critical):
 	life['goap_actions'][action_name] = {'desire': desire.split(','),
+	                                     'require': require.split(','),
 	                                     'satisfies': satisfies.split(','),
 	                                     'loop_until': loop_until.split(','),
 	                                     'execute': execute,
@@ -95,10 +96,11 @@ def parse_goap(life):
 					_loop_until = ''
 					_set_flags = ''
 				elif _action_name:
-					add_action(life, _action_name, _desire, _satisfies, _loop_until, _execute, _set_flags, _non_critical)
+					add_action(life, _action_name, _desire, _require, _satisfies, _loop_until, _execute, _set_flags, _non_critical)
 					
 					_action_name = ''
 					_desire = ''
+					_require = ''
 					_tier = ''
 					_loop_until = ''
 					_set_flags = ''
@@ -106,7 +108,7 @@ def parse_goap(life):
 					_satisfies = ''
 					_non_critical = False
 
-def find_actions_that_satisfy(life, desires):
+def find_actions_that_satisfy(life, desires, debug=False):
 	_valid_actions = []
 	
 	for action in life['goap_actions']:
@@ -129,12 +131,36 @@ def find_actions_that_satisfy(life, desires):
 				if _continue_instead:
 					continue
 				else:
-					#print 'action %s failed to meet the desires of %s' % (action, _desire)
+					if debug:
+						print 'action %s failed to meet the desires of %s' % (action, _desire)
+					
 					_break = True
 					break
 		
 		if _break:
 			continue
+		
+		if len(life['goap_actions'][action]['require'][0]):
+			for requirement in life['goap_actions'][action]['require']:
+				_requirement = requirement
+					
+				if _requirement.startswith('!'):
+					_requirement = _requirement[1:]
+					_true = False
+				else:
+					_true = True
+				
+				if not FUNCTION_MAP[_requirement](life) == _true:
+					if debug:
+						print '\tFailed at:%s' % _requirement
+					
+					_break = True
+					break
+				elif debug:
+					print '\tPassed:%s' % _requirement
+			
+			if _break:
+				continue
 		
 		_looping = False
 		for loop_until_func in life['goap_actions'][action]['loop_until']:
@@ -155,8 +181,9 @@ def find_actions_that_satisfy(life, desires):
 	#print 'Valid:', _valid_actions
 	return _valid_actions
 
-def has_valid_plan_for_goal(life, goal_name):
-	_plan = find_actions_that_satisfy(life, life['goap_goals'][goal_name]['desire'])
+def has_valid_plan_for_goal(life, goal_name, debug=False):
+	_debug = debug == goal_name
+	_plan = find_actions_that_satisfy(life, life['goap_goals'][goal_name]['desire'], debug=_debug)
 	_plan.reverse()
 	
 	#Revise
@@ -208,18 +235,29 @@ def execute(life, func):
 	return False
 
 def execute_plan(life, plan):
+	
 	for action in plan:
+		_actions = len(life['actions'])
+		
 		#try:
 		if not FUNCTION_MAP[life['goap_actions'][action]['execute']](life):
 			break
+		
+		if not life['state_action'] == life['goap_actions'][action]['execute']:
+			life['path'] = []
+			life['state_action'] = life['goap_actions'][action]['execute']
 		#except KeyError:
 		#	raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
 
-def get_next_goal(life):
+def get_next_goal(life, debug=False):
 	_next_goal = {'highest': None, 'goal': None, 'plan': None}
 	
 	for goal in life['goap_goals']:
 		_break = False
+		
+		if debug == goal:
+			print
+			print goal
 		
 		if len(life['goap_goals'][goal]['require'][0]):
 			for requirement in life['goap_goals'][goal]['require']:
@@ -232,8 +270,13 @@ def get_next_goal(life):
 					_true = True
 				
 				if not FUNCTION_MAP[_requirement](life) == _true:
+					if debug == goal:
+						print '\tFailed at:%s' % _requirement
+					
 					_break = True
 					break
+				elif debug == goal:
+					print '\tPassed:%s' % _requirement
 				#elif SETTINGS['following'] == life['id']:
 				#	print '[state_%s] Requirement passed: %s (wanted %s)' % (goal, _requirement, _true)
 				#	print FUNCTION_MAP[_requirement](life)
@@ -264,7 +307,7 @@ def get_next_goal(life):
 		if _break:
 			continue
 		
-		_plan = has_valid_plan_for_goal(life, goal)
+		_plan = has_valid_plan_for_goal(life, goal, debug=debug)
 		
 		if not _plan:
 			_plan = ['idle']

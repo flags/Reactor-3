@@ -328,7 +328,7 @@ def understand(life):
 		
 		return False
 	
-	if life['think_rate']:
+	if life['think_rate']>0:
 		life['think_rate'] -= 1
 		
 		return False
@@ -338,6 +338,9 @@ def understand(life):
 	
 	life['think_rate'] = life['think_rate_max']
 	
+	#if life['name'][0].startswith('Tim'):
+	#	_goal, _tier, _plan = planner.get_next_goal(life, debug='attack')
+	#else:
 	_goal, _tier, _plan = planner.get_next_goal(life)
 	
 	if _goal:
