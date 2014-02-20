@@ -41,8 +41,9 @@ def position_to_attack(life, target, engage_distance):
 			
 			if alife.judgement.can_trust(life, life_id):
 				_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
-			else:
-				_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
+			#else:
+			
+			_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
 		
 		_cover = _target_positions
 		

@@ -376,7 +376,7 @@ def ranged_combat(life, targets):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
 					
-					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>4:
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>8:
 						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
 							lfe.add_action(life,{'action': 'shoot',
 								                 'target': _target['last_seen_at'],
