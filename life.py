@@ -2204,7 +2204,12 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
+	
+	if item['owner']:
+		remove_item_from_inventory(LIFE[item['owner']], item['uid'])
+		
 	item['parent_id'] = life['id']
+	
 	item['owner'] = life['id']
 	
 	if 'stored_in' in item:

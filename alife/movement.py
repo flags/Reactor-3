@@ -131,8 +131,6 @@ def search_for_target(life, target_id):
 		
 		return False
 	
-	print life['name'], 'yeah', _chunk_path
-	
 	if _timer>0:
 		brain.flag(life, 'search_time', _timer-1)
 		

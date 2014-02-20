@@ -230,12 +230,20 @@ def add_to_chunk(item):
 	
 	if not item['uid'] in _chunk['items']:
 		_chunk['items'].append(item['uid'])
+		
+		return True
+	
+	return False
 
 def remove_from_chunk(item):
 	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
 	
 	if item['uid'] in _chunk['items']:
 		_chunk['items'].remove(item['uid'])
+		
+		return True
+	
+	return False
 
 def clean_item_for_save(item):
 	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):

@@ -161,7 +161,7 @@ def create_intro_story():
 		#broadcast([{'text': 'You wake up from a deep sleep.'},
 		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
-		_spawn_items = []
+		_spawn_items = ['leather backpack', 'M9', '9x19mm magazine']
 		
 		for i in range(14):
 			_spawn_items.append('9x19mm round')
@@ -225,12 +225,9 @@ def create_intro_story():
 
 def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<400) and not force:
-		print 'no', WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time']
 		return False
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
-	
-	print _overwatch_mood
 	
 	if _overwatch_mood == 'rest':
 		return False
