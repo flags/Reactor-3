@@ -55,8 +55,8 @@ def get_player_situation():
 	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
 	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
 	_situation['group'] = _life['group']
-	_situation['online_alife'] = len([l for l in LIFE.values() if l['online']])
-	_situation['trusted_online_alife'] = len([l for l in _situation['online_alife'] if alife.judgement.can_trust(_player, l)])
+	_situation['online_alife'] = [l for l in LIFE.values() if l['online'] and not l['dead'] and not l['id'] == _life['id']]
+	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
 	
 	return _situation
 
@@ -110,6 +110,7 @@ def get_overwatch_hardship():
 	_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
 	
 	_hardship = _stats['loss_experienced']
+	_hardship += _stats['danger_experienced']
 	_hardship += _stats['injury']
 	_hardship += _stats['human_encounters']*2
 	_hardship *= _mod
@@ -141,6 +142,12 @@ def record_encounter(amount):
 	
 	logging.debug('[Overwatch] encounter (%s)' % amount)
 
+def record_dangerous_event(amount):
+	WORLD_INFO['overwatch']['danger_experienced'] += amount
+	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
+	
+	logging.debug('[Overwatch] Danger (%s)' % amount)
+
 def record_loss(amount):
 	WORLD_INFO['overwatch']['loss_experienced'] += amount
 	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
@@ -154,7 +161,7 @@ def record_injury(amount):
 	logging.debug('[Overwatch] injury (%s)' % amount)
 
 def create_intro_story():
-	_i = 1#random.randint(0, 2)
+	_i = 2#random.randint(0, 2)
 	_player = LIFE[SETTINGS['controlling']]
 	
 	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
@@ -224,6 +231,9 @@ def create_intro_story():
 		#alife.speech.start_dialog(_wounded_guy, _player['id'], 'incoming_targets', force=True)
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets')
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
+	
+	elif _i == 2:
+		lfe.set_pos(_player, spawns.get_spawn_in_ref('farms'))
 
 def form_scheme(force=False):
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force:
@@ -382,12 +392,10 @@ def hurt_player(situation):
 					_target['last_seen_at'] = LIFE[friendly_member]['pos'][:]
 					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)
 	else:
-		_online_alife = len([l for l in LIFE.values() if l['online']])
-		
-		print 'dERPPPPPPPPPPP'
-		
-		if not _situation['online_alife']:
-			#Spawn threat here?
+		if len(situation['online_alife'])<=2 or len(situation['online_alife']) == len(situation['trusted_online_alife']):
+			record_dangerous_event(10)
+			gfx.message('You hear an explosion to the north!', style='important')
+			
 			return False
 		
-		print _situation['trusted_online_alife']
+		print len(situation['online_alife'])
