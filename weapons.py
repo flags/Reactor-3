@@ -78,7 +78,7 @@ def get_recoil(life):
 
 def get_accuracy(life, weapon_uid, limb=None):
 	weapon = ITEMS[weapon_uid]
-	_accuracy = weapon['accuracy']
+	_accuracy = 3*weapon['accuracy']
 	_accuracy *= alife.stats.get_firearm_accuracy(life)
 	
 	if limb:
@@ -175,6 +175,9 @@ def fire(life, target, limb=None):
 		effects.create_smoke(life['pos'], color=tcod.yellow)
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
+
+	print 'ACCURACY', _bullet['accuracy']
+	
 	del _bullet['parent']
 	items.move(_bullet, _bullet_direction, _bullet['max_speed'])
 	_bullet['start_velocity'] = _bullet['velocity'][:]

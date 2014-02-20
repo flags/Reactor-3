@@ -411,7 +411,7 @@ def is_confident(life):
 			
 			_threat_confidence += _score
 	
-	return _friendly_confidence > _threat_confidence
+	return _friendly_confidence-_threat_confidence>=-2
 
 def is_threat_too_close(life):
 	_nearest_threat = judgement.get_nearest_threat(life)

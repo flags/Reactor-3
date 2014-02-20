@@ -25,14 +25,15 @@ def position_to_attack(life, target, engage_distance):
 		if not lfe.ticker(life, 'attack_position', 4):
 			return False
 	
+	#_target_distance = numbers.distance(life['pos'], brain.knows_alife_by_id(life, target)['last_seen_at'])
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
-	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
+	#_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
 	
 	#TODO: Short or long-range weapon?
 	#if _nearest_target_score >= sight.get_vision(life)/2:
 	_can_see = sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'])
-	if _can_see and len(_can_see)>engage_distance:
-		print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
+	if _can_see and len(_can_see)>=engage_distance*.85:
+		#print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
 		
 		_avoid_positions = []
 		for life_id in life['seen']:
@@ -69,8 +70,6 @@ def position_to_attack(life, target, engage_distance):
 			return False
 	elif life['path']:
 		lfe.stop(life)
-	else:
-		print 'Failed to find position for combat', _can_see
 	
 	return True
 
@@ -189,7 +188,7 @@ def escape(life, targets):
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escape'}]):
-		if lfe.ticker(life, 'escape_refresh', 16):
+		if lfe.ticker(life, 'escape_refresh', 4):
 			lfe.stop(life)
 		else:
 			return False

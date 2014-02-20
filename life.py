@@ -1764,10 +1764,8 @@ def kill(life, injury):
 def can_die_via_critical_injury(life):
 	for limb in life['body']:
 		_limb = life['body'][limb]
-		if not 'CRUCIAL' in _limb['flags']:
-			continue
 		
-		if _limb['pain']>=_limb['size']:
+		if _limb['pain']>=_limb['size']*(('CRUCIAL' in _limb['flags'])+1):
 			return limb
 	
 	return False	
@@ -3675,6 +3673,8 @@ def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	
+	print '*' * 10
+	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 		_rand_limb.append(random.choice(life['body'].keys()))

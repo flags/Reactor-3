@@ -291,9 +291,6 @@ def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
-		#TODO: Dude, what?
-		movement.find_target(life, targets, call=False)
-		
 		return False
 	
 	_targets_too_far = []
@@ -350,12 +347,10 @@ def ranged_combat(life, targets):
 			brain.knows_alife_by_id(life, target_id)['escaped'] = 1
 		
 		logging.error('No target for ranged combat.')
+		
 		return False
 	
 	_engage_distance = get_engage_distance(life)
-	
-	#print _engage_distance
-	
 	_path_dest = lfe.path_dest(life)
 	
 	if not _path_dest:
@@ -364,14 +359,11 @@ def ranged_combat(life, targets):
 	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	#Get us near the target
-	if _target['last_seen_at'] and numbers.distance(life['pos'], _target['last_seen_at']) >= _engage_distance:#numbers.clip(_engage_distance*1.7, 3, sight.get_vision(life)):
+	if _target['last_seen_at']:
 		movement.position_to_attack(life, _target['life']['id'], _engage_distance)
 		
-	elif sight.can_see_position(life, _target['last_seen_at']):
-		print life['name'], 'vis'
-		
+	if sight.can_see_position(life, _target['last_seen_at']):
 		if _target_distance	<= _engage_distance:
-			print life['name'], '\teng'
 			if sight.can_see_position(life, _target['life']['pos']):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
@@ -434,7 +426,7 @@ def melee_combat(life, targets):
 	_target = get_closest_target(life, targets)
 	
 	if not _target:
-		logging.error('No target for ranged combat.')
+		logging.error('No target for melee combat.')
 		return False
 	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):

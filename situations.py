@@ -55,6 +55,8 @@ def get_player_situation():
 	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
 	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
 	_situation['group'] = _life['group']
+	_situation['online_alife'] = len([l for l in LIFE.values() if l['online']])
+	_situation['trusted_online_alife'] = len([l for l in _situation['online_alife'] if alife.judgement.can_trust(_player, l)])
 	
 	return _situation
 
@@ -183,7 +185,7 @@ def create_intro_story():
 		
 		#Group nearby
 		_bandit_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=60, area=90))
-		_bandit_group = spawns.generate_group('bandit', amount=2, spawn_chunks=[_bandit_group_spawn_chunk])
+		_bandit_group = spawns.generate_group('bandit', amount=3, spawn_chunks=[_bandit_group_spawn_chunk])
 		
 		_friendly_group_spawn_chunk = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=20))
 		_friendly_group = spawns.generate_group('loner_riflemen', amount=2, spawn_chunks=[_friendly_group_spawn_chunk])
@@ -224,7 +226,7 @@ def create_intro_story():
 		alife.memory.create_question(_wounded_guy, _player['id'], 'incoming_targets_follow', group_id=_wounded_guy['group'])
 
 def form_scheme(force=False):
-	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<400) and not force:
+	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force:
 		return False
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
@@ -236,7 +238,6 @@ def form_scheme(force=False):
 	
 	if _overwatch_mood == 'hurt':
 		return hurt_player(_player_situation)
-	
 	
 	#if _player_situation['armed']:
 	_i = random.randint(0, 3)+10
@@ -380,3 +381,13 @@ def hurt_player(situation):
 					_target['escaped'] = 1
 					_target['last_seen_at'] = LIFE[friendly_member]['pos'][:]
 					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)
+	else:
+		_online_alife = len([l for l in LIFE.values() if l['online']])
+		
+		print 'dERPPPPPPPPPPP'
+		
+		if not _situation['online_alife']:
+			#Spawn threat here?
+			return False
+		
+		print _situation['trusted_online_alife']
