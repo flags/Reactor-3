@@ -70,7 +70,8 @@ WORLD_INFO = {'map': [],
                    'human_encounters': 0,
                    'mood': 'rest',
                    'rest_level': .7,
-                   'last_updated': 0},
+                   'last_updated': 0,
+                   'tracked_alife': []},
 	'last_scheme_time': 9000}
 
 LOCKS = {}

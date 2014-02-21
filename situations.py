@@ -57,6 +57,7 @@ def get_player_situation():
 	_situation['group'] = _life['group']
 	_situation['online_alife'] = [l for l in LIFE.values() if l['online'] and not l['dead'] and not l['id'] == _life['id']]
 	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
+	_situation['has_radio'] = len(lfe.get_all_inventory_items(_life, matches=[{'type': 'radio'}]))>0
 	
 	return _situation
 
@@ -106,8 +107,15 @@ def broadcast(messages, event_time, glitch=False):
 
 def get_overwatch_hardship():
 	_stats = WORLD_INFO['overwatch']
+	_situation = get_player_situation()
 	
-	_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
+	if not _situation:
+		return 0
+	
+	if _situation['online_alife'] == _situation['trusted_online_alife']:
+		_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
+	else:
+		_mod = 1
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['danger_experienced']
@@ -136,9 +144,12 @@ def evaluate_overwatch_mood():
 	else:
 		_stats['mood'] = 'hurt'
 
-def record_encounter(amount):
+def record_encounter(amount, life_ids=None):
 	WORLD_INFO['overwatch']['human_encounters'] += amount
 	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
+	
+	if life_ids:
+		WORLD_INFO['overwatch']['tracked_alife'].extend(life_ids)
 	
 	logging.debug('[Overwatch] encounter (%s)' % amount)
 
@@ -247,7 +258,10 @@ def form_scheme(force=False):
 	_player_situation = get_player_situation()
 	
 	if _overwatch_mood == 'hurt':
-		return hurt_player(_player_situation)
+		if hurt_player(_player_situation):
+			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+			
+			return True
 	
 	#if _player_situation['armed']:
 	_i = random.randint(0, 3)+10
@@ -319,7 +333,9 @@ def execute_scheme():
 	if not _event:
 		return False
 	
-	if 'radio' in _event:
+	_situation = get_player_situation()
+	
+	if 'radio' in _event and _situation['has_radio']:
 		gfx.message('%s: %s' % (_event['radio'][0], _event['radio'][1]), style='radio')
 	
 	if 'glitch' in _event:
@@ -346,7 +362,6 @@ def hurt_player(situation):
 		return False
 	
 	_player = LIFE[SETTINGS['controlling']]
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 	
 	if situation['group']:
 		if situation['armed']:
@@ -391,6 +406,8 @@ def hurt_player(situation):
 					_target['escaped'] = 1
 					_target['last_seen_at'] = LIFE[friendly_member]['pos'][:]
 					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)
+			
+			return True
 	else:
 		_town_chunk_keys = []
 		for ref in WORLD_INFO['refs']['towns']:
@@ -401,19 +418,31 @@ def hurt_player(situation):
 		_distance_to_nearst_town = numbers.distance(_player['pos'], _town_chunk['pos'])
 		_spawn_distance = 15*WORLD_INFO['chunk_size']
 		
-		if len(situation['online_alife'])<=2 or len(situation['online_alife']) == len(situation['trusted_online_alife']):
+		if len(situation['online_alife']) == len(situation['trusted_online_alife']):
 			if _distance_to_nearst_town<=50:
-				_bandit_spawn_velocity = numbers.velocity(numbers.direction_to(_player['pos'], _town_chunk['pos']), _spawn_distance+(50-numbers.clip(_distance_to_nearst_town, 0, 50)))
-				_bandit_spawn_pos = [int(round(_player['pos'][0]+_bandit_spawn_velocity[0])), int(round(_player['pos'][1]+_bandit_spawn_velocity[1]))]
-				_bandit_spawn_pos[0] = numbers.clip(_bandit_spawn_pos[0], 0, MAP_SIZE[0])
-				_bandit_spawn_pos[1] = numbers.clip(_bandit_spawn_pos[1], 0, MAP_SIZE[1])
-				print _bandit_spawn_pos
-				_bandit_spawn_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_bandit_spawn_pos, area=30))
-				spawns.generate_group('bandit', amount=2, spawn_chunks=[_bandit_spawn_chunk_key])
-				record_encounter(2)
-			#record_dangerous_event(10)
-			#gfx.message('You hear an explosion to the north!', style='important')
+				_group_spawn_velocity = numbers.velocity(numbers.direction_to(_player['pos'], _town_chunk['pos']), _spawn_distance+(50-numbers.clip(_distance_to_nearst_town, 0, 50)))
+				_group_spawn_pos = [int(round(_player['pos'][0]+_group_spawn_velocity[0])), int(round(_player['pos'][1]+_group_spawn_velocity[1]))]
+				_group_spawn_pos[0] = numbers.clip(_group_spawn_pos[0], 0, MAP_SIZE[0])
+				_group_spawn_pos[1] = numbers.clip(_group_spawn_pos[1], 0, MAP_SIZE[1])
+				_group_spawn_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_group_spawn_pos, area=30))
+				
+				_alife = spawns.generate_group('bandit', amount=2, spawn_chunks=[_group_spawn_chunk_key])
+				
+				for ai in _alife:
+					alife.brain.meet_alife(ai, _player)
+					alife.stats.establish_hostile(ai, _player['id'])
+				
+				record_encounter(2, life_ids=[i['id'] for i in _alife])
 			
-			return False
-		
-		print len(situation['online_alife'])
+				if random.randint(0, 1) or 1:
+					_spawn_chunk_key = spawns.get_spawn_point_around(_group_spawn_pos, area=30, min_area=20, chunk_key=True)
+					_alife = spawns.generate_group('loner', amount=1, spawn_chunks=[_spawn_chunk_key])
+					
+					
+					_messages = [{'text': 'I\'m pinned down in the village!'},
+				                  {'text': 'Anyone nearby?'}]
+					broadcast(_messages, 0)
+				
+				return True
+			
+	return False

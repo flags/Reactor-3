@@ -155,7 +155,7 @@ def get_spawn_in_ref(ref_type, chunk_key=False):
 	
 	return [_pos[0], _pos[1], 2]
 
-def get_spawn_point_around(pos, area=5, min_area=0):
+def get_spawn_point_around(pos, area=5, min_area=0, chunk_key=False):
 	_positions = []
 	
 	for next_pos in drawing.draw_circle(pos, area):
@@ -171,5 +171,8 @@ def get_spawn_point_around(pos, area=5, min_area=0):
 			_pos.append(2)
 			
 			_positions.append(_pos)
-		
+	
+	if chunk_key:
+		return alife.chunks.get_chunk_key_at(random.choice(_positions))
+	
 	return random.choice(_positions)
