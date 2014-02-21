@@ -435,9 +435,18 @@ def hurt_player(situation):
 				record_encounter(2, life_ids=[i['id'] for i in _alife])
 			
 				if random.randint(0, 1) or 1:
-					_spawn_chunk_key = spawns.get_spawn_point_around(_group_spawn_pos, area=30, min_area=20, chunk_key=True)
-					_alife = spawns.generate_group('loner', amount=1, spawn_chunks=[_spawn_chunk_key])
+					_spawn_chunk_key = spawns.get_spawn_point_around(_group_spawn_pos, area=90, min_area=60, chunk_key=True)
+					_other_group = spawns.generate_group('loner', amount=1, spawn_chunks=[_spawn_chunk_key])
 					
+					for ai in _other_group:
+						for ai2 in _alife:
+							alife.brain.meet_alife(ai, ai2)
+							alife.stats.establish_hostile(ai, ai2['id'])
+					
+					for ai2 in _alife:
+						for ai in _other_group:
+							alife.brain.meet_alife(ai2, ai)
+							alife.stats.establish_hostile(ai2, ai['id'])
 					
 					_messages = [{'text': 'I\'m pinned down in the village!'},
 				                  {'text': 'Anyone nearby?'}]
