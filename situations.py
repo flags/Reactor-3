@@ -392,9 +392,27 @@ def hurt_player(situation):
 					_target['last_seen_at'] = LIFE[friendly_member]['pos'][:]
 					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)
 	else:
+		_town_chunk_keys = []
+		for ref in WORLD_INFO['refs']['towns']:
+			_town_chunk_keys.extend(ref)
+		
+		_nearest_town_chunk_key = alife.chunks.get_nearest_chunk_in_list(_player['pos'], _town_chunk_keys)
+		_town_chunk = alife.chunks.get_chunk(_nearest_town_chunk_key)
+		_distance_to_nearst_town = numbers.distance(_player['pos'], _town_chunk['pos'])
+		_spawn_distance = 15*WORLD_INFO['chunk_size']
+		
 		if len(situation['online_alife'])<=2 or len(situation['online_alife']) == len(situation['trusted_online_alife']):
-			record_dangerous_event(10)
-			gfx.message('You hear an explosion to the north!', style='important')
+			if _distance_to_nearst_town<=50:
+				_bandit_spawn_velocity = numbers.velocity(numbers.direction_to(_player['pos'], _town_chunk['pos']), _spawn_distance+(50-numbers.clip(_distance_to_nearst_town, 0, 50)))
+				_bandit_spawn_pos = [int(round(_player['pos'][0]+_bandit_spawn_velocity[0])), int(round(_player['pos'][1]+_bandit_spawn_velocity[1]))]
+				_bandit_spawn_pos[0] = numbers.clip(_bandit_spawn_pos[0], 0, MAP_SIZE[0])
+				_bandit_spawn_pos[1] = numbers.clip(_bandit_spawn_pos[1], 0, MAP_SIZE[1])
+				print _bandit_spawn_pos
+				_bandit_spawn_chunk_key = alife.chunks.get_chunk_key_at(spawns.get_spawn_point_around(_bandit_spawn_pos, area=30))
+				spawns.generate_group('bandit', amount=2, spawn_chunks=[_bandit_spawn_chunk_key])
+				record_encounter(2)
+			#record_dangerous_event(10)
+			#gfx.message('You hear an explosion to the north!', style='important')
 			
 			return False
 		
