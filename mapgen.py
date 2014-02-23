@@ -189,6 +189,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	generate_reference_maps(map_gen)
 	
 	WORLD_INFO.update(map_gen)
+	zones.cache_zones()
 	
 	if not skip_zoning:
 		logging.debug('Creating zone map...')
@@ -398,6 +399,11 @@ def generate_noise_map(map_gen):
 	                           'min_cells': 350,
 	                           'max_cells': 1000,
 	                           'difficulty_min': 0.0,
+	                           'difficulty_max': 1.0},
+	               'Factory': {'callback': generate_factory,
+	                           'min_cells': 250,
+	                           'max_cells': 2000,
+	                           'difficulty_min': 0.3,
 	                           'difficulty_max': 1.0}}
 	_empty_cell_types = {'Forest': generate_forest}	
 	_zone_entry_position = (125, 125)
@@ -683,6 +689,74 @@ def generate_farm(map_gen, cell):
 				else:
 					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
 
+def generate_factory(map_gen, cell):
+	print 'FACTORY' * 10
+	_potential_building_chunks = cell['chunk_keys'][:]
+	map_gen['refs']['factories'].append(cell['chunk_keys'][:])
+	
+	for chunk_key in cell['chunk_keys']:
+		_chunk = maps.get_chunk(chunk_key)
+		_chunk['type'] = 'factory'
+	
+	_fence_links = []
+	for chunk_key in cell['chunk_keys']:
+		if len(get_neighbors_of_type(map_gen, chunk_key, 'factory', diagonal=True))<8:
+			_chunk = maps.get_chunk(chunk_key)
+			_x = _chunk['pos'][0]+WORLD_INFO['chunk_size']/2
+			_y = _chunk['pos'][1]+WORLD_INFO['chunk_size']/2
+			
+			_fence_links.append((_x, _y))
+			_potential_building_chunks.remove(chunk_key)
+	
+	_opening = False
+	while _fence_links:
+		_link = _fence_links.pop(0)
+		
+		if not _opening and not random.randint(0, 100):
+			_opening = True
+			continue
+		
+		_closest = {'score': 0, 'pos': None}
+		for next_link in _fence_links:
+			if next_link == _link:
+				continue
+			
+			_distance = numbers.distance(_link, next_link)
+			
+			if not _closest['pos'] or _distance<_closest['score']:
+				_closest['score'] = _distance
+				_closest['pos'] = next_link[:]
+		
+		if not _closest['pos']:
+			break
+		
+		for pos in render_los.draw_line(_link[0], _link[1], _closest['pos'][0], _closest['pos'][1]):
+			for z in range(3):
+				create_splotch(map_gen, (pos[0], pos[1]), 2+random.randint(0, 1), tiles.CONCRETE_FLOOR_TILES, z=2+z)
+	
+	_build_chunk_key = random.choice(_potential_building_chunks)
+	_build_chunk = maps.get_chunk(_build_chunk_key)
+	_outpost_chunk_keys = walker(map_gen,
+	                             _build_chunk['pos'],
+	                             random.randint(10, 14),
+	                             only_chunk_types=['factory'],
+	                             return_keys=True)
+	
+	for chunk_key in _outpost_chunk_keys:
+		map_gen['chunk_map'][chunk_key]['type'] = 'town'
+	
+	_exterior_chunk_keys = []
+	for chunk_key in _outpost_chunk_keys:
+		for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'factory'):
+			if neighbor_chunk_key in _exterior_chunk_keys:
+				continue
+			
+			_exterior_chunk_keys.append(neighbor_chunk_key)
+	
+	#map_gen['refs']['outposts'].append(_outpost_chunk_keys)
+	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
+	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
+
 def generate_town(map_gen, cell):
 	_min_building_size = 4
 	_max_building_size = 6
@@ -864,7 +938,7 @@ def generate_town(map_gen, cell):
 	#	               tiles.GRASS_TILES,
 	#	               pos_is_chunk_key=True)
 
-def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], only_tiles=[], avoid_chunks=[], avoid_positions=[], pos_is_chunk_key=False):
+def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], z=2, only_tiles=[], avoid_chunks=[], avoid_positions=[], pos_is_chunk_key=False):
 	if pos_is_chunk_key:
 		position = list(position)
 		position[0] += map_gen['chunk_size']/2
@@ -880,13 +954,13 @@ def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], only_tiles=[]
 		if pos in avoid_positions:
 			continue
 		
-		if avoid_tiles and map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in avoid_tiles]:
+		if avoid_tiles and map_gen['map'][pos[0]][pos[1]][z]['id'] in [t['id'] for t in avoid_tiles]:
 			continue
 		
-		if only_tiles and not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in only_tiles]:
+		if only_tiles and not map_gen['map'][pos[0]][pos[1]][z]['id'] in [t['id'] for t in only_tiles]:
 			continue
 		
-		create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles))
+		create_tile(map_gen, pos[0], pos[1], z, random.choice(tiles))
 
 def find_spaces_matching(map_gen, chunk_type, neighbor_rules):
 	_chunk_keys = []
@@ -1685,6 +1759,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(650, 650, 10), skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(450, 450, 10), skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t

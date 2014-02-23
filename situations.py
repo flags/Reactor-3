@@ -440,16 +440,24 @@ def hurt_player(situation):
 					
 					for ai in _other_group:
 						for ai2 in _alife:
-							alife.brain.meet_alife(ai, ai2)
+							_target = alife.brain.meet_alife(ai, ai2)
+							_target['last_seen_time'] = 1
+							_target['escaped'] = 1
+							_target['last_seen_at'] = ai2['pos'][:]
+							
 							alife.stats.establish_hostile(ai, ai2['id'])
 					
 					for ai2 in _alife:
 						for ai in _other_group:
-							alife.brain.meet_alife(ai2, ai)
+							_target = alife.brain.meet_alife(ai2, ai)
+							_target['last_seen_time'] = 1
+							_target['escaped'] = 1
+							_target['last_seen_at'] = ai['pos'][:]
+							
 							alife.stats.establish_hostile(ai2, ai['id'])
 					
 					_messages = [{'text': 'I\'m pinned down in the village!'},
-				                  {'text': 'Anyone nearby?'}]
+					             {'text': 'Anyone nearby?'}]
 					broadcast(_messages, 0)
 				
 				return True

@@ -16,7 +16,7 @@ import time
 
 def cache_zones():
 	for z in range(0, MAP_SIZE[2]):
-		ZONE_CACHE[z] = get_slices_at_z(z)
+		ZONE_CACHE[z] = [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def create_map_array(val=0, size=MAP_SIZE):
 	_map = numpy.zeros((size[0], size[1]))
@@ -188,7 +188,8 @@ def get_slice(zone_id):
 	return WORLD_INFO['slices'][zone_id]
 
 def get_slices_at_z(z):
-	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
+	return ZONE_CACHE[z]
+	#return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
@@ -249,10 +250,12 @@ def connect_ramps():
 		_i += 1
 		
 		for x,y,z in WORLD_INFO['slices'][_slice]['ramps']:
+			print _slice, WORLD_INFO['slices'][_slice]['ramps'].index((x, y, z)), len(WORLD_INFO['slices'][_slice]['ramps'])
 			for _matched_slice in get_slices_at_z(z):
 				if _matched_slice['id']>0:
 					if not _matched_slice['id'] in WORLD_INFO['slices'][_slice]['neighbors']:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']] = [(x, y)]
+						print _slice, _matched_slice['id']
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']].append((x, y))
 
