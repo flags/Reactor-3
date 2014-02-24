@@ -557,9 +557,6 @@ def update_chunk_map():
 			_chunk_key = '%s,%s' % (x1, y1)
 			_chunk_type = WORLD_INFO['chunk_map'][_chunk_key]['type']
 			
-			#if _type in ['forest', 'field']:
-			#	continue
-			
 			if _chunk_type == 'town':
 				_chunk_type = 'building'
 			
@@ -568,7 +565,7 @@ def update_chunk_map():
 				'life': [],
 				'items': [],
 				'control': {},
-				'flags': {},
+				'flags': WORLD_INFO['chunk_map'][_chunk_key]['flags'],
 				'reference': WORLD_INFO['chunk_map'][_chunk_key]['reference'],
 				'type': _chunk_type,
 				'max_z': 0}

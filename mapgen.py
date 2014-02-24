@@ -488,6 +488,10 @@ def generate_outpost(map_gen, cell):
 	                             avoid_chunk_distance=4*map_gen['chunk_size'],
 	                             return_keys=True)
 	
+	#_spawn_list = [{'item': 'M9', 'rarity': 0.3, 'amount': 1},
+	#               {'item': '9x19mm round', 'rarity': 0.3, 'amount': 16},
+	#               {'item': '9x19mm magazine', 'rarity': 0.3, 'amount': 1}]
+	
 	for chunk_key in _outpost_chunk_keys:
 		map_gen['chunk_map'][chunk_key]['type'] = 'town'
 	
@@ -742,8 +746,13 @@ def generate_factory(map_gen, cell):
 	                             only_chunk_types=['factory'],
 	                             return_keys=True)
 	
+	_spawn_list = [{'item': 'M9', 'rarity': 0.3, 'amount': 1},
+	               {'item': '9x19mm round', 'rarity': 0.3, 'amount': 16},
+	               {'item': '9x19mm magazine', 'rarity': 0.3, 'amount': 1}]
+	
 	for chunk_key in _outpost_chunk_keys:
 		map_gen['chunk_map'][chunk_key]['type'] = 'town'
+		map_gen['chunk_map'][chunk_key]['flags']['spawn_items'] = _spawn_list
 	
 	_exterior_chunk_keys = []
 	for chunk_key in _outpost_chunk_keys:

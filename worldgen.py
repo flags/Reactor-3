@@ -218,6 +218,23 @@ def reset_world():
 	logging.debug('World reset.')
 
 def randomize_item_spawns():
+	for chunk_key in WORLD_INFO['chunk_map']:
+		_chunk = maps.get_chunk(chunk_key)
+		
+		if not 'spawn_items' in _chunk['flags']:
+			continue
+		
+		for item in _chunk['flags']['spawn_items']:
+			if random.uniform(0, 1)<item['rarity']:
+				continue
+			
+			for i in range(item['amount']):
+				_rand_pos = random.choice(_chunk['ground'])[:]
+				_rand_pos.append(2)
+				items.create_item(item['item'], position=_rand_pos)
+		
+	return False
+
 	for building in WORLD_INFO['reference_map']['buildings']:
 		_chunk_key = random.choice(alife.references.get_reference(building))
 		_chunk = maps.get_chunk(_chunk_key)
