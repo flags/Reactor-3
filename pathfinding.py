@@ -49,11 +49,17 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	#1: Walkable
 	
 	for zone in [zns.get_slice(z) for z in zones]:
-		for _open_pos in zone['map']:
-			if chunk_mode:
-				_path['map'][_open_pos[1]/WORLD_INFO['chunk_size'], _open_pos[0]/WORLD_INFO['chunk_size']] = 1
-			else:
-				_path['map'][_open_pos[1], _open_pos[0]] = 1
+		for y in range(zone['top_left'][1], zone['bot_right'][1]):
+			for x in range(zone['top_left'][0], zone['bot_right'][0]):
+				_map_pos = WORLD_INFO['map'][x][y][zone['z']]
+				
+				if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == zone['id']:
+					continue
+		
+				if chunk_mode:
+					_path['map'][y/WORLD_INFO['chunk_size'], x/WORLD_INFO['chunk_size']] = 1
+				else:
+					_path['map'][y, x] = 1
 	
 	_path['hmap'][_path['start'][1], _path['start'][0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]

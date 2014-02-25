@@ -72,7 +72,7 @@ def reload_slices():
 			
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
-def save_map(map_name, base_dir=MAP_DIR):
+def save_map(map_name, base_dir=MAP_DIR, only_cached=True):
 	_map_dir = os.path.join(base_dir, map_name)
 	
 	#if base_dir == DATA_DIR:
@@ -146,17 +146,24 @@ def save_map(map_name, base_dir=MAP_DIR):
 		
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
 	_map = WORLD_INFO['map']
-		
+	
 	del WORLD_INFO['map']
+	
+	if only_cached:
+		_cluster_keys = LOADED_CHUNKS
+	else:
+		for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
+			for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
+				_cluster_keys.append('%s_%s' % (x1, y1))
+				
+	for cluster_key in _cluster_keys:
+		_x1 = int(cluster_key.split(',')[0])
+		_y1 = int(cluster_key.split(',')[1])
 		
-	for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
-		for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
-			_cluster_key = '%s_%s' % (x1, y1)
-			
-			with open(os.path.join(_map_dir, 'world_%s.cluster' % _cluster_key), 'w') as _cluster_file:
-				for y2 in range(y1, y1+_chunk_cluster_size):
-					for x2 in range(x1, x1+_chunk_cluster_size):
-						_cluster_file.write(json.dumps(_map[x2][y2])+'\n')
+		with open(os.path.join(_map_dir, 'world_%s.cluster' % cluster_key), 'w') as _cluster_file:
+			for y2 in range(_y1, _y1+_chunk_cluster_size):
+				for x2 in range(_x1, _x1+_chunk_cluster_size):
+					_cluster_file.write(json.dumps(_map[x2][y2])+'\n')
 	
 	WORLD_INFO['map'] = _map
 	SETTINGS['base_dir'] = _map_dir
@@ -208,13 +215,7 @@ def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
 	SETTINGS['base_dir'] = _map_dir
 	
 	if cache_map:
-		_chunk_cluster_size = WORLD_INFO['chunk_size']*10
-		
-		for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
-			for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
-				_cluster_key = '%s_%s' % (x1, y1)
-				
-				load_cluster(_cluster_key, base_dir=_map_dir)
+		cache_all_clusters()
 	
 	logging.info('Map \'%s\' loaded.' % map_name)
 	gfx.log('Map \'%s\' loaded.' % map_name)
@@ -224,14 +225,14 @@ def load_cluster(cluster_key, base_dir=DATA_DIR):
 	LOADED_CHUNKS.append(cluster_key)
 	
 	_map_dir = base_dir
-	_cluster_key = cluster_key.replace(',', '_')
-	_x1 = int(_cluster_key.split('_')[0])
-	_y1 = int(_cluster_key.split('_')[1])
+	_cluster_key = cluster_key
+	_x1 = int(_cluster_key.split(',')[0])
+	_y1 = int(_cluster_key.split(',')[1])
 	_xc = 0
 	
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
 	
-	with open(os.path.join(_map_dir, 'world_%s.cluster' % _cluster_key), 'r') as _cluster_file:
+	with open(os.path.join(_map_dir, 'world_%s.cluster' % _cluster_key.replace(',', '_')), 'r') as _cluster_file:
 		for line in _cluster_file.readlines():
 			_sline = line.rstrip()
 			
@@ -245,8 +246,17 @@ def load_cluster(cluster_key, base_dir=DATA_DIR):
 				_xc += 1
 			else:
 				_xc = 0
-				_x1 = int(_cluster_key.split('_')[0])
+				_x1 = int(_cluster_key.split(',')[0])
 				_y1 += 1
+
+def cache_all_clusters():
+	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+		
+	for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
+		for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
+			_cluster_key = '%s,%s' % (x1, y1)
+			
+			load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
 
 def load_cluster_at_position_if_needed(position):
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10

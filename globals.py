@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.7'
+VERSION = '0.7.5'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = [100, 60]
 MAP_SIZE = [250, 250, 5]

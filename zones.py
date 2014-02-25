@@ -176,7 +176,12 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
-	return WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]['z_id']
+	_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
+	
+	if not _map_pos or not 'z_id' in _map_pos:
+		return None
+	
+	return _map_pos['z_id']
 
 def get_slice(zone_id):
 	zone_id = str(zone_id)

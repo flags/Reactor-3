@@ -130,7 +130,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	
 	if save:
 		WORLD_INFO['id'] = profiles.create_world()
-		save_world()
+		save_world(create=True)
 	
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
@@ -173,9 +173,12 @@ def load_world(world):
 	
 	logging.info('World loaded.')
 
-def save_world():
+def save_world(create=False):
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+	
+	if create:
+		maps.cache_all_clusters()
 	
 	_config_directory, _worlds_directory = profiles.has_reactor3()
 	_version_file = os.path.join(_worlds_directory, WORLD_INFO['id'], 'version.txt')
