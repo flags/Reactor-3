@@ -1810,6 +1810,18 @@ def tick(life):
 	if 'THIRST' in life['life_flags']:
 		if not thirst(life):
 			return False
+		
+	if 'player' in life:
+		_x_min = numbers.clip(life['pos'][0]-WINDOW_SIZE[0], 0, MAP_SIZE[0]-1-WINDOW_SIZE[0])
+		_y_min = numbers.clip(life['pos'][1]-WINDOW_SIZE[1], 0, MAP_SIZE[1]-1-WINDOW_SIZE[1])
+		_x_max = numbers.clip(life['pos'][0]+WINDOW_SIZE[0], 0, MAP_SIZE[0]-1)
+		_y_max = numbers.clip(life['pos'][1]+WINDOW_SIZE[1], 0, MAP_SIZE[1]-1)
+		
+		for y in range(_y_min, _y_max, WORLD_INFO['chunk_size']*2):
+			for x in range(_x_min, _x_max, WORLD_INFO['chunk_size']*2):
+				maps.load_cluster_at_position_if_needed((x, y))
+	else:
+		maps.load_cluster_at_position_if_needed(life['pos'])
 	
 	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0.0, 1.0)
 	

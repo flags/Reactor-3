@@ -186,7 +186,7 @@ def save_world():
 	logging.debug('Saving items...')
 	items.save_all_items()
 	
-	maps.save_map('map', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
+	maps.save_map('world', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
 	_life = life.save_all_life()

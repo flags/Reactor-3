@@ -87,6 +87,6 @@ if __name__ == '__main__':
 		zones.create_zone_map()
 		zones.connect_ramps()
 		
-		maps.save_map('temp_map.dat')
+		maps.save_map('temp_map')
 		
 		print 'Created map: temp_map.dat'

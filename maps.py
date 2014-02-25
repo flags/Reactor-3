@@ -27,15 +27,17 @@ import os
 
 try:
 	import render_los as cython_render_los
+	
 	CYTHON_ENABLED = True
 
 except ImportError, e:
 	CYTHON_ENABLED = False
+	
 	logging.warning('[Cython] ImportError with module: %s' % e)
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
 	logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 
-def create_map(size=MAP_SIZE):
+def create_map(size=MAP_SIZE, blank=False):
 	_map = []
 
 	for x in range(size[0]):
@@ -43,7 +45,7 @@ def create_map(size=MAP_SIZE):
 		for y in range(size[1]):
 			_z = []
 			for z in range(size[2]):
-				if z == 2:
+				if z == 2 and not blank:
 					_z.append(create_tile(random.choice([TALL_GRASS_TILE,SHORT_GRASS_TILE,GRASS_TILE])))
 				else:
 					_z.append(None)
@@ -71,12 +73,10 @@ def reload_slices():
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
-	_map_dir = os.path.join(base_dir,'maps')
-	if not map_name.count('.dat'):
-		map_name+='.dat'
+	_map_dir = os.path.join(base_dir, 'maps')
 
 	try:
-		os.mkdir(_map_dir)
+		os.mkdirs(_map_dir)
 	except:
 		pass
 		
@@ -87,20 +87,20 @@ def save_map(map_name, base_dir=DATA_DIR):
 		if 'old_pos' in light:
 			del light['old_pos']
 
-	with open(os.path.join(_map_dir,map_name), 'w') as _map_file:
+	with open(os.path.join(_map_dir, map_name+'.meta'), 'w') as _map_file:
 		try:
-			_map = WORLD_INFO['map']
 			_slices = WORLD_INFO['slices']
 			_chunk_map = WORLD_INFO['chunk_map']
 			_weather_light_map = None
 			
-			del WORLD_INFO['map']
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
 			
 			if 'light_map' in WORLD_INFO['weather']:
 				_weather_light_map = WORLD_INFO['weather']['light_map']
 				del WORLD_INFO['weather']['light_map']
+			
+			logging.debug('Writing map metadata to disk...')
 			
 			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
 			
@@ -113,15 +113,6 @@ def save_map(map_name, base_dir=DATA_DIR):
 			for _chunk_key in _chunk_map:
 				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
 			
-			logging.debug('Writing map to disk...')
-			
-			for x in range(MAP_SIZE[0]):
-				_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
-				#logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
-			
-			logging.info('Map \'%s\' saved to disk.' % map_name)			
-			
-			WORLD_INFO['map'] = _map
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
 			
@@ -132,30 +123,57 @@ def save_map(map_name, base_dir=DATA_DIR):
 			reload_slices()
 			logging.debug('Done!')
 			
-			logging.info('Map \'%s\' saved.' % map_name)
-			gfx.log('Map \'%s\' saved.' % map_name)
 		except TypeError as e:
 			logging.critical('FATAL: Map not JSON serializable.')
 			gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 			
 			raise e
-
-def load_map(map_name, base_dir=DATA_DIR):
-	_map_dir = os.path.join(base_dir,'maps')
-	if not map_name.count('.dat'):
-		map_name+='.dat'
 		
+	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+	_map = WORLD_INFO['map']
+		
+	del WORLD_INFO['map']
+		
+	for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
+		for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
+			_cluster_key = '%s_%s' % (x1, y1)
+			
+			with open(os.path.join(_map_dir, 'world_%s.cluster' % _cluster_key), 'w') as _cluster_file:
+				for y2 in range(y1, y1+_chunk_cluster_size):
+					for x2 in range(x1, x1+_chunk_cluster_size):
+						_cluster_file.write(json.dumps(_map[x2][y2])+'\n')
+	
+	WORLD_INFO['map'] = _map
+				
+		#with open(os.path.join(_map_dir, _map_name+'.map'), 'w') as _map_file:
+
+			
+		#	for x in range(MAP_SIZE[0]):
+		#		_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
+		#		#logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
+			
+		#	logging.info('Map \'%s\' saved to disk.' % map_name)
+			
+		#	WORLD_INFO['map'] = _map
+		
+		#logging.info('Map \'%s\' saved.' % map_name)
+		#gfx.log('Map \'%s\' saved.' % map_name)
+
+#@profile
+def load_map(map_name, base_dir=DATA_DIR):
+	_map_dir = os.path.join(base_dir, 'maps')
+
 	WORLD_INFO['map'] = []
 
-	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
+	with open(os.path.join(_map_dir, 'world.meta'),'r') as _map_file:
 		for line in _map_file.readlines():
 			line = line.rstrip()
 			value = line.split(':')
 			
 			if line.startswith('chunk'):
 				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
-			elif line.startswith('map'):
-				WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
+			#elif line.startswith('map'):
+			#	WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
 			elif line.startswith('slice'):
 				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 			elif line.startswith('world_info'):
@@ -173,39 +191,85 @@ def load_map(map_name, base_dir=DATA_DIR):
 		
 		WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
-		alife.chunks.generate_cache()
-		
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
-		
-		for x in range(MAP_SIZE[0]):
-			for y in range(MAP_SIZE[1]):
-				for z in range(MAP_SIZE[2]):
-					if not WORLD_INFO['map'][x][y][z]:
-						continue
-					
-					for key in TILE_STRUCT_DEP:
-						if key in WORLD_INFO['map'][x][y][z]:
-							del WORLD_INFO['map'][x][y][z][key]
-					
-					for key in TILE_STRUCT:
-						if not key in WORLD_INFO['map'][x][y][z]:
-							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
-		
-		logging.debug('Caching zones...')
-		zones.cache_zones()
-		logging.debug('Done!')
-		
-		logging.debug('Creating position maps...')
-		create_position_maps()
-		logging.debug('Done!')
-		
-		logging.info('Map \'%s\' loaded.' % map_name)
-		gfx.log('Map \'%s\' loaded.' % map_name)
+	
+	logging.debug('Caching zones...')
+	zones.cache_zones()
+	logging.debug('Done!')
+	
+	logging.debug('Creating position maps...')
+	create_position_maps()
+	logging.debug('Done!')
+	
+	WORLD_INFO['map'] = create_map(blank=True)
+	SETTINGS['base_dir'] = base_dir
+	
+	#_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+	#for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
+	#	for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
+	#		_cluster_key = '%s,%s' % (x1, y1)
+	#		
+	#		load_cluster(_cluster_key, base_dir=base_dir)
+	
+	logging.info('Map \'%s\' loaded.' % map_name)
+	gfx.log('Map \'%s\' loaded.' % map_name)
+	
+	#for x in range(MAP_SIZE[0]):
+	#	for y in range(MAP_SIZE[1]):
+	#		for z in range(MAP_SIZE[2]):
+	#			if not WORLD_INFO['map'][x][y][z]:
+	#				continue
+	#			
+	#			for key in TILE_STRUCT_DEP:
+	#				if key in WORLD_INFO['map'][x][y][z]:
+	#					del WORLD_INFO['map'][x][y][z][key]
+	#			
+	#			for key in TILE_STRUCT:
+	#				if not key in WORLD_INFO['map'][x][y][z]:
+	#					WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 
-		return True
+def load_cluster(cluster_key, base_dir=DATA_DIR):
+	logging.debug('Loading cluster: %s' % cluster_key)
+	LOADED_CHUNKS.append(cluster_key)
+	
+	_map_dir = os.path.join(base_dir, 'maps')
+	_cluster_key = cluster_key.replace(',', '_')
+	_x1 = int(cluster_key.split(',')[0])
+	_y1 = int(cluster_key.split(',')[1])
+	_xc = 0
+	
+	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+	
+	with open(os.path.join(_map_dir, 'world_%s.cluster' % _cluster_key), 'r') as _cluster_file:
+		for line in _cluster_file.readlines():
+			_sline = line.rstrip()
+			
+			if not _sline:
+				continue
+			
+			WORLD_INFO['map'][_x1][_y1] = json.loads(_sline)
+			
+			if _xc<_chunk_cluster_size-1:
+				_x1 += 1
+				_xc += 1
+			else:
+				_xc = 0
+				_x1 = int(cluster_key.split(',')[0])
+				_y1 += 1
+
+def load_cluster_at_position_if_needed(position):
+	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+	
+	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,
+	                          (position[1]/_chunk_cluster_size)*_chunk_cluster_size)
+	
+	if _cluster_key in LOADED_CHUNKS:
+		return False
+	
+	load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
 
 def get_tile(pos):
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
