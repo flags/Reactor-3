@@ -72,11 +72,11 @@ def reload_slices():
 			
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
-def save_map(map_name, base_dir=DATA_DIR):
-	_map_dir = os.path.join(base_dir, 'map')
+def save_map(map_name, base_dir=MAP_DIR):
+	_map_dir = os.path.join(base_dir, map_name)
 	
-	if base_dir == DATA_DIR:
-		_map_dir = os.path.join(_map_dir, map_name)
+	#if base_dir == DATA_DIR:
+	#	_map_dir = os.path.join(_map_dir, map_name)
 
 	try:
 		os.makedirs(_map_dir)
@@ -93,14 +93,20 @@ def save_map(map_name, base_dir=DATA_DIR):
 	with open(os.path.join(_map_dir, 'world.meta'), 'w') as _map_file:
 		try:
 			_slices = WORLD_INFO['slices']
+			#_slice_map = WORLD_INFO['slice_map']
+			_references = WORLD_INFO['references']
 			_chunk_map = WORLD_INFO['chunk_map']
 			_weather_light_map = None
 			
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
+			del WORLD_INFO['references']
+			
+			#del WORLD_INFO['slice_map']
 			
 			if 'light_map' in WORLD_INFO['weather']:
 				_weather_light_map = WORLD_INFO['weather']['light_map']
+				
 				del WORLD_INFO['weather']['light_map']
 			
 			logging.debug('Writing map metadata to disk...')
@@ -116,15 +122,19 @@ def save_map(map_name, base_dir=DATA_DIR):
 			for _chunk_key in _chunk_map:
 				_map_file.write('chunk:%s:%s\n' % (_chunk_key, json.dumps(_chunk_map[_chunk_key])))
 			
+			#_map_file.write('slice_map:%s' % json.dumps(_slice_map))
+			
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
+			WORLD_INFO['references'] = _references
+			#WORLD_INFO['slice_map'] = _slice_map
 			
 			if _weather_light_map:
 				WORLD_INFO['weather']['light_map'] = _weather_light_map
 			
-			logging.debug('Reloading slices...')
-			reload_slices()
-			logging.debug('Done!')
+			#logging.debug('Reloading slices...')
+			#reload_slices()
+			#logging.debug('Done!')
 			
 		except TypeError as e:
 			logging.critical('FATAL: Map not JSON serializable.')
@@ -161,6 +171,8 @@ def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
 			
 			if line.startswith('chunk'):
 				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
+			#elif line.startswith('slice_map'):
+			#	WORLD_INFO['slice_map'] = json.loads(':'.join(value[1:]))
 			elif line.startswith('slice'):
 				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 			elif line.startswith('world_info'):
@@ -174,7 +186,7 @@ def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
 		MAP_SIZE[1] = _map_size[1]
 		MAP_SIZE[2] = _map_size[2]
 		
-		reload_slices()
+		#reload_slices()
 		
 		WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
@@ -189,6 +201,10 @@ def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
 	
 	logging.debug('Creating position maps...')
 	create_position_maps()
+	logging.debug('Done!')
+	
+	logging.debug('Reloading references...')
+	reload_reference_maps()
 	logging.debug('Done!')
 	
 	WORLD_INFO['map'] = create_map(blank=True)
@@ -245,6 +261,20 @@ def load_cluster_at_position_if_needed(position):
 		return False
 	
 	load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
+
+def reload_reference_maps():
+	WORLD_INFO['references'] = {}
+	
+	for chunk_key in WORLD_INFO['chunk_map']:
+		if not 'reference' in WORLD_INFO['chunk_map'][chunk_key]:
+			continue
+		
+		_ref_id = WORLD_INFO['chunk_map'][chunk_key]['reference']
+		
+		if _ref_id in WORLD_INFO['references']:
+			WORLD_INFO['references'][_ref_id].append(chunk_key)
+		else:
+			WORLD_INFO['references'][_ref_id] = [chunk_key]
 
 def get_tile(pos):
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:

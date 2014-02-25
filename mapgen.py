@@ -429,7 +429,6 @@ def generate_noise_map(map_gen):
 					
 					for pos in _occupied_cells[avoid_cell_type]:
 						if numbers.distance(cell['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
-							print '2close', cell_type, avoid_cell_type
 							_continue = True
 							
 							break
@@ -450,9 +449,6 @@ def generate_noise_map(map_gen):
 				continue
 			
 			if _cell_type['min_cells'] < cell['size'] <= _cell_type['max_cells']:
-				_matched = True
-				#_cell_type['callback'](map_gen, cell)
-				#logging.debug('Created cell: %s' % cell_type)
 				_matching_cell_types.append(cell_type)
 			else:
 				logging.debug('Rejected cell (not enough cells): %s' % cell_type+str(cell['size']))

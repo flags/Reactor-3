@@ -186,7 +186,7 @@ def save_world():
 	logging.debug('Saving items...')
 	items.save_all_items()
 	
-	maps.save_map('world', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
+	maps.save_map('map', base_dir=profiles.get_world_directory(WORLD_INFO['id']))
 	
 	logging.debug('Saving life...')
 	_life = life.save_all_life()
@@ -375,9 +375,9 @@ def create_region_spawns():
 			_type = 'crime'
 	
 		spawns.generate_group('bandit',
-	                         amount=random.randint(4, 6),
-	                         group_motive=_type,
-	                         spawn_chunks=[_spawn_chunk])
+		                      amount=random.randint(4, 6),
+		                      group_motive=_type,
+		                      spawn_chunks=[_spawn_chunk])
 	
 	return False
 

@@ -137,8 +137,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					continue
 				
 				try:
-					if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+					if not WORLD_INFO['slice_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1][zone['z']] == zone['id']:
 						continue
+					#if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+					#	continue
 				except:
 					print 'Dijkstra crash dump:'
 					print 'Zones:', zones
