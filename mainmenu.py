@@ -273,7 +273,7 @@ def generate_world(combat_test=False):
 	elif _settings['World Age'] == '5 Weeks':
 		_ticks = 5000
 	
-	maps.load_map(_settings['Map'])
+	maps.load_map(_settings['Map'], cache_map=True)
 	
 	worldgen.generate_world(WORLD_INFO['map'],
 		dynamic_spawns=_settings['Dynamic Spawns'],

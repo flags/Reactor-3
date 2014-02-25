@@ -65,7 +65,7 @@ def get_maps():
 	_maps = []
 	
 	for (dirpath, dirname, filenames) in os.walk(_map_dir):
-		_maps.extend(filenames)
+		_maps.extend(dirname)
 	
 	return _maps
 

@@ -73,10 +73,13 @@ def reload_slices():
 			_slice['_map'][pos[0]-_xx][pos[1]-_yy] = 1
 
 def save_map(map_name, base_dir=DATA_DIR):
-	_map_dir = os.path.join(base_dir, 'maps')
+	_map_dir = os.path.join(base_dir, 'map')
+	
+	if base_dir == DATA_DIR:
+		_map_dir = os.path.join(_map_dir, map_name)
 
 	try:
-		os.mkdirs(_map_dir)
+		os.makedirs(_map_dir)
 	except:
 		pass
 		
@@ -87,7 +90,7 @@ def save_map(map_name, base_dir=DATA_DIR):
 		if 'old_pos' in light:
 			del light['old_pos']
 
-	with open(os.path.join(_map_dir, map_name+'.meta'), 'w') as _map_file:
+	with open(os.path.join(_map_dir, 'world.meta'), 'w') as _map_file:
 		try:
 			_slices = WORLD_INFO['slices']
 			_chunk_map = WORLD_INFO['chunk_map']
@@ -144,24 +147,10 @@ def save_map(map_name, base_dir=DATA_DIR):
 						_cluster_file.write(json.dumps(_map[x2][y2])+'\n')
 	
 	WORLD_INFO['map'] = _map
-				
-		#with open(os.path.join(_map_dir, _map_name+'.map'), 'w') as _map_file:
-
-			
-		#	for x in range(MAP_SIZE[0]):
-		#		_map_file.write('map:%s:%s\n' % (x, json.dumps(_map[x])))
-		#		#logging.debug('Wrote segment %s/%s' % (x+1, MAP_SIZE[0]))
-			
-		#	logging.info('Map \'%s\' saved to disk.' % map_name)
-			
-		#	WORLD_INFO['map'] = _map
-		
-		#logging.info('Map \'%s\' saved.' % map_name)
-		#gfx.log('Map \'%s\' saved.' % map_name)
-
-#@profile
-def load_map(map_name, base_dir=DATA_DIR):
-	_map_dir = os.path.join(base_dir, 'maps')
+	SETTINGS['base_dir'] = _map_dir
+	
+def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
+	_map_dir = os.path.join(base_dir, map_name)
 
 	WORLD_INFO['map'] = []
 
@@ -203,7 +192,16 @@ def load_map(map_name, base_dir=DATA_DIR):
 	logging.debug('Done!')
 	
 	WORLD_INFO['map'] = create_map(blank=True)
-	SETTINGS['base_dir'] = base_dir
+	SETTINGS['base_dir'] = _map_dir
+	
+	if cache_map:
+		_chunk_cluster_size = WORLD_INFO['chunk_size']*10
+		
+		for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
+			for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
+				_cluster_key = '%s_%s' % (x1, y1)
+				
+				load_cluster(_cluster_key, base_dir=_map_dir)
 	
 	logging.info('Map \'%s\' loaded.' % map_name)
 	gfx.log('Map \'%s\' loaded.' % map_name)
@@ -212,10 +210,10 @@ def load_cluster(cluster_key, base_dir=DATA_DIR):
 	logging.debug('Loading cluster: %s' % cluster_key)
 	LOADED_CHUNKS.append(cluster_key)
 	
-	_map_dir = os.path.join(base_dir, 'maps')
+	_map_dir = base_dir
 	_cluster_key = cluster_key.replace(',', '_')
-	_x1 = int(cluster_key.split(',')[0])
-	_y1 = int(cluster_key.split(',')[1])
+	_x1 = int(_cluster_key.split('_')[0])
+	_y1 = int(_cluster_key.split('_')[1])
 	_xc = 0
 	
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
@@ -234,7 +232,7 @@ def load_cluster(cluster_key, base_dir=DATA_DIR):
 				_xc += 1
 			else:
 				_xc = 0
-				_x1 = int(cluster_key.split(',')[0])
+				_x1 = int(_cluster_key.split('_')[0])
 				_y1 += 1
 
 def load_cluster_at_position_if_needed(position):

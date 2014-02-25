@@ -135,7 +135,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	"""
 	#smp.init()
 	
-	map_gen = {'name': '%s.dat' % time.time(),
+	map_gen = {'name': '%s' % time.time(),
 		'size': size,
 		'chunk_size': detail,
 		'noise_view_size': 100.0,
