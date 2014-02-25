@@ -172,8 +172,6 @@ def load_map(map_name, base_dir=DATA_DIR):
 			
 			if line.startswith('chunk'):
 				WORLD_INFO['chunk_map'][value[1]] = json.loads(':'.join(value[2:]))
-			#elif line.startswith('map'):
-			#	WORLD_INFO['map'].append(json.loads(':'.join(value[2:])))
 			elif line.startswith('slice'):
 				WORLD_INFO['slices'][value[1]] = json.loads(':'.join(value[2:]))
 			elif line.startswith('world_info'):
@@ -207,29 +205,8 @@ def load_map(map_name, base_dir=DATA_DIR):
 	WORLD_INFO['map'] = create_map(blank=True)
 	SETTINGS['base_dir'] = base_dir
 	
-	#_chunk_cluster_size = WORLD_INFO['chunk_size']*10
-	#for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
-	#	for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
-	#		_cluster_key = '%s,%s' % (x1, y1)
-	#		
-	#		load_cluster(_cluster_key, base_dir=base_dir)
-	
 	logging.info('Map \'%s\' loaded.' % map_name)
 	gfx.log('Map \'%s\' loaded.' % map_name)
-	
-	#for x in range(MAP_SIZE[0]):
-	#	for y in range(MAP_SIZE[1]):
-	#		for z in range(MAP_SIZE[2]):
-	#			if not WORLD_INFO['map'][x][y][z]:
-	#				continue
-	#			
-	#			for key in TILE_STRUCT_DEP:
-	#				if key in WORLD_INFO['map'][x][y][z]:
-	#					del WORLD_INFO['map'][x][y][z][key]
-	#			
-	#			for key in TILE_STRUCT:
-	#				if not key in WORLD_INFO['map'][x][y][z]:
-	#					WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 
 def load_cluster(cluster_key, base_dir=DATA_DIR):
 	logging.debug('Loading cluster: %s' % cluster_key)
