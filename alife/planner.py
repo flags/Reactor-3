@@ -27,8 +27,7 @@ def add_goal(life, goal_name, desire, require, tier, loop_until, set_flags):
 	                                 'loop_until': loop_until.split(','),
 	                                 'set_flags': set_flags.split(',')}
 	
-	logging.debug('Created goal: %s' % goal_name)
-
+	#logging.debug('Created goal: %s' % goal_name)
 
 def remove_goal(life, goal_name):
 	logging.warning('TODO: Remove blacklist.')
@@ -45,7 +44,7 @@ def add_action(life, action_name, desire, require, satisfies, loop_until, execut
 	                                     'set_flags': set_flags.split(','),
 	                                     'non_critical': non_critical == 'true'}
 	
-	logging.debug('Created action: %s' % action_name)
+	#logging.debug('Created action: %s' % action_name)
 
 def parse_goap(life):
 	logging.debug('Parsing GOAP for life type \'%s\'' % life['species'])

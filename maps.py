@@ -148,8 +148,6 @@ def load_map(map_name, base_dir=DATA_DIR):
 	WORLD_INFO['map'] = []
 
 	with open(os.path.join(_map_dir,map_name),'r') as _map_file:
-		#try:
-		#WORLD_INFO.update(json.loads(' '.join(_map_file.readlines())))
 		for line in _map_file.readlines():
 			line = line.rstrip()
 			value = line.split(':')
@@ -165,9 +163,6 @@ def load_map(map_name, base_dir=DATA_DIR):
 		
 		if 'items' in WORLD_INFO:
 			ITEMS.update(WORLD_INFO['items'])
-				
-		#if not (x, y) in zone['map']:
-		#for slice 
 		
 		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 		MAP_SIZE[0] = _map_size[0]
@@ -199,15 +194,18 @@ def load_map(map_name, base_dir=DATA_DIR):
 						if not key in WORLD_INFO['map'][x][y][z]:
 							WORLD_INFO['map'][x][y][z][key] = copy.copy(TILE_STRUCT[key])
 		
+		logging.debug('Caching zones...')
 		zones.cache_zones()
+		logging.debug('Done!')
+		
+		logging.debug('Creating position maps...')
 		create_position_maps()
+		logging.debug('Done!')
+		
 		logging.info('Map \'%s\' loaded.' % map_name)
 		gfx.log('Map \'%s\' loaded.' % map_name)
 
 		return True
-		#except TypeError:
-		#	logging.error('FATAL: Map not JSON serializable.')
-		#	gfx.log('TypeError: Failed to save map (Map not JSON serializable).')
 
 def get_tile(pos):
 	if WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]:
@@ -508,20 +506,22 @@ def get_open_position_in_chunk(source_map, chunk_id):
 	return False
 
 def create_position_maps():
-	_map = []
+	_emap = []
+	_lmap = []
 	
 	for x in range(0, MAP_SIZE[0]):
-		_y = []
+		_ye = []
+		_yl = []
 		
 		for y in range(0, MAP_SIZE[1]):
-			_y.append([])
+			_ye.append([])
+			_yl.append([])
 		
-		_map.append(_y)
+		_emap.append(_ye)
+		_lmap.append(_yl)
 	
-	EFFECT_MAP.extend(copy.deepcopy(_map))
-	LIFE_MAP.extend(copy.deepcopy(_map))
-	
-	logging.debug('Position maps created.')
+	EFFECT_MAP.extend(_emap)
+	LIFE_MAP.extend(_lmap)
 
 def create_search_map(life, pos, size):
 	_map = numpy.ones((size, size))
