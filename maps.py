@@ -160,7 +160,7 @@ def save_map(map_name, base_dir=MAP_DIR, only_cached=True):
 		_x1 = int(cluster_key.split(',')[0])
 		_y1 = int(cluster_key.split(',')[1])
 		
-		with open(os.path.join(_map_dir, 'world_%s.cluster' % cluster_key), 'w') as _cluster_file:
+		with open(os.path.join(_map_dir, 'world_%s.cluster' % cluster_key.replace(',', '_')), 'w') as _cluster_file:
 			for y2 in range(_y1, _y1+_chunk_cluster_size):
 				for x2 in range(_x1, _x1+_chunk_cluster_size):
 					_cluster_file.write(json.dumps(_map[x2][y2])+'\n')
