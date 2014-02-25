@@ -93,16 +93,17 @@ def save_map(map_name, base_dir=MAP_DIR):
 	with open(os.path.join(_map_dir, 'world.meta'), 'w') as _map_file:
 		try:
 			_slices = WORLD_INFO['slices']
-			#_slice_map = WORLD_INFO['slice_map']
 			_references = WORLD_INFO['references']
 			_chunk_map = WORLD_INFO['chunk_map']
+			_map = WORLD_INFO['map']
 			_weather_light_map = None
 			
 			del WORLD_INFO['slices']
 			del WORLD_INFO['chunk_map']
 			del WORLD_INFO['references']
+			del WORLD_INFO['map']
 			
-			#del WORLD_INFO['slice_map']
+			WORLD_INFO['map_size'] = maputils.get_map_size(_map)
 			
 			if 'light_map' in WORLD_INFO['weather']:
 				_weather_light_map = WORLD_INFO['weather']['light_map']
@@ -127,6 +128,7 @@ def save_map(map_name, base_dir=MAP_DIR):
 			WORLD_INFO['slices'] = _slices
 			WORLD_INFO['chunk_map'] = _chunk_map
 			WORLD_INFO['references'] = _references
+			WORLD_INFO['map'] = _map
 			#WORLD_INFO['slice_map'] = _slice_map
 			
 			if _weather_light_map:
@@ -181,19 +183,14 @@ def load_map(map_name, base_dir=MAP_DIR, cache_map=False):
 		if 'items' in WORLD_INFO:
 			ITEMS.update(WORLD_INFO['items'])
 		
-		_map_size = maputils.get_map_size(WORLD_INFO['map'])
-		MAP_SIZE[0] = _map_size[0]
-		MAP_SIZE[1] = _map_size[1]
-		MAP_SIZE[2] = _map_size[2]
-		
-		#reload_slices()
+		MAP_SIZE[0] = WORLD_INFO['map_size'][0]
+		MAP_SIZE[1] = WORLD_INFO['map_size'][1]
+		MAP_SIZE[2] = WORLD_INFO['map_size'][2]
 		
 		WORLD_INFO['chunk_map'].update(WORLD_INFO['chunk_map'])
 		
 		if WORLD_INFO['weather']:
 			weather.create_light_map(WORLD_INFO['weather'])
-		
-		_map_size = maputils.get_map_size(WORLD_INFO['map'])
 	
 	logging.debug('Caching zones...')
 	zones.cache_zones()
