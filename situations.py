@@ -105,17 +105,22 @@ def broadcast(messages, event_time, glitch=False):
 		_i += 1
 		_time += int(round(len(entry['text'])*1.25))
 
-def get_overwatch_hardship():
+def get_overwatch_hardship(no_mod=False):
 	_stats = WORLD_INFO['overwatch']
 	_situation = get_player_situation()
 	
 	if not _situation:
 		return 0
 	
-	if _situation['online_alife'] == _situation['trusted_online_alife']:
-		_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
-	else:
+	if no_mod:
 		_mod = 1
+	else:
+		if len(_situation['online_alife']) == len(_situation['trusted_online_alife']):
+			_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
+		elif not _situation['trusted_online_alife']:
+			_mod = 0.95*float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
+		else:
+			_mod = numbers.clip(float(_stats['last_updated'])/float(WORLD_INFO['ticks'])-(len(_situation['online_alife'])/float(len(_situation['trusted_online_alife']))), 0.75, 1)
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['danger_experienced']
@@ -124,6 +129,15 @@ def get_overwatch_hardship():
 	_hardship *= _mod
 	
 	return _hardship
+
+def handle_tracked_alife():
+	for ai in [LIFE[i] for i in WORLD_INFO['overwatch']['tracked_alife']]:
+		if ai['online']:
+			continue
+		
+		WORLD_INFO['overwatch']['tracked_alife'].remove(ai['id'])
+		
+		logging.debug('[Overwatch]: Stopped tracking agent: %s' % ' '.join(ai['name']))
 
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
@@ -139,8 +153,10 @@ def evaluate_overwatch_mood():
 	#	
 	#	_stats['mood'] = random.choice(['rest', 'hurt'])
 	#elif _stats['mood'] == 'hurt':
-	if _hardship-_success >= 3:
+	if _hardship-_success >= 3.5:
 		_stats['mood'] = 'rest'
+	elif get_overwatch_hardship(no_mod=True)>=3.5:
+		_stats['mood'] = 'intrigue'
 	else:
 		_stats['mood'] = 'hurt'
 
@@ -247,10 +263,12 @@ def create_intro_story():
 		lfe.set_pos(_player, spawns.get_spawn_in_ref('farms'))
 
 def form_scheme(force=False):
-	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force:
+	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force or not SETTINGS['controlling']:
 		return False
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
+	
+	handle_tracked_alife()
 	
 	if _overwatch_mood == 'rest':
 		return False
@@ -259,6 +277,11 @@ def form_scheme(force=False):
 	
 	if _overwatch_mood == 'hurt':
 		if hurt_player(_player_situation):
+			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+			
+			return True
+	elif _overwatch_mood == 'intrigue':
+		if intrigue_player(_player_situation):
 			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 			
 			return True
@@ -357,10 +380,10 @@ def execute_scheme():
 	
 	WORLD_INFO['scheme'].remove(_event)
 
+def intrigue_player(situation):
+	_player = LIFE[SETTINGS['controlling']]
+
 def hurt_player(situation):
-	if not SETTINGS['controlling']:
-		return False
-	
 	_player = LIFE[SETTINGS['controlling']]
 	
 	if situation['group']:

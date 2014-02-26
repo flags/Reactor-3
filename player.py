@@ -1558,6 +1558,7 @@ def create_pick_up_item_menu(items):
 
 def create_open_item_menu(items):
 	_menu_items = []
+	_items = []
 	
 	for item in items:
 		if not 'storing' in item:
@@ -1567,12 +1568,13 @@ def create_open_item_menu(items):
 		
 		for stored_item in [ITEMS[s] for s in item['storing']]:
 			_menu_items.append(menus.create_item('single', stored_item['name'], None, icon=stored_item['icon'], item=stored_item['uid']))
+			_items.append(stored_item['uid'])
 	
 	if len(_menu_items)==1:
 		gfx.message('The %s is empty.' % items[0]['name'])
 		return False
 	
-	if not _menu_items:
+	if not _items:
 		gfx.message('There is nothing here to open.')
 		return False
 	
