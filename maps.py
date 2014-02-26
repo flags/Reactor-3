@@ -152,9 +152,11 @@ def save_map(map_name, base_dir=MAP_DIR, only_cached=True):
 	if only_cached:
 		_cluster_keys = LOADED_CHUNKS
 	else:
+		_cluster_keys = []
+		
 		for y1 in range(0, MAP_SIZE[1], _chunk_cluster_size):
 			for x1 in range(0, MAP_SIZE[0], _chunk_cluster_size):
-				_cluster_keys.append('%s_%s' % (x1, y1))
+				_cluster_keys.append('%s,%s' % (x1, y1))
 				
 	for cluster_key in _cluster_keys:
 		_x1 = int(cluster_key.split(',')[0])

@@ -136,24 +136,32 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	#smp.init()
 	
 	map_gen = {'name': '%s' % time.time(),
-		'size': size,
-		'chunk_size': detail,
-		'noise_view_size': 100.0,
-		'noise_zoom': 3.5,
-		'town_fuzz': 45.0,#50.0,
-		'road_fuzz': 15.5,
-		'towns': towns,
-		'factories': factories,
-		'forests': forests,
-		'outposts': outposts,
-		'underground': underground,
-		'chunk_map': {},
-		'refs': {'factories': [], 'villages': [], 'towns': [], 'farms': [], 'buildings': [], 'forests': [], 'roads': [], 'town_seeds': [], 'outposts': [], 'dirt_road': []},
-		'buildings': load_tiles('buildings.txt', detail),
-		'flags': {},
-		'map': maps.create_map(size=size),
-		'queued_roads': [],
-		'settings': {'back yards': True, 'town size': (20, 25)}}
+	           'size': size,
+	           'chunk_size': detail,
+	           'noise_view_size': 100.0,
+	           'noise_zoom': 3.5,
+	           'town_fuzz': 45.0,#50.0,
+	           'road_fuzz': 15.5,
+	           'towns': towns,
+	           'factories': factories,
+	           'forests': forests,
+	           'outposts': outposts,
+	           'underground': underground,
+	           'chunk_map': {},
+	           'refs': {'factories': [],
+	                    'towns': [],
+	                    'farms': [],
+	                    'buildings': [],
+	                    'forests': [],
+	                    'roads': [],
+	                    'outposts': [],
+	                    'town_seeds': [],
+	                    'dirt_road': []},
+	           'buildings': load_tiles('buildings.txt', detail),
+	           'flags': {},
+	           'map': maps.create_map(size=size),
+	           'queued_roads': [],
+	           'settings': {'back yards': True, 'town size': (20, 25)}}
 	
 	_map_size = maputils.get_map_size(map_gen['map'])
 	MAP_SIZE[0] = _map_size[0]
@@ -206,7 +214,7 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 		items.save_all_items()
 		
 		if not hotload:
-			maps.save_map(map_gen['name'])
+			maps.save_map(map_gen['name'], only_cached=False)
 		
 		items.reload_all_items()
 	
@@ -220,14 +228,14 @@ def generate_chunk_map(map_gen):
 			_chunk_key = '%s,%s' % (x1, y1)
 			
 			map_gen['chunk_map'][_chunk_key] = {'pos': (x1, y1),
-				'ground': [],
-				'life': [],
-				'items': [],
-				'control': {},
-				'reference': None,
-				'flags': {},
-				'type': 'other',
-				'max_z': 2}
+			                                    'ground': [],
+			                                    'life': [],
+			                                    'items': [],
+			                                    'control': {},
+			                                    'reference': None,
+			                                    'flags': {},
+			                                    'type': 'other',
+			                                    'max_z': 2}
 
 def generate_reference_maps(map_gen):
 	map_gen['references'] = {}
@@ -501,7 +509,7 @@ def generate_outpost(map_gen, cell):
 	
 	map_gen['refs']['outposts'].append(_outpost_chunk_keys)
 	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
-	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
+	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key], house_themes=['barracks'])
 
 def generate_forest(map_gen, cell):
 	for chunk_key in cell['chunk_keys']:
@@ -1372,7 +1380,7 @@ def direction_from_key_to_key(map_gen, key1, key2):
 	
 	raise Exception('Invalid direction.')
 
-def construct_building(map_gen, building, building_type='town', exterior_chunks=[]):
+def construct_building(map_gen, building, building_type='town', exterior_chunks=[], house_themes=['townhouse']):
 	_main_room_types = []
 	_secondary_room_types = []
 	_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
@@ -1428,6 +1436,20 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 				_lowest_neighbor['chunk_key'] = neighbor_key
 				_lowest_neighbor['count'] = _remaining_free_space
 		
+		_house_theme = random.choice(house_themes)
+		_valid_room_types = []
+		
+		if _house_theme == 'townhouse':
+			_room_types = {'closet': {'int': 1},
+		                   'bathroom': {'int': 1},
+		                   'bedroom': {'int': 2},
+		                   'large dining room': {'int': 3}}
+		elif _house_theme == 'barracks':
+			_room_types = {'small dorm': {'int': 2},
+			               'dorm': {'int': 3},
+			               'small dorm': {'int': 1},
+			               'office': {'int': 1}}
+		
 		#Lots of connected rooms
 		if _highest_neighbor['count']>=4 and _lowest_neighbor['count']>=4:
 			#Higher than 4 for each
@@ -1437,8 +1459,14 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 				if _exterior_chunks:
 					_type = 'landing'
 				else:
-					if len(_interior_chunks) == 1:
-						_type = random.choice(['closet', 'bathroom'])
+					for room_type in _room_types:
+						_room_type = _room_types[room_type]
+						
+						if len(_interior_chunks)+len(_exterior_chunks) == _room_type['int']:
+							_valid_room_types.append(room_type)
+					
+					if _valid_room_types:
+						_type = random.choice(_valid_room_types)
 						_exterior_chunks = _interior_chunks.keys()
 						_interior_chunks = []
 					else:
@@ -1456,12 +1484,14 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 				if _exterior_chunks:
 					_type = 'landing'
 				else:
-					if len(_interior_chunks) == 1:
-						_type = random.choice(['closet', 'bathroom'])
-						_exterior_chunks = _interior_chunks.keys()
-						_interior_chunks = []
-					elif len(_interior_chunks) == 2:
-						_type = 'bedroom'
+					for room_type in _room_types:
+						_room_type = _room_types[room_type]
+						
+						if len(_interior_chunks)+len(_exterior_chunks) == _room_type['int']:
+							_valid_room_types.append(room_type)
+					
+					if _valid_room_types:
+						_type = random.choice(_valid_room_types)
 						_exterior_chunks = _interior_chunks.keys()
 						_interior_chunks = []
 					else:
@@ -1490,8 +1520,19 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 						_can_connect_to.append(_direction)
 				
 				if _needs_to_connect and len(_can_connect_to):
-					_occupied_chunks[chunk_key] = {'room': 'small1',
-						                          'interior': random.sample(_can_connect_to, random.randint(1, len(_can_connect_to))),
+					_int = random.sample(_can_connect_to, random.randint(1, len(_can_connect_to)))
+					
+					for room_type in _room_types:
+						_room_type = _room_types[room_type]
+						
+						if len(_int)+len(_needs_to_connect) == _room_type['int']:
+							_valid_room_types.append(room_type)
+					
+					if not _valid_room_types:
+						_valid_room_types = ['small1']
+							
+					_occupied_chunks[chunk_key] = {'room': random.choice(_valid_room_types),
+						                          'interior': _int,
 						                          'exterior': _needs_to_connect}
 				elif _interior_chunks:
 					_exterior_chunks = [random.choice(_interior_chunks.keys())]
@@ -1543,35 +1584,41 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 		_storage = []
 		if _room == 'closet':
 			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-				     {'item': 'leather backpack', 'rarity': 0.65},
-				     {'item': 'sneakers', 'rarity': 1.0},
-				     {'item': 'white t-shirt', 'rarity': 1.0},
-				     {'item': 'white cloth', 'rarity': 0.4},
-			          {'item': 'glock', 'rarity': 0.25},
-			          {'item': '9x19mm magazine', 'rarity': 0.3}]
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+			                  {'item': 'leather backpack', 'rarity': 0.65},
+			                  {'item': 'sneakers', 'rarity': 1.0},
+			                  {'item': 'white t-shirt', 'rarity': 0.7},
+			                  {'item': 'white cloth', 'rarity': 0.4},
+			                  {'item': 'glock', 'rarity': 0.25},
+			                  {'item': '9x19mm magazine', 'rarity': 0.3}]
+			_storage_items_2 = [{'item': 'brown hoodie', 'rarity': 0.4},
+			                    {'item': 'leather backpack', 'rarity': 0.35},
+			                    {'item': 'fall camo pants', 'rarity': 0.35},
+			                    {'item': 'white t-shirt', 'rarity': 0.5},
+			                    {'item': '.22 rifle', 'rarity': 0.4}]
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items},
+			            {'item': 'wooden dresser', 'rarity': 0.6, 'spawn_list': _storage_items_2}]
 			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
 		elif _room == 'bathroom':
-			_storage_items = [{'item': 'aspirin', 'rarity': 1.0}]
+			_storage_items = [{'item': 'aspirin', 'rarity': 0.7}]
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			_floor_tiles = tiles.BLUE_FLOOR_TILES
 		elif _room == 'bedroom':
 			_items = [{'item': 'bed', 'rarity': 1.0},
 			          {'item': 'wooden dresser', 'rarity': 0.5}]
 			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-				     {'item': 'leather backpack', 'rarity': 0.65},
-			          {'item': 'chest holster', 'rarity': 0.65},
-				     {'item': 'sneakers', 'rarity': 1.0},
-				     {'item': 'white t-shirt', 'rarity': 1.0},
-			          {'item': 'white cloth', 'rarity': 0.4},
-			          {'item': 'glock', 'rarity': 0.25},
-			          {'item': '9x19mm magazine', 'rarity': 0.3}]
+			                  {'item': 'leather backpack', 'rarity': 0.65},
+			                  {'item': 'chest holster', 'rarity': 0.65},
+			                  {'item': 'sneakers', 'rarity': 1.0},
+			                  {'item': 'white t-shirt', 'rarity': 1.0},
+			                  {'item': 'white cloth', 'rarity': 0.4},
+			                  {'item': 'glock', 'rarity': 0.25},
+			                  {'item': '9x19mm magazine', 'rarity': 0.3}]
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			_floor_tiles = tiles.DARK_BLUE_FLOOR_TILES
 		elif _room == 'small1':
-			_floor_tiles = tiles.BLUE_CARPET_TILES
+			_floor_tiles = tiles.RED_BRICK_TILES
 		elif _room == 'small2':
-			_floor_tiles = tiles.DARK_GREEN_FLOOR_TILES
+			_floor_tiles = tiles.RED_BRICK_TILES
 			_items = [{'item': 'bed', 'rarity': 1.0}]
 			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
 			                  {'item': 'leather backpack', 'rarity': 0.65},
@@ -1586,6 +1633,53 @@ def construct_building(map_gen, building, building_type='town', exterior_chunks=
 			
 			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
 			          
+			_floor_tiles = tiles.WHITE_TILE_TILES
+		elif _room == 'large dining room':
+			_items = [{'item': 'wooden dresser', 'rarity': 1.0},
+			          {'item': 'wooden dresser', 'rarity': 1.0},
+			          {'item': 'wooden dresser', 'rarity': 1.0}]
+			_floor_tiles = tiles.WHITE_TILE_TILES
+		elif _room == 'small dorm':
+			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
+			                  {'item': 'glock', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm magazine', 'rarity': 0.75}]
+			
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
+		elif _room == 'dorm':
+			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
+			                  {'item': 'glock', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm round', 'rarity': 0.6},
+			                  {'item': '9x19mm magazine', 'rarity': 0.75}]
+			_storage_items_2 = [{'item': 'leather backpack', 'rarity': 0.65},
+			                    {'item': 'glock', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm round', 'rarity': 0.6},
+			                    {'item': '9x19mm magazine', 'rarity': 0.75}]
+			
+			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items},
+			            {'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items_2}]
+			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
+		elif _room == 'office':
+			_items = [{'item': 'wooden dresser', 'rarity': 1.0}]
 			_floor_tiles = tiles.WHITE_TILE_TILES
 		else:
 			_floor_tiles = tiles.SEA_CARPET_TILES
