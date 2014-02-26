@@ -261,6 +261,7 @@ def get_next_goal(life, debug=False):
 		if len(life['goap_goals'][goal]['require'][0]):
 			for requirement in life['goap_goals'][goal]['require']:
 				_requirement = requirement
+				_single = False
 				
 				if _requirement.startswith('!'):
 					_requirement = _requirement[1:]
@@ -268,7 +269,15 @@ def get_next_goal(life, debug=False):
 				else:
 					_true = True
 				
-				if not FUNCTION_MAP[_requirement](life) == _true:
+				if _requirement.startswith('%'):
+					_requirement = _requirement[1:]
+					_single = True
+				
+				if _single:
+					_func = FUNCTION_MAP[_requirement]()
+				else:
+					_func = FUNCTION_MAP[_requirement](life)
+				if not _func == _true:
 					if debug == goal:
 						print '\tFailed at:%s' % _requirement
 					

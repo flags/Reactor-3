@@ -82,6 +82,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	WORLD_INFO['start_age'] = simulate_ticks
 	WORLD_INFO['dynamic_spawns'] = dynamic_spawns
 	WORLD_INFO['wildlife_spawns'] = wildlife_spawns
+	WORLD_INFO['real_time_of_day'] = int(round(WORLD_INFO['length_of_day']*.10))
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
 	WORLD_INFO['title'] = 'Operation %s' % language.generate_scheme_title().title()

@@ -146,6 +146,21 @@ def clear_effect(effect):
 	if gfx.position_is_in_frame(effect['pos']):
 		gfx.refresh_view_position(effect['pos'][0]-CAMERA_POS[0], effect['pos'][1]-CAMERA_POS[1], 'map')
 
+def create_explosion(pos, force):
+	alife.noise.create(pos, force*100, 'an explosion', 'a low rumble', skip_on_visual=False)
+	
+	create_light(pos, (255, 69, 0), force*6, 1, fade=3)
+	create_smoke_cloud(pos,
+	                   force*6,
+	                   age=.8,
+	                   factor_distance=True)
+
+	for i in range(random.randint(1, 3)):
+		create_smoke_streamer(pos,
+		                      3+random.randint(0, 2),
+		                      (force*2)+random.randint(3, 6),
+		                      color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
+
 def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1, speed=0.3, max_opacity=.75, interp_wind=True):
 	_intensity = random.uniform(max_opacity*.25, max_opacity)
 	_color = tcod.color_lerp(color, tcod.white, random.uniform(0, 0.3))

@@ -4,6 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import language
+import drawing
 import numbers
 import effects
 import spawns
@@ -14,13 +15,22 @@ import logging
 import random
 
 
-def create_heli_crash(kind):
-	while 1:
-		chunk_key = random.choice(WORLD_INFO['chunk_map'])
-		
-		_walkable = alife.chunks.get_walkable_areas(chunk_key)
-		if not _walkable:
+def create_heli_crash(pos, spawn_list):
+	_pos = spawns.get_spawn_point_around(pos, area=10)
+	_size = random.randint(4, 6)
+	
+	effects.create_explosion(_pos, _size)
+	
+	for n_pos in drawing.draw_circle(_pos, _size*2):
+		if random.randint(0, 2):
 			continue
+		
+		_n_pos = list(n_pos)
+		_n_pos.append(2)
+		
+		effects.create_fire(_n_pos, intensity=8)
+	
+	record_dangerous_event(3)
 		
 def drop_cache(item_names):
 	while 1:
@@ -138,6 +148,14 @@ def handle_tracked_alife():
 		WORLD_INFO['overwatch']['tracked_alife'].remove(ai['id'])
 		
 		logging.debug('[Overwatch]: Stopped tracking agent: %s' % ' '.join(ai['name']))
+
+def attract_tracked_alife_to(pos):
+	_chunk_key = alife.chunks.get_chunk_key_at(pos)
+	
+	for ai in [LIFE[i] for i in WORLD_INFO['overwatch']['tracked_alife']]:
+		alife.movement.set_focus_point(ai, _chunk_key)
+	
+		logging.debug('[Overwatch]: Attracting %s to %s.' % (' '.join(ai['name']), _chunk_key))
 
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
@@ -382,6 +400,13 @@ def execute_scheme():
 
 def intrigue_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
+	_event_number = random.randint(0, 1)
+	
+	if _event_number == 1:
+		_crash_pos = spawns.get_spawn_point_around(_player['pos'], area=50, min_area=30)
+		create_heli_crash(_crash_pos, [])
+		
+		attract_tracked_alife_to(_crash_pos)
 
 def hurt_player(situation):
 	_player = LIFE[SETTINGS['controlling']]

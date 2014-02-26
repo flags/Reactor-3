@@ -462,6 +462,7 @@ def create_all_tiles():
 def create_tile(tile):
 	_ret_tile = {}
 	_ret_tile['id'] = tile['id']
+	_ret_tile['flags'] = {}
 
 	return _ret_tile
 

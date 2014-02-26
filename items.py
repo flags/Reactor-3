@@ -521,20 +521,8 @@ def explode(item):
 	#TODO: Don't breathe this!
 	item['pos'] = get_pos(item['uid'])
 	
-	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
-	
 	if item['damage']['force']:
-		effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=3)
-		effects.create_smoke_cloud(item['pos'],
-			                       item['damage']['force']*6,
-			                       age=.8,
-			                       factor_distance=True)
-		
-		for i in range(random.randint(1, 3)):
-			effects.create_smoke_streamer(item['pos'],
-				                          3+random.randint(0, 2),
-				                          (item['damage']['force']*2)+random.randint(3, 6),
-				                          color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
+		effects.create_explosion(item['pos'], item['damage']['force'])
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
