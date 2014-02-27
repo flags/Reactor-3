@@ -22,7 +22,7 @@ def create_heli_crash(pos, spawn_list):
 	effects.create_explosion(_pos, _size)
 	
 	for n_pos in drawing.draw_circle(_pos, _size*2):
-		if random.randint(0, 2):
+		if random.randint(0, 10):
 			continue
 		
 		_n_pos = list(n_pos)
@@ -30,30 +30,15 @@ def create_heli_crash(pos, spawn_list):
 		
 		effects.create_fire(_n_pos, intensity=8)
 	
-	record_dangerous_event(3)
+	record_dangerous_event(6)
 		
-def drop_cache(item_names):
-	while 1:
-		_chunk_key = random.choice(WORLD_INFO['chunk_map'].keys())
-		_chunk = alife.chunks.get_chunk(_chunk_key)
-		
-		if _chunk['type'] == 'other':
-			break
+def create_cache_drop(pos, spawn_list):
+	_player = LIFE[SETTINGS['controlling']]
 	
-	for item in item_names:
-		_pos = random.choice(_chunk['ground'])
-		_item = ITEMS[items.create_item(item, position=[_pos[0], _pos[1], 2])]
-		
-		for life in LIFE.values():
-			lfe.memory(life, 'cache_drop', chunk_key=_chunk_key)
-			#alife.survival.add_needed_item(life,
-			#                               {'pos': _item['pos'][:]},
-			#                               satisfy_if=alife.action.make_small_script(function='always'),
-			#                               satisfy_callback=alife.action.make_small_script(function='consume'))
-			#alife.brain.remember_item(life, _item)
+	_pos = spawns.get_spawn_point_around(pos, area=10)
+	_direction = language.get_real_direction(numbers.direction_to(_player['pos'], _pos))
 	
-	gfx.message('You see something parachuting to the ground.')
-	print _chunk['pos']
+	gfx.message('You see something parachuting to the ground to the %s.' % _direction)
 
 def get_player_situation():
 	if not SETTINGS['controlling']:
@@ -126,16 +111,20 @@ def get_overwatch_hardship(no_mod=False):
 		_mod = 1
 	else:
 		if len(_situation['online_alife']) == len(_situation['trusted_online_alife']):
-			_mod = float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
-		elif not _situation['trusted_online_alife']:
-			_mod = 0.95*float(_stats['last_updated'])/float(WORLD_INFO['ticks'])
+			_mod = _stats['last_updated']/float(WORLD_INFO['ticks'])
 		else:
-			_mod = numbers.clip(float(_stats['last_updated'])/float(WORLD_INFO['ticks'])-(len(_situation['online_alife'])/float(len(_situation['trusted_online_alife']))), 0.75, 1)
+			_mod = numbers.clip((_stats['last_updated']*1.5)/float(WORLD_INFO['ticks']), 0, 1.0)
+			
+			#TODO: Decay
+			#_stats['loss_experienced'] *= _dec
+			#_stats['danger_experienced'] *= _dec
+			#_stats['injury'] *= _dec
+			#_stats['human_encounters'] *= _dec
 	
 	_hardship = _stats['loss_experienced']
 	_hardship += _stats['danger_experienced']
 	_hardship += _stats['injury']
-	_hardship += _stats['human_encounters']*2
+	_hardship += _stats['human_encounters']*4
 	_hardship *= _mod
 	
 	return _hardship
@@ -402,11 +391,18 @@ def intrigue_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
 	_event_number = random.randint(0, 1)
 	
+	#0: Cache drop (mid-game only: faction ordered)
+	#1: Heli crash site (military)
+	#2: Weather balloon (radio, PDA info: forecast)
+	
 	if _event_number == 1:
 		_crash_pos = spawns.get_spawn_point_around(_player['pos'], area=50, min_area=30)
 		create_heli_crash(_crash_pos, [])
 		
 		attract_tracked_alife_to(_crash_pos)
+	else:
+		_land_pos = spawns.get_spawn_point_around(_player['pos'], area=150, min_area=90)
+		create_cache_drop(_land_pos, _items)
 
 def hurt_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
