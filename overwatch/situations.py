@@ -7,192 +7,15 @@ import language
 import drawing
 import numbers
 import effects
+import events
 import spawns
 import alife
 import items
+import core
 
 import logging
 import random
 
-
-def create_heli_crash(pos, spawn_list):
-	_pos = spawns.get_spawn_point_around(pos, area=10)
-	_size = random.randint(4, 6)
-	
-	effects.create_explosion(_pos, _size)
-	
-	for n_pos in drawing.draw_circle(_pos, _size*2):
-		if random.randint(0, 10):
-			continue
-		
-		_n_pos = list(n_pos)
-		_n_pos.append(2)
-		
-		effects.create_fire(_n_pos, intensity=8)
-	
-	record_dangerous_event(6)
-		
-def create_cache_drop(pos, spawn_list):
-	_player = LIFE[SETTINGS['controlling']]
-	
-	_pos = spawns.get_spawn_point_around(pos, area=10)
-	_direction = language.get_real_direction(numbers.direction_to(_player['pos'], _pos))
-	
-	gfx.message('You see something parachuting to the ground to the %s.' % _direction)
-
-def get_player_situation():
-	if not SETTINGS['controlling']:
-		return False
-	
-	_life = LIFE[SETTINGS['controlling']]
-	
-	_situation = {}
-	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
-	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
-	_situation['group'] = _life['group']
-	_situation['online_alife'] = [l for l in LIFE.values() if l['online'] and not l['dead'] and not l['id'] == _life['id']]
-	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
-	_situation['has_radio'] = len(lfe.get_all_inventory_items(_life, matches=[{'type': 'radio'}]))>0
-	
-	return _situation
-
-def get_group_leader_with_motive(group_motive, online=False):
-	for life in LIFE.values():
-		if not (life['online'] or not online) or not life['group'] or not alife.groups.is_leader(life, life['group'], life['id']) or SETTINGS['controlling'] == life['id']:
-			continue
-		
-		if alife.groups.get_motive(life, life['group']) == group_motive:
-			return life['id']
-	
-	return None
-
-def spawn_life(life_type, position, event_time, **kwargs):
-	_life = {'type': life_type, 'position': position[:]}
-	_life.update(**kwargs)
-	         
-	WORLD_INFO['scheme'].append({'life': _life, 'time': event_time})
-
-def order_group(life, group_id, stage, event_time, **kwargs):
-	WORLD_INFO['scheme'].append({'group': group_id, 'member': life['id'], 'stage': stage, 'flags': kwargs, 'time': WORLD_INFO['ticks']+event_time})
-
-def broadcast(messages, event_time, glitch=False):
-	_time = WORLD_INFO['ticks']+event_time
-	_i = 0
-	
-	for entry in messages:
-		if 'source' in entry:
-			_source = entry['source']
-		else:
-			_source = '???'		
-		
-		if glitch:
-			if 'change_only' in entry:
-				_change = entry['change_only']
-			else:
-				_change = False
-			
-			_delay = (50*numbers.clip(_i, 0, 1))+(len(entry['text'])*2)*_i
-			
-			WORLD_INFO['scheme'].append({'glitch': entry['text'], 'change': _change, 'time': _time+_delay})
-		else:
-			WORLD_INFO['scheme'].append({'radio': [_source, entry['text']], 'time': _time})
-		
-		_i += 1
-		_time += int(round(len(entry['text'])*1.25))
-
-def get_overwatch_hardship(no_mod=False):
-	_stats = WORLD_INFO['overwatch']
-	_situation = get_player_situation()
-	
-	if not _situation:
-		return 0
-	
-	if no_mod:
-		_mod = 1
-	else:
-		if len(_situation['online_alife']) == len(_situation['trusted_online_alife']):
-			_mod = _stats['last_updated']/float(WORLD_INFO['ticks'])
-		else:
-			_mod = numbers.clip((_stats['last_updated']*1.5)/float(WORLD_INFO['ticks']), 0, 1.0)
-			
-			#TODO: Decay
-			#_stats['loss_experienced'] *= _dec
-			#_stats['danger_experienced'] *= _dec
-			#_stats['injury'] *= _dec
-			#_stats['human_encounters'] *= _dec
-	
-	_hardship = _stats['loss_experienced']
-	_hardship += _stats['danger_experienced']
-	_hardship += _stats['injury']
-	_hardship += _stats['human_encounters']*4
-	_hardship *= _mod
-	
-	return _hardship
-
-def handle_tracked_alife():
-	for ai in [LIFE[i] for i in WORLD_INFO['overwatch']['tracked_alife']]:
-		if ai['online']:
-			continue
-		
-		WORLD_INFO['overwatch']['tracked_alife'].remove(ai['id'])
-		
-		logging.debug('[Overwatch]: Stopped tracking agent: %s' % ' '.join(ai['name']))
-
-def attract_tracked_alife_to(pos):
-	_chunk_key = alife.chunks.get_chunk_key_at(pos)
-	
-	for ai in [LIFE[i] for i in WORLD_INFO['overwatch']['tracked_alife']]:
-		alife.movement.set_focus_point(ai, _chunk_key)
-	
-		logging.debug('[Overwatch]: Attracting %s to %s.' % (' '.join(ai['name']), _chunk_key))
-
-def evaluate_overwatch_mood():
-	_stats = WORLD_INFO['overwatch']
-	_hardship = get_overwatch_hardship()
-	
-	#print _hardship, _mod, _stats['rest_level'], (_stats['last_updated']/float(WORLD_INFO['ticks']))
-	
-	_success = 0
-	
-	#if _stats['mood'] == 'rest':
-	#	if _mod > _stats['rest_level']:
-	#		return False
-	#	
-	#	_stats['mood'] = random.choice(['rest', 'hurt'])
-	#elif _stats['mood'] == 'hurt':
-	if _hardship-_success >= 3.5:
-		_stats['mood'] = 'rest'
-	elif get_overwatch_hardship(no_mod=True)>=3.5:
-		_stats['mood'] = 'intrigue'
-	else:
-		_stats['mood'] = 'hurt'
-
-def record_encounter(amount, life_ids=None):
-	WORLD_INFO['overwatch']['human_encounters'] += amount
-	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
-	
-	if life_ids:
-		WORLD_INFO['overwatch']['tracked_alife'].extend(life_ids)
-	
-	logging.debug('[Overwatch] encounter (%s)' % amount)
-
-def record_dangerous_event(amount):
-	WORLD_INFO['overwatch']['danger_experienced'] += amount
-	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
-	
-	logging.debug('[Overwatch] Danger (%s)' % amount)
-
-def record_loss(amount):
-	WORLD_INFO['overwatch']['loss_experienced'] += amount
-	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
-	
-	logging.debug('[Overwatch] Loss (%s)' % amount)
-
-def record_injury(amount):
-	WORLD_INFO['overwatch']['injury'] += amount
-	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
-	
-	logging.debug('[Overwatch] injury (%s)' % amount)
 
 def create_intro_story():
 	_i = 2#random.randint(0, 2)
@@ -201,7 +24,7 @@ def create_intro_story():
 	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 	
 	if _i == 1:
-		#broadcast([{'text': 'You wake up from a deep sleep.'},
+		#events.broadcast([{'text': 'You wake up from a deep sleep.'},
 		#           {'text': 'You don\'t remember anything.', 'change_only': True}], 0, glitch=True)
 		
 		_spawn_items = ['leather backpack', 'M9', '9x19mm magazine']
@@ -275,12 +98,12 @@ def form_scheme(force=False):
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	
-	handle_tracked_alife()
+	core.handle_tracked_alife()
 	
 	if _overwatch_mood == 'rest':
 		return False
 	
-	_player_situation = get_player_situation()
+	_player_situation = core.get_player_situation()
 	
 	if _overwatch_mood == 'hurt':
 		if hurt_player(_player_situation):
@@ -317,11 +140,11 @@ def form_scheme(force=False):
 	                 {'text': 'Bandits robbed me and left me to bleed out...'},
 	                 {'text': 'I\'m by a farm to the %s.' % _real_direction},
 	                 {'text': 'They might still be around. Please hurry!'}]
-		broadcast(_messages, 40)
+		events.broadcast(_messages, 40)
 	
 	elif 1 == 1:
-		_bandit_group_leader = get_group_leader_with_motive('crime', online=True)
-		_military_group_leader = get_group_leader_with_motive('military', online=False)
+		_bandit_group_leader = core.get_group_leader_with_motive('crime', online=True)
+		_military_group_leader = core.get_group_leader_with_motive('military', online=False)
 		
 		if _military_group_leader and _bandit_group_leader:
 			_bandit_group_location = lfe.get_current_chunk_id(LIFE[_bandit_group_leader])
@@ -335,7 +158,7 @@ def form_scheme(force=False):
 			_messages = [{'text': 'Attention all neutral and bandit squads.'},
 				         {'text': 'We finally got solid contact on military in the %s compound.' % _real_direction},
 				         {'text': 'We\'re located near coords %s and heading out soon.' % (', '.join(_bandit_group_location.split(',')))}]
-			broadcast(_messages, 40)
+			events.broadcast(_messages, 40)
 		
 	#if not WORLD_INFO['scheme'] and WORLD_INFO['ticks'] < 100:
 		#if 1==1:#random.randint(0, 5):
@@ -347,7 +170,7 @@ def form_scheme(force=False):
 		#                 {'text': 'We\'re in dire need of help near <location>.', 'source': 'Group Leader'},
 		#                 {'text': 'A group of bandits is approaching from the %s.' % _bandit_raid_direction, 'source': 'Group Leader'},
 		#                 {'text': 'If you are able to fight, please! We need fighters!', 'source': 'Group Leader'}]
-		#	broadcast(_messages, 40)
+		#	events.broadcast(_messages, 40)
 
 def execute_scheme():
 	if not WORLD_INFO['scheme']:
@@ -363,7 +186,7 @@ def execute_scheme():
 	if not _event:
 		return False
 	
-	_situation = get_player_situation()
+	_situation = core.get_player_situation()
 	
 	if 'radio' in _event and _situation['has_radio']:
 		gfx.message('%s: %s' % (_event['radio'][0], _event['radio'][1]), style='radio')
@@ -397,12 +220,13 @@ def intrigue_player(situation):
 	
 	if _event_number == 1:
 		_crash_pos = spawns.get_spawn_point_around(_player['pos'], area=50, min_area=30)
-		create_heli_crash(_crash_pos, [])
+		events.create_heli_crash(_crash_pos, [])
 		
-		attract_tracked_alife_to(_crash_pos)
+		events.attract_tracked_alife_to(_crash_pos)
 	else:
 		_land_pos = spawns.get_spawn_point_around(_player['pos'], area=150, min_area=90)
-		create_cache_drop(_land_pos, _items)
+		_items = {}
+		events.create_cache_drop(_land_pos, _items)
 
 def hurt_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
@@ -430,8 +254,8 @@ def hurt_player(situation):
 			_messages = [{'text': 'Attention all neutral and bandit squads.'},
 		                 {'text': 'We finally got solid contact on military in the %s compound.' % _real_direction},
 		                 {'text': 'We\'re located near coords %s and heading out soon.' % (', '.join(_bandit_group_location.split(',')))}]
-			broadcast(_messages, 40)
-			record_encounter(len(alife.groups.get_group(_military_group_leader, _military_group_leader['group'])['members']))
+			events.broadcast(_messages, 40)
+			core.record_encounter(len(alife.groups.get_group(_military_group_leader, _military_group_leader['group'])['members']))
 			
 			_player_group_leader = LIFE[alife.groups.get_leader(_player, situation['group'])]
 			
@@ -476,7 +300,7 @@ def hurt_player(situation):
 					alife.brain.meet_alife(ai, _player)
 					alife.stats.establish_hostile(ai, _player['id'])
 				
-				record_encounter(2, life_ids=[i['id'] for i in _alife])
+				core.record_encounter(2, life_ids=[i['id'] for i in _alife])
 			
 				if random.randint(0, 1) or 1:
 					_spawn_chunk_key = spawns.get_spawn_point_around(_group_spawn_pos, area=90, min_area=60, chunk_key=True)
@@ -502,7 +326,7 @@ def hurt_player(situation):
 					
 					_messages = [{'text': 'I\'m pinned down in the village!'},
 					             {'text': 'Anyone nearby?'}]
-					broadcast(_messages, 0)
+					events.broadcast(_messages, 0)
 				
 				return True
 			

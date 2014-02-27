@@ -5,7 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import historygen
-import situations
+from overwatch import core
 import language
 import profiles
 import effects
@@ -350,7 +350,7 @@ def create_player():
 	#	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
-	situations.create_intro_story()
+	core.create_intro_story()
 	
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	

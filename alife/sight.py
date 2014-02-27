@@ -4,7 +4,7 @@ from fast_scan_surroundings import scan_surroundings as fast_scan_surroundings
 import numpy as np
 import life as lfe
 
-import situations
+from overwatch import core
 import judgement
 import weather
 import groups
@@ -133,7 +133,7 @@ def look(life):
 				if life['know'][ai['id']]['group']:
 					groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
 					life['know'][ai['id']]['group'] = None
-					situations.record_loss(1)
+					core.record_loss(1)
 				
 				life['know'][ai['id']]['dead'] = True
 			elif ai['asleep']:

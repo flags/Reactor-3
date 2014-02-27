@@ -1,11 +1,11 @@
 from globals import *
+from overwatch import situations, core
 
 import libtcodpy as tcod
 import graphics as gfx
 import alife as alfe
 
 import encounters
-import situations
 import worldgen
 import effects
 import numbers
@@ -122,7 +122,7 @@ def tick_world():
 	
 	situations.form_scheme()
 	situations.execute_scheme()
-	situations.evaluate_overwatch_mood()
+	core.evaluate_overwatch_mood()
 	
 	cache.scan_cache()
 	

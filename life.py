@@ -1,10 +1,10 @@
 from globals import *
+from overwatch import core
 from alife import *
 
 import graphics as gfx
 import damage as dam
 import pathfinding
-import situations
 import scripting
 import crafting
 import language
@@ -3054,7 +3054,7 @@ def draw_life_info():
 	                   'High recoil: '+str(life['recoil']>=.75))
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+13+_i,
-	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], situations.get_overwatch_hardship()))
+	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], core.get_overwatch_hardship()))
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+14+_i,
 	                   'Threat in range: '+str(alife.stats.has_threat_in_combat_range(life)))
@@ -3566,10 +3566,10 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
 		
-		situations.record_injury(1)
+		core.record_injury(1)
 	
 	if pain:
-		situations.record_injury(1)
+		core.record_injury(1)
 		add_pain_to_limb(life, limb, amount=pain)
 	
 	if force_velocity:
