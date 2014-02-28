@@ -12,6 +12,8 @@ import core
 
 import random
 
+FUNCTION_MAP = {'heli_crash': create_heli_crash,
+                'cache_drop': create_cache_drop}
 
 def create_heli_crash(pos, spawn_list):
 	_pos = spawns.get_spawn_point_around(pos, area=10)
