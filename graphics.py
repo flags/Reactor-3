@@ -583,6 +583,9 @@ def draw_status_line():
 	if LIFE[SETTINGS['following']]['strafing']:
 		_non_flashing_text.append('Strafing')
 	
+	if SETTINGS['loading']:
+		_non_flashing_text.append(str(TICKER[int(round(time.time()%3))]))
+	
 	if SETTINGS['paused']:
 		if life.is_target_of(LIFE[SETTINGS['following']]):
 			_non_flashing_text.append('Combat')
