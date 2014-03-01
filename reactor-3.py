@@ -25,6 +25,7 @@ import worldgen
 import mainmenu
 import language
 import profiles
+import threads
 import network
 import drawing
 import weapons
@@ -353,6 +354,8 @@ if __name__ == '__main__':
 		logging.info('Profiling. Exit when completed.')
 		cProfile.run('loop()','profile.dat')
 		sys.exit()
+	
+	threads.init()
 	
 	try:
 		loop()

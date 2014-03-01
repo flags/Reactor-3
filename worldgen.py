@@ -7,6 +7,7 @@ import life as lfe
 import historygen
 import language
 import profiles
+import threads
 import effects
 import weather
 import spawns

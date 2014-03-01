@@ -12,8 +12,6 @@ import core
 
 import random
 
-FUNCTION_MAP = {'heli_crash': create_heli_crash,
-                'cache_drop': create_cache_drop}
 
 def create_heli_crash(pos, spawn_list):
 	_pos = spawns.get_spawn_point_around(pos, area=10)
@@ -85,3 +83,7 @@ def attract_tracked_alife_to(pos):
 		alife.movement.set_focus_point(ai, _chunk_key)
 	
 		logging.debug('[Overwatch]: Attracting %s to %s.' % (' '.join(ai['name']), _chunk_key))
+
+
+FUNCTION_MAP = {'heli_crash': create_heli_crash,
+                'cache_drop': create_cache_drop}
