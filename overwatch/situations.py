@@ -212,21 +212,34 @@ def execute_scheme():
 
 def intrigue_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
-	_event_number = random.randint(0, 1)
+	_event_number = 0#random.randint(0, 1)
 	
 	#0: Cache drop (mid-game only: faction ordered)
 	#1: Heli crash site (military)
 	#2: Weather balloon (radio, PDA info: forecast)
 	
 	if _event_number == 1:
-		_crash_pos = spawns.get_spawn_point_around(_player['pos'], area=50, min_area=30)
-		events.create_heli_crash(_crash_pos, [])
+		_crash_pos = spawns.get_spawn_point_around(_player['pos'], area=150, min_area=90)
 		
+		events.create_heli_crash(_crash_pos, [])
 		events.attract_tracked_alife_to(_crash_pos)
+		core.record_dangerous_event(6)
 	else:
-		_land_pos = spawns.get_spawn_point_around(_player['pos'], area=150, min_area=90)
-		_items = {}
-		events.create_cache_drop(_land_pos, _items)
+		_land_pos = spawns.get_spawn_point_around(_player['pos'], area=160, min_area=90)
+		_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
+		                  {'item': 'glock', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm round', 'rarity': 0.6},
+		                  {'item': '9x19mm magazine', 'rarity': 0.75}]
+		_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+		
+		events.create_cache_drop(_land_pos, _storage)
+		core.record_dangerous_event(6)
 
 def hurt_player(situation):
 	_player = LIFE[SETTINGS['controlling']]

@@ -100,6 +100,12 @@ def calculate_fire(fire):
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
 	
+	if random.randint(0, 1):
+		_pos = fire['pos'][:2]
+		_pos.append(2)
+		
+		create_smoke(_pos, direction=random.randint(0, 369), speed=random.uniform(0.3, 0.85), age=0.2, max_opacity=0.9, decay=0.03)
+	
 	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
 		lfe.burn(life, fire['intensity'])
 	

@@ -21,6 +21,8 @@ def get_player_situation():
 	_situation['online_alife'] = [l for l in LIFE.values() if l['online'] and not l['dead'] and not l['id'] == _life['id']]
 	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
 	_situation['has_radio'] = len(lfe.get_all_inventory_items(_life, matches=[{'type': 'radio'}]))>0
+	_situation['weapons'] = alife.combat.get_weapons(_life)
+	_situation['equipped_gear'] = lfe.get_all_equipped_items(_life)
 	
 	return _situation
 
@@ -72,13 +74,26 @@ def get_overwatch_hardship(no_mod=False):
 	
 	return _hardship
 
+def get_overwatch_success():
+	_stats = WORLD_INFO['overwatch']
+	_situation = get_player_situation()
+	
+	if not _situation:
+		return 0
+	
+	#TODO: Check ammo
+	_success = len(_situation['weapons'])
+	_success += len(_situation['equipped_gear'])
+	
+	return _success
+
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
 	_hardship = get_overwatch_hardship()
 	
 	#print _hardship, _mod, _stats['rest_level'], (_stats['last_updated']/float(WORLD_INFO['ticks']))
 	
-	_success = 0
+	_success = get_overwatch_success()
 	
 	#if _stats['mood'] == 'rest':
 	#	if _mod > _stats['rest_level']:

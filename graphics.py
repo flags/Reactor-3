@@ -584,7 +584,7 @@ def draw_status_line():
 		_non_flashing_text.append('Strafing')
 	
 	if SETTINGS['loading']:
-		_non_flashing_text.append(str(TICKER[int(round(time.time()%3))]))
+		_non_flashing_text.append(str(TICKER[int(round(3*(time.time()%1)))]))
 	
 	if SETTINGS['paused']:
 		if life.is_target_of(LIFE[SETTINGS['following']]):

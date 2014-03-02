@@ -7,19 +7,20 @@ import numbers
 import drawing
 import effects
 import spawns
+import items
 import alife
 import core
 
+import logging
 import random
 
 
 def create_heli_crash(pos, spawn_list):
-	_pos = spawns.get_spawn_point_around(pos, area=10)
 	_size = random.randint(4, 6)
 	
-	effects.create_explosion(_pos, _size)
+	effects.create_explosion(pos, _size)
 	
-	for n_pos in drawing.draw_circle(_pos, _size*2):
+	for n_pos in drawing.draw_circle(pos, _size*2):
 		if random.randint(0, 10):
 			continue
 		
@@ -27,16 +28,32 @@ def create_heli_crash(pos, spawn_list):
 		_n_pos.append(2)
 		
 		effects.create_fire(_n_pos, intensity=8)
-	
-	core.record_dangerous_event(6)
 		
 def create_cache_drop(pos, spawn_list):
 	_player = LIFE[SETTINGS['controlling']]
-	
 	_pos = spawns.get_spawn_point_around(pos, area=10)
 	_direction = language.get_real_direction(numbers.direction_to(_player['pos'], _pos))
 	
-	gfx.message('You see something parachuting to the ground to the %s.' % _direction)
+	for container in spawn_list:
+		if not container['rarity']>random.uniform(0, 1.0):
+			continue
+		
+		_c = items.create_item(container['item'], position=[_pos[0], _pos[1], 2])
+		
+		for _inside_item in container['spawn_list']:
+			if _inside_item['rarity']<=random.uniform(0, 1.0):
+				continue
+			
+			_i = items.create_item(_inside_item['item'], position=[_pos[0], _pos[1], 2])
+			
+			if not items.can_store_item_in(_i, _c):
+				items.delete_item(_i)
+				continue
+			
+			items.store_item_in(_i, _c)
+	
+	gfx.message('You see something parachuting to the ground to the %s.' % _direction, style='event')
+	print _pos
 
 def spawn_life(life_type, position, event_time, **kwargs):
 	_life = {'type': life_type, 'position': position[:]}
