@@ -226,17 +226,16 @@ def intrigue_player(situation):
 		core.record_dangerous_event(6)
 	else:
 		_land_pos = spawns.get_spawn_point_around(_player['pos'], area=160, min_area=90)
-		_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
-		                  {'item': 'glock', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm round', 'rarity': 0.6},
-		                  {'item': '9x19mm magazine', 'rarity': 0.75}]
-		_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
+		_storage_items = [{'item': 'AK-74', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm round', 'rarity': 0.6},
+		                  {'item': '5.45x39mm magazine', 'rarity': 0.75}]
+		_storage = [{'item': 'military crate', 'rarity': 1.0, 'spawn_list': _storage_items}]
 		
 		events.create_cache_drop(_land_pos, _storage)
 		core.record_dangerous_event(6)

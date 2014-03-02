@@ -1,5 +1,6 @@
 from globals import *
 from alife import *
+from overwatch import events
 
 import libtcodpy as tcod
 import graphics as gfx
@@ -775,8 +776,7 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		for alife in LIFE.values():
-			print alife['name'], len(life.get_all_inventory_items(alife, matches=[{'type': 'gun'}]))
+		events.create_cache_drop(LIFE[SETTINGS['controlling']]['pos'], {})
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

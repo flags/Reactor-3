@@ -1,6 +1,7 @@
 from globals import WORLD_INFO, SETTINGS, LIFE, ITEMS
 
 import graphics as gfx
+import libtcodpy as tcod
 
 import language
 import numbers
@@ -48,12 +49,14 @@ def create_cache_drop(pos, spawn_list):
 			
 			if not items.can_store_item_in(_i, _c):
 				items.delete_item(_i)
+				
 				continue
 			
 			items.store_item_in(_i, _c)
 	
+	effects.create_smoker(_pos, 300, color=tcod.orange)
+	
 	gfx.message('You see something parachuting to the ground to the %s.' % _direction, style='event')
-	print _pos
 
 def spawn_life(life_type, position, event_time, **kwargs):
 	_life = {'type': life_type, 'position': position[:]}

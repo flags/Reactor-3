@@ -258,6 +258,34 @@ def process_smoke(smoke):
 def draw_smoke(pos, smoke):
 	gfx.tint_tile(pos[0], pos[1], smoke['color'], numbers.clip(smoke['intensity'], 0, smoke['max_intensity']))
 
+def create_smoker(pos, time, color=tcod.gray):
+	_color = random.randint(200, 205)
+	_pos = list(pos)
+	
+	if len(_pos)<3:
+		_pos.append(2)
+	
+	_effect = {'type': 'vapor',
+	           'age': 0,
+	           'age_max': time,
+	           'max_intensity': 0.3,
+	           'color': color,
+	           'pos': _pos,
+	           'callback': process_smoker,
+	           'draw_callback': None,
+	           'unregister_callback': None}
+	
+	register_effect(_effect)
+
+def process_smoker(smoker):
+	if smoker['age'] >= smoker['age_max']:
+		unregister_effect(smoker)
+		return False
+	
+	smoker['age'] += 1
+	
+	create_smoke(smoker['pos'], color=smoker['color'], decay=0.03, direction=random.randint(0, 359))
+
 def create_vapor(pos, time, intensity):
 	_color = random.randint(200, 205)
 	
@@ -328,7 +356,8 @@ def draw_effect(pos):
 		_x = pos[0]-CAMERA_POS[0]
 		_y = pos[1]-CAMERA_POS[1]
 		
-		effect['draw_callback']((_x, _y), effect)
+		if effect['draw_callback']:
+			effect['draw_callback']((_x, _y), effect)
 
 def light_exists_at(pos):
 	for light in WORLD_INFO['lights']:
