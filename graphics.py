@@ -527,8 +527,14 @@ def draw_message_box():
 		else:		
 			_text = msg['msg']
 		
+		_c = 9*((_i>0)+1)
+		_back_color = tcod.Color(_c, _c, _c)
+		
 		if msg['style'] == 'damage':
 			_fore_color = tcod.red
+		elif msg['style'] == 'sound':
+			_fore_color = tcod.white
+			_back_color = tcod.dark_gray
 		elif msg['style'] == 'speech':
 			_fore_color = tcod.gray
 		elif msg['style'] == 'action':
@@ -545,9 +551,6 @@ def draw_message_box():
 			_fore_color = tcod.crimson
 		else:
 			_fore_color = tcod.Color(160, 160, 160)
-		
-		_c = 9*((_i>0)+1)
-		_back_color = tcod.Color(_c, _c, _c)
 		
 		_i = -_i
 		

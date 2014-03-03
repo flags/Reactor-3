@@ -114,7 +114,12 @@ def form_scheme(force=False):
 		if intrigue_player(_player_situation):
 			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 			
-			return True
+			return True	
+	elif _overwatch_mood == 'help':
+		if help_player(_player_situation):
+			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+			
+			return True	
 	
 	#if _player_situation['armed']:
 	_i = random.randint(0, 3)+10
@@ -187,6 +192,10 @@ def execute_scheme():
 		return False
 	
 	_situation = core.get_player_situation()
+	_player = LIFE[SETTINGS['controlling']]
+	
+	if 'sound' in _event:
+		alife.noise.create(_event['pos'], _event['volume'], _event['sound'][0], _event['sound'][1])
 	
 	if 'radio' in _event and _situation['has_radio']:
 		gfx.message('%s: %s' % (_event['radio'][0], _event['radio'][1]), style='radio')
@@ -237,8 +246,19 @@ def intrigue_player(situation):
 		                  {'item': '5.45x39mm magazine', 'rarity': 0.75}]
 		_storage = [{'item': 'military crate', 'rarity': 1.0, 'spawn_list': _storage_items}]
 		
+		if situation['armed']:
+			_group = spawns.generate_group('bandit', amount=3, spawn_chunks=[spawns.get_spawn_point_around(_land_pos, area=140, min_area=80, chunk_key=True)])
+			
+			for ai in _group:
+				alife.brain.meet_alife(ai, _player)
+				alife.stats.establish_hostile(ai, _player['id'])
+			
+			core.record_encounter(3, life_ids=[l['id'] for l in _group])
+			events.attract_tracked_alife_to(_land_pos)
+		
 		events.create_cache_drop(_land_pos, _storage)
-		core.record_dangerous_event(6)
+		
+		core.record_dangerous_event(3)
 
 def hurt_player(situation):
 	_player = LIFE[SETTINGS['controlling']]
@@ -288,7 +308,7 @@ def hurt_player(situation):
 					alife.stats.establish_hostile(LIFE[hostile_member], friendly_member)
 			
 			return True
-	else:
+	elif situation['armed']:
 		_town_chunk_keys = []
 		for ref in WORLD_INFO['refs']['towns']:
 			_town_chunk_keys.extend(ref)
@@ -341,5 +361,27 @@ def hurt_player(situation):
 					events.broadcast(_messages, 0)
 				
 				return True
+	elif 1==2:
+		_spawn_chunk_key = spawns.get_spawn_point_around(_player['pos'], min_area=125, area=200, chunk_key=True)
+		_group = spawns.generate_group('loner', amount=1, spawn_chunks=[_spawn_chunk_key])
+		
+		core.record_encounter(1, life_ids=[l['id'] for l in _group])
+		
+		for ai in _group:
+			events.attract_tracked_alife_to(spawns.get_spawn_point_around(_player['pos'], min_area=10, area=100))
 			
 	return False
+
+def help_player(situation):
+	_player = LIFE[SETTINGS['controlling']]
+	
+	if not situation['armed']:
+		_spawn_pos = spawns.get_spawn_point_around(_player['pos'], min_area=50, area=125)
+		_group = spawns.generate_group('bandit', amount=1, spawn_chunks=[alife.chunks.get_chunk_key_at(_spawn_pos)])
+		
+		lfe.add_wound(_group[0], random.choice(['head', 'stomach']), cut=4, pain=5)
+		
+		for i in range(8):
+			events.sound('radio static', 'something', _spawn_pos, 130, 180*i)
+		
+		core.record_intervention(3)

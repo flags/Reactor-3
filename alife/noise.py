@@ -84,8 +84,8 @@ def _spread(noise):
 		if not _can_see or not noise['skip_on_visual']:
 			if _dist >=noise['volume']/2:
 				if 'player' in alife:
-					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string))
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string), style='sound')
 			else:
 				if 'player' in alife:
-					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string))
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string), style='sound')
 				

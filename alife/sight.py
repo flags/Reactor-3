@@ -126,9 +126,7 @@ def look(life):
 			
 			if ai['dead']:
 				if 'player' in life and not life['know'][ai['id']]['dead']:
-					if life['know'][ai['id']]['last_seen_time']>16:
-						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
-				
+					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
 				
 				if life['know'][ai['id']]['group']:
 					groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])

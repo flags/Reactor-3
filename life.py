@@ -2167,20 +2167,19 @@ def get_item_access_time(life, item_uid):
 	if _owner:
 		if 'stored_in' in _item:
 			_score = _size+get_item_access_time(LIFE[_owner], _item['stored_in'])
-			print _item['name'], 'in container:', _score
+			
 			return int(round(_score))
 		elif _equipped:
-			#Injury?
+			#TODO: Injury?
 			
 			if 'capacity' in _item:
-				print _item['name'], 'equipped, is container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
 				return int(round(_size+(_size*(_item['capacity']/float(_item['max_capacity'])))))
 			
 			return int(round(_size))
 	else:
-		print _item['name'], 'OFF-GROUND:', _size
-		
 		return int(round(_size))
+	
+	return 9
 
 def activate_item(life, item_uid):
 	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)

@@ -62,7 +62,7 @@ def spawn_life(life_type, position, event_time, **kwargs):
 	_life = {'type': life_type, 'position': position[:]}
 	_life.update(**kwargs)
 	         
-	WORLD_INFO['scheme'].append({'life': _life, 'time': event_time})
+	WORLD_INFO['scheme'].append({'life': _life, 'time': WORLD_INFO['ticks']+event_time})
 
 def order_group(life, group_id, stage, event_time, **kwargs):
 	WORLD_INFO['scheme'].append({'group': group_id,
@@ -81,6 +81,7 @@ def broadcast(messages, event_time, glitch=False):
 		else:
 			_source = '???'		
 		
+		
 		if glitch:
 			if 'change_only' in entry:
 				_change = entry['change_only']
@@ -92,9 +93,12 @@ def broadcast(messages, event_time, glitch=False):
 			WORLD_INFO['scheme'].append({'glitch': entry['text'], 'change': _change, 'time': _time+_delay})
 		else:
 			WORLD_INFO['scheme'].append({'radio': [_source, entry['text']], 'time': _time})
-		
-		_i += 1
+			
 		_time += int(round(len(entry['text'])*1.25))
+		_i += 1
+
+def sound(near_text, far_text, position, volume, time):
+	WORLD_INFO['scheme'].append({'sound': (near_text, far_text), 'pos': position, 'time': WORLD_INFO['ticks']+time, 'volume': volume})
 
 def attract_tracked_alife_to(pos):
 	_chunk_key = alife.chunks.get_chunk_key_at(pos)

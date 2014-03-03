@@ -359,6 +359,8 @@ if __name__ == '__main__':
 	
 	try:
 		loop()
+	except KeyboardInterrupt:
+		SETTINGS['running'] = False
 	except Exception, e:
 		traceback.print_exc(file=sys.stdout)
 		SETTINGS['running'] = False

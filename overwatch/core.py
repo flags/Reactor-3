@@ -45,7 +45,7 @@ def handle_tracked_alife():
 		
 		logging.debug('[Overwatch]: Stopped tracking agent: %s' % ' '.join(ai['name']))
 
-def get_overwatch_hardship(no_mod=False):
+def get_overwatch_hardship(no_mod=True):
 	_stats = WORLD_INFO['overwatch']
 	_situation = get_player_situation()
 	
@@ -72,7 +72,7 @@ def get_overwatch_hardship(no_mod=False):
 	_hardship += _stats['human_encounters']*4
 	_hardship *= _mod
 	
-	return _hardship
+	return numbers.clip(float(_hardship), 0.0, 10.0)
 
 def get_overwatch_success():
 	_stats = WORLD_INFO['overwatch']
@@ -83,30 +83,38 @@ def get_overwatch_success():
 	
 	#TODO: Check ammo
 	_success = len(_situation['weapons'])
-	_success += len(_situation['equipped_gear'])
+	_success += _stats['intervention']
+	#_success += len(_situation['equipped_gear'])
 	
-	return _success
+	return numbers.clip(float(_success), 0.0, 10.0)
 
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
-	_hardship = get_overwatch_hardship()
-	
-	#print _hardship, _mod, _stats['rest_level'], (_stats['last_updated']/float(WORLD_INFO['ticks']))
-	
+	_hardship = get_overwatch_hardship(no_mod=True)
 	_success = get_overwatch_success()
 	
-	#if _stats['mood'] == 'rest':
-	#	if _mod > _stats['rest_level']:
-	#		return False
-	#	
-	#	_stats['mood'] = random.choice(['rest', 'hurt'])
-	#elif _stats['mood'] == 'hurt':
-	if _hardship-_success >= 3.5:
+	_hardship_rate = _hardship/10.0
+	_success_rate = _success/10.0
+	
+	_activity = _stats['last_updated']/float(WORLD_INFO['ticks'])
+	_difficulty = numbers.clip(_hardship_rate-_success_rate, 0.0, 1.0)
+	
+	print _activity, numbers.clip(_success_rate, 0.3, 0.85)
+	
+	if _activity>numbers.clip(_success_rate, 0.3, 0.85):
 		_stats['mood'] = 'rest'
-	elif get_overwatch_hardship(no_mod=True)>=3.5:
+	elif _success_rate<.3:
+		_stats['mood'] = 'help'
+	elif _success_rate>_hardship_rate:
 		_stats['mood'] = 'intrigue'
 	else:
-		_stats['mood'] = 'hurt'
+		_stats['mood'] = 'idle'
+
+def record_intervention(amount):
+	WORLD_INFO['overwatch']['intervention'] += amount
+	WORLD_INFO['overwatch']['last_updated'] = WORLD_INFO['ticks']
+	
+	logging.debug('[Overwatch] intervention (%s)' % amount)
 
 def record_encounter(amount, life_ids=None):
 	WORLD_INFO['overwatch']['human_encounters'] += amount
