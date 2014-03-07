@@ -65,7 +65,7 @@ def post_setup_world():
 	weather.change_weather()
 	maps.create_position_maps()
 	
-	WORLD_INFO['real_time_of_day'] = 2000
+	WORLD_INFO['real_time_of_day'] = WORLD_INFO['length_of_day']/2
 
 def regenerate_world():
 	gfx.title('Generating...')

@@ -317,7 +317,7 @@ def generate_noise_map(map_gen):
 			elif map_gen['road_fuzz'] < _val < map_gen['town_fuzz']:
 				_chance = random.uniform(0, 1)
 				
-				if _chance<.9:
+				if _chance<.75:
 					_x = numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
 					_y = numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 					
@@ -328,8 +328,8 @@ def generate_noise_map(map_gen):
 					
 					map_gen['chunk_map'][_chunk_key]['type'] = 'forest'
 				
-				if _chance<.8:
-					for pos in drawing.draw_circle((x, y), random.randint(6, 8)):
+				if _chance<.6:
+					for pos in drawing.draw_circle((x, y), random.randint(4, 6)):
 						if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 							continue
 						
@@ -516,7 +516,7 @@ def generate_forest(map_gen, cell):
 		_tiles_in_chunk = map_gen['chunk_size']**2
 		map_gen['chunk_map'][chunk_key]['type'] = 'forest'
 		
-		for i in range(int(round(_tiles_in_chunk*.15)), int(round(_tiles_in_chunk*.25))):
+		for i in range(int(round(_tiles_in_chunk*.1)), int(round(_tiles_in_chunk*.2))):
 			_x = map_gen['chunk_map'][chunk_key]['pos'][0]+random.randint(0, map_gen['chunk_size'])
 			_y = map_gen['chunk_map'][chunk_key]['pos'][1]+random.randint(0, map_gen['chunk_size'])
 			
@@ -526,7 +526,7 @@ def generate_forest(map_gen, cell):
 			if map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
 				create_tree(map_gen, (_x, _y, 2), random.randint(3, 4))
 				
-				if random.randint(0, 4):
+				if not random.randint(0, 4):
 					create_bush(map_gen, (_x, _y, 2), random.randint(3, 6), dither=True)
 
 def generate_farm(map_gen, cell):
