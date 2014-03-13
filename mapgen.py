@@ -125,7 +125,7 @@ def create_tile(map_gen, x, y, z, tile):
 	if z > _chunk['max_z']:
 		_chunk['max_z'] = z
 
-def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False):
+def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -180,10 +180,6 @@ def generate_map(size=(450, 450, 10), detail=5, towns=2, factories=1, forests=1,
 	generate_noise_map(map_gen)
 	
 	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
-	
-	#Placeholder!
-	logging.debug('Placing region spawns...')
-	create_region_spawns()
 	
 	logging.debug('Occupying empty spaces...')
 	fill_empty_spaces(map_gen)
@@ -392,34 +388,29 @@ def generate_noise_map(map_gen):
 		               'center_pos': _center_pos[:]})
 	
 	_cell_types = {'Outpost': {'callback': generate_outpost,
-	                           'min_cells': 10,
+	                           'min_cells': 30,
 	                           'max_cells': 350,
-	                           'difficulty_min': 0.25,
-	                           'difficulty_max': 1.0,
+	                           'y_mod_min': .5,
+	                           'y_mod_max': .6,
 	                           'avoid_types': {'Outpost': 150}},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
 	                           'max_cells': 500,
-	                           'difficulty_min': 0.0,
-	                           'difficulty_max': 0.85,
+	                           'y_mod_min': .6,
+	                           'y_mod_max': 1.0,
 	                           'avoid_types': {'Farm': 250}},
 	               'Town': {'callback': generate_town,
-	                           'min_cells': 350,
+	                           'min_cells': 200,
 	                           'max_cells': 1000,
-	                           'difficulty_min': 0.0,
-	                           'difficulty_max': 1.0},
+	                           'y_mod_min': .5,
+	                           'y_mod_max': 1.0},
 	               'Factory': {'callback': generate_factory,
-	                           'min_cells': 250,
+	                           'min_cells': 150,
 	                           'max_cells': 2000,
-	                           'difficulty_min': 0.3,
-	                           'difficulty_max': 1.0}}
-	_empty_cell_types = {'Forest': generate_forest}	
-	_zone_entry_position = (125, 125)
-	_npp_position = (map_gen['size'][0]-25, map_gen['size'][1]-25)
-	_difficulty_distance = numbers.distance(_zone_entry_position, _npp_position)
+	                           'y_mod_min': 0,
+	                           'y_mod_max': .35}}
+	_empty_cell_types = {'Forest': generate_forest}
 	_occupied_cells = {}
-	
-	map_gen['zone_entry_chunk_key'] = '%s,%s' % (_zone_entry_position[0], _zone_entry_position[1])
 	
 	#Fields and farms
 	for cell in _cells:
@@ -429,6 +420,9 @@ def generate_noise_map(map_gen):
 		#Find matching cell type
 		for cell_type in _cell_types:
 			_cell_type = _cell_types[cell_type]
+			
+			if cell['top_left'][1]<map_gen['size'][1]*_cell_type['y_mod_min'] or cell['bot_right'][1]>map_gen['size'][1]*_cell_type['y_mod_max']:
+				continue
 			
 			if 'avoid_types' in _cell_type:
 				for avoid_cell_type in _cell_type['avoid_types']:
@@ -446,15 +440,6 @@ def generate_noise_map(map_gen):
 				
 				if _continue:
 					continue
-			
-			#if not cell['top_left'][0] or not cell['top_left'][1] or cell['bot_right'][0] == map_gen['size'][0] or cell['bot_right'][1] == map_gen['size'][1]:
-			#	continue
-			
-			_difficulty_percentage = numbers.clip(numbers.distance(cell['center_pos'], _zone_entry_position)/float(_difficulty_distance), 0, 1)
-			if not _cell_type['difficulty_min'] < _difficulty_percentage <= _cell_type['difficulty_max']:
-				#logging.debug('Rejected cell (difficulty): %s (%s)' % (cell_type, _difficulty_percentage))
-				
-				continue
 			
 			if _cell_type['min_cells'] < cell['size'] <= _cell_type['max_cells']:
 				_matching_cell_types.append(cell_type)
@@ -1789,9 +1774,6 @@ def can_spawn_item(item):
 	
 	return False
 
-def create_region_spawns():
-	pass
-
 def fill_empty_spaces(map_gen):
 	_empty_spots = []
 	
@@ -1858,6 +1840,6 @@ if __name__ == '__main__':
 	if '--profile' in sys.argv:
 		cProfile.run('generate_map(skip_zoning=False)','mapgen_profile.dat')
 	else:
-		generate_map(size=(450, 450, 10), skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
+		generate_map(size=(400, 1000, 10), skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
 	print 'Total mapgen time:', time.time()-_t

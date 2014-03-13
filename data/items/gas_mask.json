@@ -1,0 +1,10 @@
+{"name": "gas mask",
+"prefix": "a",
+"type": "clothing",
+"icon": "V",
+"description": "A gas mask.",
+"attaches_to": "lshoulder|rshoulder|chest|stomach",
+"flags": "CAN_WEAR",
+"size": "2x1",
+"thickness": 3,
+"material": "metal"}

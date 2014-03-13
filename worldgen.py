@@ -267,9 +267,9 @@ def randomize_item_spawns():
 
 def get_spawn_point(randomize=False, zone_entry_point=False):
 	if zone_entry_point:
-		_pos = random.choice(WORLD_INFO['chunk_map'][WORLD_INFO['zone_entry_chunk_key']]['ground'])
+		_pos = [random.randint(150, 250), random.randint(850, 900), 2]
 		
-		return [_pos[0], _pos[1], 2]
+		return spawns.get_spawn_point_around(_pos, area=100)
 	
 	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
@@ -356,31 +356,8 @@ def create_player():
 	return PLAYER
 	
 def create_region_spawns():
-	return False
-
-	#Step 1: Army Outpost
-	for outpost in WORLD_INFO['refs']['outposts']:
-		generate_outpost(outpost)
-	
-	#return False
-
-	_survival = True
-	for town in WORLD_INFO['refs']['towns']:
-		_spawn_chunk = random.choice(town)
-		
-		while maps.get_chunk(_spawn_chunk)['type'] == 'town':
-			_spawn_chunk = random.choice(town)
-	
-		if _survival:
-			_type = 'survival'
-			_survival = False
-		else:
-			_type = 'crime'
-	
-		spawns.generate_group('bandit',
-		                      amount=random.randint(4, 6),
-		                      group_motive=_type,
-		                      spawn_chunks=[_spawn_chunk])
+	#Runners
+	#spawns.generate_group('runner_scout', amount=random
 	
 	return False
 

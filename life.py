@@ -2230,7 +2230,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	
 	return item_uid
 
-def add_item_to_inventory(life, item_uid):
+def add_item_to_inventory(life, item_uid, no_equip=False):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
 		raise Exception('Deprecated: String not passed as item UID')
@@ -2244,9 +2244,11 @@ def add_item_to_inventory(life, item_uid):
 	if 'stored_in' in item:
 		items.remove_item_from_any_storage(item_uid)
 	
-	if not add_item_to_storage(life, item_uid):
+	if not no_equip and not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
-			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			if not no_equip:
+				logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			
 			item['pos'] = life['pos'][:]
 			
 			del item['parent_id']

@@ -74,8 +74,7 @@ def regenerate_world():
 	pre_setup_world()
 	
 	try:
-		mapgen.generate_map(size=(450, 450, 10),
-			                towns=1,
+		mapgen.generate_map(towns=1,
 			                factories=0,
 			                outposts=2,
 			                forests=1,
@@ -204,7 +203,7 @@ def handle_input():
 		zones.create_zone_map()
 		
 		gfx.title('Saving...')
-		maps.save_map(str(time.time()))
+		maps.save_map(str(time.time()), only_cached=False)
 		items.reload_all_items()
 
 	elif INPUT['l']:

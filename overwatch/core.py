@@ -99,7 +99,7 @@ def evaluate_overwatch_mood():
 	_activity = _stats['last_updated']/float(WORLD_INFO['ticks'])
 	_difficulty = numbers.clip(_hardship_rate-_success_rate, 0.0, 1.0)
 	
-	print _activity, numbers.clip(_success_rate, 0.3, 0.85)
+	#print _activity, numbers.clip(_success_rate, 0.3, 0.85)
 	
 	if _activity>numbers.clip(_success_rate, 0.3, 0.85):
 		_stats['mood'] = 'rest'
