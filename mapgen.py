@@ -255,9 +255,13 @@ def generate_reference_maps(map_gen):
 		
 		_ref_id += 1
 	
-	logging.debug('\tRoads:\t\t %s' % (len(map_gen['reference_map']['roads'])))
-	logging.debug('\tBuildings:\t %s' % (len(map_gen['reference_map']['buildings'])))
-	logging.debug('\tTotal:\t %s' % len(map_gen['references']))
+	#logging.debug('\tRoads:\t\t %s' % (len(map_gen['reference_map']['roads'])))
+	#logging.debug('\tBuildings:\t %s' % (len(map_gen['reference_map']['buildings'])))
+	logging.debug('\tTowns:\t %s' % len(map_gen['refs']['towns']))
+	logging.debug('\tFactories:\t %s' % len(map_gen['refs']['factories']))
+	logging.debug('\tFarms:\t %s' % len(map_gen['refs']['farms']))
+	logging.debug('\tOutposts:\t %s' % len(map_gen['refs']['outposts']))
+	#logging.debug('\tTotal:\t %s' % len(map_gen['references']))
 
 def generate_noise_map(map_gen):
 	_cells = []
@@ -356,6 +360,8 @@ def generate_noise_map(map_gen):
 	while _town_seeds:
 		_chunk_key = _town_seeds.pop()
 		_top_left = MAP_SIZE[:]
+		_bot_left = MAP_SIZE[:]
+		_top_right = [0, 0, 0]
 		_bot_right = [0, 0, 0]
 		_connected_chunk_keys = get_all_connected_chunks_of_type(map_gen, _chunk_key, 'other')
 		
@@ -368,14 +374,26 @@ def generate_noise_map(map_gen):
 			if _chunk_pos[0]<_top_left[0]:
 				_top_left[0] = _chunk_pos[0]
 			
-			if _chunk_pos[0]>_bot_right[0]:
-				_bot_right[0] = _chunk_pos[0]
-			
 			if _chunk_pos[1]<_top_left[1]:
 				_top_left[1] = _chunk_pos[1]
 			
+			if _chunk_pos[0]>_bot_right[0]:
+				_bot_right[0] = _chunk_pos[0]
+			
 			if _chunk_pos[1]>_bot_right[1]:
 				_bot_right[1] = _chunk_pos[1]
+			
+			if _chunk_pos[0]>_top_right[0]:
+				_top_right[0] = _chunk_pos[0]
+			
+			if _chunk_pos[1]<_top_right[1]:
+				_top_right[1] = _chunk_pos[1]
+			
+			if _chunk_pos[0]<_bot_left[0]:
+				_bot_left[0] = _chunk_pos[0]
+			
+			if _chunk_pos[1]>_bot_left[1]:
+				_bot_left[1] = _chunk_pos[1]
 		
 		_center_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
 		_center_pos[0] = int(_center_pos[0])
@@ -385,34 +403,60 @@ def generate_noise_map(map_gen):
 		               'chunk_keys': _connected_chunk_keys,
 		               'top_left': _top_left,
 		               'bot_right': _bot_right,
+		               'top_right': _top_right,
+		               'bot_left': _bot_left,
 		               'center_pos': _center_pos[:]})
 	
 	_cell_types = {'Outpost': {'callback': generate_outpost,
-	                           'min_cells': 30,
+	                           'min_cells': 20,
 	                           'max_cells': 350,
-	                           'y_mod_min': .5,
+	                           'y_mod_min': .45,
 	                           'y_mod_max': .6,
+	                           'amount': 0,
+	                           'min_amount': 3,
+	                           'max_amount': 6,
+	                           'can_combine': False,
 	                           'avoid_types': {'Outpost': 150}},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
 	                           'max_cells': 500,
 	                           'y_mod_min': .6,
 	                           'y_mod_max': 1.0,
+	                           'amount': 0,
+	                           'min_amount': 1,
+	                           'max_amount': 2,
+	                           'can_combine': False,
 	                           'avoid_types': {'Farm': 250}},
 	               'Town': {'callback': generate_town,
 	                           'min_cells': 200,
 	                           'max_cells': 1000,
 	                           'y_mod_min': .5,
-	                           'y_mod_max': 1.0},
+	                           'y_mod_max': 1.0,
+	                           'amount': 0,
+	                           'min_amount': 2,
+	                           'max_amount': 3,
+	                           'can_combine': True},
 	               'Factory': {'callback': generate_factory,
 	                           'min_cells': 150,
 	                           'max_cells': 2000,
 	                           'y_mod_min': 0,
-	                           'y_mod_max': .35}}
-	_empty_cell_types = {'Forest': generate_forest}
+	                           'y_mod_max': .35,
+	                           'amount': 0,
+	                           'min_amount': 2,
+	                           'max_amount': 3,
+	                           'can_combine': False}}
+	_empty_cell_types = {'Forest': {'callback': generate_forest,
+	                                'y_mod_min': .45,
+	                                'y_mod_max': .6},
+	                     'Field': {'callback': generate_field,
+	                                'y_mod_min': .6,
+	                                'y_mod_max': 1.0}}
 	_occupied_cells = {}
+	_empty_cells = {}
 	
-	#Fields and farms
+	#Initial sweep
+	logging.debug('Beginning first pass...')
+	
 	for cell in _cells:
 		_continue = False
 		_matching_cell_types = []
@@ -420,6 +464,9 @@ def generate_noise_map(map_gen):
 		#Find matching cell type
 		for cell_type in _cell_types:
 			_cell_type = _cell_types[cell_type]
+			
+			if _cell_type['amount']>=_cell_type['max_amount']:
+				continue
 			
 			if cell['top_left'][1]<map_gen['size'][1]*_cell_type['y_mod_min'] or cell['bot_right'][1]>map_gen['size'][1]*_cell_type['y_mod_max']:
 				continue
@@ -442,12 +489,14 @@ def generate_noise_map(map_gen):
 					continue
 			
 			if _cell_type['min_cells'] < cell['size'] <= _cell_type['max_cells']:
-				_matching_cell_types.append(cell_type)
+				for i in range(_cell_type['max_amount']-_cell_type['amount']):
+					_matching_cell_types.append(cell_type)
 			#else:
 			#	logging.debug('Rejected cell (not enough cells): %s' % cell_type+str(cell['size']))
 		else:
 			if _matching_cell_types:
 				_cell_type = random.choice(_matching_cell_types)
+				_cell_types[_cell_type]['amount'] += 1
 				_cell_types[_cell_type]['callback'](map_gen, cell)
 				
 				if _cell_type in _occupied_cells:
@@ -456,16 +505,125 @@ def generate_noise_map(map_gen):
 					_occupied_cells[_cell_type] = [cell['center_pos']]
 				
 				logging.debug('Created cell: %s' % _cell_type)
-			elif random.randint(0, 3):
-				_empty_cell_type = random.choice(_empty_cell_types.keys())
-				_empty_cell_types[_empty_cell_type](map_gen, cell)
-				
-				if _empty_cell_type in _occupied_cells:
-					_occupied_cells[_empty_cell_type].append(cell['center_pos'])
-				else:
-					_occupied_cells[_empty_cell_type] = [cell['center_pos']]
+			else:
+				_empty_cells[len(_empty_cells)] = {'cell': cell, 'neighbors': []}
+			#elif random.randint(0, 3):
+			#	_empty_cell_type = random.choice(_empty_cell_types.keys())
+			#	_empty_cell_types[_empty_cell_type](map_gen, cell)
+			#	
+			#	if _empty_cell_type in _occupied_cells:
+			#		_occupied_cells[_empty_cell_type].append(cell['center_pos'])
+			#	else:
+			#		_occupied_cells[_empty_cell_type] = [cell['center_pos']]
 			
 			#logging.debug('Cell has no matching cell type, using \'%s\'.' % _empty_cell_type)
+	
+	#Fill in empty cells by combining neighbors
+	logging.debug('Beginning second pass...')
+	
+	for empty_cell_1 in _empty_cells:
+		_cell_1 = _empty_cells[empty_cell_1]
+		
+		for pos_1 in [_cell_1['cell']['top_left'], _cell_1['cell']['top_right'], _cell_1['cell']['bot_left'], _cell_1['cell']['bot_right']]:
+			for empty_cell_2 in _empty_cells:
+				if empty_cell_1 == empty_cell_2:
+					continue
+				
+				_cell_2 = _empty_cells[empty_cell_2]
+				
+				for pos_2 in [_cell_2['cell']['top_left'], _cell_2['cell']['top_right'], _cell_2['cell']['bot_left'], _cell_2['cell']['bot_right']]:
+					if numbers.distance(pos_1, pos_2)<100:
+						if not empty_cell_2 in _cell_1['neighbors']:
+							_cell_1['neighbors'].append(empty_cell_2)
+						
+						if not empty_cell_1 in _cell_2['neighbors']:
+							_cell_2['neighbors'].append(empty_cell_1)
+		
+	for empty_cell in _empty_cells.keys():
+		_cell = _empty_cells[empty_cell]
+		_matching_cell_types = []
+		_break = False
+		
+		for cell_type in _cell_types:
+			_cell_type = _cell_types[cell_type]
+			
+			if not _cell_type['can_combine']:
+				continue
+			
+			for neighbor in _cell['neighbors']:
+				_neighbor_cell = _empty_cells[neighbor]
+				_size = _cell['cell']['size']+_neighbor_cell['cell']['size']
+				
+				for cell_type in _cell_types:
+					_cell_type = _cell_types[cell_type]
+					
+					if _cell_type['amount']>=_cell_type['max_amount']:
+						continue
+					
+					if _cell['cell']['top_left'][1]<map_gen['size'][1]*_cell_type['y_mod_min'] or _cell['cell']['bot_right'][1]>map_gen['size'][1]*_cell_type['y_mod_max']:
+						continue
+					
+					if 'avoid_types' in _cell_type:
+						for avoid_cell_type in _cell_type['avoid_types']:
+							if not avoid_cell_type in _occupied_cells:
+								continue
+							
+							for pos in _occupied_cells[avoid_cell_type]:
+								if numbers.distance(_cell['cell']['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
+									_continue = True
+									
+									break
+						
+							if _continue:
+								break
+						
+						if _continue:
+							continue
+					
+					if _cell_type['min_cells'] < _size <= _cell_type['max_cells']:
+						for i in range(_cell_type['max_amount']-_cell_type['amount']):
+							_matching_cell_types.append(cell_type)
+				
+				if _matching_cell_types:
+					_cell_type = random.choice(_matching_cell_types)
+					_cell_types[_cell_type]['amount'] += 1
+					
+					logging.debug('[2nd pass] Creating cell: %s' % cell_type)
+					_cell_types[_cell_type]['callback'](map_gen, _cell['cell'])
+					_cell_types[_cell_type]['callback'](map_gen, _neighbor_cell['cell'])
+					
+					del _empty_cells[empty_cell]
+					del _empty_cells[neighbor]
+					
+					for __cell in _empty_cells.values():
+						if empty_cell in __cell['neighbors']:
+							__cell['neighbors'].remove(empty_cell)
+						
+						if neighbor in __cell['neighbors']:
+							__cell['neighbors'].remove(neighbor)
+					
+					logging.debug('[2nd pass] Created cell: %s' % cell_type)
+					_break = True
+					
+					break
+			
+			if _break:
+				break
+	
+	#Fill empty cells
+	logging.debug('Filling empty cells...')
+	
+	for empty_cell in _empty_cells:
+		_cell = _empty_cells[empty_cell]['cell']
+		
+		for empty_cell_type in _empty_cell_types.values():
+			if random.randint(0, 1):
+				continue
+			
+			if map_gen['size'][1]*empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*empty_cell_type['y_mod_max']:
+				empty_cell_type['callback'](map_gen, _cell)
+	
+	logging.debug('%s empty cells remain.' % len(_empty_cells))
 
 def generate_outpost(map_gen, cell):
 	_center_chunk_key = alife.chunks.get_chunk_key_at(cell['center_pos'])
@@ -513,6 +671,18 @@ def generate_forest(map_gen, cell):
 				
 				if not random.randint(0, 4):
 					create_bush(map_gen, (_x, _y, 2), random.randint(3, 6), dither=True)
+
+def generate_field(map_gen, cell):
+	for chunk_key in cell['chunk_keys']:
+		map_gen['chunk_map'][chunk_key]['type'] = 'field'
+		
+		_x = map_gen['chunk_map'][chunk_key]['pos'][0]+random.randint(0, map_gen['chunk_size'])
+		_y = map_gen['chunk_map'][chunk_key]['pos'][1]+random.randint(0, map_gen['chunk_size'])
+			
+		if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
+			continue
+		
+		create_splotch(map_gen, (_x, _y), random.randint(5, 8), tiles.FIELD_TILES)
 
 def generate_farm(map_gen, cell):
 	#Farmland (crops)
@@ -683,7 +853,6 @@ def generate_farm(map_gen, cell):
 					create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
 
 def generate_factory(map_gen, cell):
-	print 'FACTORY' * 10
 	_potential_building_chunks = cell['chunk_keys'][:]
 	map_gen['refs']['factories'].append(cell['chunk_keys'][:])
 	
@@ -765,6 +934,7 @@ def generate_town(map_gen, cell):
 	_avoid_positions = []
 	_fence_positions = []
 	_sidewalk_positions = []
+	_tries = 0
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
@@ -788,7 +958,19 @@ def generate_town(map_gen, cell):
 			for chunk_key in _room_chunks:
 				_potential_building_chunks.remove(chunk_key)
 			
-			continue
+			if _tries<3:
+				_tries += 1
+				
+				continue
+			elif _potential_building_chunks:
+				_potential_building_chunks.remove(_potential_building_chunks[0])
+				_tries = 0
+				
+				continue
+			else:
+				break
+		
+		_tries = 0
 		
 		#Fence
 		for chunk_key in _room_chunks:
@@ -856,6 +1038,9 @@ def generate_town(map_gen, cell):
 				_ext_chunk_key = chunk_key
 				
 				break
+		
+		if not _potential_exterior_chunks:
+			continue
 		
 		if not _ext_chunk_key:
 			_ext_chunk_key = random.choice(_potential_exterior_chunks)
