@@ -120,8 +120,8 @@ def tick_world():
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
 	
-	situations.form_scheme()
-	situations.execute_scheme()
+	#situations.form_scheme()
+	#situations.execute_scheme()
 	core.evaluate_overwatch_mood()
 	
 	cache.scan_cache()

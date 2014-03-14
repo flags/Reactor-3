@@ -430,8 +430,8 @@ def generate_noise_map(map_gen):
 	               'Town': {'callback': generate_town,
 	                           'min_cells': 200,
 	                           'max_cells': 1000,
-	                           'y_mod_min': .5,
-	                           'y_mod_max': 1.0,
+	                           'y_mod_min': .45,
+	                           'y_mod_max': .75,
 	                           'amount': 0,
 	                           'min_amount': 2,
 	                           'max_amount': 3,
@@ -676,8 +676,8 @@ def generate_field(map_gen, cell):
 	for chunk_key in cell['chunk_keys']:
 		map_gen['chunk_map'][chunk_key]['type'] = 'field'
 		
-		_x = map_gen['chunk_map'][chunk_key]['pos'][0]+random.randint(0, map_gen['chunk_size'])
-		_y = map_gen['chunk_map'][chunk_key]['pos'][1]+random.randint(0, map_gen['chunk_size'])
+		_x = map_gen['chunk_map'][chunk_key]['pos'][0]+(map_gen['chunk_size']/2)
+		_y = map_gen['chunk_map'][chunk_key]['pos'][1]+(map_gen['chunk_size']/2)
 			
 		if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 			continue

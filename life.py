@@ -464,6 +464,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['group'] = None
 	_life['needs'] = {}
 	_life['need_id'] = 1
+	_life['faction'] = None
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)
@@ -2011,8 +2012,6 @@ def add_item_to_storage(life, item_uid, container=None):
 	#_container['capacity'] += _item['size']
 	items.store_item_in(item_uid, container)
 	
-	brain.remember_item(life, _item)
-	
 	return True
 
 def remove_item_in_storage(life, item_uid):
@@ -2230,12 +2229,13 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	
 	return item_uid
 
-def add_item_to_inventory(life, item_uid, no_equip=False):
+def add_item_to_inventory(life, item_uid, equip=False):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
 		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
+	brain.remember_item(life, item)
 	
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
@@ -2244,10 +2244,14 @@ def add_item_to_inventory(life, item_uid, no_equip=False):
 	if 'stored_in' in item:
 		items.remove_item_from_any_storage(item_uid)
 	
-	if not no_equip and not add_item_to_storage(life, item_uid):
+	if equip:
+		if can_wear_item(life, item_uid):
+			life['inventory'].append(item_uid)
+			equip_item(life,item_uid)
+		
+	elif not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
-			if not no_equip:
-				logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
 			
 			item['pos'] = life['pos'][:]
 			
@@ -2669,10 +2673,10 @@ def draw_life_icon(life):
 	if 'player' in life:
 		_icon[1] = tcod.white
 		
-		for item in [ITEMS[i] for i in get_all_equipped_items(life)]:
-			if not item['color'][0] == tcod.white and item['type'] == 'clothing':
-				_icon[1] = tcod.color_lerp(_icon[1], item['color'][0], 0.2)
-	
+	for item in [ITEMS[i] for i in get_all_equipped_items(life)]:
+		if not item['color'][0] == tcod.white and item['type'] == 'clothing':
+			_icon[1] = tcod.color_lerp(_icon[1], item['color'][0], 0.2)
+
 	return _icon
 
 def draw_life():

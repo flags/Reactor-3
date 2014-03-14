@@ -358,6 +358,10 @@ def create_player():
 def create_region_spawns():
 	#Runners
 	#spawns.generate_group('runner_scout', amount=random
+	alife.factions.generate()
+	
+	if SETTINGS['controlling']:
+		alife.factions.add_member('Loners', SETTINGS['controlling'])
 	
 	return False
 

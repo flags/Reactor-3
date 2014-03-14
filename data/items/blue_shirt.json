@@ -2,6 +2,7 @@
 "prefix": "a",
 "type": "clothing",
 "icon": "T",
+"color": [[0, 0, 150], null],
 "description": "A plain, blue t-shirt.",
 "attaches_to": "lshoulder|rshoulder|chest|stomach",
 "flags": "CAN_WEAR|CANSTACK|CAN_BURN|CAN_SOAK",

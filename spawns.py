@@ -21,7 +21,7 @@ SOLDIER_ITEMS = [{'item': 'kevlar jacket', 'amount': 1, 'equip': True},
                  {'item': 'frag grenade', 'amount': 3}]
 SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}
-SOLDIER_BANNED_GOALS = ['discover']
+SOLDIER_BANNED_GOALS = []
 
 BANDIT_SPECIES = 'human'
 BANDIT_ITEMS = [{'item': 'white t-shirt', 'amount': 1, 'equip': True},
@@ -69,39 +69,67 @@ DAWN_SCOUT_ITEMS = [{'item': 'blue t-shirt', 'amount': 1, 'equip': True},
                     {'item': '5.45x39mm round', 'amount': 30}]
 DAWN_SCOUT_STATS = {'firearms': 6+random.randint(0, 3)}
 
+ZES_SPECIES = 'human'
+ZES_GUARD_ITEMS = [{'item': 'blue t-shirt', 'amount': 1, 'equip': True},
+                    {'item': 'blue jeans', 'amount': 1, 'equip': True},
+                    {'item': 'chest holster', 'amount': 1, 'equip': True},
+                    {'item': 'utility backpack', 'amount': 1, 'equip': True},
+                    {'item': 'gas mask', 'amount': 1, 'equip': True},
+                    {'item': 'radio', 'amount': 1},
+                    {'item': 'AK-74', 'amount': 1},
+                    {'item': '5.45x39mm magazine', 'amount': 1},
+                    {'item': '5.45x39mm round', 'amount': 30}]
+ZES_GUARD_STATS = {'firearms': 5+random.randint(0, 2)}
+
+
 LIFE_CLASSES = {'soldier': {'species': SOLDIER_SPECIES,
                             'items': SOLDIER_ITEMS,
                             'stats': SOLDIER_STATS,
+                            'faction': 'Military',
                             'banned_goals': SOLDIER_BANNED_GOALS},
                 'bandit': {'species': SOLDIER_SPECIES,
                            'items': BANDIT_ITEMS,
                            'stats': BANDIT_STATS,
+                           'faction': 'Bandits',
                            'banned_goals': []},
                 'loner': {'species': LONER_SPECIES,
                           'items': LONER_ITEMS,
                           'stats': LONER_STATS,
+                          'faction': 'Loners',
                           'banned_goals': []},
                 'loner_riflemen': {'species': LONER_SPECIES,
                           'items': LONER_RIFLEMEN_ITEMS,
                           'stats': LONER_STATS,
+                          'faction': 'Loners',
                           'banned_goals': []},
                 'dawn_scout': {'species': DAWN_SPECIES,
                                'items': DAWN_SCOUT_ITEMS,
                                'stats': DAWN_SCOUT_STATS,
+                               'faction': 'Dawn',
                                'banned_goals': []},
                 'dawn_sentry': {'species': DAWN_SPECIES,
                                'items': DAWN_SCOUT_ITEMS,
                                'stats': DAWN_SCOUT_STATS,
+                               'faction': 'Dawn',
+                               'banned_goals': []},
+                'zes_guard': {'species': ZES_SPECIES,
+                               'items': ZES_GUARD_ITEMS,
+                               'stats': ZES_GUARD_STATS,
+                               'faction': 'ZES',
                                'banned_goals': []},
                 'feral dog': {'species': 'dog',
                               'items': [],
                               'stats': {},
+                              'faction': 'Dogs',
                               'banned_goals': []}}
 
 
-def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
+def generate_life(life_class, amount=1, position=None, faction=None, spawn_chunks=[]):
 	_life_species = LIFE_CLASSES[life_class]['species']
 	_spawn_list = []
+	
+	if not faction:
+		faction = LIFE_CLASSES[life_class]['faction']
 	
 	if position:
 		_spawn = position[:]
@@ -122,6 +150,9 @@ def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
 		
 		_alife = life.create_life(_life_species, position=[_spawn[0], _spawn[1], 2])
 		
+		if faction:
+			alife.factions.add_member(faction, _alife['id'])
+		
 		for item in LIFE_CLASSES[life_class]['items']:
 			for i in range(item['amount']):
 				if 'equip' in item and item['equip']:
@@ -129,7 +160,7 @@ def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
 				else:
 					_equip = False
 				
-				life.add_item_to_inventory(_alife, items.create_item(item['item']), no_equip=not _equip)
+				life.add_item_to_inventory(_alife, items.create_item(item['item']), equip=_equip)
 		
 		for stat in LIFE_CLASSES[life_class]['stats']:
 			_alife['stats'][stat] = LIFE_CLASSES[life_class]['stats'][stat]
@@ -141,8 +172,8 @@ def generate_life(life_class, amount=1, position=None, spawn_chunks=[]):
 		
 	return _spawn_list
 
-def generate_group(life_class, amount=3, group_motive='survival', spawn_chunks=[]):
-	_group_members = generate_life(life_class, amount=amount, spawn_chunks=spawn_chunks)
+def generate_group(life_class, amount=3, faction=None, group_motive='survival', spawn_chunks=[]):
+	_group_members = generate_life(life_class, amount=amount, spawn_chunks=spawn_chunks, faction=faction)
 	
 	_group_members[0]['stats']['is_leader'] = True
 	_group = alife.groups.create_group(_group_members[0])

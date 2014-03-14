@@ -10,11 +10,13 @@ import snapshots
 import judgement
 import survival
 import movement
+import factions
 import planner
 import numbers
 import memory
 import speech
 import combat
+import stats
 import logic
 import sight
 import sound
@@ -205,6 +207,9 @@ def meet_alife(life, target):
 		'orders': {},
 		'orderid': 1,
 		'flags': {}}
+	
+	if factions.is_enemy(life, target['id']):
+		stats.establish_hostile(life, target['id'])
 	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 	return life['know'][target['id']]

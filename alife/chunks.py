@@ -55,6 +55,19 @@ def get_chunk_pos(chunk_id, center=False):
 	
 	return [int(val) for val in chunk_id.split(',')]
 
+def get_chunks_in_range(x_mod_min, x_mod_max, y_mod_min, y_mod_max, x_buffer=0, y_buffer=0):
+	_chunk_keys = []
+	
+	print int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer
+	print range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size'])
+	print range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size'])
+	
+	for y in range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size']):
+		for x in range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size']):
+			_chunk_keys.append('%s,%s' % (x, y))
+	
+	return _chunk_keys
+
 def get_visible_chunks_from(pos, vision, center=True):
 	_center_chunk_key = get_chunk_key_at(pos)
 	
