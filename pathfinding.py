@@ -28,11 +28,6 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	         'map_size': map_size,
 	         'chunk_mode': chunk_mode}
 	
-	if len(zones)>1:
-		print 'More than one zone being pathed'
-	
-	print start, end, WORLD_INFO['map'][end[0]][end[1]][end[2]]
-	
 	maps.load_cluster_at_position_if_needed(end)
 	
 	if chunk_mode:
@@ -59,7 +54,7 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	for zone in [zns.get_slice(z) for z in zones]:
 		for y in range(zone['top_left'][1], zone['bot_right'][1]):
 			for x in range(zone['top_left'][0], zone['bot_right'][0]):
-				maps.load_cluster_at_position_if_needed((x, y))
+				#maps.load_cluster_at_position_if_needed((x, y))
 				
 				_map_pos = WORLD_INFO['map'][x][y][zone['z']]
 				
@@ -95,8 +90,9 @@ def walk_path(life, path):
 	while len(_olist):
 		_olist.remove(node)
 
-		if tuple(node) == path['end']:
+		if tuple(node) == path['end'][:2]:
 			_olist = []
+			
 			break
 
 		_clist.append(node)
@@ -111,6 +107,7 @@ def walk_path(life, path):
 
 				xDistance = abs(adj[0]-path['end'][0])
 				yDistance = abs(adj[1]-path['end'][1])
+				
 				if xDistance > yDistance:
 					_hmap[adj[1],adj[0]] = 14*yDistance + 10*(xDistance-yDistance)
 				else:
@@ -157,7 +154,6 @@ def find_path(path):
 	_broken = False
 	
 	while not tuple(node) == tuple(path['start']):
-		#print 'iter', node, path['start'], path['end'], path['chunk_mode']
 		if not node:
 			_broken = True
 			break

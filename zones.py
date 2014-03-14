@@ -286,14 +286,14 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		return DIJKSTRA_CACHE[_map_string]['return']
 	
 	_map['return'] = fast_dijkstra.dijkstra_map(start_pos,
-	                                  goals,
-	                                  zones,
-	                                  max_chunk_distance=max_chunk_distance,
-	                                  rolldown=rolldown,
-	                                  avoid_chunks=avoid_chunks,
-	                                  avoid_positions=avoid_positions,
-	                                  return_score=return_score,
-	                                  return_score_in_range=return_score_in_range)
+	                                            goals,
+	                                            zones,
+	                                            max_chunk_distance=max_chunk_distance,
+	                                            rolldown=rolldown,
+	                                            avoid_chunks=avoid_chunks,
+	                                            avoid_positions=avoid_positions,
+	                                            return_score=return_score,
+	                                            return_score_in_range=return_score_in_range)
 	
 	DIJKSTRA_CACHE[_map_string] = _map
 	

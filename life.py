@@ -1110,8 +1110,6 @@ def walk(life, to=None, path=None):
 		
 		_zone = can_walk_to(life, to)
 		
-		print life['name'], _zone, life['pos'], to, zones.get_zone_at_coords(to)
-		
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
 			life['path_state'] = life['state']
