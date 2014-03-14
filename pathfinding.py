@@ -10,6 +10,7 @@ import zones
 import alife
 import numpy
 import tiles
+import maps
 
 import logging
 import time
@@ -26,6 +27,13 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	         'map': [],
 	         'map_size': map_size,
 	         'chunk_mode': chunk_mode}
+	
+	if len(zones)>1:
+		print 'More than one zone being pathed'
+	
+	print start, end, WORLD_INFO['map'][end[0]][end[1]][end[2]]
+	
+	maps.load_cluster_at_position_if_needed(end)
 	
 	if chunk_mode:
 		_path['start'] = (_path['start'][0]/WORLD_INFO['chunk_size'], _path['start'][1]/WORLD_INFO['chunk_size'])
@@ -51,6 +59,8 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	for zone in [zns.get_slice(z) for z in zones]:
 		for y in range(zone['top_left'][1], zone['bot_right'][1]):
 			for x in range(zone['top_left'][0], zone['bot_right'][0]):
+				maps.load_cluster_at_position_if_needed((x, y))
+				
 				_map_pos = WORLD_INFO['map'][x][y][zone['z']]
 				
 				if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == zone['id']:
@@ -208,7 +218,7 @@ def create_path(life, start, end, zones, ignore_chunk_path=False):
 		               'end': end,
 		               'zones': zones}
 		alife.brain.flag(life, 'chunk_path', _chunk_path)
-		_next_pos = _chunk_path['path'][0][:2]
+		_next_pos = _chunk_path['path'][0]
 		_next_pos = (_next_pos[0]*WORLD_INFO['chunk_size'], _next_pos[1]*WORLD_INFO['chunk_size'])
 		
 		return astar(life, start, _next_pos, zones)

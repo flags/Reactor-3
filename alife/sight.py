@@ -362,10 +362,14 @@ def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
 	
 	return life['fov'][_x, _y] == 1
 
-def can_see_position(life, pos, distance=True, block_check=False, strict=False, get_path=False):
+def can_see_position(life, pos, distance=True, block_check=False, strict=False, get_path=False, ignore_z=False):
 	"""Returns `true` if the life can see a certain position."""
 	if tuple(life['pos'][:2]) == tuple(pos[:2]):
 		return [pos]
+	
+	if not ignore_z and len(pos) == 3:
+		if not life['pos'][2] == pos[2]:
+			return []
 	
 	if get_path or not 'player' in life:
 		return _can_see_position(life['pos'], pos, max_length=get_vision(life), block_check=block_check, strict=strict, distance=distance)

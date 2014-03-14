@@ -270,6 +270,8 @@ def load_cluster_at_position_if_needed(position):
 		return False
 	
 	load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
+	
+	return True
 
 def reload_reference_maps():
 	WORLD_INFO['references'] = {}

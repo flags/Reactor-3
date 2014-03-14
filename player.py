@@ -89,7 +89,7 @@ def handle_input():
 				_dialog['cursor_index'] -= 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
-			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]-1)},200)
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0], LIFE[SETTINGS['controlling']]['pos'][1]-1, LIFE[SETTINGS['controlling']]['pos'][2])},200)
 
 	if INPUT['down'] or (SETTINGS['controlling'] and INPUT['2']):
 		if not ACTIVE_MENU['menu'] == -1:
@@ -103,7 +103,7 @@ def handle_input():
 				_dialog['cursor_index'] += 1
 		elif LIFE[SETTINGS['controlling']]['pos'][1]<MAP_SIZE[1]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
-			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1)},200)
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0],LIFE[SETTINGS['controlling']]['pos'][1]+1, LIFE[SETTINGS['controlling']]['pos'][2])},200)
 
 	if INPUT['right'] or (SETTINGS['controlling'] and INPUT['6']):
 		if not ACTIVE_MENU['menu'] == -1:
@@ -113,7 +113,7 @@ def handle_input():
 			LIFE[SETTINGS['controlling']]['targeting'][0]+=1
 		elif LIFE[SETTINGS['controlling']]['pos'][0]<MAP_SIZE[0]-1 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
-			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1,LIFE[SETTINGS['controlling']]['pos'][1], LIFE[SETTINGS['controlling']]['pos'][2])},200)
 
 	if INPUT['left'] or (SETTINGS['controlling'] and INPUT['4']):
 		if not ACTIVE_MENU['menu'] == -1:
@@ -123,7 +123,7 @@ def handle_input():
 			LIFE[SETTINGS['controlling']]['targeting'][0]-=1
 		elif LIFE[SETTINGS['controlling']]['pos'][0]>0 and not LIFE[SETTINGS['controlling']]['dead']:
 			life.clear_actions(LIFE[SETTINGS['controlling']])
-			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1])},200)
+			life.add_action(LIFE[SETTINGS['controlling']],{'action': 'move', 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1,LIFE[SETTINGS['controlling']]['pos'][1], LIFE[SETTINGS['controlling']]['pos'][2])},200)
 	
 	if INPUT['\r']:
 		if ACTIVE_MENU['menu'] > -1:
@@ -776,6 +776,13 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
+		#events.create_cache_drop(LIFE[SETTINGS['controlling']]['pos'], {})
+		if not SETTINGS['kill threads']:
+			logging.debug('Killing threads...')
+		
+		SETTINGS['kill threads'] = True
+		
+		LIFE[SETTINGS['controlling']]['pos'] = [283, 858, 2]# (284, 857, 2)
 		events.create_cache_drop(LIFE[SETTINGS['controlling']]['pos'], {})
 	
 	if INPUT['y']:
@@ -820,7 +827,7 @@ def handle_input():
 				life.clear_actions(LIFE[SETTINGS['controlling']])
 				life.add_action(LIFE[SETTINGS['controlling']],
 				                {'action': 'move',
-				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]+1)},
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]+1, LIFE[SETTINGS['controlling']]['pos'][2])},
 				                200)
 		else:
 			CAMERA_POS[2] = 1
@@ -838,7 +845,7 @@ def handle_input():
 				life.clear_actions(LIFE[SETTINGS['controlling']])
 				life.add_action(LIFE[SETTINGS['controlling']],
 				                {'action': 'move',
-				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]+1)},
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]+1, LIFE[SETTINGS['controlling']]['pos'][2])},
 				                200)
 		else:
 			CAMERA_POS[2] = 3
@@ -860,7 +867,7 @@ def handle_input():
 				life.clear_actions(LIFE[SETTINGS['controlling']])
 				life.add_action(LIFE[SETTINGS['controlling']],
 				                {'action': 'move',
-				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]-1)},
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]-1, LIFE[SETTINGS['controlling']]['pos'][1]-1, LIFE[SETTINGS['controlling']]['pos'][2])},
 				                200)
 	if INPUT['9']:
 		if LIFE[SETTINGS['controlling']]:
@@ -871,7 +878,7 @@ def handle_input():
 				life.clear_actions(LIFE[SETTINGS['controlling']])
 				life.add_action(LIFE[SETTINGS['controlling']],
 				                {'action': 'move',
-				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]-1)},
+				                 'to': (LIFE[SETTINGS['controlling']]['pos'][0]+1, LIFE[SETTINGS['controlling']]['pos'][1]-1, LIFE[SETTINGS['controlling']]['pos'][2])},
 				                200)
 
 def inventory_select(entry):

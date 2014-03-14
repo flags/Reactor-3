@@ -23,6 +23,7 @@ def generate():
 
 def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 	WORLD_INFO['factions'][name] = {'members': [],
+	                                'groups': [],
 	                                'friendlies': friendlies,
 	                                'enemies': enemies,
 	                                'life_types': life_types}
@@ -43,21 +44,49 @@ def is_enemy(life, life_id):
 
 def add_member(faction_name, life_id):
 	_faction = get_faction(faction_name)
+	
+	if life_id in _faction['members']:
+		return False
+	
 	_faction['members'].append(life_id)
 	
 	LIFE[life_id]['faction'] = faction_name
 
+def add_group(faction_name, alife):
+	for life in alife:
+		add_member(faction_name, life['id'])
+	
+	_faction = get_faction(faction_name)
+	_faction['groups'].append([i['id'] for i in alife])
+
 def create_zes_export():
 	_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
 	
-	spawns.generate_group('zes_guard', amount=random.randint(3, 4), spawn_chunks=[_zes_camp_chunk_key])
+	spawns.generate_group('zes_guard', faction='ZES', amount=random.randint(3, 4), spawn_chunks=[_zes_camp_chunk_key])
 
 def create_fields():
 	_lower_half_chunk_keys = alife.chunks.get_chunks_in_range(0, 1, .6, 1)
 	
-	spawns.generate_group('loner', amount=random.randint(3, 4), spawn_chunks=random.sample(_lower_half_chunk_keys, 1))
-	spawns.generate_group('bandit', amount=random.randint(3, 4), spawn_chunks=random.sample(_lower_half_chunk_keys, 1))
+	spawns.generate_group('loner', faction='Loners', amount=random.randint(3, 4), spawn_chunks=random.sample(_lower_half_chunk_keys, 1))
+	spawns.generate_group('bandit', faction='Bandits', amount=random.randint(3, 4), spawn_chunks=random.sample(_lower_half_chunk_keys, 1))
 
 def create_outposts():
 	for outpost_chunks in WORLD_INFO['refs']['outposts']:
-		spawns.generate_group('soldier', amount=random.randint(3, 4), spawn_chunks=outpost_chunks)
+		spawns.generate_group('soldier', faction='Military', amount=random.randint(3, 4), spawn_chunks=outpost_chunks)
+
+def control_loners():
+	_loners = get_faction('Loners')
+	
+	for squad in _loners['groups']:
+		for member in [LIFE[i] for i in squad]:
+			#print member['name'], alife.groups.get_stage(member, member['group'])
+			if not alife.groups.is_leader(member, member['group'], member['id']):
+				continue
+		
+			alife.groups.set_stage(member, member['group'], STAGE_RAIDING)
+			alife.groups.flag(member, member['group'], 'raid_chunk', WORLD_INFO['refs']['outposts'][0][0])
+
+def direct():
+	#for faction_name in WORLD_INFO['factions']:
+	#if faction_name == 'Loners':
+	control_loners()

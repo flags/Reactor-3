@@ -74,7 +74,7 @@ def position_to_attack(life, target, engage_distance):
 	return True
 
 def travel_to_position(life, pos, stop_on_sight=False, force=False):
-	if stop_on_sight and sight.can_see_position(life, pos, get_path=True):
+	if stop_on_sight and sight.can_see_position(life, pos, get_path=True, ignore_z=True):
 		lfe.stop(life)
 		
 		return True
@@ -86,14 +86,14 @@ def travel_to_position(life, pos, stop_on_sight=False, force=False):
 	if not force and _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
-	lfe.walk_to(life, pos[:2])
+	lfe.walk_to(life, pos[:3])
 	
 	return False
 
 def travel_to_chunk(life, chunk_key):
 	_chunk_pos = maps.get_chunk(chunk_key)['pos']
 	
-	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2])
+	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2, 2])
 
 def guard_chunk(life, chunk_key):
 	if 'guard_time' in life['state_flags'] and life['state_flags']['guard_time']:
@@ -141,8 +141,7 @@ def search_for_target(life, target_id):
 		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 		
-		lfe.walk_to(life, _know['last_seen_at'][:2])
-		
+		lfe.walk_to(life, _know['last_seen_at'])
 		brain.flag(life, 'search_time', 12)
 		
 		return False
@@ -166,7 +165,7 @@ def search_for_target(life, target_id):
 			if not _search_map[y, x]:
 				continue
 			
-			if sight.can_see_position(life, (_x, _y), get_path=True):
+			if sight.can_see_position(life, (_x, _y, _know['last_seen_at'][2]), get_path=True) or not lfe.can_walk_to(life, (_x, _y, _know['last_seen_at'][2])):
 				_search_map[y, x] = 0
 			
 			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] < _lowest['score']):
@@ -339,7 +338,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			delay=lfe.get_item_access_time(life, _highest['item']['uid']))
 		lfe.lock_item(life, _highest['item']['uid'])
 	else:
-		lfe.walk_to(life, _highest['item']['pos'][:2])
+		lfe.walk_to(life, _highest['item']['pos'])
 	
 	return False
 
@@ -372,7 +371,7 @@ def find_target(life, target, distance=5, follow=False, call=True):
 		return False
 	
 	if not lfe.path_dest(life) == tuple(_target['last_seen_at'][:2]):
-		lfe.walk_to(life, _target['last_seen_at'][:2])
+		lfe.walk_to(life, _target['last_seen_at'])
 	
 	return False
 

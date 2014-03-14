@@ -1063,16 +1063,17 @@ def calculate_velocity(life):
 		if not sum([abs(i) for i in life['velocity']]):
 			return False
 	
-		print life['velocity']
-	
 	return True
 
 def walk_to(life, position):
 	clear_actions(life)
 	
+	if not len(position) == 3:
+		raise Exception('teee')
+	
 	add_action(life,{'action': 'move',
-          'to': position},
-          100)
+	                 'to': position},
+	                 100)
 
 def walk(life, to=None, path=None):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
@@ -1104,9 +1105,12 @@ def walk(life, to=None, path=None):
 	elif _existing_chunk_path and to == _existing_chunk_path['end']:
 		if not life['path']:
 			life['path'] = pathfinding.walk_chunk_path(life)
-	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to)):
+	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to[:2])):
 		alife.brain.unflag(life, 'chunk_path')
+		
 		_zone = can_walk_to(life, to)
+		
+		print life['name'], _zone, life['pos'], to, zones.get_zone_at_coords(to)
 		
 		if _zone:
 			life['path'] = pathfinding.create_path(life, life['pos'], to, _zone)
@@ -1306,7 +1310,7 @@ def perform_action(life):
 				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
 					del life['state_flags']['failed_dijkstra']
 				else:
-					walk_to(life, _action['goals'][0][:2])
+					walk_to(life, _action['goals'][0])
 			else:
 				if 'return_score_in_range' in _action:
 					_return_score_in_range = _action['return_score_in_range']
@@ -3057,6 +3061,12 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+15+_i,
 	                   'Blood: %0.1f' % life['blood'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+17+_i,
+	                   'Faction: %s' % life['faction'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+18+_i,
+	                   'Needs to manage: %s' % str(alife.alife_manage_items.conditions(life)))
 	
 	if life['path']:
 		tcod.console_print(0, _debug_position[0],

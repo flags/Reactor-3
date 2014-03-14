@@ -45,7 +45,7 @@ class ChunkHandler(threading.Thread):
 		SETTINGS['loading'] = False
 	
 	def run(self):
-		while SETTINGS['running']:
+		while SETTINGS['running'] and not SETTINGS['kill threads']:
 			self.check_chunks()
 			time.sleep(1)
 		

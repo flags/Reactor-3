@@ -174,9 +174,12 @@ def generate_life(life_class, amount=1, position=None, faction=None, spawn_chunk
 
 def generate_group(life_class, amount=3, faction=None, group_motive='survival', spawn_chunks=[]):
 	_group_members = generate_life(life_class, amount=amount, spawn_chunks=spawn_chunks, faction=faction)
-	
 	_group_members[0]['stats']['is_leader'] = True
 	_group = alife.groups.create_group(_group_members[0])
+	
+	if faction:
+		alife.factions.add_group(faction, _group_members)
+	
 	alife.groups.set_motive(_group_members[0], _group, group_motive)
 	
 	for m1 in _group_members:

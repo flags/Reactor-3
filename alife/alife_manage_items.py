@@ -10,7 +10,7 @@ import logging
 def conditions(life):
 	RETURN_VALUE = STATE_UNCHANGED
 	
-	if not lfe.execute_raw(life, 'state', 'managing'):
+	if lfe.execute_raw(life, 'state', 'managing'):
 		return True
 	
 	return False
