@@ -10,7 +10,7 @@ def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=
 	_path = []
 	
 	if add_first:
-		_path.append(_pos)
+		_path.append(_pos[:])
 	
 	for i in range(steps-add_first):
 		_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -23,7 +23,7 @@ def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=
 			if _n_chunk_key in avoid_chunk_keys or _n_chunk_key in ['%s,%s' % (p[0], p[1]) for p in _path]:
 				continue
 			
-			_valid_directions.append(mod)
+			_valid_directions.append(mod[:])
 		
 		if not _valid_directions:
 			print 'Take a break...'
@@ -53,80 +53,120 @@ def find_best_offshoot_chunk_key(chunk_keys, occupied_chunk_keys, steps):
 	
 	return random.choice(_results)
 
+def get_neighbors(chunk_key):
+	_neighbors = []
+	_pos = [int(i) for i in chunk_key.split(',')]
+	
+	for pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+		_neighbors.append('%s,%s' % (_pos[0]+(pos[0]*WORLD_INFO['chunk_size']), _pos[1]+(pos[1]*WORLD_INFO['chunk_size'])))
+	
+	return _neighbors
+
+def connect_to_chunks(connect_to, existing_connections, steps):
+	_connect_layers = {}
+	
+	for room_name in connect_to:
+		if not room_name in existing_connections:
+			continue
+		
+		_neighbors = []
+		for chunk_key in existing_connections[room_name]:
+			_neighbors.extend(get_neighbors(chunk_key))
+		
+		_connect_layers[room_name] = {'chunk_keys': existing_connections[room_name],
+		                              'neighbors': _neighbors}
+	
+	_common_neighbors = {}
+	for layer in _connect_layers.values():
+		for chunk_key in layer['neighbors']:
+			if chunk_key in _common_neighbors:
+				_common_neighbors[chunk_key] += 1
+			else:
+				_common_neighbors[chunk_key] = 1
+
+	#print _common_neighbors
+	for chunk_key in _common_neighbors.keys():
+		if _common_neighbors[chunk_key]<len(_connect_layers)-1:
+			del _common_neighbors[chunk_key]
+	
+	#print _common_neighbors
+	return random.choice(_common_neighbors.keys())
+
 def create_building(chunk_key, design):
 	#TODO: Replace
 	_pos = chunk_key
 	_rooms = {}
+	_building = {}
 	_building_chunk_keys = []
-	_to_design = design['build_order']
-	_room_name = _to_design[0]
+	_build_queue = [design['build_order']]
+	_to_build = design['chunks'].keys()
 	
-	while _to_design:
+	while _build_queue:
+		_room_name = _build_queue.pop(0)
 		print _room_name
-		_to_design.remove(_room_name)
+		_to_build.remove(_room_name)
+		#else:
+		#	_room_name = _to_design[0]
+		
+		_building[_room_name] = []
+		#_to_design.remove(_room_name)
 		
 		_room = design['chunks'][_room_name]
 		
-		if _rooms:			
-			_path = find_best_offshoot_chunk_key(_rooms[_rooms.keys()[len(_rooms)-1]], _building_chunk_keys, _room['chunks'])
-			_rooms[_room_name] = _path
+		if _rooms:
+			_start_chunk = connect_to_chunks(_room['doors'], _building, _room['chunks'])
+			_path = walker(_start_chunk, _room['chunks'], avoid_chunk_keys=_building_chunk_keys, add_first=_room['doors']==1)
+			#_path = find_best_offshoot_chunk_key(_rooms[_rooms.keys()[len(_rooms)-1]], _building_chunk_keys, _room['chunks'])
+			_rooms[_room_name] = _path[:]
+			_building[_room_name] = _rooms[_room_name]
 			
 			for pos in _path:
 				if _path.count(pos) == 2:
-					print 'ESCAPE'
+					print 'ESCAPE 2'
 			
 			_building_chunk_keys.extend(_rooms[_room_name])
-		else:	
+		else:
 			_rooms[_room_name] = walker(_pos, _room['chunks'], add_first=not len(_rooms))
 			_building_chunk_keys.extend(_rooms[_room_name])
+			_building[_room_name] = _rooms[_room_name]
 			
 			for pos in _rooms[_room_name]:
 				if _rooms[_room_name].count(pos) == 2:
 					print 'ESCAPE'
 		
-		#_set_new_room = False
-		
-		#Nothing weird going on here, I promise!
-		#while _room['doors']:
-		#	_next_room_name = _room['doors'].pop()
-		#	
-		#	if _next_room_name in _to_design:
-		#		_room_name = _next_room_name
-		#		_set_new_room = True
-		#		break
-		#
-		#if not _set_new_room and _to_design:
-		if _to_design:
-			_room_name = _to_design[0]
+		if _room['doors']:
+			_build_queue.extend([d for d in _room['doors'] if d in _to_build])
 	
 	print _rooms
 	
-	return _building_chunk_keys
+	return _building
 
 _test = {'chunks': {'shopping': {'type': 'interior',
                                   'chunks': 3,
-                                  'doors': ['parking lot', 'office']},
-                     'checkout': {'type': 'interior',
+                                  'doors': ['parking lot', 'office', 'checkout']},
+                    'checkout': {'type': 'interior',
                                   'chunks': 1,
-                                  'doors': []},
-                     'office': {'type': 'interior',
+                                  'doors': ['shopping']},
+                    'office': {'type': 'interior',
                                 'chunks': 2,
                                 'doors': ['shopping']},
-                     'parking lot': {'type': 'interior',
+                    'parking lot': {'type': 'interior',
                                      'chunks': 3,
                                      'doors': ['shopping']}},
-         'build_order': ['shopping', 'checkout', 'office', 'parking lot']}
+         'build_order': 'office'}
 
-_building = create_building('25,25', _test)
+_building = create_building('50,50', _test)
 _rooms = 0
 
-for y in range(5, 50, WORLD_INFO['chunk_size']):
-	for x in range(5, 50, WORLD_INFO['chunk_size']):
+for y in range(5, 80, WORLD_INFO['chunk_size']):
+	for x in range(5, 80, WORLD_INFO['chunk_size']):
 		_chunk_key = '%s,%s' % (x, y)
 		
-		if _chunk_key in _building:
-			_rooms += 1
-			print 'X',
+		for room in _building:
+			if _chunk_key in _building[room]:
+				_rooms += 1
+				print room[0],
+				break
 		else:
 			print '.',
 	
