@@ -776,14 +776,10 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		#events.create_cache_drop(LIFE[SETTINGS['controlling']]['pos'], {})
 		if not SETTINGS['kill threads']:
 			logging.debug('Killing threads...')
 		
 		SETTINGS['kill threads'] = True
-		
-		LIFE[SETTINGS['controlling']]['pos'] = [283, 858, 2]# (284, 857, 2)
-		events.create_cache_drop(LIFE[SETTINGS['controlling']]['pos'], {})
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])

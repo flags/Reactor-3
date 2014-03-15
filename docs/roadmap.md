@@ -806,3 +806,13 @@ Event pool:
 * Firefight nearby: Two or more wandering NPCs engage in combat.
 * Ambush: Two ore more hidden NPCs attack the player.
 * Rescue: A neutral NPC is attacked and radios for help.
+
+Buildings V3
+-----------
+
+### Supermarket:
+
+Chunk set 1: Shopping. Interior. 3 connected chunks, open. 2 doors: exit, manager's office. Container spawns near walls, center of chunks.
+Chunk set 2: Checkout. Interior. 1 chunk, open. Connected to set 1. Counter in center, 3x1x2. Restraints: Near door
+Chunk set 3: Office. Interior. 2 connected chunks, open. Desk, cabinets. Connected to set 2.
+Chunk set 4: Parking lot. Exterior. 3 connected chunks, open. Connected to set 2.
