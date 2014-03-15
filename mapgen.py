@@ -2,6 +2,7 @@ from globals import *
 
 import libtcodpy as tcod
 
+import buildinggen
 import render_los
 import maputils
 import language
@@ -45,87 +46,7 @@ BUILDING_EXCLUDE_TILES.extend([t['id'] for t in tiles.BUSH_TILES])
 BUILDING_EXCLUDE_TILES.extend([t['id'] for t in tiles.DIRT_TILES])
 
 
-def create_building(buildings, building, chunk_size):
-	_top = False
-	_bot = False
-	_left = False
-	_right = False
-	_door_top = False
-	_door_bot = False
-	_door_left = False
-	_door_right = False
-	
-	for y in range(chunk_size):
-		for x in range(chunk_size):
-			_tile = building[y][x]
-			
-			if x == 0 and (y>0 or y<chunk_size) and _tile in OPEN_TILES:
-				_left = True
-			elif x == 0 and (y>0 or y<chunk_size) and _tile in DOOR_TILES:
-				_door_left = True
-			
-			if x == chunk_size-1 and (y>0 or y<chunk_size) and _tile in OPEN_TILES:
-				_right = True
-			elif x == chunk_size-1 and (y>0 or y<chunk_size) and _tile in DOOR_TILES:
-				_door_right = True
-			
-			if y == 0 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
-				_top = True
-			elif y == 0 and (x>0 or x<chunk_size) and _tile in DOOR_TILES:
-				_door_top = True
-			
-			if y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in OPEN_TILES:
-				_bot = True
-			elif y == chunk_size-1 and (x>0 or x<chunk_size) and _tile in DOOR_TILES:
-				_door_bot = True
-	
-	_building_temp = {'open': {'top': _top, 'bot': _bot, 'left': _left, 'right': _right},
-	                  'door': {'top': _door_top, 'bot': _door_bot, 'left': _door_left, 'right': _door_right},
-	                  'building': copy.deepcopy(building)}
-	
-	buildings.append(_building_temp)
-
-def load_tiles(file_name, chunk_size):
-	with open(os.path.join(TEXT_DIR, file_name), 'r') as f:
-		_buildings = []
-		_building = []
-		_i = 0
-		for line in f.readlines():
-			_i += 1
-			
-			if line.startswith('//'):
-				continue
-			
-			if len(line)>1 and (not len(line)-1 == chunk_size or len(_building)>chunk_size):
-				logging.debug('Incorrect chunk size (%s) for tile on line %s' % (len(line), _i))
-				print 'Incorrect chunk size %s (wanted %s) for tile on line %s' % (len(line)-1, chunk_size, _i)
-				continue
-			
-			line = line.rstrip()
-			
-			if line:
-				_building.append(line)
-			elif _building:
-				create_building(_buildings, _building, chunk_size)
-				_building = []
-		
-		if _building:
-			create_building(_buildings, _building, chunk_size)
-	
-	return _buildings
-
-def create_tile(map_gen, x, y, z, tile):
-	map_gen['map'][x][y][z] = tiles.create_tile(tile)
-	
-	_raw_tile = tiles.get_raw_tile(map_gen['map'][x][y][z])
-	if 'not_solid' in _raw_tile and _raw_tile['not_solid']:
-		return True
-	
-	_chunk = map_gen['chunk_map'][alife.chunks.get_chunk_key_at((x, y))]
-	if z > _chunk['max_z']:
-		_chunk['max_z'] = z
-
-def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False):
+def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False, build_test=True):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -134,6 +55,9 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	Underground: Flags whether buildings can be constructed beneath the surface.
 	"""
 	#smp.init()
+	
+	if build_test:
+		size = (100, 100, 10)
 	
 	map_gen = {'name': '%s' % time.time(),
 	           'size': size,
@@ -157,7 +81,6 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	                    'outposts': [],
 	                    'town_seeds': [],
 	                    'dirt_road': []},
-	           'buildings': load_tiles('buildings.txt', detail),
 	           'flags': {},
 	           'map': maps.create_map(size=size),
 	           'queued_roads': [],
@@ -177,7 +100,10 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	logging.debug('Drawing outlines...')
 	#generate_outlines(map_gen)
 	
-	generate_noise_map(map_gen)
+	if build_test:
+		building_test(map_gen)
+	else:
+		generate_noise_map(map_gen)
 	
 	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
 	
@@ -217,6 +143,125 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	logging.debug('Map generation complete.')	
 	
 	return map_gen
+
+def building_test(map_gen):
+	_test = {'chunks': {'shopping': {'type': 'interior',
+	                                 'chunks': 3,
+	                                 'doors': ['office', 'checkout'],
+	                                 'floor': [{'x_mod_min': 0,
+	                                            'x_mod_max': 1,
+	                                            'y_mod_min': 0,
+	                                            'y_mod_max': 1,
+	                                            'height': 1,
+	                                            'tiles': tiles.WHITE_TILE_TILES}],
+	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                    'checkout': {'type': 'interior',
+	                                 'chunks': 1,
+	                                 'doors': ['shopping', 'parking lot'],
+	                                 'floor': [{'x_mod_min': 0,
+	                                            'x_mod_max': 1,
+	                                            'y_mod_min': 0,
+	                                            'y_mod_max': 1,
+	                                            'height': 1,
+	                                            'tiles': tiles.WHITE_TILE_TILES}],
+	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                    'office': {'type': 'interior',
+	                               'chunks': 2,
+	                               'doors': ['shopping'],
+	                               'floor': [{'x_mod_min': 0,
+	                                          'x_mod_max': 1,
+	                                          'y_mod_min': 0,
+	                                          'y_mod_max': 1,
+	                                          'height': 1,
+	                                          'tiles': tiles.SEA_CARPET_TILES}],
+	                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                    'parking lot': {'type': 'exterior',
+	                                    'chunks': 3,
+	                                    'doors': ['shopping', 'checkout'],
+	                                    'floor': [{'x_mod_min': 0,
+	                                               'x_mod_max': 1,
+	                                               'y_mod_min': 0,
+	                                               'y_mod_max': 1,
+	                                               'height': 1,
+	                                               'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                              {'x_mod_min': 0,
+	                                               'x_mod_max': 1,
+	                                               'y_mod_min': 0,
+	                                               'y_mod_max': 1,
+	                                               'mod_x': 3,
+	                                               'mod_y': 2,
+	                                               'height': 4,
+	                                               'tiles': tiles.BROKEN_CONCRETE_TILES}],
+	                                    'walls': {'tiles': [tiles.WALL_TILE]}}},
+	         'build_order': 'shopping'}
+	
+	_building = buildinggen.create_building('45,30', _test)
+	
+	for room_name in _building:
+		_room = _building[room_name]
+		for chunk_key in _room['chunk_keys']:
+			_doors_used = []
+			_door = False
+			_doors_in = []
+					
+			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key):
+				for neighbor_room_name in _building:
+					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:
+						if neighbor_room_name in _room['doors']:
+							_direction_mod = (numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
+							                  numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
+							_doors_in.append(_direction_mod)
+							#_door = True
+							
+							#if not neighbor_room_name in _doors_used:
+							#	_doors_used.append(neighbor_room_name)
+							
+							#break
+				
+				if _door:
+					break
+			
+			for y in range(0, WORLD_INFO['chunk_size']+1):
+				for x in range(0, WORLD_INFO['chunk_size']+1):
+					_x = int(chunk_key.split(',')[0])+x
+					_y = int(chunk_key.split(',')[1])+y
+					_x_mod = x/float(WORLD_INFO['chunk_size'])
+					_y_mod = y/float(WORLD_INFO['chunk_size'])
+					
+					if _room['type'] == 'interior':
+						if (x == 0 and not (-1, 0) in _doors_in) or (y == 0 and not (0, -1) in _doors_in) or (x == WORLD_INFO['chunk_size'] and not (1, 0) in _doors_in) or (y == WORLD_INFO['chunk_size'] and not (0, 1) in _doors_in):
+							for z in range(4):
+								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
+					
+					for tile_design in _room['floor']:
+						if not tile_design['x_mod_min']<_x_mod<=tile_design['x_mod_max']:
+							continue
+						
+						if not tile_design['y_mod_min']<_y_mod<=tile_design['y_mod_max']:
+							continue
+						
+						if 'mod_x' in tile_design and x % tile_design['mod_x']:
+							continue
+						
+						if 'mod_y' in tile_design and y % tile_design['mod_y']:
+							continue
+					
+						for z in range(tile_design['height']):
+							create_tile(map_gen, _x, _y, 2+z, random.choice(tile_design['tiles']))
+			
+			for used_room_name in _doors_used:
+				_room['doors'].remove(used_room_name)
+
+def create_tile(map_gen, x, y, z, tile):
+	map_gen['map'][x][y][z] = tiles.create_tile(tile)
+	
+	_raw_tile = tiles.get_raw_tile(map_gen['map'][x][y][z])
+	if 'not_solid' in _raw_tile and _raw_tile['not_solid']:
+		return True
+	
+	_chunk = map_gen['chunk_map'][alife.chunks.get_chunk_key_at((x, y))]
+	if z > _chunk['max_z']:
+		_chunk['max_z'] = z
 
 def generate_chunk_map(map_gen):
 	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
@@ -652,7 +697,7 @@ def generate_outpost(map_gen, cell):
 	
 	map_gen['refs']['outposts'].append(_outpost_chunk_keys)
 	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
-	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key], house_themes=['barracks'])
+	#construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key], house_themes=['barracks'])
 
 def generate_forest(map_gen, cell):
 	for chunk_key in cell['chunk_keys']:
@@ -772,7 +817,7 @@ def generate_farm(map_gen, cell):
 			if not _x or not _y or x == _bot_right[0] or y == _bot_right[1]:
 				create_tile(map_gen, x+map_gen['chunk_size']/2, y+map_gen['chunk_size']/2, 2, random.choice(tiles.WOOD_TILES))
 	
-	construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
+	#construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
 	
 	#Silos
 	_potential_silo_chunks = []
@@ -922,7 +967,7 @@ def generate_factory(map_gen, cell):
 	
 	#map_gen['refs']['outposts'].append(_outpost_chunk_keys)
 	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
-	construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
+	#construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
 
 def generate_town(map_gen, cell):
 	_min_building_size = 4
@@ -934,7 +979,6 @@ def generate_town(map_gen, cell):
 	_avoid_positions = []
 	_fence_positions = []
 	_sidewalk_positions = []
-	_tries = 0
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
@@ -948,35 +992,33 @@ def generate_town(map_gen, cell):
 		_potential_exterior_chunks = []
 		_potential_yard_chunks = []
 		
-		for chunk_key in _potential_room_chunks:
-			if not chunk_key in _potential_building_chunks:
-				continue
-			
-			_room_chunks.append(chunk_key)
+		_test = {'chunks': {'shopping': {'type': 'interior',
+		                                 'chunks': 3,
+		                                 'doors': ['office', 'checkout']},
+		                    'checkout': {'type': 'interior',
+		                                 'chunks': 1,
+		                                 'doors': ['shopping', 'parking lot']},
+		                    'office': {'type': 'interior',
+		                               'chunks': 2,
+		                               'doors': ['shopping']},
+		                    'parking lot': {'type': 'interior',
+		                                    'chunks': 3,
+		                                    'doors': ['shopping', 'checkout']}},
+		         'build_order': 'shopping'}
 		
-		if len(_room_chunks) < _min_building_size:
-			for chunk_key in _room_chunks:
-				_potential_building_chunks.remove(chunk_key)
-			
-			if _tries<3:
-				_tries += 1
-				
-				continue
-			elif _potential_building_chunks:
-				_potential_building_chunks.remove(_potential_building_chunks[0])
-				_tries = 0
-				
-				continue
-			else:
-				break
+		_building = buildinggen.create_building(random.choice(_potential_building_chunks), _test)
 		
-		_tries = 0
+		for room_name in _building:
+			for chunk_key in _building[room_name]:
+				_room_chunks.append(chunk_key)
 		
 		#Fence
 		for chunk_key in _room_chunks:
 			_chunk = map_gen['chunk_map'][chunk_key]
 			_chunk['type'] = 'town'
-			_potential_building_chunks.remove(chunk_key)
+			
+			if chunk_key in _potential_building_chunks:
+				_potential_building_chunks.remove(chunk_key)
 			
 			if _chunk['pos'][0] < _top_left[0]:
 				_top_left[0] = _chunk['pos'][0]-3
@@ -1064,11 +1106,6 @@ def generate_town(map_gen, cell):
 					if (_x, _y) in _fence_positions:
 						_fence_positions.remove((_x, _y))
 						_avoid_positions.append((_x, _y))
-		
-		_buildings.append({'rooms': _room_chunks[:], 'exterior_chunk': _ext_chunk_key})
-	
-	for building in _buildings:
-		construct_building(map_gen, {'rooms': building['rooms']}, exterior_chunks=[building['exterior_chunk']])
 	
 	#Roads
 	for chunk_key in _potential_street_chunks:
@@ -1549,409 +1586,6 @@ def direction_from_key_to_key(map_gen, key1, key2):
 		return (-1, 1)
 	
 	raise Exception('Invalid direction.')
-
-def construct_building(map_gen, building, building_type='town', exterior_chunks=[], house_themes=['townhouse']):
-	_main_room_types = []
-	_secondary_room_types = []
-	_wall_tile = random.choice(tiles.HOUSE_WALL_TILES)
-	_building_chunk_map = {}
-	
-	map_gen['refs']['buildings'].append(building['rooms'][:])	
-	
-	for chunk_key in building['rooms']:
-		_chunk = map_gen['chunk_map'][chunk_key]
-		_avoid_directions = []
-		_connected_interior_chunks = {}
-		_connected_exterior_chunks = {}
-		
-		for neighbor_key in get_neighbors_of_type(map_gen, chunk_key, 'any'):
-			_neighbor_direction = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, neighbor_key))]
-			
-			if not neighbor_key in building['rooms'] and not map_gen['chunk_map'][neighbor_key]['type'] == 'driveway' and not neighbor_key in exterior_chunks:
-				_avoid_directions.append(_neighbor_direction)
-				continue
-			
-			if map_gen['chunk_map'][neighbor_key]['type'] in [building_type]:
-				_connected_interior_chunks[_neighbor_direction] = neighbor_key
-			elif map_gen['chunk_map'][neighbor_key]['type'] in ['driveway'] or neighbor_key in exterior_chunks:
-				_connected_exterior_chunks[_neighbor_direction] = neighbor_key
-		
-		_building_chunk_map[chunk_key] = {'interior_chunks': _connected_interior_chunks,
-		                                  'exterior_chunks': _connected_exterior_chunks}
-		
-	_occupied_chunks = {}
-	for chunk_key in _building_chunk_map:
-		_interior_chunks = _building_chunk_map[chunk_key]['interior_chunks']
-		_exterior_chunks = _building_chunk_map[chunk_key]['exterior_chunks']
-		_chunk = map_gen['chunk_map'][chunk_key]
-		
-		#Find available room
-		_lowest_neighbor = {'count': 0, 'chunk_key': None}
-		_highest_neighbor = {'count': 0, 'chunk_key': None}
-		
-		for neighbor_key in get_neighbors_of_type(map_gen, chunk_key, building_type):
-			_connected_chunks = []
-			
-			for connected_chunk_key in get_all_connected_chunks_of_type(map_gen, neighbor_key, building_type):
-				if connected_chunk_key in _occupied_chunks:
-					continue
-			
-				_connected_chunks.append(connected_chunk_key)
-			
-			_remaining_free_space = len(_connected_chunks)
-			if _remaining_free_space>_highest_neighbor['count'] or not _highest_neighbor['chunk_key']:
-				_highest_neighbor['chunk_key'] = neighbor_key
-				_highest_neighbor['count'] = _remaining_free_space
-			elif _remaining_free_space<_lowest_neighbor['count'] or not _lowest_neighbor['chunk_key']:
-				_lowest_neighbor['chunk_key'] = neighbor_key
-				_lowest_neighbor['count'] = _remaining_free_space
-		
-		_house_theme = random.choice(house_themes)
-		_valid_room_types = []
-		
-		if _house_theme == 'townhouse':
-			_room_types = {'closet': {'int': 1},
-		                   'bathroom': {'int': 1},
-		                   'bedroom': {'int': 2},
-		                   'large dining room': {'int': 3}}
-		elif _house_theme == 'barracks':
-			_room_types = {'small dorm': {'int': 2},
-			               'dorm': {'int': 3},
-			               'small dorm': {'int': 1},
-			               'office': {'int': 1}}
-		
-		#Lots of connected rooms
-		if _highest_neighbor['count']>=4 and _lowest_neighbor['count']>=4:
-			#Higher than 4 for each
-			
-			#Equals means they have the same view of the house.
-			if _highest_neighbor['count'] == _lowest_neighbor['count']:
-				if _exterior_chunks:
-					_type = 'landing'
-				else:
-					for room_type in _room_types:
-						_room_type = _room_types[room_type]
-						
-						if len(_interior_chunks)+len(_exterior_chunks) == _room_type['int']:
-							_valid_room_types.append(room_type)
-					
-					if _valid_room_types:
-						_type = random.choice(_valid_room_types)
-						_exterior_chunks = _interior_chunks.keys()
-						_interior_chunks = []
-					else:
-						_type = 'hall'
-				
-				_occupied_chunks[chunk_key] = {'room': _type,
-				                               'interior': _interior_chunks,
-				                               'exterior': _exterior_chunks}
-			else:
-				print 'Room counts DNE'
-		else:
-			if _highest_neighbor['count']>1:
-				#There's more than one connected node but no other available directions to build in
-				#Make this a hallway or otherwise large room
-				if _exterior_chunks:
-					_type = 'landing'
-				else:
-					for room_type in _room_types:
-						_room_type = _room_types[room_type]
-						
-						if len(_interior_chunks)+len(_exterior_chunks) == _room_type['int']:
-							_valid_room_types.append(room_type)
-					
-					if _valid_room_types:
-						_type = random.choice(_valid_room_types)
-						_exterior_chunks = _interior_chunks.keys()
-						_interior_chunks = []
-					else:
-						_type = 'hall'
-				
-				_occupied_chunks[chunk_key] = {'room': _type,
-				                               'interior': _interior_chunks,
-				                               'exterior': _exterior_chunks}
-				
-			else:
-				#There's a chance we could potentially cut off a few routes
-				#Check for connected neighbors with only 1 connection
-				
-				_needs_to_connect = _exterior_chunks.keys()
-				_can_connect_to = []
-				for next_neighbor_key in get_neighbors_of_type(map_gen, chunk_key, building_type):
-					if not next_neighbor_key in _occupied_chunks:
-						continue
-					
-					_direction = DIRECTION_MAP[str(direction_from_key_to_key(map_gen, chunk_key, next_neighbor_key))]
-					_exits = len(_occupied_chunks[next_neighbor_key]['interior'])+len(_occupied_chunks[next_neighbor_key]['exterior'])
-					
-					if _exits==1:
-						_needs_to_connect.append(_direction)
-					elif _exits>1:
-						_can_connect_to.append(_direction)
-				
-				if _needs_to_connect and len(_can_connect_to):
-					_int = random.sample(_can_connect_to, random.randint(1, len(_can_connect_to)))
-					
-					for room_type in _room_types:
-						_room_type = _room_types[room_type]
-						
-						if len(_int)+len(_needs_to_connect) == _room_type['int']:
-							_valid_room_types.append(room_type)
-					
-					if not _valid_room_types:
-						_valid_room_types = ['small1']
-							
-					_occupied_chunks[chunk_key] = {'room': random.choice(_valid_room_types),
-						                          'interior': _int,
-						                          'exterior': _needs_to_connect}
-				elif _interior_chunks:
-					_exterior_chunks = [random.choice(_interior_chunks.keys())]
-					_occupied_chunks[chunk_key] = {'room': 'small2',
-						                          'interior': [],
-						                          'exterior': _exterior_chunks}
-				else:
-					continue
-		
-	for chunk_key in _occupied_chunks:
-		_possible_buildings = []
-		_room = _occupied_chunks[chunk_key]['room']
-		_interior_chunks = _occupied_chunks[chunk_key]['interior']
-		_exterior_chunks = _occupied_chunks[chunk_key]['exterior']
-		_chunk = map_gen['chunk_map'][chunk_key]
-		
-		for possible_building in map_gen['buildings']:
-			_unchecked_directions = ['top', 'bot', 'left', 'right']
-			_continue = False
-			
-			for direction in _interior_chunks:
-				if not possible_building['open'][direction]:
-					_continue = True
-					break
-				
-				_unchecked_directions.remove(direction)
-			
-			if _continue:
-				continue
-			
-			for direction in _exterior_chunks:
-				if not possible_building['door'][direction]:
-					_continue = True
-					break
-				
-				_unchecked_directions.remove(direction)
-			
-			for direction in _unchecked_directions:
-				if possible_building['open'][direction] or possible_building['door'][direction]:
-					_continue = True
-					break
-			
-			if _continue:
-				continue
-			
-			_possible_buildings.append(possible_building['building'])
-		
-		_items = []
-		_storage = []
-		if _room == 'closet':
-			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-			                  {'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'sneakers', 'rarity': 1.0},
-			                  {'item': 'white t-shirt', 'rarity': 0.7},
-			                  {'item': 'white cloth', 'rarity': 0.4},
-			                  {'item': 'glock', 'rarity': 0.25},
-			                  {'item': '9x19mm magazine', 'rarity': 0.3}]
-			_storage_items_2 = [{'item': 'brown hoodie', 'rarity': 0.4},
-			                    {'item': 'leather backpack', 'rarity': 0.35},
-			                    {'item': 'fall camo pants', 'rarity': 0.35},
-			                    {'item': 'white t-shirt', 'rarity': 0.5},
-			                    {'item': '.22 rifle', 'rarity': 0.4}]
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items},
-			            {'item': 'wooden dresser', 'rarity': 0.6, 'spawn_list': _storage_items_2}]
-			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
-		elif _room == 'bathroom':
-			_storage_items = [{'item': 'aspirin', 'rarity': 0.7}]
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
-			_floor_tiles = tiles.BLUE_FLOOR_TILES
-		elif _room == 'bedroom':
-			_items = [{'item': 'bed', 'rarity': 1.0},
-			          {'item': 'wooden dresser', 'rarity': 0.5}]
-			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-			                  {'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'chest holster', 'rarity': 0.65},
-			                  {'item': 'sneakers', 'rarity': 1.0},
-			                  {'item': 'white t-shirt', 'rarity': 1.0},
-			                  {'item': 'white cloth', 'rarity': 0.4},
-			                  {'item': 'glock', 'rarity': 0.25},
-			                  {'item': '9x19mm magazine', 'rarity': 0.3}]
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
-			_floor_tiles = tiles.DARK_BLUE_FLOOR_TILES
-		elif _room == 'small1':
-			_floor_tiles = tiles.RED_BRICK_TILES
-		elif _room == 'small2':
-			_floor_tiles = tiles.RED_BRICK_TILES
-			_items = [{'item': 'bed', 'rarity': 1.0}]
-			_storage_items = [{'item': 'blue jeans', 'rarity': 1.0},
-			                  {'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'sneakers', 'rarity': 1.0},
-			                  {'item': 'white t-shirt', 'rarity': 1.0},
-			                  {'item': 'white cloth', 'rarity': 0.4}]
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
-		elif _room == 'landing':
-			_items = [{'item': 'coat rack', 'rarity': 1.0}]
-			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'sneakers', 'rarity': 1.0}]
-			
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
-			          
-			_floor_tiles = tiles.WHITE_TILE_TILES
-		elif _room == 'large dining room':
-			_items = [{'item': 'wooden dresser', 'rarity': 1.0},
-			          {'item': 'wooden dresser', 'rarity': 1.0},
-			          {'item': 'wooden dresser', 'rarity': 1.0}]
-			_floor_tiles = tiles.WHITE_TILE_TILES
-		elif _room == 'small dorm':
-			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'glock', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm magazine', 'rarity': 0.75}]
-			
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items}]
-			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
-		elif _room == 'dorm':
-			_storage_items = [{'item': 'leather backpack', 'rarity': 0.65},
-			                  {'item': 'glock', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm round', 'rarity': 0.6},
-			                  {'item': '9x19mm magazine', 'rarity': 0.75}]
-			_storage_items_2 = [{'item': 'leather backpack', 'rarity': 0.65},
-			                    {'item': 'glock', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm round', 'rarity': 0.6},
-			                    {'item': '9x19mm magazine', 'rarity': 0.75}]
-			
-			_storage = [{'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items},
-			            {'item': 'wooden dresser', 'rarity': 1.0, 'spawn_list': _storage_items_2}]
-			_floor_tiles = tiles.CONCRETE_FLOOR_TILES
-		elif _room == 'office':
-			_items = [{'item': 'wooden dresser', 'rarity': 1.0}]
-			_floor_tiles = tiles.WHITE_TILE_TILES
-		else:
-			_floor_tiles = tiles.SEA_CARPET_TILES
-		
-		_neighbor_dirs = [DIRECTION_MAP[str(d)] for d in [direction_from_key_to_key(map_gen, chunk_key, n) for n in get_neighbors_of_type(map_gen, chunk_key, building_type)]]
-		
-		try:
-			_building = random.choice(_possible_buildings)
-		except:
-			_int = ', '.join(_interior_directions)
-			_ext = ', '.join(_exterior_directions)
-			
-			raise Exception('Matching tile not found for the following layout: Interior-facing: %s, Exterior-facing: %s, Doors: %s' % (_int, _ext, _rules['doors']))
-		
-		_half = map_gen['chunk_size']/2
-		_open_spots = []
-		for _y in range(map_gen['chunk_size']):
-			y = _chunk['pos'][1]+_y
-			for _x in range(map_gen['chunk_size']):
-				x = _chunk['pos'][0]+_x
-				
-				for i in range(3):
-					if i == 2:
-						create_tile(map_gen, x, y, 2+i, _wall_tile)
-					elif _building[_y][_x] == '#':
-						create_tile(map_gen, x, y, 2+i, _wall_tile)
-					elif i in [0] and _building[_y][_x] == 'D':
-						items.create_item('wooden door', position=[x, y, 2+i])
-						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
-					elif i in [0] and _building[_y][_x] == '.':
-						create_tile(map_gen, x, y, 2+i, random.choice(_floor_tiles))
-						
-						if not i and random.randint(0, 500) == 500:
-							effects.create_light((x, y, 2), (255, 255, 255), 5, 0.95)
-						
-						_open_spots.append((x, y))
-						
-		_possible_spots = []
-		for pos in _open_spots:
-			_open = 0
-			_continue = False
-			
-			for _n_pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-				for item in items.get_items_at((pos[0]+_n_pos[0], pos[1]+_n_pos[1], 2)):
-					if item['type'] == 'door':
-						_continue = True
-						break
-				
-				if _continue:
-					break
-				
-				if (pos[0]+_n_pos[0], pos[1]+_n_pos[1]) in _open_spots:
-					_open += 1
-			
-			if _continue:
-				continue
-			
-			_possible_spots.append({'spot': pos[:], 'open_neighbors': _open})
-		
-		_only_one_neighbor = []
-		for entry in _possible_spots:
-			if entry['open_neighbors'] == 3:
-				_only_one_neighbor.append(entry)
-		
-		if not _only_one_neighbor:
-			continue
-		
-		_placed_containers = []
-		if _storage:
-			_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
-			
-			for _container in _storage:
-				if not _container['rarity']>random.uniform(0, 1.0):
-					continue
-				
-				_c = items.create_item(_container['item'], position=[_spawn_x, _spawn_y, 2])
-				_placed_containers.append(_container)
-				
-				for _inside_item in _container['spawn_list']:
-					if not can_spawn_item(_inside_item):
-						continue
-					
-					_i = items.create_item(_inside_item['item'], position=[_spawn_x, _spawn_y, 2])
-					
-					if not items.can_store_item_in(_i, _c):
-						items.delete_item(_i)
-						continue
-					
-					items.store_item_in(_i, _c)
-		
-		if _items:
-			for item in _items:
-				if not item['rarity']>random.uniform(0, 1.0):
-					continue
-				
-				_spawn_x, _spawn_y = random.choice([s['spot'] for s in _only_one_neighbor])
-				items.create_item(item['item'], position=[_spawn_x, _spawn_y, 2])
-		
-		for container in _placed_containers:
-			_storage.remove(container)
-	
-	return _building_chunk_map
 
 def can_spawn_item(item):
 	if item['rarity']>random.uniform(0, 1.0):
