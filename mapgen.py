@@ -309,7 +309,7 @@ def building_test(map_gen):
 						if (x == 0 and not (-1, 0) in _doors_in) or (y == 0 and not (0, -1) in _doors_in) or (x == WORLD_INFO['chunk_size']-1 and not (1, 0) in _doors_in) or (y == WORLD_INFO['chunk_size']-1 and not (0, 1) in _doors_in):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
-						elif (not x and (y<=1 or y >= 3) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y<=1 or y >= 3) and not (1, 0) in _skip_doors) or (not y and (x<=1 or x >= 3) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x<=1 or x >= 3) and not (0, -1) in _skip_doors):
+						elif (not x and (y<=1 or y >= 3) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y<=1 or y >= 3) and not (1, 0) in _skip_doors) or (not y and (x<=1 or x >= 3) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x<=1 or x >= 3) and not (0, 1) in _skip_doors):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
 					
