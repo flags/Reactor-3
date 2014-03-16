@@ -356,6 +356,26 @@ def building_test(map_gen):
 					
 						for z in range(tile_design['height']):
 							create_tile(map_gen, _x, _y, 2+z, random.choice(tile_design['tiles']))
+	
+	for room_name in _building:
+		_room = _building[room_name]
+		
+		if not _room['type'] == 'interior':
+			continue
+		
+		for chunk_key in _room['chunk_keys']:
+			_x = int(chunk_key.split(',')[0])
+			_y = int(chunk_key.split(',')[1])
+			
+			for mod in [(0, 0), (1, 0), (0, 1), (1, 1)]:
+				__x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
+				__y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
+				
+				print __x, __y
+				
+				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in [tiles.WALL_TILE]:
+					create_tile(map_gen, __x, __y, 2, tiles.WALL_TILE)
+				
 
 def create_tile(map_gen, x, y, z, tile):
 	map_gen['map'][x][y][z] = tiles.create_tile(tile)
