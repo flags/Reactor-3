@@ -3,7 +3,7 @@ from globals import WORLD_INFO
 import random
 
 
-def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=[]):
+def walker(chunk_key, steps, building_chunks, add_first=False, chunk_keys=True, avoid_chunk_keys=[]):
 	_pos = [int(i) for i in chunk_key.split(',')]
 	_path = []
 	
@@ -17,6 +17,9 @@ def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=
 		for mod in _directions:
 			_n_pos = (_pos[0]+(mod[0]*WORLD_INFO['chunk_size']), _pos[1]+(mod[1]*WORLD_INFO['chunk_size']))
 			_n_chunk_key = '%s,%s' % (_n_pos[0], _n_pos[1])
+			
+			if not _n_chunk_key in building_chunks:
+				continue
 			
 			if _n_chunk_key in avoid_chunk_keys or _n_chunk_key in ['%s,%s' % (p[0], p[1]) for p in _path]:
 				continue
@@ -36,12 +39,15 @@ def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=
 	else:
 		return _path
 
-def get_neighbors(chunk_key, avoid_chunk_keys=[]):
+def get_neighbors(chunk_key, only_chunk_keys=[], avoid_chunk_keys=[]):
 	_neighbors = []
 	_pos = [int(i) for i in chunk_key.split(',')]
 	
 	for pos in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
 		_chunk_key = '%s,%s' % (_pos[0]+(pos[0]*WORLD_INFO['chunk_size']), _pos[1]+(pos[1]*WORLD_INFO['chunk_size']))
+		
+		if only_chunk_keys and not _chunk_key in only_chunk_keys:
+			continue
 		
 		if _chunk_key in avoid_chunk_keys:
 			continue
@@ -50,7 +56,7 @@ def get_neighbors(chunk_key, avoid_chunk_keys=[]):
 	
 	return _neighbors
 
-def connect_to_chunks(connect_to, existing_connections, steps):
+def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 	_connect_layers = {}
 	_all_chunk_keys = []
 	
@@ -58,16 +64,23 @@ def connect_to_chunks(connect_to, existing_connections, steps):
 		for chunk_key in existing_connections[room_name]['chunk_keys']:
 			_all_chunk_keys.append(chunk_key)
 	
+	_allowed = False
 	for room_name in connect_to:
 		if not room_name in existing_connections:
 			continue
 		
 		_neighbors = []
 		for chunk_key in existing_connections[room_name]['chunk_keys']:
-			_neighbors.extend(get_neighbors(chunk_key, avoid_chunk_keys=_all_chunk_keys))
+			_neighbors.extend(get_neighbors(chunk_key, only_chunk_keys=building_chunks, avoid_chunk_keys=_all_chunk_keys))
 		
 		_connect_layers[room_name] = {'chunk_keys': existing_connections[room_name]['chunk_keys'],
 		                              'neighbors': _neighbors}
+		
+		if _neighbors:
+			_allowed = True
+	
+	if not _allowed:
+		return -1
 	
 	_common_neighbors = {}
 	_highest = 0
@@ -93,7 +106,7 @@ def connect_to_chunks(connect_to, existing_connections, steps):
 	
 	return random.choice(_common_neighbors.keys())
 
-def _create_building(chunk_key, design):
+def _create_building(chunk_key, design, building_chunks):
 	_pos = chunk_key
 	_rooms = {}
 	_building = {}
@@ -108,12 +121,15 @@ def _create_building(chunk_key, design):
 		_room = design['chunks'][_room_name]
 		
 		if _rooms:
-			_start_chunk = connect_to_chunks(_room['doors'], _building, _room['chunks'])
+			_start_chunk = connect_to_chunks(_room['doors'], _building, _room['chunks'], building_chunks)
 			
 			if not _start_chunk:
 				return False
 			
-			_path = walker(_start_chunk, _room['chunks'], avoid_chunk_keys=_building_chunk_keys, add_first=True)
+			if _start_chunk == -1:
+				return -1
+			
+			_path = walker(_start_chunk, _room['chunks'], building_chunks, avoid_chunk_keys=_building_chunk_keys, add_first=True)
 			_rooms[_room_name] = _path[:]
 			_building[_room_name] = {'chunk_keys': _rooms[_room_name],
 			                         'type': _room['type'],
@@ -129,7 +145,7 @@ def _create_building(chunk_key, design):
 			                                    'edge': []}}
 			_building_chunk_keys.extend(_rooms[_room_name])
 		else:
-			_rooms[_room_name] = walker(_pos, _room['chunks'], add_first=True, avoid_chunk_keys=_building_chunk_keys,)
+			_rooms[_room_name] = walker(_pos, _room['chunks'], building_chunks, avoid_chunk_keys=_building_chunk_keys, add_first=True)
 			_building_chunk_keys.extend(_rooms[_room_name])
 			_building[_room_name] = {'chunk_keys': _rooms[_room_name],
 			                         'type': _room['type'],
@@ -149,10 +165,13 @@ def _create_building(chunk_key, design):
 	
 	return _building
 
-def create_building(chunk_key, design):
+def create_building(chunk_key, design, building_chunks):
 	_building = None
 	
 	while not _building:
-		_building = _create_building(chunk_key, design)
+		_building = _create_building(chunk_key, design, building_chunks)
+	
+	if _building == -1:
+		return False
 	
 	return _building
