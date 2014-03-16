@@ -144,20 +144,26 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	
 	return map_gen
 
-def get_neighboring_tiles(map_gen, pos, tiles):
+def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False, diag=False):
 	_pos = pos[:]
 	_neighbor_tiles = []
 	
-	for mod in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+	if vert_only:
+		_directions = [(0, -1), (0, 1)]
+	elif horiz_only:
+		_directions = [(-1, 0), (1, 0)]
+	else:
+		_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+	
+	if diag:
+		_directions.extend([(-1, -1), (1, -1), (-1, 1), (1, 1)])
+	
+	for mod in _directions:
 		_x = _pos[0]+mod[0]
 		_y = _pos[1]+mod[1]
 	
-		#print map_gen['map'][_x][_y][3]['id'], [t['id'] for t in tiles]
-		if map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in tiles]:
-			#print map_gen['map'][_x][_y][2]['id']
+		if map_gen['map'][_x][_y][2] and map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles]:
 			_neighbor_tiles.append((_x, _y))
-	
-	print _neighbor_tiles
 	
 	return _neighbor_tiles
 
@@ -221,6 +227,7 @@ def building_test(map_gen):
 	                                             'y_mod_max': 1,
 	                                             'height': 1,
 	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'items': [],
 	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'driveway': {'type': 'exterior',
 	                                  'chunks': 1,
@@ -231,6 +238,7 @@ def building_test(map_gen):
 	                                             'y_mod_max': 1,
 	                                             'height': 1,
 	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'items': [],
 	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'sidewalk': {'type': 'exterior',
 	                                  'chunks': 1,
@@ -241,6 +249,7 @@ def building_test(map_gen):
 	                                             'y_mod_max': 1,
 	                                             'height': 1,
 	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'items': [],
 	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'landing': {'type': 'interior',
 	                                 'chunks': 1,
@@ -251,6 +260,7 @@ def building_test(map_gen):
 	                                            'y_mod_max': 1,
 	                                            'height': 1,
 	                                            'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                 'items': [],
 	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'kitchen': {'type': 'interior',
 	                                 'chunks': 2,
@@ -261,7 +271,8 @@ def building_test(map_gen):
 	                                            'y_mod_max': 1,
 	                                            'height': 1,
 	                                            'tiles': tiles.WHITE_TILE_TILES}],
-	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                 'walls': {'tiles': [tiles.WALL_TILE]},
+	                                 'items': [{'item': 'gas stove', 'location': 'middle', 'spawn_chance': 1, 'amount': 2}]},
 	                     'pantry': {'type': 'interior',
 	                                 'chunks': 1,
 	                                 'doors': ['kitchen'],
@@ -271,6 +282,7 @@ def building_test(map_gen):
 	                                            'y_mod_max': 1,
 	                                            'height': 1,
 	                                            'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 5}],
 	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'bedroom 1': {'type': 'interior',
 	                                   'chunks': 1,
@@ -281,6 +293,8 @@ def building_test(map_gen):
 	                                              'y_mod_max': 1,
 	                                              'height': 1,
 	                                              'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                   'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1},
+	                                             {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
 	                                   'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'bedroom 2': {'type': 'interior',
 	                                   'chunks': 1,
@@ -291,6 +305,8 @@ def building_test(map_gen):
 	                                              'y_mod_max': 1,
 	                                              'height': 1,
 	                                              'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                   'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1},
+	                                             {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
 	                                   'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'living room': {'type': 'interior',
 	                                     'chunks': 2,
@@ -301,6 +317,8 @@ def building_test(map_gen):
 	                                                'y_mod_max': 1,
 	                                                'height': 1,
 	                                                'tiles': tiles.BLUE_CARPET_TILES}],
+	                                     'items': [],
+	                                     'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 3}],
 	                                     'walls': {'tiles': [tiles.WALL_TILE]}}},
 	          'build_order': 'landing'}
 	
@@ -361,6 +379,8 @@ def building_test(map_gen):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
 								_wall = True
+						elif (not x and (y==2) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y==2) and not (1, 0) in _skip_doors) or (not y and (x==2) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x==2) and not (0, 1) in _skip_doors):
+							_room['spawns']['doors'].append((_x, _y))
 					
 					for tile_design in _room['floor']:
 						if _wall:
@@ -377,9 +397,54 @@ def building_test(map_gen):
 						
 						if 'mod_y' in tile_design and not y % tile_design['mod_y']:
 							continue
-					
+						
 						for z in range(tile_design['height']):
 							create_tile(map_gen, _x, _y, 2+z, random.choice(tile_design['tiles']))
+			
+			for y in range(0, WORLD_INFO['chunk_size']):
+				for x in range(0, WORLD_INFO['chunk_size']):
+					_x = int(chunk_key.split(',')[0])+x
+					_y = int(chunk_key.split(',')[1])+y
+					
+					if map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in [tiles.WALL_TILE]] or (map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in [tiles.WALL_TILE]]):
+						continue
+					
+					if (_x, _y) in _room['spawns']['doors']:
+						continue
+					
+					_continue = False
+					
+					for mod in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+						if (_x+mod[0], _y+mod[1]) in _room['spawns']['doors']:
+							_continue = True
+							
+							break
+					
+					if _continue:
+						continue
+					
+					if not len(get_neighboring_tiles(map_gen, (_x, _y), [tiles.WALL_TILE], diag=True)):
+						_room['spawns']['middle'].append((_x, _y))
+					else:
+						if x==0:
+							_room['spawns']['edge'].append((_x, _y))
+						elif x==1:
+							_room['spawns']['edge'].append((_x, _y))
+						
+						if x==WORLD_INFO['chunk_size']-1:
+							_room['spawns']['edge'].append((_x, _y))
+						elif x==WORLD_INFO['chunk_size']-2:
+							_room['spawns']['edge'].append((_x, _y))
+						
+						if y==0:
+							_room['spawns']['edge'].append((_x, _y))
+						elif y==1:
+							_room['spawns']['edge'].append((_x, _y))
+						
+						if y==WORLD_INFO['chunk_size']-1:
+							_room['spawns']['edge'].append((_x, _y))
+						elif y==WORLD_INFO['chunk_size']-2:
+							_room['spawns']['edge'].append((_x, _y))
 	
 	for room_name in _building:
 		_room = _building[room_name]
@@ -397,7 +462,14 @@ def building_test(map_gen):
 				
 				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in [tiles.WALL_TILE]:
 					create_tile(map_gen, __x, __y, 2, tiles.WALL_TILE)
+		
+		for item in _room['items']:
+			for i in range(item['amount']):
+				if random.uniform(0, 1)<1-item['spawn_chance']:
+					continue
 				
+				_pos = _room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1))
+				items.create_item(item['item'], position=_pos)
 
 def create_tile(map_gen, x, y, z, tile):
 	map_gen['map'][x][y][z] = tiles.create_tile(tile)

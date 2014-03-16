@@ -120,7 +120,13 @@ def _create_building(chunk_key, design):
 			                         'floor': _room['floor'],
 			                         'walls': _room['walls'],
 			                         'doors': _room['doors'],
-			                         'no_doors': []}
+			                         'no_doors': [],
+			                         'items': _room['items'],
+			                         'spawns': {'away_from_door': [],
+			                                    'doors': [],
+			                                    'middle': [],
+			                                    'floor': [],
+			                                    'edge': []}}
 			_building_chunk_keys.extend(_rooms[_room_name])
 		else:
 			_rooms[_room_name] = walker(_pos, _room['chunks'], add_first=True, avoid_chunk_keys=_building_chunk_keys,)
@@ -130,7 +136,13 @@ def _create_building(chunk_key, design):
 			                         'floor': _room['floor'],
 			                         'walls': _room['walls'],
 			                         'doors': _room['doors'],
-			                         'no_doors': []}
+			                         'no_doors': [],
+			                         'items': _room['items'],
+			                         'spawns': {'away_from_door': [],
+			                                    'doors': [],
+			                                    'middle': [],
+			                                    'floor': [],
+			                                    'edge': []}}
 		
 		if _room['doors']:
 			_build_queue.extend([d for d in _room['doors'] if d in _to_build and not d in _build_queue])
