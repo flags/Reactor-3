@@ -144,6 +144,23 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	
 	return map_gen
 
+def get_neighboring_tiles(map_gen, pos, tiles):
+	_pos = pos[:]
+	_neighbor_tiles = []
+	
+	for mod in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+		_x = _pos[0]+mod[0]
+		_y = _pos[1]+mod[1]
+	
+		#print map_gen['map'][_x][_y][3]['id'], [t['id'] for t in tiles]
+		if map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in tiles]:
+			#print map_gen['map'][_x][_y][2]['id']
+			_neighbor_tiles.append((_x, _y))
+	
+	print _neighbor_tiles
+	
+	return _neighbor_tiles
+
 def building_test(map_gen):
 	_supermarket = {'chunks': {'shopping': {'type': 'interior',
 	                                        'chunks': 3,
@@ -271,6 +288,7 @@ def building_test(map_gen):
 	
 	for room_name in _building:
 		_room = _building[room_name]
+		#_needs_doors  = [r for r in _room['doors'] if r in 
 		for chunk_key in _room['chunk_keys']:
 			_doors_used = []
 			_door = False
@@ -290,9 +308,13 @@ def building_test(map_gen):
 								_possible_doors[neighbor_room_name].append(_direction_mod)
 							else:
 								_possible_doors[neighbor_room_name] = [_direction_mod]
+							
+							
+							if room_name in _building[neighbor_room_name]['doors']:
+								_building[neighbor_room_name]['no_doors'].append(room_name)
 				
 			for possible_room_name in _possible_doors:
-				if possible_room_name == room_name:
+				if possible_room_name == room_name or possible_room_name in _building[room_name]['no_doors']:
 					_doors_in.extend(_possible_doors[possible_room_name])
 					_skip_doors.extend(_possible_doors[possible_room_name])
 				else:
@@ -304,16 +326,22 @@ def building_test(map_gen):
 					_y = int(chunk_key.split(',')[1])+y
 					_x_mod = x/float(WORLD_INFO['chunk_size'])
 					_y_mod = y/float(WORLD_INFO['chunk_size'])
+					_wall = False
 
 					if _room['type'] == 'interior':
 						if (x == 0 and not (-1, 0) in _doors_in) or (y == 0 and not (0, -1) in _doors_in) or (x == WORLD_INFO['chunk_size']-1 and not (1, 0) in _doors_in) or (y == WORLD_INFO['chunk_size']-1 and not (0, 1) in _doors_in):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
+								_wall = True
 						elif (not x and (y<=1 or y >= 3) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y<=1 or y >= 3) and not (1, 0) in _skip_doors) or (not y and (x<=1 or x >= 3) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x<=1 or x >= 3) and not (0, 1) in _skip_doors):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
+								_wall = True
 					
 					for tile_design in _room['floor']:
+						if _wall:
+							break
+						
 						if not tile_design['x_mod_min']<=_x_mod<=tile_design['x_mod_max']:
 							continue
 						
