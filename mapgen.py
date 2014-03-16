@@ -272,9 +272,29 @@ def building_test(map_gen):
 	                                            'height': 1,
 	                                            'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'bedroom 1': {'type': 'interior',
+	                                   'chunks': 1,
+	                                   'doors': ['living room'],
+	                                   'floor': [{'x_mod_min': 0,
+	                                              'x_mod_max': 1,
+	                                              'y_mod_min': 0,
+	                                              'y_mod_max': 1,
+	                                              'height': 1,
+	                                              'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                   'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'bedroom 2': {'type': 'interior',
+	                                   'chunks': 1,
+	                                   'doors': ['living room'],
+	                                   'floor': [{'x_mod_min': 0,
+	                                              'x_mod_max': 1,
+	                                              'y_mod_min': 0,
+	                                              'y_mod_max': 1,
+	                                              'height': 1,
+	                                              'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                   'walls': {'tiles': [tiles.WALL_TILE]}},
 	                     'living room': {'type': 'interior',
 	                                     'chunks': 2,
-	                                     'doors': ['landing'],
+	                                     'doors': ['landing', 'bedroom 1', 'bedroom 2'],
 	                                     'floor': [{'x_mod_min': 0,
 	                                                'x_mod_max': 1,
 	                                                'y_mod_min': 0,
@@ -285,11 +305,13 @@ def building_test(map_gen):
 	          'build_order': 'landing'}
 	
 	_building = buildinggen.create_building('45,30', _house)
+	_built_chunk_keys = []
 	
 	for room_name in _building:
 		_room = _building[room_name]
-		#_needs_doors  = [r for r in _room['doors'] if r in 
+		
 		for chunk_key in _room['chunk_keys']:
+			_built_chunk_keys.append(chunk_key)
 			_doors_used = []
 			_door = False
 			_possible_doors = {}
@@ -299,7 +321,7 @@ def building_test(map_gen):
 					
 			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key):
 				for neighbor_room_name in _building:
-					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:
+					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:						
 						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
 							_direction_mod = (numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
 							                  numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
@@ -308,7 +330,6 @@ def building_test(map_gen):
 								_possible_doors[neighbor_room_name].append(_direction_mod)
 							else:
 								_possible_doors[neighbor_room_name] = [_direction_mod]
-							
 							
 							if room_name in _building[neighbor_room_name]['doors']:
 								_building[neighbor_room_name]['no_doors'].append(room_name)
@@ -319,6 +340,9 @@ def building_test(map_gen):
 					_skip_doors.extend(_possible_doors[possible_room_name])
 				else:
 					_doors_in.append(random.choice(_possible_doors[possible_room_name]))
+					
+					if not room_name in _building[possible_room_name]['no_doors']:
+						_building[possible_room_name]['no_doors'].append(room_name)
 			
 			for y in range(0, WORLD_INFO['chunk_size']):
 				for x in range(0, WORLD_INFO['chunk_size']):
@@ -370,8 +394,6 @@ def building_test(map_gen):
 			for mod in [(0, 0), (1, 0), (0, 1), (1, 1)]:
 				__x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
 				__y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
-				
-				print __x, __y
 				
 				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in [tiles.WALL_TILE]:
 					create_tile(map_gen, __x, __y, 2, tiles.WALL_TILE)
