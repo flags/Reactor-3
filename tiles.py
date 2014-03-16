@@ -344,7 +344,7 @@ WALL_BROWN = {'id': 'wall_brown',
 
 FLOOR_BROWN_1 = {'id': 'floor_brown_1',
            'icon': '.',
-           'color': (tcod.brass, tcod.Color(236, 200, 149)),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'color': (tcod.lighter_sepia, tcod.light_sepia),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
            'type': 'building',
            'burnable': False}
 

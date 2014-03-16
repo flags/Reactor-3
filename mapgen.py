@@ -145,112 +145,189 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	return map_gen
 
 def building_test(map_gen):
-	_test = {'chunks': {'shopping': {'type': 'interior',
-	                                 'chunks': 3,
-	                                 'doors': ['office', 'checkout'],
-	                                 'floor': [{'x_mod_min': 0,
-	                                            'x_mod_max': 1,
-	                                            'y_mod_min': 0,
-	                                            'y_mod_max': 1,
-	                                            'height': 1,
-	                                            'tiles': tiles.WHITE_TILE_TILES}],
-	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
-	                    'checkout': {'type': 'interior',
-	                                 'chunks': 1,
-	                                 'doors': ['shopping', 'parking lot'],
-	                                 'floor': [{'x_mod_min': 0,
-	                                            'x_mod_max': 1,
-	                                            'y_mod_min': 0,
-	                                            'y_mod_max': 1,
-	                                            'height': 1,
-	                                            'tiles': tiles.WHITE_TILE_TILES}],
-	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
-	                    'office': {'type': 'interior',
-	                               'chunks': 2,
-	                               'doors': ['shopping'],
-	                               'floor': [{'x_mod_min': 0,
-	                                          'x_mod_max': 1,
-	                                          'y_mod_min': 0,
-	                                          'y_mod_max': 1,
-	                                          'height': 1,
-	                                          'tiles': tiles.SEA_CARPET_TILES}],
-	                               'walls': {'tiles': [tiles.WALL_TILE]}},
-	                    'parking lot': {'type': 'exterior',
-	                                    'chunks': 3,
-	                                    'doors': ['shopping', 'checkout'],
-	                                    'floor': [{'x_mod_min': 0,
-	                                               'x_mod_max': 1,
-	                                               'y_mod_min': 0,
-	                                               'y_mod_max': 1,
-	                                               'height': 1,
-	                                               'tiles': tiles.CONCRETE_FLOOR_TILES},
-	                                              {'x_mod_min': 0,
-	                                               'x_mod_max': 1,
-	                                               'y_mod_min': 0,
-	                                               'y_mod_max': 1,
-	                                               'mod_x': 3,
-	                                               'mod_y': 2,
-	                                               'height': 4,
-	                                               'tiles': tiles.BROKEN_CONCRETE_TILES}],
-	                                    'walls': {'tiles': [tiles.WALL_TILE]}}},
-	         'build_order': 'shopping'}
+	_supermarket = {'chunks': {'shopping': {'type': 'interior',
+	                                        'chunks': 3,
+	                                        'doors': ['office', 'checkout'],
+	                                        'floor': [{'x_mod_min': 0,
+	                                                   'x_mod_max': 1,
+	                                                   'y_mod_min': 0,
+	                                                   'y_mod_max': 1,
+	                                                   'height': 1,
+	                                                   'tiles': tiles.WHITE_TILE_TILES}],
+	                                        'walls': {'tiles': [tiles.WALL_TILE]}},
+	                           'checkout': {'type': 'interior',
+	                                        'chunks': 1,
+	                                        'doors': ['shopping', 'parking lot'],
+	                                        'floor': [{'x_mod_min': 0,
+	                                                   'x_mod_max': 1,
+	                                                   'y_mod_min': 0,
+	                                                   'y_mod_max': 1,
+	                                                   'height': 1,
+	                                                   'tiles': tiles.WHITE_TILE_TILES}],
+	                                        'walls': {'tiles': [tiles.WALL_TILE]}},
+	                           'office': {'type': 'interior',
+	                                      'chunks': 2,
+	                                      'doors': ['shopping'],
+	                                      'floor': [{'x_mod_min': 0,
+	                                                 'x_mod_max': 1,
+	                                                 'y_mod_min': 0,
+	                                                 'y_mod_max': 1,
+	                                                 'height': 1,
+	                                                 'tiles': tiles.SEA_CARPET_TILES}],
+	                                      'walls': {'tiles': [tiles.WALL_TILE]}},
+	                           'parking lot': {'type': 'exterior',
+	                                           'chunks': 3,
+	                                           'doors': ['shopping', 'checkout'],
+	                                           'floor': [{'x_mod_min': 0,
+	                                                      'x_mod_max': 1,
+	                                                      'y_mod_min': 0,
+	                                                      'y_mod_max': 1,
+	                                                      'height': 1,
+	                                                      'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                                     {'x_mod_min': 0,
+	                                                      'x_mod_max': 1,
+	                                                      'y_mod_min': 0,
+	                                                      'y_mod_max': 1,
+	                                                      'mod_x': 2,
+	                                                      'mod_y': 4,
+	                                                      'height': 4,
+	                                                      'tiles': tiles.WHITE_TILE_TILES}],
+	                                           'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                'build_order': 'shopping'}
 	
-	_building = buildinggen.create_building('45,30', _test)
+	_house = {'chunks': {'garage': {'type': 'interior',
+	                                  'chunks': 1,
+	                                  'doors': ['driveway'],
+	                                  'floor': [{'x_mod_min': 0,
+	                                             'x_mod_max': 1,
+	                                             'y_mod_min': 0,
+	                                             'y_mod_max': 1,
+	                                             'height': 1,
+	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'driveway': {'type': 'exterior',
+	                                  'chunks': 1,
+	                                  'doors': ['sidewalk', 'garage'],
+	                                  'floor': [{'x_mod_min': 0,
+	                                             'x_mod_max': 1,
+	                                             'y_mod_min': 0,
+	                                             'y_mod_max': 1,
+	                                             'height': 1,
+	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'sidewalk': {'type': 'exterior',
+	                                  'chunks': 1,
+	                                  'doors': ['driveway', 'landing'],
+	                                  'floor': [{'x_mod_min': 0,
+	                                             'x_mod_max': 1,
+	                                             'y_mod_min': 0,
+	                                             'y_mod_max': 1,
+	                                             'height': 1,
+	                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'landing': {'type': 'interior',
+	                                 'chunks': 1,
+	                                 'doors': ['sidewalk', 'kitchen', 'living room'],
+	                                 'floor': [{'x_mod_min': 0,
+	                                            'x_mod_max': 1,
+	                                            'y_mod_min': 0,
+	                                            'y_mod_max': 1,
+	                                            'height': 1,
+	                                            'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'kitchen': {'type': 'interior',
+	                                 'chunks': 2,
+	                                 'doors': ['landing', 'pantry'],
+	                                 'floor': [{'x_mod_min': 0,
+	                                            'x_mod_max': 1,
+	                                            'y_mod_min': 0,
+	                                            'y_mod_max': 1,
+	                                            'height': 1,
+	                                            'tiles': tiles.WHITE_TILE_TILES}],
+	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'pantry': {'type': 'interior',
+	                                 'chunks': 1,
+	                                 'doors': ['kitchen'],
+	                                 'floor': [{'x_mod_min': 0,
+	                                            'x_mod_max': 1,
+	                                            'y_mod_min': 0,
+	                                            'y_mod_max': 1,
+	                                            'height': 1,
+	                                            'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                 'walls': {'tiles': [tiles.WALL_TILE]}},
+	                     'living room': {'type': 'interior',
+	                                     'chunks': 2,
+	                                     'doors': ['landing'],
+	                                     'floor': [{'x_mod_min': 0,
+	                                                'x_mod_max': 1,
+	                                                'y_mod_min': 0,
+	                                                'y_mod_max': 1,
+	                                                'height': 1,
+	                                                'tiles': tiles.BLUE_CARPET_TILES}],
+	                                     'walls': {'tiles': [tiles.WALL_TILE]}}},
+	          'build_order': 'landing'}
+	
+	_building = buildinggen.create_building('45,30', _house)
 	
 	for room_name in _building:
 		_room = _building[room_name]
 		for chunk_key in _room['chunk_keys']:
 			_doors_used = []
 			_door = False
+			_possible_doors = {}
 			_doors_in = []
+			_skip_doors = []
+			_placing_door = []
 					
 			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key):
 				for neighbor_room_name in _building:
 					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:
-						if neighbor_room_name in _room['doors']:
+						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
 							_direction_mod = (numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
 							                  numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
-							_doors_in.append(_direction_mod)
-							#_door = True
 							
-							#if not neighbor_room_name in _doors_used:
-							#	_doors_used.append(neighbor_room_name)
-							
-							#break
+							if neighbor_room_name in _possible_doors:
+								_possible_doors[neighbor_room_name].append(_direction_mod)
+							else:
+								_possible_doors[neighbor_room_name] = [_direction_mod]
 				
-				if _door:
-					break
+			for possible_room_name in _possible_doors:
+				if possible_room_name == room_name:
+					_doors_in.extend(_possible_doors[possible_room_name])
+					_skip_doors.extend(_possible_doors[possible_room_name])
+				else:
+					_doors_in.append(random.choice(_possible_doors[possible_room_name]))
 			
-			for y in range(0, WORLD_INFO['chunk_size']+1):
-				for x in range(0, WORLD_INFO['chunk_size']+1):
+			for y in range(0, WORLD_INFO['chunk_size']):
+				for x in range(0, WORLD_INFO['chunk_size']):
 					_x = int(chunk_key.split(',')[0])+x
 					_y = int(chunk_key.split(',')[1])+y
 					_x_mod = x/float(WORLD_INFO['chunk_size'])
 					_y_mod = y/float(WORLD_INFO['chunk_size'])
-					
+
 					if _room['type'] == 'interior':
-						if (x == 0 and not (-1, 0) in _doors_in) or (y == 0 and not (0, -1) in _doors_in) or (x == WORLD_INFO['chunk_size'] and not (1, 0) in _doors_in) or (y == WORLD_INFO['chunk_size'] and not (0, 1) in _doors_in):
+						if (x == 0 and not (-1, 0) in _doors_in) or (y == 0 and not (0, -1) in _doors_in) or (x == WORLD_INFO['chunk_size']-1 and not (1, 0) in _doors_in) or (y == WORLD_INFO['chunk_size']-1 and not (0, 1) in _doors_in):
+							for z in range(4):
+								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
+						elif (not x and (y<=1 or y >= 3) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y<=1 or y >= 3) and not (1, 0) in _skip_doors) or (not y and (x<=1 or x >= 3) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x<=1 or x >= 3) and not (0, -1) in _skip_doors):
 							for z in range(4):
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
 					
 					for tile_design in _room['floor']:
-						if not tile_design['x_mod_min']<_x_mod<=tile_design['x_mod_max']:
+						if not tile_design['x_mod_min']<=_x_mod<=tile_design['x_mod_max']:
 							continue
 						
-						if not tile_design['y_mod_min']<_y_mod<=tile_design['y_mod_max']:
+						if not tile_design['y_mod_min']<=_y_mod<=tile_design['y_mod_max']:
 							continue
 						
-						if 'mod_x' in tile_design and x % tile_design['mod_x']:
+						if 'mod_x' in tile_design and not x % tile_design['mod_x']:
 							continue
 						
-						if 'mod_y' in tile_design and y % tile_design['mod_y']:
+						if 'mod_y' in tile_design and not y % tile_design['mod_y']:
 							continue
 					
 						for z in range(tile_design['height']):
 							create_tile(map_gen, _x, _y, 2+z, random.choice(tile_design['tiles']))
-			
-			for used_room_name in _doors_used:
-				_room['doors'].remove(used_room_name)
 
 def create_tile(map_gen, x, y, z, tile):
 	map_gen['map'][x][y][z] = tiles.create_tile(tile)
