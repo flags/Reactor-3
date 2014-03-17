@@ -731,7 +731,7 @@ def draw_chunk_map(life=None, show_faction_ownership=False):
 				if _type in ['building', 'town']:
 					_fore_color = tcod.light_gray
 					_char = 'B'
-				elif _type in ['outpost']:
+				elif _type in ['outpost', 'factory']:
 					_fore_color = tcod.desaturated_green
 					_back_color = tcod.desaturated_han
 					_char = 'M'

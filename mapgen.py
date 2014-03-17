@@ -170,7 +170,7 @@ def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False
 	return _neighbor_tiles
 
 def building_test(map_gen):
-	generate_building(map_gen, '45,30', 'supermarket', map_gen['chunk_map'].keys())
+	generate_building(map_gen, '45,30', 'factory_1', map_gen['chunk_map'].keys())
 
 def create_buildings():
 	BUILDINGS['supermarket'] = {'chunks': {'shopping': {'type': 'interior',
@@ -355,6 +355,74 @@ def create_buildings():
 	                                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 3}],
 	                                                 'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                      'build_order': 'landing'}
+	
+	BUILDINGS['factory_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['waiting room'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'waiting room': {'type': 'interior',
+	                                                  'chunks': 2,
+	                                                  'doors': ['office', 'sidewalk'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.WHITE_TILE_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'office': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['waiting room', 'hall to shop'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'hall to shop': {'type': 'interior',
+	                                                  'chunks': 3,
+	                                                  'doors': ['shop', 'office'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'shop': {'type': 'interior',
+	                                                  'chunks': 4,
+	                                                  'doors': ['hall to shop', 'ramp'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'ramp': {'type': 'exterior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['shop'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.BROKEN_CONCRETE_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                          'build_order': 'sidewalk'}
 
 def generate_building(map_gen, chunk_key, building_type, possible_building_chunks):
 	_building = buildinggen.create_building(chunk_key, copy.deepcopy(BUILDINGS[building_type]), possible_building_chunks)
@@ -375,7 +443,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					_x = int(chunk_key.split(',')[0])+x
 					_y = int(chunk_key.split(',')[1])+y
 					
-					if not 0<_x<=map_gen['size'][0] or not 0<_y<=map_gen['size'][1]:
+					if not 0<_x<=map_gen['size'][0]-1 or not 0<_y<=map_gen['size'][1]-1:
 						return False
 	
 	for room_name in _building:
@@ -1185,73 +1253,47 @@ def generate_factory(map_gen, cell):
 	_potential_building_chunks = cell['chunk_keys'][:]
 	map_gen['refs']['factories'].append(cell['chunk_keys'][:])
 	
-	for chunk_key in cell['chunk_keys']:
-		_chunk = maps.get_chunk(chunk_key)
-		_chunk['type'] = 'factory'
+	#_fence_links = []
+	#for chunk_key in cell['chunk_keys']:
+	#	if len(get_neighbors_of_type(map_gen, chunk_key, 'factory', diagonal=True))<8:
+	#		_chunk = maps.get_chunk(chunk_key)
+	#		_x = _chunk['pos'][0]+WORLD_INFO['chunk_size']/2
+	#		_y = _chunk['pos'][1]+WORLD_INFO['chunk_size']/2
+	#		
+	#		_fence_links.append((_x, _y))
+	#		_potential_building_chunks.remove(chunk_key)
 	
-	_fence_links = []
-	for chunk_key in cell['chunk_keys']:
-		if len(get_neighbors_of_type(map_gen, chunk_key, 'factory', diagonal=True))<8:
-			_chunk = maps.get_chunk(chunk_key)
-			_x = _chunk['pos'][0]+WORLD_INFO['chunk_size']/2
-			_y = _chunk['pos'][1]+WORLD_INFO['chunk_size']/2
-			
-			_fence_links.append((_x, _y))
-			_potential_building_chunks.remove(chunk_key)
+	#_opening = False
+	#while _fence_links:
+	#	_link = _fence_links.pop(0)
+	#	
+	#	if not _opening and not random.randint(0, 100):
+	#		_opening = True
+	#		continue
+	#	
+	#	_closest = {'score': 0, 'pos': None}
+	#	for next_link in _fence_links:
+	#		if next_link == _link:
+	#			continue
+	#		
+	#		_distance = numbers.distance(_link, next_link)
+	#		
+	#		if not _closest['pos'] or _distance<_closest['score']:
+	#			_closest['score'] = _distance
+	#			_closest['pos'] = next_link[:]
+	#	
+	#	if not _closest['pos']:
+	#		break
+	#	
+	#	for pos in render_los.draw_line(_link[0], _link[1], _closest['pos'][0], _closest['pos'][1]):
+	#		for z in range(3):
+	#			create_splotch(map_gen, (pos[0], pos[1]), 2+random.randint(0, 1), tiles.CONCRETE_FLOOR_TILES, z=2+z)
+	#
+	_building = generate_building(map_gen, random.choice(cell['chunk_keys']), 'factory_1', cell['chunk_keys'])
 	
-	_opening = False
-	while _fence_links:
-		_link = _fence_links.pop(0)
-		
-		if not _opening and not random.randint(0, 100):
-			_opening = True
-			continue
-		
-		_closest = {'score': 0, 'pos': None}
-		for next_link in _fence_links:
-			if next_link == _link:
-				continue
-			
-			_distance = numbers.distance(_link, next_link)
-			
-			if not _closest['pos'] or _distance<_closest['score']:
-				_closest['score'] = _distance
-				_closest['pos'] = next_link[:]
-		
-		if not _closest['pos']:
-			break
-		
-		for pos in render_los.draw_line(_link[0], _link[1], _closest['pos'][0], _closest['pos'][1]):
-			for z in range(3):
-				create_splotch(map_gen, (pos[0], pos[1]), 2+random.randint(0, 1), tiles.CONCRETE_FLOOR_TILES, z=2+z)
-	
-	_build_chunk_key = random.choice(_potential_building_chunks)
-	_build_chunk = maps.get_chunk(_build_chunk_key)
-	_outpost_chunk_keys = walker(map_gen,
-	                             _build_chunk['pos'],
-	                             random.randint(10, 14),
-	                             only_chunk_types=['factory'],
-	                             return_keys=True)
-	
-	_spawn_list = [{'item': 'M9', 'rarity': 0.3, 'amount': 1},
-	               {'item': '9x19mm round', 'rarity': 0.3, 'amount': 16},
-	               {'item': '9x19mm magazine', 'rarity': 0.3, 'amount': 1}]
-	
-	for chunk_key in _outpost_chunk_keys:
-		map_gen['chunk_map'][chunk_key]['type'] = 'town'
-		map_gen['chunk_map'][chunk_key]['flags']['spawn_items'] = _spawn_list
-	
-	_exterior_chunk_keys = []
-	for chunk_key in _outpost_chunk_keys:
-		for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'factory'):
-			if neighbor_chunk_key in _exterior_chunk_keys:
-				continue
-			
-			_exterior_chunk_keys.append(neighbor_chunk_key)
-	
-	#map_gen['refs']['outposts'].append(_outpost_chunk_keys)
-	_exterior_chunk_key = random.choice(_exterior_chunk_keys)
-	#construct_building(map_gen, {'rooms': _outpost_chunk_keys}, exterior_chunks=[_exterior_chunk_key])
+	for room_name in _building:
+		for chunk_key in _building[room_name]['chunk_keys']:
+			map_gen['chunk_map'][chunk_key]['type'] = 'factory'
 
 def generate_town(map_gen, cell):
 	_min_building_size = 4
@@ -1264,18 +1306,22 @@ def generate_town(map_gen, cell):
 	_fence_positions = []
 	_sidewalk_positions = []
 	_tries = 0
+	_buildings = ['house_1', 'house_1', 'house_1', 'house_1', 'house_1', 'supermarket', ]
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
-	while _potential_building_chunks:
+	while _potential_building_chunks and _buildings:
 		_top_left = MAP_SIZE[:2]
 		_bot_right = [0, 0]
 		_room_chunks = []
+		_building_type = _buildings[0]
 		_chunk_key = _potential_building_chunks.pop(random.randint(0, len(_potential_building_chunks)-1))
-		_building = generate_building(map_gen, _chunk_key, 'house_1', _potential_building_chunks)
+		_building = generate_building(map_gen, _chunk_key, _building_type, _potential_building_chunks)
 		
 		if not _building:
 			continue
+		
+		_buildings.pop(0)
 		
 		for room_name in _building:
 			for chunk_key in _building[room_name]['chunk_keys']:
