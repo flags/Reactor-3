@@ -47,7 +47,7 @@ BUILDING_EXCLUDE_TILES.extend([t['id'] for t in tiles.DIRT_TILES])
 BUILDINGS = {}
 
 
-def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False, build_test=True):
+def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False, build_test=False):
 	""" Size: Both width and height must be divisible by DETAIL.
 	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
 	towns: Number of towns.
@@ -163,6 +163,9 @@ def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False
 	for mod in _directions:
 		_x = _pos[0]+mod[0]
 		_y = _pos[1]+mod[1]
+		
+		if not 0<=_x<=map_gen['size'][0]-1 or not 0<=_y<=map_gen['size'][1]-1:
+			continue
 	
 		if map_gen['map'][_x][_y][2] and map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles]:
 			_neighbor_tiles.append((_x, _y))
@@ -170,7 +173,8 @@ def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False
 	return _neighbor_tiles
 
 def building_test(map_gen):
-	generate_building(map_gen, '45,30', 'factory_1', map_gen['chunk_map'].keys())
+	while not generate_building(map_gen, '45,30', 'factory_1', map_gen['chunk_map'].keys()):
+		continue
 
 def create_buildings():
 	BUILDINGS['supermarket'] = {'chunks': {'shopping': {'type': 'interior',
@@ -273,6 +277,7 @@ def create_buildings():
 	                                                         'y_mod_max': 1,
 	                                                         'height': 1,
 	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'flags': {'road_seed': True},
 	                                              'items': [],
 	                                              'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'sidewalk': {'type': 'exterior',
@@ -413,7 +418,7 @@ def create_buildings():
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'ramp': {'type': 'exterior',
 	                                                  'chunks': 1,
-	                                                  'doors': ['shop'],
+	                                                  'doors': ['shop', 'shop 2'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
@@ -421,7 +426,18 @@ def create_buildings():
 	                                                             'height': 1,
 	                                                             'tiles': tiles.BROKEN_CONCRETE_TILES}],
 	                                                  'items': [],
-	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'shop 2': {'type': 'interior',
+	                                                  'chunks': 4,
+	                                                  'doors': ['ramp'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},},
 	                          'build_order': 'sidewalk'}
 
 def generate_building(map_gen, chunk_key, building_type, possible_building_chunks):
@@ -693,8 +709,8 @@ def generate_noise_map(map_gen):
 					elif not random.randint(0, 6):
 						create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.BROKEN_CONCRETE_TILES))
 				
-				if not _chunk_key in map_gen['refs']['dirt_road']:
-					map_gen['refs']['dirt_road'].append(_chunk_key)
+				if not _chunk_key in map_gen['refs']['roads']:
+					map_gen['refs']['roads'].append(_chunk_key)
 					map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				
 			elif _val >= map_gen['town_fuzz']:
@@ -1253,47 +1269,17 @@ def generate_factory(map_gen, cell):
 	_potential_building_chunks = cell['chunk_keys'][:]
 	map_gen['refs']['factories'].append(cell['chunk_keys'][:])
 	
-	#_fence_links = []
-	#for chunk_key in cell['chunk_keys']:
-	#	if len(get_neighbors_of_type(map_gen, chunk_key, 'factory', diagonal=True))<8:
-	#		_chunk = maps.get_chunk(chunk_key)
-	#		_x = _chunk['pos'][0]+WORLD_INFO['chunk_size']/2
-	#		_y = _chunk['pos'][1]+WORLD_INFO['chunk_size']/2
-	#		
-	#		_fence_links.append((_x, _y))
-	#		_potential_building_chunks.remove(chunk_key)
+	while _potential_building_chunks:
+		_building = generate_building(map_gen, _potential_building_chunks.pop(random.randint(0, len(_potential_building_chunks)-1)), 'factory_1', cell['chunk_keys'])
+		
+		if not _building:
+			continue
 	
-	#_opening = False
-	#while _fence_links:
-	#	_link = _fence_links.pop(0)
-	#	
-	#	if not _opening and not random.randint(0, 100):
-	#		_opening = True
-	#		continue
-	#	
-	#	_closest = {'score': 0, 'pos': None}
-	#	for next_link in _fence_links:
-	#		if next_link == _link:
-	#			continue
-	#		
-	#		_distance = numbers.distance(_link, next_link)
-	#		
-	#		if not _closest['pos'] or _distance<_closest['score']:
-	#			_closest['score'] = _distance
-	#			_closest['pos'] = next_link[:]
-	#	
-	#	if not _closest['pos']:
-	#		break
-	#	
-	#	for pos in render_los.draw_line(_link[0], _link[1], _closest['pos'][0], _closest['pos'][1]):
-	#		for z in range(3):
-	#			create_splotch(map_gen, (pos[0], pos[1]), 2+random.randint(0, 1), tiles.CONCRETE_FLOOR_TILES, z=2+z)
-	#
-	_building = generate_building(map_gen, random.choice(cell['chunk_keys']), 'factory_1', cell['chunk_keys'])
-	
-	for room_name in _building:
-		for chunk_key in _building[room_name]['chunk_keys']:
-			map_gen['chunk_map'][chunk_key]['type'] = 'factory'
+		for room_name in _building:
+			for chunk_key in _building[room_name]['chunk_keys']:
+				map_gen['chunk_map'][chunk_key]['type'] = 'factory'
+		
+		break
 
 def generate_town(map_gen, cell):
 	_min_building_size = 4
@@ -1307,6 +1293,7 @@ def generate_town(map_gen, cell):
 	_sidewalk_positions = []
 	_tries = 0
 	_buildings = ['house_1', 'house_1', 'house_1', 'house_1', 'house_1', 'supermarket', ]
+	_road_seeds = []
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
 	
@@ -1331,161 +1318,47 @@ def generate_town(map_gen, cell):
 				
 				if chunk_key in _potential_building_chunks:
 					_potential_building_chunks.remove(chunk_key)
+				
+			if 'road_seed' in _building[room_name]['flags'] and _building[room_name]['flags']['road_seed']:
+				_road_seeds.append(random.choice(_building[room_name]['chunk_keys']))
 		
 		for room_name in _building:
 			for chunk_key in _building[room_name]['chunk_keys']:
 				for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'other', diagonal=True):
 					if neighbor_chunk_key in _potential_building_chunks:
 						_potential_building_chunks.remove(neighbor_chunk_key)
-
-		print 'trying', len(_potential_building_chunks), len(_room_chunks), _chunk_key
-		continue
 	
-		#Fence
-		for chunk_key in _room_chunks:
-			_chunk = map_gen['chunk_map'][chunk_key]
-			_chunk['type'] = 'town'
-			
-			if chunk_key in _potential_building_chunks:
-				_potential_building_chunks.remove(chunk_key)
-			
-			if _chunk['pos'][0] < _top_left[0]:
-				_top_left[0] = _chunk['pos'][0]-3
-			
-			if _chunk['pos'][1] < _top_left[1]:
-				_top_left[1] = _chunk['pos'][1]-3
-			
-			if _chunk['pos'][0]+map_gen['chunk_size'] > _bot_right[0]:
-				_bot_right[0] = _chunk['pos'][0]+map_gen['chunk_size']+3
-			
-			if _chunk['pos'][1]+map_gen['chunk_size'] > _bot_right[1]:
-				_bot_right[1] = _chunk['pos'][1]+map_gen['chunk_size']+3
+	_starting_road_seed = {'road_seed': None, 'road_chunk_key': None, 'distance': 0}
+	for road_seed in _road_seeds:
+		_road_chunk_key = alife.chunks.get_nearest_chunk_in_list(map_gen['chunk_map'][road_seed]['pos'], map_gen['refs']['roads'])
+		_distance = numbers.distance(map_gen['chunk_map'][_road_chunk_key]['pos'], map_gen['chunk_map'][road_seed]['pos'])
 		
-		for y in range(_top_left[1]-1, _bot_right[1]+1):
-			for x in range(_top_left[0]-1, _bot_right[0]+1):
-				if x<0 or x>=MAP_SIZE[0] or y<0 or y>=MAP_SIZE[1]:
-					continue
-				
-				_x = x-_top_left[0]
-				_y = y-_top_left[1]
-				
-				if (_x == 0 or _x == _bot_right[0]-_top_left[0]-1) and (_y >= 0 and _y < _bot_right[1]-_top_left[1]):
-					_fence_positions.append((x, y))
-				elif (_y == 0 or _y == _bot_right[1]-_top_left[1]-1) and (_x >= 0 and _x < _bot_right[0]-_top_left[0]):
-					_fence_positions.append((x, y))
-				else:
-					if _x == -1 or _y == -1 or _x == _bot_right[0]-_top_left[0] or _y == _bot_right[1]-_top_left[1]:
-						_sidewalk_positions.append((x, y))
-					else:
-						_avoid_positions.append((x, y))
-		
-		#Mark exterior chunks.
-		for chunk_key in _room_chunks:
-			for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'other'):
-				if not neighbor_chunk_key in _potential_exterior_chunks:
-					_potential_exterior_chunks.append(neighbor_chunk_key)
-				
-				if neighbor_chunk_key in _potential_building_chunks:
-					_potential_building_chunks.remove(neighbor_chunk_key)
-		
-		#Once more, but catching all corners now.
-		for chunk_key in _room_chunks:
-			for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'any', diagonal=True):
-				if neighbor_chunk_key in _potential_building_chunks:
-					_potential_building_chunks.remove(neighbor_chunk_key)
-				
-				_potential_yard_chunks.append(neighbor_chunk_key)
-			
-				for sub_neighbor_chunk_key in get_neighbors_of_type(map_gen, neighbor_chunk_key, 'any', diagonal=True):
-					if sub_neighbor_chunk_key in _potential_building_chunks:
-						_potential_building_chunks.remove(sub_neighbor_chunk_key)
-					
-					if not sub_neighbor_chunk_key in _potential_street_chunks:
-						_potential_street_chunks.append(sub_neighbor_chunk_key)
-		
-		_ext_chunk_key = None
-		for chunk_key in _potential_exterior_chunks:
-			if len(get_neighbors_of_type(map_gen, chunk_key, 'town'))>=2:
-				_ext_chunk_key = chunk_key
-				
-				break
-		
-		if not _potential_exterior_chunks:
-			continue
-		
-		if not _ext_chunk_key:
-			_ext_chunk_key = random.choice(_potential_exterior_chunks)
-		
-		#Concrete by door
-		_chunk = map_gen['chunk_map'][_ext_chunk_key]
-		_chunk['type'] = 'sidewalk'
-		
-		for y in range(0, map_gen['chunk_size']):
-			for x in range(0, map_gen['chunk_size']):
-				create_tile(map_gen, _chunk['pos'][0]+x, _chunk['pos'][1]+y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
-				
-		for chunk_key in get_neighbors_of_type(map_gen, _ext_chunk_key, 'other'):
-			_chunk = map_gen['chunk_map'][chunk_key]
-			
-			for y in range(0, map_gen['chunk_size']):
-				for x in range(0, map_gen['chunk_size']):
-					_x = _chunk['pos'][0]+x
-					_y = _chunk['pos'][1]+y
-					
-					if (_x, _y) in _fence_positions:
-						_fence_positions.remove((_x, _y))
-						_avoid_positions.append((_x, _y))
+		if not _starting_road_seed['road_seed'] or _distance<_starting_road_seed['distance']:
+			_starting_road_seed['distance'] = _distance
+			_starting_road_seed['road_seed'] = road_seed
+			_starting_road_seed['road_chunk_key'] = _road_chunk_key
 	
-	#Roads
-	for chunk_key in _potential_street_chunks:
-		create_splotch(map_gen,
-		               map_gen['chunk_map'][chunk_key]['pos'],
-		               random.randint(5, 7),
-		               tiles.CONCRETE_TILES,
-		               only_tiles=tiles.GRASS_TILES,
-		               pos_is_chunk_key=True)
+	_path = [_starting_road_seed['road_chunk_key'], _starting_road_seed['road_seed']]
+	print _road_seeds, _starting_road_seed['road_seed']
+	_road_seeds.remove(_starting_road_seed['road_seed'])
 	
-	#Sidewalks
-	for chunk_key in _potential_street_chunks:
-		create_splotch(map_gen,
-		               map_gen['chunk_map'][chunk_key]['pos'],
-		               random.randint(9, 11),
-		               tiles.CONCRETE_FLOOR_TILES,
-		               only_tiles=tiles.GRASS_TILES,
-		               pos_is_chunk_key=True)
+	while _road_seeds:
+		_closest_road_seed = {'road_seed': None, 'distance': None}
+		_last_seed = _path[len(_path)-1]
+		
+		for road_seed in _road_seeds:
+			_distance = numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
+			
+			if not _closest_road_seed['road_seed'] or _distance<_closest_road_seed['distance']:
+				_closest_road_seed['road_seed'] = road_seed
+				_closest_road_seed['distance'] = _distance
+		
+		_road_seeds.remove(_closest_road_seed['road_seed'])
+		_path.append(_closest_road_seed['road_seed'])
 	
-	for pos in _avoid_positions:
-		if pos in _fence_positions or pos in _sidewalk_positions:
-			continue
-		
-		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES]:
-			continue
-		
-		create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.GRASS_TILES))
-	
-	for pos in _sidewalk_positions:
-		if pos in _avoid_positions:
-			continue
-		
-		if not map_gen['map'][pos[0]][pos[1]][2]['id'] in [t['id'] for t in tiles.CONCRETE_TILES]:
-			continue
-		
-		create_tile(map_gen, pos[0], pos[1], 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
-	
-	for pos in _fence_positions:
-		#Avoid building fences in yards of other chunks
-		if pos in _avoid_positions:
-			continue
-		
-		for z in range(0, 2):
-			create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WOOD_TILES))
-	
-	#for chunk_key in _yard_chunks:
-	#	create_splotch(map_gen,
-	#	               map_gen['chunk_map'][chunk_key]['pos'],
-	#	               random.randint(4, 6),
-	#	               tiles.GRASS_TILES,
-	#	               pos_is_chunk_key=True)
+	print _path
+	#while _road_seeds:
+	#	alife.chunks.get_nearest_chunk_in_list(
 
 def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], z=2, only_tiles=[], avoid_chunks=[], avoid_positions=[], pos_is_chunk_key=False):
 	if pos_is_chunk_key:
@@ -1934,21 +1807,6 @@ def fill_empty_spaces(map_gen):
 		_empty_spots.append(chunk_key)
 
 def decorate_world(map_gen):
-	#Side roads
-	logging.debug('Generating side roads...')
-	_rules = [{'chunk_type': 'town', 'diagonal': True, 'min': 1, 'max': 7},
-	          {'chunk_type': 'road', 'diagonal': True, 'min': 0, 'max': 0}]
-	
-	_side_road_chunks = find_spaces_matching(map_gen, 'other', _rules)
-	
-	for chunk_key in _side_road_chunks:
-		map_gen['chunk_map'][chunk_key]['type'] = 'road'
-	
-	for chunk_key in _side_road_chunks:
-		if random.randint(0, 5) and len(get_all_connected_chunks_of_type(map_gen, chunk_key, 'road'))<=5:
-			map_gen['chunk_map'][chunk_key]['type'] = 'other'
-			continue
-	
 	#fences
 	_possible_fences = []
 	_low_end = random.randint(0, 5)

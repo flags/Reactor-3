@@ -120,6 +120,11 @@ def _create_building(chunk_key, design, building_chunks):
 		_building[_room_name] = {'chunk_keys': []}
 		_room = design['chunks'][_room_name]
 		
+		if 'flags' in _room:
+			_flags = _room['flags']
+		else:
+			_flags = {}
+		
 		if _rooms:
 			_start_chunk = connect_to_chunks(_room['doors'], _building, _room['chunks'], building_chunks)
 			
@@ -138,6 +143,7 @@ def _create_building(chunk_key, design, building_chunks):
 			                         'doors': _room['doors'],
 			                         'no_doors': [],
 			                         'items': _room['items'],
+			                         'flags': _flags,
 			                         'spawns': {'away_from_door': [],
 			                                    'doors': [],
 			                                    'middle': [],
@@ -154,6 +160,7 @@ def _create_building(chunk_key, design, building_chunks):
 			                         'doors': _room['doors'],
 			                         'no_doors': [],
 			                         'items': _room['items'],
+			                         'flags': _flags,
 			                         'spawns': {'away_from_door': [],
 			                                    'doors': [],
 			                                    'middle': [],
