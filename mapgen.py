@@ -97,15 +97,15 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	
 	#logging.debug('Creating height map...')
 	#generate_height_map(map_gen)
-	create_buildings()
 	logging.debug('Creating chunk map...')
 	generate_chunk_map(map_gen)
 	logging.debug('Drawing outlines...')
 	#generate_outlines(map_gen)
 	
 	if build_test:
-		building_test(map_gen)
+		building_test(map_gen, build_test)
 	else:
+		create_buildings()
 		generate_noise_map(map_gen)
 	
 	map_gen['refs']['roads'].extend(map_gen['refs']['dirt_road'])
@@ -173,8 +173,8 @@ def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False
 	
 	return _neighbor_tiles
 
-def building_test(map_gen):
-	while not generate_building(map_gen, '45,30', 'factory_1', map_gen['chunk_map'].keys()):
+def building_test(map_gen, building_type):
+	while not generate_building(map_gen, '45,30', building_type, map_gen['chunk_map'].keys()):
 		continue
 
 def create_buildings():

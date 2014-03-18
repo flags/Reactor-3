@@ -67,9 +67,13 @@ def post_setup_world():
 	
 	WORLD_INFO['real_time_of_day'] = WORLD_INFO['length_of_day']/2
 
-def regenerate_world():
+def regenerate_world(build_test=False):
 	gfx.title('Generating...')
+	
 	reload(mapgen)
+	
+	if build_test:
+		mapgen.create_buildings()
 	
 	pre_setup_world()
 	
@@ -80,12 +84,13 @@ def regenerate_world():
 			                forests=1,
 			                skip_zoning=True,
 			                skip_chunking=True,
-			                hotload=True)
+			                hotload=True,
+		                     build_test=build_test)
 	except:
 		import traceback
 		traceback.print_exc()
-		
 		SETTINGS['running'] = 1
+		
 		return False
 	
 	post_setup_world()
@@ -158,7 +163,7 @@ def handle_input():
 			CURSOR_POS[0] -= SETTINGS['cursor speed']
 
 	elif INPUT[' ']:
-		pass
+		menus.activate_menu_by_name('Buildings')
 	
 	elif INPUT['n']:
 		for alife in LIFE:
@@ -258,9 +263,20 @@ def menu_item_selected(entry):
 	
 	gfx.title('Loading...')
 	
-	pre_setup_world
+	pre_setup_world()
 	maps.load_map(entry['key'])
 	post_setup_world()
+	
+	SETTINGS['running'] = 2
+
+def building_type_selected(entry):
+	gfx.title('Loading...')
+	
+	#pre_setup_world()
+	regenerate_world(build_test=entry['key'])
+	#mapgen.generate_map(build_test=entry['key'], skip_chunking=True, skip_zoning=True)
+	#post_setup_world()
+	gfx.refresh_view('map')
 	
 	SETTINGS['running'] = 2
 
@@ -274,22 +290,33 @@ def menu_align():
 		
 		menu['settings']['position'][1] = _size
 
-def create_maps_menu():
+def create_maps_menu(build_test):
 	_menu_items = []
 	
-	for map_file in profiles.get_maps():
-		_menu_items.append(menus.create_item('single', map_file, None))
-	
-	if not _menu_items:
-		logging.error('No maps found.')
-		sys.exit(1)
-	
-	_m = menus.create_menu(title='Maps',
-		menu=_menu_items,
-		padding=(1,1),
-		position=(0, 0),
-		on_select=menu_item_selected,
-	    format_str='$k')
+	if build_test:
+		for building_type in mapgen.BUILDINGS:
+			_menu_items.append(menus.create_item('single', building_type, None))
+		
+		_m = menus.create_menu(title='Buildings',
+			                  menu=_menu_items,
+			                  padding=(1,1),
+			                  position=(0, 0),
+			                  on_select=building_type_selected,
+			                  format_str='$k')
+	else:
+		for map_file in profiles.get_maps():
+			_menu_items.append(menus.create_item('single', map_file, None))
+		
+		if not _menu_items:
+			logging.error('No maps found.')
+			sys.exit(1)
+		
+		_m = menus.create_menu(title='Maps',
+			                  menu=_menu_items,
+			                  padding=(1,1),
+			                  position=(0, 0),
+			                  on_select=menu_item_selected,
+			                  format_str='$k')
 	
 	menus.activate_menu(_m)
 	menu_align()
@@ -317,7 +344,7 @@ def chunk_map():
 	gfx.end_of_frame()
 
 def main():
-	if not '--select' in sys.argv:
+	if not '--select' in sys.argv and not '--test' in sys.argv:
 		if regenerate_world():
 			SETTINGS['running'] = 2
 	
@@ -327,10 +354,10 @@ def main():
 		
 		#Show list of maps if not passed directly
 		if SETTINGS['running'] == 1:
-			if menus.get_menu_by_name('Maps')>-1:
+			if menus.get_menu_by_name('Maps')>-1 or menus.get_menu_by_name('Buildings')>-1:
 				map_selection()
 			else:
-				create_maps_menu()
+				create_maps_menu('--test' in sys.argv)
 		
 		elif SETTINGS['running'] == 2:
 			terraform()
@@ -348,5 +375,7 @@ if __name__ == '__main__':
 	
 	sys_set_fps(FPS_TERRAFORM)
 	console_set_keyboard_repeat(200, 30)
+	
+	mapgen.create_buildings()
 	
 	main()
