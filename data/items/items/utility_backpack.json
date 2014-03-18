@@ -1,0 +1,12 @@
+{"name": "utility backpack",
+"prefix": "a",
+"type": "backpack",
+"icon": "B",
+"color": [[94, 75, 47], null],
+"description": "Medium-sized backpack.",
+"attaches_to": "chest",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "6x7",
+"capacity": "6x7",
+"thickness": 5,
+"material": "cloth"}

@@ -1,0 +1,9 @@
+{"name": "radio",
+"prefix": "a",
+"type": "radio",
+"icon": "r",
+"description": "A radio used to communicate with others.",
+"flags": "",
+"size": "2x2",
+"material": "metal",
+"thickness": 2}

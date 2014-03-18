@@ -1,0 +1,12 @@
+{"name": "blue jeans",
+"prefix": "a pair of",
+"type": "clothing",
+"icon": "H",
+"color": [[0, 0, 255], null],
+"description": "A sturdy pair of blue jeans.",
+"attaches_to": "hip|rthigh|lthigh|lknee|rknee|llowerleg|rlowerleg",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "1x1",
+"capacity": "2x1",
+"thickness": 1,
+"material": "cloth"}

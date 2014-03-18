@@ -1,0 +1,11 @@
+{"name": "sneakers",
+"prefix": "a pair of",
+"type": "clothing",
+"icon": "s",
+"description": "A pair of running shoes.",
+"mods": {"speed": 0.5},
+"attaches_to": "lfoot|rfoot",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "1x1",
+"thickness": 1,
+"material": "cloth"}

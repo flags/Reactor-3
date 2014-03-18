@@ -1,0 +1,10 @@
+{"name": "office chair",
+"prefix": "a",
+"type": "storage",
+"icon": "L",
+"description": "A desk.",
+"flags": "",
+"size": "4x6",
+"thickness": 4,
+"color": [[85, 85, 85], [35, 35, 35]],
+"material": "metal"}

@@ -1,0 +1,11 @@
+{"name": "white t-shirt",
+"prefix": "a",
+"type": "clothing",
+"icon": "T",
+"description": "A plain, white t-shirt.",
+"attaches_to": "lshoulder|rshoulder|chest|stomach",
+"flags": "CAN_WEAR|CANSTACK|CAN_BURN|CAN_SOAK",
+"craft": [{"name": "Make cloth", "type": "create_item", "requirements": [], "time": 20, "difficulty": {"engineering": 3}, "create_item": {"white cloth": {"failure": {"amount": 2}, "partial_success": {"amount": 4}, "success": {"amount": 6}}}, "strings": {"failure": "You struggle tearing the cloth, destroying it.", "partial_success": "You rip some of the cloth, wasting it.", "success": "You tear the cloth evenly."}}],
+"size": "1x1",
+"thickness": 1,
+"material": "cloth"}
