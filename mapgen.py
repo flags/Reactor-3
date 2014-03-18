@@ -260,6 +260,64 @@ def create_buildings():
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                          'build_order': 'shopping'}
 	
+	BUILDINGS['office_1'] = {'chunks': {'parking lot': {'type': 'exterior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['lobby'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'flags': {'road_seed': True},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                    'lobby': {'type': 'interior',
+	                                                  'chunks': 3,
+	                                                  'doors': ['parking lot', 'desk'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                    'desk': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['lobby', 'hall'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                    'hall': {'type': 'interior',
+	                                             'chunks': 1,
+	                                             'doors': ['office', 'desk'],
+	                                             'floor': [{'x_mod_min': 0,
+	                                                        'x_mod_max': 1,
+	                                                        'y_mod_min': 0,
+	                                                        'y_mod_max': 1,
+	                                                        'height': 1,
+	                                                        'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                             'items': [],
+	                                             'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                    'office': {'type': 'interior',
+	                                             'chunks': 3,
+	                                             'doors': ['hall'],
+	                                             'floor': [{'x_mod_min': 0,
+	                                                        'x_mod_max': 1,
+	                                                        'y_mod_min': 0,
+	                                                        'y_mod_max': 1,
+	                                                        'height': 1,
+	                                                        'tiles': tiles.BLUE_CARPET_TILES}],
+	                                             'items': [],
+	                                             'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                         'build_order': 'parking lot'}
+	
 	BUILDINGS['house_1'] = {'chunks': {'driveway': {'type': 'exterior',
 	                                              'chunks': 1,
 	                                              'doors': ['sidewalk'],
@@ -1287,7 +1345,7 @@ def generate_town(map_gen, cell):
 	_fence_positions = []
 	_sidewalk_positions = []
 	_tries = 0
-	_buildings = ['house_1', 'house_1', 'house_1', 'house_1', 'house_1', 'supermarket', ]
+	_buildings = ['house_1', 'house_1', 'office_1', 'house_1', 'house_1', 'supermarket']
 	_road_seeds = []
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
