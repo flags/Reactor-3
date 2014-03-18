@@ -1277,8 +1277,7 @@ def generate_town(map_gen, cell):
 	_min_building_size = 4
 	_max_building_size = 6
 	_potential_building_chunks = cell['chunk_keys'][:]
-	_potential_street_chunks = []
-	_yard_chunks = []
+	_building_chunks = []
 	_buildings = []
 	_avoid_positions = []
 	_fence_positions = []
@@ -1304,6 +1303,7 @@ def generate_town(map_gen, cell):
 		
 		for room_name in _building:
 			for chunk_key in _building[room_name]['chunk_keys']:
+				_building_chunks.append(chunk_key)
 				_room_chunks.append(chunk_key)
 				_chunk = map_gen['chunk_map'][chunk_key]
 				_chunk['type'] = 'town'
@@ -1382,6 +1382,7 @@ def generate_town(map_gen, cell):
 			
 			for pos in _astar:
 				_chunk_key = '%s,%s' % (pos[0]*map_gen['chunk_size'], pos[1]*map_gen['chunk_size'])
+				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				
 				create_splotch(map_gen,
 					           map_gen['chunk_map'][_chunk_key]['pos'],
@@ -1404,8 +1405,32 @@ def generate_town(map_gen, cell):
 					           only_tiles=_ok_tiles_1,
 					           pos_is_chunk_key=True)
 		
-	else:
-		print 'No road in town'
+	
+	for chunk_key in cell['chunk_keys']:
+		if chunk_key in _building_chunks:
+			continue
+		
+		if map_gen['chunk_map'][chunk_key]['type'] == 'road':
+			continue
+		
+		_i = 5
+		while _i:
+			_i -= 1
+			
+			_pos = [int(i) for i in chunk_key.split(',')]
+			_p_pos = (_pos[0]+random.randint(0, map_gen['chunk_size']),
+		             _pos[1]+random.randint(0, map_gen['chunk_size']))
+			
+			if _p_pos[0]>=map_gen['size'][0]-1 or _p_pos[1]>=map_gen['size'][1]-1:
+				continue
+			
+			if not map_gen['map'][_p_pos[0]][_p_pos[1]][2]['id'] in tiles.GRASS_TILES:
+				continue
+			
+			create_tree(map_gen,
+			            _p_pos,
+			            random.randint(1, 2))
+			break
 	#while _road_seeds:
 	#	alife.chunks.get_nearest_chunk_in_list(
 
