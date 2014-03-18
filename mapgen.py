@@ -1406,6 +1406,9 @@ def generate_town(map_gen, cell):
 					           pos_is_chunk_key=True)
 		
 	
+	if random.randint(0, 1):
+		return False
+	
 	for chunk_key in cell['chunk_keys']:
 		if chunk_key in _building_chunks:
 			continue
@@ -1413,7 +1416,7 @@ def generate_town(map_gen, cell):
 		if map_gen['chunk_map'][chunk_key]['type'] == 'road':
 			continue
 		
-		_i = 5
+		_i = random.randint(2, 6)
 		while _i:
 			_i -= 1
 			
