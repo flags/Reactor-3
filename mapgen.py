@@ -187,7 +187,8 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.WHITE_TILE_TILES}],
-	                                                  'items': [],
+	                                                  'items': [{'item': 'metal shelving', 'location': 'edge', 'spawn_chance': 1, 'amount': 32},
+	                                                            {'item': 'metal door', 'location': 'door', 'spawn_chance': 1, 'amount': 3}],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'office': {'type': 'interior',
 	                                                  'chunks': 1,
@@ -198,7 +199,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.SEA_CARPET_TILES}],
-	                                                  'items': [],
+	                                                  'items': [{'item': 'desk', 'location': 'middle', 'spawn_chance': 1, 'amount': 2}],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'checkout': {'type': 'interior',
 	                                                  'chunks': 1,
@@ -318,21 +319,9 @@ def create_buildings():
 	                                             'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                         'build_order': 'parking lot'}
 	
-	BUILDINGS['house_1'] = {'chunks': {'driveway': {'type': 'exterior',
+	BUILDINGS['house_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
 	                                              'chunks': 1,
-	                                              'doors': ['sidewalk'],
-	                                              'floor': [{'x_mod_min': 0,
-	                                                         'x_mod_max': 1,
-	                                                         'y_mod_min': 0,
-	                                                         'y_mod_max': 1,
-	                                                         'height': 1,
-	                                                         'tiles': tiles.CONCRETE_TILES}],
-	                                              'flags': {'road_seed': True},
-	                                              'items': [],
-	                                              'walls': {'tiles': [tiles.WALL_TILE]}},
-	                                 'sidewalk': {'type': 'exterior',
-	                                              'chunks': 1,
-	                                              'doors': ['driveway', 'landing'],
+	                                              'doors': ['landing'],
 	                                              'floor': [{'x_mod_min': 0,
 	                                                         'x_mod_max': 1,
 	                                                         'y_mod_min': 0,
@@ -567,7 +556,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
 								_wall = True
 						elif (not x and (y==2) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y==2) and not (1, 0) in _skip_doors) or (not y and (x==2) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x==2) and not (0, 1) in _skip_doors):
-							_room['spawns']['doors'].append((_x, _y))
+							_room['spawns']['door'].append((_x, _y))
 					
 					for tile_design in _room['floor']:
 						if _wall:
@@ -617,13 +606,13 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					if map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in [tiles.WALL_TILE]] or (map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in [tiles.WALL_TILE]]):
 						continue
 					
-					if (_x, _y) in _room['spawns']['doors']:
+					if (_x, _y) in _room['spawns']['door']:
 						continue
 					
 					_continue = False
 					
 					for mod in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-						if (_x+mod[0], _y+mod[1]) in _room['spawns']['doors']:
+						if (_x+mod[0], _y+mod[1]) in _room['spawns']['door']:
 							_continue = True
 							
 							break
@@ -657,6 +646,9 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 		for item in _room['items']:
 			for i in range(item['amount']):
 				if random.uniform(0, 1)<1-item['spawn_chance']:
+					continue
+				
+				if not len(_room['spawns'][item['location']]):
 					continue
 				
 				_pos = _room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1))

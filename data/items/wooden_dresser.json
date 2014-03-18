@@ -2,7 +2,7 @@
 "prefix": "a",
 "type": "storage",
 "icon": "D",
-"description": "A large wooden dresser.",
+"description": "A wooden door.",
 "flags": "CAN_BURN",
 "size": "12x12",
 "capacity": "12x12",

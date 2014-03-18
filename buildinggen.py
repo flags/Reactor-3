@@ -145,7 +145,7 @@ def _create_building(chunk_key, design, building_chunks):
 			                         'items': _room['items'],
 			                         'flags': _flags,
 			                         'spawns': {'away_from_door': [],
-			                                    'doors': [],
+			                                    'door': [],
 			                                    'middle': [],
 			                                    'floor': [],
 			                                    'edge': []}}
@@ -162,7 +162,7 @@ def _create_building(chunk_key, design, building_chunks):
 			                         'items': _room['items'],
 			                         'flags': _flags,
 			                         'spawns': {'away_from_door': [],
-			                                    'doors': [],
+			                                    'door': [],
 			                                    'middle': [],
 			                                    'floor': [],
 			                                    'edge': []}}
