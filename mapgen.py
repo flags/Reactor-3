@@ -884,16 +884,29 @@ def generate_noise_map(map_gen):
 	                           'max_amount': 2,
 	                           'can_combine': False,
 	                           'avoid_types': {'Farm': 250}},
-	               'Town': {'callback': generate_town,
-	                           'min_cells': 200,
-	                           'max_cells': 1000,
+	               'Village': {'callback': generate_town,
+	                           'min_cells': 150,
+	                           'max_cells': 300,
 	                           'x_mod_min': .1,
 	                           'x_mod_max': .9,
 	                           'y_mod_min': .45,
 	                           'y_mod_max': .75,
 	                           'amount': 0,
-	                           'min_amount': 2,
+	                           'min_amount': 1,
 	                           'max_amount': 3,
+	                           'building_types': ['house_1', 'house_1', 'supermarket'],
+	                           'can_combine': True},
+	               'Town': {'callback': generate_town,
+	                           'min_cells': 301,
+	                           'max_cells': 450,
+	                           'x_mod_min': .1,
+	                           'x_mod_max': .9,
+	                           'y_mod_min': .45,
+	                           'y_mod_max': .75,
+	                           'amount': 0,
+	                           'min_amount': 1,
+	                           'max_amount': 3,
+	                           'building_types': ['house_1', 'office_1', 'house_1', 'factory_1', 'house_1', 'supermarket'],
 	                           'can_combine': True},
 	               'Factory': {'callback': generate_factory,
 	                           'min_cells': 150,
@@ -960,6 +973,10 @@ def generate_noise_map(map_gen):
 			if _matching_cell_types:
 				_cell_type = random.choice(_matching_cell_types)
 				_cell_types[_cell_type]['amount'] += 1
+				
+				if 'building_types' in _cell_types[_cell_type]:
+					cell['building_types'] = _cell_types[_cell_type]['building_types']
+				
 				_cell_types[_cell_type]['callback'](map_gen, cell)
 				
 				if _cell_type in _occupied_cells:
@@ -1054,6 +1071,10 @@ def generate_noise_map(map_gen):
 				if _matching_cell_types:
 					_cell_type = random.choice(_matching_cell_types)
 					_cell_types[_cell_type]['amount'] += 1
+					
+					if 'building_types' in _cell_types[_cell_type]:
+						_cell['cell']['building_types'] = _cell_types[_cell_type]['building_types']
+						_neighbor_cell['cell']['building_types'] = _cell_types[_cell_type]['building_types']
 					
 					logging.debug('[2nd pass] Creating cell: %s' % cell_type)
 					_cell_types[_cell_type]['callback'](map_gen, _cell['cell'])
@@ -1345,7 +1366,7 @@ def generate_town(map_gen, cell):
 	_fence_positions = []
 	_sidewalk_positions = []
 	_tries = 0
-	_buildings = ['house_1', 'house_1', 'office_1', 'house_1', 'house_1', 'supermarket']
+	_buildings = cell['building_types'][:]
 	_road_seeds = []
 	
 	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
