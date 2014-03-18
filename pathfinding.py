@@ -16,7 +16,7 @@ import logging
 import time
 import sys
 
-def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
+def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles=[], avoid_chunk_types=[], map_size=MAP_SIZE):
 	_stime = time.time()
 	
 	_path = {'start': tuple(start),
@@ -28,7 +28,10 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	         'map_size': map_size,
 	         'chunk_mode': chunk_mode}
 	
-	maps.load_cluster_at_position_if_needed(end)
+	if terraform:
+		_path['map_size'] = terraform['size']
+	else:
+		maps.load_cluster_at_position_if_needed(end)
 	
 	if chunk_mode:
 		_path['start'] = (_path['start'][0]/WORLD_INFO['chunk_size'], _path['start'][1]/WORLD_INFO['chunk_size'])
@@ -51,20 +54,52 @@ def astar(life, start, end, zones, chunk_mode=False, map_size=MAP_SIZE):
 	#0: Unwalkable
 	#1: Walkable
 	
-	for zone in [zns.get_slice(z) for z in zones]:
-		for y in range(zone['top_left'][1], zone['bot_right'][1]):
-			for x in range(zone['top_left'][0], zone['bot_right'][0]):
-				#maps.load_cluster_at_position_if_needed((x, y))
-				
-				_map_pos = WORLD_INFO['map'][x][y][zone['z']]
-				
-				if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == zone['id']:
-					continue
+	if terraform:
+		_start_chunk_key = '%s,%s' % ((start[0]/terraform['chunk_size'])*terraform['chunk_size'],
+		                            (start[1]/terraform['chunk_size'])*terraform['chunk_size'])
+		_end_chunk_key = '%s,%s' % ((end[0]/terraform['chunk_size'])*terraform['chunk_size'],
+		                            (end[1]/terraform['chunk_size'])*terraform['chunk_size'])
 		
+		if chunk_mode:
+			_increment = terraform['chunk_size']
+		else:
+			_increment = 1
+		
+		for y in range(0, terraform['size'][1], _increment):
+			for x in range(0, terraform['size'][0], _increment):
 				if chunk_mode:
-					_path['map'][y/WORLD_INFO['chunk_size'], x/WORLD_INFO['chunk_size']] = 1
+					_chunk_key = '%s,%s' % ((x/terraform['chunk_size'])*terraform['chunk_size'],
+						                    (y/terraform['chunk_size'])*terraform['chunk_size'])
+					
+					if not _chunk_key in [_start_chunk_key, _end_chunk_key]:
+						if terraform['chunk_map'][_chunk_key]['type'] in avoid_chunk_types:
+							continue
+		
+					_path['map'][y/terraform['chunk_size'], x/terraform['chunk_size']] = 1
 				else:
-					_path['map'][y, x] = 1
+					_map_pos = terraform['map'][x][y][2]
+				
+					if _map_pos['id'] in avoid_tiles:
+						continue
+					
+					if not (x, y) in [_path['start'], path['end']]:
+						_path['map'][y, x] = 1
+		
+	else:
+		for zone in [zns.get_slice(z) for z in zones]:
+			for y in range(zone['top_left'][1], zone['bot_right'][1]):
+				for x in range(zone['top_left'][0], zone['bot_right'][0]):
+					#maps.load_cluster_at_position_if_needed((x, y))
+					
+					_map_pos = WORLD_INFO['map'][x][y][zone['z']]
+					
+					if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == zone['id']:
+						continue
+			
+					if chunk_mode:
+						_path['map'][y/WORLD_INFO['chunk_size'], x/WORLD_INFO['chunk_size']] = 1
+					else:
+						_path['map'][y, x] = 1
 	
 	_path['hmap'][_path['start'][1], _path['start'][0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]

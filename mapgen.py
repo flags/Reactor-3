@@ -3,6 +3,7 @@ from globals import *
 import libtcodpy as tcod
 
 import buildinggen
+import pathfinding
 import render_los
 import maputils
 import language
@@ -211,25 +212,26 @@ def create_buildings():
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'parking lot': {'type': 'exterior',
-	                                                  'chunks': 2,
+	                                                  'chunks': 1,
 	                                                  'doors': ['checkout', 'gas pump 1', 'gas pump 2'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.CONCRETE_TILES}],
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'gas pump 1': {'type': 'exterior',
 	                                                  'chunks': 1,
+	                                                  'flags': {'road_seed': True},
 	                                                  'doors': ['parking lot'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.CONCRETE_TILES},
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES},
 	                                                            {'x_mod_min': .15,
 	                                                             'x_mod_max': .45,
 	                                                             'y_mod_min': .15,
@@ -240,13 +242,14 @@ def create_buildings():
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'gas pump 2': {'type': 'exterior',
 	                                                  'chunks': 1,
+	                                                  'flags': {'road_seed': True},
 	                                                  'doors': ['parking lot'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.CONCRETE_TILES},
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES},
 	                                                            {'x_mod_min': .15,
 	                                                             'x_mod_max': .45,
 	                                                             'y_mod_min': .15,
@@ -257,26 +260,15 @@ def create_buildings():
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                          'build_order': 'shopping'}
 	
-	BUILDINGS['house_1'] = {'chunks': {'garage': {'type': 'interior',
+	BUILDINGS['house_1'] = {'chunks': {'driveway': {'type': 'exterior',
 	                                              'chunks': 1,
-	                                              'doors': ['driveway'],
+	                                              'doors': ['sidewalk'],
 	                                              'floor': [{'x_mod_min': 0,
 	                                                         'x_mod_max': 1,
 	                                                         'y_mod_min': 0,
 	                                                         'y_mod_max': 1,
 	                                                         'height': 1,
-	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
-	                                              'items': [],
-	                                              'walls': {'tiles': [tiles.WALL_TILE]}},
-	                                 'driveway': {'type': 'exterior',
-	                                              'chunks': 1,
-	                                              'doors': ['sidewalk', 'garage'],
-	                                              'floor': [{'x_mod_min': 0,
-	                                                         'x_mod_max': 1,
-	                                                         'y_mod_min': 0,
-	                                                         'y_mod_max': 1,
-	                                                         'height': 1,
-	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                         'tiles': tiles.CONCRETE_TILES}],
 	                                              'flags': {'road_seed': True},
 	                                              'items': [],
 	                                              'walls': {'tiles': [tiles.WALL_TILE]}},
@@ -1338,25 +1330,82 @@ def generate_town(map_gen, cell):
 			_starting_road_seed['road_seed'] = road_seed
 			_starting_road_seed['road_chunk_key'] = _road_chunk_key
 	
-	_path = [_starting_road_seed['road_chunk_key'], _starting_road_seed['road_seed']]
-	print _road_seeds, _starting_road_seed['road_seed']
-	_road_seeds.remove(_starting_road_seed['road_seed'])
-	
-	while _road_seeds:
-		_closest_road_seed = {'road_seed': None, 'distance': None}
-		_last_seed = _path[len(_path)-1]
+	if _road_seeds:
+		_path = [_starting_road_seed['road_chunk_key'], _starting_road_seed['road_seed']]
+		_road_seeds.remove(_starting_road_seed['road_seed'])
 		
-		for road_seed in _road_seeds:
-			_distance = numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
+		while _road_seeds:
+			_closest_road_seed = {'road_seed': None, 'distance': None}
+			_last_seed = _path[len(_path)-1]
 			
-			if not _closest_road_seed['road_seed'] or _distance<_closest_road_seed['distance']:
-				_closest_road_seed['road_seed'] = road_seed
-				_closest_road_seed['distance'] = _distance
+			for road_seed in _road_seeds:
+				_distance = numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
+				
+				if not _closest_road_seed['road_seed'] or _distance<_closest_road_seed['distance']:
+					_closest_road_seed['road_seed'] = road_seed
+					_closest_road_seed['distance'] = _distance
+			
+			_road_seeds.remove(_closest_road_seed['road_seed'])
+			_path.append(_closest_road_seed['road_seed'])
 		
-		_road_seeds.remove(_closest_road_seed['road_seed'])
-		_path.append(_closest_road_seed['road_seed'])
-	
-	print _path
+		_final_path = []
+		for chunk_key in _path:
+			_final_path.append([int(i) for i in chunk_key.split(',')])
+		
+		_path = _final_path
+		_start = None
+		_ok_tiles_1 = []
+		_ok_tiles_1.extend(tiles.DIRT_TILES)
+		_ok_tiles_1.extend(tiles.BROKEN_CONCRETE_TILES)
+		_ok_tiles_1.extend(tiles.GRASS_TILES)
+		
+		_ok_tiles_2 = []
+		_ok_tiles_2.extend(tiles.DIRT_TILES)
+		_ok_tiles_2.extend(tiles.GRASS_TILES)
+		
+		while _path:
+			_last_path = _start
+			
+			_start = _path.pop(0)
+			
+			if _path:
+				_end = _path[0]
+			else:
+				_end = _last_path
+			
+			_astar = pathfinding.astar({}, _start, _end, [], chunk_mode=True, terraform=map_gen, avoid_chunk_types=['town'])
+			
+			if not _astar:
+				logging.error('Road impossible for these positions: %s -> %s' % (_start, _end))
+				
+				continue
+			
+			for pos in _astar:
+				_chunk_key = '%s,%s' % (pos[0]*map_gen['chunk_size'], pos[1]*map_gen['chunk_size'])
+				
+				create_splotch(map_gen,
+					           map_gen['chunk_map'][_chunk_key]['pos'],
+					           random.randint(10, 12),
+					           tiles.DIRT_TILES,
+					           only_tiles=_ok_tiles_2,
+					           pos_is_chunk_key=True)
+				
+				create_splotch(map_gen,
+					           map_gen['chunk_map'][_chunk_key]['pos'],
+					           random.randint(8, 10),
+					           tiles.BROKEN_CONCRETE_TILES,
+					           only_tiles=_ok_tiles_1,
+					           pos_is_chunk_key=True)
+				
+				create_splotch(map_gen,
+					           map_gen['chunk_map'][_chunk_key]['pos'],
+					           random.randint(6, 8),
+					           tiles.CONCRETE_TILES,
+					           only_tiles=_ok_tiles_1,
+					           pos_is_chunk_key=True)
+		
+	else:
+		print 'No road in town'
 	#while _road_seeds:
 	#	alife.chunks.get_nearest_chunk_in_list(
 
