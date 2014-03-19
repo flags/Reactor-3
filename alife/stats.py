@@ -105,7 +105,7 @@ def wants_to_abandon_group(life, group_id):
 	_trusted = 0
 	_hostile = 0
 	
-	for member in groups.get_group_memory(life, group_id, 'members'):
+	for member in groups.get_group(life, group_id)['members']:
 		if life['id'] == member:
 			continue
 		

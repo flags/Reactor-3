@@ -2,6 +2,7 @@ from globals import *
 
 import life as lfe
 
+import language
 import spawns
 import alife
 
@@ -10,6 +11,7 @@ import random
 
 
 def generate():
+	create_territories()
 	create_faction('Dawn', ['dawn_scout', 'dawn_sentry'], enemies=['Bandits', 'Runners', 'Military'])
 	create_faction('Runners', ['loner', 'loner_rifleman'], enemies=['Bandits', 'Dawn', 'Military'])
 	create_faction('Loners', ['loner', 'loner_rifleman'], enemies=['Bandits', 'Military'])
@@ -20,6 +22,27 @@ def generate():
 	create_zes_export()
 	create_fields()
 	create_outposts()
+
+def create_territories():
+	for town in WORLD_INFO['refs']['towns']:
+		_place_name = language.generate_place_name()
+		
+		WORLD_INFO['territories'][_place_name] = {'chunk_keys': town,
+		                           'owner': None}
+		
+		logging.debug('Created territory: %s' % _place_name)
+
+def get_territory(territory_name):
+	return WORLD_INFO['territories'][territory_name]
+
+def claim_territory(faction_name):
+	_territory_name = random.choice([t for t in WORLD_INFO['territories'] if not WORLD_INFO['territories'][t]['owner']])
+	_territory = get_territory(_territory_name)
+	_territory['owner'] = faction_name
+	
+	logging.debug('%s has claimed %s.' % (faction_name, _territory_name))
+	
+	return _territory
 
 def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 	WORLD_INFO['factions'][name] = {'members': [],
@@ -60,7 +83,8 @@ def add_group(faction_name, alife):
 	_faction['groups'].append([i['id'] for i in alife])
 
 def create_zes_export():
-	_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
+	#_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
+	_zes_camp_chunk_key = random.choice(claim_territory('ZES')['chunk_keys'])
 	
 	spawns.generate_group('zes_guard', faction='ZES', amount=random.randint(3, 4), spawn_chunks=[_zes_camp_chunk_key])
 

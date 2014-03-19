@@ -186,10 +186,8 @@ def generate_group(life_class, amount=3, faction=None, group_motive='survival', 
 		if m1['id'] == _group_members[0]['id']:
 			continue
 		
-		alife.groups.discover_group(m1, _group)
 		alife.groups.set_motive(m1, _group, group_motive)
 		alife.groups.add_member(_group_members[0], _group, m1['id'])
-		alife.groups.add_member(m1, _group, m1['id'])
 		m1['group'] = _group
 		alife.groups.set_leader(m1, _group, _group_members[0]['id'])
 
@@ -199,8 +197,6 @@ def generate_group(life_class, amount=3, faction=None, group_motive='survival', 
 					continue
 				
 				alife.stats.establish_trust(m1, m2['id'])
-
-	alife.speech.inform_of_group_members(_group_members[0], None, _group)
 	
 	return _group_members
 

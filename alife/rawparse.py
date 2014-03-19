@@ -138,7 +138,7 @@ def create_function_map():
 		'is_target_in_group': lambda life, life_id, **kwargs: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group']==kwargs['group'],
 		'is_target_in_any_group': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group']>0,
 		'is_target_group_friendly': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='trust',
-		'is_target_group_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='hostile',
+		'is_target_group_hostile': groups.is_target_group_hostile,
 		'is_target_group_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='neutral',
 		'is_group_hostile': lambda life, **kwargs: groups.get_group_memory(life, kwargs['group_id'], 'alignment')=='hostile',
 		'is_injured': lambda life: len(lfe.get_cut_limbs(life)) or len(lfe.get_bleeding_limbs(life)),
