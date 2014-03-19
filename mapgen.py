@@ -651,7 +651,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				if not len(_room['spawns'][item['location']]):
 					continue
 				
-				_pos = _room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1))
+				_pos = list(_room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1)))
+				_pos.append(2)
 				items.create_item(item['item'], position=_pos)
 	
 	return _building

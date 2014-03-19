@@ -1,0 +1,10 @@
+{"name": "office chair",
+"prefix": "a",
+"type": "storage",
+"icon": "D",
+"description": "A chair.",
+"flags": "",
+"size": "4x6",
+"thickness": 3,
+"color": [[175, 175, 175], [145, 145, 145]],
+"material": "metal"}
