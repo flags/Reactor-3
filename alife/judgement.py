@@ -26,7 +26,7 @@ def judge_item(life, item_uid):
 	_item = ITEMS[item_uid]
 	_score = 0
 	
-	if brain.get_flag(life, 'no_weapon') or not combat.has_ready_weapon(life):
+	if brain.get_flag(life, 'no_weapon'):
 		if _item['type'] == 'gun':
 			if combat.weapon_is_working(life, item_uid):
 				_score += _item['accuracy']

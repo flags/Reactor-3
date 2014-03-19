@@ -13,6 +13,7 @@ import random
 import time
 
 INTRO = 'flagsdev presents'
+SUB_LINE = 'Reactor 3'
 MESSAGE = ['Reactor 3 is still a prototype',
 	'You may experience slow performance and crashes',
 	'',
@@ -26,12 +27,12 @@ def draw_intro():
 	_stime = time.time()
 	_title_time = time.time()
 	_warning_time = None
-	_sub_line = 'Reactor 3'
 	_warning_message = VERSION
 	_sub_mod = 0
 	_sub_time = 0
 	_shadow = 50
 	_burn = 8.0
+	_char_alpha = {c: random.uniform(.15, .7) for c in SUB_LINE}
 	
 	#Why did I base this on time.time()?
 	while time.time()-_stime<=5:
@@ -44,18 +45,11 @@ def draw_intro():
 		else:
 			if not _sub_time:
 				_sub_time = time.time()
-			elif time.time()-_stime>=3.2:
-				#_shadow *= 1.05
-				#_sub_time += .042
-				_title_time += .044
 			
 			if 4.0>time.time()-_stime:
 				_burn *= 1.005
-			elif time.time()-_stime>=4.0:
-				if _burn>255:
-					_burn = 255
-				
-				_burn *= .99
+			elif time.time()-_stime>=4.0 and _burn>255:
+				_burn = 255
 			
 			_text = INTRO
 		
@@ -73,24 +67,15 @@ def draw_intro():
 			console_set_default_foreground(0, Color(_mod/2, _mod/2, _mod/2))
 			console_print(0, 0, WINDOW_SIZE[1]-1, _warning_message)
 		
-		_i = 0
-		for c in _sub_line:
-			if _sub_time:
-				_delta = numbers.clip((time.time()-_sub_time)*6.0, 0, len(_sub_line)*2)
-				_upper = numbers.clip(255-(abs(_i-_delta))*_shadow, 0, 255)
-				#_sub_mod = int(round(_upper*numbers.clip((time.time()-_sub_time)*2, 0, 1)))
-			
-				#if _sub_mod < 1 and _i-_delta<0:
-				#_sub_mod = numbers.clip(_sub_mod, 1, 255)
-				_r = numbers.clip(numbers.clip(int(round(_burn)), 0, 255)-random.randint(0, 75), 0, 255)
-				#else:
-				#	_r = _sub_mod
-			else:
-				_r = _sub_mod
-			
-			console_set_default_foreground(0, Color(_r, _sub_mod, _sub_mod))
-			console_print(0, ((WINDOW_SIZE[0]/2)-len(_sub_line)/2)+_i, (WINDOW_SIZE[1]/2), c)
-			_i += 1
+		if time.time()-_stime>=1.2:
+			_i = 0
+			for c in SUB_LINE:
+				_c_mod = _char_alpha[c]
+				_mod = numbers.clip(time.time()-_warning_time, 0, 1)
+				console_set_default_foreground(0, Color(int(round((200*_mod)*_c_mod)), 0, 0))
+				console_print(0, _i+(WINDOW_SIZE[0]/2)-len(SUB_LINE)/2, (WINDOW_SIZE[1]/2), c)
+				_char_alpha[c] = numbers.clip(_char_alpha[c]*1.015, 0, 1)
+				_i += 1
 		
 		console_flush()
 	

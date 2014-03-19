@@ -7,6 +7,7 @@ import references
 import judgement
 import movement
 import survival
+import factions
 import numbers
 import memory
 import action
@@ -29,7 +30,14 @@ def create_group(life, add_creator=True):
 	WORLD_INFO['groupid'] += 1
 	_id = str(WORLD_INFO['groupid']-1)
 	
-	discover_group(life, _id)
+	WORLD_INFO['groups'][_id] = {'id': _id,
+	                             'members': [],
+	                             'leader': None,
+	                             'shelter': None,
+	                             'stage': STAGE_FORMING,
+	                             'alignment': 'neutral',
+	                             'claimed_motive': 'nothing',
+	                             'flags': {}}
 	
 	if add_creator:
 		join_group(life, _id)
@@ -40,13 +48,13 @@ def create_group(life, add_creator=True):
 	return _id
 
 def group_exists(life, group_id):
-	return (group_id in life['known_groups'])
+	return (group_id in WORLD_INFO['groups'])
 
 def get_group(life, group_id):
 	if not group_exists(life, group_id):
 		raise Exception('Group does not exist: %s' % group_id)
 	
-	return life['known_groups'][group_id]
+	return WORLD_INFO['groups'][group_id]
 
 def flag(life, group_id, flag, value):
 	get_group(life, group_id)['flags'][flag] = value
@@ -60,26 +68,6 @@ def get_flag(life, group_id, flag):
 def has_flag(life, group_id, flag):
 	return flag in get_group(life, group_id)['flags']
 
-def discover_group(life, group_id):
-	if not group_id in life['known_groups']:
-		life['known_groups'][group_id] = {'id': group_id,
-		                                  'members': [],
-		                                  'leader': None,
-		                                  'shelter': None,
-		                                  'stage': STAGE_FORMING,
-		                                  'alignment': 'neutral',
-		                                  'claimed_motive': 'nothing',
-		                                  'flags': {}}
-		
-		if 'player' in life:
-			gfx.message('You learn about group %s.' % group_id)
-		
-		logging.debug('%s discovered group %s.' % (' '.join(life['name']), group_id))
-		
-		return True
-	
-	return False
-
 def get_group_size(life, group_id):
 	_number_of_members = len(get_group(life, group_id)['members'])
 	
@@ -91,25 +79,12 @@ def get_group_size(life, group_id):
 	
 	return 'partner'
 
-def update_group_memory(life, group_id, flag, value):
-	_previous_value = life['known_groups'][group_id][flag]
-	life['known_groups'][group_id][flag] = value
-	
-	#logging.debug('%s updated group %s\'s memory: %s: %s -> %s' % (' '.join(life['name']), group_id, flag, _previous_value, value))
-
-def get_group_memory(life, group_id, flag):
-	if not group_id in life['known_groups']:
-		raise Exception('%s does not know about group %s.' % (' '.join(life['name']), group_id))
-	
-	return life['known_groups'][group_id][flag]
-
 def get_group_relationships():
 	_groups = {grp: {_grp: 0 for _grp in WORLD_INFO['groups'] if not _grp == grp} for grp in WORLD_INFO['groups']}
 
 def join_group(life, group_id):
 	life['group'] = group_id
 	
-	update_group_memory(life, group_id, 'alignment', 'trust')
 	add_member(life, group_id, life['id'])
 	
 	if 'player' in life:
@@ -118,9 +93,6 @@ def join_group(life, group_id):
 		logging.debug('%s joined group %s.' % (' '.join(life['name']), group_id))
 
 def add_member(life, group_id, life_id):
-	if not group_id in LIFE[life_id]['known_groups']:
-		raise Exception('DOES NOT KNOW')
-	
 	if is_member(life, group_id, life_id):
 		raise Exception('%s failed to add new member: %s is already a member of group: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), group_id))
 	
@@ -245,9 +217,6 @@ def process_events(life, group_id):
 	for event in _group['events'].values():
 		events.process_event(event)
 
-def get_alignment(life, group_id):
-	return get_group_memory(life, group_id, 'alignment')
-
 def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=None, **kwargs):
 	_group = get_group(life, _group_id)
 	
@@ -299,10 +268,13 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 			memory.create_question(life, life_id, gist, **kwargs)
 
 def get_shelter(life, group_id):
-	return get_group_memory(life, group_id, 'shelter')
+	_group = get_group(life, group_id)
+	
+	return _group['shelter']
 
 def set_shelter(life, group_id, shelter):
-	update_group_memory(life, group_id, 'shelter', shelter)
+	_group = get_group(life, group_id)
+	_group['shelter'] = shelter
 
 def find_shelter(life, group_id):
 	_group = get_group(life, group_id)
@@ -357,19 +329,22 @@ def raid(life, group_id, chunk_key):
 	flag(life, group_id, 'raid_chunk', chunk_key)
 
 def set_motive(life, group_id, motive):
-	update_group_memory(life, group_id, 'claimed_motive', motive)
+	_group = get_group(life, group_id)
+	_group['claimed_motive'] = motive
 
 def get_motive(life, group_id):
-	return get_group_memory(life, group_id, 'claimed_motive')
+	_group = get_group(life, group_id)
+	
+	return _group['claimed_motive']
 
 def get_stage(life, group_id):
-	return get_group_memory(life, group_id, 'stage')
+	_group = get_group(life, group_id)
+	
+	return _group['stage']
 
 def set_stage(life, group_id, stage):
-	update_group_memory(life, group_id, 'stage', stage)
-	
-	if is_leader(life, group_id, life['id']):
-		announce(life, group_id, 'update_group_stage')
+	_group = get_group(life, group_id)
+	_group['stage'] = stage
 
 def get_combat_score(life, group_id, potential=False):
 	_group = get_group(life, group_id)
@@ -565,7 +540,7 @@ def manage_territory(life, group_id):
 	if not _shelter:
 		return False
 	
-	_shelter_chunk = chunks.get_nearest_chunk_in_list(life['pos'], references.get_reference(_shelter))
+	_shelter_chunk = chunks.get_nearest_chunk_in_list(life['pos'], factions.get_territory(_shelter)['chunk_keys'])
 	
 	for known_group_id in life['known_groups']:
 		if group_id == known_group_id:
@@ -575,21 +550,10 @@ def manage_territory(life, group_id):
 		if not _opposing_shelter:
 			continue
 		
-		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], references.get_reference(_opposing_shelter))
+		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], factions.get_territory(_opposing_shelter)['chunk_keys'])
 		
 		if _distance<=30:
 			print '2 CLOSE 2 HANDLE'
-	
-	for seen_life_id in life['seen']:
-		_target = brain.knows_alife_by_id(life, seen_life_id)
-		
-		if not _target or _target['alignment'] in ['trust', 'hostile'] or not _target['last_seen_at'] or _target['dead']:
-			continue
-		
-		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:
-			continue
-		
-		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
 
 def manage_raid(life, group_id):
 	if not get_stage(life, group_id) in [STAGE_RAIDING, STAGE_ATTACKING]:
@@ -793,64 +757,6 @@ def manage_strategy(life, group_id):
 			
 			memory.create_question(life, member_id, 'order_equip_weapon')
 
-#Might still work? Unsure... old code here
-def manage_combat_old(life, group_id):
-	if get_stage(life, group_id) == STAGE_RAIDING:
-		prepare_for_raid(life, group_id)
-		return False
-	
-	for known_group_id in life['known_groups']:
-		if group_id == known_group_id:
-			continue
-		
-		if get_group_memory(life, known_group_id, 'alignment') == 'neutral':
-			_known_group_members = get_group_memory(life, known_group_id, 'members')
-			
-			announce(life, group_id, 'inform_of_known_group', group_id=known_group_id,
-			         filter_if=lambda alife_id: group_exists(LIFE[alife_id], known_group_id))
-			
-			if _known_group_members:
-				update_group_memory(life, known_group_id, 'shelter', get_possible_group_location(life, known_group_id))
-				
-				_people_to_ask_about = []
-				for member in _known_group_members:
-					_target = brain.knows_alife_by_id(life, member)
-					
-					if not _target['last_seen_at'] or not _target['state'] in ['idle', 'shelter']:
-						continue
-					
-					_people_to_ask_about.append(member)
-				
-				if get_group_memory(life, known_group_id, 'shelter'):
-					fight_or_flight(life, group_id, known_group_id)
-				elif _people_to_ask_about:
-					announce(life, group_id, 'last_seen_target', target_id=random.choice(_people_to_ask_about))
-				else:
-					print 'Nobody to ask about group location'
-					print 'LOST' * 100
-		
-		elif get_group_memory(life, known_group_id, 'alignment') == 'scared':
-			_known_group_shelter = get_group(life, known_group_id)['shelter']
-			
-			if not _known_group_shelter:
-				print 'FREE-FLOATING ANXIETY'
-				continue
-			
-			_distance = chunks.get_distance_to_nearest_chunk_in_list(life['pos'], references.get_reference(_known_group_shelter))
-			
-			if get_stage(life, group_id) >= STAGE_SETTLED:
-				if _distance<=100:
-					set_stage(life, group_id, STAGE_SETTLING)
-					set_shelter(life, group_id, None)
-					
-			#if get_stage(life, group_id) == STAGE_SETTLED:
-			#	set_stage(life, group_id, STAGE_RAIDING)
-			#	
-			#	announce(life, group_id, 'prepare_for_raid')
-			#	flag(life, group_id, 'raid_target', known_group_id)
-			
-			#declare_group_hostile(life, group_id, known_group_id)
-
 def get_possible_group_location(life, group_id):
 	_group = get_group(life, group_id)
 	_most_recent = {'time': 9999, 'shelter': None}
@@ -869,6 +775,15 @@ def get_possible_group_location(life, group_id):
 		print 'STILL DO NOT HAVE TARGET GROUP LOCATION'
 	
 	return _most_recent['shelter']
+
+def is_group_hostile(life, group_id):
+	return factions.is_enemy(life, get_group(life, group_id)['leader'])
+
+def is_target_group_hostile(life, life_id):
+	if not brain.knows_alife_by_id(life, life_id) or not brain.knows_alife_by_id(life, life_id)['group']:
+		return False
+	
+	return factions.is_enemy(life, get_group(life, LIFE[life_id]['group'])['leader'])
 
 def is_combat_ready(life, group_id):
 	_combat_readiness = 0

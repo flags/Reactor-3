@@ -322,6 +322,7 @@ def create_buildings():
 	BUILDINGS['house_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
 	                                              'chunks': 1,
 	                                              'doors': ['landing'],
+	                                              'flags': {'road_seed': True},
 	                                              'floor': [{'x_mod_min': 0,
 	                                                         'x_mod_max': 1,
 	                                                         'y_mod_min': 0,
@@ -403,6 +404,7 @@ def create_buildings():
 	BUILDINGS['factory_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
 	                                                  'chunks': 1,
 	                                                  'doors': ['waiting room'],
+	                                                  'flags': {'road_seed': True},
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
@@ -651,7 +653,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				if not len(_room['spawns'][item['location']]):
 					continue
 				
-				_pos = _room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1))
+				_pos = list(_room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1)))
+				_pos.append(2)
 				items.create_item(item['item'], position=_pos)
 	
 	return _building

@@ -9,6 +9,7 @@ import judgement
 import weather
 import groups
 import chunks
+import combat
 import brain
 import logic
 import items
@@ -174,7 +175,6 @@ def look(life):
 			life['know_items'][item['uid']]['score'] = judgement.judge_item(life, item['uid'])
 			life['know_items'][item['uid']]['lost'] = False
 
-#@profile
 def quick_look(life):
 	_life = []
 	_items = []
@@ -184,6 +184,7 @@ def quick_look(life):
 	_y_chunk_min = numbers.clip(_current_chunk_pos[1]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
 	_x_chunk_max = numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
 	_y_chunk_max = numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_has_ready_weapon = combat.has_ready_weapon(life)
 	
 	for y in range(_y_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
 		for x in range(_x_chunk_min, _x_chunk_max, WORLD_INFO['chunk_size']):
@@ -321,20 +322,20 @@ def _can_see_position(pos1, pos2, max_length=10, block_check=False, strict=False
 		for pos in _line:
 			_chunk = chunks.get_chunk_from_cache(pos)
 			
-			for item_uid in _chunk['items'][:]:
-				if not item_uid in ITEMS:
-					_chunk['items'].remove(item_uid)
+			#for item_uid in _chunk['items'][:]:
+			#	if not item_uid in ITEMS:
+			#		_chunk['items'].remove(item_uid)
 			
-			for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
-				if tuple(item['pos'])[:2] == tuple(pos2)[:2]:
-					continue
-				
-				if (pos[0], pos[1]) == tuple(item['pos'])[:2]:
-					_ret_line = []
-					if strict:
-						return False
-					
-					continue
+			#for item in [ITEMS[uid] for uid in _chunk['items'] if items.is_blocking(uid)]:
+			#	if tuple(item['pos'])[:2] == tuple(pos2)[:2]:
+			#		continue
+			#	
+			#	if (pos[0], pos[1]) == tuple(item['pos'])[:2]:
+			#		_ret_line = []
+			#		if strict:
+			#			return False
+			#		
+			#		continue
 				
 			if maps.is_solid((pos[0], pos[1], pos1[2]+1)):
 				_ret_line = []
