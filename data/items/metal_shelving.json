@@ -4,8 +4,8 @@
 "icon": "=",
 "description": "A metal structure with several shelves.",
 "flags": "",
-"size": "3x2",
-"capacity": "3x2",
+"size": "3x3",
+"capacity": "3x3",
 "thickness": 3,
 "color": [[180, 180, 180], [130, 130, 130]],
 "material": "metal"}

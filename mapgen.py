@@ -187,7 +187,19 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.WHITE_TILE_TILES}],
-	                                                  'items': [{'item': 'metal shelving', 'location': 'edge', 'spawn_chance': 1, 'amount': 32},
+	                                                  'items': [{'item': 'metal shelving',
+	                                                             'location': 'edge',
+	                                                             'spawn_chance': 1,
+	                                                             'amount': 32,
+	                                                             'items': [{'item': 'corn',
+	                                                                        'spawn_chance': .15,
+	                                                                        'amount': 1},
+	                                                                       {'item': 'soda',
+	                                                                        'spawn_chance': .15,
+	                                                                        'amount': 1},
+	                                                                       {'item': 'aspirin',
+	                                                                        'spawn_chance': .15,
+	                                                                        'amount': 1}]},
 	                                                            {'item': 'metal door', 'location': 'door', 'spawn_chance': 1, 'amount': 3}],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'office': {'type': 'interior',
@@ -655,7 +667,21 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				
 				_pos = list(_room['spawns'][item['location']].pop(random.randint(0, len(_room['spawns'][item['location']])-1)))
 				_pos.append(2)
-				items.create_item(item['item'], position=_pos)
+				_parent_item_uid = items.create_item(item['item'], position=_pos)
+				
+				if 'items' in item:
+					for child_item in item['items']:
+						for i in range(child_item['amount']):
+							if random.uniform(0, 1)<1-child_item['spawn_chance']:
+								continue
+							
+							_child_item = items.create_item(child_item['item'], position=_pos[:])
+							if items.can_store_item_in(_child_item, _parent_item_uid):
+								items.store_item_in(_child_item, _parent_item_uid)
+							else:
+								logging.debug('Item overflow in building: %s' % building_type)
+								items.delete_item(ITEMS[_child_item])
+							
 	
 	return _building
 

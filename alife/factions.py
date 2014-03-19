@@ -97,6 +97,7 @@ def add_group(faction_name, group_id):
 			break
 
 def patrol_territory(faction_name, group_id, territory_name):
+	_faction = get_faction(faction_name)
 	_territory = _faction['territories'][territory_name]
 	_territory['groups'].append(group_id)
 	
