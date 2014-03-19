@@ -104,6 +104,8 @@ def patrol_territory(faction_name, group_id, territory_name):
 	#alife.groups.focus_on
 
 def create_zes_export():
+	_zes = get_faction('ZES')
+	alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
 	#_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
 	_zes_camp_chunk_key = random.choice(claim_territory('ZES')['chunk_keys'])
 	
@@ -133,6 +135,10 @@ def control_loners():
 
 def control_zes():
 	_zes = get_faction('ZES')
+	
+	#for group_id in _zes['groups']:
+	#	pass
+	#	#for member in [LIFE[i] for i in alife.groups.get_group({}, group_id)['members']]:
 	
 	#for group_id in _loners['groups']:
 	#	for member in [LIFE[i] for i in squad]:

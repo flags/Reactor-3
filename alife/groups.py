@@ -26,6 +26,7 @@ import jobs
 import logging
 import random
 
+
 def create_group(life, add_creator=True):
 	WORLD_INFO['groupid'] += 1
 	_id = str(WORLD_INFO['groupid']-1)
