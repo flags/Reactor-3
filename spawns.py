@@ -178,7 +178,7 @@ def generate_group(life_class, amount=3, faction=None, group_motive='survival', 
 	_group = alife.groups.create_group(_group_members[0])
 	
 	if faction:
-		alife.factions.add_group(faction, _group_members)
+		alife.factions.add_group(faction, _group_members[0]['group'])
 	
 	alife.groups.set_motive(_group_members[0], _group, group_motive)
 	

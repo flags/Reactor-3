@@ -28,7 +28,7 @@ def create_territories():
 		_place_name = language.generate_place_name()
 		
 		WORLD_INFO['territories'][_place_name] = {'chunk_keys': town,
-		                           'owner': None}
+		                                          'owner': None}
 		
 		logging.debug('Created territory: %s' % _place_name)
 
@@ -39,6 +39,10 @@ def claim_territory(faction_name):
 	_territory_name = random.choice([t for t in WORLD_INFO['territories'] if not WORLD_INFO['territories'][t]['owner']])
 	_territory = get_territory(_territory_name)
 	_territory['owner'] = faction_name
+	_territory['groups'] = []
+	
+	_faction = get_faction(faction_name)
+	_faction['territories'][_territory_name] = {'groups': []}
 	
 	logging.debug('%s has claimed %s.' % (faction_name, _territory_name))
 	
@@ -47,6 +51,8 @@ def claim_territory(faction_name):
 def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 	WORLD_INFO['factions'][name] = {'members': [],
 	                                'groups': [],
+	                                'group_orders': {},
+	                                'territories': {},
 	                                'friendlies': friendlies,
 	                                'enemies': enemies,
 	                                'life_types': life_types}
@@ -75,12 +81,26 @@ def add_member(faction_name, life_id):
 	
 	LIFE[life_id]['faction'] = faction_name
 
-def add_group(faction_name, alife):
-	for life in alife:
-		add_member(faction_name, life['id'])
+def add_group(faction_name, group_id):
+	for life_id in alife.groups.get_group({}, group_id)['members']:
+		add_member(faction_name, life_id)
 	
 	_faction = get_faction(faction_name)
-	_faction['groups'].append([i['id'] for i in alife])
+	_faction['groups'].append(group_id)
+	
+	for territory_name in _faction['territories']:
+		_territory = _faction['territories'][territory_name]
+		
+		if not _territory['groups']:
+			patrol_territory(faction_name, group_id, territory_name)
+			
+			break
+
+def patrol_territory(faction_name, group_id, territory_name):
+	_territory = _faction['territories'][territory_name]
+	_territory['groups'].append(group_id)
+	
+	#alife.groups.focus_on
 
 def create_zes_export():
 	#_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
@@ -110,7 +130,20 @@ def control_loners():
 			alife.groups.set_stage(member, member['group'], STAGE_RAIDING)
 			alife.groups.flag(member, member['group'], 'raid_chunk', WORLD_INFO['refs']['outposts'][0][0])
 
+def control_zes():
+	_zes = get_faction('ZES')
+	
+	#for group_id in _loners['groups']:
+	#	for member in [LIFE[i] for i in squad]:
+	#		#print member['name'], alife.groups.get_stage(member, member['group'])
+	#		if not alife.groups.is_leader(member, member['group'], member['id']):
+	#			continue
+	#	
+	#		alife.groups.set_stage(member, member['group'], STAGE_RAIDING)
+	#		alife.groups.flag(member, member['group'], 'raid_chunk', WORLD_INFO['refs']['outposts'][0][0])
+
 def direct():
 	#for faction_name in WORLD_INFO['factions']:
 	#if faction_name == 'Loners':
-	control_loners()
+	#control_loners()
+	control_zes()

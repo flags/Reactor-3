@@ -26,7 +26,6 @@ def setup(life):
 	
 	_group = groups.get_group(life, life['group'])
 	
-	groups.find_and_announce_shelter(life, life['group'])
 	groups.manage_jobs(life, life['group'])
 	groups.manage_territory(life, life['group'])
 	groups.manage_combat(life, life['group'])

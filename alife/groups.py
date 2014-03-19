@@ -540,7 +540,7 @@ def manage_territory(life, group_id):
 	if not _shelter:
 		return False
 	
-	_shelter_chunk = chunks.get_nearest_chunk_in_list(life['pos'], references.get_reference(_shelter))
+	_shelter_chunk = chunks.get_nearest_chunk_in_list(life['pos'], factions.get_territory(_shelter)['chunk_keys'])
 	
 	for known_group_id in life['known_groups']:
 		if group_id == known_group_id:
@@ -550,21 +550,10 @@ def manage_territory(life, group_id):
 		if not _opposing_shelter:
 			continue
 		
-		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], references.get_reference(_opposing_shelter))
+		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], factions.get_territory(_opposing_shelter)['chunk_keys'])
 		
 		if _distance<=30:
 			print '2 CLOSE 2 HANDLE'
-	
-	for seen_life_id in life['seen']:
-		_target = brain.knows_alife_by_id(life, seen_life_id)
-		
-		if not _target or _target['alignment'] in ['trust', 'hostile'] or not _target['last_seen_at'] or _target['dead']:
-			continue
-		
-		if chunks.get_distance_to_nearest_chunk_in_list(_target['last_seen_at'], references.get_reference(_shelter))>30:
-			continue
-		
-		memory.create_question(life, seen_life_id, 'territory_violation', ignore_if_said_in_last=-1)
 
 def manage_raid(life, group_id):
 	if not get_stage(life, group_id) in [STAGE_RAIDING, STAGE_ATTACKING]:
