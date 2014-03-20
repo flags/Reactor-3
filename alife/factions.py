@@ -139,9 +139,10 @@ def control_zes():
 	
 	if not 'intro_created' in _zes['flags'] and _zes['members'] and SETTINGS['controlling']:
 		_zes = get_faction('ZES')
+		_zes['flags']['intro_created'] = True
+		
 		alife.brain.meet_alife(LIFE[_zes['members'][0]], LIFE[SETTINGS['controlling']])
 		alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
-	
 	
 	#for group_id in _zes['groups']:
 	#	pass

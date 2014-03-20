@@ -3,6 +3,7 @@ import life as lfe
 
 import judgement
 import movement
+import numbers
 import dialog
 import speech
 import groups
@@ -78,7 +79,7 @@ def setup(life):
 		#if stats.desires_first_contact_with(life, target):
 		#	memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=-1)
 		
-		if memory.get_questions_for_target(life, target):
+		if memory.get_questions_for_target(life, target) and numbers.distance(life['pos'], LIFE[target]['pos'])<=25:
 			_question = memory.ask_target_question(life, target)
 			speech.start_dialog(life, target, _question['gist'], **_question['args'])
 		elif memory.get_orders_for_target(life, target):

@@ -78,7 +78,7 @@ ZES_GUARD_ITEMS = [{'item': 'blue t-shirt', 'amount': 1, 'equip': True},
                     {'item': 'radio', 'amount': 1},
                     {'item': 'AK-74', 'amount': 1},
                     {'item': '5.45x39mm magazine', 'amount': 1},
-                    {'item': '5.45x39mm round', 'amount': 30}]
+                    {'item': '5.45x39mm round', 'amount': 8}]
 ZES_GUARD_STATS = {'firearms': 5+random.randint(0, 2)}
 
 
