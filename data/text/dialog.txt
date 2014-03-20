@@ -1,7 +1,9 @@
 #Special
 ZES_INTRO:!TARGET_IS_COMBAT_READY:"Hey! You think walking around like that is a good idea?":>ZES_INTRO_NEW
+ZES_INTRO:TARGET_IS_COMBAT_READY:"Hey! Over here!":>ZES_INTRO_NEW
 ZES_INTRO_NEW:@ALWAYS:"Who are you?":>ZES_INTRO_EXPLAIN_WHO
-ZES_INTRO_NEW:@ALWAYS:"What...?":>ZES_INTRO_EXPLAIN
+ZES_INTRO_NEW:@ALWAYS:"What...?":>ZES_INTRO_QUESTION
+ZES_INTRO_QUESTION:@ALWAYS:"Are you unarmed? You really need a weapon out here.":>ZES_INTRO_EXPLAIN_WHO_2
 ZES_INTRO_EXPLAIN_WHO:@ALWAYS:"Me? They just pay me to stand around and guard this place.":>ZES_INTRO_EXPLAIN_WHO_2
 ZES_INTRO_EXPLAIN_WHO_2:@ALWAYS:"Where am I?":>ZES_INTRO_EXPLAIN
 ZES_INTRO_EXPLAIN:@ALWAYS:"This is the ZES outpost. You know...":>ZES_INTRO_EXPLAIN_2

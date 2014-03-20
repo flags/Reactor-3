@@ -110,6 +110,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	weather.change_weather()
 	create_region_spawns()
 	randomize_item_spawns()
+	lfe.focus_on(create_player())
 	
 	alife.camps.create_all_camps()
 	
@@ -126,7 +127,6 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	else:
 		simulate_life(simulate_ticks)
 	
-	lfe.focus_on(create_player())
 	WORLD_INFO['id'] = 0
 	
 	if save:
@@ -351,6 +351,7 @@ def create_player():
 
 	SETTINGS['controlling'] = PLAYER['id']
 	
+	alife.factions.add_member('Loners', SETTINGS['controlling'])
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
 	return PLAYER
@@ -359,9 +360,6 @@ def create_region_spawns():
 	#Runners
 	#spawns.generate_group('runner_scout', amount=random
 	alife.factions.generate()
-	
-	if SETTINGS['controlling']:
-		alife.factions.add_member('Loners', SETTINGS['controlling'])
 	
 	return False
 

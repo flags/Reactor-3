@@ -2657,12 +2657,10 @@ def draw_life_icon(life):
 						_icon[1] = tcod.crimson
 			
 			if not _icon[1]:
-				if _knows['alignment'] in ['trust', 'feign_trust']:
-					_icon[1] = tcod.color_lerp(tcod.lightest_yellow, tcod.yellow, 1)
-				elif _knows['alignment'] == 'neutral':
-					_icon[1] = tcod.light_gray
-				else:
+				if _knows['alignment'] == 'hostile':
 					_icon[1] = tcod.crimson
+				else:
+					_icon[1] = tcod.light_gray
 		else:
 			_icon[1] = tcod.light_gray
 	
