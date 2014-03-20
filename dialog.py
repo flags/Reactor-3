@@ -392,7 +392,7 @@ def process(life, dialog_id):
 def draw_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	_last_message = get_last_message(dialog_id)
-	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
+	_x = numbers.clip(MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2, 3, 100)
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
 	
@@ -415,7 +415,15 @@ def draw_dialog(dialog_id):
 	gfx.camera_track(_center_pos)
 	gfx.blit_string(_x-2, _y-2, ' '.join(LIFE[_target]['name']), 'overlay', fore_color=_target_portrait[1])
 	gfx.blit_string(_x-2, _y, _target_portrait[0], 'overlay', fore_color=_target_portrait[1])#, back_color=tcod.darkest_gray)
-	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')#, back_color=tcod.darkest_gray)
+	
+	_text = _last_message['text']
+	_y_mod = 0
+	while _text:
+		_x = MAP_WINDOW_SIZE[0]/2-len(_text[:MAP_WINDOW_SIZE[0]-4])/2
+		
+		gfx.blit_string(_x, _y+_y_mod, _text[:MAP_WINDOW_SIZE[0]-4], 'overlay')
+		_text = _text[MAP_WINDOW_SIZE[0]-4:]
+		_y_mod += 1
 	
 	for choice in _dialog['choices']:
 		_text = choice['text'][choice['text'].index('\"')+1:choice['text'].index('\"')-1]

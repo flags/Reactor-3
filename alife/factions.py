@@ -55,7 +55,8 @@ def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 	                                'territories': {},
 	                                'friendlies': friendlies,
 	                                'enemies': enemies,
-	                                'life_types': life_types}
+	                                'life_types': life_types,
+	                                'flags': {}}
 	
 	logging.debug('Created faction: %s' % name)
 
@@ -104,8 +105,8 @@ def patrol_territory(faction_name, group_id, territory_name):
 	#alife.groups.focus_on
 
 def create_zes_export():
-	_zes = get_faction('ZES')
-	alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
+	#_zes = get_faction('ZES')
+	#alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
 	#_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
 	_zes_camp_chunk_key = random.choice(claim_territory('ZES')['chunk_keys'])
 	
@@ -135,6 +136,12 @@ def control_loners():
 
 def control_zes():
 	_zes = get_faction('ZES')
+	
+	if not 'intro_created' in _zes['flags'] and _zes['members'] and SETTINGS['controlling']:
+		_zes = get_faction('ZES')
+		alife.brain.meet_alife(LIFE[_zes['members'][0]], LIFE[SETTINGS['controlling']])
+		alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
+	
 	
 	#for group_id in _zes['groups']:
 	#	pass
