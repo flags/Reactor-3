@@ -210,6 +210,8 @@ def meet_alife(life, target):
 	
 	if factions.is_enemy(life, target['id']):
 		stats.establish_hostile(life, target['id'])
+	else:
+		stats.establish_trust(life, target['id'])
 	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
 	return life['know'][target['id']]

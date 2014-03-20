@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import references
+import factions
 import weapons
 import chunks
 import combat
