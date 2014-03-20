@@ -385,7 +385,21 @@ def create_buildings():
 	                                                          'y_mod_max': 1,
 	                                                          'height': 1,
 	                                                          'tiles': tiles.BROWN_FLOOR_TILES}],
-	                                               'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1},
+	                                               'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1,
+	                                                          'items': [{'item': 'trenchcoat',
+	                                                                     'spawn_chance': .2, 'amount': 1},
+	                                                                    {'item': 'fall camo pants',
+	                                                                     'spawn_chance': .35, 'amount': 1},
+	                                                                    {'item': 'brown hoodie',
+	                                                                     'spawn_chance': .4, 'amount': 1},
+	                                                                    {'item': 'glock',
+	                                                                     'spawn_chance': .1, 'amount': 1},
+	                                                                    {'item': '9x19mm magazine',
+	                                                                     'spawn_chance': .15, 'amount': 1},
+	                                                                    {'item': '9x19mm round',
+	                                                                     'spawn_chance': .15, 'amount': 5},
+	                                                                    {'item': 'scout pack',
+	                                                                     'spawn_chance': .15, 'amount': 1}]},
 	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'bedroom 2': {'type': 'interior',
@@ -397,7 +411,21 @@ def create_buildings():
 	                                                          'y_mod_max': 1,
 	                                                          'height': 1,
 	                                                          'tiles': tiles.BROWN_FLOOR_TILES}],
-	                                               'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1},
+	                                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1,
+	                                                          'items': [{'item': 'trenchcoat',
+	                                                                     'spawn_chance': .2, 'amount': 1},
+	                                                                    {'item': 'fall camo pants',
+	                                                                     'spawn_chance': .35, 'amount': 1},
+	                                                                    {'item': 'brown hoodie',
+	                                                                     'spawn_chance': .4, 'amount': 1},
+	                                                                    {'item': 'glock',
+	                                                                     'spawn_chance': .1, 'amount': 1},
+	                                                                    {'item': '9x19mm magazine',
+	                                                                     'spawn_chance': .15, 'amount': 1},
+	                                                                    {'item': '9x19mm round',
+	                                                                     'spawn_chance': .15, 'amount': 5},
+	                                                                    {'item': 'scout pack',
+	                                                                     'spawn_chance': .15, 'amount': 1}]},
 	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'living room': {'type': 'interior',
@@ -1041,6 +1069,9 @@ def generate_noise_map(map_gen):
 							_cell_2['neighbors'].append(empty_cell_1)
 		
 	for empty_cell in _empty_cells.keys():
+		if not empty_cell in _empty_cells.keys():
+			continue
+		
 		_cell = _empty_cells[empty_cell]
 		_matching_cell_types = []
 		_break = False

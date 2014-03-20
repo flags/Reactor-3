@@ -1,0 +1,12 @@
+{"name": "scout pack",
+"prefix": "a",
+"type": "backpack",
+"icon": "b",
+"color": [[94, 75, 47], null],
+"description": "A small, low-profile backpack.",
+"attaches_to": "chest",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "2x3",
+"capacity": "2x3",
+"thickness": 2,
+"material": "cloth"}
