@@ -277,6 +277,7 @@ def handle_input():
 		
 		if not _inventory:
 			gfx.message('You have no items to equip.')
+			
 			return False
 		
 		_i = menus.create_menu(title='Equip',

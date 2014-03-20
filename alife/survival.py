@@ -354,6 +354,8 @@ def manage_inventory(life):
 							_item_to_equip['score'] = _known_item['score']
 							_item_to_equip['item_uid'] = item['uid']
 	
+	print _item_to_equip
+	
 	_item = None
 	if _item_to_wear['score'] > _item_to_equip['score']:
 		_item = _item_to_wear['item_uid']

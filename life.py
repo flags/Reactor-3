@@ -3058,6 +3058,9 @@ def draw_life_info():
 	                   _debug_position[1]+15+_i,
 	                   'Blood: %0.1f' % life['blood'])
 	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+16+_i,
+	                   'Online: %s' % life['online'])
+	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+17+_i,
 	                   'Faction: %s' % life['faction'])
 	tcod.console_print(0, _debug_position[0],

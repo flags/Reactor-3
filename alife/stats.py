@@ -175,7 +175,7 @@ def desires_to_join_camp(life, camp_id):
 	return True
 
 def desires_weapon(life):
-	if not combat.get_weapons(life):
+	if not combat.get_equipped_weapons(life):
 		return True
 	
 	#if life['stats']['firearms'] >= 5:
