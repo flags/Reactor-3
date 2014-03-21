@@ -118,7 +118,7 @@ def remember_item(life, item):
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item['uid'],
-			'score': judgement.judge_item(life, item['uid']),
+			'score': judgement.judge_item(life, item['uid'], initial=True),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
 			'last_owned_by': item['owner'],

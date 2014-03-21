@@ -7,6 +7,7 @@ import survival
 
 import logging
 
+
 def conditions(life):
 	RETURN_VALUE = STATE_UNCHANGED
 	
