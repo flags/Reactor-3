@@ -213,11 +213,8 @@ def hide(life, targets):
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 
-	#print life['name'], len(lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]))
-
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
-		print life['name'], 'walking'
-		if not lfe.ticker(life, 'escaping', 64):
+		if not lfe.ticker(life, 'escaping', 6):
 			return False
 
 	#What can the targets see?
@@ -284,7 +281,7 @@ def hide(life, targets):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
 		return True
 
-	#lfe.stop(life)
+	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
 	                      'rolldown': True,
 	                      'zones': _zones,
@@ -292,7 +289,7 @@ def hide(life, targets):
 	                      'reason': 'escaping'},
 	               200)
 
-	print life['name'], 'here', tuple(life['pos'][:2]) in _can_see_positions
+	#print life['name'], 'here', tuple(life['pos'][:2]) in _can_see_positions
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}

@@ -644,7 +644,7 @@ def collision_with_solid(item, pos):
 		if not item['velocity'][0]<0:
 			item['velocity'][0] = -item['velocity'][0]*.8
 		
-		print '*** bounce ***', _x_diff, item['pos'], pos
+		#print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		#if 'max_speed' in item:
 		#	effects.create_smoke_cloud(pos, 4)
@@ -655,7 +655,7 @@ def collision_with_solid(item, pos):
 		if not item['velocity'][0]>0:
 			item['velocity'][0] = -item['velocity'][0]*.8
 		
-		print '*** bounce ***', _x_diff, item['pos'], pos
+		#print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		#if 'max_speed' in item:
 		#	effects.create_smoke_cloud(pos, 4)
@@ -667,7 +667,7 @@ def collision_with_solid(item, pos):
 		if not item['velocity'][1]<0:
 			item['velocity'][1] = -item['velocity'][1]*.8
 		
-		print '*** bounce ***', _x_diff, item['pos'], pos
+		#print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		#if 'max_speed' in item:
 		#	effects.create_smoke_cloud(pos, 4)
@@ -678,7 +678,7 @@ def collision_with_solid(item, pos):
 		if not item['velocity'][1]>0:
 			item['velocity'][1] = -item['velocity'][1]*.8
 		
-		print '*** bounce ***', _x_diff, item['pos'], pos
+		#print '*** bounce ***', _x_diff, item['pos'], pos
 		
 		#if 'max_speed' in item:
 		#	effects.create_smoke_cloud(pos, 4)

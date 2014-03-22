@@ -1067,12 +1067,13 @@ def calculate_velocity(life):
 
 def walk_to(life, position):
 	clear_actions(life)
+	_pos = position[:]
 	
 	if not len(position) == 3:
-		raise Exception('teee')
+		_pos.append(life['pos'][2])
 	
 	add_action(life,{'action': 'move',
-	                 'to': position},
+	                 'to': _pos},
 	                 100)
 
 def walk(life, to=None, path=None):
@@ -1334,6 +1335,7 @@ def perform_action(life):
 					SETTINGS['print dijkstra maps'] = True
 				
 				_s = time.time()
+				
 				_path = zones.dijkstra_map(life['pos'],
 					                       _action['goals'],
 					                       _zones,
