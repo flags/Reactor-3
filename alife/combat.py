@@ -319,22 +319,18 @@ def get_closest_target(life, targets):
 			return False
 		
 		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
-		#else:
-		#	_target_pos = life['pos'][:]
-		#	_target_positions.append(_target_pos)
 		
-		target = None
+		_return_target = None
 		
 		if _target_pos in _target_positions:
 			for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
 				if _target_pos == _target['last_seen_at']:
-					target = _target
+					_return_target = _target
 					break
 	else:
-		print 'THIS IS MUCH QUICKER!!!' * 10
-		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
+		_return_target = brain.knows_alife_by_id(life, _closest_target['target_id'])
 	
-	return target
+	return _return_target
 
 def ranged_combat(life, targets):
 	_target = get_closest_target(life, targets)

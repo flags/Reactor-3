@@ -548,6 +548,116 @@ def create_buildings():
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},},
 	                          'build_order': 'sidewalk'}
+	
+	BUILDINGS['barracks_1'] = {'chunks': {'wall': {'type': 'exterior',
+	                                               'chunks': 1,
+	                                               'doors': ['desk'],
+	                                               'flags': {'road_seed': True},
+	                                               'floor': [{'x_mod_min': .25,
+	                                                          'x_mod_max': .55,
+	                                                          'y_mod_min': .25,
+	                                                          'y_mod_max': .55,
+	                                                          'height': 3,
+	                                                          'tiles': [tiles.WALL_TILE]}],
+	                                               'items': [],
+	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'desk': {'type': 'interior',
+	                                               'chunks': 1,
+	                                               'doors': ['bedroom 1', 'wall'],
+	                                               'flags': {'road_seed': False},
+	                                               'floor': [{'x_mod_min': 0,
+	                                                          'x_mod_max': 1,
+	                                                          'y_mod_min': 0,
+	                                                          'y_mod_max': 1,
+	                                                          'height': 1,
+	                                                          'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                               'items': [],
+	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'bedroom 1': {'type': 'interior',
+	                                               'chunks': 1,
+	                                               'doors': ['desk', 'bedroom 2'],
+	                                               'flags': {'road_seed': False},
+	                                               'floor': [{'x_mod_min': 0,
+	                                                          'x_mod_max': 1,
+	                                                          'y_mod_min': 0,
+	                                                          'y_mod_max': 1,
+	                                                          'height': 1,
+	                                                          'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                               'items': [{'item': 'bed',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': 1,
+	                                                          'amount': 2},
+	                                                         {'item': 'military crate',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .35,
+	                                                          'amount': 2,
+	                                                          'items': [{'item': 'mp5',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2},
+	                                                                    {'item': '9x19mm round',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 25},
+	                                                                    {'item': '9x19mm magazine',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2}]}],
+	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'bedroom 2': {'type': 'interior',
+	                                               'chunks': 1,
+	                                               'doors': ['bedroom 1', 'bedroom 3'],
+	                                               'flags': {'road_seed': False},
+	                                               'floor': [{'x_mod_min': 0,
+	                                                          'x_mod_max': 1,
+	                                                          'y_mod_min': 0,
+	                                                          'y_mod_max': 1,
+	                                                          'height': 1,
+	                                                          'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                               'items': [{'item': 'bed',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': 1,
+	                                                          'amount': 2},
+	                                                         {'item': 'military crate',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .35,
+	                                                          'amount': 2,
+	                                                          'items': [{'item': 'mp5',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2},
+	                                                                    {'item': '9x19mm round',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 25},
+	                                                                    {'item': '9x19mm magazine',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2}]}],
+	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'bedroom 3': {'type': 'interior',
+	                                               'chunks': 1,
+	                                               'doors': ['bedroom 2'],
+	                                               'flags': {'road_seed': False},
+	                                               'floor': [{'x_mod_min': 0,
+	                                                          'x_mod_max': 1,
+	                                                          'y_mod_min': 0,
+	                                                          'y_mod_max': 1,
+	                                                          'height': 1,
+	                                                          'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                               'items': [{'item': 'bed',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': 1,
+	                                                          'amount': 2},
+	                                                         {'item': 'military crate',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .35,
+	                                                          'amount': 2,
+	                                                          'items': [{'item': 'mp5',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2},
+	                                                                    {'item': '9x19mm round',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 25},
+	                                                                    {'item': '9x19mm magazine',
+	                                                                     'spawn_chance': .35,
+	                                                                     'amount': 2}]}],
+	                                               'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                           'build_order': 'wall'}
 
 def generate_building(map_gen, chunk_key, building_type, possible_building_chunks):
 	_building = buildinggen.create_building(chunk_key, copy.deepcopy(BUILDINGS[building_type]), possible_building_chunks)
@@ -941,7 +1051,7 @@ def generate_noise_map(map_gen):
 		               'bot_left': _bot_left,
 		               'center_pos': _center_pos[:]})
 	
-	_cell_types = {'Outpost': {'callback': generate_outpost,
+	_cell_types = {'Outpost': {'callback': generate_town,
 	                           'min_cells': 20,
 	                           'max_cells': 350,
 	                           'y_mod_min': .45,
@@ -950,6 +1060,8 @@ def generate_noise_map(map_gen):
 	                           'min_amount': 3,
 	                           'max_amount': 6,
 	                           'can_combine': False,
+	                           'building_types': ['factory_1', 'barracks_1', 'barracks_1'],
+	                           'refs': 'outposts',
 	                           'avoid_types': {'Outpost': 150}},
 	               'Farm': {'callback': generate_farm,
 	                           'min_cells': 200,
@@ -972,6 +1084,7 @@ def generate_noise_map(map_gen):
 	                           'min_amount': 1,
 	                           'max_amount': 3,
 	                           'building_types': ['house_1', 'house_1', 'supermarket'],
+	                           'refs': 'towns',
 	                           'can_combine': True},
 	               'Town': {'callback': generate_town,
 	                           'min_cells': 301,
@@ -984,6 +1097,7 @@ def generate_noise_map(map_gen):
 	                           'min_amount': 1,
 	                           'max_amount': 3,
 	                           'building_types': ['house_1', 'office_1', 'house_1', 'factory_1', 'house_1', 'supermarket'],
+	                           'refs': 'towns',
 	                           'can_combine': True},
 	               'Factory': {'callback': generate_factory,
 	                           'min_cells': 150,
@@ -1053,6 +1167,7 @@ def generate_noise_map(map_gen):
 				
 				if 'building_types' in _cell_types[_cell_type]:
 					cell['building_types'] = _cell_types[_cell_type]['building_types']
+					cell['refs'] = _cell_types[_cell_type]['refs']
 				
 				_cell_types[_cell_type]['callback'](map_gen, cell)
 				
@@ -1155,6 +1270,8 @@ def generate_noise_map(map_gen):
 					if 'building_types' in _cell_types[_cell_type]:
 						_cell['cell']['building_types'] = _cell_types[_cell_type]['building_types']
 						_neighbor_cell['cell']['building_types'] = _cell_types[_cell_type]['building_types']
+						_cell['cell']['refs'] = _cell_types[_cell_type]['refs']
+						_neighbor_cell['cell']['refs'] = _cell_types[_cell_type]['refs']
 					
 					logging.debug('[2nd pass] Creating cell: %s' % cell_type)
 					_cell_types[_cell_type]['callback'](map_gen, _cell['cell'])
@@ -1449,7 +1566,7 @@ def generate_town(map_gen, cell):
 	_buildings = cell['building_types'][:]
 	_road_seeds = []
 	
-	map_gen['refs']['towns'].append(cell['chunk_keys'][:])
+	map_gen['refs'][cell['refs']].append(cell['chunk_keys'][:])
 	
 	while _potential_building_chunks and _buildings:
 		_top_left = MAP_SIZE[:2]
