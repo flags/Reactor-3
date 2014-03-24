@@ -34,7 +34,7 @@ def get_unzoned(slice_map, positions, z, map_size=MAP_SIZE):
 
 #@profile
 def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
-	print 'Processing:', z
+	#print 'Processing:', z
 	_runs = 0
 	_slice = create_map_array(size=map_size)
 	_ground = []
@@ -73,10 +73,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		_ramps = set()
 		_start_pos = get_unzoned(_slice, _unzoned, z, map_size=map_size)
 		
-		if _start_pos:
-			print '\tNew zone:', _z_id
-		else:
-			print '\tRuns for zone id %s: %s' % (_z_id, _runs)
+		if not _start_pos:
 			break
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
@@ -117,10 +114,6 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 				if _x<0 or _x>=map_size[0] or _y<0 or _y>=map_size[1]:
 					continue
 				
-				#if maps.is_solid((_x, _y, z+1)) and maps.is_solid((_x, _y, z-1)):
-				#	print 'both solid!!!!!!!!!!!'
-				#	continue
-				
 				if (_x, _y) in _unzoned and not (_slice[_x][_y]):
 					_slice[_x][_y] = _z_id
 					_ground.append((_x, _y))
@@ -136,10 +129,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 					if _y > _bot_right[1]:
 						_bot_right[1] = _y
 					
-					#if not (_x, _y) in _to_check:
 					_to_check.append((_x, _y))
-					#else:
-					#	print 'dupe'
 				
 				if _skip_ramp_check:
 					continue
@@ -160,7 +150,6 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 				
 				elif z and (not maps.get_tile((_x, _y, z)) or not maps.is_solid((_x, _y, z))) and maps.is_solid((_x, _y, z-1)):
 					if (_x, _y, z-1) in _ramps:
-						print 'panic'
 						continue
 					
 					_ramps.add((_x, _y, z-1))
@@ -168,7 +157,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		for pos in _ground:
 			WORLD_INFO['map'][pos[0]][pos[1]][z]['z_id'] = _z_id
 		
-		print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
+		#print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 		
 		if world_info:
 			return {'z': z, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
@@ -245,7 +234,7 @@ def connect_ramps():
 	_i = 1
 	
 	for _slice in WORLD_INFO['slices']:
-		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
+		#print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
 		gfx.title('Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
 		
 		_i += 1
