@@ -120,7 +120,8 @@ def create_fields():
 
 def create_outposts():
 	for outpost_chunks in WORLD_INFO['refs']['outposts']:
-		spawns.generate_group('soldier', faction='Military', amount=random.randint(3, 4), spawn_chunks=outpost_chunks)
+		spawns.generate_group('soldier', faction='Military', amount=random.randint(1, 2), spawn_chunks=outpost_chunks)
+		spawns.generate_group('soldier_riflemen', faction='Military', amount=random.randint(1, 2), spawn_chunks=outpost_chunks)
 
 def control_loners():
 	_loners = get_faction('Loners')

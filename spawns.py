@@ -23,6 +23,14 @@ SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
                  'psychotic': True}
 SOLDIER_BANNED_GOALS = []
 
+SOLDIER_RIFLEMEN_ITEMS = [{'item': 'kevlar jacket', 'amount': 1, 'equip': True},
+                 {'item': 'ALICE pack', 'amount': 1, 'equip': True},
+                 {'item': 'CZ 511', 'amount': 1},
+                 {'item': '.22 LR magazine', 'amount': 1},
+                 {'item': '.22 LR cartridge', 'amount': 15},
+                 {'item': 'radio', 'amount': 1},
+                 {'item': 'frag grenade', 'amount': 3}]
+
 BANDIT_SPECIES = 'human'
 BANDIT_ITEMS = [{'item': 'white t-shirt', 'amount': 1, 'equip': True},
                 {'item': 'brown hoodie', 'amount': 1, 'equip': True},
@@ -84,6 +92,11 @@ ZES_GUARD_STATS = {'firearms': 5+random.randint(0, 2)}
 
 LIFE_CLASSES = {'soldier': {'species': SOLDIER_SPECIES,
                             'items': SOLDIER_ITEMS,
+                            'stats': SOLDIER_STATS,
+                            'faction': 'Military',
+                            'banned_goals': SOLDIER_BANNED_GOALS},
+                'soldier_riflemen': {'species': SOLDIER_SPECIES,
+                            'items': SOLDIER_RIFLEMEN_ITEMS,
                             'stats': SOLDIER_STATS,
                             'faction': 'Military',
                             'banned_goals': SOLDIER_BANNED_GOALS},

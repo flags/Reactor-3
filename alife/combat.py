@@ -23,7 +23,7 @@ def get_engage_distance(life):
 	_weapons = get_equipped_weapons(life)
 	
 	if _weapons:
-		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*25)), 3, sight.get_vision(life))
+		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*27)), 3, sight.get_vision(life))
 	else:
 		return sight.get_vision(life)/2
 
@@ -386,7 +386,6 @@ def ranged_combat(life, targets):
 							                    'avoid_positions': _friendly_positions,
 							                    'reason': 'combat_position'},
 							             100)
-						print '1'
 			else:
 				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 				
