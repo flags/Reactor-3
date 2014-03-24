@@ -1,9 +1,0 @@
-{"name": "white cloth",
-"prefix": "a",
-"type": "fabric",
-"icon": "W",
-"description": "A white piece of cloth. Good for bandages.",
-"flags": "CANSTACK|CAN_BURN|CAN_SOAK",
-"size": "1x1",
-"thickness": 1,
-"material": "cloth"}
