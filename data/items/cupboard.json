@@ -1,0 +1,11 @@
+{"name": "cupboard",
+"prefix": "a",
+"type": "storage",
+"icon": "|",
+"description": "A wooden cupboard."
+"flags": "CAN_BURN",
+"size": "8x2",
+"capacity": "8x2",
+"thickness": 2,
+"color": [[94, 75, 47], [63, 50, 31]],
+"material": "wood"}
