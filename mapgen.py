@@ -273,9 +273,9 @@ def create_buildings():
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                          'build_order': 'shopping'}
 	
-	BUILDINGS['office_1'] = {'chunks': {'parking lot': {'type': 'exterior',
+	BUILDINGS['office_1'] = {'chunks': {'parking lot 1': {'type': 'exterior',
 	                                                  'chunks': 1,
-	                                                  'doors': ['lobby'],
+	                                                  'doors': ['parking lot 2', 'parking lot 4'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
@@ -284,52 +284,116 @@ def create_buildings():
 	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
 	                                                  'flags': {'road_seed': True},
 	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'parking lot 2': {'type': 'exterior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['parking lot 1', 'parking lot 3'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'flags': {'road_seed': True},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'parking lot 3': {'type': 'exterior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['parking lot 2', 'parking lot 4'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'flags': {'road_seed': True},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'parking lot 4': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['parking lot 1', 'parking lot 3', 'lobby'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                    'lobby': {'type': 'interior',
-	                                                  'chunks': 3,
-	                                                  'doors': ['parking lot', 'desk'],
+	                                                  'chunks': 2,
+	                                                  'doors': ['parking lot 4', 'hall'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.SEA_CARPET_TILES}],
-	                                                  'items': [{'item': 'office chair', 'location': 'edge', 'spawn_chance': 1, 'amount': 32}],
-	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
-	                                    'desk': {'type': 'interior',
-	                                                  'chunks': 1,
-	                                                  'doors': ['lobby', 'hall'],
-	                                                  'floor': [{'x_mod_min': 0,
-	                                                             'x_mod_max': 1,
-	                                                             'y_mod_min': 0,
-	                                                             'y_mod_max': 1,
-	                                                             'height': 1,
-	                                                             'tiles': tiles.SEA_CARPET_TILES}],
-	                                                  'items': [{'item': 'desk', 'location': 'middle', 'spawn_chance': 1, 'amount': 2}],
-	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                                             'tiles': tiles.BLUE_CARPET_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [{'item': 'office chair', 'location': 'edge', 'spawn_chance': .5, 'amount': 32}],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'hall': {'type': 'interior',
-	                                             'chunks': 1,
-	                                             'doors': ['office', 'desk'],
-	                                             'floor': [{'x_mod_min': 0,
-	                                                        'x_mod_max': 1,
-	                                                        'y_mod_min': 0,
-	                                                        'y_mod_max': 1,
-	                                                        'height': 1,
-	                                                        'tiles': tiles.BROWN_FLOOR_TILES}],
-	                                             'items': [],
-	                                             'walls': {'tiles': [tiles.WALL_TILE]}},
-	                                    'office': {'type': 'interior',
-	                                             'chunks': 3,
-	                                             'doors': ['hall'],
-	                                             'floor': [{'x_mod_min': 0,
-	                                                        'x_mod_max': 1,
-	                                                        'y_mod_min': 0,
-	                                                        'y_mod_max': 1,
-	                                                        'height': 1,
-	                                                        'tiles': tiles.BLUE_CARPET_TILES}],
-	                                             'items': [],
-	                                             'walls': {'tiles': [tiles.WALL_TILE]}}},
-	                         'build_order': 'parking lot'}
+	                                                  'chunks': 3,
+	                                                  'doors': ['lobby', 'office 1', 'office 2', 'office 3', 'office 4'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'office 1': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['hall'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.WOOD_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'office 2': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['hall'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'office 3': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['hall'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                    'office 4': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['hall'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.SEA_CARPET_TILES}],
+	                                                  'flags': {'road_seed': False},
+	                                                  'items': [],
+	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},},
+	                         'build_order': 'parking lot 1'}
 	
 	BUILDINGS['house_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
 	                                              'chunks': 1,
@@ -838,7 +902,7 @@ def create_buildings():
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                           'build_order': 'wall'}
 
-def generate_building(map_gen, chunk_key, building_type, possible_building_chunks):
+def generate_building(map_gen, chunk_key, building_type, possible_building_chunks, only_chunk_keys=[]):
 	_building = buildinggen.create_building(chunk_key, copy.deepcopy(BUILDINGS[building_type]), possible_building_chunks)
 	_built_chunk_keys = []
 	
@@ -872,7 +936,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 			_skip_doors = []
 			_placing_door = []
 					
-			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key):
+			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key, only_chunk_keys=only_chunk_keys):
 				for neighbor_room_name in _building:
 					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:						
 						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
@@ -950,8 +1014,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				__x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
 				__y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
 				
-				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in [tiles.WALL_TILE]:
-					create_tile(map_gen, __x, __y, 2, tiles.WALL_TILE)
+				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in tiles.WALL_TILES:
+					create_tile(map_gen, __x, __y, 2, random.choice(_room['walls']['tiles']))
 	
 	for room_name in _building:
 		_room = _building[room_name]
@@ -962,7 +1026,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					_x = int(chunk_key.split(',')[0])+x
 					_y = int(chunk_key.split(',')[1])+y
 					
-					if map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in [tiles.WALL_TILE]] or (map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in [tiles.WALL_TILE]]):
+					if map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.WALL_TILES] or (map_gen['map'][_x][_y][3] and map_gen['map'][_x][_y][3]['id'] in [t['id'] for t in [tiles.WALL_TILE]]):
 						continue
 					
 					if (_x, _y) in _room['spawns']['door']:
@@ -979,9 +1043,9 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					if _continue:
 						continue
 					
-					if not len(get_neighboring_tiles(map_gen, (_x, _y), [tiles.WALL_TILE], diag=True)):
+					if not len(get_neighboring_tiles(map_gen, (_x, _y), tiles.WALL_TILES, diag=True)):
 						_room['spawns']['middle'].append((_x, _y))
-					else:
+					elif len(get_neighboring_tiles(map_gen, (_x, _y), tiles.WALL_TILES)):
 						if x==0:
 							_room['spawns']['edge'].append((_x, _y))
 						elif x==1:
@@ -1275,7 +1339,7 @@ def generate_noise_map(map_gen):
 	                           'amount': 0,
 	                           'min_amount': 1,
 	                           'max_amount': 3,
-	                           'building_types': ['house_1', 'office_1', 'house_1', 'factory_1', 'house_1', 'supermarket'],
+	                           'building_types': ['house_1', 'office_1', 'house_2', 'factory_1', 'house_2', 'supermarket', 'house_1'],
 	                           'refs': 'towns',
 	                           'can_combine': True},
 	               'Factory': {'callback': generate_factory,
@@ -1753,7 +1817,7 @@ def generate_town(map_gen, cell):
 		_room_chunks = []
 		_building_type = _buildings[0]
 		_chunk_key = _potential_building_chunks.pop(random.randint(0, len(_potential_building_chunks)-1))
-		_building = generate_building(map_gen, _chunk_key, _building_type, _potential_building_chunks)
+		_building = generate_building(map_gen, _chunk_key, _building_type, _potential_building_chunks, only_chunk_keys=cell['chunk_keys'][:])
 		
 		if not _building:
 			continue

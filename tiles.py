@@ -71,6 +71,13 @@ WALL_TILE = {'id':'wall',
 			 'type': 'building',
 			 'cost':-1}
 
+WHITE_WALL_TILE = {'id':'white_wall_1',
+			 'icon':'#',
+			 'color':(tcod.lightest_gray, tcod.lighter_gray),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
 BLUE_CARPET_1 = {'id':'blue_carpet_1',
 			 'icon':'.',
 			 'color':(tcod.desaturated_cyan, tcod.desaturated_sky),
@@ -351,7 +358,6 @@ FLOOR_BROWN_1 = {'id': 'floor_brown_1',
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
-		WALL_TILE,
 		ROAD_STRIPE_1,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
@@ -431,6 +437,8 @@ DARK_GREEN_FLOOR_TILES = [FLOOR_DARK_GREEN_1]
 
 BROWN_FLOOR_TILES = [FLOOR_BROWN_1]
 
+WALL_TILES = [WALL_TILE, WALL_BROWN, WHITE_WALL_TILE]
+
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
 	TEMP_TILES.extend(DIRT_TILES)
@@ -455,6 +463,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(SEA_CARPET_TILES)
 	TEMP_TILES.extend(BUSH_TILES)
 	TEMP_TILES.extend(WHEAT_TILES)
+	TEMP_TILES.extend(WALL_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile

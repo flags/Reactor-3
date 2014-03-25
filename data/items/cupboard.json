@@ -2,10 +2,10 @@
 "prefix": "a",
 "type": "storage",
 "icon": "|",
-"description": "A wooden cupboard."
+"description": "A wooden cupboard.",
 "flags": "CAN_BURN",
 "size": "8x2",
 "capacity": "8x2",
 "thickness": 2,
-"color": [[94, 75, 47], [63, 50, 31]],
+"color": [[133, 120, 91], [154, 135, 107]],
 "material": "wood"}
