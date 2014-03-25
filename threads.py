@@ -17,8 +17,8 @@ class ChunkHandler(threading.Thread):
 		self.last_checked = -check_every
 		self.check_every = check_every
 	
-	def check_chunks(self):
-		if WORLD_INFO['ticks']-self.last_checked<self.check_every:
+	def check_chunks(self, force=False):
+		if not force and WORLD_INFO['ticks']-self.last_checked<self.check_every:
 			return False
 		
 		self.last_checked = WORLD_INFO['ticks']

@@ -169,6 +169,9 @@ def load_world(world):
 	lfe.load_all_life()
 	items.reload_all_items()
 	
+	if SETTINGS['chunk_handler']:
+		SETTINGS['chunk_handler'].check_chunks(force=True)
+	
 	#logging.debug('Rendering map slices...')
 	#maps.render_map_slices()
 	

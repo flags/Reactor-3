@@ -318,6 +318,7 @@ if __name__ == '__main__':
 	locks.create_lock('camera_free', locked=True)
 	
 	gfx.init_libtcod()
+	threads.init()
 	#smp.init()
 
 	SETTINGS['draw z-levels below'] = True
@@ -354,8 +355,6 @@ if __name__ == '__main__':
 		logging.info('Profiling. Exit when completed.')
 		cProfile.run('loop()','profile.dat')
 		sys.exit()
-	
-	threads.init()
 	
 	try:
 		loop()
