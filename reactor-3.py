@@ -259,7 +259,7 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if (SETTINGS['recording'] and _player_moved and not EVENTS) or '--worldmap' in sys.argv:
+	if (SETTINGS['recording'] and _player_moved and not EVENTS and not MENUS) or '--worldmap' in sys.argv:
 		gfx.screenshot()
 		
 		if '--worldmap' in sys.argv:

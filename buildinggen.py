@@ -71,7 +71,12 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 		
 		_neighbors = []
 		for chunk_key in existing_connections[room_name]['chunk_keys']:
-			_neighbors.extend(get_neighbors(chunk_key, only_chunk_keys=building_chunks, avoid_chunk_keys=_all_chunk_keys))
+			_temp_neighbors = get_neighbors(chunk_key, only_chunk_keys=building_chunks, avoid_chunk_keys=_all_chunk_keys)
+			
+			if not _temp_neighbors:
+				return -1
+			
+			_neighbors.extend(_temp_neighbors)
 		
 		_connect_layers[room_name] = {'chunk_keys': existing_connections[room_name]['chunk_keys'],
 		                              'neighbors': _neighbors}
@@ -102,7 +107,7 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 		return False
 	
 	if _highest<len(_connect_layers):
-		return False
+		return -1
 	
 	return random.choice(_common_neighbors.keys())
 

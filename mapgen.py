@@ -935,8 +935,12 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 			_doors_in = []
 			_skip_doors = []
 			_placing_door = []
+			_neighbors = buildinggen.get_neighbors(chunk_key, only_chunk_keys=only_chunk_keys)
+			
+			if not _neighbors:
+				return False
 					
-			for neighbor_chunk_key in buildinggen.get_neighbors(chunk_key, only_chunk_keys=only_chunk_keys):
+			for neighbor_chunk_key in _neighbors:
 				for neighbor_room_name in _building:
 					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:						
 						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
