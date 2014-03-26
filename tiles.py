@@ -80,14 +80,14 @@ WHITE_WALL_TILE = {'id':'white_wall_1',
 
 BLUE_CARPET_1 = {'id':'blue_carpet_1',
 			 'icon':'.',
-			 'color':(tcod.desaturated_cyan, tcod.desaturated_sky),
+			 'color':(tcod.darker_sky, tcod.darker_azure),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 BLUE_CARPET_2 = {'id':'blue_carpet_2',
 			 'icon':'.',
-			 'color':(tcod.desaturated_sky, tcod.desaturated_cyan),
+			 'color':(tcod.darker_azure, tcod.darker_sky),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
@@ -337,9 +337,9 @@ FLOOR_DARK_BLUE_1 = {'id': 'floor_dark_blue_1',
            'type': 'building',
            'burnable': False}
 
-FLOOR_DARK_GREEN_1 = {'id': 'floor_dark_green_1',
+FLOOR_DARK_BROWN_1 = {'id': 'floor_dark_brown_1',
            'icon': '.',
-           'color': (tcod.darker_chartreuse, tcod.brass),
+           'color': (tcod.darker_amber, tcod.darker_amber),
            'type': 'building',
            'burnable': False}
 
@@ -351,7 +351,7 @@ WALL_BROWN = {'id': 'wall_brown',
 
 FLOOR_BROWN_1 = {'id': 'floor_brown_1',
            'icon': '.',
-           'color': (tcod.lighter_sepia, tcod.light_sepia),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'color': (tcod.darker_sea, tcod.desaturated_sea),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
            'type': 'building',
            'burnable': False}
 
@@ -433,7 +433,7 @@ BLUE_FLOOR_TILES = [FLOOR_BLUE_1, FLOOR_BLUE_2]
 
 DARK_BLUE_FLOOR_TILES = [FLOOR_DARK_BLUE_1]
 
-DARK_GREEN_FLOOR_TILES = [FLOOR_DARK_GREEN_1]
+DARK_BROWN_FLOOR_TILES = [FLOOR_DARK_BROWN_1]
 
 BROWN_FLOOR_TILES = [FLOOR_BROWN_1]
 
@@ -456,7 +456,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(HOUSE_WALL_TILES)
 	TEMP_TILES.extend(BLUE_FLOOR_TILES)
 	TEMP_TILES.extend(DARK_BLUE_FLOOR_TILES)
-	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_BROWN_FLOOR_TILES)
 	TEMP_TILES.extend(BROWN_FLOOR_TILES)
 	TEMP_TILES.extend(FIELD_TILES)
 	TEMP_TILES.extend(BLUE_CARPET_TILES)
