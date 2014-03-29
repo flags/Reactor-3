@@ -317,26 +317,22 @@ def judge(life):
 		if _target['escaped'] == 2 or _target['dead'] or not _target['last_seen_at']:
 			continue
 		
-		#Lost targets
 		#TODO: Unhardcode 1. Can be used for reaction times
 		if _target['last_seen_time'] >= 1 and not _target['escaped']:
 			#TODO: Unhardcode 2000. How long to wait until a target is lost
-			#Note that `escaped` can be set to 2 after a failed search
 			if _target['last_seen_time'] >= 2000:
 				_target['escaped'] = 2
 				logging.debug('%s flagged %s as lost (state 2).' % (' '.join(life['name']), ' '.join(_target['life']['name'])))
 			elif _target['last_seen_time']>=25 and not _target['escaped']:
 				_target['escaped'] = 1
-			#	print 'lost.....'
 		
 		_tension += get_tension_with(life, alife_id)
 		
-		_threat = is_target_threat(life, alife_id)
-		if _threat:
+		if can_trust(life, alife_id):
+			_neutral_targets.append(alife_id)
+		else:
 			_combat_targets.append(alife_id)
 			_threats.append(alife_id)
-		else:
-			_neutral_targets.append(alife_id)
 	
 	brain.store_in_memory(life, 'threats', _threats)
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)

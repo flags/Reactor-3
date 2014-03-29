@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
+from globals import SELECTED_TILES, WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
 
 import life as lfe
 
@@ -25,51 +25,46 @@ def position_to_attack(life, target, engage_distance):
 		if not lfe.ticker(life, 'attack_position', 4):
 			return False
 	
-	#_target_distance = numbers.distance(life['pos'], brain.knows_alife_by_id(life, target)['last_seen_at'])
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
-	#_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
+	_avoid_positions = set()
+	_target_area = set()
 	
-	#TODO: Short or long-range weapon?
-	#if _nearest_target_score >= sight.get_vision(life)/2:
-	_can_see = sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'])
-	if _can_see and len(_can_see)>=engage_distance*.85:
-		#print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
-		
-		_avoid_positions = []
-		for life_id in life['seen']:
-			if life_id == target or life['id'] == life_id:
-				continue
-			
-			if alife.judgement.can_trust(life, life_id):
-				_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
-			#else:
-			
-			_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
-		
-		_cover = _target_positions
-		
-		_zones = []
-		for pos in _cover:
-			_zone = zones.get_zone_at_coords(pos)
-			
-			if not _zone in _zones:
-				_zones.append(_zone)
-		
-		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:], 'avoid_positions': _avoid_positions}]):
+	for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
+		fov.fov(LIFE[life_id]['pos'], int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_positions.add(pos))
+	
+	fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.15)), callback=lambda pos: _target_area.add(pos))
+	
+	_can_see = alife.sight.can_see_position(life, _target_positions[0], get_path=True)
+	
+	if _can_see and len(_can_see)<engage_distance*.85:
+		if life['path']:
 			lfe.stop(life)
+	else:
+		_min_view_distance = int(round(sight.get_vision(life)*.25))
+		_max_view_distance = int(round(sight.get_vision(life)*.5))
+		_attack_positions = set(zones.dijkstra_map(life['pos'],
+		                   _target_positions,
+		                   _zones,
+		                   rolldown=True,
+		                   return_score_in_range=[_min_view_distance, _max_view_distance]))
+		
+		_attack_positions = _attack_positions - _target_area
+		
+		if not _attack_positions:
+			return False
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _attack_positions, 'avoid_positions': list(_avoid_positions)}]):
+			lfe.stop(life)
+			
 			lfe.add_action(life, {'action': 'dijkstra_move',
 		                          'rolldown': True,
-		                          'goals': _cover[:],
-		                          'orig_goals': _cover[:],
-		                          'avoid_positions': _avoid_positions,
+		                          'goals': [list(p) for p in _attack_positions],
+		                          'orig_goals': _attack_positions,
+		                          'avoid_positions': list(_avoid_positions),
 		                          'reason': 'positioning for attack'},
 		                   999)
 			
 			return False
-		else:
-			return False
-	elif life['path']:
-		lfe.stop(life)
 	
 	return True
 

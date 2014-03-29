@@ -58,12 +58,12 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def ranged_attack(life):
-	_all_targets = judgement.get_threats(life, ignore_escaped=1)
+	_all_targets = judgement.get_threats(life, ignore_escaped=False)
 	
 	combat.ranged_combat(life, _all_targets)
 
 def melee_attack(life):
-	_all_targets = judgement.get_threats(life, ignore_escaped=1)
+	_all_targets = judgement.get_threats(life)
 	
 	combat.melee_combat(life, _all_targets)
 

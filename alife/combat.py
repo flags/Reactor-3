@@ -293,58 +293,29 @@ def get_closest_target(life, targets):
 	else:
 		return False
 	
-	_targets_too_far = []
 	_closest_target = {'target_id': None, 'score': 9999}
 	for t in [brain.knows_alife_by_id(life, t_id) for t_id in targets]:
 		_distance = numbers.distance(life['pos'], t['last_seen_at'])
-		
-		#NOTE: Hardcoding this for optimization reasons.
-		if _distance>=100:
-			targets.remove(t['life']['id'])
-			_targets_too_far.append(t['life']['id'])
 		
 		if _distance < _closest_target['score']:
 			_closest_target['score'] = _distance
 			_closest_target['target_id'] = t['life']['id']
 	
-	if not _targets_too_far:
-		_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
-		
-		if not _path_to_nearest:
-			_path_to_nearest = [life['pos'][:]]
-		
-		if not _path_to_nearest:
-			logging.error('%s lost known/visible target.' % ' '.join(life['name']))
-			
-			return False
-		
-		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
-		
-		_return_target = None
-		
-		if _target_pos in _target_positions:
-			for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
-				if _target_pos == _target['last_seen_at']:
-					_return_target = _target
-					break
-	else:
-		_return_target = brain.knows_alife_by_id(life, _closest_target['target_id'])
-	
-	return _return_target
+	return _closest_target['target_id']
 
 def ranged_combat(life, targets):
-	_target = get_closest_target(life, targets)
+	_target = brain.knows_alife_by_id(life, get_closest_target(life, targets))
 	
-	if not _target:
-		for target_id in targets:
-			if brain.knows_alife_by_id(life, target_id)['escaped']:
-				continue
-			
-			brain.knows_alife_by_id(life, target_id)['escaped'] = 1
-		
-		logging.error('No target for ranged combat.')
-		
-		return False
+	#if not _target:
+	#	for target_id in targets:
+	#		if brain.knows_alife_by_id(life, target_id)['escaped']:
+	#			continue
+	#		
+	#		brain.knows_alife_by_id(life, target_id)['escaped'] = 1
+	#	
+	#	logging.error('No target for ranged combat.')
+	#	
+	#	return False
 	
 	_engage_distance = get_engage_distance(life)
 	_path_dest = lfe.path_dest(life)
@@ -355,8 +326,8 @@ def ranged_combat(life, targets):
 	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	#Get us near the target
-	if _target['last_seen_at']:
-		movement.position_to_attack(life, _target['life']['id'], _engage_distance)
+	#if _target['last_seen_at']:
+	movement.position_to_attack(life, _target['life']['id'], _engage_distance)
 		
 	if sight.can_see_position(life, _target['last_seen_at']):
 		if _target_distance	<= _engage_distance:
