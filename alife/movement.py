@@ -26,20 +26,21 @@ def position_to_attack(life, target, engage_distance):
 			return False
 	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
-	_avoid_positions = set()
-	_target_area = set()
-	
-	for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
-		fov.fov(LIFE[life_id]['pos'], int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_positions.add(pos))
-	
-	fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.15)), callback=lambda pos: _target_area.add(pos))
-	
 	_can_see = alife.sight.can_see_position(life, _target_positions[0], get_path=True)
+	_distance = numbers.distance(life['pos'], _target_positions[0])
 	
 	if _can_see and len(_can_see)<engage_distance*.85:
 		if life['path']:
 			lfe.stop(life)
-	else:
+	elif _distance<engage_distance*.9:
+		_avoid_positions = set()
+		_target_area = set()
+			
+		for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
+			fov.fov(LIFE[life_id]['pos'], int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_positions.add(pos))
+			
+		fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.15)), callback=lambda pos: _target_area.add(pos))
+		
 		_min_view_distance = int(round(sight.get_vision(life)*.25))
 		_max_view_distance = int(round(sight.get_vision(life)*.5))
 		_attack_positions = set(zones.dijkstra_map(life['pos'],
@@ -58,9 +59,38 @@ def position_to_attack(life, target, engage_distance):
 			
 			lfe.add_action(life, {'action': 'dijkstra_move',
 		                          'rolldown': True,
-		                          'goals': [list(p) for p in _attack_positions],
+		                          'goals': [list(p) for p in random.sample(_attack_positions, len(_attack_positions)/2)],
 		                          'orig_goals': _attack_positions,
 		                          'avoid_positions': list(_avoid_positions),
+		                          'reason': 'positioning for attack'},
+		                   999)
+			
+			return False
+	else:
+		_can_see_positions = set()
+		_target_area = set()
+		
+		fov.fov(life['pos'], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _can_see_positions.add(pos))
+		fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _target_area.add(pos))
+		
+		_sneak_positions = _can_see_positions - _target_area
+		_move_positions = set(zones.dijkstra_map(LIFE[target]['pos'],
+		                                         list(_sneak_positions),
+		                                         _zones,
+		                                         rolldown=True))
+		
+		if not _move_positions:
+			travel_to_position(life, _target_positions[0])
+			return False
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _move_positions}]):
+			print 'doing it right'
+			lfe.stop(life)
+			
+			lfe.add_action(life, {'action': 'dijkstra_move',
+		                          'rolldown': True,
+		                          'goals': [list(p) for p in _move_positions],
+		                          'orig_goals': _move_positions,
 		                          'reason': 'positioning for attack'},
 		                   999)
 			
