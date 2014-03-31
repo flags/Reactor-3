@@ -12,7 +12,7 @@ import alife
 import logging
 import random
 
-#Scale & Design
+
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
 	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
@@ -70,7 +70,7 @@ def bullet_hit(life, bullet, limb):
 				_chance_of_hitting_item = bullet['size']*(_item['capacity']/float(_item['max_capacity']))
 				
 				if random.uniform(0, 1)<_chance_of_hitting_item:
-					continue
+					break
 				
 				_items_to_check.append({'item': item_in_container_uid, 'visible': False})
 		

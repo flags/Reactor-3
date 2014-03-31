@@ -1418,7 +1418,7 @@ def generate_noise_map(map_gen):
 	                           'x_mod_min': .1,
 	                           'x_mod_max': .9,
 	                           'y_mod_min': .45,
-	                           'y_mod_max': .75,
+	                           'y_mod_max': .8,
 	                           'amount': 0,
 	                           'min_amount': 1,
 	                           'max_amount': 3,
@@ -1427,7 +1427,7 @@ def generate_noise_map(map_gen):
 	                           'can_combine': True},
 	               'Town': {'callback': generate_town,
 	                           'min_cells': 301,
-	                           'max_cells': 450,
+	                           'max_cells': 550,
 	                           'x_mod_min': .1,
 	                           'x_mod_max': .9,
 	                           'y_mod_min': .45,
@@ -1796,8 +1796,6 @@ def generate_farm(map_gen, cell):
 			if not _x or not _y or x == _bot_right[0] or y == _bot_right[1]:
 				create_tile(map_gen, x+map_gen['chunk_size']/2, y+map_gen['chunk_size']/2, 2, random.choice(tiles.WOOD_TILES))
 	
-	#construct_building(map_gen, {'rooms': _building_chunks}, exterior_chunks=[random.choice(list(_exterior_chunk_keys))])
-	
 	#Silos
 	_potential_silo_chunks = []
 	_min_farmhouse_distance = 4*map_gen['chunk_size']
@@ -1897,7 +1895,6 @@ def generate_town(map_gen, cell):
 	_max_building_size = 6
 	_potential_building_chunks = cell['chunk_keys'][:]
 	_building_chunks = []
-	_buildings = []
 	_avoid_positions = []
 	_fence_positions = []
 	_sidewalk_positions = []
