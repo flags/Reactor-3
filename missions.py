@@ -41,9 +41,9 @@ def load_mission(mission_file):
 			if not _current_stage:
 				raise Exception('No stage set: Missing stage tag.')
 				
-			_mission[_current_stage] = _stage
+			_mission['stages'][_current_stage] = _stage
 	
-	print _mission
+	print _mission['stages'][1]
 
 def load_all_missions():
 	for (dirpath, dirnames, filenames) in os.walk(MISSION_DIR):
