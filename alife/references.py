@@ -60,6 +60,21 @@ def _find_nearest_reference_exact(position, ref_type=None):
 	
 	return _lowest
 
+def _find_nearest_reference_type_exact(position, ref_type=None):
+	_lowest = {'chunk_key': None, 'reference': None, 'distance': -1}
+	
+	for chunk_keys in WORLD_INFO['refs'][ref_type]:
+		_nearest_chunk_key = chunks.get_nearest_chunk_in_list(position, chunk_keys)
+		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
+		_distance = numbers.distance(position, _center)
+		
+		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
+			_lowest['distance'] = _distance
+			_lowest['chunk_key'] = _nearest_chunk_key
+			_lowest['chunk_keys'] = chunk_keys
+	
+	return _lowest
+
 def _find_best_unknown_reference(life, ref_type):
 	_best_reference = {'reference': None, 'score': -1}
 	
@@ -82,10 +97,10 @@ def _find_best_unknown_reference(life, ref_type):
 	return _best_reference
 
 def find_nearest_reference_of_type(pos, reference_type):
-	return _find_nearest_reference_exact(pos, reference_type)
+	return _find_nearest_reference_type_exact(pos, reference_type)
 
 def find_nearest_chunk_key_in_reference_of_type(life, reference_type):
-	return find_nearest_reference_of_type(life['pos'], reference_type)
+	return find_nearest_reference_of_type(life['pos'], reference_type)['chunk_key']
 
 def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False, threshold=-1):
 	_lowest = {'chunk_key': None, 'distance': 9000}

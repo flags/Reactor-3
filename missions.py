@@ -15,6 +15,9 @@ def load_mission(mission_file):
 
 	with open(mission_file, 'r') as _file:
 		for line in _file.readlines():
+			if line.startswith('#'):
+				continue
+			
 			line = line.rstrip()
 			
 			if not line:
@@ -45,15 +48,16 @@ def load_mission(mission_file):
 				         'func': _args[2],
 				         'args': _args[3:]}
 
-			elif _args[0] == 'exec':
-				_step = {'mode': 'exec',
+			elif _args[0] in ['exec', 'wait']:
+				_step = {'mode': _args[0],
 				         'func': _args[1],
 				         'args': _args[2:]}
 			
 			elif _args[0] == 'jumpif':
 				_step = {'mode': 'jumpif',
-				         'stage': _args[1],
-				         'args': _args[2:]}
+				         'stage': int(_args[1]),
+				         'func': _args[2],
+				         'args': _args[3:]}
 			
 			if not _current_stage:
 				raise Exception('No stage set: Missing stage tag.')
@@ -84,20 +88,42 @@ def activate_mission(life, mission_id):
 		gfx.glitch_text('Mission: %s' % life['missions'][life['mission_id']]['name'])
 
 def exec_func(life, func, *args):
-	return FUNCTION_MAP[func](life, *args)
+	try:
+		return FUNCTION_MAP[func](life, *args)
+	except:
+		raise Exception('Failed to execute: %s' % func)
 
 def do_mission(life, mission_id):
 	_mission = life['missions'][mission_id]
-	_stage = _mission['stages'][_mission['stage_index']]
-	_step = _stage['steps'][_stage['step_index']]
-	_steps_to_take = 0
 	
-	if _step['mode'] in ['exec', 'set']:
-		_func = exec_func(life, _step['func'], *_step['args'])
-		_steps_to_take += 1
+	while 1:
+		_stage = _mission['stages'][_mission['stage_index']]
+		_step = _stage['steps'][_stage['step_index']]
+		_args = []
 		
-		if _step['mode'] == 'set':
+		for arg in _step['args']:
+			if arg.startswith('%'):
+				_args.append(_mission['flags'][arg[1:len(arg)-1]])
+			else:
+				_args.append(arg)
+		
+		_func = exec_func(life, _step['func'], *_args)
+		
+		if _step['mode'] in ['wait', 'jumpif']:
+			if _func:
+				if _step['mode'] == 'wait':
+					_stage['step_index'] += 1
+				else:
+					_mission['stage_index'] = _step['stage']
+			else:
+				break
+		
+		elif _step['mode'] == 'set':
 			_mission['flags'][_step['flag']] = _func
-			print 'flag', _step['flag'], _func
-	
-	_mission['stage_index'] += _steps_to_take
+			_stage['step_index'] += 1
+		
+		elif _step['mode'] == 'exec':
+			_stage['step_index'] += 1
+		
+		else:
+			break
