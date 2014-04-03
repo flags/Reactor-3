@@ -8,7 +8,8 @@ import os
 def load_mission(mission_file):
 	_mission = {'name': mission_file.rpartition(os.sep)[2].replace('_', ' ').split('.')[0].title(),
 	            'stages': {},
-	            'stage_index': 1}
+	            'stage_index': 1,
+	            'flags': {}}
 	_stage = {}
 	_current_stage = None
 
@@ -26,7 +27,6 @@ def load_mission(mission_file):
 				
 				_current_stage = int(line.split('=')[1])
 				_mission['stages'][_current_stage] = {'steps': {},
-				                                      'flags': {},
 				                                      'step_index': 1}
 				continue
 			
@@ -42,7 +42,8 @@ def load_mission(mission_file):
 			if _args[0] == 'set':
 				_step = {'mode': 'set',
 				         'flag': _args[1],
-				         'func': _args[2]}
+				         'func': _args[2],
+				         'args': _args[3:]}
 
 			elif _args[0] == 'exec':
 				_step = {'mode': 'exec',
@@ -86,19 +87,17 @@ def exec_func(life, func, *args):
 	return FUNCTION_MAP[func](life, *args)
 
 def do_mission(life, mission_id):
-	_mission = life['missions'][_mission_id]
+	_mission = life['missions'][mission_id]
 	_stage = _mission['stages'][_mission['stage_index']]
 	_step = _stage['steps'][_stage['step_index']]
 	_steps_to_take = 0
 	
-	if _step['mode'] == 'exec':
+	if _step['mode'] in ['exec', 'set']:
 		_func = exec_func(life, _step['func'], *_step['args'])
 		_steps_to_take += 1
-	
-	elif _step['mode'] == 'set':
-		_func = exec_func(life, _step['func'])
-		_steps_to_take += 1
 		
-		_mission['flags'][_step['flag']] = _func
+		if _step['mode'] == 'set':
+			_mission['flags'][_step['flag']] = _func
+			print 'flag', _step['flag'], _func
 	
 	_mission['stage_index'] += _steps_to_take

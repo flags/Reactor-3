@@ -222,7 +222,7 @@ def create_function_map():
 		'recruiting': lambda life, life_id: speech.send(life, life_id, 'recruit'),
 		'is_raiding': lambda life: life['group'] and groups.get_stage(life, life['group']) == STAGE_ATTACKING,
 		'has_threat_in_combat_range': stats.has_threat_in_combat_range,
-	    'find_nearest_chunk_in_reference': lambda life, ref_type: references.get_nearest_ref_type(life['pos'], ref_type),
+	    'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

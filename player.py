@@ -782,7 +782,7 @@ def handle_input():
 		_player = LIFE[SETTINGS['controlling']]
 		
 		if _player['mission_id']:
-			missions.do_mission(life, _player['mission_id'])
+			missions.do_mission(_player, _player['mission_id'])
 		
 		else:
 			_mission = missions.create_mission('fetch_item')

@@ -81,6 +81,12 @@ def _find_best_unknown_reference(life, ref_type):
 	
 	return _best_reference
 
+def find_nearest_reference_of_type(pos, reference_type):
+	return _find_nearest_reference_exact(pos, reference_type)
+
+def find_nearest_chunk_key_in_reference_of_type(life, reference_type):
+	return find_nearest_reference_of_type(life['pos'], reference_type)
+
 def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_current=False, threshold=-1):
 	_lowest = {'chunk_key': None, 'distance': 9000}
 
