@@ -54,13 +54,13 @@ def position_to_attack(life, target, engage_distance):
 		if not _attack_positions:
 			return False
 		
-		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _attack_positions, 'avoid_positions': list(_avoid_positions)}]):
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': list(_attack_positions), 'avoid_positions': list(_avoid_positions)}]):
 			lfe.stop(life)
 			
 			lfe.add_action(life, {'action': 'dijkstra_move',
 		                          'rolldown': True,
 		                          'goals': [list(p) for p in random.sample(_attack_positions, len(_attack_positions)/2)],
-		                          'orig_goals': _attack_positions,
+		                          'orig_goals': list(_attack_positions),
 		                          'avoid_positions': list(_avoid_positions),
 		                          'reason': 'positioning for attack'},
 		                   999)
@@ -69,28 +69,42 @@ def position_to_attack(life, target, engage_distance):
 	else:
 		_can_see_positions = set()
 		_target_area = set()
+		_avoid_positions = set()
 		
 		fov.fov(life['pos'], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _can_see_positions.add(pos))
 		fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _target_area.add(pos))
 		
+		for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
+			_path_dest = lfe.path_dest(LIFE[life_id])
+			
+			if not _path_dest:
+				continue
+			
+			if len(_path_dest)==2:
+				_path_dest = list(_path_dest[:])
+				_path_dest.append(LIFE[life_id]['pos'][2])
+			
+			fov.fov(_path_dest, 5, callback=lambda pos: _avoid_positions.add(pos))
+		
+		_avoid_positions = list(_avoid_positions)
 		_sneak_positions = _can_see_positions - _target_area
-		_move_positions = set(zones.dijkstra_map(LIFE[target]['pos'],
-		                                         list(_sneak_positions),
-		                                         _zones,
-		                                         rolldown=True))
+		_move_positions = zones.dijkstra_map(LIFE[target]['pos'],
+		                                     list(_sneak_positions),
+		                                     _zones,
+		                                     rolldown=True)
 		
 		if not _move_positions:
-			travel_to_position(life, _target_positions[0])
+			travel_to_position(life, list(_target_positions[0]))
 			return False
 		
-		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _move_positions}]):
-			print 'doing it right'
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _move_positions, 'avoid_positions': _avoid_positions}]):
 			lfe.stop(life)
 			
 			lfe.add_action(life, {'action': 'dijkstra_move',
 		                          'rolldown': True,
 		                          'goals': [list(p) for p in _move_positions],
 		                          'orig_goals': _move_positions,
+			                      'avoid_positions': _avoid_positions,
 		                          'reason': 'positioning for attack'},
 		                   999)
 			

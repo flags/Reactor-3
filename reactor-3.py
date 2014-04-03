@@ -85,11 +85,22 @@ def move_camera(pos, scroll=False):
 			
 			brain.flag(_life, 'camera_lean', value=_target_pos[:])
 			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
+			
+			_future_time = brain.get_flag(_life, 'camera_lean_time_future')
+			if not _future_time or WORLD_INFO['ticks']>_future_time:
+				brain.flag(_life, 'camera_lean_time_future', value=WORLD_INFO['ticks']+30)
 		
 		if brain.get_flag(_life, 'camera_lean'):
-			if not _seen:
+			if _seen:
+				_st = WORLD_INFO['ticks']-(brain.get_flag(_life, 'camera_lean_time_future')-30)
+				_et = brain.get_flag(_life, 'camera_lean_time_future')-(brain.get_flag(_life, 'camera_lean_time_future')-30)
+				_lerp = 1-numbers.clip(_st/float(_et), 0, 1.0)
+				
+				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+				pos.append(2)
+			else:
 				if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
-					_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .35)
+					_lerp = .45-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .45)
 					pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
 					pos.append(2)
 				else:

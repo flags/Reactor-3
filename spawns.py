@@ -13,6 +13,7 @@ import random
 
 SOLDIER_SPECIES = 'human'
 SOLDIER_ITEMS = [{'item': 'kevlar jacket', 'amount': 1, 'equip': True},
+                 {'item': 'kevlar helmet', 'amount': 1, 'equip': True},
                  {'item': 'ALICE pack', 'amount': 1, 'equip': True},
                  {'item': 'mp5', 'amount': 1},
                  {'item': '9x19mm magazine', 'amount': 1},
@@ -24,6 +25,7 @@ SOLDIER_STATS = {'firearms': 7+random.randint(0, 3),
 SOLDIER_BANNED_GOALS = []
 
 SOLDIER_RIFLEMEN_ITEMS = [{'item': 'kevlar jacket', 'amount': 1, 'equip': True},
+                          {'item': 'kevlar helmet', 'amount': 1, 'equip': True},
                  {'item': 'ALICE pack', 'amount': 1, 'equip': True},
                  {'item': 'CZ 511', 'amount': 1},
                  {'item': '.22 LR magazine', 'amount': 1},

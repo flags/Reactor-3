@@ -59,3 +59,7 @@ Do not clear orders until group leader allows it
 "Are you armed?"
 "Negative"
 "Stay behind us, then!"
+
+
+
+CALL FOR BACKUP - "hot" areas of map that attrack people
