@@ -141,6 +141,7 @@ LIFE_DIR = os.path.join(DATA_DIR, 'life')
 MAP_DIR = os.path.join(DATA_DIR, 'maps')
 ITEM_DIR = os.path.join(DATA_DIR, 'items')
 TEXT_DIR = os.path.join(DATA_DIR, 'text')
+MISSION_DIR = os.path.join(DATA_DIR, 'missions')
 PREFAB_DIR = os.path.join(DATA_DIR, 'prefabs')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
@@ -236,6 +237,7 @@ VIEWS = {}
 VIEW_SCENE = {}
 VIEW_SCENE_CACHE = set()
 DIALOG_TOPICS = {}
+MISSIONS = {}
 
 #Consoles
 ITEM_WINDOW = None
