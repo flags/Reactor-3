@@ -85,14 +85,20 @@ def activate_mission(life, mission_id):
 def exec_func(life, func, *args):
 	return FUNCTION_MAP[func](life, *args)
 
-def do_mission(life, mission):
-	_stage = mission['stages'][mission['stage_index']]
+def do_mission(life, mission_id):
+	_mission = life['missions'][_mission_id]
+	_stage = _mission['stages'][_mission['stage_index']]
 	_step = _stage['steps'][_stage['step_index']]
+	_steps_to_take = 0
 	
 	if _step['mode'] == 'exec':
 		_func = exec_func(life, _step['func'], *_step['args'])
+		_steps_to_take += 1
 	
 	elif _step['mode'] == 'set':
 		_func = exec_func(life, _step['func'])
+		_steps_to_take += 1
 		
-		mission['flags'][_step['flag']] = _func
+		_mission['flags'][_step['flag']] = _func
+	
+	_mission['stage_index'] += _steps_to_take

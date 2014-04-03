@@ -780,9 +780,15 @@ def handle_input():
 		import missions
 		
 		_player = LIFE[SETTINGS['controlling']]
-		_mission = missions.create_mission('fetch_item')
-		missions.remember_mission(_player, _mission)
-		missions.activate_mission(_player, _player['missions'].keys()[0])
+		
+		if _player['mission_id']:
+			missions.do_mission(life, _player['mission_id'])
+		
+		else:
+			_mission = missions.create_mission('fetch_item')
+			
+			missions.remember_mission(_player, _mission)
+			missions.activate_mission(_player, _player['missions'].keys()[0])
 	
 	#if INPUT['N']:
 	#	if not SETTINGS['kill threads']:
