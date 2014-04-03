@@ -785,7 +785,7 @@ def handle_input():
 			missions.do_mission(_player, _player['mission_id'])
 		
 		else:
-			_mission = missions.create_mission('fetch_item')
+			_mission = missions.create_mission('fetch_item', item_type={'type': 'gun'})
 			
 			missions.remember_mission(_player, _mission)
 			missions.activate_mission(_player, _player['missions'].keys()[0])

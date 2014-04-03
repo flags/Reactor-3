@@ -33,12 +33,12 @@ def load_mission(mission_file):
 				                                      'step_index': 1}
 				continue
 			
-			elif line.startswith('COMPLETE'):
-				_step_id = len(_mission['stages'][_current_stage]['steps'])+1
-				_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
-				_current_stage = None
-				
-				continue
+			#elif line.startswith('COMPLETE'):
+			#	_step_id = len(_mission['stages'][_current_stage]['steps'])+1
+			#	_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
+			#	_current_stage = None
+			#	
+			#	continue
 			
 			_args = [l.lower() for l in line.split(' ')]
 			
@@ -53,11 +53,19 @@ def load_mission(mission_file):
 				         'func': _args[1],
 				         'args': _args[2:]}
 			
+			elif _args[0] == 'jump':
+				_step = {'mode': 'jump',
+				         'stage': int(_args[1]),
+				         'args': []}
+			
 			elif _args[0] == 'jumpif':
 				_step = {'mode': 'jumpif',
 				         'stage': int(_args[1]),
 				         'func': _args[2],
 				         'args': _args[3:]}
+			
+			elif _args[0] == 'complete':
+				_step = {'mode': 'complete'}
 			
 			if not _current_stage:
 				raise Exception('No stage set: Missing stage tag.')
@@ -72,11 +80,14 @@ def load_all_missions():
 		for filename in [f for f in filenames if f.endswith('.dat')]:
 			load_mission(os.path.join(dirpath, filename))
 
-def create_mission(mission_name):
+def create_mission(mission_name, **kwargs):
 	if not mission_name in MISSIONS:
 		raise Exception('Mission does not exist: %s' % mission_name)
 	
-	return copy.deepcopy(MISSIONS[mission_name])
+	_mission = copy.deepcopy(MISSIONS[mission_name])
+	_mission['flags'].update(kwargs)
+	
+	return _mission
 
 def remember_mission(life, mission):
 	life['missions'][len(life['missions'])+1] = mission
@@ -86,6 +97,12 @@ def activate_mission(life, mission_id):
 	
 	if 'player' in life:
 		gfx.glitch_text('Mission: %s' % life['missions'][life['mission_id']]['name'])
+
+def complete_mission(life, mission_id):
+	if 'player' in life:
+		gfx.glitch_text('Mission complete: %s' % life['missions'][life['mission_id']]['name'])
+	
+	del life['missions'][mission_id]
 
 def exec_func(life, func, *args):
 	try:
@@ -107,6 +124,16 @@ def do_mission(life, mission_id):
 			else:
 				_args.append(arg)
 		
+		if _step['mode'] == 'complete':
+			complete_mission(life, mission_id)
+			
+			break
+		
+		elif _step['mode'] == 'jump':
+			_mission['stage_index'] = _step['stage']
+			
+			continue
+		
 		_func = exec_func(life, _step['func'], *_args)
 		
 		if _step['mode'] in ['wait', 'jumpif']:
@@ -115,6 +142,8 @@ def do_mission(life, mission_id):
 					_stage['step_index'] += 1
 				else:
 					_mission['stage_index'] = _step['stage']
+					
+					continue
 			else:
 				break
 		
