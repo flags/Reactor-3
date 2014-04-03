@@ -465,6 +465,8 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['needs'] = {}
 	_life['need_id'] = 1
 	_life['faction'] = None
+	_life['missions'] = {}
+	_life['mission_id'] = None
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)
@@ -1309,6 +1311,12 @@ def perform_action(life):
 				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
 					del life['state_flags']['failed_dijkstra']
 				else:
+					_pos = _action['goals'][0][:]
+					
+					if len(_pos)<3:
+						_pos = _action['goals'][0][:]
+						_pos.append(life['pos'][2])
+					
 					walk_to(life, _action['goals'][0])
 			else:
 				if 'return_score_in_range' in _action:

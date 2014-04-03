@@ -25,6 +25,7 @@ import worldgen
 import mainmenu
 import language
 import profiles
+import missions
 import threads
 import network
 import drawing
@@ -325,6 +326,7 @@ if __name__ == '__main__':
 	
 	tiles.create_all_tiles()
 	language.load_strings()
+	missions.load_all_missions()
 	alife.rawparse.create_function_map()
 	locks.create_lock('camera_free', locked=True)
 	

@@ -1,10 +1,14 @@
-from globals import MISSION_DIR, MISSIONS
+from globals import MISSION_DIR, MISSIONS, FUNCTION_MAP
 
+import graphics as gfx
+
+import copy
 import os
 
 def load_mission(mission_file):
-	_mission = {'stages': {},
-	            'task_index': 0}
+	_mission = {'name': mission_file.rpartition(os.sep)[2].replace('_', ' ').split('.')[0].title(),
+	            'stages': {},
+	            'stage_index': 1}
 	_stage = {}
 	_current_stage = None
 
@@ -17,37 +21,78 @@ def load_mission(mission_file):
 			
 			if line.startswith('='):
 				if _current_stage:
-					_mission['stages'][_current_stage] = _stage
+					_step_id = len(_mission['stages'][_current_stage]['steps'])+1
+					_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
 				
-				_stage = {'mode': None,
-				          'flags': {}}
 				_current_stage = int(line.split('=')[1])
-				
+				_mission['stages'][_current_stage] = {'steps': {},
+				                                      'flags': {},
+				                                      'step_index': 1}
 				continue
 			
 			elif line.startswith('COMPLETE'):
-				_mission['stages'][_current_stage] = _stage
+				_step_id = len(_mission['stages'][_current_stage]['steps'])+1
+				_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
 				_current_stage = None
 				
 				continue
 			
-			elif line.startswith('SET'):
-				_stage['mode'] = 'set'
+			_args = [l.lower() for l in line.split(' ')]
 			
-			_args = line.split(' ')[1:]
-			_stage['func'] = _args[0]
-			_stage['args'] = _args[1:]
+			if _args[0] == 'set':
+				_step = {'mode': 'set',
+				         'flag': _args[1],
+				         'func': _args[2]}
+
+			elif _args[0] == 'exec':
+				_step = {'mode': 'exec',
+				         'func': _args[1],
+				         'args': _args[2:]}
+			
+			elif _args[0] == 'jumpif':
+				_step = {'mode': 'jumpif',
+				         'stage': _args[1],
+				         'args': _args[2:]}
 			
 			if not _current_stage:
 				raise Exception('No stage set: Missing stage tag.')
-				
-			_mission['stages'][_current_stage] = _stage
+			
+			_step_id = len(_mission['stages'][_current_stage]['steps'])+1
+			_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
 	
-	print _mission['stages'][1]
+	MISSIONS[mission_file.rpartition(os.sep)[2].split('.')[0]] = _mission
 
 def load_all_missions():
 	for (dirpath, dirnames, filenames) in os.walk(MISSION_DIR):
 		for filename in [f for f in filenames if f.endswith('.dat')]:
 			load_mission(os.path.join(dirpath, filename))
 
-load_all_missions()
+def create_mission(mission_name):
+	if not mission_name in MISSIONS:
+		raise Exception('Mission does not exist: %s' % mission_name)
+	
+	return copy.deepcopy(MISSIONS[mission_name])
+
+def remember_mission(life, mission):
+	life['missions'][len(life['missions'])+1] = mission
+
+def activate_mission(life, mission_id):
+	life['mission_id'] = mission_id
+	
+	if 'player' in life:
+		gfx.glitch_text('Mission: %s' % life['missions'][life['mission_id']]['name'])
+
+def exec_func(life, func, *args):
+	return FUNCTION_MAP[func](life, *args)
+
+def do_mission(life, mission):
+	_stage = mission['stages'][mission['stage_index']]
+	_step = _stage['steps'][_stage['step_index']]
+	
+	if _step['mode'] == 'exec':
+		_func = exec_func(life, _step['func'], *_step['args'])
+	
+	elif _step['mode'] == 'set':
+		_func = exec_func(life, _step['func'])
+		
+		mission['flags'][_step['flag']] = _func

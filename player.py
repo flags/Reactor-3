@@ -777,10 +777,18 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		if not SETTINGS['kill threads']:
-			logging.debug('Killing threads...')
+		import missions
 		
-		SETTINGS['kill threads'] = True
+		_player = LIFE[SETTINGS['controlling']]
+		_mission = missions.create_mission('fetch_item')
+		missions.remember_mission(_player, _mission)
+		missions.activate_mission(_player, _player['missions'].keys()[0])
+	
+	#if INPUT['N']:
+	#	if not SETTINGS['kill threads']:
+	#		logging.debug('Killing threads...')
+	#	
+	#	SETTINGS['kill threads'] = True
 	
 	if INPUT['y']:
 		_id = int(SETTINGS['following'])
