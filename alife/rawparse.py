@@ -11,6 +11,7 @@ import alife_combat
 import alife_follow
 import alife_cover
 import alife_needs
+import alife_work
 
 import references
 import judgement
@@ -224,11 +225,14 @@ def create_function_map():
 		'recruiting': lambda life, life_id: speech.send(life, life_id, 'recruit'),
 		'is_raiding': lambda life: life['group'] and groups.get_stage(life, life['group']) == STAGE_ATTACKING,
 		'is_in_target_chunk': lambda life, target_id: lfe.get_current_chunk_id(life) == lfe.get_current_chunk_id(LIFE[target_id]),
+	     'get_chunk_key': lfe.get_current_chunk_id,
 		'has_threat_in_combat_range': stats.has_threat_in_combat_range,
 		'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
 		'has_item_type': lambda life, item_match: not lfe.get_inventory_item_matching(life, item_match) == None,
 		'move_to_target': lambda life, target_id: movement.travel_to_position(life, LIFE[target_id]['pos']),
-		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=distance,
+		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
+		'do_mission': alife_work.tick,
+		'has_mission': lambda life: not life['mission_id'] == None,
 		'drop_item': lfe.drop_item,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,

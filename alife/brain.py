@@ -4,7 +4,6 @@ import life as lfe
 
 import alife_group
 import alife_needs
-import alife_work
 import alife_talk
 
 import snapshots
@@ -28,8 +27,7 @@ import copy
 
 CONSTANT_MODULES = [alife_needs,
                     alife_group,
-                    alife_talk,
-                    alife_work]
+                    alife_talk]
 
 
 def parse(life):
