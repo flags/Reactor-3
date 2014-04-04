@@ -3,8 +3,10 @@ from globals import *
 import life as lfe
 
 import language
+import missions
 import spawns
 import alife
+import items
 
 import logging
 import random
@@ -141,9 +143,14 @@ def control_zes():
 	if not 'intro_created' in _zes['flags'] and _zes['members'] and SETTINGS['controlling']:
 		_zes = get_faction('ZES')
 		_zes['flags']['intro_created'] = True
+		_item_uid = items.create_item('glock')
+		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'], item_uid=_item_uid)
 		
+		lfe.add_item_to_inventory(LIFE[_zes['members'][0]], _item_uid)
 		alife.brain.meet_alife(LIFE[_zes['members'][0]], LIFE[SETTINGS['controlling']])
 		alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
+		missions.remember_mission(LIFE[_zes['members'][0]], _mission)
+		missions.activate_mission(LIFE[_zes['members'][0]], '1')
 	
 	#for group_id in _zes['groups']:
 	#	pass

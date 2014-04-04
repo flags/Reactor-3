@@ -2107,6 +2107,14 @@ def get_inventory_item(life, item_id):
 	
 	return items.get_item_from_uid(item_id)
 
+def get_inventory_item_matching(life, item_match):
+	_matches = get_all_inventory_items(life, [item_match])
+	
+	if _matches:
+		return _matches[0]['uid']
+	
+	return None
+
 def get_all_inventory_items(life, matches=None, ignore_actions=False):
 	"""Returns list of all inventory items.
 	

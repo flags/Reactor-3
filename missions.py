@@ -25,11 +25,11 @@ def load_mission(mission_file):
 			
 			if line.startswith('='):
 				if _current_stage:
-					_step_id = len(_mission['stages'][_current_stage]['steps'])+1
-					_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
+					_step_id = len(_mission['stages'][str(_current_stage)]['steps'])+1
+					_mission['stages'][str(_current_stage)]['steps'][str(_step_id)] = _step.copy()
 				
 				_current_stage = int(line.split('=')[1])
-				_mission['stages'][_current_stage] = {'steps': {},
+				_mission['stages'][str(_current_stage)] = {'steps': {},
 				                                      'step_index': 1}
 				continue
 			
@@ -64,14 +64,17 @@ def load_mission(mission_file):
 				         'func': _args[2],
 				         'args': _args[3:]}
 			
+			elif _args[0] == 'loop':
+				_step = {'mode': 'loop'}
+			
 			elif _args[0] == 'complete':
 				_step = {'mode': 'complete'}
 			
 			if not _current_stage:
 				raise Exception('No stage set: Missing stage tag.')
 			
-			_step_id = len(_mission['stages'][_current_stage]['steps'])+1
-			_mission['stages'][_current_stage]['steps'][_step_id] = _step.copy()
+			_step_id = len(_mission['stages'][str(_current_stage)]['steps'])+1
+			_mission['stages'][str(_current_stage)]['steps'][str(_step_id)] = _step.copy()
 	
 	MISSIONS[mission_file.rpartition(os.sep)[2].split('.')[0]] = _mission
 
@@ -90,7 +93,7 @@ def create_mission(mission_name, **kwargs):
 	return _mission
 
 def remember_mission(life, mission):
-	life['missions'][len(life['missions'])+1] = mission
+	life['missions'][str(len(life['missions'])+1)] = mission
 
 def activate_mission(life, mission_id):
 	life['mission_id'] = mission_id
@@ -101,6 +104,9 @@ def activate_mission(life, mission_id):
 def complete_mission(life, mission_id):
 	if 'player' in life:
 		gfx.glitch_text('Mission complete: %s' % life['missions'][life['mission_id']]['name'])
+	
+	if life['mission_id'] == mission_id:
+		life['mission_id'] = None
 	
 	del life['missions'][mission_id]
 
@@ -114,25 +120,32 @@ def do_mission(life, mission_id):
 	_mission = life['missions'][mission_id]
 	
 	while 1:
-		_stage = _mission['stages'][_mission['stage_index']]
-		_step = _stage['steps'][_stage['step_index']]
+		_stage = _mission['stages'][str(_mission['stage_index'])]
+		_step = _stage['steps'][str(_stage['step_index'])]
 		_args = []
-		
-		for arg in _step['args']:
-			if arg.startswith('%'):
-				_args.append(_mission['flags'][arg[1:len(arg)-1]])
-			else:
-				_args.append(arg)
 		
 		if _step['mode'] == 'complete':
 			complete_mission(life, mission_id)
 			
 			break
 		
-		elif _step['mode'] == 'jump':
-			_mission['stage_index'] = _step['stage']
+		elif _step['mode'] in ['jump', 'loop']:
+			_stage['step_index'] = 1
 			
-			continue
+			if _step['mode'] == 'jump':
+				_mission['stage_index'] = _step['stage']
+				
+				continue
+			else:
+				break
+		
+		for arg in _step['args']:
+			if arg.startswith('%'):
+				_args.append(_mission['flags'][arg[1:len(arg)-1]])
+			elif arg.count('.'):
+				_args.append(float(arg))
+			else:
+				_args.append(arg)
 		
 		_func = exec_func(life, _step['func'], *_args)
 		
@@ -141,9 +154,14 @@ def do_mission(life, mission_id):
 				if _step['mode'] == 'wait':
 					_stage['step_index'] += 1
 				else:
+					_stage['step_index'] = 1
 					_mission['stage_index'] = _step['stage']
 					
 					continue
+			elif _step['mode'] == 'jumpif':
+				_stage['step_index'] += 1
+				
+				continue
 			else:
 				break
 		
