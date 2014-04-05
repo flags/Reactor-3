@@ -15,7 +15,7 @@ ZES_INTRO_EXPLAIN_ZES_3:@ALWAYS:"Yup. A lot of noobies like you end up here.":>Z
 ZES_INTRO_EXPLAIN_ZES_4:@ALWAYS:"Interesting":>ZES_INTRO_OFFER
 ZES_INTRO_OFFER:@ALWAYS:"You looking to do some work?":>ZES_INTRO_OFFER_2
 ZES_INTRO_OFFER_2:@ALWAYS:"What kind of work?":>ZES_INTRO_OFFER_4
-ZES_INTRO_OFFER_4:@ALWAYS:"Some bandit north of here is being quite the asshole to our scouts.":>ZES_INTRO_OFFER_5
+ZES_INTRO_OFFER_4:@ALWAYS:"Some bandit %KILL_TARGET_DIRECTION% of here is being quite the asshole to our scouts.":>ZES_INTRO_OFFER_5
 ZES_INTRO_OFFER_5:@ALWAYS:"You want me to kill him?":>ZES_INTRO_OFFER_6
 ZES_INTRO_OFFER_6:@ALWAYS:"You catch on quick!":>ZES_INTRO_OFFER_7
 ZES_INTRO_OFFER_7:!@HAS_USABLE_WEAPON:"With what?":>ZES_INTRO_OFFER_8

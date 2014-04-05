@@ -6,6 +6,7 @@ import graphics as gfx
 import damage as dam
 import pathfinding
 import scripting
+import missions
 import crafting
 import language
 import contexts
@@ -1643,7 +1644,6 @@ def perform_action(life):
 		delete_action(life,action)
 		
 	elif _action['action'] == 'reload':
-		print life['name'], 'reloading' * 10
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
 		_ammo = remove_item_from_inventory(life, _action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
@@ -1892,8 +1892,8 @@ def tick_all_life(setup=False):
 			brain.sight.look(life)
 			brain.sound.listen(life)
 			
-			if life['job']:
-				alife.jobs.work(life)
+			if life['mission_id']:
+				missions.do_mission(life, life['mission_id'])
 			
 			perform_action(life)
 			

@@ -10,6 +10,21 @@ import items
 
 import random
 
+
+def spawn_and_arm(weapon_name, feed_name, ammo_name, ammo_amount):
+	_weapon = ITEMS[items.create_item(weapon_name)]
+	_feed = ITEMS[items.create_item(feed_name)]
+	
+	for i in range(ammo_amount):
+		_round = ITEMS[items.create_item(ammo_name)]
+		_feed['rounds'].append(_round['uid'])
+		_round['parent'] = _feed['uid']
+	
+	_weapon[_feed['type']] = _feed['uid']
+	_feed['parent'] = _weapon['uid']
+	
+	return _weapon['uid']
+
 def get_weapon_to_fire(life):
 	if 'player' in life:
 		return life['firing']

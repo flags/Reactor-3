@@ -5,6 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import historygen
+import missions
 import language
 import profiles
 import threads
@@ -343,17 +344,15 @@ def create_player():
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
-	
-	#life.add_item_to_inventory(PLAYER, items.create_item('glock'))
-	#life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
-	#life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
-	#life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
-	
-	#for i in range(17):
-	#	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
 	
+	_zes_leader = alife.factions.get_faction('ZES')['members'][0]
+	_m = missions.create_mission('locate_target', target=_zes_leader)
+	_m_id = missions.remember_mission(PLAYER, _m)
+	
+	missions.activate_mission(PLAYER, _m_id)
+	missions.change_task_description(PLAYER, _m_id, 1, 'Find ZES outpost, talk to %s' % ' '.join(LIFE[_zes_leader]['name']))
 	alife.factions.add_member('Loners', SETTINGS['controlling'])
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	

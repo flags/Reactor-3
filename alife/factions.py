@@ -4,6 +4,8 @@ import life as lfe
 
 import language
 import missions
+import numbers
+import weapons
 import spawns
 import alife
 import items
@@ -143,12 +145,18 @@ def control_zes():
 	if not 'intro_created' in _zes['flags'] and _zes['members'] and SETTINGS['controlling']:
 		_zes = get_faction('ZES')
 		_zes['flags']['intro_created'] = True
-		_item_uid = items.create_item('glock')
-		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'], item_uid=_item_uid)
+		_item_uid = weapons.spawn_and_arm('glock', '9x19mm magazine', '9x19mm round', 17)
+		_kill_target = get_faction('Bandits')['members'][0]
+		_kill_target_direction = numbers.distance(LIFE[_zes['members'][0]]['pos'], LIFE[_kill_target]['pos'])
+		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'], item_uid=_item_uid, kill_target=_kill_target)
 		
 		lfe.add_item_to_inventory(LIFE[_zes['members'][0]], _item_uid)
 		alife.brain.meet_alife(LIFE[_zes['members'][0]], LIFE[SETTINGS['controlling']])
-		alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
+		alife.memory.create_question(LIFE[_zes['members'][0]],
+		                             SETTINGS['controlling'],
+		                             'zes_intro',
+		                             kill_target_name=' '.join(LIFE[_kill_target]['name']),
+		                             kill_target_direction=language.get_real_direction(_kill_target_direction))
 		missions.remember_mission(LIFE[_zes['members'][0]], _mission)
 		missions.activate_mission(LIFE[_zes['members'][0]], '1')
 	

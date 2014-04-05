@@ -408,6 +408,39 @@ def handle_input():
 			return create_radio_menu()
 
 	if INPUT['m']:
+		_player = LIFE[SETTINGS['controlling']]
+		_menu_items = []
+		
+		for mission in _player['missions'].values():
+			if not mission['tasks']:
+				continue
+			
+			_menu_items.append(menus.create_item('title', mission['name'], None))
+			
+			for task_id in mission['tasks']:
+				_task = mission['tasks'][task_id]
+				
+				if _task['completed']:
+					_completed = 'x'
+				else:
+					_completed = ' '
+				
+				_menu_items.append(menus.create_item('single', _completed, _task['description'], enabled=_completed == ' '))
+		
+		if not _menu_items:
+			gfx.message('You have no missions.')
+			
+			return False
+		
+		_i = menus.create_menu(title='Missions',
+		                       menu=_menu_items,
+		                       padding=(1,1),
+		                       position=(1,1),
+		                       format_str='[$k] $v')
+		
+		menus.activate_menu(_i)
+
+	if INPUT['M']:
 		if menus.get_menu_by_name('Fight')>-1:
 			return False
 		

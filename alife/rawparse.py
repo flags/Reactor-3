@@ -15,6 +15,7 @@ import alife_work
 
 import references
 import judgement
+import missions
 import survival
 import movement
 import logging
@@ -82,6 +83,7 @@ def create_function_map():
 		'is_traitor': lambda life, life_id: len(lfe.get_memory(life, matches={'text': 'traitor', 'target': life_id}))>0,
 		'is_awake': judgement.is_target_awake,
 		'is_dead': judgement.is_target_dead,
+		'is_target_dead': judgement.is_target_dead,
 		'is_raiding': lambda life: (life['group'] and groups.get_stage(life, life['group'])==STAGE_RAIDING)==True,
 		'find_and_announce_shelter': groups.find_and_announce_shelter,
 		'desires_shelter': stats.desires_shelter,
@@ -225,12 +227,13 @@ def create_function_map():
 		'recruiting': lambda life, life_id: speech.send(life, life_id, 'recruit'),
 		'is_raiding': lambda life: life['group'] and groups.get_stage(life, life['group']) == STAGE_ATTACKING,
 		'is_in_target_chunk': lambda life, target_id: lfe.get_current_chunk_id(life) == lfe.get_current_chunk_id(LIFE[target_id]),
-	     'get_chunk_key': lfe.get_current_chunk_id,
+		'get_chunk_key': lfe.get_current_chunk_id,
 		'has_threat_in_combat_range': stats.has_threat_in_combat_range,
 		'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
 		'has_item_type': lambda life, item_match: not lfe.get_inventory_item_matching(life, item_match) == None,
 		'move_to_target': lambda life, target_id: movement.travel_to_position(life, LIFE[target_id]['pos']),
 		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
+		'give_mission': missions.create_mission_and_give,
 		'do_mission': alife_work.tick,
 		'has_mission': lambda life: not life['mission_id'] == None,
 		'drop_item': lfe.drop_item,
