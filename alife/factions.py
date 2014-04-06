@@ -148,7 +148,12 @@ def control_zes():
 		_item_uid = weapons.spawn_and_arm('glock', '9x19mm magazine', '9x19mm round', 17)
 		_kill_target = get_faction('Bandits')['members'][0]
 		_kill_target_direction = numbers.distance(LIFE[_zes['members'][0]]['pos'], LIFE[_kill_target]['pos'])
-		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'], item_uid=_item_uid, kill_target=_kill_target)
+		_quest_item_uid = lfe.get_inventory_item_matching(LIFE[_kill_target], {'type': 'radio'})
+		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'],
+		                                   item_uid=_item_uid,
+		                                   quest_item_uid=_quest_item_uid,
+		                                   kill_target=_kill_target,
+		                                   location=lfe.get_current_chunk_id(LIFE[_kill_target]))
 		
 		lfe.add_item_to_inventory(LIFE[_zes['members'][0]], _item_uid)
 		alife.brain.meet_alife(LIFE[_zes['members'][0]], LIFE[SETTINGS['controlling']])

@@ -351,7 +351,6 @@ def create_player():
 	_m = missions.create_mission('locate_target', target=_zes_leader)
 	_m_id = missions.remember_mission(PLAYER, _m)
 	
-	missions.activate_mission(PLAYER, _m_id)
 	missions.change_task_description(PLAYER, _m_id, 1, 'Find ZES outpost, talk to %s' % ' '.join(LIFE[_zes_leader]['name']))
 	alife.factions.add_member('Loners', SETTINGS['controlling'])
 	lfe.focus_on(LIFE[SETTINGS['controlling']])

@@ -113,12 +113,12 @@ def position_to_attack(life, target, engage_distance):
 	return True
 
 def travel_to_position(life, pos, stop_on_sight=False, force=False):
+	if not numbers.distance(life['pos'], pos):
+		return True
+	
 	if stop_on_sight and sight.can_see_position(life, pos, get_path=True, ignore_z=True):
 		lfe.stop(life)
 		
-		return True
-	
-	if not numbers.distance(life['pos'], pos):
 		return True
 	
 	_dest = lfe.path_dest(life)
@@ -156,6 +156,17 @@ def set_focus_point(life, chunk_key):
 		_center_chunk_pos.append(2)
 		
 		logic.show_event('<Movement Order>', pos=_center_chunk_pos)
+
+def pick_up_item(life, item_uid):
+	_not_moved = travel_to_position(life, ITEMS[item_uid]['pos'])
+	
+	print 'PICKING UP...', _not_moved, life['pos'], ITEMS[item_uid]['pos'], life['path'], life['actions']
+	
+	if _not_moved:
+		lfe.add_action(life,{'action': 'pickupitem_npc',
+		                     'item': item_uid},
+		                     200,
+		                     delay=lfe.get_item_access_time(life, item_uid))
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded

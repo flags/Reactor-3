@@ -1456,9 +1456,8 @@ def perform_action(life):
 			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
 				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
 		
-		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
+		direct_add_item_to_inventory(life, _action['item'], container=_action['container'])
 		delete_action(life, action)
-		
 		set_animation(life, [',', 'x'], speed=6)
 		
 		if life.has_key('player'):
@@ -1467,6 +1466,20 @@ def perform_action(life):
 				_container = items.get_item_from_uid(_action['container'])
 				gfx.message('You store %s in %s.'
 					% (items.get_name(_item), items.get_name(_container)))
+	
+	elif _action['action'] == 'pickupitem_npc':
+		#If we're looting someone...
+		if ITEMS[_action['item']]['owner'] and not life['id'] == ITEMS[_action['item']]['owner']:
+			if not LIFE[ITEMS[_action['item']]['owner']]['asleep']:
+				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
+				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
+			
+			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
+				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
+		
+		add_item_to_inventory(life, _action['item'])
+		delete_action(life, action)
+		set_animation(life, [',', 'x'], speed=6)
 	
 	elif _action['action'] == 'dropitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1892,8 +1905,8 @@ def tick_all_life(setup=False):
 			brain.sight.look(life)
 			brain.sound.listen(life)
 			
-			if life['mission_id']:
-				missions.do_mission(life, life['mission_id'])
+			for mission_id in life['missions'].keys():
+				missions.do_mission(life, mission_id)
 			
 			perform_action(life)
 			
@@ -2979,10 +2992,15 @@ def draw_life_info():
 	                   _weather_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
-	_longest_state = 3
+	_longest_state = 1
 	_visible_life = []
+	_seen = [LIFE[i] for i in life['seen']]
+	_tracking_target = brain.get_flag(life, 'tracking_target')
 	
-	for ai in [LIFE[i] for i in life['seen']]:
+	if _tracking_target:
+		_seen.append(LIFE[_tracking_target])
+	
+	for ai in _seen:
 		if ai['dead']:
 			_state = 'dead'
 		else:
@@ -2996,9 +3014,9 @@ def draw_life_info():
 	_i = 5
 	_xmod = _longest_state+3
 	
-	for ai in [LIFE[i] for i in life['seen']]:
+	for ai in _seen:
 		if ai['dead']:
-			continue
+			continue		
 		
 		_state = judgement.get_target_state(life, ai['id'])
 		_icon = draw_life_icon(ai)
@@ -3006,14 +3024,25 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 		
+		if ai['id'] == _tracking_target and alife.brain.knows_alife(life, ai)['last_seen_at']:
+			_pos = alife.brain.knows_alife(life, ai)['last_seen_at']
+			_distance = numbers.distance(life['pos'], _pos)
+			_direction = numbers.direction_to(life['pos'], _pos)
+		else:
+			_distance = numbers.distance(life['pos'], ai['pos'])
+			_direction = numbers.direction_to(life['pos'], ai['pos'])
+		
 		if _state == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		_character_string = '%s (%s, %s)' % (' '.join(ai['name']),
-		                                 language.get_real_distance_string(numbers.distance(life['pos'], ai['pos'])),
-		                                 language.get_real_direction(numbers.direction_to(life['pos'], ai['pos'])))
+		_character_string = '%s %s@%s)' % (' '.join(ai['name']),
+		                                   language.get_real_direction(_direction, short=True).upper(),
+		                                   language.get_real_distance_string(_distance, round_up=True))
+		
+		if ai['id'] == _tracking_target:
+			_character_string += ' *TRACKING*'
 		
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
 		tcod.console_set_default_foreground(0, tcod.white)

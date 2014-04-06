@@ -192,7 +192,7 @@ def meet_alife(life, target):
 		'last_seen_time': -1,
 		'time_visible': 0,
 		'met_at_time': WORLD_INFO['ticks'],
-		'last_seen_at': None,
+		'last_seen_at': target['pos'],
 		'last_encounter_time': 0,
 		'items': [],
 		'escaped': False,

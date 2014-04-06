@@ -113,13 +113,18 @@ def create_mission_and_give(life, mission_name, target_id, **kwargs):
 	
 	remember_mission(LIFE[target_id], _mission)
 
+def create_mission_for_self(life, mission_name, **kwargs):
+	create_mission_and_give(life, mission_name, life['id'], **kwargs)
+
 def remember_mission(life, mission):
 	_id = str(len(life['missions'])+1)
 	
 	life['missions'][_id] = mission
 	
-	if 'player' in life:
-		gfx.glitch_text('Mission intel: %s' % mission['name'])
+	if 'player' in life and not life['mission_id']:
+		life['mission_id'] = _id
+		
+		gfx.glitch_text('Added Mission: %s' % mission['name'])
 	
 	return _id
 
@@ -127,7 +132,16 @@ def activate_mission(life, mission_id):
 	life['mission_id'] = mission_id
 	
 	if 'player' in life:
-		gfx.glitch_text('Mission: %s' % life['missions'][life['mission_id']]['name'])
+		_active_task_description = get_active_task(life, mission_id)['description']
+		gfx.glitch_text('Task: %s' % _active_task_description)
+
+def get_active_task(life, mission_id):
+	_mission = life['mission_id'][mission_id]
+	
+	if not _mission['tasks']:
+		return None
+	
+	return [t for t in _mission['tasks'] if not _mission['tasks'][t]['completed']][0]
 
 def change_task_description(life, mission_id, task_number, description):
 	_mission = life['missions'][mission_id]
@@ -135,7 +149,9 @@ def change_task_description(life, mission_id, task_number, description):
 
 def complete_mission(life, mission_id):
 	if 'player' in life:
-		gfx.glitch_text('Mission complete: %s' % life['missions'][life['mission_id']]['name'])
+		gfx.glitch_text('Mission complete: %s' % life['missions'][mission_id]['name'])
+
+	print life['name'], 'completed', life['missions'][mission_id]['name']
 	
 	if life['mission_id'] == mission_id:
 		life['mission_id'] = None
@@ -185,7 +201,7 @@ def do_mission(life, mission_id):
 					_flag = flag.partition('%')[2].rpartition('%')[0]
 					
 					if _flag:
-						arg = arg.replace('%%%s%%' % _flag, _mission['flags'][_flag])
+						arg = arg.replace('%%%s%%' % _flag, '\"%s\"' % _mission['flags'][_flag])
 				
 				_kwargs.update(json.loads(arg))
 			elif arg.count('.'):

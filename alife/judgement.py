@@ -176,19 +176,13 @@ def get_target_state(life, life_id):
 	_mods = []
 	
 	if _target['asleep']:
-		_mods.append('unconscious')
-	elif life['state_tier'] >= TIER_COMBAT:
-		_mods.append('alert')
-	elif life['state_tier'] < TIER_COMBAT:
-		_mods.append('relaxed')
+		_mods.append('s')
+	elif LIFE[life_id]['state_tier'] >= TIER_COMBAT:
+		_mods.append('!')
+	elif LIFE[life_id]['state_tier'] < TIER_COMBAT:
+		_mods.append('c')
 	
-	if get_tension(life) >= .3:
-		_mods.append('nervous')
-	
-		#if _target['alignment'] == 'neutral':
-		#	_mods.append(''
-	
-	return _mods[0].title()+' '.join(_mods[1:])
+	return ''.join(_mods)
 
 def get_tension(life):
 	return brain.retrieve_from_memory(life, 'tension')

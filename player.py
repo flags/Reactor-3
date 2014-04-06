@@ -408,6 +408,9 @@ def handle_input():
 			return create_radio_menu()
 
 	if INPUT['m']:
+		if not ACTIVE_MENU['menu'] == -1:
+			return False
+		
 		_player = LIFE[SETTINGS['controlling']]
 		_menu_items = []
 		

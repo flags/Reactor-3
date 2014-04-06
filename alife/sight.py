@@ -253,7 +253,7 @@ def quick_look(life):
 				item = ITEMS[item_uid]
 				
 				if not item['uid'] in life['know_items']:
-					continue
+					brain.remember_item(life, item)
 	
 				if items.is_item_owned(item['uid']):
 					continue
