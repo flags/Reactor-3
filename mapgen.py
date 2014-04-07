@@ -993,6 +993,144 @@ def create_buildings():
 	                                                                     'amount': 2}]}],
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                           'build_order': 'wall'}
+	
+	BUILDINGS['storage_1'] = {'chunks': {'wall': {'type': 'exterior',
+	                                              'chunks': 1,
+	                                              'doors': ['ground_1', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                                        {'x_mod_min': .12,
+	                                                         'x_mod_max': .7,
+	                                                         'y_mod_min': .12,
+	                                                         'y_mod_max': .7,
+	                                                         'height': 3,
+	                                                         'tiles': [tiles.WHITE_WALL_TILE]}],
+	                                              'items': [],
+	                                              'walls': {}},
+	                                  'ground_1': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['wall', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_2': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['wall', 'ground_3'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_3': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}}},
+	                      'build_order': 'wall'}
+	
+	BUILDINGS['storage_2'] = {'chunks': {'wall': {'type': 'exterior',
+	                                              'chunks': 2,
+	                                              'doors': ['ground_1', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                                        {'x_mod_min': .12,
+	                                                         'x_mod_max': .7,
+	                                                         'y_mod_min': .12,
+	                                                         'y_mod_max': .7,
+	                                                         'height': 3,
+	                                                         'tiles': [tiles.WHITE_WALL_TILE]}],
+	                                              'items': [],
+	                                              'walls': {}},
+	                                  'ground_1': {'type': 'interior',
+	                                              'chunks': 2,
+	                                              'doors': ['wall', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_2': {'type': 'interior',
+	                                              'chunks': 2,
+	                                              'doors': ['wall', 'ground_1'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}}},
+	                      'build_order': 'wall'}
+	
+	BUILDINGS['workshop_1'] = {'chunks': {'lobby': {'type': 'interior',
+	                                                'chunks': 2,
+	                                                'doors': ['shop_1'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_1': {'type': 'interior',
+	                                                'chunks': 2,
+	                                                'doors': ['lobby', 'shop_2'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_2': {'type': 'interior',
+	                                                'chunks': 2,
+	                                                'doors': ['shop_1'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                      'build_order': 'lobby'}
 
 def generate_building(map_gen, chunk_key, building_type, possible_building_chunks, only_chunk_keys=[]):
 	_building = buildinggen.create_building(chunk_key, copy.deepcopy(BUILDINGS[building_type]), possible_building_chunks)
@@ -1452,7 +1590,12 @@ def generate_noise_map(map_gen):
 	                                'y_mod_max': .6},
 	                     'Field': {'callback': generate_field,
 	                                'y_mod_min': .6,
-	                                'y_mod_max': 1.0}}
+	                                'y_mod_max': 1.0},
+	                     'Ruins': {'callback': generate_town,
+	                               'building_types': ['storage_1', 'storage_1', 'storage_2'],
+	                               'y_mod_min': .3,
+	                               'y_mod_max': .8,
+	                               'refs': 'towns'}}
 	_occupied_cells = {}
 	_empty_cells = {}
 	
@@ -1640,12 +1783,18 @@ def generate_noise_map(map_gen):
 	for empty_cell in _empty_cells:
 		_cell = _empty_cells[empty_cell]['cell']
 		
-		for empty_cell_type in _empty_cell_types.values():
+		for empty_cell_type in _empty_cell_types:
 			if random.randint(0, 1):
 				continue
 			
-			if map_gen['size'][1]*empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*empty_cell_type['y_mod_max']:
-				empty_cell_type['callback'](map_gen, _cell)
+			_empty_cell_type = _empty_cell_types[empty_cell_type]
+			
+			if 'building_types' in _empty_cell_type:
+				_cell['building_types'] = _empty_cell_type['building_types']
+				_cell['refs'] = _empty_cell_type['refs']
+			
+			if map_gen['size'][1]*_empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*_empty_cell_type['y_mod_max']:
+				_empty_cell_type['callback'](map_gen, _cell)
 	
 	logging.debug('%s empty cells remain.' % len(_empty_cells))
 
