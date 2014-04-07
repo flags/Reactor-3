@@ -367,6 +367,12 @@ def handle_input():
 		
 		menus.activate_menu(_i)
 	
+	if INPUT['T']:
+		if not ACTIVE_MENU['menu'] == -1:
+			return False
+		
+		create_tracking_menu()
+	
 	if INPUT['v']:
 		if menus.get_menu_by_name('Talk')>-1:
 			menus.delete_menu(menus.get_menu_by_name('Talk'))
@@ -2267,4 +2273,46 @@ def wound_examine(entry):
 		on_select=heal_wound)
 	
 	menus.activate_menu(_menu)
+
+def create_tracking_menu():
+	_player = LIFE[SETTINGS['controlling']]
+	_targets = []
 	
+	for target_id in _player['know']:
+		_target = _player['know'][target_id]
+		
+		if _target['dead']:
+			continue
+		
+		if judgement.is_tracking(_player, target_id):
+			_tracking_color = tcod.red
+		else:
+			_tracking_color = tcod.gray
+		
+		_targets.append(menus.create_item('single',
+	                                       ' '.join(_target['life']['name']),
+	                                       None,
+	                                       color=(_tracking_color, tcod.color_lerp(_tracking_color, tcod.lightest_red, .85)),
+	                                       target_id=target_id))
+	
+	if not _targets:
+		gfx.message('There is nobody to track.')
+		
+		return False
+	
+	_i = menus.create_menu(title='Track',
+                            menu=_targets,
+                            format_str='$k',
+                            on_select=toggle_tracking)
+	
+	menus.activate_menu(_i)
+
+def toggle_tracking(entry):
+	menus.delete_active_menu()
+	
+	if judgement.is_tracking(LIFE[SETTINGS['controlling']], entry['target_id']):
+		judgement.untrack_target(LIFE[SETTINGS['controlling']], entry['target_id'])
+	else:
+		judgement.track_target(LIFE[SETTINGS['controlling']], entry['target_id'])
+	
+	create_tracking_menu()

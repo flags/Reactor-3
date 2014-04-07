@@ -308,6 +308,9 @@ def get_items_at(position, check_bodies=False):
 	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))
 	
 	for _item in _chunk['items']:
+		if not _item in ITEMS:
+			continue
+		
 		item = ITEMS[_item]
 		
 		if is_item_owned(_item):

@@ -2701,6 +2701,15 @@ def draw_life_icon(life):
 		if time.time()%1>=0.5:
 			_icon[0] = 'S'
 	
+	if SETTINGS['controlling'] and judgement.is_tracking(LIFE[SETTINGS['controlling']], life['id']) and gfx.position_is_in_frame(life['pos']):
+		_pos = gfx.get_render_position(life['pos'])
+		if time.time()%1>=0.5:
+			_icon[2] = tcod.white
+		else:
+			_icon[2] = None
+		
+		gfx.refresh_view_position(_pos[0], _pos[1], 'map')
+	
 	if 'player' in life:
 		_icon[1] = tcod.white
 		
@@ -2995,10 +3004,14 @@ def draw_life_info():
 	_longest_state = 1
 	_visible_life = []
 	_seen = [LIFE[i] for i in life['seen']]
-	_tracking_target = brain.get_flag(life, 'tracking_target')
+	_tracking_targets = brain.get_flag(life, 'tracking_targets')
 	
-	if _tracking_target:
-		_seen.append(LIFE[_tracking_target])
+	if _tracking_targets:
+		for target_id in _tracking_targets:
+			if not LIFE[target_id] in _seen:
+				_seen.append(LIFE[target_id])
+	else:
+		_tracking_targets = []
 	
 	for ai in _seen:
 		if ai['dead']:
@@ -3024,7 +3037,7 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 		
-		if ai['id'] == _tracking_target and alife.brain.knows_alife(life, ai)['last_seen_at']:
+		if ai['id'] in _tracking_targets and alife.brain.knows_alife(life, ai)['last_seen_at']:
 			_pos = alife.brain.knows_alife(life, ai)['last_seen_at']
 			_distance = numbers.distance(life['pos'], _pos)
 			_direction = numbers.direction_to(life['pos'], _pos)
@@ -3041,7 +3054,7 @@ def draw_life_info():
 		                                   language.get_real_direction(_direction, short=True).upper(),
 		                                   language.get_real_distance_string(_distance, round_up=True))
 		
-		if ai['id'] == _tracking_target:
+		if ai['id'] in _tracking_targets:
 			_character_string += ' *TRACKING*'
 		
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)

@@ -244,6 +244,30 @@ def is_target_threat(life, target_id):
 	
 	return False
 
+def track_target(life, target_id):
+	_tracking = brain.get_flag(life, 'tracking_targets')
+	
+	if not _tracking:
+		brain.flag(life, 'tracking_targets', [target_id])
+		
+		return None
+	
+	_tracking.append(target_id)
+
+def untrack_target(life, target_id):
+	_tracking = brain.get_flag(life, 'tracking_targets')
+	
+	if target_id in _tracking:
+		_tracking.remove(target_id)
+
+def is_tracking(life, target_id):
+	_targets = brain.get_flag(life, 'tracking_targets')
+
+	if not _targets:
+		return False
+	
+	return target_id in _targets
+
 def _get_target_value(life, life_id, value):
 	_knows = brain.knows_alife_by_id(life, life_id)
 	
