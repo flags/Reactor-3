@@ -1,10 +1,12 @@
 from globals import *
+from overwatch import core
 from alife import *
 
 import graphics as gfx
 import damage as dam
 import pathfinding
 import scripting
+import missions
 import crafting
 import language
 import contexts
@@ -387,6 +389,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['seen'] = []
 	_life['seen_items'] = []
 	_life['state'] = 'idle'
+	_life['state_action'] = ''
 	_life['state_tier'] = 9999
 	_life['state_flags'] = {}
 	_life['states'] = []
@@ -403,7 +406,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['shoot_timer'] = 0
 	_life['shoot_timer_max'] = 300
 	_life['strafing'] = False
-	_life['recoil'] = 0
+	_life['recoil'] = 0.0
 	_life['stance'] = 'standing'
 	_life['stances'] = {'tackle': 7,
 	                    'leap': 6,
@@ -434,6 +437,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['tickers'] = {}
 	_life['think_rate_max'] = LIFE_THINK_RATE
 	_life['think_rate'] = random.randint(0, _life['think_rate_max'])
+	_life['time_of_death'] = -1000
 	
 	#Various icons...
 	# expl = #chr(15)
@@ -461,6 +465,9 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['group'] = None
 	_life['needs'] = {}
 	_life['need_id'] = 1
+	_life['faction'] = None
+	_life['missions'] = {}
+	_life['mission_id'] = None
 	
 	_life['stats'] = {}
 	alife.stats.init(_life)
@@ -478,7 +485,7 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 
 def ticker(life, name, time, fire=False):
 	if name in life['tickers']:
-		if life['tickers'][name]:
+		if life['tickers'][name]>0:
 			life['tickers'][name] -= 1
 			return False
 		else:
@@ -487,6 +494,10 @@ def ticker(life, name, time, fire=False):
 	else:
 		life['tickers'][name] = time
 		return fire
+
+def clear_ticker(life, name):
+	if name in life['tickers']:
+		del life['tickers'][name]
 
 def focus_on(life):
 	SETTINGS['following'] = life['id']
@@ -575,16 +586,27 @@ def change_goal(life, goal, tier, plan):
 		return False
 	
 	logging.debug('%s set new goal: %s (%s) -> %s (%s)' % (' '.join(life['name']), life['state'], life['state_tier'], goal, tier))
+	
 	life['state'] = goal
 	life['state_flags'] = {}
 	life['state_tier'] = tier
 	
+	#stop(life)
+	
 	life['states'].append(goal)
+	
 	if len(life['states'])>SETTINGS['state history size']:
 		life['states'].pop(0)
 	
-	if groups.is_leader_of_any_group(life):
-		speech.announce(life, 'group_leader_state_change', group=life['group'])
+	#if groups.is_leader_of_any_group(life):
+	#	speech.announce(life, 'group_leader_state_change', group=life['group'])
+
+def set_pos(life, pos):
+	maps.leave_chunk(get_current_chunk_id(life), life['id'])
+	
+	life['pos'] = list(pos[:])
+	
+	maps.enter_chunk(get_current_chunk_id(life), life['id'])
 
 def set_animation(life, animation, speed=2, loops=0):
 	life['animation'] = {'images': animation,
@@ -831,6 +853,15 @@ def memory(life, gist, *args, **kvargs):
 	if 'target' in kvargs:
 		create_and_update_self_snapshot(LIFE[kvargs['target']])
 	
+		if 'trust' in kvargs:
+			brain.knows_alife_by_id(life, kvargs['target'])['trust'] += kvargs['trust']
+			
+			logging.debug('%s changed trust in %s (%s): %s -> %s' % (' '.join(life['name']),
+			                                                    ' '.join(LIFE[kvargs['target']]['name']),
+			                                                    gist,
+			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']-1,
+			                                                    brain.knows_alife_by_id(life, kvargs['target'])['trust']))
+	
 	return _entry['id']
 
 def has_dialog(life):
@@ -938,6 +969,8 @@ def crawl(life, force=False):
 
 def stop(life):
 	clear_actions(life)
+	alife.brain.unflag(life, 'chunk_path')
+	
 	life['path'] = []
 
 def path_dest(life):
@@ -998,7 +1031,7 @@ def push(life, direction, speed, friction=0.05, _velocity=0):
 	life['friction'] = friction
 	life['velocity'] = velocity
 	life['realpos'] = life['pos'][:]
-	life['path'] = []
+	stop(life)
 	
 	logging.debug('%s flies off in an arc! (%s)' % (' '.join(life['name']), life['velocity']))
 
@@ -1033,15 +1066,18 @@ def calculate_velocity(life):
 		if not sum([abs(i) for i in life['velocity']]):
 			return False
 	
-		print life['velocity']
-	
 	return True
 
 def walk_to(life, position):
 	clear_actions(life)
+	_pos = position[:]
+	
+	if not len(position) == 3:
+		_pos.append(life['pos'][2])
+	
 	add_action(life,{'action': 'move',
-          'to': position},
-          200)
+	                 'to': _pos},
+	                 100)
 
 def walk(life, to=None, path=None):
 	"""Performs a single walk tick. Waits or returns success of life.walk_path()."""
@@ -1061,8 +1097,8 @@ def walk(life, to=None, path=None):
 		life['speed_max'] = get_max_speed(life)
 		life['speed'] = life['speed_max']
 		
-		if life['recoil'] < get_max_speed(life)*weapons.get_stance_recoil_mod(life):
-			life['recoil'] = get_max_speed(life)*weapons.get_stance_recoil_mod(life)
+		if life['recoil']<.5:
+			life['recoil'] = .5
 	
 	_dest = path_dest(life)
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')
@@ -1073,8 +1109,9 @@ def walk(life, to=None, path=None):
 	elif _existing_chunk_path and to == _existing_chunk_path['end']:
 		if not life['path']:
 			life['path'] = pathfinding.walk_chunk_path(life)
-	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to)):
+	elif to and (not _dest or not (_dest[0], _dest[1]) == tuple(to[:2])):
 		alife.brain.unflag(life, 'chunk_path')
+		
 		_zone = can_walk_to(life, to)
 		
 		if _zone:
@@ -1145,7 +1182,7 @@ def perform_collisions(life):
 			if life.has_key('player'):
 				gfx.message('You begin to fall...')
 		
-		life['gravity'] = WORLD_INFO['world gravity']
+		life['gravity'] = WORLD_INFO['world_gravity']
 			
 	#elif life['gravity']:
 	#	life['gravity'] = 0
@@ -1156,7 +1193,7 @@ def perform_collisions(life):
 	#		gfx.message('You land.')
 	
 	#if life['gravity']:
-	#	life['realpos'][2] -= WORLD_INFO['world gravity']
+	#	life['realpos'][2] -= WORLD_INFO['world_gravity']
 	#	life['pos'][2] = int(life['realpos'][2])
 	
 	return False
@@ -1180,28 +1217,27 @@ def clear_actions_matching(life,matches):
 def clear_actions(life,matches=[]):
 	"""Clears all actions and prints a cancellation message for the highest scoring action."""
 	
-	if matches:
-		clear_actions_matching(life,matches)
+	if len(matches):
+		clear_actions_matching(life, matches)
 		return True
 	else:
-		clear_actions_matching(life,matches=[{'action': 'move'}])
-		clear_actions_matching(life,matches=[{'action': 'dijkstra_move'}])
+		clear_actions_matching(life, matches=[{'action': 'move'}])
+		clear_actions_matching(life, matches=[{'action': 'dijkstra_move'}])
 		return True
 
-def find_action(life, matches=[{}]):
+def find_action(life, matches=[{}], invert=False):
 	_matching_actions = []
 	
 	for action in [action['action'] for action in life['actions']]:
-		_break = False
-		
 		for match in matches:
-			for key in match:
+			_break = False
+			for key in match:	
 				if not key in action or not action[key] == match[key]:
 					_break = True
 					break
 			
 			if _break:
-				break
+				continue
 				
 			_matching_actions.append(action)
 	
@@ -1276,8 +1312,19 @@ def perform_action(life):
 				if WORLD_INFO['ticks']-life['state_flags']['failed_dijkstra']>30:
 					del life['state_flags']['failed_dijkstra']
 				else:
-					walk_to(life, _action['goals'][0][:2])
+					_pos = _action['goals'][0][:]
+					
+					if len(_pos)<3:
+						_pos = _action['goals'][0][:]
+						_pos.append(life['pos'][2])
+					
+					walk_to(life, _action['goals'][0])
 			else:
+				if 'return_score_in_range' in _action:
+					_return_score_in_range = _action['return_score_in_range']
+				else:
+					_return_score_in_range = None
+				
 				if 'avoid_positions' in _action:
 					_avoid_positions = _action['avoid_positions']
 				else:
@@ -1297,13 +1344,17 @@ def perform_action(life):
 					SETTINGS['print dijkstra maps'] = True
 				
 				_s = time.time()
+				
 				_path = zones.dijkstra_map(life['pos'],
 					                       _action['goals'],
 					                       _zones,
 					                       rolldown=_action['rolldown'],
 					                       max_chunk_distance=sight.get_vision(life)/WORLD_INFO['chunk_size'],
 					                       avoid_positions=_avoid_positions,
+				                           return_score_in_range=_return_score_in_range,
 					                       avoid_chunks=_avoid_chunks)
+				
+				#print life['name'], 'DIJKSTRA MAP', _action['reason'], life['pos'], _path
 				
 				if not _path:
 					life['state_flags']['failed_dijkstra'] = WORLD_INFO['ticks']
@@ -1346,33 +1397,38 @@ def perform_action(life):
 		delete_action(life, action)
 	
 	elif _action['action'] == 'heal_limb':
+		_target = LIFE[_action['target']]
 		_item = items.get_item_from_uid(remove_item_from_inventory(life, _action['item_uid']))
 		_check_wounds = []
 		
 		items.delete_item(_item)
 		
-		for wound in life['body'][_action['limb']]['wounds']:
+		for wound in _target['body'][_action['limb']]['wounds']:
 			if _item['material'] == 'cloth':
 				_cut = wound['cut']
 				
 				wound['cut'] -= _item['thickness']
-				life['body'][wound['limb']]['cut'] -= _item['thickness']
+				_target['body'][wound['limb']]['cut'] -= _item['thickness']
 				
 				_item['thickness'] -= _cut
 				_check_wounds.append(wound)
 				
-				if 'player' in life:
+				if 'player' in _target:
 					gfx.message('You apply %s to your %s.' % (items.get_name(_item), wound['limb']))
-				
-				logging.debug('%s applies %s to their %s.' % (' '.join(life['name']), items.get_name(_item), wound['limb']))
+				elif 'player' in life:
+					memory(_target, 'healed_by', target=life['id'], trust=1)
+					
+					logging.debug('%s applies %s to %s\'s %s.' % (' '.join(life['name']), items.get_name(_item), ' '.join(_target['name']), wound['limb']))
+				else:
+					logging.debug('%s applies %s to their %s.' % (' '.join(_target['name']), items.get_name(_item), wound['limb']))
 		
 		for wound in _check_wounds:
 			if wound['cut'] > 0 or wound['lodged_item'] or wound['artery_ruptured']:
 				continue
 			
-			life['body'][wound['limb']]['wounds'].remove(wound)
+			_target['body'][wound['limb']]['wounds'].remove(wound)
 			
-			if 'player' in life:
+			if 'player' in _target:
 				gfx.message('Your %s has healed.' % wound['limb'])
 		
 		delete_action(life, action)
@@ -1400,9 +1456,8 @@ def perform_action(life):
 			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
 				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
 		
-		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
+		direct_add_item_to_inventory(life, _action['item'], container=_action['container'])
 		delete_action(life, action)
-		
 		set_animation(life, [',', 'x'], speed=6)
 		
 		if life.has_key('player'):
@@ -1411,6 +1466,20 @@ def perform_action(life):
 				_container = items.get_item_from_uid(_action['container'])
 				gfx.message('You store %s in %s.'
 					% (items.get_name(_item), items.get_name(_container)))
+	
+	elif _action['action'] == 'pickupitem_npc':
+		#If we're looting someone...
+		if ITEMS[_action['item']]['owner'] and not life['id'] == ITEMS[_action['item']]['owner']:
+			if not LIFE[ITEMS[_action['item']]['owner']]['asleep']:
+				memory(LIFE[ITEMS[_action['item']]['owner']], 'shot_by', target=life['id'])
+				judgement.judge_life(LIFE[ITEMS[_action['item']]['owner']], life['id'])
+			
+			if _action['item'] in LIFE[ITEMS[_action['item']]['owner']]['inventory']:
+				remove_item_from_inventory(LIFE[ITEMS[_action['item']]['owner']], _action['item'])
+		
+		add_item_to_inventory(life, _action['item'])
+		delete_action(life, action)
+		set_animation(life, [',', 'x'], speed=6)
 	
 	elif _action['action'] == 'dropitem':
 		_name = items.get_name(get_inventory_item(life,_action['item']))
@@ -1442,6 +1511,14 @@ def perform_action(life):
 	elif _action['action'] == 'equipitem':
 		_name = items.get_name(get_inventory_item(life, _action['item']))
 		
+		_stored = item_is_stored(life, _action['item'])
+
+		if _stored:
+			if 'player' in life:
+				gfx.message('You remove %s from your %s.' % (_name, _stored['name']))
+			else:
+				pass
+		
 		if not equip_item(life, _action['item']):
 			delete_action(life, action)
 			
@@ -1451,14 +1528,6 @@ def perform_action(life):
 				gfx.message('You can\'t hold %s.' % _name)
 			
 			return False
-		
-		_stored = item_is_stored(life, _action['item'])
-
-		if _stored:
-			if 'player' in life:
-				gfx.message('You remove %s from your %s.' % (_name, _stored['name']))
-			else:
-				pass
 		
 		if 'player' in life:
 			#if ITEMS[_action['item']]['type'] == 'gun':
@@ -1520,7 +1589,7 @@ def perform_action(life):
 			
 		#TODO: Can we even equip this? Can we check here instead of later?
 		_id = direct_add_item_to_inventory(life,_action['item'])
-		equip_item(life,_id)
+		equip_item(life, _id)
 		set_animation(life, [',', '*'], speed=6)
 		delete_action(life,action)
 	
@@ -1587,7 +1656,7 @@ def perform_action(life):
 		
 		delete_action(life,action)
 		
-	elif _action['action'] == 'reload':	
+	elif _action['action'] == 'reload':
 		_action['weapon'][_action['weapon']['feed']] = _action['ammo']['uid']
 		_ammo = remove_item_from_inventory(life, _action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
@@ -1680,16 +1749,16 @@ def kill(life, injury):
 		
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
-		else:
-			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+		#else:
+		#	say(life, '@n dies.', action=True)
 	else:
 		life['cause_of_death'] = language.format_injury(injury)
 		
 		if 'player' in life:
 			gfx.message('You die from %s.' % life['cause_of_death'])
 			del life['player']
-		else:
-			say(life, '@n dies from %s.' % life['cause_of_death'], action=True)
+		#else:
+		#	say(life, '@n dies.', action=True)
 		
 	logging.debug('%s dies: %s' % (life['name'][0], life['cause_of_death']))
 		
@@ -1705,19 +1774,24 @@ def kill(life, injury):
 		_walk_direction = numbers.direction_to(life['prev_pos'], life['pos'])
 		push(life, _walk_direction, 2)
 	
-	drop_all_items(life)
+	#drop_all_items(life)
+	for item_id in get_held_items(life):
+		drop_item(life, item_id)
+	
 	life['dead'] = True
 	life['stance'] = 'crawling'
 	life['time_of_death'] = WORLD_INFO['ticks']
 	timers.remove_by_owner(life)
+	
+	if 'player' in life:
+		while EVENTS:
+			EVENTS.pop()
 
 def can_die_via_critical_injury(life):
 	for limb in life['body']:
 		_limb = life['body'][limb]
-		if not 'CRUCIAL' in _limb['flags']:
-			continue
 		
-		if _limb['pain']>=_limb['size']:
+		if _limb['pain']>=_limb['size']*(('CRUCIAL' in _limb['flags'])+1):
 			return limb
 	
 	return False	
@@ -1762,8 +1836,8 @@ def tick(life):
 	if 'THIRST' in life['life_flags']:
 		if not thirst(life):
 			return False
-	
-	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0, 10)
+
+	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0.0, 1.0)
 	
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
@@ -1782,6 +1856,7 @@ def tick(life):
 			logging.debug('%s woke up.' % life['name'][0])
 			
 			if 'player' in life:
+				tcod.sys_set_fps(FPS)
 				gfx.message('You wake up.')
 			else:
 				say(life,'@n wakes up.',action=True, event=False)
@@ -1830,8 +1905,8 @@ def tick_all_life(setup=False):
 			brain.sight.look(life)
 			brain.sound.listen(life)
 			
-			if life['job']:
-				alife.jobs.work(life)
+			for mission_id in life['missions'].keys():
+				missions.do_mission(life, mission_id)
 			
 			perform_action(life)
 			
@@ -1854,10 +1929,10 @@ def tick_all_life(setup=False):
 		return False
 	
 	for life in _tick:
+		brain.act(life)
+		
 		if life['online']:
 			perform_action(life)
-		
-		brain.act(life)
 
 def attach_item_to_limb(body,id,limb):
 	"""Attaches item to limb. Returns True."""
@@ -1962,8 +2037,6 @@ def add_item_to_storage(life, item_uid, container=None):
 	#_container['capacity'] += _item['size']
 	items.store_item_in(item_uid, container)
 	
-	brain.remember_item(life, _item)
-	
 	return True
 
 def remove_item_in_storage(life, item_uid):
@@ -2047,6 +2120,14 @@ def get_inventory_item(life, item_id):
 	
 	return items.get_item_from_uid(item_id)
 
+def get_inventory_item_matching(life, item_match):
+	_matches = get_all_inventory_items(life, [item_match])
+	
+	if _matches:
+		return _matches[0]['uid']
+	
+	return None
+
 def get_all_inventory_items(life, matches=None, ignore_actions=False):
 	"""Returns list of all inventory items.
 	
@@ -2058,7 +2139,7 @@ def get_all_inventory_items(life, matches=None, ignore_actions=False):
 	for item_id in life['inventory']:
 		_item = items.get_item_from_uid(item_id)
 		
-		if not ignore_actions and find_action(life, matches=[{'item': item_id}]):
+		if ignore_actions and find_action(life, matches=[{'item': item_id}]):
 			continue
 		
 		if matches:
@@ -2073,13 +2154,13 @@ def get_all_unequipped_items(life, check_hands=True, matches=[], invert=False):
 	_unequipped_items = []
 	
 	for entry in life['inventory']:
-		item = get_inventory_item(life,entry)
+		item = get_inventory_item(life, entry)
 		
 		if matches:
 			if not perform_match(item, matches):
 				continue					
 		
-		if item_is_equipped(life,entry, check_hands=check_hands) == invert:
+		if item_is_equipped(life, entry, check_hands=check_hands) == invert:
 			_unequipped_items.append(entry)
 	
 	return _unequipped_items
@@ -2118,20 +2199,19 @@ def get_item_access_time(life, item_uid):
 	if _owner:
 		if 'stored_in' in _item:
 			_score = _size+get_item_access_time(LIFE[_owner], _item['stored_in'])
-			print _item['name'], 'in container:', _score
+			
 			return int(round(_score))
 		elif _equipped:
-			#Injury?
+			#TODO: Injury?
 			
 			if 'capacity' in _item:
-				print _item['name'], 'equipped, is container:', int(round(_size+(5*(_item['capacity']/float(_item['max_capacity'])))))
 				return int(round(_size+(_size*(_item['capacity']/float(_item['max_capacity'])))))
 			
 			return int(round(_size))
 	else:
-		print _item['name'], 'OFF-GROUND:', _size
-		
 		return int(round(_size))
+	
+	return 9
 
 def activate_item(life, item_uid):
 	add_action(life, {'action': 'activate_item', 'item_uid': item_uid}, 1000)
@@ -2153,7 +2233,12 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 
 	unlock_item(life, item_uid)
 	life['item_index'] += 1
+	
+	if item['owner']:
+		remove_item_from_inventory(LIFE[item['owner']], item['uid'])
+		
 	item['parent_id'] = life['id']
+	
 	item['owner'] = life['id']
 	
 	if 'stored_in' in item:
@@ -2177,12 +2262,13 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	
 	return item_uid
 
-def add_item_to_inventory(life, item_uid):
+def add_item_to_inventory(life, item_uid, equip=False):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
 	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
 		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
+	brain.remember_item(life, item)
 	
 	unlock_item(life, item_uid)
 	item['parent_id'] = life['id']
@@ -2191,9 +2277,19 @@ def add_item_to_inventory(life, item_uid):
 	if 'stored_in' in item:
 		items.remove_item_from_any_storage(item_uid)
 	
-	if not add_item_to_storage(life, item_uid):
+	if equip:
+		if can_wear_item(life, item_uid):
+			life['inventory'].append(item_uid)
+			equip_item(life,item_uid)
+		
+	elif not add_item_to_storage(life, item_uid):
 		if not can_wear_item(life, item_uid):
 			logging.warning('%s cannot store or wear item. Discarding...' % ' '.join(life['name']))
+			
+			item['pos'] = life['pos'][:]
+			
+			del item['parent_id']
+			item['owner'] = None
 			
 			return False
 		else:
@@ -2315,7 +2411,7 @@ def get_max_carry_size(life):
 	return _greatest
 
 def can_carry_item(life, item_uid):
-	if items.get_item_from_uid(item_uid)['size'] < get_max_carry_size(life):
+	if items.get_item_from_uid(item_uid)['size'] <= get_max_carry_size(life):
 		return True
 	
 	return False
@@ -2410,9 +2506,6 @@ def drop_item(life, item_id):
 
 def drop_all_items(life):
 	logging.debug('%s is dropping all items.' % ' '.join(life['name']))
-	
-	for item in get_all_storage(life):
-		drop_item(life, item['uid'])
 	
 	for item_uid in get_all_equipped_items(life):
 		drop_item(life, item_uid)
@@ -2537,7 +2630,7 @@ def get_items_attached_to_limb(life, limb):
 	
 	return _limb['holding']	
 
-def item_is_equipped(life,id,check_hands=False):
+def item_is_equipped(life, item_uid,check_hands=False):
 	"""Returns limb where item is equipped. Returns False othewise.
 	
 	The `check_hands` keyword argument indicates whether hands will be checked (default False)
@@ -2547,7 +2640,7 @@ def item_is_equipped(life,id,check_hands=False):
 		if not check_hands and _limb in life['hands']:
 			continue
 		
-		if id in get_limb(life,_limb)['holding']:
+		if item_uid in get_limb(life, _limb)['holding']:
 			return True
 	
 	return False
@@ -2568,13 +2661,15 @@ def draw_life_icon(life):
 	
 	if life['dead']:
 		_icon[1] = tcod.darkest_gray
+		
+		if 'time_of_death' in life and WORLD_INFO['ticks']-life['time_of_death']<=18 and time.time() % 1>=1-((WORLD_INFO['ticks']-life['time_of_death'])/18.0):
+			_icon[0] = chr(3)
+		
 		return _icon
 	
 	_bleed_rate = int(round(life['blood']))/float(calculate_max_blood(life))
 	
-	if time.time() % 0.5>=0.25 and life['state'] in STATE_ICONS:
-		_icon[0] = STATE_ICONS[life['state']]
-	elif _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
+	if _bleed_rate and _bleed_rate<=.85 and time.time()%_bleed_rate>=_bleed_rate/2.0:
 		_icon[0] = chr(3)
 	
 	if not life['id'] == SETTINGS['controlling']:
@@ -2593,12 +2688,10 @@ def draw_life_icon(life):
 						_icon[1] = tcod.crimson
 			
 			if not _icon[1]:
-				if _knows['alignment'] in ['trust', 'feign_trust']:
-					_icon[1] = tcod.color_lerp(tcod.lightest_yellow, tcod.yellow, 1)
-				elif _knows['alignment'] == 'neutral':
-					_icon[1] = tcod.light_gray
-				else:
+				if _knows['alignment'] == 'hostile':
 					_icon[1] = tcod.crimson
+				else:
+					_icon[1] = tcod.light_gray
 		else:
 			_icon[1] = tcod.light_gray
 	
@@ -2608,45 +2701,84 @@ def draw_life_icon(life):
 		if time.time()%1>=0.5:
 			_icon[0] = 'S'
 	
+	if SETTINGS['controlling'] and judgement.is_tracking(LIFE[SETTINGS['controlling']], life['id']) and gfx.position_is_in_frame(life['pos']):
+		_pos = gfx.get_render_position(life['pos'])
+		if time.time()%1>=0.5:
+			_icon[2] = tcod.white
+		else:
+			_icon[2] = None
+		
+		gfx.refresh_view_position(_pos[0], _pos[1], 'map')
+	
 	if 'player' in life:
 		_icon[1] = tcod.white
-	
+		
+	for item in [ITEMS[i] for i in get_all_equipped_items(life)]:
+		if not item['color'][0] == tcod.white and item['type'] == 'clothing':
+			_icon[1] = tcod.color_lerp(_icon[1], item['color'][0], 0.2)
+
 	return _icon
 
 def draw_life():
 	_view = gfx.get_view_by_name('map')
+	_life = LIFE[SETTINGS['following']]
+	_group = _life['group']
+	_view_list = {life_id: {'pos': LIFE[life_id]['pos']} for life_id in _life['seen'][:]}
+	_view_list[_life['id']] = {'pos': _life['pos']}
 	
-	for life in [LIFE[i] for i in LIFE]:
-		_icon,_fore_color,_back_color = draw_life_icon(life)
+	if _group:
+		for member_id in alife.groups.get_group(_life, _group)['members']:
+			if member_id in _view_list:
+				continue
+			
+			_member = brain.knows_alife_by_id(_life, member_id)
+			
+			if not _member['last_seen_at']:
+				continue
+			
+			_view_list[member_id] = {'pos': _member['last_seen_at'],
+			                         'icon': '?',
+			                         'blink_rate': numbers.clip(_member['last_seen_time']/50.0, 0, 1)}
+	
+	for entry in _view_list:
+		_target = entry
+		_icon,_fore_color,_back_color = draw_life_icon(LIFE[_target])
 		
-		if life['pos'][0] >= CAMERA_POS[0] and life['pos'][0] < CAMERA_POS[0]+_view['draw_size'][0] and\
-			life['pos'][1] >= CAMERA_POS[1] and life['pos'][1] < CAMERA_POS[1]+_view['draw_size'][1]:
-			_x = life['pos'][0] - CAMERA_POS[0]
-			_y = life['pos'][1] - CAMERA_POS[1]
+		_pos = _view_list[entry]['pos']
+		
+		if _pos[0] >= CAMERA_POS[0] and _pos[0] < CAMERA_POS[0]+_view['draw_size'][0] and\
+			_pos[1] >= CAMERA_POS[1] and _pos[1] < CAMERA_POS[1]+_view['draw_size'][1]:
+			_x = _pos[0] - CAMERA_POS[0]
+			_y = _pos[1] - CAMERA_POS[1]
 			
-			_p_x = life['prev_pos'][0] - CAMERA_POS[0]
-			_p_y = life['prev_pos'][1] - CAMERA_POS[1]
+			_p_x = LIFE[entry]['prev_pos'][0] - CAMERA_POS[0]
+			_p_y = LIFE[entry]['prev_pos'][1] - CAMERA_POS[1]
 			
-			if not sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
-				continue
-			
-			_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
-			_stealth_coverage = sight.get_stealth_coverage(life)
-			
-			
-			
-			if not 'player' in life and _visibility > _stealth_coverage:
-				continue
+			#if not _group or not life['id'] in alife.groups.get_group(LIFE[_player], _group):
+			#	if not sight.is_in_fov(LIFE[SETTINGS['following']], life['pos']):
+			#		continue
+			#
+			#	_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['following']], life['pos'])
+			#	_stealth_coverage = sight.get_stealth_coverage(life)
+			#	
+			#	if not 'player' in life and _visibility > _stealth_coverage:
+			#		continue
 			
 			if 0<=_p_x<=_view['draw_size'][0]-1 and 0<=_p_y<=_view['draw_size'][1]-1:
-				if not life['pos'] == life['prev_pos']:
+				if not _pos == LIFE[entry]['prev_pos']:
 					gfx.refresh_view_position(_p_x, _p_y, 'map')
 			
-			if SETTINGS['camera_track'] == life['pos'] and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
-				if time.time()%.5>.25:
+			if SETTINGS['camera_track'] == _pos and not SETTINGS['camera_track'] == LIFE[SETTINGS['controlling']]['pos']:
+				if time.time()%.5<.25:
 					_back_color = tcod.black
 				else:
 					_back_color = tcod.white
+			
+			if 'icon' in _view_list[entry]:
+				if time.time()%1<_view_list[entry]['blink_rate']:
+					_icon = _view_list[entry]['icon']
+				else:
+					_icon = LIFE[_target]['icon']
 			
 			gfx.refresh_view_position(_x, _y, 'map')
 			gfx.blit_char(_x,
@@ -2658,7 +2790,30 @@ def draw_life():
 				rgb_fore_buffer=_view['col_buffer'][0],
 				rgb_back_buffer=_view['col_buffer'][1])
 
-def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,check_hands=False,matches=None):
+def get_custom_fancy_inventory_menu_items(life, item_uids, title_item_uid=None):
+	_menu_items = []
+	
+	for item_uid in item_uids:
+		item = ITEMS[item_uid]
+		
+		_menu_items.append(menus.create_item('single',
+		                                     items.get_name(item),
+		                                     None,
+		                                     icon=item['icon'],
+		                                     id=item_uid,
+		                                     is_item=True,
+		                                     color=(tcod.color_lerp(tcod.gray, item['color'][0], 0.30), tcod.white)))
+	
+	if _menu_items and title_item_uid:
+		_title_item = ITEMS[title_item_uid]
+		_menu_items.insert(0, menus.create_item('title',
+		                                        _title_item['name'],
+		                                        None,
+		                                        icon=_title_item['icon']))
+	
+	return _menu_items
+
+def get_fancy_inventory_menu_items(life, show_equipped=True, show_containers=True, check_hands=False, matches=None):
 	"""Returns list of menu items with "fancy formatting".
 	
 	`show_equipped` decides whether equipped items are shown (default True)
@@ -2671,7 +2826,6 @@ def get_fancy_inventory_menu_items(life,show_equipped=True,show_containers=True,
 	_storage = {}
 	
 	#TODO: Time it would take to remove
-	#_items.extend(life['inventory'].keys())
 	for item_uid in life['inventory']:
 		if show_equipped and item_is_equipped(life, item_uid):
 			_equipped_items.append(item_uid)
@@ -2768,6 +2922,7 @@ def draw_life_info():
 	_action_queue_position = (_min_x+len(_stance)+2, 1)
 	_stance_position = (_min_x, _action_queue_position[1])
 	_health_position = (_min_x, _stance_position[1]+2)
+	_weather_position = (_min_x, _health_position[1]+1)
 	_debug_position = (_min_x, _health_position[1]+1)
 	
 	if life['asleep']:
@@ -2842,14 +2997,23 @@ def draw_life_info():
 	
 	#Weather
 	tcod.console_set_default_foreground(0, tcod.light_gray)
-	tcod.console_print(0, _health_position[0]+len(_health_string)+1,
-	                   _health_position[1],
+	tcod.console_print(0, _weather_position[0],
+	                   _weather_position[1],
 	                   'Weather: %s' % weather.get_weather_status())
 	
-	_longest_state = 3
+	_longest_state = 1
 	_visible_life = []
+	_seen = [LIFE[i] for i in life['seen']]
+	_tracking_targets = brain.get_flag(life, 'tracking_targets')
 	
-	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+	if _tracking_targets:
+		for target_id in _tracking_targets:
+			if not LIFE[target_id] in _seen:
+				_seen.append(LIFE[target_id])
+	else:
+		_tracking_targets = []
+	
+	for ai in _seen:
 		if ai['dead']:
 			_state = 'dead'
 		else:
@@ -2861,11 +3025,11 @@ def draw_life_info():
 			_longest_state = _state_len
 	
 	_i = 5
-	_xmod = _longest_state+3
+	_xmod = _longest_state
 	
-	for ai in [LIFE[i] for i in judgement.get_all_visible_life(life)]:
+	for ai in _seen:
 		if ai['dead']:
-			continue
+			continue		
 		
 		_state = judgement.get_target_state(life, ai['id'])
 		_icon = draw_life_icon(ai)
@@ -2873,14 +3037,25 @@ def draw_life_info():
 		tcod.console_set_default_foreground(0, _icon[1])
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _i, _icon[0])
 		
+		if ai['id'] in _tracking_targets and alife.brain.knows_alife(life, ai)['last_seen_at']:
+			_pos = alife.brain.knows_alife(life, ai)['last_seen_at']
+			_distance = numbers.distance(life['pos'], _pos)
+			_direction = numbers.direction_to(life['pos'], _pos)
+		else:
+			_distance = numbers.distance(life['pos'], ai['pos'])
+			_direction = numbers.direction_to(life['pos'], ai['pos'])
+		
 		if _state == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		_character_string = '%s (%s, %s)' % (' '.join(ai['name']),
-		                                 language.get_real_distance_string(numbers.distance(life['pos'], ai['pos'])),
-		                                 language.get_real_direction(numbers.direction_to(life['pos'], ai['pos'])))
+		_character_string = '%s %s@%s)' % (' '.join(ai['name']),
+		                                   language.get_real_direction(_direction, short=True).upper(),
+		                                   language.get_real_distance_string(_distance, round_up=True))
+		
+		if ai['id'] in _tracking_targets:
+			_character_string += ' *TRACKING*'
 		
 		tcod.console_print(0, MAP_WINDOW_SIZE[0]+3, _i, _state)
 		tcod.console_set_default_foreground(0, tcod.white)
@@ -2893,6 +3068,8 @@ def draw_life_info():
 		
 		_i += 1
 	
+	#print life['name'], life['seen'], alife.judgement.get_visible_threats(life)
+	
 	#Debug info
 	tcod.console_set_default_foreground(0, tcod.light_blue)
 	tcod.console_print(0, _debug_position[0],
@@ -2904,12 +3081,61 @@ def draw_life_info():
 	tcod.console_print(0, _debug_position[0],
 	                   _debug_position[1]+3+_i,
 	                   str(maps.get_chunk(get_current_chunk_id(life))['max_z']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+4+_i,
+	                   life['state'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+5+_i,
+	                   'Has targets: '+str(len(alife.judgement.get_threats(life, ignore_escaped=1))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+6+_i,
+	                   'Has visible targets: '+str(len(alife.judgement.get_visible_threats(life))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+7+_i,
+	                   'Has lost targets: '+str(len(judgement.get_threats(life, escaped_only=True, ignore_escaped=2))>0))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+8+_i,
+	                   'Confident: '+str(alife.stats.is_confident(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+9+_i,
+	                   'Potentially usable weapon: '+str(alife.combat.has_potentially_usable_weapon(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+10+_i,
+	                   'Usable weapon: '+str(not alife.combat.has_ready_weapon(life) == False))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+11+_i,
+	                   'Think rate: '+str(life['think_rate']))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+12+_i,
+	                   'High recoil: '+str(life['recoil']>=.75))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+13+_i,
+	                   'Overwatch: Goal: %s (h=%0.1f)' % (WORLD_INFO['overwatch']['mood'], core.get_overwatch_hardship()))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+14+_i,
+	                   'Threat in range: '+str(alife.stats.has_threat_in_combat_range(life)))
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+15+_i,
+	                   'Blood: %0.1f' % life['blood'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+16+_i,
+	                   'Online: %s' % life['online'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+17+_i,
+	                   'Faction: %s' % life['faction'])
+	tcod.console_print(0, _debug_position[0],
+	                   _debug_position[1]+18+_i,
+	                   'Needs to manage: %s' % str(alife.alife_manage_items.conditions(life)))
 	
+	if life['path']:
+		tcod.console_print(0, _debug_position[0],
+			               _debug_position[1]+16+_i,
+			               'Path length: %s' % len(life['path']))
 	#Recoil
 	if LIFE[SETTINGS['controlling']]['recoil']:
 		_y = MAP_WINDOW_SIZE[1]-SETTINGS['action queue size']
 		tcod.console_set_default_foreground(0, tcod.yellow)
-		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % LIFE[SETTINGS['controlling']]['recoil'])
+		tcod.console_print(0, MAP_WINDOW_SIZE[0]+1, _y-3, 'RECOIL (%s)' % life['recoil'])
 	
 	#Drawing the action queue
 	tcod.console_set_default_foreground(0, tcod.white)
@@ -2945,22 +3171,14 @@ def draw_life_info():
 def is_target_of(life):
 	_targets = []
 	
-	if not brain.get_flag(life, 'visible_chunks'):
-		return False
-	
-	for chunk_key in brain.get_flag(life, 'visible_chunks'):
-		for ai in  [LIFE[ai] for ai in maps.get_chunk(chunk_key)['life']]:
-			if life['id'] == ai['id'] or ai['dead']:
-				continue
-			
-			if not alife.sight.can_see_position(life, ai['pos']):
-				continue
-			
-			_targets = judgement.get_combat_targets(ai)
-			if _targets and life['id'] in [l for l in _targets]:
-				_targets.append(ai)
-				break
-	
+	for ai in  [LIFE[ai] for ai in life['seen']]:
+		if life['id'] == ai['id'] or ai['dead']:
+			continue
+		
+		if judgement.is_target_threat(ai, life['id']):
+			_targets.append(ai)
+			break
+
 	return _targets
 
 def is_in_shelter(life):
@@ -2998,14 +3216,17 @@ def pass_out(life, length=None, reason='Passed out'):
 	if not length:
 		length = get_total_pain(life)*PASS_OUT_PAIN_MOD
 	
+	clear_actions(life)
 	collapse(life)
 	life['asleep'] = length
 	life['asleep_reason'] = reason
 	
 	if 'player' in life:
+		tcod.sys_set_fps(1000)
+		
 		gfx.message('You pass out!',style='damage')
-	else:
-		say(life, '@n passes out.', action=True, event=False)
+	#lse:
+	#say(life, '@n passes out.', action=True, event=False)
 	
 	logging.debug('%s passed out.' % life['name'][0])
 
@@ -3113,7 +3334,6 @@ def get_health_status(life):
 	
 	return 'Fine'
 
-
 def calculate_blood(life):
 	_blood = 0
 	
@@ -3121,13 +3341,17 @@ def calculate_blood(life):
 		return 0
 	
 	for limb in life['body'].values():
-		if limb['bleeding']>0:
-			#print limb_is_cut
-			limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
-			limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
-			_blood += limb['bleeding']
+		if not limb['bleeding']:
+			continue
+		
+		limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
+		limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
+		_blood += limb['bleeding']
 	
-	life['blood'] -= _blood*LIFE_BLEED_RATE
+	if _blood:
+		life['blood'] -= _blood*LIFE_BLEED_RATE
+	else:
+		life['blood'] += 0.005
 	
 	if not life['asleep'] and _blood*LIFE_BLEED_RATE>=1.2:
 		pass_out(life)
@@ -3258,7 +3482,8 @@ def remove_limb(life, limb, no_children=False):
 	logging.debug('%s\'s %s was removed!' % (' '.join(life['name']), limb))
 
 def sever_limb(life, limb, impact_velocity):
-	say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
+	if life['group'] and SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['group'] == life['group']:
+		say(life, '%s %s is severed!' % (language.get_introduction(life, posession=True), limb), action=True)
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
@@ -3376,15 +3601,23 @@ def add_pain_to_limb(life, limb, amount=1):
 	_limb['pain'] += amount
 	_current_condition = get_limb_condition(life, limb)
 	
-	if amount>=1.5:
+	if amount>=1.2:
 		pass_out(life, length=25*amount, reason='Unconscious')
+		
+		if not 'player' in life:
+			say(life, '@n is knocked out!', action=True, event=False)
+	elif amount>=.3:
+		noise.create(life['pos'], 30, '%s cry out in pain' % ' '.join(life['name']), 'shouting', target=life['id'], skip_on_visual=False)
 	
 	logging.debug('%s hurts their %s (%s)' % (' '.join(life['name']), limb, amount))
 
-def heal_limb(life, limb, item_uid):
+def heal_limb(life, limb, item_uid, target=None):
+	if not target:
+		target = life['id']
+	
 	_delay = (life['body'][limb]['size']+ITEMS[item_uid]['size']) * 10
 	
-	add_action(life, {'action': 'heal_limb', 'limb': limb, 'item_uid': item_uid}, 9999, delay=_delay)
+	add_action(life, {'action': 'heal_limb', 'limb': limb, 'item_uid': item_uid, 'target': target}, 9999, delay=_delay)
 
 def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptured=False, lodged_item=None, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
@@ -3397,8 +3630,11 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 			return ', '.join(_msg)
 		
 		add_pain_to_limb(life, limb, amount=cut*float(_limb['damage_mod']))
+		
+		core.record_injury(1)
 	
 	if pain:
+		core.record_injury(1)
 		add_pain_to_limb(life, limb, amount=pain)
 	
 	if force_velocity:
@@ -3511,8 +3747,11 @@ def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	
+	print '*' * 10
+	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
+		_rand_limb.append(random.choice(life['body'].keys()))
 	else:
 		_rand_limb = [random.choice(life['body'].keys())]
 	
@@ -3520,7 +3759,7 @@ def damage_from_item(life, item):
 	_shot_by_alife = LIFE[item['shot_by']]
 	
 	if not _rand_limb:
-		memory(life, 'shot at by (missed)', target=item['shot_by'], danger=3, trust=-10)
+		memory(life, 'shot at by (missed)', target=item['shot_by'])
 		create_and_update_self_snapshot(life)
 		
 		if 'player' in _shot_by_alife:
@@ -3568,7 +3807,8 @@ def damage_from_item(life, item):
 	elif 'player' in life:
 		gfx.message(_dam_message, style='player_combat_bad')
 	elif sight.get_visiblity_of_position(_shot_by_alife, life['pos']) >= .4:
-		say(life, _dam_message, action=True, event=False)
+		if life['group'] and SETTINGS['controlling'] and LIFE[SETTINGS['controlling']]['group'] == life['group']:
+			say(life, _dam_message, action=True, event=False)
 	
 	create_and_update_self_snapshot(life)
 	
@@ -3589,8 +3829,6 @@ def natural_healing(life):
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))
-		#else:
-		#	logging.debug('%s\'s %s is healing (%s).' % (' '.join(life['name']), limb, _limb['pain']))
 				
 def generate_life_info(life):
 	_stats_for = ['name', 'id', 'pos', 'memory']

@@ -1,0 +1,11 @@
+{"name": "military crate",
+"prefix": "a",
+"type": "storage",
+"icon": "=",
+"description": "A large metal crate.",
+"flags": "",
+"size": "14x14",
+"capacity": "14x14",
+"thickness": 8,
+"color": [[0, 150, 0], [0, 170, 0]],
+"material": "metal"}

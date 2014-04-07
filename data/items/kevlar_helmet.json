@@ -1,0 +1,10 @@
+{"name": "kevlar helmet",
+"prefix": "a",
+"type": "clothing",
+"icon": "O",
+"description": "A bulletproof helmet.",
+"attaches_to": "head",
+"flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
+"size": "3x3",
+"thickness": 10,
+"material": "kevlar"}

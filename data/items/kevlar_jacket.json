@@ -3,7 +3,7 @@
 "type": "clothing",
 "icon": "T",
 "description": "A bulletproof jacket.",
-"attaches_to": "chest|stomach|lshoulder|rshoulder|lupperarm|rupperarm|lelbow|relbow|lforearm|rforearm",
+"attaches_to": "chest|neck|stomach|lshoulder|rshoulder|lupperarm|rupperarm|lelbow|relbow|lforearm|rforearm",
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
 "size": "6x6",
 "capacity": "2x2",

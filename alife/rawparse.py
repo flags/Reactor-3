@@ -5,15 +5,17 @@ import life as lfe
 import alife_manage_items
 import alife_discover
 import alife_shelter
+import alife_escape
 import alife_search
 import alife_combat
 import alife_follow
 import alife_cover
 import alife_needs
-import alife_hide
+import alife_work
 
 import references
 import judgement
+import missions
 import survival
 import movement
 import logging
@@ -37,6 +39,7 @@ CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
 
 def create_function_map():
 	FUNCTION_MAP.update({'is_family': stats.is_family,
+		'name': lambda life: ' '.join(life['name']),
 		'is_same_species': stats.is_same_species,
 		'can_trust': judgement.can_trust,
 		'is_dangerous': judgement.is_target_dangerous,
@@ -80,6 +83,7 @@ def create_function_map():
 		'is_traitor': lambda life, life_id: len(lfe.get_memory(life, matches={'text': 'traitor', 'target': life_id}))>0,
 		'is_awake': judgement.is_target_awake,
 		'is_dead': judgement.is_target_dead,
+		'is_target_dead': judgement.is_target_dead,
 		'is_raiding': lambda life: (life['group'] and groups.get_stage(life, life['group'])==STAGE_RAIDING)==True,
 		'find_and_announce_shelter': groups.find_and_announce_shelter,
 		'desires_shelter': stats.desires_shelter,
@@ -103,6 +107,7 @@ def create_function_map():
 		'retrieve_from_memory': brain.retrieve_from_memory,
 		'pick_up_and_hold_item': lfe.pick_up_and_hold_item,
 		'has_usable_weapon': lambda life: not combat.has_ready_weapon(life) == False,
+		'has_potentially_usable_weapon': lambda life: combat.has_potentially_usable_weapon(life) == True,
 		'target_is_combat_ready': judgement.target_is_combat_ready,
 		'create_item_need': survival.add_needed_item,
 		'group_needs_resources': lambda life, group_id: groups.needs_resources(group_id),
@@ -132,13 +137,14 @@ def create_function_map():
 		'is_in_same_group': lambda life, life_id: (life['group'] and LIFE[life_id]['group'] == life['group'])>0,
 		'is_target_group_leader': lambda life, life_id: (groups.is_leader_of_any_group(LIFE[life_id]))==True,
 		'is_in_group': lambda life: life['group']>0,
-		'is_target_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['alignment'] == 'hostile',
-		'is_target_in_group': lambda life, life_id, **kwargs: brain.knows_alife_by_id(life, life_id)['group']==kwargs['group'],
-		'is_target_in_any_group': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group']>0,
-		'is_target_group_friendly': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='trust',
-		'is_target_group_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='hostile',
-		'is_target_group_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='neutral',
+		'is_target_hostile': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['alignment'] == 'hostile',
+		'is_target_in_group': lambda life, life_id, **kwargs: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group']==kwargs['group'],
+		'is_target_in_any_group': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group']>0,
+		'is_target_group_friendly': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='trust',
+		'is_target_group_hostile': groups.is_target_group_hostile,
+		'is_target_group_neutral': lambda life, life_id: brain.knows_alife_by_id(life, life_id) and brain.knows_alife_by_id(life, life_id)['group'] and groups.get_group_memory(life, brain.knows_alife_by_id(life, life_id)['group'], 'alignment')=='neutral',
 		'is_group_hostile': lambda life, **kwargs: groups.get_group_memory(life, kwargs['group_id'], 'alignment')=='hostile',
+		'is_injured': lambda life: len(lfe.get_cut_limbs(life)) or len(lfe.get_bleeding_limbs(life)),
 		'inform_of_group_members': speech.inform_of_group_members,
 		'update_group_members': speech.update_group_members,
 		'get_group_flag': groups.get_flag,
@@ -163,7 +169,7 @@ def create_function_map():
 		'inform_of_group': speech.inform_of_group,
 		'force_inform_of_group': speech.force_inform_of_group,
 		'inform_of_items': lambda life, life_id, **kwargs: speech.inform_of_items(life, life_id, kwargs['items']),
-		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', life['pos'][:]),
+		'update_location': lambda life, life_id: brain.update_known_life(life, life_id, 'last_seen_at', LIFE[life_id]['pos'][:]),
 		'has_questions_for_target': lambda life, life_id: len(memory.get_questions_for_target(life, life_id))>0,
 		'has_orders_for_target': lambda life, life_id: len(memory.get_orders_for_target(life, life_id))>0,
 		'ask_target_question': memory.ask_target_question,
@@ -174,7 +180,7 @@ def create_function_map():
 		'get_introduction_message': speech.get_introduction_message,
 		'get_introduction_gist': speech.get_introduction_gist,
 		'establish_trust': stats.establish_trust,
-		'establish_feign_trust': stats.establish_trust,
+		'establish_feign_trust': stats.establish_feign_trust,
 		'establish_aggressive': stats.establish_aggressive,
 		'establish_hostile': stats.establish_hostile,
 		'establish_scared': stats.establish_scared,
@@ -194,7 +200,7 @@ def create_function_map():
 		'pick_up_item': lambda life: alife_needs.tick(life),
 		'take_shelter': lambda life: alife_shelter.tick(life),
 		'has_non_relaxed_goal': lambda life: life['state_tier']>TIER_RELAXED,
-		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life),
+		'needs_to_manage_inventory': lambda life: alife_manage_items.conditions(life) == True,
 		'manage_inventory': lambda life: alife_manage_items.tick(life),
 		'cover_exposed': lambda life: len(combat.get_exposed_positions(life))>0,
 		'ranged_ready': lambda life: lfe.execute_raw(life, 'combat', 'ranged_ready'),
@@ -202,15 +208,42 @@ def create_function_map():
 		'melee_ready': lambda life: lfe.execute_raw(life, 'combat', 'melee_ready'),
 		'melee_attack': lambda life: alife_combat.melee_attack(life),
 		'take_cover': lambda life: alife_cover.tick(life),
-		'hide': lambda life: alife_hide.tick(life),
+		'hide': lambda life: alife_escape.tick(life),
+		'stop': lfe.stop,
 		'search_for_threat': lambda life: alife_search.tick(life),
-		'has_recoil': lambda life: life['recoil']>=4,
+		'has_low_recoil': lambda life: life['recoil']>=.25,
+		'has_medium_recoil': lambda life: life['recoil']>=.5,
+		'has_high_recoil': lambda life: life['recoil']>=.75,
 		'has_focus_point': lambda life: len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))>0,
-		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
+		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))-1]['chunk_key']),
 		'follow_target': alife_follow.tick,
 		'guard_focus_point': lambda life: movement.guard_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'disarm': lambda life, life_id: brain.flag_alife(life, life_id, 'disarm', value=WORLD_INFO['ticks']),
+		'drop_weapon': lambda life: lfe.drop_item(life, lfe.get_held_items(life, matches={'type': 'gun'})[0]),
 		'is_disarming': lambda life, life_id: brain.get_alife_flag(life, life_id, 'disarm')>0,
+		'set_raid_location': lambda life, **kwargs: lfe.memory(life, 'focus_on_chunk', chunk_key=kwargs['chunk_key']),
+		'move_to_chunk': lambda life, **kwargs:  movement.set_focus_point(life, kwargs['chunk_key']),
+		'move_to_chunk_key': movement.set_focus_point,
+		'recruiting': lambda life, life_id: speech.send(life, life_id, 'recruit'),
+		'is_raiding': lambda life: life['group'] and groups.get_stage(life, life['group']) == STAGE_ATTACKING,
+		'is_in_target_chunk': lambda life, target_id: lfe.get_current_chunk_id(life) == lfe.get_current_chunk_id(LIFE[target_id]),
+		'get_chunk_key': lfe.get_current_chunk_id,
+		'has_threat_in_combat_range': stats.has_threat_in_combat_range,
+		'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
+		'has_item_type': lambda life, item_match: not lfe.get_inventory_item_matching(life, item_match) == None,
+		'move_to_target': lambda life, target_id: movement.travel_to_position(life, LIFE[target_id]['pos']),
+		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
+		'track_target': lambda life, target_id: brain.meet_alife(life, LIFE[target_id]) and judgement.track_target(life, target_id),
+		'untrack_target': judgement.untrack_target,
+		'clear_tracking': lambda life: brain.flag(life, 'tracking_targets', []),
+		'can_see_item': lambda life, item_uid: item_uid in life['seen_items'],
+		'has_item': lambda life, item_uid: item_uid in life['inventory'],
+		'pick_up_item': movement.pick_up_item,
+		'create_mission': missions.create_mission_for_self,
+		'give_mission': missions.create_mission_and_give,
+		'do_mission': alife_work.tick,
+		'has_mission': lambda life: len(life['missions'])>0,
+		'drop_item': lfe.drop_item,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
 		'pass': lambda life, *a, **k: True,

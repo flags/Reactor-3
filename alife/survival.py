@@ -281,6 +281,12 @@ def manage_hands(life):
 		judgement.judge_item(life, item['uid'])
 		_known_item = brain.get_remembered_item(life, item['uid'])
 		
+		for weapon in combat.get_equipped_weapons(life):
+			if item['type'] == ITEMS[weapon]['feed'] and len(item['rounds'])>=5:
+				combat.load_feed(life, weapon, item['uid'])
+				
+				return True
+		
 		if _known_item['score']:#judgement.get_score_of_highest_scoring_item(life):
 			continue
 		
@@ -319,8 +325,10 @@ def manage_inventory(life):
 	for weapon_uid in combat.get_equipped_weapons(life):
 		if not combat.weapon_is_working(life, weapon_uid):
 			if combat.weapon_is_in_preferred_working_condition(life, weapon_uid):
-				combat.reload_weapon(life, weapon_uid)
-				return True
+				if not len(lfe.find_action(life,matches=[{'action': 'refillammo'}])):
+					combat.reload_weapon(life, weapon_uid)
+				
+					return True
 	
 	_item_to_wear = {'score': 0, 'item_uid': None}
 	_item_to_equip = {'score': 0, 'item_uid': None}
@@ -337,6 +345,9 @@ def manage_inventory(life):
 			else:
 				if rawparse.raw_has_section(life, 'items') and rawparse.raw_section_has_identifier(life, 'items', item['type']):
 					_action = lfe.execute_raw(life, 'items', item['type'])
+					
+					if item['type'] == 'gun' and lfe.get_all_equipped_items(life, matches=[{'type': 'gun'}]):
+						continue
 					
 					if _action == 'equip':
 						if _known_item['score'] > _item_to_equip['score']:
@@ -360,9 +371,9 @@ def manage_inventory(life):
 			401,
 			delay=lfe.get_item_access_time(life, _item))
 		
-		return True
+		return False
 	
-	return False
+	return True
 
 def explore_known_chunks(life):
 	#Our first order of business is to figure out exactly what we're looking for.
@@ -390,22 +401,17 @@ def explore_known_chunks(life):
 		return False
 	
 	_pos_in_chunk = random.choice(_chunk['ground'])
-	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': _pos_in_chunk},200)
+	
+	lfe.walk_to(life, _pos_in_chunk)
+	
 	return True
 
+#@profile
 def explore_unknown_chunks(life):
 	if life['path']:
 		return True
 	
 	_chunk_key = references.path_along_reference(life, 'roads')
-	
-	if not _chunk_key:
-		_best_reference = references._find_best_unknown_reference(life, 'roads')['reference']
-		if not _best_reference:
-			return False
-		
-		_chunk_key = references.find_nearest_key_in_reference(life, _best_reference, unknown=True, threshold=15)
 	
 	if not _chunk_key:
 		return False

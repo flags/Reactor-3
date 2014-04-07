@@ -7,9 +7,9 @@
 "size": "3x2",
 "feed": "magazine",
 "ammotype": "9x19mm",
-"recoil": 0.45,
+"recoil": 0.25,
+"accuracy": 0.63,
 "firemodes": ["single", "3burst", "auto"],
-"firemode": 0,
-"accuracy": 4,
+"firemode": 1,
 "material": "metal",
 "thickness": 3}

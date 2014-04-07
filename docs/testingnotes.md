@@ -34,3 +34,32 @@ Factor weather into visiblity
 	best places to hide in the surrounding area
 
 When weapons are dropped, the magazines inside the guns are not disowned.
+
+healed_by memory to boost leadership?
+	then "Thanks!"
+	Changes in relationships after memories
+		Would make combat affect ALife behavior more
+		
+When rendering items, render the most important one on top (gun -> health kit -> ammo)
+		
+AI: What should I do?
+
+
+
+Content:
+	Lock weapon crates: Use small explosives to open them, etc
+		It's a "task" to open them. Gives the player something to do
+
+
+
+Do not clear orders until group leader allows it
+	i.e., when the AI hits a guard point it should not be cleared (they should wait there)
+
+
+"Are you armed?"
+"Negative"
+"Stay behind us, then!"
+
+
+
+CALL FOR BACKUP - "hot" areas of map that attrack people

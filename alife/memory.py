@@ -11,12 +11,15 @@ import jobs
 
 import logging
 
-def create_question(life, life_id, gist, ignore_if_said_in_last=0, **kwargs):
+def create_question(life, life_id, gist, ignore_if_said_in_last=0, recent_time=0, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)
 	_question = {'gist': gist, 'args': kwargs}
 	
 	if not _target:
 		logging.critical('%s does not know %s but is creating questions for them.' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name'])))
+		return False
+	
+	if _target['time_visible'] < recent_time:
 		return False
 	
 	if _question in _target['questions']:
@@ -30,7 +33,7 @@ def create_question(life, life_id, gist, ignore_if_said_in_last=0, **kwargs):
 	speech.send(life, life_id, gist)
 	_target['questions'].append(_question)
 	
-	logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))
+	#logging.debug('%s created question for %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), gist))
 
 def create_order(life, life_id, order, message, **kwargs):
 	_target = brain.knows_alife_by_id(life, life_id)

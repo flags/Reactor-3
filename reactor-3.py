@@ -25,6 +25,8 @@ import worldgen
 import mainmenu
 import language
 import profiles
+import missions
+import threads
 import network
 import drawing
 import weapons
@@ -36,6 +38,7 @@ import numpy
 import tiles
 import menus
 import logic
+import locks
 import items
 import life
 import time
@@ -50,14 +53,20 @@ CYTHON_ENABLED = True
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
 	
-	if SETTINGS['controlling']:
+	if SETTINGS['controlling'] and SETTINGS['following'] == SETTINGS['controlling'] and locks.is_locked('camera_free'):
 		_life = LIFE[SETTINGS['controlling']]
 		_top_left = MAP_SIZE[:]
 		_bot_right = [0, 0, 0]
+		_seen = False
 		
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
 			if LIFE[life_id]['dead']:
 				continue
+			
+			if brain.knows_alife_by_id(LIFE[SETTINGS['controlling']], life_id)['alignment'] in ['trust', 'feign_trust']:
+				continue
+			
+			_seen = True
 			
 			if LIFE[life_id]['pos'][0] < _top_left[0]:
 				_top_left[0] = LIFE[life_id]['pos'][0]
@@ -77,11 +86,22 @@ def move_camera(pos, scroll=False):
 			
 			brain.flag(_life, 'camera_lean', value=_target_pos[:])
 			brain.flag(_life, 'camera_lean_time', value=WORLD_INFO['ticks'])
+			
+			_future_time = brain.get_flag(_life, 'camera_lean_time_future')
+			if not _future_time or WORLD_INFO['ticks']>_future_time:
+				brain.flag(_life, 'camera_lean_time_future', value=WORLD_INFO['ticks']+30)
 		
 		if brain.get_flag(_life, 'camera_lean'):
-			if not LIFE[SETTINGS['controlling']]['seen']:
+			if _seen:
+				_st = WORLD_INFO['ticks']-(brain.get_flag(_life, 'camera_lean_time_future')-30)
+				_et = brain.get_flag(_life, 'camera_lean_time_future')-(brain.get_flag(_life, 'camera_lean_time_future')-30)
+				_lerp = 1-numbers.clip(_st/float(_et), 0, 1.0)
+				
+				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+				pos.append(2)
+			else:
 				if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
-					_lerp = .35-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/20.0, 0, .35)
+					_lerp = .45-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .45)
 					pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
 					pos.append(2)
 				else:
@@ -112,6 +132,8 @@ def draw_targeting():
 
 def death():
 	_player = LIFE[SETTINGS['controlling']]
+	
+	maps.reset_lights()
 	FADE_TO_WHITE[0] += .5
 	
 	_time_since_death = FADE_TO_WHITE[0]
@@ -249,7 +271,7 @@ def main():
 	if '--fps' in sys.argv:
 		print tcod.sys_get_fps()
 	
-	if (SETTINGS['recording'] and _player_moved and not EVENTS) or '--worldmap' in sys.argv:
+	if (SETTINGS['recording'] and _player_moved and not EVENTS and not MENUS) or '--worldmap' in sys.argv:
 		gfx.screenshot()
 		
 		if '--worldmap' in sys.argv:
@@ -304,9 +326,12 @@ if __name__ == '__main__':
 	
 	tiles.create_all_tiles()
 	language.load_strings()
+	missions.load_all_missions()
 	alife.rawparse.create_function_map()
+	locks.create_lock('camera_free', locked=True)
 	
 	gfx.init_libtcod()
+	threads.init()
 	#smp.init()
 
 	SETTINGS['draw z-levels below'] = True
@@ -346,6 +371,8 @@ if __name__ == '__main__':
 	
 	try:
 		loop()
+	except KeyboardInterrupt:
+		SETTINGS['running'] = False
 	except Exception, e:
 		traceback.print_exc(file=sys.stdout)
 		SETTINGS['running'] = False

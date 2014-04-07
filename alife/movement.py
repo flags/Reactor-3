@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
+from globals import SELECTED_TILES, WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
 
 import life as lfe
 
@@ -9,6 +9,7 @@ import combat
 import speech
 import chunks
 import memory
+import logic
 import alife
 import zones
 import sight
@@ -19,76 +20,119 @@ import fov
 
 import random
 
-def position_to_attack(life, target):
+def position_to_attack(life, target, engage_distance):
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'positioning for attack'}]):
 		if not lfe.ticker(life, 'attack_position', 4):
 			return False
 	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
-	_nearest_target_score = zones.dijkstra_map(life['pos'], _target_positions, _zones, return_score=True)
+	_can_see = alife.sight.can_see_position(life, _target_positions[0], get_path=True)
+	_distance = numbers.distance(life['pos'], _target_positions[0])
 	
-	#TODO: Short or long-range weapon?
-	#if _nearest_target_score >= sight.get_vision(life)/2:
-	if not sight.can_see_position(life, brain.knows_alife_by_id(life, target)['last_seen_at'], block_check=True, strict=True) or sight.view_blocked_by_life(life, _target_positions[0], allow=[target]):
-		print life['name'], 'changing position for combat...', life['name'], LIFE[target]['name']
+	if _can_see and len(_can_see)<engage_distance*.85:
+		if life['path']:
+			lfe.stop(life)
+	elif _distance<engage_distance*.9:
+		_avoid_positions = set()
+		_target_area = set()
+			
+		for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
+			fov.fov(LIFE[life_id]['pos'], int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_positions.add(pos))
+			
+		fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.15)), callback=lambda pos: _target_area.add(pos))
 		
-		_avoid_positions = []
-		for life_id in life['seen']:
-			if life_id == target or life['id'] == life_id:
+		_min_view_distance = int(round(sight.get_vision(life)*.25))
+		_max_view_distance = int(round(sight.get_vision(life)*.5))
+		_attack_positions = set(zones.dijkstra_map(life['pos'],
+		                   _target_positions,
+		                   _zones,
+		                   rolldown=True,
+		                   return_score_in_range=[_min_view_distance, _max_view_distance]))
+		
+		_attack_positions = _attack_positions - _target_area
+		
+		if not _attack_positions:
+			return False
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': list(_attack_positions), 'avoid_positions': list(_avoid_positions)}]):
+			lfe.stop(life)
+			
+			lfe.add_action(life, {'action': 'dijkstra_move',
+		                          'rolldown': True,
+		                          'goals': [list(p) for p in random.sample(_attack_positions, len(_attack_positions)/2)],
+		                          'orig_goals': list(_attack_positions),
+		                          'avoid_positions': list(_avoid_positions),
+		                          'reason': 'positioning for attack'},
+		                   999)
+			
+			return False
+	else:
+		_can_see_positions = set()
+		_target_area = set()
+		_avoid_positions = set()
+		
+		fov.fov(life['pos'], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _can_see_positions.add(pos))
+		fov.fov(_target_positions[0], int(round(sight.get_vision(life)*.75)), callback=lambda pos: _target_area.add(pos))
+		
+		for life_id in alife.judgement.get_trusted(life, visible=False, only_recent=True):
+			_path_dest = lfe.path_dest(LIFE[life_id])
+			
+			if not _path_dest:
 				continue
 			
-			if alife.judgement.can_trust(life, life_id):
-				_avoid_positions.append(lfe.path_dest(LIFE[life_id]))
-			else:
-				_avoid_positions.append(brain.knows_alife_by_id(life, life_id)['last_seen_at'])
-		
-		_cover = _target_positions
-		
-		_zones = []
-		for pos in _cover:
-			_zone = zones.get_zone_at_coords(pos)
+			if len(_path_dest)==2:
+				_path_dest = list(_path_dest[:])
+				_path_dest.append(LIFE[life_id]['pos'][2])
 			
-			if not _zone in _zones:
-				_zones.append(_zone)
+			fov.fov(_path_dest, 5, callback=lambda pos: _avoid_positions.add(pos))
 		
-		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _cover[:], 'avoid_positions': _avoid_positions}]):
+		_avoid_positions = list(_avoid_positions)
+		_sneak_positions = _can_see_positions - _target_area
+		_move_positions = zones.dijkstra_map(LIFE[target]['pos'],
+		                                     list(_sneak_positions),
+		                                     _zones,
+		                                     rolldown=True)
+		
+		if not _move_positions:
+			travel_to_position(life, list(_target_positions[0]))
+			return False
+		
+		if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': _move_positions, 'avoid_positions': _avoid_positions}]):
 			lfe.stop(life)
+			
 			lfe.add_action(life, {'action': 'dijkstra_move',
-				                  'rolldown': True,
-				                  'goals': _cover[:],
-			                      'orig_goals': _cover[:],
+		                          'rolldown': True,
+		                          'goals': [list(p) for p in _move_positions],
+		                          'orig_goals': _move_positions,
 			                      'avoid_positions': _avoid_positions,
-			                      'reason': 'positioning for attack'},
-				           999)
+		                          'reason': 'positioning for attack'},
+		                   999)
 			
 			return False
-		else:
-			return False
-	elif life['path']:
-		lfe.stop(life)
 	
 	return True
 
-def travel_to_position(life, pos, stop_on_sight=False):
-	if stop_on_sight and sight.can_see_position(life, pos):
-		return True
-	
+def travel_to_position(life, pos, stop_on_sight=False, force=False):
 	if not numbers.distance(life['pos'], pos):
 		return True
 	
+	if stop_on_sight and sight.can_see_position(life, pos, get_path=True, ignore_z=True):
+		lfe.stop(life)
+		
+		return True
+	
 	_dest = lfe.path_dest(life)
-	if _dest and tuple(_dest[:2]) == tuple(pos[:2]):
+	if not force and _dest and tuple(_dest[:2]) == tuple(pos[:2]):
 		return False
 	
-	lfe.clear_actions(life)
-	lfe.add_action(life,{'action': 'move','to': (pos[0],pos[1])},200)
+	lfe.walk_to(life, pos[:3])
 	
 	return False
 
 def travel_to_chunk(life, chunk_key):
 	_chunk_pos = maps.get_chunk(chunk_key)['pos']
 	
-	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2])
+	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2, 2])
 
 def guard_chunk(life, chunk_key):
 	if 'guard_time' in life['state_flags'] and life['state_flags']['guard_time']:
@@ -96,20 +140,48 @@ def guard_chunk(life, chunk_key):
 		
 		return False
 	
-	_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
-	_center_chunk_pos.append(2)
-	_patrol_chunk_key = random.choice(chunks.get_visible_chunks_from(_center_chunk_pos, alife.sight.get_vision(life)))
-	
-	travel_to_chunk(life, _patrol_chunk_key)
-	
 	life['state_flags']['guard_time'] = random.randint(45, 60)
 	
+	travel_to_chunk(life, chunk_key)
+	
 	return False
+
+def set_focus_point(life, chunk_key):
+	lfe.delete_memory(life, matches={'text': 'focus_on_chunk'})
+	
+	lfe.memory(life, 'focus_on_chunk', chunk_key=chunk_key)
+	
+	if 'player' in life:
+		_center_chunk_pos = maps.get_chunk(chunk_key)['pos']
+		_center_chunk_pos.append(2)
+		
+		logic.show_event('<Movement Order>', pos=_center_chunk_pos)
+
+def pick_up_item(life, item_uid):
+	_not_moved = travel_to_position(life, ITEMS[item_uid]['pos'])
+	
+	if _not_moved:
+		lfe.add_action(life,{'action': 'pickupitem_npc',
+		                     'item': item_uid},
+		                     200,
+		                     delay=lfe.get_item_access_time(life, item_uid))
 
 def search_for_target(life, target_id):
 	#TODO: Variable size instead of hardcoded
 	_know = brain.knows_alife_by_id(life, target_id)
 	_size = 30
+	_timer = brain.get_flag(life, 'search_time')
+	_chunk_path = alife.brain.get_flag(life, 'chunk_path')
+	
+	if _chunk_path:
+		travel_to_position(life, _chunk_path['end'], force=True)
+		
+		return False
+	
+	if _timer>0:
+		brain.flag(life, 'search_time', _timer-1)
+		
+		return False
 	
 	if brain.alife_has_flag(life, target_id, 'search_map'):
 		_search_map = brain.get_alife_flag(life, target_id, 'search_map')
@@ -117,10 +189,9 @@ def search_for_target(life, target_id):
 		_search_map = maps.create_search_map(life, _know['last_seen_at'], _size)
 		brain.flag_alife(life, target_id, 'search_map', value=_search_map)
 		
-		lfe.stop(life)
-		lfe.walk_to(life, _know['last_seen_at'][:2])
-	
-	if life['path'] or lfe.find_action(life, matches=[{'action': 'move'}]):
+		lfe.walk_to(life, _know['last_seen_at'])
+		brain.flag(life, 'search_time', 12)
+		
 		return False
 	
 	_lowest = {'score': -1, 'pos': None}
@@ -142,31 +213,33 @@ def search_for_target(life, target_id):
 			if not _search_map[y, x]:
 				continue
 			
-			if sight.can_see_position(life, (_x, _y)):
+			if sight.can_see_position(life, (_x, _y, _know['last_seen_at'][2]), get_path=True) or not lfe.can_walk_to(life, (_x, _y, _know['last_seen_at'][2])):
 				_search_map[y, x] = 0
 			
-			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] <= _lowest['score']):
+			if _search_map[y, x]>0 and (not _lowest['pos'] or _search_map[y, x] < _lowest['score']):
 				_lowest['score'] = _search_map[y, x]
 				_lowest['pos'] = (_x, _y, x, y)
 
 	if _lowest['pos']:
 		x, y, _x, _y = _lowest['pos']
 		
-		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=True):
+		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=False):
 			_search_map[_y, _x] = 0
+		
+		brain.flag(life, 'search_time', numbers.clip(numbers.distance(life['pos'], (x, y))*.75, 5, 16))
 	else:
 		_know['escaped'] = 2
 
 def escape(life, targets):
-	_target_positions = []
 	_avoid_positions = []
 	_zones = [zones.get_zone_at_coords(life['pos'])]
 	
-	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
-		if not lfe.ticker(life, 'escaping', 4):
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escape'}]):
+		if lfe.ticker(life, 'escape_refresh', 4):
+			lfe.stop(life)
+		else:
 			return False
 	
-	#What can the targets see?
 	for target_id in targets:
 		_target = brain.knows_alife_by_id(life, target_id)
 		_zone = zones.get_zone_at_coords(_target['last_seen_at'])
@@ -174,103 +247,97 @@ def escape(life, targets):
 		if not _zone in _zones:
 			_zones.append(_zone)
 		
-		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), callback=lambda pos: _avoid_positions.append(pos))
+		_avoid_positions.append(_target['last_seen_at'])
 	
+	lfe.add_action(life, {'action': 'dijkstra_move',
+	                      'rolldown': False,
+	                      'zones': _zones,
+	                      'goals': _avoid_positions,
+	                      'reason': 'escape'},
+	               100)
+
+def hide(life, targets):
+	_target_positions = []
+	_avoid_positions = []
+	_zones = [zones.get_zone_at_coords(life['pos'])]
+
+	if lfe.find_action(life, [{'action': 'dijkstra_move', 'reason': 'escaping'}]):
+		if not lfe.ticker(life, 'escaping', 6):
+			return False
+
+	#What can the targets see?
+	for target_id in targets:
+		_target = brain.knows_alife_by_id(life, target_id)
+		_zone = zones.get_zone_at_coords(_target['last_seen_at'])
+
+		if not _zone in _zones:
+			_zones.append(_zone)
+
+		fov.fov(_target['last_seen_at'], sight.get_vision(_target['life']), callback=lambda pos: _avoid_positions.append(pos))
+
 	#What can we see?
 	_can_see_positions = []
 	fov.fov(life['pos'], sight.get_vision(life), callback=lambda pos: _can_see_positions.append(pos))
-	
+
 	#If there are no visible targets, we could be running away from a position we were attacked from
 	_cover_exposed_at = brain.get_flag(life, 'cover_exposed_at')
-	
+
 	if _cover_exposed_at:
 		_avoid_exposed_cover_positions = set()
-		
+
 		for pos in _cover_exposed_at[:]:
 			if tuple(pos[:2]) in _can_see_positions:
-				print 'ok!!!'*20
 				_cover_exposed_at.remove(pos)
+
 				continue
-			
+
 			fov.fov(pos, int(round(sight.get_vision(life)*.25)), callback=lambda pos: _avoid_exposed_cover_positions.add(pos))
-		
+
 		for pos in _avoid_exposed_cover_positions:
 			if not pos in _avoid_positions:
 				_avoid_positions.append(pos)
-	
+	else:
+		print 'Something went wrong'
+
+		return False
+
 	#Overlay the two, finding positions we can see but the target can't
 	for pos in _can_see_positions[:]:
 		if pos in _avoid_positions:
 			_can_see_positions.remove(pos)
 			continue
-	
+
 		#Get rid of positions that are too close
 		for target_id in targets:
 			_target = brain.knows_alife_by_id(life, target_id)
-			
-			#TODO: Unhardcode 15
-			if numbers.distance(_target['last_seen_at'], pos)<10:
+
+			if numbers.distance(_target['last_seen_at'], pos)<4:
 				_can_see_positions.remove(pos)
 				break
-	
+
 	#Now scan for cover to prevent hiding in the open
 	for pos in _can_see_positions[:]:
 		if chunks.get_chunk(chunks.get_chunk_key_at(pos))['max_z'] == 2:
 			_can_see_positions.remove(pos)
-	
-	#for target_id in targets:
-		#_target = brain.knows_alife_by_id(life, target_id)
-		#_target_positions.append(_target['last_seen_at'][:])
-		#_zone = zones.get_zone_at_coords(_target['last_seen_at'])
-		
-		#if not _zone in _zones:
-		#	_zones.append(_zone)
-		
-		#for chunk_key in chunks.get_visible_chunks_from(_target['last_seen_at'], sight.get_vision(_target['life'])):
-		#	if chunk_key in _visible_target_chunks:
-		#		continue
-			
-		#	_visible_target_chunks.append(chunk_key)
-	
-	#for friendly_id in life['seen']:
-	#	_chunk_key = lfe.get_current_chunk_id(LIFE[friendly_id])
-	#	
-	#	if not _chunk_key in _visible_target_chunks:
-	#		_visible_target_chunks.append(_chunk_key)
-	
-	#if not _target_positions:
-	#	return False
-	
-	#TODO: #combat: For lower limit in return_score_in_range, use range of weapon
-	#_cover = zones.dijkstra_map(life['pos'],
-	#                            _avoid_positions,
-	#                            _zones,
-	#                            avoid_chunks=[],
-	#                            return_score_in_range=[1, 5]) # sight.get_vision(life)
-	#_cover = [(c[0], c[1], life['pos'][2]) for c in _cover]
-	#if not _cover:
-	#	return False
-	
-	#_zones = [zones.get_zone_at_coords(life['pos'])]
-	#for _pos in _cover:
-	#	_zone = zones.get_zone_at_coords(_pos)
-		
-	#	if not _zone in _zones:
-	#		_zones.append(_zone)
-	
+
 	if not _can_see_positions:
+		if life['pos'] in _cover_exposed_at:
+			_cover_exposed_at.remove(life['pos'])
+
 		return False
-	
+
 	if lfe.find_action(life, [{'action': 'dijkstra_move', 'goals': _can_see_positions[:]}]):
 		return True
-	
+
 	lfe.stop(life)
 	lfe.add_action(life, {'action': 'dijkstra_move',
 	                      'rolldown': True,
 	                      'zones': _zones,
 	                      'goals': _can_see_positions[:],
 	                      'reason': 'escaping'},
-	               999)
+	               200)
+
+	#print life['name'], 'here', tuple(life['pos'][:2]) in _can_see_positions
 
 def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}):
 	_highest = {'item': None,'score': -100000}
@@ -316,8 +383,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 			delay=lfe.get_item_access_time(life, _highest['item']['uid']))
 		lfe.lock_item(life, _highest['item']['uid'])
 	else:
-		lfe.clear_actions(life)
-		lfe.add_action(life,{'action': 'move','to': _highest['item']['pos'][:2]},200)
+		lfe.walk_to(life, _highest['item']['pos'])
 	
 	return False
 
@@ -350,10 +416,7 @@ def find_target(life, target, distance=5, follow=False, call=True):
 		return False
 	
 	if not lfe.path_dest(life) == tuple(_target['last_seen_at'][:2]):
-		lfe.clear_actions(life)
-		lfe.add_action(life,
-			          {'action': 'move','to': _target['last_seen_at'][:2]},
-			          200)
+		lfe.walk_to(life, _target['last_seen_at'])
 	
 	return False
 

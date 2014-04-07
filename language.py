@@ -31,24 +31,51 @@ def prettify_string_array(array, max_length):
 def get_name(life):
 	return ' '.join(life['name'])
 
-def get_real_direction(direction):
+def get_real_direction(direction, short=False):
 	if abs(direction)<22 or abs(direction-360)<22:
+		if short:
+			return 'e'
+		
 		return 'east'
 	elif abs(direction-45)<22:
+		if short:
+			return 'ne'
+		
 		return 'northeast'
 	elif abs(direction-90)<22:
+		if short:
+			return 'n'
+		
 		return 'north'
 	elif abs(direction-135)<22:
+		if short:
+			return 'nw'
+		
 		return 'northwest'
 	elif abs(direction-180)<22:
+		if short:
+			return 'w'
+		
 		return 'west'
 	elif abs(direction-225)<22:
+		if short:
+			return 'sw'
+		
 		return 'southwest'
 	elif abs(direction-270)<22:
+		if short:
+			return 's'
+		
 		return 'south'
 	elif abs(direction-315)<22:
+		if short:
+			return 'se'
+		
 		return 'southeast'
 	else:
+		if short:
+			return 'e'
+		
 		return 'east'
 
 def get_real_distance(distance):
@@ -59,9 +86,12 @@ def get_real_distance(distance):
 	else:
 		return distance*METERS
 
-def get_real_distance_string(distance):
+def get_real_distance_string(distance, round_up=False):
 	_distance = get_real_distance(distance)
 	_mods = ''
+	
+	if round_up:
+		_distance = int(round(_distance))
 	
 	if not _distance == 1:
 		_mods = 's'
@@ -145,6 +175,9 @@ def generate_place_name():
 		return 'Zoolandia %s' % WORLD_INFO['ticks']
 	
 	return TEXT_MAP['places'].pop(random.randint(0, len(TEXT_MAP['places'])-1))
+
+def generate_scheme_title():
+	return TEXT_MAP['nouns'][random.randint(0, len(TEXT_MAP['nouns'])-1)]
 
 def generate_first_and_last_name_from_species(species):
 	_map_first_names = '%s_first_names' % species

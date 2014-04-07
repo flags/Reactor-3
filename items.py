@@ -23,6 +23,7 @@ try:
 except:
 	import json
 
+
 def load_item(item):
 	with open(os.path.join(ITEM_DIR, item),'r') as e:
 		try:
@@ -174,7 +175,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['realpos'] = list(position)
 	item['velocity'] = [0.0, 0.0, 0.0]
 	item['friction'] = 0
-	item['gravity'] = WORLD_INFO['world gravity']
+	item['gravity'] = WORLD_INFO['world_gravity']
 	item['lock'] = None
 	item['owner'] = None
 	item['aim_at_limb'] = None
@@ -189,6 +190,7 @@ def create_item(name, position=[0,0,2], item=None):
 	
 	add_to_chunk(item)
 	ITEMS[item['uid']] = item
+	ACTIVE_ITEMS.add(item['uid'])
 	
 	WORLD_INFO['itemid'] += 1
 	return item['uid']
@@ -228,12 +230,20 @@ def add_to_chunk(item):
 	
 	if not item['uid'] in _chunk['items']:
 		_chunk['items'].append(item['uid'])
+		
+		return True
+	
+	return False
 
 def remove_from_chunk(item):
 	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(item['pos']))
 	
 	if item['uid'] in _chunk['items']:
 		_chunk['items'].remove(item['uid'])
+		
+		return True
+	
+	return False
 
 def clean_item_for_save(item):
 	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
@@ -292,12 +302,15 @@ def get_pos(item_uid):
 	
 	return item['pos']
 
-def get_items_at(position):
+def get_items_at(position, check_bodies=False):
 	"""Returns list of all items at a given position."""
 	_items = []
 	_chunk = alife.chunks.get_chunk(alife.chunks.get_chunk_key_at(position))
 	
 	for _item in _chunk['items']:
+		if not _item in ITEMS:
+			continue
+		
 		item = ITEMS[_item]
 		
 		if is_item_owned(_item):
@@ -305,6 +318,20 @@ def get_items_at(position):
 		
 		if tuple(item['pos']) == tuple(position):
 			_items.append(item)
+	
+	#TODO: This is awful
+	if check_bodies:
+		#for pos in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, 0)]:
+		#	__pos = (_pos[0]+pos[0], _pos[1]+pos[1], _pos[2])
+		#	_items.extend(items.get_items_at(__pos))
+			
+		#Sue me again.
+		for life_id in LIFE[SETTINGS['controlling']]['seen']:
+			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+				continue
+			
+			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
+				_items.append(ITEMS[item_uid])
 	
 	return _items
 
@@ -497,20 +524,8 @@ def explode(item):
 	#TODO: Don't breathe this!
 	item['pos'] = get_pos(item['uid'])
 	
-	alife.noise.create(item['pos'], item['damage']['force']*100, 'an explosion', 'a low rumble')
-	
 	if item['damage']['force']:
-		effects.create_light(item['pos'], (255, 69, 0), item['damage']['force']*6, 1, fade=3)
-		effects.create_smoke_cloud(item['pos'],
-			                       item['damage']['force']*6,
-			                       age=.8,
-			                       factor_distance=True)
-		
-		for i in range(random.randint(1, 3)):
-			effects.create_smoke_streamer(item['pos'],
-				                          3+random.randint(0, 2),
-				                          (item['damage']['force']*2)+random.randint(3, 6),
-				                          color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
+		effects.create_explosion(item['pos'], item['damage']['force'])
 	
 	if SETTINGS['controlling'] and alife.sight.can_see_position(LIFE[SETTINGS['controlling']], item['pos']):
 		gfx.message('%s explodes!' % get_name(item))
@@ -545,9 +560,8 @@ def explode(item):
 			
 			#_limb = random.choice(LIFE[life_id]['body'].keys())
 			
-			#ex: memory(life, 'shot at by (missed)', target=item['owner'], danger=3, trust=-10)
 			if _known_item and _known_item['last_seen_time'] < 100 and _known_item['last_owned_by']:
-				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'], trust=-10, danger=3)
+				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'])
 			
 			#for _limb in _limbs:
 			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force*2))
@@ -597,13 +611,21 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
-	if pos[0]<0 or pos[0]>=MAP_SIZE[0]-1 or pos[1]<0 or pos[1]>=MAP_SIZE[1]-1 or pos[2]<0 or pos[2]>=MAP_SIZE[2]-1:
-		return True
+	_x_diff = numbers.clip(item['pos'][0]-pos[0], -1, 1)
+	_y_diff = numbers.clip(item['pos'][1]-pos[1], -1, 1)
 	
 	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
 		item['velocity'] = [0, 0, 0]
-		item['pos'] = pos
+		#item['pos'] = pos
+		
+		item['pos'][0] = pos[0]+_x_diff
+		item['pos'][1] = pos[1]+_y_diff
+		item['realpos'][0] = float(pos[0])+_x_diff
+		item['realpos'][1] = float(pos[1])+_y_diff
+		
+		print '*** STOP ***'
+		
 		process_event(item, 'stop')
 			
 		return True
@@ -613,32 +635,58 @@ def collision_with_solid(item, pos):
 	else:
 		_z = -1
 	
-	if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
-		item['velocity'][0] = -item['velocity'][0]*.8
-		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
-	elif not pos[0]+1 >= MAP_SIZE[0]-1 and item['velocity'][0]>0 and WORLD_INFO['map'][pos[0]+1][pos[1]][pos[2]+_z]:
-		item['velocity'][0] = -item['velocity'][0]*.8
-		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
+	_is_solid = (pos[0], pos[1], pos[2]+_z)
 	
-	if not pos[1]-1 < 0 and item['velocity'][1]<0 and WORLD_INFO['map'][pos[0]][pos[1]-1][pos[2]+_z]:
-		item['velocity'][1] = -item['velocity'][1]*.8
+	#if not pos[0]-1 < 0 and item['velocity'][0]<0 and WORLD_INFO['map'][pos[0]-1][pos[1]][pos[2]+_z]:
+	#	item['velocity'][0] = -item['velocity'][0]*.8
+	#
+	if _x_diff<0 and _is_solid:
+		item['pos'][0] = pos[0]+_x_diff
+		item['realpos'][0] = float(pos[0])+_x_diff
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
-	elif not pos[1]+1 >= MAP_SIZE[1]-1 and item['velocity'][1]>0 and WORLD_INFO['map'][pos[0]][pos[1]+1][pos[2]+_z]:
-		item['velocity'][1] = -item['velocity'][1]*.8
+		if not item['velocity'][0]<0:
+			item['velocity'][0] = -item['velocity'][0]*.8
 		
-		if 'max_speed' in item:
-			effects.create_smoke_cloud(pos, 4)
+		#print '*** bounce ***', _x_diff, item['pos'], pos
+		
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
+	elif _x_diff>0 and _is_solid:
+		item['pos'][0] = pos[0]+_x_diff
+		item['realpos'][0] = float(pos[0])+_x_diff
+		
+		if not item['velocity'][0]>0:
+			item['velocity'][0] = -item['velocity'][0]*.8
+		
+		#print '*** bounce ***', _x_diff, item['pos'], pos
+		
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
 	
-	if 'max_speed' in item:
-		effects.create_vapor(pos, 5, numbers.clip(item['speed']/30, 0, 1))
+	if _y_diff<0 and _is_solid:
+		item['pos'][1] = pos[1]+_y_diff
+		item['realpos'][1] = float(pos[1])+_y_diff
+		
+		if not item['velocity'][1]<0:
+			item['velocity'][1] = -item['velocity'][1]*.8
+		
+		#print '*** bounce ***', _x_diff, item['pos'], pos
+		
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
+	elif _y_diff>0 and _is_solid:
+		item['pos'][1] = pos[1]+_x_diff
+		item['realpos'][1] = float(pos[1])+_x_diff
+		
+		if not item['velocity'][1]>0:
+			item['velocity'][1] = -item['velocity'][1]*.8
+		
+		#print '*** bounce ***', _x_diff, item['pos'], pos
+		
+		#if 'max_speed' in item:
+		#	effects.create_smoke_cloud(pos, 4)
 	
-	return False
+	return maps.is_solid(pos)
 
 def create_effects(item, pos, real_z_pos, z_min):
 	for _z in range(0, 2):
@@ -649,8 +697,19 @@ def create_effects(item, pos, real_z_pos, z_min):
 				if 'BLOODY' in item['flags']:
 					if random.randint(0,50)<=35:
 						effects.create_splatter('blood', [pos[0]+random.randint(-2, 2), pos[1]+random.randint(-2, 2), _z_level])
-			
-				break
+				
+				if 'SMOKING' in item['flags']:
+					if random.randint(0, 50)<=25:
+						effects.create_smoke_streamer([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
+						                              item['size']/2,
+						                              random.randint(item['size']*2, (item['size']*2)+5))
+				if 'BURNING' in item['flags']:
+					if random.randint(0, 50)<=25:
+						effects.create_smoke_cloud([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
+						                              random.randint(item['size'], (item['size'])+3),
+						                              color=tcod.light_crimson)
+				if 'max_speed' in item and is_moving(item):
+					effects.create_vapor(item['pos'], 5, numbers.clip(item['speed']/20, 0, 1))
 
 def get_min_max_velocity(item):
 	if item['velocity'][0]>0:
@@ -669,49 +728,62 @@ def get_min_max_velocity(item):
 	
 	return _min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel
 
-def tick_item(item):
+#TODO: Move this
+def is_moving(item):
+	return sum([abs(v) for v in item['velocity']])>0
+
+def tick_effects(item):
 	if 'CAN_BURN' in item['flags'] and item['burning'] and item['owner']:
 		life.burn(LIFE[item['owner']], item['burning'])
 	
 	if 'stored_in' in item or is_item_owned(item['uid']):
 		return False
 	
-	_z_max = numbers.clip(item['pos'][2], 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-	if item['velocity'][:2] == [0.0, 0.0] and WORLD_INFO['map'][item['pos'][0]][item['pos'][1]][_z_max]:
+	create_effects(item, item['pos'], item['pos'][2], 2)
+
+def tick_item(item):
+	_z_max = numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
+	
+	if item['type'] == 'bullet':
+		_gravity = 0
+	else:
+		_gravity = item['gravity']
+	
+	if not is_moving(item):
 		return False
 	
 	_x = item['pos'][0]
 	_y = item['pos'][1]
+	_break = False
 	
-	#_view = gfx.get_view_by_name('map')
-	#if 0<=_x<_view['draw_size'][0] and 0<=_y<_view['draw_size'][1]:
+	item['realpos'][0] += item['velocity'][0]
+	item['realpos'][1] += item['velocity'][1]	
+	
+	_line = drawing.diag_line(item['pos'], (int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
+
+	#Refresh even if we're not moving far enough to switch tiles
 	if gfx.position_is_in_frame((_x, _y)):
 		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 	
-	item['realpos'][0] += item['velocity'][0]
-	item['realpos'][1] += item['velocity'][1]
-	_break = False
-	_line = drawing.diag_line(item['pos'],(int(round(item['realpos'][0])),int(round(item['realpos'][1]))))
-	
 	if not _line:
-		item['velocity'][2] -= item['gravity']
+		item['velocity'][2] -= _gravity
 		item['realpos'][2] = item['realpos'][2]+item['velocity'][2]
 		item['pos'][2] = int(round(item['realpos'][2]))
 		
-		if item['pos'][0]<0 or item['pos'][0]>=MAP_SIZE[0] or item['pos'][1]<0 or item['pos'][1]>=MAP_SIZE[1]:
+		if maps.is_oob(item['pos']):
 			delete_item(item)
+			
 			return False
 		
-		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-		if collision_with_solid(item, [item['pos'][0], item['pos'][1], _z_min]):
-			pos = item['pos'][:]
-			_break = True
+		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
 		
-		create_effects(item, item['pos'], item['realpos'][2], _z_min)
+		collision_with_solid(item, [int(round(item['realpos'][0])), int(round(item['realpos'][1])), _z_min])
 	
 	for pos in _line:
 		item['realpos'][2] += item['velocity'][2]
-		item['velocity'][2] -= item['velocity'][2]*item['gravity']
+		
+		if _gravity:
+			item['velocity'][2] -= item['velocity'][2]*_gravity
 		
 		if 'drag' in item:
 			_drag = item['drag']
@@ -721,31 +793,37 @@ def tick_item(item):
 			
 		_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 		
-		if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
-			item['velocity'][0] = 0
+		if abs(item['velocity'][0])<=1:
+			item['velocity'][0] = 0.0
+			
+		if abs(item['velocity'][1])<=1:
+			item['velocity'][1] = 0.0
 		
-		if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
-			item['velocity'][1] = 0
+		if not is_moving(item):
+			if item['type'] == 'bullet':
+				delete_item(item)
+				return False
 		
 		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
 		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
 		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
 		
-		if 0>pos[0] or pos[0]>=MAP_SIZE[0] or 0>pos[1] or pos[1]>=MAP_SIZE[1] or item['realpos'][2]<0 or item['realpos'][2]>=MAP_SIZE[2]-1:
-			logging.warning('Item OOM: %s', item['uid'])
+		if maps.is_oob((pos[0], pos[1], int(round(item['realpos'][2])))) or maps.is_oob(item['realpos']):
 			delete_item(item)
-			return False
-		
-		if collision_with_solid(item, [pos[0], pos[1], int(round(item['realpos'][2]))]):
-			if item['type'] == 'bullet':
-				effects.create_light(item['pos'], (255, 0, 0), 9, 1, fade=4.5)
-			
-			logging.debug('Item #%s hit a wall.' % item['uid'])
 			
 			return False
 		
+		#TODO: Don't just stop the object
+		collision_with_solid(item, (pos[0], pos[1], int(round(item['realpos'][2]))))
+		
+		tick_effects(item)
+				
+		#TODO: Don't do this here... maybe a callback or something
 		if item['type'] == 'bullet':
 			for _life in [LIFE[i] for i in LIFE]:
+				if not _life['online']:
+					continue
+				
 				if _life['id'] == item['shot_by'] or _life['dead']:
 					continue					
 				
@@ -759,27 +837,15 @@ def tick_item(item):
 						delete_item(item)
 					
 					return False
-			
-		if _break:
-			break
-		
-		#_z_max = numbers.clip(int(round(item['realpos'][2]))+1, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-		#if MAP[pos[0]][pos[1]][_z_max]:
-		#	item['velocity'][0] = 0
-		#	item['velocity'][1] = 0
-		#	item['velocity'][2] = 0
-		#	item['pos'] = [pos[0],pos[1],item['pos'][2]-1]
-		#
-		#	print 'LANDED',item['pos']	
-		#	_break = True
+		#if _break:
 		#	break
 	
-		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
-		if collision_with_solid(item, [pos[0], pos[1], _z_min]):
-			_break = True
-			break
+		#_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
+		#if collision_with_solid(item, [pos[0], pos[1], _z_min]):
+		#	#_break = True
+		#	break
 		
-		create_effects(item, pos, item['realpos'][2], _z_min)
+		#create_effects(item, pos, item['realpos'][2], _z_min)
 	
 	remove_from_chunk(item)
 	
@@ -800,21 +866,18 @@ def tick_item(item):
 	if gfx.position_is_in_frame((_x, _y)):
 		gfx.refresh_view_position(_x-CAMERA_POS[0], _y-CAMERA_POS[1], 'map')
 
-	if item['pos'][0] < 0 or item['pos'][0] > MAP_SIZE[0] \
-          or item['pos'][1] < 0 or item['pos'][1] > MAP_SIZE[1]:
+	if maps.is_oob(item['pos']):
 		delete_item(item)
+		
 		return False
-			
-	#elif _break:
-	#	maps.refresh_chunk(life.get_current_chunk_id(item))
 
 	_min_x_vel, _min_y_vel, _max_x_vel, _max_y_vel = get_min_max_velocity(item)
 	
-	if 0<item['velocity'][0]<0.1 or -.1<item['velocity'][0]<0:
-		item['velocity'][0] = 0
-	
-	if 0<item['velocity'][1]<0.1 or -.1<item['velocity'][1]<0:
-		item['velocity'][1] = 0
+	if abs(item['velocity'][0])<.35:
+		item['velocity'][0] = 0.0
+			
+	if abs(item['velocity'][1])<.35:
+		item['velocity'][1] = 0.0
 	
 	#TODO: This isn't gravity...
 	if 'drag' in item:
@@ -840,4 +903,5 @@ def tick_all_items():
 			ACTIVE_ITEMS.update(ITEMS.keys())
 		
 	for item in ACTIVE_ITEMS.copy():
+		tick_effects(ITEMS[item])
 		tick_item(ITEMS[item])

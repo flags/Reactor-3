@@ -13,6 +13,7 @@ import random
 import time
 
 INTRO = 'flagsdev presents'
+SUB_LINE = 'Reactor 3'
 MESSAGE = ['Reactor 3 is still a prototype',
 	'You may experience slow performance and crashes',
 	'',
@@ -26,12 +27,12 @@ def draw_intro():
 	_stime = time.time()
 	_title_time = time.time()
 	_warning_time = None
-	_sub_line = 'Reactor 3'
 	_warning_message = VERSION
 	_sub_mod = 0
 	_sub_time = 0
 	_shadow = 50
 	_burn = 8.0
+	_char_alpha = {c: random.uniform(.15, .7) for c in SUB_LINE}
 	
 	#Why did I base this on time.time()?
 	while time.time()-_stime<=5:
@@ -44,18 +45,11 @@ def draw_intro():
 		else:
 			if not _sub_time:
 				_sub_time = time.time()
-			elif time.time()-_stime>=3.2:
-				#_shadow *= 1.05
-				#_sub_time += .042
-				_title_time += .044
 			
 			if 4.0>time.time()-_stime:
 				_burn *= 1.005
-			elif time.time()-_stime>=4.0:
-				if _burn>255:
-					_burn = 255
-				
-				_burn *= .99
+			elif time.time()-_stime>=4.0 and _burn>255:
+				_burn = 255
 			
 			_text = INTRO
 		
@@ -73,24 +67,15 @@ def draw_intro():
 			console_set_default_foreground(0, Color(_mod/2, _mod/2, _mod/2))
 			console_print(0, 0, WINDOW_SIZE[1]-1, _warning_message)
 		
-		_i = 0
-		for c in _sub_line:
-			if _sub_time:
-				_delta = numbers.clip((time.time()-_sub_time)*6.0, 0, len(_sub_line)*2)
-				_upper = numbers.clip(255-(abs(_i-_delta))*_shadow, 0, 255)
-				#_sub_mod = int(round(_upper*numbers.clip((time.time()-_sub_time)*2, 0, 1)))
-			
-				#if _sub_mod < 1 and _i-_delta<0:
-				#_sub_mod = numbers.clip(_sub_mod, 1, 255)
-				_r = numbers.clip(numbers.clip(int(round(_burn)), 0, 255)-random.randint(0, 75), 0, 255)
-				#else:
-				#	_r = _sub_mod
-			else:
-				_r = _sub_mod
-			
-			console_set_default_foreground(0, Color(_r, _sub_mod, _sub_mod))
-			console_print(0, ((WINDOW_SIZE[0]/2)-len(_sub_line)/2)+_i, (WINDOW_SIZE[1]/2), c)
-			_i += 1
+		if time.time()-_stime>=1.2:
+			_i = 0
+			for c in SUB_LINE:
+				_c_mod = _char_alpha[c]
+				_mod = numbers.clip(time.time()-_warning_time, 0, 1)
+				console_set_default_foreground(0, Color(int(round((200*_mod)*_c_mod)), 0, 0))
+				console_print(0, _i+(WINDOW_SIZE[0]/2)-len(SUB_LINE)/2, (WINDOW_SIZE[1]/2), c)
+				_char_alpha[c] = numbers.clip(_char_alpha[c]*1.015, 0, 1)
+				_i += 1
 		
 		console_flush()
 	
@@ -194,8 +179,9 @@ def switch_to_select_world():
 def switch_to_spawn_point():
 	#TODO: List of camps
 	_menu_items = []
-	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp'))
-	_menu_items.append(menus.create_item('single', 'Chase', 'You are being trailed!'))
+	_menu_items.append(menus.create_item('single', 'Random', 'Randomized story'))
+	_menu_items.append(menus.create_item('single', 'Zone Entry Point', 'Near Rookie camp', enabled=False))
+	_menu_items.append(menus.create_item('single', 'Chase', 'You are being trailed!', enabled=False))
 	_menu_items.append(menus.create_item('single', 'Back', None))
 	
 	_i = menus.create_menu(title='Spawn Point',
@@ -242,6 +228,8 @@ def start_game():
 	
 	while MENUS:
 		menus.delete_active_menu()
+	
+	graphics.glitch_text(WORLD_INFO['title'])
 
 def generate_world(combat_test=False):
 	_menu = MENUS[menus.get_menu_by_name('World Generation')]
@@ -251,8 +239,7 @@ def generate_world(combat_test=False):
 		_settings[entry['key']] = entry['values'][entry['value']]
 	
 	if _settings['Map'] == 'Generate Map':
-		_settings['Map'] = mapgen.generate_map(size=(250, 650, 10),
-		                                       towns=1,
+		_settings['Map'] = mapgen.generate_map(towns=1,
 		                                       factories=0,
 		                                       outposts=2,
 		                                       forests=1)['name']
@@ -270,15 +257,14 @@ def generate_world(combat_test=False):
 	elif _settings['World Age'] == '5 Weeks':
 		_ticks = 5000
 	
-	maps.load_map(_settings['Map'])
+	maps.load_map(_settings['Map'], cache_map=True)
 	
 	worldgen.generate_world(WORLD_INFO['map'],
 		dynamic_spawns=_settings['Dynamic Spawns'],
 		wildlife_spawns=_settings['Wildlife Density'],
 		simulate_ticks=_ticks,
 		save=True,
-		thread=True,
-	    combat_test=combat_test)
+		thread=True)
 
 def main_menu_select(entry):
 	key = entry['key']
@@ -315,8 +301,7 @@ def world_select_select(entry):
 def spawn_menu_select(entry):
 	key = entry['key']
 	
-	if key == 'Zone Entry Point':
-		worldgen.create_player()
+	if key in ['Zone Entry Point', 'Random']:
 		start_game()
 	elif key == 'Back':
 		switch_to_start_game()

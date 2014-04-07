@@ -5,7 +5,10 @@ import graphics as gfx
 import life as lfe
 
 import historygen
+import missions
+import language
 import profiles
+import threads
 import effects
 import weather
 import spawns
@@ -26,16 +29,15 @@ import time
 import json
 import sys
 
+
 BASE_ITEMS = ['sneakers',
               'blue jeans',
-              'white t-shirt',
-              'ALICE pack',
-              'radio',
-              'molotov']
+              'white t-shirt']
 RECRUIT_ITEMS = ['glock', '9x19mm magazine', 'soda', 'corn']
 
 for i in range(10):
 	RECRUIT_ITEMS.append('9x19mm round')
+
 
 class Runner(threading.Thread):
 	def __init__(self, amount):
@@ -81,8 +83,10 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	WORLD_INFO['start_age'] = simulate_ticks
 	WORLD_INFO['dynamic_spawns'] = dynamic_spawns
 	WORLD_INFO['wildlife_spawns'] = wildlife_spawns
+	WORLD_INFO['real_time_of_day'] = int(round(WORLD_INFO['length_of_day']*.10))
 	WORLD_INFO['seed'] = time.time()
 	WORLD_INFO['combat_test'] = combat_test
+	WORLD_INFO['title'] = 'Operation %s' % language.generate_scheme_title().title()
 	
 	random.seed(WORLD_INFO['seed'])
 	
@@ -107,6 +111,7 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	weather.change_weather()
 	create_region_spawns()
 	randomize_item_spawns()
+	lfe.focus_on(create_player())
 	
 	alife.camps.create_all_camps()
 	
@@ -123,12 +128,11 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	else:
 		simulate_life(simulate_ticks)
 	
-	lfe.focus_on(create_player())
 	WORLD_INFO['id'] = 0
 	
 	if save:
 		WORLD_INFO['id'] = profiles.create_world()
-		save_world()
+		save_world(create=True)
 	
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
@@ -166,14 +170,20 @@ def load_world(world):
 	lfe.load_all_life()
 	items.reload_all_items()
 	
+	if SETTINGS['chunk_handler']:
+		SETTINGS['chunk_handler'].check_chunks(force=True)
+	
 	#logging.debug('Rendering map slices...')
 	#maps.render_map_slices()
 	
 	logging.info('World loaded.')
 
-def save_world():
+def save_world(create=False):
 	gfx.title('Saving...')
 	logging.debug('Offloading world...')
+	
+	if create:
+		maps.cache_all_clusters()
 	
 	_config_directory, _worlds_directory = profiles.has_reactor3()
 	_version_file = os.path.join(_worlds_directory, WORLD_INFO['id'], 'version.txt')
@@ -216,6 +226,23 @@ def reset_world():
 	logging.debug('World reset.')
 
 def randomize_item_spawns():
+	for chunk_key in WORLD_INFO['chunk_map']:
+		_chunk = maps.get_chunk(chunk_key)
+		
+		if not 'spawn_items' in _chunk['flags']:
+			continue
+		
+		for item in _chunk['flags']['spawn_items']:
+			if random.uniform(0, 1)<item['rarity']:
+				continue
+			
+			for i in range(item['amount']):
+				_rand_pos = random.choice(_chunk['ground'])[:]
+				_rand_pos.append(2)
+				items.create_item(item['item'], position=_rand_pos)
+		
+	return False
+
 	for building in WORLD_INFO['reference_map']['buildings']:
 		_chunk_key = random.choice(alife.references.get_reference(building))
 		_chunk = maps.get_chunk(_chunk_key)
@@ -242,17 +269,11 @@ def randomize_item_spawns():
 			_rand_pos = random.choice(_chunk['ground'])
 			items.create_item(random.choice(RECRUIT_ITEMS), position=[_rand_pos[0], _rand_pos[1], 2])
 
-def get_spawn_point_around(pos, area=5):
-	_x = numbers.clip(pos[0]+random.randint(-area, area), 0, MAP_SIZE[0]-1)
-	_y = numbers.clip(pos[1]+random.randint(-area, area), 0, MAP_SIZE[1]-1)
-	
-	return (_x, _y)
-
 def get_spawn_point(randomize=False, zone_entry_point=False):
 	if zone_entry_point:
-		_pos = random.choice(WORLD_INFO['chunk_map'][WORLD_INFO['zone_entry_chunk_key']]['ground'])
+		_pos = [random.randint(150, 250), random.randint(850, 900), 2]
 		
-		return [_pos[0], _pos[1], 2]
+		return spawns.get_spawn_point_around(_pos, area=100)
 	
 	if WORLD_INFO['reference_map']['roads'] and not randomize:
 		_entry_road_keys = []
@@ -323,36 +344,23 @@ def create_player():
 	
 	for item in BASE_ITEMS:
 		life.add_item_to_inventory(PLAYER, items.create_item(item))
-	
-	life.add_item_to_inventory(PLAYER, items.create_item('glock'))
-	life.add_item_to_inventory(PLAYER, items.create_item('9x19mm magazine'))
-	life.add_item_to_inventory(PLAYER, items.create_item('electric lantern'))
-	life.add_item_to_inventory(PLAYER, items.create_item('aspirin'))
-	
-	for i in range(17):
-		life.add_item_to_inventory(PLAYER, items.create_item('9x19mm round'))
 
 	SETTINGS['controlling'] = PLAYER['id']
 	
+	_zes_leader = alife.factions.get_faction('ZES')['members'][0]
+	_m = missions.create_mission('locate_target', target=_zes_leader)
+	_m_id = missions.remember_mission(PLAYER, _m)
+	
+	missions.change_task_description(PLAYER, _m_id, 1, 'Find ZES outpost, talk to %s' % ' '.join(LIFE[_zes_leader]['name']))
+	alife.factions.add_member('Loners', SETTINGS['controlling'])
 	lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
 	return PLAYER
 	
 def create_region_spawns():
-	#Step 1: Army Outpost
-	for outpost in WORLD_INFO['refs']['outposts']:
-		generate_outpost(outpost)
-	
-	for town in WORLD_INFO['refs']['towns']:
-		_spawn_chunk = random.choice(town)
-		
-		while maps.get_chunk(_spawn_chunk)['type'] == 'town':
-			_spawn_chunk = random.choice(town)
-	
-		spawns.generate_group('bandit',
-	                         amount=random.randint(5, 7),
-	                         group_motive='crime',
-	                         spawn_chunks=[_spawn_chunk])
+	#Runners
+	#spawns.generate_group('runner_scout', amount=random
+	alife.factions.generate()
 	
 	return False
 
@@ -381,6 +389,3 @@ def create_region_spawns():
 	
 			for _alife in spawns.generate_group('feral dog', amount=random.randint(4, 6), spawn_chunks=[_spawn_chunk]):
 				life.memory(_alife, 'focus_on_chunk', chunk_key=_spawn_chunk)
-
-def generate_outpost(outpost_chunks):
-	spawns.generate_group('soldier', amount=5, spawn_chunks=outpost_chunks)

@@ -18,10 +18,11 @@ import random
 
 FAR_TEXT = ['You hear @t to the @d.']
 
-def create(position, volume, close_text, far_text, **sound):
+def create(position, volume, close_text, far_text, skip_on_visual=True, **sound):
 	_noise = {'pos': position,
 	          'volume': volume,
-	          'text': (close_text, far_text)}
+	          'text': (close_text, far_text),
+	          'skip_on_visual': skip_on_visual}
 	_noise.update(sound)
 	
 	_spread(_noise)
@@ -33,8 +34,6 @@ def update_targets_around_noise(life, noise):
 		_visiblity = numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
 		_visiblity = numbers.clip(_visiblity+(numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
 		
-		print 'vis', life['name'], _visiblity, sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos'])
-		
 		if _visiblity >= sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos']):
 			brain.meet_alife(life, LIFE[noise['target']])
 			
@@ -43,7 +42,7 @@ def update_targets_around_noise(life, noise):
 			life['know'][noise['target']]['last_seen_time'] = 0
 	
 	for target in life['know'].values():
-		if not target['escaped']:
+		if not target['escaped'] or not target['last_seen_at'] or target['dead']:
 			continue
 		
 		if numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:
@@ -53,15 +52,12 @@ def update_targets_around_noise(life, noise):
 			if not _most_likely_target['target'] or target['last_seen_time'] < _most_likely_target['last_seen_time']:
 				_most_likely_target['last_seen_time'] = target['last_seen_time']
 				_most_likely_target['target'] = target
-			
-			#target['escaped'] = 1
-			#target['last_seen_at'] = noise['pos'][:]
 	
 	if _most_likely_target['target']:
-		print '/' * 50
 		_most_likely_target['target']['escaped'] = 1
 		_most_likely_target['target']['last_seen_at'] = noise['pos'][:]
 		_most_likely_target['target']['last_seen_time'] = 1
+		
 		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(_most_likely_target['target']['life']['name'])))
 
 def _spread(noise):
@@ -85,11 +81,11 @@ def _spread(noise):
 		
 		#TODO: Check walls between positions
 		#TODO: Add memory
-		if not _can_see:
+		if not _can_see or not noise['skip_on_visual']:
 			if _dist >=noise['volume']/2:
 				if 'player' in alife:
-					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string))
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string), style='sound')
 			else:
 				if 'player' in alife:
-					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string))
+					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][0]).replace('@d', _direction_string), style='sound')
 				

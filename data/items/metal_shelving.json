@@ -1,0 +1,11 @@
+{"name": "metal shelving",
+"prefix": "the",
+"type": "storage",
+"icon": "=",
+"description": "A metal structure with several shelves.",
+"flags": "",
+"size": "3x3",
+"capacity": "3x3",
+"thickness": 3,
+"color": [[180, 180, 180], [130, 130, 130]],
+"material": "metal"}

@@ -1,4 +1,5 @@
 from globals import *
+from overwatch import situations, core
 
 import libtcodpy as tcod
 import graphics as gfx
@@ -13,6 +14,7 @@ import timers
 import dialog
 import spawns
 import melee
+import locks
 import cache
 import menus
 import items
@@ -89,7 +91,7 @@ def tick_world():
 		WORLD_INFO['day'] += 1
 		weather.change_weather()
 	
-	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-22.00 or WORLD_INFO['real_time_of_day']<=1000:
+	if WORLD_INFO['real_time_of_day']>=WORLD_INFO['length_of_day']-22.00 or WORLD_INFO['real_time_of_day']<=WORLD_INFO['length_of_day']*.15:
 		if WORLD_INFO['time_of_day'] == 'day':
 			gfx.message('Night falls.')
 		
@@ -117,6 +119,11 @@ def tick_world():
 		WORLD_INFO['wildlife_spawn_interval'][0] = random.randint(WORLD_INFO['wildlife_spawn_interval'][1][0], WORLD_INFO['wildlife_spawn_interval'][1][1])
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
+	
+	#situations.form_scheme()
+	#situations.execute_scheme()
+	alfe.factions.direct()
+	core.evaluate_overwatch_mood()
 	
 	cache.scan_cache()
 	
@@ -150,7 +157,9 @@ def draw_event():
 	if not _event:
 		return False
 	
+	locks.unlock('camera_free')
 	gfx.camera_track(_event['pos'])
+	
 	if len(event['text'])>=MAP_WINDOW_SIZE[0]-1:
 		_lines = list(_event['text'].partition(','))
 		
@@ -203,11 +212,23 @@ def show_next_event():
 	if not EVENTS:
 		return False
 	
-	EVENTS.pop(0)
+	_event = None
+	
+	for event in EVENTS:
+		if not event['delay']:
+			_event = event
+			break
+	
+	if not _event:
+		return False
+	
+	EVENTS.remove(_event)
 	gfx.refresh_view('map')
 	
 	if not EVENTS:
 		life.focus_on(LIFE[SETTINGS['following']])
+		locks.lock('camera_free', reason='No more events')
+		
 		return False
 	
 	return True
@@ -238,6 +259,7 @@ def process_events():
 
 def matches(dict1, dict2):
 	_break = False
+	
 	for key in dict2:
 		if not key in dict1 or not dict1[key] == dict2[key]:
 			return False

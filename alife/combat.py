@@ -18,6 +18,15 @@ import numbers
 import logging
 import random
 
+
+def get_engage_distance(life):
+	_weapons = get_equipped_weapons(life)
+	
+	if _weapons:
+		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*27)), 3, sight.get_vision(life))
+	else:
+		return sight.get_vision(life)/2
+
 def weapon_is_working(life, item_uid):
 	_weapon = ITEMS[item_uid]
 	_feed_uid = weapons.get_feed(_weapon)
@@ -70,9 +79,11 @@ def reload_weapon(life, weapon_uid):
 	
 	if not _feed:
 		logging.error('No feed for weapon, but trying to reload anyway.')
+		
 		return False
 	
 	_refill = _refill_feed(life, _feed)
+	
 	if _refill:
 		load_feed(life, weapon_uid, _feed['uid'])
 	
@@ -91,7 +102,7 @@ def load_feed(life, weapon_uid, feed_uid):
 	return True
 
 def _get_feed(life, weapon):
-	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=True)
+	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=False)
 
 	_highest_feed = {'rounds': -1, 'feed': None}
 	for feed in [lfe.get_inventory_item(life, _feed['uid']) for _feed in _feeds]:
@@ -117,12 +128,10 @@ def _refill_feed(life, feed):
 
 	#TODO: No check for ammo type.
 	
-	_loading_rounds = len(lfe.find_action(life,matches=[{'action': 'refillammo'}]))
-	if _loading_rounds >= len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])):
-		#TODO: What?
-		if not _loading_rounds:
-			return True
-		
+	_loading_rounds = len(lfe.find_action(life, matches=[{'action': 'refillammo'}]))
+	_bullets_in_inventory = len(lfe.get_all_inventory_items(life, matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))
+	
+	if _loading_rounds:# >= _bullets_in_inventory:
 		return False
 	
 	if len(lfe.find_action(life,matches=[{'action': 'refillammo'}])):
@@ -130,7 +139,7 @@ def _refill_feed(life, feed):
 	
 	_rounds = len(feed['rounds'])
 	
-	if _rounds>=feed['maxrounds']:
+	if _rounds>=feed['maxrounds'] or (not _bullets_in_inventory and _rounds):
 		print 'Full?'
 		return True
 	
@@ -155,6 +164,7 @@ def _equip_weapon(life, weapon_uid, feed_uid):
 	#TODO: Need to refill ammo?
 	if not weapons.get_feed(_weapon):
 		#TODO: How much time should we spend loading rounds if we're in danger?
+		
 		if _refill_feed(life, _feed):
 			load_feed(life, _weapon['uid'], _feed['uid'])
 	else:
@@ -185,7 +195,7 @@ def get_equipped_weapons(life):
 	return lfe.get_held_items(life, matches=[{'type': 'gun'}])
 
 def get_weapons(life):
-	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=True)
+	return lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}], ignore_actions=False)
 
 def get_loose_ammo_for_weapon(life, weapon_uid):
 	_weapon = ITEMS[weapon_uid]
@@ -219,7 +229,7 @@ def have_feed_and_ammo_for_weapon(life, weapon_uid):
 def has_potentially_usable_weapon(life):
 	for weapon in get_weapons(life):
 		if get_feeds_for_weapon(life, weapon['uid']):
-			if len(get_all_ammo_for_weapon(life, weapon['uid']))>=5:
+			if len(get_all_ammo_for_weapon(life, weapon['uid'])):
 				return True
 		
 		if weapon_is_working(life, weapon['uid']):
@@ -281,98 +291,108 @@ def get_closest_target(life, targets):
 	if targets:
 		_target_positions, _zones = get_target_positions_and_zones(life, targets)
 	else:
-		#TODO: Dude, what?
-		movement.find_target(life, targets, call=False)
 		return False
 	
-	_targets_too_far = []
 	_closest_target = {'target_id': None, 'score': 9999}
 	for t in [brain.knows_alife_by_id(life, t_id) for t_id in targets]:
 		_distance = numbers.distance(life['pos'], t['last_seen_at'])
-		
-		#NOTE: Hardcoding this for optimization reasons.
-		if _distance>=100:
-			targets.remove(t['life']['id'])
-			_targets_too_far.append(t['life']['id'])
 		
 		if _distance < _closest_target['score']:
 			_closest_target['score'] = _distance
 			_closest_target['target_id'] = t['life']['id']
 	
-	if not _targets_too_far:
-		_path_to_nearest = zones.dijkstra_map(life['pos'], _target_positions, _zones)
-		
-		if not _path_to_nearest:
-			_path_to_nearest = [life['pos'][:]]
-		
-		if not _path_to_nearest:
-			logging.error('%s lost known/visible target.' % ' '.join(life['name']))
-			
-			return False
-		
-		_target_pos = list(_path_to_nearest[len(_path_to_nearest)-1])
-		#else:
-		#	_target_pos = life['pos'][:]
-		#	_target_positions.append(_target_pos)
-		
-		target = None
-		
-		if _target_pos in _target_positions:
-			for _target in [brain.knows_alife_by_id(life, t) for t in targets]:
-				if _target_pos == _target['last_seen_at']:
-					target = _target
-					break
-	else:
-		print 'THIS IS MUCH QUICKER!!!' * 10
-		target = brain.knows_alife_by_id(life, _closest_target['target_id'])
-	
-	return target
+	return _closest_target['target_id']
 
 def ranged_combat(life, targets):
-	_target = get_closest_target(life, targets)
+	_target = brain.knows_alife_by_id(life, get_closest_target(life, targets))
 	
-	if not _target:
-		for target_id in targets:
-			if brain.knows_alife_by_id(life, target_id)['escaped']:
-				continue
-			
-			brain.knows_alife_by_id(life, target_id)['escaped'] = 1
+	#if not _target:
+	#	for target_id in targets:
+	#		if brain.knows_alife_by_id(life, target_id)['escaped']:
+	#			continue
+	#		
+	#		brain.knows_alife_by_id(life, target_id)['escaped'] = 1
+	#	
+	#	logging.error('No target for ranged combat.')
+	#	
+	#	return False
+	
+	_engage_distance = get_engage_distance(life)
+	_path_dest = lfe.path_dest(life)
+	
+	if not _path_dest:
+		_path_dest = life['pos'][:]
+	
+	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
+	
+	#Get us near the target
+	#if _target['last_seen_at']:
+	movement.position_to_attack(life, _target['life']['id'], _engage_distance)
 		
-		logging.error('No target for ranged combat.')
-		return False
-	
-	if not life['path'] or not numbers.distance(lfe.path_dest(life), _target['last_seen_at']) == 0:
-		movement.position_to_attack(life, _target['life']['id'])
-	
-	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True) and not sight.view_blocked_by_life(life, _target['last_seen_at'], allow=[_target['life']['id']]):
-		if sight.can_see_position(life, _target['life']['pos']):
-			if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])):
-				for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
-					lfe.add_action(life,{'action': 'shoot',
-						'target': _target['last_seen_at'],
-						'target_id': _target['life']['id'],
-						'limb': 'chest'},
-						5000,
-						delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
-		else:
-			lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
+	if sight.can_see_position(life, _target['last_seen_at']):
+		if _target_distance	<= _engage_distance:
+			if sight.can_see_position(life, _target['life']['pos']):
+				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
+					lfe.clear_actions(life)
+					
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>8:
+						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
+							lfe.add_action(life,{'action': 'shoot',
+								                 'target': _target['last_seen_at'],
+								                 'target_id': _target['life']['id'],
+								                 'limb': 'chest'},
+								                 300,
+								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+				else:
+					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
+					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
+					_friendly_positions.append(life['pos'][:])
+					
+					if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
+						lfe.add_action(life, {'action': 'dijkstra_move',
+							                    'rolldown': True,
+							                    'zones': _friendly_zones,
+							                    'goals': [_target['life']['pos'][:]],
+							                    'orig_goals': [_target['life']['pos'][:]],
+							                    'avoid_positions': _friendly_positions,
+							                    'reason': 'combat_position'},
+							             100)
+			else:
+				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
+				
+				_target['escaped'] = 1
+				
+				for send_to in judgement.get_trusted(life):
+					speech.communicate(life,
+					                   'target_missing',
+					                   target=_target['life']['id'],
+					                   matches=[send_to])
+		#else:
+			#print life['name']
+			#_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
+			#_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
+			#_friendly_positions.append(life['pos'][:])
 			
-			_target['escaped'] = 1
-			
-			for send_to in judgement.get_trusted(life):
-				speech.communicate(life,
-			        'target_missing',
-			        target=_target['life']['id'],
-			        matches=[send_to])
+			#if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
+			#	lfe.add_action(life, {'action': 'dijkstra_move',
+			#		                'rolldown': True,
+			#		                'zones': _friendly_zones,
+			#		                'goals': [_target['life']['pos'][:]],
+			#		                'orig_goals': [_target['life']['pos'][:]],
+			#		                'avoid_positions': _friendly_positions,
+			#		                'reason': 'combat_position'},
+			#		         100)
+			#	
+			#	print '2'
+		
 	else:
-		print life['name'], 'waiting...'
 		return False
 
 def melee_combat(life, targets):
 	_target = get_closest_target(life, targets)
 	
 	if not _target:
-		logging.error('No target for ranged combat.')
+		logging.error('No target for melee combat.')
 		return False
 	
 	if sight.can_see_position(life, _target['last_seen_at'], block_check=True, strict=True):
@@ -394,5 +414,4 @@ def melee_combat(life, targets):
 			        target=_target['life']['id'],
 			        matches=[send_to])
 	else:
-		print life['name'], 'waiting...'
 		return False

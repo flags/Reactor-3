@@ -12,7 +12,7 @@ import alife
 import logging
 import random
 
-#Scale & Design
+
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
 	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
@@ -56,8 +56,10 @@ def bullet_hit(life, bullet, limb):
 		else:
 			_msg = ['The round misses slightly']
 		_detailed = True
+	elif 'player' in life:
+		_msg = ['The round hits']
 	else:
-		_msg = ['%s hits your %s' % (items.get_name(bullet), limb)]
+		_msg = ['%s hits %s\'s %s' % (items.get_name(bullet), life['name'][0], limb)]
 	
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})
@@ -65,10 +67,10 @@ def bullet_hit(life, bullet, limb):
 		
 		if 'storing' in _item:
 			for item_in_container_uid in _item['storing']:
-				_chance_of_hitting_item = bullet['size']*(_item['capacity']/float(_item['max_capacity']))
+				_chance_of_hitting_item = _item['capacity']/float(_item['max_capacity'])
 				
 				if random.uniform(0, 1)<_chance_of_hitting_item:
-					continue
+					break
 				
 				_items_to_check.append({'item': item_in_container_uid, 'visible': False})
 		
@@ -77,10 +79,15 @@ def bullet_hit(life, bullet, limb):
 		_item_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
 		_item['thickness'] = numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
 		
-		_speed_mod = _item_damage
-		bullet['speed'] *= _speed_mod
-		bullet['velocity'][0] *= _speed_mod
-		bullet['velocity'][1] *= _speed_mod
+		if 'material' in _item and not _item['material'] == 'cloth':
+			_speed_mod = _item_damage
+			_can_stop = True
+			
+			bullet['speed'] *= _speed_mod
+			bullet['velocity'][0] *= _speed_mod
+			bullet['velocity'][1] *= _speed_mod
+		else:
+			_can_stop = False
 		
 		if not _item['thickness']:
 			_msg.append(', destroying the %s' % _item['name'])
@@ -90,7 +97,7 @@ def bullet_hit(life, bullet, limb):
 			else:
 				items.delete_item(_item)
 		else:
-			if bullet['speed']<=1:
+			if bullet['speed']<=1 and _can_stop:
 				_msg.append(', lodging itself in %s' % items.get_name(_item))
 				_ret_string = own_language(life, _msg)
 			
@@ -112,7 +119,6 @@ def bullet_hit(life, bullet, limb):
 	if limb in life['body']:
 		_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
-	#return '%s punctures %s (%s)' % (bullet['name'], limb, get_puncture_value(bullet, _actual_limb, target_structure_name=limb))
 	_ret_string = own_language(life, _msg)
 	
 	if _ret_string.endswith('!'):
@@ -129,6 +135,7 @@ def bite(life, target_id, limb):
 	
 	if numbers.distance(life['pos'], target['pos'])>1:
 		_msg.append('bites the air')
+		
 		return ' '.join(_msg)+'.'
 	
 	_items_to_check = []

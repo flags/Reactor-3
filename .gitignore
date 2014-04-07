@@ -7,7 +7,9 @@
 *.swp
 *.wpr
 *.gif
+*.png
 *.ase
+*.txt
 *.patch
 *.lprof
 *.idea_wall
@@ -29,6 +31,9 @@ docs/devjournal.md
 docs/shortlist.md
 docs/talks/*
 
+mergedown
+nounlist.py
+kernprof.py
 profile.dat
 profile.txt
 diffout.txt

@@ -6,6 +6,7 @@ import life as lfe
 import language
 import numbers
 import drawing
+import locks
 import menus
 import logic
 import alife
@@ -54,7 +55,7 @@ def end_dialog(dialog_id):
 	if SETTINGS['controlling'] in [_dialog['started_by'], _dialog['target']]:
 		lfe.focus_on(LIFE[SETTINGS['controlling']])
 	
-	logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
+	#logging.debug('Dialog between %s and %s is over.' % (' '.join(LIFE[_dialog['started_by']]['name']), ' '.join(LIFE[_dialog['target']]['name'])))
 
 def get_flag(dialog_id, flag):
 	return get_dialog(dialog_id)['flags'][flag.lower()]
@@ -250,7 +251,7 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'skip': False,
 	            'loop': loop}
 	
-	if _dialog['remote']:
+	if _dialog['remote'] and not alife.sight.can_see_target(life, _target):
 		print ' '.join(life['name'])+'(%s) (radio):' % life['group'], _text
 	else:
 		print ' '.join(life['name'])+'(%s):' % life['group'], _text
@@ -353,10 +354,10 @@ def process_dialog_for_player(dialog_id, loop=False):
 	_dialog['cursor_index'] = 0	
 	_last_message = get_last_message(dialog_id)	
 	
-	print 'loo8888888888888888888888op', LIFE[_last_message['from']]['name'], dialog_id
-	
 	if loop:
 		end_dialog(dialog_id)
+		locks.lock('camera_free')
+		
 		return False
 	
 	for response in get_matching_message(LIFE[SETTINGS['controlling']], dialog_id, _last_message['next_gist']):
@@ -381,7 +382,9 @@ def process(life, dialog_id):
 	
 	if _last_message['next_gist'] == 'end':
 		end_dialog(dialog_id)
+		locks.lock('camera_free')
 	elif 'player' in life:
+		locks.unlock('camera_free', reason='Process dialog')
 		process_dialog_for_player(dialog_id, loop=_last_message['loop'])
 	else:
 		say_via_gist(life, dialog_id, _last_message['next_gist'], loop=_last_message['loop'])
@@ -389,9 +392,11 @@ def process(life, dialog_id):
 def draw_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	_last_message = get_last_message(dialog_id)
-	_x = MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2
+	_x = numbers.clip(MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2, 3, 100)
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
+	
+	locks.unlock('camera_free')
 	
 	if len(_line_of_sight)<=1:
 		_center_pos = LIFE[_dialog['started_by']]['pos']
@@ -410,7 +415,15 @@ def draw_dialog(dialog_id):
 	gfx.camera_track(_center_pos)
 	gfx.blit_string(_x-2, _y-2, ' '.join(LIFE[_target]['name']), 'overlay', fore_color=_target_portrait[1])
 	gfx.blit_string(_x-2, _y, _target_portrait[0], 'overlay', fore_color=_target_portrait[1])#, back_color=tcod.darkest_gray)
-	gfx.blit_string(_x, _y, _last_message['text'], 'overlay')#, back_color=tcod.darkest_gray)
+	
+	_text = _last_message['text']
+	_y_mod = 0
+	while _text:
+		_x = MAP_WINDOW_SIZE[0]/2-len(_text[:MAP_WINDOW_SIZE[0]-4])/2
+		
+		gfx.blit_string(_x, _y+_y_mod, _text[:MAP_WINDOW_SIZE[0]-4], 'overlay')
+		_text = _text[MAP_WINDOW_SIZE[0]-4:]
+		_y_mod += 1
 	
 	for choice in _dialog['choices']:
 		_text = choice['text'][choice['text'].index('\"')+1:choice['text'].index('\"')-1]

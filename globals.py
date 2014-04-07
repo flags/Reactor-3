@@ -1,7 +1,7 @@
 import libtcodpy as tcod
 import os
 
-VERSION = '0.7'
+VERSION = '0.7.5'
 WINDOW_TITLE = 'Reactor 3 - %s' % VERSION
 WINDOW_SIZE = [100, 60]
 MAP_SIZE = [250, 250, 5]
@@ -24,12 +24,13 @@ UPDATE_CAMP_RATE = 5
 #Map stuff
 WORLD_INFO = {'map': [],
 	'id': None,
+	'title': '',
 	'seed': 0,
 	'time': 0,
-	'real_time_of_day': 6000,
+	'real_time_of_day': 32000,
 	'time_of_day': 'limbo',
 	'time_scale': 1,
-	'length_of_day': 6000,
+	'length_of_day': 32000,
 	'day': 0,
 	'ticks': 0,
 	'sub_ticks': 0,
@@ -39,7 +40,7 @@ WORLD_INFO = {'map': [],
 	'dynamic_spawns': 'Sparse',
 	'dynamic_spawn_interval': [0, (0, 0)],
 	'wildlife_spawn_interval': [0, (0, 0)],
-	'world gravity': 0.3,
+	'world_gravity': 0.2,
 	'lifeid': 1,
 	'itemid': 1,
 	'groupid': 1,
@@ -54,6 +55,8 @@ WORLD_INFO = {'map': [],
 	'chunk_map': {},
 	'camps': {},
 	'groups': {},
+    'factions': {},
+    'territories': {},
 	'jobs': {},
 	'references': {},
 	'reference_map': {'roads': [], 'buildings': []},
@@ -61,7 +64,20 @@ WORLD_INFO = {'map': [],
 	'chunk_size': 5,
 	'lights': [],
 	'timers': [],
-	'weather': {}}
+	'weather': {},
+	'scheme': [],
+	'overwatch': {'loss_experienced': 0,
+                  'intervention': 0,
+                  'danger_experienced': 0,
+                  'injury': 0,
+                  'human_encounters': 0,
+                  'mood': 'rest',
+                  'rest_level': .7,
+                  'last_updated': 0,
+                  'tracked_alife': []},
+	'last_scheme_time': 0}
+
+LOCKS = {}
 
 #Return values
 STATE_CHANGE = 2
@@ -85,6 +101,7 @@ STAGE_FORMING = 1
 STAGE_SETTLING = 2
 STAGE_SETTLED = 3
 STAGE_RAIDING = 4
+STAGE_ATTACKING = 5
 
 CAMERA_POS = [0,0,2]
 PREFAB_CAMERA_POS = [0,0,0]
@@ -92,7 +109,7 @@ SUN_POS = [0,0,25]
 SUN_BRIGHTNESS = [100]
 FPS = 60
 FPS_TERRAFORM = 100
-LOW_FPS = 15
+TOTAL_PLANNED_SCHEME_EVENTS = 5
 FONT = 'terminal8x8_gs_as_incol.png'
 HEIGHT_MAP = [[]]
 DARK_BUFFER = [[]]
@@ -118,12 +135,14 @@ CONSOLE_HISTORY_MAX_LINES = 29
 MESSAGE_LOG = []
 MESSAGE_LOG_MAX_LINES = 8
 PLACING_TILE = None
-RENDERER = tcod.RENDERER_SDL
+RENDERER = tcod.RENDERER_GLSL
 DATA_DIR = 'data'
-LIFE_DIR = os.path.join(DATA_DIR,'life')
-ITEM_DIR = os.path.join(DATA_DIR,'items')
-TEXT_DIR = os.path.join(DATA_DIR,'text')
-PREFAB_DIR = os.path.join(DATA_DIR,'prefabs')
+LIFE_DIR = os.path.join(DATA_DIR, 'life')
+MAP_DIR = os.path.join(DATA_DIR, 'maps')
+ITEM_DIR = os.path.join(DATA_DIR, 'items')
+TEXT_DIR = os.path.join(DATA_DIR, 'text')
+MISSION_DIR = os.path.join(DATA_DIR, 'missions')
+PREFAB_DIR = os.path.join(DATA_DIR, 'prefabs')
 DEFAULT_LIFE_ICON = '@'
 DEFAULT_ITEM_ICON = 'i'
 DEFAULT_ITEM_SIZE = '2x2'
@@ -181,7 +200,15 @@ SETTINGS = {'running': True,
 	'distance unit': 'Yards',
 	'viewid': 1,
 	'active_view': 0,
-    'refresh_los': False}
+	'refresh_los': False,
+    'loading': False,
+	'glitch_text': '',
+	'glitch_text_fade': False,
+	'glitch_text_time': 0,
+	'glitch_text_time_max': 0,
+	'aim_difficulty': 1.8,
+	'firearms_skill_mod': 0.55,
+    'kill threads': False}
 
 FUNCTION_MAP = {}
 KEYBOARD_STRING = ['']
@@ -192,13 +219,13 @@ TILE_STRUCT_DEP = ['tiles']
 LIFE_TYPES = {}
 LIFE = {}
 LIFE_MAP = []
+LOADED_CHUNKS = []
 ITEMS = {}
 ACTIVE_ITEMS = set()
 FOV_JOBS = {}
 ITEMS_HISTORY = {}
 ITEM_TYPES = {}
 ITEM_MAP = []
-CHUNK_MAP_CACHE = {}
 EFFECTS = {}
 EFFECT_MAP = []
 SPLATTERS = []
@@ -210,6 +237,7 @@ VIEWS = {}
 VIEW_SCENE = {}
 VIEW_SCENE_CACHE = set()
 DIALOG_TOPICS = {}
+MISSIONS = {}
 
 #Consoles
 ITEM_WINDOW = None
@@ -256,6 +284,7 @@ INPUT = {'up':False,
 		'k':False,
 		'l':False,
 		'm':False,
+		'M':False,
 		'n':False,
 		'o':False,
 		'O':False,
@@ -266,10 +295,12 @@ INPUT = {'up':False,
 		's':False,
 		'S':False,
 		't':False,
+		'T':False,
 		'u':False,
 		'v':False,
 		'V':False,
 		'w':False,
+     	'W':False,
 		'x':False,
 		'y':False,
 		'z':False,
@@ -284,8 +315,8 @@ INPUT = {'up':False,
 		'8':False,
 		'9':False,
 		'0':False,
-		'm1': False,
-		'm2': False}
+		'm1':False,
+		'm2':False}
 		
 #Colors
 GREEN_ALT = tcod.Color(0,130,0)

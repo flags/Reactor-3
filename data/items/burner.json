@@ -3,6 +3,6 @@
 "type": "artifact",
 "icon": 145,
 "description": "It is warm to the touch.",
-"flags": "",
+"flags": "SMOKING|BURNING",
 "size": "1x1",
 "material": "rock"}

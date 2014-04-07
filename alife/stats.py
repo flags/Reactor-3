@@ -105,7 +105,7 @@ def wants_to_abandon_group(life, group_id):
 	_trusted = 0
 	_hostile = 0
 	
-	for member in groups.get_group_memory(life, group_id, 'members'):
+	for member in groups.get_group(life, group_id)['members']:
 		if life['id'] == member:
 			continue
 		
@@ -136,6 +136,9 @@ def desires_to_create_camp(life):
 			return True
 	
 	return False
+
+def desires_help_from(life, life_id):
+	return judgement.can_trust(life, life_id) and judgement.get_tension_with(life, life_id)<=judgement.get_max_tension_with(life, life_id)
 
 def desires_shelter(life):
 	if not lfe.execute_raw(life, 'discover', 'desires_shelter'):
@@ -172,7 +175,7 @@ def desires_to_join_camp(life, camp_id):
 	return True
 
 def desires_weapon(life):
-	if not combat.get_weapons(life):
+	if not combat.get_equipped_weapons(life):
 		return True
 	
 	#if life['stats']['firearms'] >= 5:
@@ -193,7 +196,7 @@ def get_firearm_accuracy(life):
 	return numbers.clip((life['stats']['firearms'])/10.0, 0.35, 1)
 
 def get_recoil_recovery_rate(life):
-	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.4
+	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.2
 
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
@@ -354,8 +357,14 @@ def is_intimidated(life):
 	
 	return False
 
+def is_injured(life):
+	return len(lfe.get_bleeding_limbs(life)) > 0
+
 def is_confident(life):
-	_friendly_confidence = 0
+	if 'player' in life:
+		return False
+	
+	_friendly_confidence = judgement.get_ranged_combat_rating_of_target(life, life['id'])
 	_threat_confidence = 0
 	
 	for target_id in judgement.get_trusted(life, visible=False):
@@ -364,30 +373,51 @@ def is_confident(life):
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
-		
-		if _knows['last_seen_time']:
-			_friendly_confidence += _recent_mod
+		if _knows['last_seen_time']>30:
+			if brain.get_alife_flag(life, target_id, 'threat_score'):
+				_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
+				_score = brain.get_alife_flag(life, target_id, 'threat_score')
+				_friendly_confidence += _score*_recent_mod
+			else:
+				_friendly_confidence += 1
 		else:
-			_friendly_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
+			_score = judgement.get_ranged_combat_rating_of_target(life, target_id)
+			
+			brain.flag_alife(life, target_id, 'threat_score', value=_score)
+			
+			_friendly_confidence += _score
 	
-	for target_id in judgement.get_threats(life, ignore_escaped=True):
+	for target_id in judgement.get_threats(life, ignore_escaped=False):
 		_knows = brain.knows_alife_by_id(life, target_id)
 		
 		if _knows['dead'] or _knows['asleep']:
 			continue
 		
-		_recent_mod = numbers.clip(_knows['last_seen_time'], 0, 300)/300.0
-		
 		if _knows['last_seen_time']:
-			_threat_confidence += 2*_recent_mod
+			if brain.get_alife_flag(life, target_id, 'threat_score'):
+				if _knows['last_seen_time']>50:
+					_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 600)/600.0)
+				else:
+					_recent_mod = 1
+				
+				_score = brain.get_alife_flag(life, target_id, 'threat_score')
+				_threat_confidence += _score*_recent_mod
+			else:
+				_threat_confidence += 1
 		else:
-			_threat_confidence += judgement.get_ranged_combat_rating_of_target(life, target_id)*_recent_mod
+			_score = judgement.get_ranged_combat_rating_of_target(life, target_id, inventory_check=False)
+			
+			brain.flag_alife(life, target_id, 'threat_score', value=_score)
+			
+			_threat_confidence += _score
 	
-	return _friendly_confidence > _threat_confidence
+	return _friendly_confidence-_threat_confidence>=-2
 
 def is_threat_too_close(life):
 	_nearest_threat = judgement.get_nearest_threat(life)
+	
+	if not _nearest_threat:
+		return False
 	
 	_knows = brain.knows_alife_by_id(life, _nearest_threat)
 	
@@ -400,6 +430,17 @@ def is_threat_too_close(life):
 	_danger_close_range = int(lfe.execute_raw(life, 'safety', 'danger_close_range'))
 	if numbers.distance(life['pos'], _knows['last_seen_at'])<_danger_close_range:
 		return True
+	
+	return False
+
+def has_threat_in_combat_range(life):
+	_engage_distance = combat.get_engage_distance(life)
+	
+	for target_id in judgement.get_threats(life):
+		_target = brain.knows_alife_by_id(life, target_id)
+		
+		if numbers.distance(life['pos'], _target['last_seen_at']) <= _engage_distance:
+			return True
 	
 	return False
 
@@ -494,7 +535,12 @@ def react_to_attack(life, life_id):
 		speech.start_dialog(life, _knows['life']['id'], 'establish_hostile')
 		
 	if life['group']:
-		groups.announce(life, life['group'], 'attacked_by_hostile', target_id=_knows['life']['id'])
+		groups.announce(life,
+		                life['group'],
+		                'attacked_by_hostile',
+		                target_id=_knows['life']['id'],
+		                filter_if=lambda life_id: brain.knows_alife_by_id(life, life_id)['last_seen_time']<=30,
+		                ignore_if_said_in_last=150)
 
 def react_to_tension(life, life_id):
 	if brain.knows_alife_by_id(life, life_id)['alignment'] in ['hostile']:
@@ -509,7 +555,11 @@ def react_to_tension(life, life_id):
 	if _disarm:
 		#For now...
 		if not sight.can_see_position(life, LIFE[life_id]['pos']):
-			groups.announce(life, life['group'], 'attacked_by_hostile', target_id=life_id)
+			groups.announce(life,
+			                life['group'],
+			                'attacked_by_hostile',
+			                filter_if=lambda life_id: brain.knows_alife_by_id(life, life_id)['last_seen_time']<=30,
+			                target_id=life_id)
 			
 			return False
 		
@@ -532,6 +582,23 @@ def react_to_tension(life, life_id):
 	elif not speech.has_sent(life, life_id, 'confront'):
 		speech.start_dialog(life, life_id, 'confront')
 		speech.send(life, life_id, 'confront')
+
+def ask_for_help(life, life_id):
+	_bleeding_limbs = len(lfe.get_bleeding_limbs(life))
+	
+	if not speech.has_sent(life, life_id, 'hurt'):
+		speech.start_dialog(life, life_id, 'hurt')
+		speech.send(life, life_id, 'hurt')
+
+def wants_alignment_change(life, life_id):
+	_target = brain.knows_alife_by_id(life, life_id)
+	
+	for memory in lfe.get_memory(life, matches={'text': 'healed_by'}):
+		if memory['target'] == life_id:
+			if _target['alignment'] == 'feign_trust':
+				return 'trust'
+	
+	return None
 
 def distance_from_pos_to_pos(life, pos1, pos2):
 	return numbers.distance(pos1, pos2)

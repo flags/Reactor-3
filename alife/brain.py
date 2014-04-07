@@ -10,11 +10,13 @@ import snapshots
 import judgement
 import survival
 import movement
+import factions
 import planner
 import numbers
 import memory
 import speech
 import combat
+import stats
 import logic
 import sight
 import sound
@@ -70,11 +72,13 @@ def alife_has_flag(life, target_id, flag):
 	return False
 
 def flag_alife(life, target_id, flag, value=True):
-	logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	#logging.debug('%s flagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	
 	life['know'][target_id]['flags'][flag] = value
 
 def unflag_alife(life, target_id, flag):
-	logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	#logging.debug('%s unflagged %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), flag))
+	
 	del life['know'][target_id]['flags'][flag] 
 
 def alife_has_flag(life, target_id, flag):
@@ -114,7 +118,7 @@ def remember_item(life, item):
 	#TODO: Doing too much here. Try to get rid of this check.
 	if not item['uid'] in life['know_items']:
 		life['know_items'][item['uid']] = {'item': item['uid'],
-			'score': judgement.judge_item(life, item['uid']),
+			'score': judgement.judge_item(life, item['uid'], initial=True),
 			'last_seen_at': item['pos'][:],
 			'last_seen_time': 0,
 			'last_owned_by': item['owner'],
@@ -179,15 +183,16 @@ def meet_alife(life, target):
 		raise Exception('Life \'%s\' learned about itself. Stopping.' % ' '.join(life['name']))
 	
 	if target['id'] in life['know']:
-		return False
+		return life['know'][target['id']]
 	
 	life['know'][target['id']] = {'life': target,
 		'danger': 0,
 		'trust': 0,
 		'alignment': 'neutral',
 		'last_seen_time': -1,
+		'time_visible': 0,
 		'met_at_time': WORLD_INFO['ticks'],
-		'last_seen_at': None,
+		'last_seen_at': target['pos'],
 		'last_encounter_time': 0,
 		'items': [],
 		'escaped': False,
@@ -203,11 +208,21 @@ def meet_alife(life, target):
 		'orderid': 1,
 		'flags': {}}
 	
+	if factions.is_enemy(life, target['id']):
+		stats.establish_hostile(life, target['id'])
+	else:
+		stats.establish_trust(life, target['id'])
+	
 	#logging.debug('%s met %s.' % (' '.join(life['name']), ' '.join(target['name'])) )
+	return life['know'][target['id']]
 
 def update_known_life(life, life_id, flag, value):
 	_knows = knows_alife_by_id(life, life_id)
 	_knows[flag] = value
+	
+	if 'player' in life:
+		if flag == 'last_seen_at':
+			logic.show_event('<Updated location of %s>' % (' '.join(LIFE[life_id]['name'])), pos=value, delay=2)
 	
 	logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name']), value))
 
@@ -311,10 +326,16 @@ def understand(life):
 	else:
 		life['think_rate_max'] = 5
 	
-	if not life['online']:
+	if not life['online'] or life['asleep']:
 		return False
 	
-	if life['think_rate']:
+	if len(life['actions'])-len(lfe.find_action(life, matches=[{'action': 'move'}, {'action': 'dijkstra_move'}]))>0:
+		lfe.clear_actions(life)
+		life['path'] = []
+		
+		return False
+	
+	if life['think_rate']>0:
 		life['think_rate'] -= 1
 		
 		return False
@@ -324,6 +345,9 @@ def understand(life):
 	
 	life['think_rate'] = life['think_rate_max']
 	
+	#if life['name'][0].startswith('Tim'):
+	#	_goal, _tier, _plan = planner.get_next_goal(life, debug='attack')
+	#else:
 	_goal, _tier, _plan = planner.get_next_goal(life)
 	
 	if _goal:
@@ -331,6 +355,7 @@ def understand(life):
 	else:
 		lfe.change_goal(life, 'idle', TIER_RELAXED, [])
 		#logging.error('%s has no possible goal.' % ' '.join(life['name']))
+		
 		return False
 	
 	planner.think(life)

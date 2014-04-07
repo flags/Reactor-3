@@ -136,9 +136,16 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				if _open_map[x][y]>-3:
 					continue
 				
+				_map_pos = WORLD_INFO['map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1][zone['z']]
+				
+				if not _map_pos or not 'z_id' in _map_pos:
+					continue
+				
 				try:
-					if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+					if not _map_pos['z_id'] == zone['id']:
 						continue
+					#if not zone['_map'][x-zone['top_left'][0]-1][y-zone['top_left'][1]-1]:
+					#	continue
 				except:
 					print 'Dijkstra crash dump:'
 					print 'Zones:', zones

@@ -71,65 +71,86 @@ WALL_TILE = {'id':'wall',
 			 'type': 'building',
 			 'cost':-1}
 
+WHITE_WALL_TILE = {'id':'white_wall_1',
+			 'icon':'#',
+			 'color':(tcod.lightest_gray, tcod.lighter_gray),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
 BLUE_CARPET_1 = {'id':'blue_carpet_1',
 			 'icon':'.',
-			 'color':(tcod.desaturated_cyan, tcod.desaturated_sky),
+			 'color':(tcod.Color(89, 116, 133), tcod.Color(119, 136, 153)),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 BLUE_CARPET_2 = {'id':'blue_carpet_2',
 			 'icon':'.',
-			 'color':(tcod.desaturated_sky, tcod.desaturated_cyan),
+			 'color':(tcod.Color(119, 136, 153), tcod.Color(89, 116, 133)),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
+RED_CARPET_1 = {'id':'red_carpet_1',
+			 'icon':'.',
+			 'color':(tcod.desaturated_flame, tcod.desaturated_orange),
+			 'burnable':False,
+			 'type': 'building',
+			 'cost':-1}
+
+RED_CARPET_2 = {'id':'red_carpet_2',
+			 'icon':'.',
+			 'color':(tcod.desaturated_orange, tcod.desaturated_flame),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 SEA_CARPET_1 = {'id':'sea_carpet_1',
 			 'icon':',',
-			 'color':(tcod.desaturated_turquoise, tcod.desaturated_han),
+			 'color':(tcod.lighter_turquoise, tcod.lighter_han),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 SEA_CARPET_2 = {'id':'sea_carpet_2',
 			 'icon':',',
-			 'color':(tcod.desaturated_sea, tcod.desaturated_azure),
+			 'color':(tcod.lighter_han, tcod.lighter_turquoise),
 			 'burnable':False,
 			 'type': 'building',
 			 'cost':-1}
 
 FIELD_TILE_1 = {'id': 'field_1',
-			 'icon': '~',
-			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'icon': '-',
+			 'color': (tcod.gold, tcod.Color(222,184,135)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 FIELD_TILE_2 = {'id': 'field_2',
-			 'icon': '\'',
-			 'color': (tcod.Color(210, 170, 153), tcod.Color(211, 181, 168)),
+			 'icon': '~',
+			 'color': (tcod.gold, tcod.Color(210,180,140)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 FIELD_TILE_3 = {'id': 'field_3',
-			 'icon': ';',
-			 'color': (tcod.Color(211, 181, 168), tcod.Color(210, 170, 153)),
+			 'icon': '=',
+			 'color': (tcod.dark_yellow, tcod.Color(222,184,135)),
 			 'burnable': True,
 			 'type': 'field',
 			 'cost': 2}
 
 WHEAT_TILE_1 = {'id': 'wheat_1',
-            'icon': '|',
-            'color': (tcod.Color(232, 210, 169), tcod.Color(210, 170, 153)),
+            'icon': '=',
+            'color': (tcod.gold, tcod.Color(139, 69, 19)),
             'burnable': True,
             'translucent': True,
             'not_solid': True}
 
 WHEAT_TILE_2 = {'id': 'wheat_2',
-            'icon': '!',
-            'color': (tcod.Color(245, 222, 179), tcod.Color(211, 181, 168)),
+            'icon': '~',
+            'color': (tcod.dark_yellow, tcod.Color(160, 82, 45)),
             'burnable': True,
             'translucent': True,
             'not_solid': True}
@@ -330,9 +351,9 @@ FLOOR_DARK_BLUE_1 = {'id': 'floor_dark_blue_1',
            'type': 'building',
            'burnable': False}
 
-FLOOR_DARK_GREEN_1 = {'id': 'floor_dark_green_1',
+FLOOR_DARK_BROWN_1 = {'id': 'floor_dark_brown_1',
            'icon': '.',
-           'color': (tcod.darker_chartreuse, tcod.brass),
+           'color': (tcod.Color(117 ,85, 10), tcod.darker_amber),
            'type': 'building',
            'burnable': False}
 
@@ -344,14 +365,13 @@ WALL_BROWN = {'id': 'wall_brown',
 
 FLOOR_BROWN_1 = {'id': 'floor_brown_1',
            'icon': '.',
-           'color': (tcod.brass, tcod.Color(236, 200, 149)),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
+           'color': (tcod.darker_sea, tcod.desaturated_sea),#(tcod.Color(255, 216, 161), tcod.Color(236, 200, 149)),
            'type': 'building',
            'burnable': False}
 
 #Groups
 TEMP_TILES = [BLANK_TILE,
 		DIRT_TILE,
-		WALL_TILE,
 		ROAD_STRIPE_1,
 		ROAD_STRIPE_2,
 		RED_BRICK_1,
@@ -427,9 +447,14 @@ BLUE_FLOOR_TILES = [FLOOR_BLUE_1, FLOOR_BLUE_2]
 
 DARK_BLUE_FLOOR_TILES = [FLOOR_DARK_BLUE_1]
 
-DARK_GREEN_FLOOR_TILES = [FLOOR_DARK_GREEN_1]
+DARK_BROWN_FLOOR_TILES = [FLOOR_DARK_BROWN_1]
 
 BROWN_FLOOR_TILES = [FLOOR_BROWN_1]
+
+RED_CARPET_TILES = [RED_CARPET_1,
+                    RED_CARPET_2]
+
+WALL_TILES = [WALL_TILE, WALL_BROWN, WHITE_WALL_TILE]
 
 def create_all_tiles():
 	TEMP_TILES.extend(GRASS_TILES)
@@ -440,6 +465,7 @@ def create_all_tiles():
 	TEMP_TILES.extend(CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(BROKEN_CONCRETE_FLOOR_TILES)
 	TEMP_TILES.extend(RED_BRICK_TILES)
+	TEMP_TILES.extend(RED_CARPET_TILES)
 	TEMP_TILES.extend(WHITE_TILE_TILES)
 	TEMP_TILES.extend(TREE_STUMPS)
 	TEMP_TILES.extend(WOOD_TILES)
@@ -448,13 +474,14 @@ def create_all_tiles():
 	TEMP_TILES.extend(HOUSE_WALL_TILES)
 	TEMP_TILES.extend(BLUE_FLOOR_TILES)
 	TEMP_TILES.extend(DARK_BLUE_FLOOR_TILES)
-	TEMP_TILES.extend(DARK_GREEN_FLOOR_TILES)
+	TEMP_TILES.extend(DARK_BROWN_FLOOR_TILES)
 	TEMP_TILES.extend(BROWN_FLOOR_TILES)
 	TEMP_TILES.extend(FIELD_TILES)
 	TEMP_TILES.extend(BLUE_CARPET_TILES)
 	TEMP_TILES.extend(SEA_CARPET_TILES)
 	TEMP_TILES.extend(BUSH_TILES)
 	TEMP_TILES.extend(WHEAT_TILES)
+	TEMP_TILES.extend(WALL_TILES)
 
 	for tile in TEMP_TILES:
 		TILES[tile['id']] = tile
@@ -462,6 +489,7 @@ def create_all_tiles():
 def create_tile(tile):
 	_ret_tile = {}
 	_ret_tile['id'] = tile['id']
+	_ret_tile['flags'] = {}
 
 	return _ret_tile
 

@@ -1,7 +1,7 @@
 from globals import *
 
-import situations
 import weather
+
 import zones
 import alife
 import items
@@ -57,9 +57,6 @@ def drink():
 
 def give(item):
 	items.create_item(item, position=LIFE[SETTINGS['controlling']]['pos'])
-
-def drop():
-	situations.drop_cache(['soda', 'corn'])
 
 def day():
 	WORLD_INFO['real_time_of_day'] = 1500

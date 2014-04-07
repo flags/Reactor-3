@@ -527,8 +527,14 @@ def draw_message_box():
 		else:		
 			_text = msg['msg']
 		
+		_c = 9*((_i>0)+1)
+		_back_color = tcod.Color(_c, _c, _c)
+		
 		if msg['style'] == 'damage':
 			_fore_color = tcod.red
+		elif msg['style'] == 'sound':
+			_fore_color = tcod.white
+			_back_color = tcod.dark_gray
 		elif msg['style'] == 'speech':
 			_fore_color = tcod.gray
 		elif msg['style'] == 'action':
@@ -545,9 +551,6 @@ def draw_message_box():
 			_fore_color = tcod.crimson
 		else:
 			_fore_color = tcod.Color(160, 160, 160)
-		
-		_c = 9*((_i>0)+1)
-		_back_color = tcod.Color(_c, _c, _c)
 		
 		_i = -_i
 		
@@ -583,6 +586,9 @@ def draw_status_line():
 	if LIFE[SETTINGS['following']]['strafing']:
 		_non_flashing_text.append('Strafing')
 	
+	if SETTINGS['loading']:
+		_non_flashing_text.append(str(TICKER[int(round(3*(time.time()%1)))]))
+	
 	if SETTINGS['paused']:
 		if life.is_target_of(LIFE[SETTINGS['following']]):
 			_non_flashing_text.append('Combat')
@@ -602,6 +608,38 @@ def draw_status_line():
 		            MAP_WINDOW_SIZE[1]-1,
 		            ' - '.join(_flashing_text),
 		            'map')
+	
+	if SETTINGS['glitch_text']:
+		_max_glitch_progress = SETTINGS['glitch_text_time_max']/2
+		_glitch_progress = SETTINGS['glitch_text_time']/float(_max_glitch_progress)
+		_i = 0
+		
+		for c in SETTINGS['glitch_text']:
+			_g = random.randint(120, 150)
+			_gray = tcod.Color(_g, _g, _g)
+			
+			if random.randint(0, 1):
+				_gray = random.choice([tcod.dark_pink, tcod.dark_purple, tcod.dark_red])
+			
+			if _i/float(len(SETTINGS['glitch_text']))<_glitch_progress:
+				blit_char_to_view(_i+1, 1, c, (tcod.white, None), 'map')
+			else:
+				blit_char_to_view(_i+1, 1, chr(random.randint(0, 255)), (_gray, None), 'map')
+			
+			_i += 1
+		
+		
+		if SETTINGS['glitch_text_fade']:
+			SETTINGS['glitch_text_time'] -= 1
+		else:
+			SETTINGS['glitch_text_time'] += 1
+		
+		if SETTINGS['glitch_text_time']>SETTINGS['glitch_text_time_max']:
+			SETTINGS['glitch_text_fade'] = True
+		elif SETTINGS['glitch_text_fade'] and SETTINGS['glitch_text_time']<=0:
+			SETTINGS['glitch_text'] = ''
+			
+			refresh_view('map')
 
 def draw_selected_tile_in_item_window(pos):
 	if time.time()%1>=0.5:
@@ -704,7 +742,7 @@ def message(text, style=None):
 	MESSAGE_LOG.append({'msg': text, 'style': style, 'count': 0})
 
 def radio(source, text):
-	message('%s: %s' % (' '.join(source['name']), text), style='radio')
+	message('%s: %s' % (source, text), style='radio')
 
 def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	if not SETTINGS['running']:
@@ -724,6 +762,25 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	
 	tcod.console_print(0, _center_x, _center_y, text)
 	tcod.console_flush()
+
+def glitch_text(text, change_text_only=False):
+	SETTINGS['glitch_text'] = text
+	
+	if change_text_only:
+		refresh_view('map')
+		
+		if SETTINGS['glitch_text_fade']:
+			SETTINGS['glitch_text_fade'] = False
+		
+		if SETTINGS['glitch_text_time'] > SETTINGS['glitch_text_time_max']/2:
+			SETTINGS['glitch_text_time'] = SETTINGS['glitch_text_time_max']/2
+		
+		if SETTINGS['glitch_text_time']:
+			return True
+	
+	SETTINGS['glitch_text_fade'] = False
+	SETTINGS['glitch_text_time'] = 0
+	SETTINGS['glitch_text_time_max'] = 50+len(text)*2
 
 def position_is_in_frame(pos):
 	_view = get_active_view()

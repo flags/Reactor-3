@@ -16,7 +16,7 @@ import time
 
 def cache_zones():
 	for z in range(0, MAP_SIZE[2]):
-		ZONE_CACHE[z] = get_slices_at_z(z)
+		ZONE_CACHE[z] = [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def create_map_array(val=0, size=MAP_SIZE):
 	_map = numpy.zeros((size[0], size[1]))
@@ -34,11 +34,12 @@ def get_unzoned(slice_map, positions, z, map_size=MAP_SIZE):
 
 #@profile
 def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
-	print 'Processing:', z
+	#print 'Processing:', z
 	_runs = 0
 	_slice = create_map_array(size=map_size)
 	_ground = []
 	_unzoned = {}
+	
 	for y in range(map_size[1]):
 		for x in range(map_size[0]):
 			if not WORLD_INFO['map'][x][y][z]:# or not maps.is_solid((x, y, z)):
@@ -72,10 +73,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 		_ramps = set()
 		_start_pos = get_unzoned(_slice, _unzoned, z, map_size=map_size)
 		
-		if _start_pos:
-			print '\tNew zone:', _z_id
-		else:
-			print '\tRuns for zone id %s: %s' % (_z_id, _runs)
+		if not _start_pos:
 			break
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
@@ -116,10 +114,6 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 				if _x<0 or _x>=map_size[0] or _y<0 or _y>=map_size[1]:
 					continue
 				
-				#if maps.is_solid((_x, _y, z+1)) and maps.is_solid((_x, _y, z-1)):
-				#	print 'both solid!!!!!!!!!!!'
-				#	continue
-				
 				if (_x, _y) in _unzoned and not (_slice[_x][_y]):
 					_slice[_x][_y] = _z_id
 					_ground.append((_x, _y))
@@ -135,10 +129,7 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 					if _y > _bot_right[1]:
 						_bot_right[1] = _y
 					
-					#if not (_x, _y) in _to_check:
 					_to_check.append((_x, _y))
-					#else:
-					#	print 'dupe'
 				
 				if _skip_ramp_check:
 					continue
@@ -159,38 +150,35 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 				
 				elif z and (not maps.get_tile((_x, _y, z)) or not maps.is_solid((_x, _y, z))) and maps.is_solid((_x, _y, z-1)):
 					if (_x, _y, z-1) in _ramps:
-						print 'panic'
 						continue
 					
 					_ramps.add((_x, _y, z-1))
-				
-		print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
+		
+		for pos in _ground:
+			WORLD_INFO['map'][pos[0]][pos[1]][z]['z_id'] = _z_id
+		
+		#print '\t\tRun %s: %s seconds, %s ramps' % (_runs, time.time()-_per_run, len(_ramps))
 		
 		if world_info:
-			return {'z': z, 'id': _z_id, 'map': _slice, 'ramps': list(_ramps), 'neighbors': {}}
+			return {'z': z, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
 		else:
-			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'map': list(_ground), 'ramps': list(_ramps), 'neighbors': {}}
+			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
-	for _splice in ZONE_CACHE[pos[2]]:
-		_p = (pos[0]-_splice['top_left'][0]-1, pos[1]-_splice['top_left'][1]-1)
-		
-		if _p[0]<-1 or _p[1]<-1 or _p[0]>=_splice['_map'].shape[0] or _p[1]>=_splice['_map'].shape[1]:
-			continue
-		
-		if _splice['_map'][_p[0]][_p[1]]:
-			return _splice['id']
+	_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
 	
-	print 'No zone at', pos
+	if not _map_pos or not 'z_id' in _map_pos:
+		return None
 	
-	return None
+	return _map_pos['z_id']
 
 def get_slice(zone_id):
 	zone_id = str(zone_id)
 	return WORLD_INFO['slices'][zone_id]
 
 def get_slices_at_z(z):
-	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
+	return ZONE_CACHE[z]
+	#return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
@@ -222,6 +210,7 @@ def can_path_to_zone(z1, z2):
 
 def create_zone_map():
 	WORLD_INFO['slices'] = {}
+	#WORLD_INFO['slice_map'] = maps.create_map()
 	WORLD_INFO['zoneid'] = 1
 	
 	if SETTINGS['running']:
@@ -245,7 +234,7 @@ def connect_ramps():
 	_i = 1
 	
 	for _slice in WORLD_INFO['slices']:
-		print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
+		#print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
 		gfx.title('Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
 		
 		_i += 1
@@ -257,6 +246,8 @@ def connect_ramps():
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']] = [(x, y)]
 					elif not (x, y) in WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']]:
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['id']].append((x, y))
+		
+		del WORLD_INFO['slices'][_slice]['ramps']
 
 #@profile
 def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, avoid_chunks=[], avoid_positions=[], return_score=False, return_score_in_range=[]):
@@ -284,14 +275,14 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 		return DIJKSTRA_CACHE[_map_string]['return']
 	
 	_map['return'] = fast_dijkstra.dijkstra_map(start_pos,
-	                                  goals,
-	                                  zones,
-	                                  max_chunk_distance=max_chunk_distance,
-	                                  rolldown=rolldown,
-	                                  avoid_chunks=avoid_chunks,
-	                                  avoid_positions=avoid_positions,
-	                                  return_score=return_score,
-	                                  return_score_in_range=return_score_in_range)
+	                                            goals,
+	                                            zones,
+	                                            max_chunk_distance=max_chunk_distance,
+	                                            rolldown=rolldown,
+	                                            avoid_chunks=avoid_chunks,
+	                                            avoid_positions=avoid_positions,
+	                                            return_score=return_score,
+	                                            return_score_in_range=return_score_in_range)
 	
 	DIJKSTRA_CACHE[_map_string] = _map
 	

@@ -42,8 +42,8 @@ def announce(life, gist, public=False, trusted=False, group=None, filter_if=None
 		if not stats.can_talk_to(life, target['id']):
 			continue
 		
-		if filter_if and filter_if(life):
-			return False
+		if filter_if and filter_if(target['id']):
+			continue
 		
 		_radio = False
 		if not sight.can_see_position(life, target['pos']):
@@ -198,6 +198,9 @@ def get_group_stage_message(life):
 	
 	if _group_stage == STAGE_SETTLING:
 		return ['Keep an eye out for places to camp.', 'Look for possible camps!', 'Let\'s find a camp, guys.']
+	
+	if _group_stage == STAGE_ATTACKING:
+		return ['Be ready to engage!']
 	
 	return 'HE LIVES'
 
@@ -365,11 +368,6 @@ def update_location_of_target_from_target(life, life_id, target_id):
 	if _target_known['last_seen_time'] == -1:
 		return False
 	
-	print life['name'], LIFE[life_id]['name'], LIFE[target_id]['name']
-	
-	print life['name'], _known['last_seen_time'], LIFE[life_id]['name'], _target_known['last_seen_time']
-	print _known['last_seen_at']
-	
 	if _target_known['last_seen_time'] < _known['last_seen_time'] or not _known['last_seen_at']:
 		_known['last_seen_at'] = _target_known['last_seen_at']
 		_known['last_seen_time'] = _target_known['last_seen_time']
@@ -377,3 +375,20 @@ def update_location_of_target_from_target(life, life_id, target_id):
 		logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), _known['last_seen_at']))
 	else:
 		print 'Got out of date info!' * 20
+
+def change_alignment(life, life_id, alignment):
+	_alignment = '%s_to_%s' % (brain.knows_alife_by_id(life, life_id)['alignment'], alignment)
+	
+	if not has_sent(life, life_id, _alignment):
+		start_dialog(life, life_id, _alignment)
+		send(life, life_id, _alignment)
+
+def announce_combat_to_group(life, group_id):
+	_number_of_members = len(groups.get_group(life, group_id)['members'])
+	
+	if _number_of_members>=5:
+		groups.announce(life, group_id, 'group_prepare_for_combat_large')
+	elif _number_of_members>2:
+		groups.announce(life, group_id, 'group_prepare_for_combat_small')
+	else:
+		groups.announce(life, group_id, 'group_prepare_for_combat_partner')

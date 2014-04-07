@@ -3,6 +3,7 @@ import life as lfe
 
 import judgement
 import movement
+import numbers
 import dialog
 import speech
 import groups
@@ -23,21 +24,28 @@ def setup(life):
 	#	return False
 	#if brain.retrieve_from_memory(life, 'tension_spike') >= 10:
 	#	lfe.say(life, '@n panics!', action=True)
+	_needs_help = stats.is_injured(life)
 	
 	_potential_talking_targets = []
 	for ai in life['seen']:
 		if not stats.can_talk_to(life, ai):
 			continue
 		
-		#print life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)
+		_relationship_change = stats.wants_alignment_change(life, ai)
+		
+		#if 'player' in LIFE[ai]:
+		#	print life['name'], LIFE[ai]['name'], judgement.get_tension_with(life, ai)>judgement.get_max_tension_with(life, ai), _relationship_change
 		
 		if stats.has_attacked_self(life, ai):
 			stats.react_to_attack(life, ai)
-		elif 0<judgement.get_tension_with(life, ai)<=judgement.get_max_tension_with(life, ai):
+		elif judgement.get_tension_with(life, ai)>judgement.get_max_tension_with(life, ai):
 			stats.react_to_tension(life, ai)
+		elif _needs_help:
+			if stats.desires_help_from(life, ai):
+				stats.ask_for_help(life, ai)
+		elif _relationship_change:
+			speech.change_alignment(life, ai, _relationship_change)
 		else:
-			#if not stats.desires_first_contact_with(life, ai) and not stats.desires_conversation_with(life, ai):
-			#	continue
 			if not stats.desires_conversation_with(life, ai):
 				continue
 	
@@ -71,13 +79,13 @@ def setup(life):
 		#if stats.desires_first_contact_with(life, target):
 		#	memory.create_question(life, target, 'establish_relationship', ignore_if_said_in_last=-1)
 		
-		if memory.get_questions_for_target(life, target):
+		if memory.get_questions_for_target(life, target) and numbers.distance(life['pos'], LIFE[target]['pos'])<=25:
 			_question = memory.ask_target_question(life, target)
 			speech.start_dialog(life, target, _question['gist'], **_question['args'])
 		elif memory.get_orders_for_target(life, target):
 			speech.start_dialog(life, target, 'give_order')
-		elif stats.wants_group_member(life, target):
-			memory.create_question(life, target, 'recruit', ignore_if_said_in_last=-1, group_id=life['group'])
+		#elif stats.wants_group_member(life, target):
+		#	memory.create_question(life, target, 'recruit', ignore_if_said_in_last=-1, group_id=life['group'])
 	
 	if life['dialogs']:
 		_dialog = life['dialogs'][0]
@@ -115,7 +123,13 @@ def setup(life):
 			if _know:
 				_last_seen_at = _know['last_seen_at']
 
-			speech.announce(life, 'attacked_by_hostile', trusted=True, target_id=target, last_seen_at=_last_seen_at)
+			speech.announce(life,
+			                'attacked_by_hostile',
+			                trusted=True,
+			                target_id=target,
+			                filter_if=lambda life_id: brain.knows_alife_by_id(life, life_id)['last_seen_time']<=30,
+			                last_seen_at=_last_seen_at,
+			                ignore_if_said_in_last=150)
 
 	_visible_items = [life['know_items'][item] for item in life['know_items'] if not life['know_items'][item]['last_seen_time'] and not 'parent_id' in ITEMS[life['know_items'][item]['item']]]
 	for ai in [life['know'][i] for i in life['know']]:

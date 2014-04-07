@@ -1,5 +1,3 @@
-#This is intended to be an example of how the new ALife
-#system works.
 from globals import *
 
 import life as lfe
@@ -29,6 +27,6 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	return RETURN_VALUE
 
 def tick(life):
-	_threats = judgement.get_threats(life, recent_only=True, limit_distance=sight.get_vision(life))
-	#_knows = brain.knows_alife_by_id(life, _threat)
-	movement.escape(life, _threats)
+	_threats = judgement.get_threats(life, limit_distance=sight.get_vision(life))
+	
+	return movement.escape(life, _threats)

@@ -12,17 +12,6 @@ import numbers
 import random
 import time
 
-def generate_cache():
-	logging.debug('Generating chunk map cache...')
-	
-	for key in CHUNK_MAP_CACHE:
-		del CHUNK_MAP_CACHE[key]
-	
-	for x in range(0, MAP_SIZE[0]):
-		for y in range(0, MAP_SIZE[1]):
-			CHUNK_MAP_CACHE[(x, y)] = get_chunk(get_chunk_key_at((x, y)))
-		
-	logging.debug('Done!')
 
 def get_flag(life, chunk_id, flag):
 	#if not chunk_id in life['known_chunks']:
@@ -56,13 +45,28 @@ def get_chunk(chunk_key):
 	return maps.get_chunk(chunk_key)
 
 def get_chunk_from_cache(pos):
-	return CHUNK_MAP_CACHE[tuple(pos)[:2]]
+	_chunk_key = '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+	
+	return WORLD_INFO['chunk_map'][_chunk_key]
 
 def get_chunk_pos(chunk_id, center=False):
 	if center:
 		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]
 	
 	return [int(val) for val in chunk_id.split(',')]
+
+def get_chunks_in_range(x_mod_min, x_mod_max, y_mod_min, y_mod_max, x_buffer=0, y_buffer=0):
+	_chunk_keys = []
+	
+	print int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer
+	print range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size'])
+	print range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size'])
+	
+	for y in range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size']):
+		for x in range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size']):
+			_chunk_keys.append('%s,%s' % (x, y))
+	
+	return _chunk_keys
 
 def get_visible_chunks_from(pos, vision, center=True):
 	_center_chunk_key = get_chunk_key_at(pos)
@@ -214,8 +218,23 @@ def get_nearest_position_in_chunk(position, chunk_id):
 	
 	return _closest['pos']
 
-def _get_nearest_chunk_in_list(pos, chunks):
+def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 	_nearest_chunk = {'chunk_key': None, 'distance': -1}
+	
+	if check_these_chunks_first:
+		for chunk_key in check_these_chunks_first:
+			if not chunk_key in chunks:
+				continue
+			
+			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+			_dist = numbers.distance(pos, chunk_center)
+			
+			if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
+				_nearest_chunk['distance'] = _dist
+				_nearest_chunk['chunk_key'] = chunk_key
+	
+	if _nearest_chunk['chunk_key']:
+		return _nearest_chunk
 	
 	for chunk_key in chunks:
 		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
@@ -227,8 +246,8 @@ def _get_nearest_chunk_in_list(pos, chunks):
 	
 	return _nearest_chunk
 
-def get_nearest_chunk_in_list(pos, chunks):
-	return _get_nearest_chunk_in_list(pos, chunks)['chunk_key']
+def get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
+	return _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=check_these_chunks_first)['chunk_key']
 
 def get_distance_to_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']

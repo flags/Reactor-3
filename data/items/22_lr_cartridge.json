@@ -9,7 +9,7 @@
 "drag": 0.05,
 "scatter_rate": 0.1,
 "flags": "ON_STOP[DELETE()]",
-"damage": {"sharp": 11},
+"damage": {"sharp": 17},
 "size": "1x1",
 "ammotype": ".22 LR",
 "material": "metal"}

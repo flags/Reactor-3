@@ -100,6 +100,12 @@ def calculate_fire(fire):
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
 	
+	if random.randint(0, 1):
+		_pos = fire['pos'][:2]
+		_pos.append(2)
+		
+		create_smoke(_pos, direction=random.randint(0, 369), speed=random.uniform(0.3, 0.85), age=0.2, max_opacity=0.9, decay=0.03)
+	
 	for life in [LIFE[life_id] for life_id in LIFE_MAP[fire['pos'][0]][fire['pos'][1]]]:
 		lfe.burn(life, fire['intensity'])
 	
@@ -145,6 +151,21 @@ def draw_ash(pos, ash):
 def clear_effect(effect):
 	if gfx.position_is_in_frame(effect['pos']):
 		gfx.refresh_view_position(effect['pos'][0]-CAMERA_POS[0], effect['pos'][1]-CAMERA_POS[1], 'map')
+
+def create_explosion(pos, force):
+	alife.noise.create(pos, force*100, 'an explosion', 'a low rumble', skip_on_visual=False)
+	
+	create_light(pos, (255, 69, 0), force*6, 1, fade=3)
+	create_smoke_cloud(pos,
+	                   force*6,
+	                   age=.8,
+	                   factor_distance=True)
+
+	for i in range(random.randint(1, 3)):
+		create_smoke_streamer(pos,
+		                      3+random.randint(0, 2),
+		                      (force*2)+random.randint(3, 6),
+		                      color=tcod.color_lerp(tcod.gray, tcod.crimson, random.uniform(0.1, 0.3)))
 
 def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1, speed=0.3, max_opacity=.75, interp_wind=True):
 	_intensity = random.uniform(max_opacity*.25, max_opacity)
@@ -237,6 +258,34 @@ def process_smoke(smoke):
 def draw_smoke(pos, smoke):
 	gfx.tint_tile(pos[0], pos[1], smoke['color'], numbers.clip(smoke['intensity'], 0, smoke['max_intensity']))
 
+def create_smoker(pos, time, color=tcod.gray):
+	_color = random.randint(200, 205)
+	_pos = list(pos)
+	
+	if len(_pos)<3:
+		_pos.append(2)
+	
+	_effect = {'type': 'vapor',
+	           'age': 0,
+	           'age_max': time,
+	           'max_intensity': 0.3,
+	           'color': color,
+	           'pos': _pos,
+	           'callback': process_smoker,
+	           'draw_callback': None,
+	           'unregister_callback': None}
+	
+	register_effect(_effect)
+
+def process_smoker(smoker):
+	if smoker['age'] >= smoker['age_max']:
+		unregister_effect(smoker)
+		return False
+	
+	smoker['age'] += 1
+	
+	create_smoke(smoker['pos'], color=smoker['color'], decay=0.03, direction=random.randint(0, 359))
+
 def create_vapor(pos, time, intensity):
 	_color = random.randint(200, 205)
 	
@@ -307,7 +356,8 @@ def draw_effect(pos):
 		_x = pos[0]-CAMERA_POS[0]
 		_y = pos[1]-CAMERA_POS[1]
 		
-		effect['draw_callback']((_x, _y), effect)
+		if effect['draw_callback']:
+			effect['draw_callback']((_x, _y), effect)
 
 def light_exists_at(pos):
 	for light in WORLD_INFO['lights']:
@@ -352,27 +402,29 @@ def has_splatter(position, what=None):
 			return splat
 
 def create_splatter(what, position, velocity=[0, 0], intensity=4):
-	_splatter = has_splatter(tuple(position),what=what)
 	_intensity = numbers.clip(random.random(), intensity*.05, intensity*.1)
 	
-	if not _splatter:
-		_splatter = {'pos': list(position[:]), 'what': what, 'color': tcod.Color(0, 0, 0), 'coef': _intensity}
-		
-		if velocity[0]>0:
-			_splatter['pos'][0] += random.randint(0, numbers.clip(int(round(velocity[0])), 0, 2))
-		elif velocity[0]<0:
-			_splatter['pos'][0] -= random.randint(0, numbers.clip(-int(round(velocity[0])), 0, 2))
-		
-		if velocity[1]>0:
-			_splatter['pos'][1] += random.randint(0, numbers.clip(int(round(velocity[1])), 0, 2))
-		elif velocity[1]<0:
-			_splatter['pos'][1] -= random.randint(0, numbers.clip(-int(round(velocity[1])), 0, 2))
-	 
+	#if not _splatter:
+	_splatter = {'pos': list(position[:]), 'what': what, 'color': tcod.Color(0, 0, 0), 'coef': _intensity}
+	
+	if velocity[0]>0:
+		_splatter['pos'][0] += random.randint(0, numbers.clip(int(round(velocity[0])), 0, 2))
+	elif velocity[0]<0:
+		_splatter['pos'][0] -= random.randint(0, numbers.clip(-int(round(velocity[0])), 0, 2))
+	
+	if velocity[1]>0:
+		_splatter['pos'][1] += random.randint(0, numbers.clip(int(round(velocity[1])), 0, 2))
+	elif velocity[1]<0:
+		_splatter['pos'][1] -= random.randint(0, numbers.clip(-int(round(velocity[1])), 0, 2))
+ 
+	_has_splatter = has_splatter(tuple(_splatter['pos']), what=what)
+	
+	if _has_splatter:
 		if what == 'blood':
-			_splatter['color'].r = 150
-	else:
-		_splatter['coef'] += 0.3
-		_splatter['coef'] = numbers.clip(_splatter['coef'],0,1)
+			_has_splatter['color'].r = 150
+		else:
+			_has_splatter['coef'] += 0.3
+			_has_splatter['coef'] = numbers.clip(_has_splatter['coef'],0,1)
 		
 		return True
 	

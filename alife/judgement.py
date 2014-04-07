@@ -3,6 +3,7 @@ from globals import *
 import life as lfe
 
 import references
+import factions
 import weapons
 import chunks
 import combat
@@ -22,19 +23,22 @@ import random
 import maps
 import time
 
-def judge_item(life, item_uid):
+def judge_item(life, item_uid, initial=False):
 	_item = ITEMS[item_uid]
 	_score = 0
 	
-	if brain.get_flag(life, 'no_weapon') or not combat.has_ready_weapon(life):
+	if brain.get_flag(life, 'no_weapon') or item_uid in combat.get_equipped_weapons(life):
 		if _item['type'] == 'gun':
 			if combat.weapon_is_working(life, item_uid):
 				_score += _item['accuracy']
 			else:
-				_score += _item['accuracy']/2
+				_score += _item['accuracy']*.5
 		
 		if _item['type'] in ['magazine', 'clip']:
 			_score += 1
+	
+	if not initial:
+		brain.get_remembered_item(life, item_uid)['score'] = _score
 	
 	return _score
 
@@ -102,20 +106,27 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	
 	return _score
 
-def get_ranged_combat_rating_of_target(life, life_id):
+def get_ranged_combat_rating_of_target(life, life_id, inventory_check=True):
 	target = LIFE[life_id]
 	_score = 1
+	_score_mod = 1
 	
-	for item in [ITEMS[i] for i in lfe.get_all_visible_items(target) if i in ITEMS]:
-		if not logic.matches(item, {'type': 'gun'}):
-			continue
-		
-		if numbers.distance(life['pos'], target['pos']) > sight.get_vision(life)/2:
+	_items = [ITEMS[i] for i in lfe.get_all_visible_items(target) if i in ITEMS and logic.matches(ITEMS[i], {'type': 'gun'})]
+	
+	if not _items and inventory_check:
+		_items = [i for i in lfe.get_all_inventory_items(target) if i['uid'] in ITEMS and logic.matches(i, {'type': 'gun'})]
+		_score_mod = .5
+	
+	for item in _items:
+		if numbers.distance(life['pos'], target['pos']) > combat.get_engage_distance(target):
 			_score += item['accuracy']/2
 		else:
 			_score += item['accuracy']
 	
-	return _score
+	if _score:
+		_score += 2*(life['stats']['firearms']/10.0)
+	
+	return _score*_score_mod
 
 def get_ranged_combat_rating_of_self(life):
 	return get_ranged_combat_rating_of_target(life, life['id'])
@@ -155,8 +166,8 @@ def can_trust(life, life_id):
 	if _knows['alignment'] == 'aggressive':
 		return False
 	
-	if _knows['trust']>=life['stats']['trustiness']:
-		return True
+	#if _knows['trust']>=life['stats']['trustiness']:
+	#	return True
 	
 	return False
 
@@ -165,19 +176,13 @@ def get_target_state(life, life_id):
 	_mods = []
 	
 	if _target['asleep']:
-		_mods.append('unconscious')
-	elif life['state_tier'] >= TIER_COMBAT:
-		_mods.append('alert')
-	elif life['state_tier'] < TIER_COMBAT:
-		_mods.append('relaxed')
+		_mods.append('s')
+	elif LIFE[life_id]['state_tier'] >= TIER_COMBAT:
+		_mods.append('!')
+	elif LIFE[life_id]['state_tier'] < TIER_COMBAT:
+		_mods.append('c')
 	
-	if get_tension(life) >= .3:
-		_mods.append('nervous')
-	
-		#if _target['alignment'] == 'neutral':
-		#	_mods.append(''
-	
-	return _mods[0].title()+' '.join(_mods[1:])
+	return ''.join(_mods)
 
 def get_tension(life):
 	return brain.retrieve_from_memory(life, 'tension')
@@ -185,7 +190,7 @@ def get_tension(life):
 def get_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
 	
-	if _target['alignment'] in ['trust'] or not _target['last_seen_at']:
+	if _target['alignment'] in ['trust', 'feign_trust'] or not _target['last_seen_at']:
 		return 0
 	
 	if not _target['last_seen_time'] and _target['dead']:
@@ -201,6 +206,9 @@ def get_max_tension_with(life, life_id):
 	
 	if _target['alignment'] == 'trust' or not _target['last_seen_at']:
 		return 0
+	
+	if _target['alignment'] == 'feign_trust':
+		return .85
 	
 	if _target['alignment'] in ['hostile', 'scared']:
 		return 1
@@ -235,6 +243,30 @@ def is_target_threat(life, target_id):
 		return True
 	
 	return False
+
+def track_target(life, target_id):
+	_tracking = brain.get_flag(life, 'tracking_targets')
+	
+	if not _tracking:
+		brain.flag(life, 'tracking_targets', [target_id])
+		
+		return None
+	
+	_tracking.append(target_id)
+
+def untrack_target(life, target_id):
+	_tracking = brain.get_flag(life, 'tracking_targets')
+	
+	if target_id in _tracking:
+		_tracking.remove(target_id)
+
+def is_tracking(life, target_id):
+	_targets = brain.get_flag(life, 'tracking_targets')
+
+	if not _targets:
+		return False
+	
+	return target_id in _targets
 
 def _get_target_value(life, life_id, value):
 	_knows = brain.knows_alife_by_id(life, life_id)
@@ -303,26 +335,22 @@ def judge(life):
 		if _target['escaped'] == 2 or _target['dead'] or not _target['last_seen_at']:
 			continue
 		
-		#Lost targets
 		#TODO: Unhardcode 1. Can be used for reaction times
 		if _target['last_seen_time'] >= 1 and not _target['escaped']:
 			#TODO: Unhardcode 2000. How long to wait until a target is lost
-			#Note that `escaped` can be set to 2 after a failed search
 			if _target['last_seen_time'] >= 2000:
 				_target['escaped'] = 2
 				logging.debug('%s flagged %s as lost (state 2).' % (' '.join(life['name']), ' '.join(_target['life']['name'])))
 			elif _target['last_seen_time']>=25 and not _target['escaped']:
 				_target['escaped'] = 1
-			#	print 'lost.....'
 		
 		_tension += get_tension_with(life, alife_id)
 		
-		_threat = is_target_threat(life, alife_id)
-		if _threat:
+		if can_trust(life, alife_id):
+			_neutral_targets.append(alife_id)
+		else:
 			_combat_targets.append(alife_id)
 			_threats.append(alife_id)
-		else:
-			_neutral_targets.append(alife_id)
 	
 	brain.store_in_memory(life, 'threats', _threats)
 	brain.store_in_memory(life, 'combat_targets', _combat_targets)
@@ -337,6 +365,9 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 	_return_targets = []
 	
 	for target in target_list:
+		if LIFE[target]['dead']:
+			continue
+		
 		_knows = brain.knows_alife_by_id(life, target)
 		
 		if (escaped_only and not _knows['escaped']==1) or (ignore_escaped and _knows['escaped']>=ignore_escaped):
@@ -373,7 +404,7 @@ def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True,
 	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 
 def get_target_to_follow(life):
-	_highest = {'id': None, 'score': 1}
+	_highest = {'id': None, 'score': 0}
 	
 	for target_id in get_trusted(life, visible=False, only_recent=False):
 		if not lfe.execute_raw(life, 'follow', 'follow_target_if', life_id=target_id):
@@ -388,12 +419,12 @@ def get_target_to_follow(life):
 		if _known_target['escaped'] == 2:
 			continue
 		
-		_score += _known_target['trust']
+		#_score += _known_target['trust']
 			
-		if life['group'] and groups.is_leader(life, life['group'], target_id):
+		if life['group'] and groups.is_leader(life, life['group'], target_id) and groups.get_stage(life, life['group']) == STAGE_RAIDING:
 			_score += 1
 	
-		if _score >= _highest['score']:
+		if _score > _highest['score']:
 			_highest['id'] = target_id
 			_highest['score'] = _score
 	
@@ -442,6 +473,9 @@ def get_invisible_threats(life):
 
 def get_visible_threats(life, _inverse=False):
 	_targets = []
+	
+	if not life['seen']:
+		return []
 	
 	for target_id in get_threats(life):
 		if not target_id in life['seen'] == _inverse:
@@ -493,10 +527,7 @@ def target_is_combat_ready(life, life_id):
 	
 	return False
 
-def _calculate_danger(life, target):
-	if target['life']['asleep']:
-		return 0
-	
+def _calculate_danger(life, target):	
 	_danger = 0	
 	
 	for memory in lfe.get_memory(life, matches={'target': target['life']['id'], 'danger': '*'}):
@@ -515,8 +546,8 @@ def judge_life(life, target_id):
 	
 	parse_raw_judgements(life, target_id)
 
-	if not _old_danger == target['danger']:
-		print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
+	#if not _old_danger == target['danger']:
+	#	print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
 	
 	if not _old_trust == target['trust']:
 		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
@@ -538,8 +569,11 @@ def judge_shelter(life, chunk_id):
 		for pos in chunk['ground']:
 			for z in range(life['pos'][2]+1, MAP_SIZE[2]):
 				WORLD_INFO['map'][pos[0]][pos[1]][z]
+				
 				if WORLD_INFO['map'][pos[0]][pos[1]][z]:
 					_cover.append(list(pos))
+					
+					break
 		
 		if not _cover:
 			return 0
