@@ -152,6 +152,7 @@ def control_zes():
 		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'],
 		                                   item_uid=_item_uid,
 		                                   quest_item_uid=_quest_item_uid,
+		                                   deliver_target=_zes['members'][0],
 		                                   kill_target=_kill_target,
 		                                   location=lfe.get_current_chunk_id(LIFE[_kill_target]))
 		

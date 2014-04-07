@@ -160,8 +160,6 @@ def set_focus_point(life, chunk_key):
 def pick_up_item(life, item_uid):
 	_not_moved = travel_to_position(life, ITEMS[item_uid]['pos'])
 	
-	print 'PICKING UP...', _not_moved, life['pos'], ITEMS[item_uid]['pos'], life['path'], life['actions']
-	
 	if _not_moved:
 		lfe.add_action(life,{'action': 'pickupitem_npc',
 		                     'item': item_uid},

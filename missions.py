@@ -150,8 +150,6 @@ def change_task_description(life, mission_id, task_number, description):
 def complete_mission(life, mission_id):
 	if 'player' in life:
 		gfx.glitch_text('Mission complete: %s' % life['missions'][mission_id]['name'])
-
-	print life['name'], 'completed', life['missions'][mission_id]['name']
 	
 	if life['mission_id'] == mission_id:
 		life['mission_id'] = None
@@ -159,6 +157,9 @@ def complete_mission(life, mission_id):
 	del life['missions'][mission_id]
 
 def exec_func(life, func, *args, **kwargs):
+	if func[0] == '!':
+		return FUNCTION_MAP[func[1:]](life, *args, **kwargs) == False
+	
 	#try:
 	return FUNCTION_MAP[func](life, *args, **kwargs)
 	#except:

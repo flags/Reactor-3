@@ -3012,7 +3012,7 @@ def draw_life_info():
 			_longest_state = _state_len
 	
 	_i = 5
-	_xmod = _longest_state+3
+	_xmod = _longest_state
 	
 	for ai in _seen:
 		if ai['dead']:
