@@ -92,10 +92,8 @@ def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
 	_hardship = get_overwatch_hardship(no_mod=True)
 	_success = get_overwatch_success()
-	
 	_hardship_rate = _hardship/10.0
 	_success_rate = _success/10.0
-	
 	_activity = _stats['last_updated']/float(WORLD_INFO['ticks'])
 	_difficulty = numbers.clip(_hardship_rate-_success_rate, 0.0, 1.0)
 	

@@ -67,6 +67,9 @@ def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 def get_faction(faction_name):
 	return WORLD_INFO['factions'][faction_name]
 
+def get_faction_enemies(faction_name):
+	return get_faction(faction_name)['enemies']
+
 def is_enemy(life, life_id):
 	if not life['faction'] or not LIFE[life_id]['faction']:
 		return False
@@ -75,6 +78,14 @@ def is_enemy(life, life_id):
 	_target_faction_name = LIFE[life_id]['faction']
 	
 	return _target_faction_name in _faction['enemies']
+
+def is_faction_enemy(life, faction_name):
+	if not life['faction']:
+		return False
+	
+	_faction = get_faction(life['faction'])
+	
+	return faction_name in _faction['enemies']
 
 def add_member(faction_name, life_id):
 	_faction = get_faction(faction_name)
@@ -101,12 +112,32 @@ def add_group(faction_name, group_id):
 			
 			break
 
+def get_nearest_group(faction_name, pos):
+	_faction = get_faction(faction_name)
+	_nearest_group = {'group_id': None, 'distance': 0}
+	
+	for group_id in _faction['groups']:
+		for member_id in alife.groups.get_group({}, group_id)['members']:
+			_distance = numbers.distance(LIFE[member_id]['pos'], pos)
+			
+			if not _nearest_group['group_id'] or _distance < _nearest_group['distance']:
+				_nearest_group['group_id'] = group_id
+				_nearest_group['distance'] = _distance
+	
+	return _nearest_group['group_id']
+
 def patrol_territory(faction_name, group_id, territory_name):
 	_faction = get_faction(faction_name)
 	_territory = _faction['territories'][territory_name]
 	_territory['groups'].append(group_id)
 	
 	#alife.groups.focus_on
+
+def move_to(faction_name, group_id, chunk_key):
+	for member_id in alife.groups.get_group({}, group_id)['members']:
+		_member = LIFE[member_id]
+		
+		missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
 
 def create_zes_export():
 	#_zes = get_faction('ZES')

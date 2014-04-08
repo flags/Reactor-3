@@ -52,8 +52,8 @@ def group_exists(life, group_id):
 	return (group_id in WORLD_INFO['groups'])
 
 def get_group(life, group_id):
-	if not group_exists(life, group_id):
-		raise Exception('Group does not exist: %s' % group_id)
+	#if not group_exists(life, group_id):
+	#	raise Exception('Group does not exist: %s' % group_id)
 	
 	return WORLD_INFO['groups'][group_id]
 

@@ -31,18 +31,19 @@ CONSTANT_MODULES = [alife_needs,
 
 
 def parse(life):
-	sight.look(life)
-	sound.listen(life)
-	memory.process(life)
-	judgement.judge(life)
-	judgement.judge_jobs(life)
-	survival.process(life)
+	if not life['think_rate'] or 'player' in life:
+		sight.look(life)
+		sound.listen(life)
+		memory.process(life)
+		judgement.judge(life)
+		judgement.judge_jobs(life)
+		survival.process(life)
 
 def act(life):
 	understand(life)
 	
-	if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
-		judgement.update_camps(life)
+	#if lfe.ticker(life, 'update_camps', UPDATE_CAMP_RATE):
+	#	judgement.update_camps(life)
 
 def store_in_memory(life, key, value):
 	life['tempstor2'][key] = value
@@ -301,8 +302,9 @@ def remember_known_item(life, item_id):
 	return False
 
 def understand(life):
-	if SETTINGS['controlling']:
+	if SETTINGS['controlling'] and not life['missions']:
 		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
+		
 		if _dist_to_player < 100:
 			if life['think_rate_max']>=30:
 				if _dist_to_player < 75:
@@ -324,6 +326,7 @@ def understand(life):
 			
 			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
 	else:
+		life['online'] = True
 		life['think_rate_max'] = 5
 	
 	if not life['online'] or life['asleep']:

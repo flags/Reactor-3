@@ -122,19 +122,6 @@ def rescore_history(life):
 def detect_lies(life):
 	pass
 
-def reflect(life):
-	while life['unchecked_memories']:
-		_memory = lfe.get_memory_via_id(life, life['unchecked_memories'].pop())
-		
-		if not rawparse.raw_section_has_identifier(life, 'memory', _memory['text']):
-			continue
-		
-		_return_value = lfe.execute_raw(life, 'memory', _memory['text'])
-		
-		if _return_value == 'investigate_chunk':
-			judgement.judge_chunk(life, _memory['chunk_key'], investigate=True)
-
 def process(life):
 	detect_lies(life)
 	rescore_history(life)
-	reflect(life)

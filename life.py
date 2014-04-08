@@ -450,7 +450,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['know_items'] = {}
 	_life['known_items_type_cache'] = {}
 	_life['memory'] = []
-	_life['unchecked_memories'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
 	_life['known_groups'] = {}
@@ -534,9 +533,6 @@ def post_save(life):
 	life['heard'] = []
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
-	
-	if not 'unchecked_memories' in life:
-		life['unchecked_memories'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
@@ -847,7 +843,6 @@ def memory(life, gist, *args, **kvargs):
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	life['unchecked_memories'].append(_entry['id'])
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
