@@ -997,7 +997,7 @@ def create_buildings():
 	BUILDINGS['storage_1'] = {'chunks': {'wall': {'type': 'exterior',
 	                                              'chunks': 1,
 	                                              'doors': ['ground_1', 'ground_2'],
-	                                              'flags': {},
+	                                              'flags': {'road_seed': True},
 	                                              'floor': [{'x_mod_min': 0,
 	                                                         'x_mod_max': 1,
 	                                                         'y_mod_min': 0,
@@ -1053,7 +1053,7 @@ def create_buildings():
 	BUILDINGS['storage_2'] = {'chunks': {'wall': {'type': 'exterior',
 	                                              'chunks': 2,
 	                                              'doors': ['ground_1', 'ground_2'],
-	                                              'flags': {},
+	                                              'flags': {'road_seed': True},
 	                                              'floor': [{'x_mod_min': 0,
 	                                                         'x_mod_max': 1,
 	                                                         'y_mod_min': 0,
@@ -1595,7 +1595,9 @@ def generate_noise_map(map_gen):
 	                               'building_types': ['storage_1', 'storage_1', 'storage_2'],
 	                               'y_mod_min': .3,
 	                               'y_mod_max': .8,
-	                               'refs': 'towns'}}
+	                               'refs': 'towns',
+	                               'road_scale': 0.5,
+	                               'road_type': 'dirt'}}
 	_occupied_cells = {}
 	_empty_cells = {}
 	
@@ -1648,8 +1650,14 @@ def generate_noise_map(map_gen):
 				_cell_types[_cell_type]['amount'] += 1
 				
 				if 'building_types' in _cell_types[_cell_type]:
-					cell['building_types'] = _cell_types[_cell_type]['building_types']
+					cell['building_types'] = _cell_types[_cell_type]['building_types'][:]
 					cell['refs'] = _cell_types[_cell_type]['refs']
+				
+				if 'road_scale' in _cell_types[_cell_type]:
+					cell['road_scale'] = _cell_types[_cell_type]['road_scale']
+				
+				if 'road_type' in _cell_types[_cell_type]:
+					cell['road_type'] = _cell_types[_cell_type]['road_type']
 				
 				_cell_types[_cell_type]['callback'](map_gen, cell)
 				
@@ -1792,6 +1800,12 @@ def generate_noise_map(map_gen):
 			if 'building_types' in _empty_cell_type:
 				_cell['building_types'] = _empty_cell_type['building_types']
 				_cell['refs'] = _empty_cell_type['refs']
+			
+			if 'road_scale' in _empty_cell_type:
+				_cell['road_scale'] = _empty_cell_type['road_scale']
+			
+			if 'road_type' in _empty_cell_type:
+				_cell['road_type'] = _empty_cell_type['road_type']
 			
 			if map_gen['size'][1]*_empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*_empty_cell_type['y_mod_max']:
 				_empty_cell_type['callback'](map_gen, _cell)
@@ -2039,7 +2053,7 @@ def generate_factory(map_gen, cell):
 		
 		break
 
-def generate_town(map_gen, cell):
+def generate_town(map_gen, cell, road_scale=1, road_type='paved'):
 	_min_building_size = 4
 	_max_building_size = 6
 	_potential_building_chunks = cell['chunk_keys'][:]
@@ -2050,6 +2064,12 @@ def generate_town(map_gen, cell):
 	_tries = 0
 	_buildings = cell['building_types'][:]
 	_road_seeds = []
+	
+	if 'road_scale' in cell:
+		road_scale = cell['road_scale']
+	
+	if 'road_type' in cell:
+		road_type = cell['road_type']
 	
 	map_gen['refs'][cell['refs']].append(cell['chunk_keys'][:])
 	
@@ -2130,8 +2150,8 @@ def generate_town(map_gen, cell):
 		
 		while _path:
 			_last_path = _start
-			
 			_start = _path.pop(0)
+			_last_pos = None
 			
 			if _path:
 				_end = _path[0]
@@ -2145,31 +2165,43 @@ def generate_town(map_gen, cell):
 				
 				continue
 			
-			for pos in _astar:
-				_chunk_key = '%s,%s' % (pos[0]*map_gen['chunk_size'], pos[1]*map_gen['chunk_size'])
+			for s_pos in _astar:
+				_s_pos = (s_pos[0]*map_gen['chunk_size'], s_pos[1]*map_gen['chunk_size'])
+				_chunk_key = '%s,%s' % _s_pos
 				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(10, 12),
-					           tiles.DIRT_TILES,
-					           only_tiles=_ok_tiles_2,
-					           pos_is_chunk_key=True)
+				if not _last_pos:
+					_last_pos = _s_pos
+					
+					continue
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(8, 10),
-					           tiles.BROKEN_CONCRETE_TILES,
-					           only_tiles=_ok_tiles_1,
-					           pos_is_chunk_key=True)
+				for pos in drawing.diag_line(_last_pos, _s_pos):
+					create_splotch(map_gen,
+						           pos,
+						           random.randint(int(round(10*road_scale)), int(round(12*road_scale))),
+						           tiles.DIRT_TILES,
+						           only_tiles=_ok_tiles_2,
+						           pos_is_chunk_key=True)
+					
+					if road_type == 'paved':
+						create_splotch(map_gen,
+							           pos,
+							           random.randint(int(round(8*road_scale)), int(round(10*road_scale))),
+							           tiles.BROKEN_CONCRETE_TILES,
+							           only_tiles=_ok_tiles_1,
+							           pos_is_chunk_key=True)
+						
+						create_splotch(map_gen,
+							           pos,
+							           random.randint(int(round(6*road_scale)), int(round(8*road_scale))),
+							           tiles.CONCRETE_TILES,
+							           only_tiles=_ok_tiles_1,
+							           pos_is_chunk_key=True)
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(6, 8),
-					           tiles.CONCRETE_TILES,
-					           only_tiles=_ok_tiles_1,
-					           pos_is_chunk_key=True)
-		
+					if road_scale == 1:
+						break
+				
+				_last_pos = _s_pos
 	
 	if random.randint(0, 1):
 		return False
