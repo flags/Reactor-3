@@ -23,7 +23,7 @@ def get_engage_distance(life):
 	_weapons = get_equipped_weapons(life)
 	
 	if _weapons:
-		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*27)), 3, sight.get_vision(life))
+		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*29)), 3, sight.get_vision(life))
 	else:
 		return sight.get_vision(life)/2
 

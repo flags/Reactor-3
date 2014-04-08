@@ -53,8 +53,6 @@ def form_scheme(force=False):
 				
 				alife.factions.move_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
 				
-				print 'SENDING HELP', enemy_of_enemy_faction
-				
 				WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 	
 	#if _overwatch_mood == 'hurt':

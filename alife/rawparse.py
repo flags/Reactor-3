@@ -216,6 +216,7 @@ def create_function_map():
 		'has_high_recoil': lambda life: life['recoil']>=.75,
 		'has_focus_point': lambda life: len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))>0,
 		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))-1]['chunk_key']),
+		'travel_to_chunk': movement.travel_to_chunk,
 		'follow_target': alife_follow.tick,
 		'guard_focus_point': lambda life: movement.guard_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'disarm': lambda life, life_id: brain.flag_alife(life, life_id, 'disarm', value=WORLD_INFO['ticks']),

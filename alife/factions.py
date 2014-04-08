@@ -112,15 +112,15 @@ def add_group(faction_name, group_id):
 			
 			break
 
-def get_nearest_group(faction_name, pos):
+def get_nearest_group(faction_name, pos, max_distance=250):
 	_faction = get_faction(faction_name)
-	_nearest_group = {'group_id': None, 'distance': 0}
+	_nearest_group = {'group_id': None, 'distance': max_distance}
 	
 	for group_id in _faction['groups']:
 		for member_id in alife.groups.get_group({}, group_id)['members']:
 			_distance = numbers.distance(LIFE[member_id]['pos'], pos)
 			
-			if not _nearest_group['group_id'] or _distance < _nearest_group['distance']:
+			if _distance < _nearest_group['distance']:
 				_nearest_group['group_id'] = group_id
 				_nearest_group['distance'] = _distance
 	
@@ -137,7 +137,8 @@ def move_to(faction_name, group_id, chunk_key):
 	for member_id in alife.groups.get_group({}, group_id)['members']:
 		_member = LIFE[member_id]
 		
-		missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
+		if not missions.has_mission_with_name(_member, 'travel_to'):
+			missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
 
 def create_zes_export():
 	#_zes = get_faction('ZES')

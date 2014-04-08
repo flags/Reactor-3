@@ -143,6 +143,13 @@ def get_active_task(life, mission_id):
 	
 	return [t for t in _mission['tasks'] if not _mission['tasks'][t]['completed']][0]
 
+def has_mission_with_name(life, mission_name):
+	for mission in life['missions'].values():
+		if mission['name'] == mission_name:
+			return True
+	
+	return False
+
 def change_task_description(life, mission_id, task_number, description):
 	_mission = life['missions'][mission_id]
 	_mission['tasks'][str(task_number)]['description'] = description
