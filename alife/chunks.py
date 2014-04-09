@@ -246,8 +246,13 @@ def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 	
 	return _nearest_chunk
 
-def get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
-	return _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=check_these_chunks_first)['chunk_key']
+def get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[], include_distance=False):
+	_ret = _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=check_these_chunks_first)
+	
+	if include_distance:
+		return _ret
+	
+	return _ret['chunk_key']
 
 def get_distance_to_nearest_chunk_in_list(pos, chunks):
 	return _get_nearest_chunk_in_list(pos, chunks)['distance']

@@ -111,6 +111,14 @@ def add_group(faction_name, group_id):
 			
 			break
 
+def get_group_order(faction_name, group_id):
+	_faction = get_faction(faction_name)
+	
+	if group_id in _faction['group_orders']:
+		return _faction['group_orders'][group_id]
+	
+	return None
+
 def set_group_order(faction_name, group_id, order):
 	_faction = get_faction(faction_name)
 	_faction['group_orders'][group_id] = {'order': order,
@@ -154,15 +162,39 @@ def capture_territory(faction_name, group_id):
 	if faction_name == 'ZES':
 		return False
 	
+	_closest_territory = {'distance': 0, 'chunk_key': None, 'territory_id': None}
+	_group_center = None
+	
+	for member_id in alife.groups.get_group({}, group_id)['members']:
+		_member = LIFE[member_id]
+		
+		if not _group_center:
+			_group_center = _member['pos'][:]
+			
+			continue
+		
+		_group_center = numbers.lerp_velocity(_group_center, _member['pos'], .5)
+	
 	for territory_id in WORLD_INFO['territories']:
 		_territory = WORLD_INFO['territories'][territory_id]
 		
-		if _territory['owner']:
+		if _territory['owner'] == faction_name:
 			continue
 		
 		#TODO: Pre-compute?
+		_nearest_chunk = alife.chunks.get_nearest_chunk_in_list(_group_center, _territory['chunk_keys'], include_distance=True)
 		
-		alife.chunks.get_nearest_chunk_in_list
+		if not _closest_territory['chunk_key'] or _nearest_chunk['distance'] < _closest_territory['distance']:
+			_closest_territory['distance'] = _nearest_chunk['distance']
+			_closest_territory['chunk_key'] = _nearest_chunk['chunk_key']
+			_closest_territory['territory_id'] = territory_id
+	
+	for member_id in alife.groups.get_group({}, group_id)['members']:
+		_member = LIFE[member_id]
+		
+		missions.create_mission_for_self(_member, 'travel_to', chunk_key=_closest_territory['chunk_key'])
+		#missions.create_mission_for_self(_member, 'capture_territory', territory_id=_closest_territory['territory_id'])
+		set_group_order(faction_name, group_id, 'travel_to')
 
 def move_group_to(faction_name, group_id, chunk_key):
 	for member_id in alife.groups.get_group({}, group_id)['members']:
@@ -177,12 +209,12 @@ def manage_faction_groups():
 		_faction = get_faction(faction_name)
 		
 		for group_id in _faction['groups']:
-			_group_order = get_group_order()
+			_group_order = get_group_order(faction_name, group_id)
 			
 			if not _group_order:
 				continue
 			
-			for member_id in alife.groups.get_group(group_id)['members']:
+			for member_id in alife.groups.get_group({}, group_id)['members']:
 				if missions.has_mission_with_name(LIFE[member_id], _group_order['order']):
 					break
 			else:

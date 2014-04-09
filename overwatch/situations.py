@@ -18,6 +18,7 @@ import random
 
 
 def form_scheme(force=False):
+	print (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force or not SETTINGS['controlling']:
 		return False
 	
@@ -28,16 +29,17 @@ def form_scheme(force=False):
 	_enemy_factions = set()
 	
 	for life in _player_situation['online_alife']:
-		if alife.factions.is_enemy(_player, life['id']):
-			if not life['faction'] in _active_factions:
-				_active_factions.add(life['faction'])
-			
-			if alife.factions.is_faction_enemy(_player, life['faction']) and not life['faction'] in _enemy_factions:
-				_enemy_factions.add(life['faction'])
+		if not life['faction'] in _active_factions:
+			_active_factions.add(life['faction'])
+		
+		if alife.factions.is_enemy(_player, life['id']) and not life['faction'] in _enemy_factions:
+			_enemy_factions.add(life['faction'])
 	
-	_friendly_factions = _enemy_factions-_active_factions
-	_event_name = random.choice(['attract',
-	                             'capture'])
+	_event_name = 'capture'#random.choice(['attract', 'capture'])
+	_friendly_factions = list(_enemy_factions-_active_factions)
+	_active_factions = list(_active_factions)
+	_enemy_factions = list(_enemy_factions)
+	print _active_factions
 	
 	if _event_name == 'attract':
 		if _enemy_factions and not _friendly_factions:
@@ -54,9 +56,11 @@ def form_scheme(force=False):
 		_chosen_faction = random.choice(_active_factions)
 		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
 		
+		print _chosen_faction, 'hello!', '*' * 100
+		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 					
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-150
 	
 	#if _overwatch_mood == 'hurt':
 	#	if hurt_player(_player_situation):
