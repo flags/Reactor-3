@@ -1310,7 +1310,7 @@ def perform_action(life):
 					_pos = _action['goals'][0][:]
 					
 					if len(_pos)<3:
-						_pos = _action['goals'][0][:]
+						_pos = list(_action['goals'][0])
 						_pos.append(life['pos'][2])
 					
 					walk_to(life, _action['goals'][0])

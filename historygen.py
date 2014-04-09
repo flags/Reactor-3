@@ -57,7 +57,7 @@ def create_background(life):
 	ENGINEERING = numbers.roll(MAX_BOOK_SMART, 5)
 	
 	#1 - 10 (SCARY GUNS - I LOVE GUNS)
-	FIREARMS = numbers.roll(MAX_STREET_SMARTS, 5)
+	FIREARMS = numbers.clip(numbers.roll(MAX_STREET_SMARTS, 5), 5, 10)
 	
 	#1 - 10 (SLAPPER - MMA CHAMPION)
 	MELEE = numbers.roll(FOUGHT_BACK+STREET_SMART, 5)

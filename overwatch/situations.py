@@ -42,18 +42,20 @@ def form_scheme(force=False):
 				_enemy_factions.add(life['faction'])
 	
 	_friendly_factions = _enemy_factions-_active_factions
+	_event_number = random.randint(1, 2)
 	
-	if _enemy_factions and not _friendly_factions:
-		for enemy_faction in _enemy_factions:
-			for enemy_of_enemy_faction in alife.factions.get_faction_enemies(enemy_faction):
-				_nearest_group = alife.factions.get_nearest_group(enemy_of_enemy_faction, _player['pos'])
-			
-				if not _nearest_group:
-					continue
+	if _event_number == 1:
+		if _enemy_factions and not _friendly_factions:
+			for enemy_faction in _enemy_factions:
+				for enemy_of_enemy_faction in alife.factions.get_faction_enemies(enemy_faction):
+					_nearest_group = alife.factions.get_nearest_group(enemy_of_enemy_faction, _player['pos'])
 				
-				alife.factions.move_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
-				
-				WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
+					if not _nearest_group:
+						continue
+					
+					alife.factions.move_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
+					
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 	
 	#if _overwatch_mood == 'hurt':
 	#	if hurt_player(_player_situation):

@@ -2274,7 +2274,7 @@ def wound_examine(entry):
 	
 	menus.activate_menu(_menu)
 
-def create_tracking_menu():
+def create_tracking_menu(start_index=-1):
 	_player = LIFE[SETTINGS['controlling']]
 	_targets = []
 	
@@ -2284,16 +2284,20 @@ def create_tracking_menu():
 		if _target['dead']:
 			continue
 		
+		_color = life.draw_life_icon(_target['life'])
+		_tracking_color = _color[1]
+		
 		if judgement.is_tracking(_player, target_id):
-			_tracking_color = tcod.red
+			_tracking = 'x'
 		else:
-			_tracking_color = tcod.gray
+			_tracking = ' '
 		
 		_targets.append(menus.create_item('single',
-	                                       ' '.join(_target['life']['name']),
-	                                       None,
-	                                       color=(_tracking_color, tcod.color_lerp(_tracking_color, tcod.lightest_red, .85)),
-	                                       target_id=target_id))
+		                                  _tracking,
+		                                  ' '.join(_target['life']['name']),
+		                                  color=(_tracking_color, tcod.color_lerp(_tracking_color, tcod.white, .8)),
+		                                  target_id=target_id,
+		                                  menu_index=len(_targets)+1))
 	
 	if not _targets:
 		gfx.message('There is nobody to track.')
@@ -2301,11 +2305,16 @@ def create_tracking_menu():
 		return False
 	
 	_i = menus.create_menu(title='Track',
-                            menu=_targets,
-                            format_str='$k',
-                            on_select=toggle_tracking)
+	                       menu=_targets,
+	                       format_str='[$k] $v',
+	                       on_select=toggle_tracking)
 	
 	menus.activate_menu(_i)
+	
+	if start_index>=len(_targets):
+		menus.get_menu(_i)['index'] = 1
+	else:
+		menus.get_menu(_i)['index'] = start_index
 
 def toggle_tracking(entry):
 	menus.delete_active_menu()
@@ -2315,4 +2324,4 @@ def toggle_tracking(entry):
 	else:
 		judgement.track_target(LIFE[SETTINGS['controlling']], entry['target_id'])
 	
-	create_tracking_menu()
+	create_tracking_menu(start_index=entry['menu_index'])

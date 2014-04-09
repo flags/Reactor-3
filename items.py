@@ -903,5 +903,7 @@ def tick_all_items():
 			ACTIVE_ITEMS.update(ITEMS.keys())
 		
 	for item in ACTIVE_ITEMS.copy():
-		tick_effects(ITEMS[item])
+		if is_moving(ITEMS[item]):
+			tick_effects(ITEMS[item])
+		
 		tick_item(ITEMS[item])
