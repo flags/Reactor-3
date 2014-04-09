@@ -335,14 +335,14 @@ def ranged_combat(life, targets):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
 					
-					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>8:
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>2:
 						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
-							lfe.add_action(life,{'action': 'shoot',
-								                 'target': _target['last_seen_at'],
-								                 'target_id': _target['life']['id'],
-								                 'limb': 'chest'},
-								                 300,
-								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+							lfe.add_action(life, {'action': 'shoot',
+							                      'target': _target['last_seen_at'],
+							                      'target_id': _target['life']['id'],
+							                      'limb': 'chest'},
+							               300,
+							               delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
 				else:
 					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
 					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
@@ -350,13 +350,13 @@ def ranged_combat(life, targets):
 					
 					if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
 						lfe.add_action(life, {'action': 'dijkstra_move',
-							                    'rolldown': True,
-							                    'zones': _friendly_zones,
-							                    'goals': [_target['life']['pos'][:]],
-							                    'orig_goals': [_target['life']['pos'][:]],
-							                    'avoid_positions': _friendly_positions,
-							                    'reason': 'combat_position'},
-							             100)
+						                      'rolldown': True,
+						                      'zones': _friendly_zones,
+						                      'goals': [_target['life']['pos'][:]],
+						                      'orig_goals': [_target['life']['pos'][:]],
+						                      'avoid_positions': _friendly_positions,
+						                      'reason': 'combat_position'},
+						               100)
 			else:
 				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 				

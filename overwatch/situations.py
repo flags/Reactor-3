@@ -56,11 +56,9 @@ def form_scheme(force=False):
 		_chosen_faction = random.choice(_active_factions)
 		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
 		
-		print _chosen_faction, 'hello!', '*' * 100
-		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 					
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-150
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
 	
 	#if _overwatch_mood == 'hurt':
 	#	if hurt_player(_player_situation):
