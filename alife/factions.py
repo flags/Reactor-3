@@ -44,7 +44,6 @@ def claim_territory(faction_name):
 	_territory = get_territory(_territory_name)
 	_territory['owner'] = faction_name
 	_territory['groups'] = []
-	
 	_faction = get_faction(faction_name)
 	_faction['territories'][_territory_name] = {'groups': []}
 	
@@ -112,11 +111,29 @@ def add_group(faction_name, group_id):
 			
 			break
 
-def get_nearest_group(faction_name, pos, max_distance=250):
+def set_group_order(faction_name, group_id, order):
+	_faction = get_faction(faction_name)
+	_faction['group_orders'][group_id] = {'order': order,
+	                                      'flags': {}}
+
+def clear_group_order(faction_name, group_id):
+	_faction = get_faction(faction_name)
+	
+	del _faction['group_orders'][group_id]
+
+def get_free_groups(faction_name):
+	_faction = get_faction(faction_name)
+	
+	return list(set(_faction['groups']) - set(_faction['group_orders']))
+
+def get_nearest_group(faction_name, pos, free_only=True, max_distance=250):
 	_faction = get_faction(faction_name)
 	_nearest_group = {'group_id': None, 'distance': max_distance}
 	
 	for group_id in _faction['groups']:
+		if free_only and group_id in _faction['group_orders']:
+			continue
+		
 		for member_id in alife.groups.get_group({}, group_id)['members']:
 			_distance = numbers.distance(LIFE[member_id]['pos'], pos)
 			
@@ -133,17 +150,47 @@ def patrol_territory(faction_name, group_id, territory_name):
 	
 	#alife.groups.focus_on
 
-def move_to(faction_name, group_id, chunk_key):
+def capture_territory(faction_name, group_id):
+	if faction_name == 'ZES':
+		return False
+	
+	for territory_id in WORLD_INFO['territories']:
+		_territory = WORLD_INFO['territories'][territory_id]
+		
+		if _territory['owner']:
+			continue
+		
+		#TODO: Pre-compute?
+		
+		alife.chunks.get_nearest_chunk_in_list
+
+def move_group_to(faction_name, group_id, chunk_key):
 	for member_id in alife.groups.get_group({}, group_id)['members']:
 		_member = LIFE[member_id]
 		
 		if not missions.has_mission_with_name(_member, 'travel_to'):
 			missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
+			set_group_order(faction_name, group_id, 'travel_to')
+
+def manage_faction_groups():
+	for faction_name in WORLD_INFO['factions']:
+		_faction = get_faction(faction_name)
+		
+		for group_id in _faction['groups']:
+			_group_order = get_group_order()
+			
+			if not _group_order:
+				continue
+			
+			for member_id in alife.groups.get_group(group_id)['members']:
+				if missions.has_mission_with_name(LIFE[member_id], _group_order['order']):
+					break
+			else:
+				continue
+			
+			clear_group_order(faction_name, group_id)
 
 def create_zes_export():
-	#_zes = get_faction('ZES')
-	#alife.memory.create_question(LIFE[_zes['members'][0]], SETTINGS['controlling'], 'zes_intro')
-	#_zes_camp_chunk_key = random.choice(alife.chunks.get_chunks_in_range(.2, .8, .8, 1))
 	_zes_camp_chunk_key = random.choice(claim_territory('ZES')['chunk_keys'])
 	
 	spawns.generate_group('zes_guard', faction='ZES', amount=random.randint(3, 4), spawn_chunks=[_zes_camp_chunk_key])
@@ -215,4 +262,5 @@ def direct():
 	#for faction_name in WORLD_INFO['factions']:
 	#if faction_name == 'Loners':
 	#control_loners()
+	manage_faction_groups()
 	control_zes()

@@ -111,10 +111,10 @@ def create_mission(mission_name, **kwargs):
 def create_mission_and_give(life, mission_name, target_id, **kwargs):
 	_mission = create_mission(mission_name, **kwargs)
 	
-	remember_mission(LIFE[target_id], _mission)
+	return remember_mission(LIFE[target_id], _mission)
 
 def create_mission_for_self(life, mission_name, **kwargs):
-	create_mission_and_give(life, mission_name, life['id'], **kwargs)
+	return create_mission_and_give(life, mission_name, life['id'], **kwargs)
 
 def remember_mission(life, mission):
 	_id = str(len(life['missions'])+1)

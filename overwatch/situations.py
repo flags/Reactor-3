@@ -23,12 +23,6 @@ def form_scheme(force=False):
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	_player = LIFE[SETTINGS['controlling']]
-	
-	#core.handle_tracked_alife()
-	
-	#if _overwatch_mood == 'rest':
-	#	return False
-	
 	_player_situation = core.get_player_situation()
 	_active_factions = set()
 	_enemy_factions = set()
@@ -42,9 +36,10 @@ def form_scheme(force=False):
 				_enemy_factions.add(life['faction'])
 	
 	_friendly_factions = _enemy_factions-_active_factions
-	_event_number = random.randint(1, 2)
+	_event_name = random.choice(['attract',
+	                             'capture'])
 	
-	if _event_number == 1:
+	if _event_name == 'attract':
 		if _enemy_factions and not _friendly_factions:
 			for enemy_faction in _enemy_factions:
 				for enemy_of_enemy_faction in alife.factions.get_faction_enemies(enemy_faction):
@@ -53,7 +48,13 @@ def form_scheme(force=False):
 					if not _nearest_group:
 						continue
 					
-					alife.factions.move_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
+					alife.factions.move_group_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
+	
+	elif _event_name == 'capture' and _active_factions:
+		_chosen_faction = random.choice(_active_factions)
+		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
+		
+		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 					
 	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
 	
