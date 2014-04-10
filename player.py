@@ -819,18 +819,9 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		import missions
+		import artifacts
 		
-		_player = LIFE[SETTINGS['controlling']]
-		
-		if _player['mission_id']:
-			missions.do_mission(_player, _player['mission_id'])
-		
-		else:
-			_mission = missions.create_mission('fetch_item', item={'type': 'gun'})
-			
-			missions.remember_mission(_player, _mission)
-			missions.activate_mission(_player, _player['missions'].keys()[0])
+		artifacts.create_field()
 	
 	#if INPUT['N']:
 	#	if not SETTINGS['kill threads']:

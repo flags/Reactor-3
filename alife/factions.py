@@ -32,7 +32,8 @@ def create_territories():
 		_place_name = language.generate_place_name()
 		
 		WORLD_INFO['territories'][_place_name] = {'chunk_keys': town,
-		                                          'owner': None}
+		                                          'owner': None,
+		                                          'danger': False}
 		
 		logging.debug('Created territory: %s' % _place_name)
 

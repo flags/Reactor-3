@@ -244,6 +244,7 @@ def create_function_map():
 		'give_mission': missions.create_mission_and_give,
 		'do_mission': alife_work.tick,
 		'has_mission': lambda life: len(life['missions'])>0,
+		'has_dialog': lambda life: lfe.has_dialog(life)>0,
 		'drop_item': lfe.drop_item,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,
