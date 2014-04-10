@@ -189,6 +189,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['speed'] = 0
 	
 	add_to_chunk(item)
+	maps.load_cluster_at_position_if_needed(position, wait=True)
 	ITEMS[item['uid']] = item
 	ACTIVE_ITEMS.add(item['uid'])
 	

@@ -78,6 +78,8 @@ def calculate_fire(fire):
 			if _y<0 or _y>=MAP_SIZE[1]:
 				continue
 			
+			maps.load_cluster_at_position_if_needed((_x, _y, fire['pos'][2]))
+			
 			_effects = [EFFECTS[eid] for eid in EFFECT_MAP[_x][_y] if EFFECTS[eid]['type'] == 'fire']
 			for effect in _effects:
 				_neighbor_intensity += effect['intensity']
@@ -93,7 +95,7 @@ def calculate_fire(fire):
 				_current_burn = int(round(fire['intensity']))
 				_max_burn = int(round(_current_burn*.23))
 				
-				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.01), 0, 8))>=_raw_tile['burnable']:
+				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.8), 0, 8))>=_raw_tile['burnable']:
 					if _raw_tile['burnable'] and _max_burn:
 						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(1, numbers.clip(1+_max_burn, 2, 8)))
 	

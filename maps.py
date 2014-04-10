@@ -260,7 +260,10 @@ def cache_all_clusters():
 			
 			load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
 
-def load_cluster_at_position_if_needed(position):
+def load_cluster_at_position_if_needed(position, wait=False):
+	if not 'base_dir' in SETTINGS:
+		return False
+	
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
 	
 	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,

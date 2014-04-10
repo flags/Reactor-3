@@ -6,6 +6,7 @@ import graphics as gfx
 import alife as alfe
 
 import encounters
+import artifacts
 import worldgen
 import effects
 import numbers
@@ -122,6 +123,7 @@ def tick_world():
 	
 	situations.form_scheme()
 	situations.execute_scheme()
+	artifacts.tick_fields()
 	alfe.factions.direct()
 	core.evaluate_overwatch_mood()
 	

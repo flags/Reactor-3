@@ -532,6 +532,9 @@ def draw_message_box():
 		
 		if msg['style'] == 'damage':
 			_fore_color = tcod.red
+		elif msg['style'] == 'alert':
+			_back_color = tcod.darkest_red
+			_fore_color = tcod.red
 		elif msg['style'] == 'sound':
 			_fore_color = tcod.white
 			_back_color = tcod.dark_gray

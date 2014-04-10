@@ -18,7 +18,6 @@ import random
 
 
 def form_scheme(force=False):
-	print (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])
 	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force or not SETTINGS['controlling']:
 		return False
 	
@@ -39,7 +38,6 @@ def form_scheme(force=False):
 	_friendly_factions = list(_enemy_factions-_active_factions)
 	_active_factions = list(_active_factions)
 	_enemy_factions = list(_enemy_factions)
-	print _active_factions
 	
 	if _event_name == 'attract':
 		if _enemy_factions and not _friendly_factions:
