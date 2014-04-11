@@ -26,24 +26,13 @@ def form_scheme(force=False):
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	_player = LIFE[SETTINGS['controlling']]
 	_player_situation = core.get_player_situation()
-	_active_factions = set()
-	_enemy_factions = set()
+	_event_name = 'resupply'#random.choice(['attract', 'capture', 'anomaly'])
 	
-	for life in _player_situation['online_alife']:
-		if not life['faction'] in _active_factions:
-			_active_factions.add(life['faction'])
-		
-		if alife.factions.is_enemy(_player, life['id']) and not life['faction'] in _enemy_factions:
-			_enemy_factions.add(life['faction'])
-	
-	_event_name = random.choice(['attract', 'capture'])
-	_friendly_factions = list(_enemy_factions-_active_factions)
-	_active_factions = list(_active_factions)
-	_enemy_factions = list(_enemy_factions)
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-120
 	
 	if _event_name == 'attract':
-		if _enemy_factions and not _friendly_factions:
-			for enemy_faction in _enemy_factions:
+		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:
+			for enemy_faction in _player_situation['enemy_factions']:
 				for enemy_of_enemy_faction in alife.factions.get_faction_enemies(enemy_faction):
 					_nearest_group = alife.factions.get_nearest_group(enemy_of_enemy_faction, _player['pos'])
 				
@@ -54,53 +43,64 @@ def form_scheme(force=False):
 					
 					WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+250
 	
-	elif _event_name == 'capture' and _active_factions:
-		_chosen_faction = random.choice(_active_factions)
+	elif _event_name == 'capture' and _player_situation['active_factions']:
+		_chosen_faction = random.choice(_player_situation['active_factions'])
 		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
 		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 		
 		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+550
 	
-	elif _event_name == 'anomaly' and _active_factions:# and not random.randint(0, 30):
-		print 'HERE!!!!!!!!!!!!!!!!!!'
+	elif _event_name == 'resupply':
+		_chunk_key = random.choice(WORLD_INFO['territories'][artifacts.find_territory(y_min=.75)]['chunk_keys'])
+		_pos = WORLD_INFO['chunk_map'][_chunk_key]['pos']
+		_storage_items = [{'item': 'AK-74', 'rarity': 1.0},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm round', 'rarity': 0.6},
+			             {'item': '5.45x39mm magazine', 'rarity': 1.0}]
+		_storage = [{'item': 'military crate', 'rarity': 1.0, 'spawn_list': _storage_items}]
 		
-		if len(artifacts.get_active_fields())<3:
-			_territory_id = artifacts.create_field()
-			_territory = WORLD_INFO['territories'][_territory_id]
+		for faction_name in WORLD_INFO['factions']:
+			if faction_name == 'ZES':
+				continue
 			
-			for faction_name in _active_factions:
-				_faction = WORLD_INFO['factions'][faction_name]
+			_faction = WORLD_INFO['factions'][faction_name]
+			
+			for group_id in _faction['groups']:
+				if not random.randint(0, 3):
+					continue
 				
-				for group_id in _faction['groups']:
-					if random.randint(0, 1):
-						continue
-					
-					_chunk_key = random.choice(_territory['chunk_keys'])
-					maps.load_cluster_at_position_if_needed(WORLD_INFO['chunk_map'][_chunk_key]['pos'])
-					
-					print 'KEY', _chunk_key
-					alife.factions.move_group_to(faction_name, group_id, _chunk_key)
-			
-			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
-					
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-120
+				#alife.factions.move_group_to(faction_name, group_id, _chunk_key)
+				alife.factions.resupply(faction_name, group_id, _chunk_key)
+		
+		events.create_cache_drop(_pos, _storage)
+		
+		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
 	
-	#if _overwatch_mood == 'hurt':
-	#	if hurt_player(_player_situation):
-	#		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
-	#		
-	#		return True
-	#elif _overwatch_mood == 'intrigue':
-	#	if intrigue_player(_player_situation):
-	#		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
-	#		
-	#		return True	
-	#elif _overwatch_mood == 'help':
-	#	if help_player(_player_situation):
-	#		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']
-	#		
-	#		return True
+	elif _event_name == 'anomaly' and _player_situation['active_factions'] and not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*5):
+		_territory_id = events.create_anomaly_field(_player_situation, y_min=.65)
+		
+		for faction_name in _player_situation['active_factions']:
+			if faction_name == 'ZES':
+				continue
+			
+			_faction = WORLD_INFO['factions'][faction_name]
+			
+			for group_id in _faction['groups']:
+				if random.randint(0, 1):
+					continue
+				
+				_chunk_key = random.choice(WORLD_INFO['territories'][_territory_id]['chunk_keys'])
+				
+				maps.load_cluster_at_position_if_needed(WORLD_INFO['chunk_map'][_chunk_key]['pos'])
+				alife.factions.move_group_to(faction_name, group_id, _chunk_key)
+		
+		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
 
 def execute_scheme():
 	if not WORLD_INFO['scheme']:

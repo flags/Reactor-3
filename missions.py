@@ -1,6 +1,7 @@
 from globals import MISSION_DIR, MISSIONS, FUNCTION_MAP, LIFE
 
 import graphics as gfx
+import life as lfe
 
 import copy
 import json
@@ -218,10 +219,11 @@ def do_mission(life, mission_id):
 				_args.append(arg)
 		
 		if _kwargs:
-			print _kwargs
 			_func = exec_func(life, _step['func'], *_args, **_kwargs)
 		else:
 			_func = exec_func(life, _step['func'], *_args)
+		
+		print life['name'], _step['func'], _args, _func, lfe.get_current_chunk_id(life)
 		
 		if _step['mode'] in ['wait', 'jumpif']:
 			if _func:

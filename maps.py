@@ -269,9 +269,6 @@ def load_cluster_at_position_if_needed(position):
 	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,
 	                          (position[1]/_chunk_cluster_size)*_chunk_cluster_size)
 	
-	if _cluster_key == '0,0':
-		raise Exception('d')
-	
 	if _cluster_key in LOADED_CHUNKS:
 		return False
 	

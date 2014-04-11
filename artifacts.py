@@ -1,4 +1,4 @@
-from globals import WORLD_INFO, SETTINGS, LIFE
+from globals import WORLD_INFO, MAP_SIZE, SETTINGS, LIFE
 from alife import factions
 
 import graphics as gfx
@@ -12,11 +12,30 @@ import life
 import random
 
 
-def find_territory(has_owner=False):
-	return random.choice([t for t in WORLD_INFO['territories'] if (not WORLD_INFO['territories'][t]['owner']) == has_owner])
+def find_territory(has_owner=False, y_min=0):
+	_territories = []
+	
+	for territory_id in WORLD_INFO['territories']:
+		_territory = WORLD_INFO['territories'][territory_id]
+		_chunk_key = random.choice(_territory['chunk_keys'])
+		
+		if WORLD_INFO['chunk_map'][_chunk_key]['pos'][1]/float(MAP_SIZE[1])<y_min:
+			continue
+		
+		if _territory['danger']:
+			continue
+		
+		if has_owner and not _territory['owner']:
+			continue
+		elif _territory['owner']:
+			continue
+		
+		_territories.append(territory_id)
+	
+	return random.choice(_territories)
 
-def create_field():
-	_territory_key = find_territory()
+def create_field(y_min=0):
+	_territory_key = find_territory(y_min=y_min)
 	_territory = WORLD_INFO['territories'][_territory_key]
 	_territory['danger'] = random.choice(['burner'])
 	_spawn_chunk_keys = [k for k in _territory['chunk_keys'] if WORLD_INFO['chunk_map'][k]['type'] == 'other']

@@ -22,7 +22,21 @@ def get_player_situation():
 	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
 	_situation['has_radio'] = len(lfe.get_all_inventory_items(_life, matches=[{'type': 'radio'}]))>0
 	_situation['weapons'] = alife.combat.get_weapons(_life)
-	_situation['equipped_gear'] = lfe.get_all_equipped_items(_life)
+	_situation['equipped_gear'] = lfe.get_all_equipped_items(_life)	
+	_active_factions = set()
+	_enemy_factions = set()
+	
+	for life in _situation['online_alife']:
+		if not life['faction'] in _active_factions:
+			_active_factions.add(life['faction'])
+		
+		if alife.factions.is_enemy(_life, life['id']) and not life['faction'] in _enemy_factions:
+			_enemy_factions.add(life['faction'])
+	
+	_situation['active_factions'] = list(_active_factions)
+	_situation['friendly_factions'] = list(_enemy_factions-_active_factions)
+	_situation['active_factions'] = list(_active_factions)
+	_situation['enemy_factions'] = list(_enemy_factions)
 	
 	return _situation
 

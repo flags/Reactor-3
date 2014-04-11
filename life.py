@@ -3045,7 +3045,7 @@ def draw_life_info():
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		_character_string = '%s %s@%s)' % (' '.join(ai['name']),
+		_character_string = '%s %s@%s' % (' '.join(ai['name']),
 		                                   language.get_real_direction(_direction, short=True).upper(),
 		                                   language.get_real_distance_string(_distance, round_up=True))
 		

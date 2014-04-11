@@ -206,6 +206,14 @@ def move_group_to(faction_name, group_id, chunk_key):
 			missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
 			set_group_order(faction_name, group_id, 'travel_to')
 
+def resupply(faction_name, group_id, chunk_key):
+	for member_id in alife.groups.get_group({}, group_id)['members']:
+		_member = LIFE[member_id]
+		
+		missions.create_mission_for_self(_member, 'travel_to', chunk_key=chunk_key)
+		#missions.create_mission_for_self(_member, 'resupply', chunk_key=chunk_key)
+		set_group_order(faction_name, group_id, 'travel_to')
+
 def manage_faction_groups():
 	for faction_name in WORLD_INFO['factions']:
 		_faction = get_faction(faction_name)
