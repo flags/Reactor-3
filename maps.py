@@ -260,7 +260,7 @@ def cache_all_clusters():
 			
 			load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
 
-def load_cluster_at_position_if_needed(position, wait=False):
+def load_cluster_at_position_if_needed(position):
 	if not 'base_dir' in SETTINGS:
 		return False
 	
@@ -268,6 +268,9 @@ def load_cluster_at_position_if_needed(position, wait=False):
 	
 	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,
 	                          (position[1]/_chunk_cluster_size)*_chunk_cluster_size)
+	
+	if _cluster_key == '0,0':
+		raise Exception('d')
 	
 	if _cluster_key in LOADED_CHUNKS:
 		return False

@@ -16,14 +16,19 @@ def find_territory(has_owner=False):
 	return random.choice([t for t in WORLD_INFO['territories'] if (not WORLD_INFO['territories'][t]['owner']) == has_owner])
 
 def create_field():
-	_territory = WORLD_INFO['territories'][find_territory()]
+	_territory_key = find_territory()
+	_territory = WORLD_INFO['territories'][_territory_key]
 	_territory['danger'] = random.choice(['burner'])
-	
 	_spawn_chunk_keys = [k for k in _territory['chunk_keys'] if WORLD_INFO['chunk_map'][k]['type'] == 'other']
 	_territory['flags']['create_amount'] = numbers.clip(random.randint(3, 5), 0, len(_spawn_chunk_keys))
+	
+	return _territory_key
+
+def get_active_fields():
+	return [t for t in WORLD_INFO['territories'].values() if t['danger']]
 
 def tick_fields():
-	for territory in [t for t in WORLD_INFO['territories'].values() if t['danger']]:
+	for territory in get_active_fields():
 		_spawn_chunk_keys = [k for k in territory['chunk_keys'] if WORLD_INFO['chunk_map'][k]['type'] == 'other']
 		
 		if not 'create' in territory['flags'] or not territory['flags']['create']:

@@ -3,6 +3,7 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
+import artifacts
 import language
 import drawing
 import numbers
@@ -11,6 +12,7 @@ import events
 import spawns
 import alife
 import items
+import maps
 import core
 
 import logging
@@ -34,7 +36,7 @@ def form_scheme(force=False):
 		if alife.factions.is_enemy(_player, life['id']) and not life['faction'] in _enemy_factions:
 			_enemy_factions.add(life['faction'])
 	
-	_event_name = 'capture'#random.choice(['attract', 'capture'])
+	_event_name = random.choice(['attract', 'capture'])
 	_friendly_factions = list(_enemy_factions-_active_factions)
 	_active_factions = list(_active_factions)
 	_enemy_factions = list(_enemy_factions)
@@ -49,14 +51,40 @@ def form_scheme(force=False):
 						continue
 					
 					alife.factions.move_group_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
+					
+					WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+250
 	
 	elif _event_name == 'capture' and _active_factions:
 		_chosen_faction = random.choice(_active_factions)
 		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
 		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
+		
+		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+550
+	
+	elif _event_name == 'anomaly' and _active_factions:# and not random.randint(0, 30):
+		print 'HERE!!!!!!!!!!!!!!!!!!'
+		
+		if len(artifacts.get_active_fields())<3:
+			_territory_id = artifacts.create_field()
+			_territory = WORLD_INFO['territories'][_territory_id]
+			
+			for faction_name in _active_factions:
+				_faction = WORLD_INFO['factions'][faction_name]
+				
+				for group_id in _faction['groups']:
+					if random.randint(0, 1):
+						continue
 					
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
+					_chunk_key = random.choice(_territory['chunk_keys'])
+					maps.load_cluster_at_position_if_needed(WORLD_INFO['chunk_map'][_chunk_key]['pos'])
+					
+					print 'KEY', _chunk_key
+					alife.factions.move_group_to(faction_name, group_id, _chunk_key)
+			
+			WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
+					
+	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-120
 	
 	#if _overwatch_mood == 'hurt':
 	#	if hurt_player(_player_situation):

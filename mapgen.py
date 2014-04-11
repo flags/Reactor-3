@@ -128,6 +128,7 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 		
 		logging.debug('Connecting zone ramps...')
 		zones.connect_ramps()
+		create_path_map(map_gen)
 	
 	if not skip_chunking:
 		maps.update_chunk_map()
@@ -143,6 +144,37 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	logging.debug('Map generation complete.')	
 	
 	return map_gen
+
+def create_path_map():
+	WORLD_INFO['path_map'] = {}
+	
+	for slice_id in WORLD_INFO['slices']:
+		_slice = WORLD_INFO['slices'][slice_id]
+		_x = []
+		
+		if not _slice['z'] == 2:
+			continue
+		
+		for x in range(0, MAP_SIZE[0]):
+			_y = []
+		
+			for y in range(0, MAP_SIZE[1]):
+				_y.append(0)
+			
+			_x.append(_y)
+		
+		WORLD_INFO['path_map'][slice_id] = copy.deepcopy(_x)
+		
+		for y in range(_slice['top_left'][1], _slice['bot_right'][1]):
+			for x in range(_slice['top_left'][0], _slice['bot_right'][0]):
+				_map_pos = WORLD_INFO['map'][x][y][_slice['z']]
+				
+				if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == slice_id:
+					WORLD_INFO['path_map'][slice_id][x][y] == -2
+					
+					continue
+				
+				WORLD_INFO['path_map'][slice_id][x][y] = 1
 
 def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False, diag=False):
 	_pos = pos[:]

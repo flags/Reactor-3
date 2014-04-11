@@ -373,8 +373,9 @@ if __name__ == '__main__':
 		loop()
 	except KeyboardInterrupt:
 		SETTINGS['running'] = False
+		traceback.print_exc()
 	except Exception, e:
-		traceback.print_exc(file=sys.stdout)
+		traceback.print_exc()
 		SETTINGS['running'] = False
 		
 		if 'debug' in WORLD_INFO:

@@ -207,6 +207,9 @@ def handle_input():
 		gfx.title('Zoning...')
 		zones.create_zone_map()
 		
+		gfx.title('Pathing...')
+		mapgen.create_path_map()
+		
 		gfx.title('Saving...')
 		maps.save_map(str(time.time()), only_cached=False)
 		items.reload_all_items()
