@@ -99,10 +99,7 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 			
 			for z in zones:
 				_slice_map = WORLD_INFO['path_map'][str(z)]
-				
-				_path['map'] = _path['map'].transpose()
 				_path['map'] += _slice_map
-				_path['map'] = _path['map'].transpose((1, 0))
 			
 			_path['map'] = _path['map'].clip(-2, 1)
 	

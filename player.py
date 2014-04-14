@@ -819,9 +819,16 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		import artifacts
+		import pathfinding
 		
-		artifacts.create_field()
+		for pos in pathfinding.create_path(LIFE[SETTINGS['controlling']],
+		                        LIFE[SETTINGS['controlling']]['pos'],
+		                        (LIFE[SETTINGS['controlling']]['pos'][0]-5,
+		                         LIFE[SETTINGS['controlling']]['pos'][1]-5,
+		                         LIFE[SETTINGS['controlling']]['pos'][2]-5),
+		                        [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])]):
+			print pos
+			SELECTED_TILES[0].append((pos[0], pos[1], 2))
 	
 	#if INPUT['N']:
 	#	if not SETTINGS['kill threads']:

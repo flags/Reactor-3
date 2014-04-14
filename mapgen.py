@@ -150,31 +150,32 @@ def create_path_map():
 	
 	for slice_id in WORLD_INFO['slices']:
 		_slice = WORLD_INFO['slices'][slice_id]
-		_x = []
 		
 		if not _slice['z'] == 2:
 			continue
 		
-		for x in range(0, MAP_SIZE[0]):
-			_y = []
+		_y = []
 		
-			for y in range(0, MAP_SIZE[1]):
-				_y.append(0)
+		for y in range(0, MAP_SIZE[1]):
+			_x = []
+		
+			for x in range(0, MAP_SIZE[0]):
+				_x.append(0)
 			
-			_x.append(_y)
+			_y.append(_x)
 		
-		WORLD_INFO['path_map'][slice_id] = copy.deepcopy(_x)
+		WORLD_INFO['path_map'][slice_id] = copy.deepcopy(_y)
 		
 		for y in range(_slice['top_left'][1], _slice['bot_right'][1]):
 			for x in range(_slice['top_left'][0], _slice['bot_right'][0]):
 				_map_pos = WORLD_INFO['map'][x][y][_slice['z']]
 				
-				if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == slice_id:
-					WORLD_INFO['path_map'][slice_id][x][y] == -2
+				if not _map_pos or WORLD_INFO['map'][x][y][_slice['z']+1]:
+					WORLD_INFO['path_map'][slice_id][y][x] = -2
 					
 					continue
 				
-				WORLD_INFO['path_map'][slice_id][x][y] = 1
+				WORLD_INFO['path_map'][slice_id][y][x] = 1
 
 def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False, diag=False):
 	_pos = pos[:]

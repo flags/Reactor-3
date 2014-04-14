@@ -221,7 +221,7 @@ def create_zone_map():
 	if SETTINGS['smp']:
 		smp.create_zone_maps()
 	else:
-		for z in range(MAP_SIZE[2]):
+		for z in range(3):
 			gfx.title('Zoning: %s\%s' % (z+1, MAP_SIZE[2]))
 			process_slice(z)
 	

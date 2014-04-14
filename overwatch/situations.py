@@ -31,9 +31,9 @@ def form_scheme(force=False):
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	_player = LIFE[SETTINGS['controlling']]
 	_player_situation = core.get_player_situation()
-	_event_name = 'resupply'#random.choice(['attract', 'capture', 'anomaly'])
+	_event_name = random.choice(['attract', 'capture', 'anomaly', 'resupply'])
 	
-	WORLD_INFO['next_scheme_timer'] = 120
+	WORLD_INFO['next_scheme_timer'] = 200
 	
 	if _event_name == 'attract':
 		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:
@@ -56,7 +56,7 @@ def form_scheme(force=False):
 		
 		WORLD_INFO['next_scheme_timer'] = 550
 	
-	elif _event_name == 'resupply':
+	elif _event_name == 'resupply' and not random.randint(0, 8):
 		_chunk_key = random.choice(WORLD_INFO['territories'][artifacts.find_territory(y_min=.5)]['chunk_keys'])
 		_pos = WORLD_INFO['chunk_map'][_chunk_key]['pos']
 		_storage_items = [{'item': 'AK-74', 'rarity': 1.0},
