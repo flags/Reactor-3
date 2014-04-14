@@ -3489,12 +3489,10 @@ def sever_limb(life, limb, impact_velocity):
 	
 	if limb in get_legs(life):
 		crawl(life, force=True)
-		say(life, 'falls over!', action=True, event=True)
+		say(life, '@n falls over!', action=True, event=True)
 	
 	set_animation(life, ['X', '!'], speed=5)
-	
-	effects.create_gib(life, '-', life['body'][limb]['size'], limb, impact_velocity)
-	
+	effects.create_gib(life, random.choice(['\\', '/', ',', '-']), life['body'][limb]['size'], limb, impact_velocity)
 	remove_limb(life, limb)
 	
 	_total_blood = calculate_max_blood(life)
@@ -3520,11 +3518,12 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 			
 			kill(life, 'a critical blow to the %s' % limb)
 			
-			return '%s is fatally wounded in the %s' % (' '.join(life['name']), limb)
+			return '%s is fatally wounded in the %s.' % (' '.join(life['name']), limb)
 		
 		sever_limb(life, limb, impact_velocity)
 		
-		return '%s\'s %s is destroyed!' % (life['name'][0], limb)
+		return random.choice(['%s\'s %s is destroyed!' % (life['name'][0], limb),
+		                      '%s\'s %s is completely removed!' % (life['name'][0], limb)])
 	
 	effects.create_splatter('blood', life['pos'], velocity=impact_velocity, intensity=amount)
 	

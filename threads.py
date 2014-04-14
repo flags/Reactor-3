@@ -16,6 +16,7 @@ class ChunkHandler(threading.Thread):
 		
 		self.last_checked = -check_every
 		self.check_every = check_every
+		self.load_clusters = []
 	
 	def check_chunks(self, force=False):
 		if not force and WORLD_INFO['ticks']-self.last_checked<self.check_every:
@@ -43,6 +44,9 @@ class ChunkHandler(threading.Thread):
 				gfx.refresh_view('map')
 		
 		SETTINGS['loading'] = False
+	
+	def load_cluster(self, cluster_key):
+		self.load_clusters.append(cluster_key)
 	
 	def run(self):
 		while SETTINGS['running'] and not SETTINGS['kill threads']:

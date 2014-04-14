@@ -137,8 +137,11 @@ def generate_world(source_map, dynamic_spawns='Sparse', wildlife_spawns='Sparse'
 	logging.info('World generation complete (took %.2fs)' % (time.time()-WORLD_INFO['inittime']))
 
 def load_world(world):
+	global LOADED_CHUNKS
+	
 	gfx.title('Loading...')
 	
+	LOADED_CHUNKS = {}
 	WORLD_INFO['id'] = world
 	maps.load_map('map', base_dir=profiles.get_world_directory(world))
 
