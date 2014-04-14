@@ -1065,7 +1065,7 @@ def calculate_velocity(life):
 
 def walk_to(life, position):
 	clear_actions(life)
-	_pos = position[:]
+	_pos = list(position)
 	
 	if not len(position) == 3:
 		_pos.append(life['pos'][2])
@@ -2333,6 +2333,8 @@ def remove_item_from_inventory(life, item_id):
 			
 			#item['storing'].remove(_item)
 			#item['storing'].append(get_inventory_item(life,_item)['uid'])
+			if ITEMS[_item]['owner']:
+				ITEMS[_item]['owner'] = None
 			
 			life['inventory'].remove(_item)
 	
@@ -3482,7 +3484,7 @@ def sever_limb(life, limb, impact_velocity):
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
-		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
+		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']*10
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size']*5)
 	
 	if limb in get_legs(life):
@@ -3503,41 +3505,48 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
-	
 	_cut_amount = amount/float(_limb['size'])
 	_current_limb_condition = get_limb_condition(life, limb)
 	
+	if SETTINGS['controlling']:
+		_target_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['controlling']], life['pos'])
+	else:
+		_target_visibility = 1
+	
 	if not _current_limb_condition:
 		if 'CRUCIAL' in life['body'][limb]['flags']:
+			if 'player' in life:
+				return 'You are fatally wounded in the %s.' % limb
+			
 			kill(life, 'a critical blow to the %s' % limb)
 			
-			if 'player' in life:
-				return 'killing you'
-			
-			return 'killing %s' % ' '.join(life['name'])
+			return '%s is fatally wounded in the %s' % (' '.join(life['name']), limb)
 		
 		sever_limb(life, limb, impact_velocity)
-		return 'severing it!'
+		
+		return '%s\'s %s is destroyed!' % (life['name'][0], limb)
 	
 	effects.create_splatter('blood', life['pos'], velocity=impact_velocity, intensity=amount)
 	
-	if 'player' in life:
-		_name = 'your'
-	else:
-		_name = ' '.join(life['name'])+'\'s'
-	
 	if _cut_amount>=.75:
-		return '%s %s %s!' % (random.choice(['devastating', 'taking a slice out of', 'ripping apart']),
-		                         _name,
-		                         limb)
-	elif _cut_amount>=.50:
-		return '%s %s %s!' % (random.choice(['cutting open', 'wounding', 'opening']),
-		                        _name,
-		                         limb)
-	else:
-		return '%s %s %s!' % (random.choice(['grazing', 'scraping']),
-		                        _name,
-		                         limb)
+		if 'player' in life:
+			return random.choice(['Your %s bleeds considerably.' % limb,
+			                      'Your %s is nearly destroyed.' % limb])
+		else:
+			return '%s\'s %s is devastated.' % (life['name'][0], limb)
+	else:# _cut_amount>=.50:
+		if 'player' in life:
+			return random.choice(['Your %s is bleeding.' % limb,
+			                      'You feel warm blood on your %s.' % limb])
+		else:
+			if _target_visibility>.8:
+				return '%s\'s %s is cut open.' % (life['name'][0], limb)
+			
+			if _target_visibility>.6:
+				return 'Blood forms on %s\'s %s.' % (life['name'][0], limb)
+			
+			return random.choice(['%s\'s grasps their %s.' % (life['name'][0], limb),
+			                      'Blood sprays from %s\'s %s.' % (life['name'][0], limb)])
 	
 	#if life.has_key('player'):
 	#	gfx.message('Your %s is severely cut!' % limb,style='damage')
@@ -3651,10 +3660,9 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		'cut': cut,
 		'artery_ruptured': artery_ruptured,
 		'lodged_item': lodged_item}
-	
 	_limb['wounds'].append(_injury)
 	
-	return ', '.join(_msg)
+	return ' '.join(_msg)
 
 def get_limb_stability(life, limb):
 	_limb = get_limb(life, limb)
@@ -3742,8 +3750,6 @@ def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	
-	print '*' * 10
-	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 		_rand_limb.append(random.choice(life['body'].keys()))
@@ -3774,14 +3780,6 @@ def damage_from_item(life, item):
 			_cover_exposed_at.append(life['pos'][:])
 	else:
 		brain.flag(life, 'cover_exposed_at', value=[life['pos'][:]])
-	
-	#Useful, but unused
-	#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-	#	if not sight.can_see_position(ai, life['pos']):
-	#		continue
-	#	
-	#	if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
-	#		memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])

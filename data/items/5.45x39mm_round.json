@@ -9,6 +9,6 @@
 "scatter_rate": 0.2,
 "flags": "ON_STOP[DELETE()]",
 "damage": {"sharp": 19},
-"size": "2x1",
+"size": "1x1",
 "ammotype": "5.45x39mm",
 "material": "metal"}

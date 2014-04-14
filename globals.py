@@ -75,7 +75,7 @@ WORLD_INFO = {'map': [],
                   'rest_level': .7,
                   'last_updated': 0,
                   'tracked_alife': []},
-	'last_scheme_time': 0}
+	'next_scheme_timer': 1000}
 
 LOCKS = {}
 

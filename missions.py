@@ -39,7 +39,7 @@ def load_mission(mission_file):
 				
 				_current_stage = int(line.split('=')[1])
 				_mission['stages'][str(_current_stage)] = {'steps': {},
-				                                      'step_index': 1}
+				                                           'step_index': 1}
 				continue
 			
 			#elif line.startswith('COMPLETE'):
@@ -166,7 +166,7 @@ def complete_mission(life, mission_id):
 
 def exec_func(life, func, *args, **kwargs):
 	if func[0] == '!':
-		return FUNCTION_MAP[func[1:]](life, *args, **kwargs) == False
+		return not FUNCTION_MAP[func[1:]](life, *args, **kwargs)
 	
 	#try:
 	return FUNCTION_MAP[func](life, *args, **kwargs)
@@ -185,7 +185,7 @@ def do_mission(life, mission_id):
 		if _step['mode'] == 'complete':
 			complete_mission(life, mission_id)
 			
-			break
+			return False
 		
 		elif _step['mode'] in ['jump', 'loop']:
 			_stage['step_index'] = 1
@@ -195,7 +195,8 @@ def do_mission(life, mission_id):
 				
 				continue
 			else:
-				break
+				return False
+		
 		elif _step['mode'] == 'finish':
 			_mission['tasks'][_step['task']]['completed'] = True
 			_stage['step_index'] += 1
@@ -223,8 +224,6 @@ def do_mission(life, mission_id):
 		else:
 			_func = exec_func(life, _step['func'], *_args)
 		
-		print life['name'], _step['func'], _args, _func, lfe.get_current_chunk_id(life)
-		
 		if _step['mode'] in ['wait', 'jumpif']:
 			if _func:
 				if _step['mode'] == 'wait':
@@ -238,8 +237,8 @@ def do_mission(life, mission_id):
 				_stage['step_index'] += 1
 				
 				continue
-			else:
-				break
+			else: #Wait
+				return True
 		
 		elif _step['mode'] == 'set':
 			_mission['flags'][_step['flag']] = _func
@@ -249,4 +248,4 @@ def do_mission(life, mission_id):
 			_stage['step_index'] += 1
 		
 		else:
-			break
+			return False

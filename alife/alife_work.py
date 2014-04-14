@@ -6,5 +6,5 @@ import missions
 
 
 def tick(life):
-	for mission_id in life['missions'].keys():
-		missions.do_mission(life, mission_id)
+	if life['missions']:
+		missions.do_mission(life, life['missions'].keys()[0])

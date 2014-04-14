@@ -20,7 +20,12 @@ import random
 
 
 def form_scheme(force=False):
-	if (WORLD_INFO['scheme'] or (WORLD_INFO['ticks']-WORLD_INFO['last_scheme_time'])<200) and not force or not SETTINGS['controlling']:
+	if WORLD_INFO['next_scheme_timer']:
+		WORLD_INFO['next_scheme_timer'] -= 1
+		
+		return False
+	
+	if (WORLD_INFO['scheme'] and not force) or not SETTINGS['controlling']:
 		return False
 	
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
@@ -28,7 +33,7 @@ def form_scheme(force=False):
 	_player_situation = core.get_player_situation()
 	_event_name = 'resupply'#random.choice(['attract', 'capture', 'anomaly'])
 	
-	WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']-120
+	WORLD_INFO['next_scheme_timer'] = 120
 	
 	if _event_name == 'attract':
 		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:
@@ -41,7 +46,7 @@ def form_scheme(force=False):
 					
 					alife.factions.move_group_to(enemy_of_enemy_faction, _nearest_group, lfe.get_current_chunk_id(_player))
 					
-					WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+250
+					WORLD_INFO['next_scheme_timer'] = 250
 	
 	elif _event_name == 'capture' and _player_situation['active_factions']:
 		_chosen_faction = random.choice(_player_situation['active_factions'])
@@ -49,10 +54,10 @@ def form_scheme(force=False):
 		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 		
-		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+550
+		WORLD_INFO['next_scheme_timer'] = 550
 	
 	elif _event_name == 'resupply':
-		_chunk_key = random.choice(WORLD_INFO['territories'][artifacts.find_territory(y_min=.75)]['chunk_keys'])
+		_chunk_key = random.choice(WORLD_INFO['territories'][artifacts.find_territory(y_min=.5)]['chunk_keys'])
 		_pos = WORLD_INFO['chunk_map'][_chunk_key]['pos']
 		_storage_items = [{'item': 'AK-74', 'rarity': 1.0},
 			             {'item': '5.45x39mm round', 'rarity': 0.6},
@@ -80,7 +85,7 @@ def form_scheme(force=False):
 		
 		events.create_cache_drop(_pos, _storage)
 		
-		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
+		WORLD_INFO['next_scheme_timer'] = 350
 	
 	elif _event_name == 'anomaly' and _player_situation['active_factions'] and not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*5):
 		_territory_id = events.create_anomaly_field(_player_situation, y_min=.65)
@@ -100,7 +105,7 @@ def form_scheme(force=False):
 				maps.load_cluster_at_position_if_needed(WORLD_INFO['chunk_map'][_chunk_key]['pos'])
 				alife.factions.move_group_to(faction_name, group_id, _chunk_key)
 		
-		WORLD_INFO['last_scheme_time'] = WORLD_INFO['ticks']+350
+		WORLD_INFO['next_scheme_timer'] = 350
 
 def execute_scheme():
 	if not WORLD_INFO['scheme']:

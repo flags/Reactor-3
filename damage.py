@@ -30,6 +30,7 @@ def get_puncture_value(item, target_structure, target_structure_name='object', d
 def own_language(life, message):
 	_mentioned_name = False
 	_ret_string = ''
+	
 	for txt in message:
 		if 'player' in life:
 			_ret_string += txt.replace('<own>', 'your')
@@ -47,19 +48,22 @@ def bullet_hit(life, bullet, limb):
 	_owner = LIFE[bullet['shot_by']]
 	_actual_limb = lfe.get_limb(life, limb)
 	_items_to_check = []
+	_msg = []
 	
-	if 'player' in _owner:
-		if bullet['aim_at_limb'] == limb:
-			_msg = ['The round hits']
-		elif not limb in life['body']:
-			return 'The round misses entirely!'
-		else:
-			_msg = ['The round misses slightly']
-		_detailed = True
-	elif 'player' in life:
-		_msg = ['The round hits']
-	else:
-		_msg = ['%s hits %s\'s %s' % (items.get_name(bullet), life['name'][0], limb)]
+	#if 'player' in _owner:
+	#	if bullet['aim_at_limb'] == limb:
+	#		_hit = True
+	#		_msg = ['The round hits']
+	#	elif not limb in life['body']:
+	#		return 'The round misses entirely!'
+	#	else:
+	#		_msg = ['The round misses slightly']
+	#	_detailed = True
+	#
+	#elif 'player' in life:
+	#	_msg = ['The round hits']
+	#else:
+	#	_msg = ['%s hits %s\'s %s' % (items.get_name(bullet), life['name'][0], limb)]
 	
 	for item_uid in lfe.get_items_attached_to_limb(life, limb):
 		_items_to_check.append({'item': item_uid, 'visible': True})
@@ -90,41 +94,45 @@ def bullet_hit(life, bullet, limb):
 			_can_stop = False
 		
 		if not _item['thickness']:
-			_msg.append(', destroying the %s' % _item['name'])
+			if _item['uid'] in lfe.get_all_visible_items(life):
+				if 'player' in _owner:
+					_msg.append('%s\'s %s is destroyed!' % (' '.join(life['name']), _item['name']))
 
 			if _item['type'] == 'explosive':
 				items.explode(_item)
 			else:
 				items.delete_item(_item)
-		else:
-			if bullet['speed']<=1 and _can_stop:
-				_msg.append(', lodging itself in %s' % items.get_name(_item))
-				_ret_string = own_language(life, _msg)
-			
-				if _ret_string.endswith('!'):
-					return _ret_string
-				else:
-					return _ret_string+'.'
-			else:
-				if 'material' in _item:
-					if _item['material'] == 'metal':
-						_msg.append(', puncturing the %s' % _item['name'])
-					else:
-						_msg.append(', ripping through the %s' % _item['name'])
+		#else:
+		#	if bullet['speed']<=1 and _can_stop:
+		#		#if 'player' in _owner:
+		#		#	_msg.append(', lodging itself in %s' % items.get_name(_item))
+		#		#_ret_string = own_language(life, _msg)
+		#	
+		#		if _ret_string.endswith('!'):
+		#			return _ret_string
+		#		else:
+		#			return _ret_string+'.'
+		#	#else:
+		#	#	if 'material' in _item:
+		#	#		if _item['material'] == 'metal':
+		#	#			_msg.append(', puncturing the %s' % _item['name'])
+		#	#		else:
+		#	#			_msg.append(', ripping through the %s' % _item['name'])
 	
 	_damage = get_puncture_value(bullet, _actual_limb, target_structure_name=limb)
 	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
 	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
 	
 	if limb in life['body']:
-		_msg.append(', '+lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
+		_msg.append(lfe.add_wound(life, limb, cut=_damage*_damage_mod, impact_velocity=bullet['velocity']))
 	
-	_ret_string = own_language(life, _msg)
+	#_ret_string = own_language(life, _msg)
 	
-	if _ret_string.endswith('!'):
-		return _ret_string
-	else:
-		return _ret_string+'.'
+	return ' '.join(_msg)
+	#if _ret_string.endswith('!'):
+	#	return _ret_string
+	#else:
+	#	return _ret_string+'.'
 
 def bite(life, target_id, limb):
 	logging.debug('%s bit %s in the %s.' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), limb))

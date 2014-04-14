@@ -126,7 +126,7 @@ def look(life):
 				judgement.judge_life(life, ai['id'])
 			
 			if ai['dead']:
-				if 'player' in life and not life['know'][ai['id']]['dead']:
+				if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>25:
 					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
 				
 				if life['know'][ai['id']]['group']:
@@ -219,9 +219,6 @@ def quick_look(life):
 					judgement.judge_life(life, ai['id'])
 				
 				if ai['dead']:
-					if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
-						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
-					
 					if life['know'][ai['id']]['group']:
 						groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
 						life['know'][ai['id']]['group'] = None
