@@ -20,6 +20,7 @@ import random
 
 
 def form_scheme(force=False):
+	print WORLD_INFO['next_scheme_timer']
 	if WORLD_INFO['next_scheme_timer']:
 		WORLD_INFO['next_scheme_timer'] -= 1
 		
@@ -31,9 +32,26 @@ def form_scheme(force=False):
 	_overwatch_mood = WORLD_INFO['overwatch']['mood']
 	_player = LIFE[SETTINGS['controlling']]
 	_player_situation = core.get_player_situation()
-	_event_name = random.choice(['attract', 'capture', 'anomaly', 'resupply'])
+	_event_names = []
 	
-	WORLD_INFO['next_scheme_timer'] = 200
+	if _player_situation['active_factions']:
+		if not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*5):
+			_event_names.append('anomaly')
+	
+		_event_names.append('capture')
+	
+	if not random.randint(0, 8):
+		_event_names.append('resupply')
+	
+	if not random.randint(0, 4):
+		_event_names.append('attract')
+	
+	if not _event_names:
+		WORLD_INFO['next_scheme_timer'] = 50
+		
+		return False
+	
+	_event_name = random.choice(_event_names)
 	
 	if _event_name == 'attract':
 		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:
@@ -48,15 +66,15 @@ def form_scheme(force=False):
 					
 					WORLD_INFO['next_scheme_timer'] = 250
 	
-	elif _event_name == 'capture' and _player_situation['active_factions']:
+	elif _event_name == 'capture':
 		_chosen_faction = random.choice(_player_situation['active_factions'])
 		_chosen_group = random.choice(alife.factions.get_faction(_chosen_faction)['groups'])
 		
 		alife.factions.capture_territory(_chosen_faction, _chosen_group)
 		
-		WORLD_INFO['next_scheme_timer'] = 550
+		WORLD_INFO['next_scheme_timer'] = 350
 	
-	elif _event_name == 'resupply' and not random.randint(0, 8):
+	elif _event_name == 'resupply':
 		_chunk_key = random.choice(WORLD_INFO['territories'][artifacts.find_territory(y_min=.5)]['chunk_keys'])
 		_pos = WORLD_INFO['chunk_map'][_chunk_key]['pos']
 		_storage_items = [{'item': 'AK-74', 'rarity': 1.0},
@@ -87,7 +105,7 @@ def form_scheme(force=False):
 		
 		WORLD_INFO['next_scheme_timer'] = 350
 	
-	elif _event_name == 'anomaly' and _player_situation['active_factions'] and not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*5):
+	elif _event_name == 'anomaly':
 		_territory_id = events.create_anomaly_field(_player_situation, y_min=.65)
 		
 		for faction_name in _player_situation['active_factions']:

@@ -170,7 +170,7 @@ def create_path_map():
 			for x in range(_slice['top_left'][0], _slice['bot_right'][0]):
 				_map_pos = WORLD_INFO['map'][x][y][_slice['z']]
 				
-				if not _map_pos or WORLD_INFO['map'][x][y][_slice['z']+1]:
+				if not _map_pos or maps.is_solid((x, y, _slice['z']+1)):
 					WORLD_INFO['path_map'][slice_id][y][x] = -2
 					
 					continue

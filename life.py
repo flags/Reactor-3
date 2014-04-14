@@ -3607,8 +3607,6 @@ def add_pain_to_limb(life, limb, amount=1):
 	if amount>=1.2:
 		pass_out(life, length=25*amount, reason='Unconscious')
 		
-		if not 'player' in life:
-			say(life, '@n is knocked out!', action=True, event=False)
 	elif amount>=.3:
 		noise.create(life['pos'], 30, '%s cry out in pain' % ' '.join(life['name']), 'shouting', target=life['id'], skip_on_visual=False)
 	

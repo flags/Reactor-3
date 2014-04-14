@@ -111,7 +111,6 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 def walk_path(life, path):
 	if path['map'][path['end'][1], path['end'][0]] == -2:
 		logging.warning('Pathfinding: Attempted to create path ending in an unpathable area.')
-		print path['end']
 
 		return False
 

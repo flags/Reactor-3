@@ -14,6 +14,7 @@ import random
 
 
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
+	print target_structure
 	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
 	           (item['size']/float(numbers.get_surface_area(target_structure)))
@@ -121,6 +122,10 @@ def bullet_hit(life, bullet, limb):
 	
 	_damage = get_puncture_value(bullet, _actual_limb, target_structure_name=limb)
 	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
+
+	if not _actual_limb['thickness']:
+		lfe.sever_limb(life, limb, (0, 0, 0))
+	
 	_damage_mod = 1-(_actual_limb['thickness']/float(_actual_limb['max_thickness']))
 	
 	if limb in life['body']:
