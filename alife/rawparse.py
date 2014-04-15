@@ -18,7 +18,7 @@ import judgement
 import missions
 import survival
 import movement
-import logging
+import factions
 import numbers
 import memory
 import groups
@@ -33,9 +33,12 @@ import logic
 import sight
 import jobs
 
+import logging
 import re
 
+
 CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
+
 
 def create_function_map():
 	FUNCTION_MAP.update({'is_family': stats.is_family,
@@ -245,6 +248,8 @@ def create_function_map():
 		'do_mission': alife_work.tick,
 		'has_mission': lambda life: len(life['missions'])>0,
 		'has_dialog': lambda life: lfe.has_dialog(life)>0,
+		'is_in_territory': lambda life, territory_id: lfe.get_current_chunk_id(life) in WORLD_INFO['territories'][territory_id]['chunk_keys'],
+		'capture_territory': lambda life, territory_id: factions.claim_existing_territory(life['faction'], territory_id),
 		'drop_item': lfe.drop_item,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,

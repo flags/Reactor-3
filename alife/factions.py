@@ -53,6 +53,14 @@ def claim_territory(faction_name):
 	
 	return _territory
 
+def claim_existing_territory(faction_name, territory_id):
+	_territory = WORLD_INFO['territories'][territory_id]
+	_territory['owner'] = faction_name
+	_territory['groups'] = []
+	_faction['territories'][_territory_name] = {'groups': []}
+	
+	logging.debug('%s has claimed %s.' % (faction_name, _territory_name))
+
 def create_faction(name, life_types, friendlies=[], enemies=['Bandits']):
 	WORLD_INFO['factions'][name] = {'members': [],
 	                                'groups': [],
@@ -195,7 +203,7 @@ def capture_territory(faction_name, group_id):
 		_member = LIFE[member_id]
 		
 		missions.create_mission_for_self(_member, 'travel_to', chunk_key=_closest_territory['chunk_key'])
-		#missions.create_mission_for_self(_member, 'capture_territory', territory_id=_closest_territory['territory_id'])
+		missions.create_mission_for_self(_member, 'capture_territory', territory_id=_closest_territory['territory_id'])
 		set_group_order(faction_name, group_id, 'travel_to')
 
 def move_group_to(faction_name, group_id, chunk_key):

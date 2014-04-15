@@ -35,7 +35,7 @@ def form_scheme(force=False):
 	_event_names = []
 	
 	if _player_situation['active_factions']:
-		if not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*5):
+		if not _player_situation['active_factions'] == ['ZES'] and not random.randint(0, (len(artifacts.get_active_fields())+1)*3):
 			_event_names.append('anomaly')
 	
 		_event_names.append('capture')
@@ -52,6 +52,8 @@ def form_scheme(force=False):
 		return False
 	
 	_event_name = random.choice(_event_names)
+	
+	print _event_name
 	
 	if _event_name == 'attract':
 		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:

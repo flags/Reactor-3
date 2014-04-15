@@ -310,9 +310,12 @@ def get_items_at(position, check_bodies=False):
 	
 	for _item in _chunk['items']:
 		if not _item in ITEMS:
-			continue
+			continue		
 		
 		item = ITEMS[_item]
+		
+		if item['name'] == 'gib':
+			continue
 		
 		if is_item_owned(_item):
 			continue
