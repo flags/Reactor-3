@@ -1,0 +1,11 @@
+{"name": "wooden display case",
+"prefix": "a",
+"type": "storage",
+"icon": "#",
+"description": "A metal structure with several shelves.",
+"flags": "",
+"size": "6x10",
+"capacity": "6x10",
+"thickness": 3,
+"color": [[161, 219, 236], [94, 75, 47]],
+"material": "wood"}
