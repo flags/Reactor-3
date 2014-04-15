@@ -14,7 +14,6 @@ import random
 
 
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
-	print target_structure
 	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
 	           (item['size']/float(numbers.get_surface_area(target_structure)))
