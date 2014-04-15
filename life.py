@@ -2336,6 +2336,8 @@ def remove_item_from_inventory(life, item_id):
 			if ITEMS[_item]['owner']:
 				ITEMS[_item]['owner'] = None
 			
+			items.add_to_chunk(ITEMS[_item])
+			
 			life['inventory'].remove(_item)
 	
 	life['speed_max'] = get_max_speed(life)
