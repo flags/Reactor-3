@@ -1463,16 +1463,19 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					_pos_1_open = map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
 					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
 					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
-					
 					_pos_2_open = map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
 					    map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
 					    map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
 					
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
+					
 					if not numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
 						create_tile(map_gen, x, _top_left[1], 2, random.choice(_building['flags']['yard']['fence']))
 					
-					if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
-						create_tile(map_gen, x, _bot_right[1]+WORLD_INFO['chunk_size'], 2, random.choice(_building['flags']['yard']['fence']))
+					if not x+_bot_right[1]+WORLD_INFO['chunk_size'] >= MAP_SIZE[0]-1:
+						if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+							create_tile(map_gen, x, _bot_right[1]+WORLD_INFO['chunk_size'], 2, random.choice(_building['flags']['yard']['fence']))
 			
 				for y in range(_top_left[1], _bot_right[1]+WORLD_INFO['chunk_size']):
 					if y >= MAP_SIZE[1]-1:
@@ -1487,11 +1490,15 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					    map_gen['map'][_bot_right[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
 					    map_gen['map'][_bot_right[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
 					
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
+					
 					if not numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
 						create_tile(map_gen, _top_left[0], y, 2, random.choice(_building['flags']['yard']['fence']))
 					
-					if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
-						create_tile(map_gen, _bot_right[0]+WORLD_INFO['chunk_size'], y, 2, random.choice(_building['flags']['yard']['fence']))
+					if not _bot_right[0]+WORLD_INFO['chunk_size'] >= MAP_SIZE[1]-1:
+						if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+							create_tile(map_gen, _bot_right[0]+WORLD_INFO['chunk_size'], y, 2, random.choice(_building['flags']['yard']['fence']))
 	
 	#Spawn positions
 	for room_name in _building['rooms']:
