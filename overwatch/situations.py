@@ -6,7 +6,7 @@ import life as lfe
 import artifacts
 import language
 import drawing
-import numbers
+import bad_numbers
 import effects
 import events
 import spawns

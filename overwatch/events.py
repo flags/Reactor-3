@@ -5,7 +5,7 @@ import libtcodpy as tcod
 
 import artifacts
 import language
-import numbers
+import bad_numbers
 import drawing
 import effects
 import spawns
@@ -35,7 +35,7 @@ def create_heli_crash(pos, spawn_list):
 def create_cache_drop(pos, spawn_list):
 	_player = LIFE[SETTINGS['controlling']]
 	_pos = spawns.get_spawn_point_around(pos, area=10)
-	_direction = language.get_real_direction(numbers.direction_to(_player['pos'], _pos))
+	_direction = language.get_real_direction(bad_numbers.direction_to(_player['pos'], _pos))
 	
 	for container in spawn_list:
 		if not container['rarity']>random.uniform(0, 1.0):
@@ -93,7 +93,7 @@ def broadcast(messages, event_time, glitch=False):
 			else:
 				_change = False
 			
-			_delay = (50*numbers.clip(_i, 0, 1))+(len(entry['text'])*2)*_i
+			_delay = (50*bad_numbers.clip(_i, 0, 1))+(len(entry['text'])*2)*_i
 			
 			WORLD_INFO['scheme'].append({'glitch': entry['text'], 'change': _change, 'time': _time+_delay})
 		else:

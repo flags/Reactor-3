@@ -2,7 +2,7 @@ from globals import WORLD_INFO, SETTINGS, LIFE, ITEMS
 
 import life as lfe
 
-import numbers
+import bad_numbers
 import alife
 
 import logging
@@ -72,7 +72,7 @@ def get_overwatch_hardship(no_mod=True):
 		if len(_situation['online_alife']) == len(_situation['trusted_online_alife']):
 			_mod = _stats['last_updated']/float(WORLD_INFO['ticks'])
 		else:
-			_mod = numbers.clip((_stats['last_updated']*1.5)/float(WORLD_INFO['ticks']), 0, 1.0)
+			_mod = bad_numbers.clip((_stats['last_updated']*1.5)/float(WORLD_INFO['ticks']), 0, 1.0)
 			
 			#TODO: Decay
 			#_stats['loss_experienced'] *= _dec
@@ -86,7 +86,7 @@ def get_overwatch_hardship(no_mod=True):
 	_hardship += _stats['human_encounters']*4
 	_hardship *= _mod
 	
-	return numbers.clip(float(_hardship), 0.0, 10.0)
+	return bad_numbers.clip(float(_hardship), 0.0, 10.0)
 
 def get_overwatch_success():
 	_stats = WORLD_INFO['overwatch']
@@ -100,7 +100,7 @@ def get_overwatch_success():
 	_success += _stats['intervention']
 	#_success += len(_situation['equipped_gear'])
 	
-	return numbers.clip(float(_success), 0.0, 10.0)
+	return bad_numbers.clip(float(_success), 0.0, 10.0)
 
 def evaluate_overwatch_mood():
 	_stats = WORLD_INFO['overwatch']
@@ -109,11 +109,11 @@ def evaluate_overwatch_mood():
 	_hardship_rate = _hardship/10.0
 	_success_rate = _success/10.0
 	_activity = _stats['last_updated']/float(WORLD_INFO['ticks'])
-	_difficulty = numbers.clip(_hardship_rate-_success_rate, 0.0, 1.0)
+	_difficulty = bad_numbers.clip(_hardship_rate-_success_rate, 0.0, 1.0)
 	
-	#print _activity, numbers.clip(_success_rate, 0.3, 0.85)
+	#print _activity, bad_numbers.clip(_success_rate, 0.3, 0.85)
 	
-	if _activity>numbers.clip(_success_rate, 0.3, 0.85):
+	if _activity>bad_numbers.clip(_success_rate, 0.3, 0.85):
 		_stats['mood'] = 'rest'
 	elif _success_rate<.3:
 		_stats['mood'] = 'help'
