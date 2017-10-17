@@ -3,7 +3,7 @@ from tiles import *
 
 import libtcodpy as tcod
 
-import numbers
+import bad_numbers
 import dialog
 import logic
 import life
@@ -519,7 +519,7 @@ def draw_message_box():
 	#blit_string(1, 0, 'Messages', 'message_box', fore_color=tcod.white)
 	
 	_y_mod = 1
-	_lower = numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
+	_lower = bad_numbers.clip(0,len(MESSAGE_LOG)-MESSAGE_LOG_MAX_LINES,100000)
 	_i = -1
 	for msg in MESSAGE_LOG[_lower:len(MESSAGE_LOG)]:
 		if msg['count']:
@@ -559,7 +559,7 @@ def draw_message_box():
 		
 		while _text:
 			_print_text = _text[:_view['draw_size'][0]-2]
-			_padding = ' '*numbers.clip(_view['draw_size'][0], 0, _view['draw_size'][0]-len(_print_text)-2)
+			_padding = ' '*bad_numbers.clip(_view['draw_size'][0], 0, _view['draw_size'][0]-len(_print_text)-2)
 			blit_string(1, _y_mod, _print_text+_padding, 'message_box', fore_color=_fore_color, back_color=_back_color)
 			_y_mod += 1
 			_text = _text[_view['draw_size'][0]-2:]
@@ -673,7 +673,7 @@ def draw_dijkstra_heatmap():
 				continue
 			
 			_score = abs(SETTINGS['heatmap']['map'][_x][_y])/8
-			_light = numbers.clip(_score,0,150)
+			_light = bad_numbers.clip(_score,0,150)
 			lighten_tile(x,y,_light)
 
 def draw_chunk_map():
@@ -791,8 +791,8 @@ def position_is_in_frame(pos):
 	if not _view:
 		return False
 	
-	if pos[0] >= CAMERA_POS[0] and pos[0] < numbers.clip(CAMERA_POS[0]+_view['view_size'][0]-1, 0, MAP_SIZE[0]) and \
-	   pos[1] >= CAMERA_POS[1] and pos[1] < numbers.clip(CAMERA_POS[1]+_view['view_size'][1]-1, 0, MAP_SIZE[1]):
+	if pos[0] >= CAMERA_POS[0] and pos[0] < bad_numbers.clip(CAMERA_POS[0]+_view['view_size'][0]-1, 0, MAP_SIZE[0]) and \
+	   pos[1] >= CAMERA_POS[1] and pos[1] < bad_numbers.clip(CAMERA_POS[1]+_view['view_size'][1]-1, 0, MAP_SIZE[1]):
 		return True
 	
 	return False

@@ -5,7 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import render_los
-import numbers
+import bad_numbers
 import weather
 import alife
 import items
@@ -35,7 +35,7 @@ def unregister_effect(effect, remove_from_effect_map=True):
 	del EFFECTS[effect['id']]
 
 def create_fire(pos, intensity=1):
-	intensity = numbers.clip(intensity, 1, 8)
+	intensity = bad_numbers.clip(intensity, 1, 8)
 	
 	if not tiles.get_raw_tile(tiles.get_tile(pos))['burnable']:
 		return False
@@ -55,7 +55,7 @@ def create_fire(pos, intensity=1):
 
 def draw_fire(pos, fire):
 	_intensity = fire['intensity']/float(8)
-	_rand_intensity = numbers.clip(_intensity-random.uniform(0, .2), 0, 1)
+	_rand_intensity = bad_numbers.clip(_intensity-random.uniform(0, .2), 0, 1)
 	
 	gfx.tint_tile(pos[0], pos[1], fire['color'], _rand_intensity)
 
@@ -95,9 +95,9 @@ def calculate_fire(fire):
 				_current_burn = int(round(fire['intensity']))
 				_max_burn = int(round(_current_burn*.23))
 				
-				if tiles.flag(_tile, 'heat', numbers.clip(_heat+(fire['intensity']*.8), 0, 8))>=_raw_tile['burnable']:
+				if tiles.flag(_tile, 'heat', bad_numbers.clip(_heat+(fire['intensity']*.8), 0, 8))>=_raw_tile['burnable']:
 					if _raw_tile['burnable'] and _max_burn:
-						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(1, numbers.clip(1+_max_burn, 2, 8)))
+						create_fire((_x, _y, fire['pos'][2]), intensity=random.randint(1, bad_numbers.clip(1+_max_burn, 2, 8)))
 	
 	_intensity = ((64-_neighbor_intensity)/64.0)*random.uniform(0, SETTINGS['fire burn rate'])
 	fire['intensity'] -= _intensity
@@ -120,7 +120,7 @@ def calculate_fire(fire):
 		unregister_effect(fire)
 	
 	if 'light' in fire:
-		fire['light']['brightness'] -= numbers.clip(_intensity*.015, 0, 5)
+		fire['light']['brightness'] -= bad_numbers.clip(_intensity*.015, 0, 5)
 	elif not _neighbor_lit:
 		fire['light'] = create_light(fire['pos'], (255, 69, 0), 17*(fire['intensity']/8.0), 0.25)
 
@@ -135,7 +135,7 @@ def delete_fire(fire):
 
 def create_ash(pos):
 	_color = random.randint(0, 25)
-	_intensity = numbers.clip(_color/float(25), .3, 1)
+	_intensity = bad_numbers.clip(_color/float(25), .3, 1)
 	
 	_effect = {'type': 'ash',
 	    'color': tcod.Color(_color, _color, _color),
@@ -176,7 +176,7 @@ def create_smoke(pos, color=tcod.gray, age=0, grow=0.1, decay=0.1, direction=-1,
 	if direction == -1:
 		_velocity = [random.uniform(-speed, speed), random.uniform(-speed, speed), 0]
 	else:
-		_velocity = numbers.velocity(direction, speed)
+		_velocity = bad_numbers.velocity(direction, speed)
 	
 	_effect = {'type': 'smoke',
 	           'color': _color,
@@ -210,18 +210,18 @@ def create_smoke_cloud(pos, size, color=tcod.gray, age=0, factor_distance=False)
 		
 		_age_mod = 1
 		if factor_distance:
-			_age_mod = 1-numbers.clip(numbers.distance(pos, new_pos)/float(size), 0.1, 1)
+			_age_mod = 1-bad_numbers.clip(bad_numbers.distance(pos, new_pos)/float(size), 0.1, 1)
 		
 		create_smoke(new_pos, color=color, age=age*_age_mod)
 
 def create_smoke_streamer(pos, size, length, color=tcod.gray):
 	_direction = random.randint(0, 359)
-	_end_velocity = numbers.velocity(_direction, length)
+	_end_velocity = bad_numbers.velocity(_direction, length)
 	_end_pos = [int(round(pos[0]+_end_velocity[0])), int(round(pos[1]+_end_velocity[1]))]
 	
 	for new_pos in render_los.draw_line(pos[0], pos[1], _end_pos[0], _end_pos[1]):
 		_new_pos = [new_pos[0], new_pos[1], pos[2]]
-		create_smoke_cloud(_new_pos, size, age=-numbers.distance(pos, new_pos)/float(length), color=color)
+		create_smoke_cloud(_new_pos, size, age=-bad_numbers.distance(pos, new_pos)/float(length), color=color)
 
 def process_smoke(smoke):
 	if smoke['disappear']:
@@ -238,7 +238,7 @@ def process_smoke(smoke):
 		return False
 	
 	if smoke['interp_wind']:
-		smoke['velocity'] = numbers.lerp_velocity(smoke['velocity'], weather.get_wind_velocity(), 0.05)
+		smoke['velocity'] = bad_numbers.lerp_velocity(smoke['velocity'], weather.get_wind_velocity(), 0.05)
 	
 	smoke['float_pos'][0] += smoke['velocity'][0]
 	smoke['float_pos'][1] += smoke['velocity'][1]
@@ -263,7 +263,7 @@ def process_smoke(smoke):
 	EFFECT_MAP[smoke['pos'][0]][smoke['pos'][1]].append(smoke['id'])
 
 def draw_smoke(pos, smoke):
-	gfx.tint_tile(pos[0], pos[1], smoke['color'], numbers.clip(smoke['intensity'], 0, smoke['max_intensity']))
+	gfx.tint_tile(pos[0], pos[1], smoke['color'], bad_numbers.clip(smoke['intensity'], 0, smoke['max_intensity']))
 
 def create_smoker(pos, time, color=tcod.gray):
 	_color = random.randint(200, 205)
@@ -316,7 +316,7 @@ def process_vapor(vapor):
 	vapor['age'] += 1
 
 def draw_vapor(pos, vapor):
-	gfx.tint_tile(pos[0], pos[1], vapor['color'], numbers.clip(vapor['max_intensity']*(1-(vapor['age']/float(vapor['age_max']))), 0, vapor['max_intensity']))
+	gfx.tint_tile(pos[0], pos[1], vapor['color'], bad_numbers.clip(vapor['max_intensity']*(1-(vapor['age']/float(vapor['age_max']))), 0, vapor['max_intensity']))
 
 #def create_particle(pos, color, velocity):
 #	_effect = {'type': 'particle',
@@ -409,20 +409,20 @@ def has_splatter(position, what=None):
 			return splat
 
 def create_splatter(what, position, velocity=[0, 0], intensity=4):
-	_intensity = numbers.clip(random.random(), intensity*.05, intensity*.1)
+	_intensity = bad_numbers.clip(random.random(), intensity*.05, intensity*.1)
 	
 	#if not _splatter:
 	_splatter = {'pos': list(position[:]), 'what': what, 'color': tcod.Color(0, 0, 0), 'coef': _intensity}
 	
 	if velocity[0]>0:
-		_splatter['pos'][0] += random.randint(0, numbers.clip(int(round(velocity[0])), 0, 2))
+		_splatter['pos'][0] += random.randint(0, bad_numbers.clip(int(round(velocity[0])), 0, 2))
 	elif velocity[0]<0:
-		_splatter['pos'][0] -= random.randint(0, numbers.clip(-int(round(velocity[0])), 0, 2))
+		_splatter['pos'][0] -= random.randint(0, bad_numbers.clip(-int(round(velocity[0])), 0, 2))
 	
 	if velocity[1]>0:
-		_splatter['pos'][1] += random.randint(0, numbers.clip(int(round(velocity[1])), 0, 2))
+		_splatter['pos'][1] += random.randint(0, bad_numbers.clip(int(round(velocity[1])), 0, 2))
 	elif velocity[1]<0:
-		_splatter['pos'][1] -= random.randint(0, numbers.clip(-int(round(velocity[1])), 0, 2))
+		_splatter['pos'][1] -= random.randint(0, bad_numbers.clip(-int(round(velocity[1])), 0, 2))
  
 	_has_splatter = has_splatter(tuple(_splatter['pos']), what=what)
 	
@@ -431,7 +431,7 @@ def create_splatter(what, position, velocity=[0, 0], intensity=4):
 			_has_splatter['color'].r = 150
 		else:
 			_has_splatter['coef'] += 0.3
-			_has_splatter['coef'] = numbers.clip(_has_splatter['coef'],0,1)
+			_has_splatter['coef'] = bad_numbers.clip(_has_splatter['coef'],0,1)
 		
 		return True
 	
@@ -459,6 +459,6 @@ def create_gib(life, icon, size, limb, velocity, color=(tcod.white, None)):
 		'color': color}
 	
 	_i = items.get_item_from_uid(items.create_item('gib', position=life['pos'][:], item=_gib))
-	_i['velocity'] = [numbers.clip(velocity[0], -3, 3), numbers.clip(velocity[1], -3, 3), velocity[2]]
+	_i['velocity'] = [bad_numbers.clip(velocity[0], -3, 3), bad_numbers.clip(velocity[1], -3, 3), velocity[2]]
 	
 	logging.debug('Created gib.')

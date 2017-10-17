@@ -4,7 +4,7 @@ import life as lfe
 
 import language
 import missions
-import numbers
+import bad_numbers
 import weapons
 import spawns
 import alife
@@ -153,7 +153,7 @@ def get_nearest_group(faction_name, pos, free_only=True, max_distance=250):
 			continue
 		
 		for member_id in alife.groups.get_group({}, group_id)['members']:
-			_distance = numbers.distance(LIFE[member_id]['pos'], pos)
+			_distance = bad_numbers.distance(LIFE[member_id]['pos'], pos)
 			
 			if _distance < _nearest_group['distance']:
 				_nearest_group['group_id'] = group_id
@@ -183,7 +183,7 @@ def capture_territory(faction_name, group_id):
 			
 			continue
 		
-		_group_center = numbers.lerp_velocity(_group_center, _member['pos'], .5)
+		_group_center = bad_numbers.lerp_velocity(_group_center, _member['pos'], .5)
 	
 	for territory_id in WORLD_INFO['territories']:
 		_territory = WORLD_INFO['territories'][territory_id]
@@ -276,7 +276,7 @@ def control_zes():
 		_zes['flags']['intro_created'] = True
 		_item_uid = weapons.spawn_and_arm('glock', '9x19mm magazine', '9x19mm round', 17)
 		_kill_target = get_faction('Bandits')['members'][0]
-		_kill_target_direction = numbers.distance(LIFE[_zes['members'][0]]['pos'], LIFE[_kill_target]['pos'])
+		_kill_target_direction = bad_numbers.distance(LIFE[_zes['members'][0]]['pos'], LIFE[_kill_target]['pos'])
 		_quest_item_uid = lfe.get_inventory_item_matching(LIFE[_kill_target], {'type': 'radio'})
 		_mission = missions.create_mission('zes_glock', target=SETTINGS['controlling'],
 		                                   item_uid=_item_uid,

@@ -4,7 +4,7 @@ from alife import factions
 import graphics as gfx
 
 import effects
-import numbers
+import bad_numbers
 import timers
 import items
 import life
@@ -39,7 +39,7 @@ def create_field(y_min=0):
 	_territory = WORLD_INFO['territories'][_territory_key]
 	_territory['danger'] = random.choice(['burner'])
 	_spawn_chunk_keys = [k for k in _territory['chunk_keys'] if WORLD_INFO['chunk_map'][k]['type'] == 'other']
-	_territory['flags']['create_amount'] = numbers.clip(random.randint(3, 5), 0, len(_spawn_chunk_keys))
+	_territory['flags']['create_amount'] = bad_numbers.clip(random.randint(3, 5), 0, len(_spawn_chunk_keys))
 	
 	return _territory_key
 

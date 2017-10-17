@@ -9,7 +9,7 @@ import encounters
 import artifacts
 import worldgen
 import effects
-import numbers
+import bad_numbers
 import weather
 import timers
 import dialog
@@ -184,7 +184,7 @@ def draw_event():
 	_i = 0
 	for line in _lines:
 		_half = len(line)/2
-		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
+		_x = bad_numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
 		
 		gfx.blit_string(_x,
 			10+_i,

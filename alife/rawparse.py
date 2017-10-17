@@ -19,7 +19,7 @@ import missions
 import survival
 import movement
 import factions
-import numbers
+import bad_numbers
 import memory
 import groups
 import combat
@@ -236,7 +236,7 @@ def create_function_map():
 		'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
 		'has_item_type': lambda life, item_match: not lfe.get_inventory_item_matching(life, item_match) == None,
 		'move_to_target': lambda life, target_id: movement.travel_to_position(life, LIFE[target_id]['pos']),
-		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
+		'is_in_range_of_target': lambda life, target_id, distance: bad_numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
 		'track_target': lambda life, target_id: brain.meet_alife(life, LIFE[target_id]) and judgement.track_target(life, target_id),
 		'untrack_target': judgement.untrack_target,
 		'clear_tracking': lambda life: brain.flag(life, 'tracking_targets', []),

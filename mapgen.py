@@ -8,7 +8,7 @@ import render_los
 import maputils
 import language
 import drawing
-import numbers
+import bad_numbers
 import effects
 import items
 import alife
@@ -46,7 +46,7 @@ BUILDINGS = {}
 
 def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False, build_test=False):
 	""" Size: Both width and height must be divisible by DETAIL.
-	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
+	Detail: Determines the chunk size. Smaller bad_numbers will generate more elaborate designs.
 	towns: Number of towns.
 	factories: Decides the amount of factories generated.
 	Forests: Number of large forested areas.
@@ -1289,8 +1289,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				for neighbor_room_name in _building['rooms']:
 					if neighbor_chunk_key in _building['rooms'][neighbor_room_name]['chunk_keys']:						
 						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
-							_direction_mod = (numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
-							                  numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
+							_direction_mod = (bad_numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
+							                  bad_numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
 							
 							if neighbor_room_name in _possible_doors:
 								_possible_doors[neighbor_room_name].append(_direction_mod)
@@ -1368,10 +1368,10 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 			
 			for mod in [(-1, -1), (1, -1), (1, 1), (-1, 1)]:
 				#break
-				__x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), -1, 5)
-				__y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), -1, 5)
-				___x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
-				___y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
+				__x = _x+bad_numbers.clip((mod[0]*WORLD_INFO['chunk_size']), -1, 5)
+				__y = _y+bad_numbers.clip((mod[1]*WORLD_INFO['chunk_size']), -1, 5)
+				___x = _x+bad_numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
+				___y = _y+bad_numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
 				
 				if __x >= MAP_SIZE[0]-1 or __y >= MAP_SIZE[1]-1 or __x < 0 or __y < 0:
 					continue
@@ -1416,16 +1416,16 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				
 				if _building['flags']['yard']['type'] == 'square':
 					if _pos[0] <= _top_left[0]:
-						_top_left[0] = numbers.clip(_pos[0]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
+						_top_left[0] = bad_numbers.clip(_pos[0]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
 					
 					if _pos[1] <= _top_left[1]:
-						_top_left[1] = numbers.clip(_pos[1]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
+						_top_left[1] = bad_numbers.clip(_pos[1]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
 					
 					if _pos[0] >= _bot_right[0]:
-						_bot_right[0] = numbers.clip(_pos[0]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
+						_bot_right[0] = bad_numbers.clip(_pos[0]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
 					
 					if _pos[1] >= _bot_right[1]:
-						_bot_right[1] = numbers.clip(_pos[1]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
+						_bot_right[1] = bad_numbers.clip(_pos[1]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
 			
 		if _building['flags']['yard']['type'] == 'square':
 			for y in range(_top_left[1], _bot_right[1]+1, WORLD_INFO['chunk_size']):
@@ -1435,7 +1435,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					if _chunk_key in _built_chunk_keys:
 						continue
 					
-					_distance = numbers.distance((x, y), _exterior_pos)
+					_distance = bad_numbers.distance((x, y), _exterior_pos)
 					
 					if not _closest_fence_chunk['distance'] or _distance>_closest_fence_chunk['distance']:
 						_closest_fence_chunk['distance'] = _distance
@@ -1470,11 +1470,11 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
 					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
 					
-					if not numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
+					if not bad_numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
 						create_tile(map_gen, x, _top_left[1], 2, random.choice(_building['flags']['yard']['fence']))
 					
 					if not x+_bot_right[1]+WORLD_INFO['chunk_size'] >= MAP_SIZE[0]-1:
-						if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+						if not bad_numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
 							create_tile(map_gen, x, _bot_right[1]+WORLD_INFO['chunk_size'], 2, random.choice(_building['flags']['yard']['fence']))
 			
 				for y in range(_top_left[1], _bot_right[1]+WORLD_INFO['chunk_size']):
@@ -1493,11 +1493,11 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
 					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
 					
-					if not numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
+					if not bad_numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
 						create_tile(map_gen, _top_left[0], y, 2, random.choice(_building['flags']['yard']['fence']))
 					
 					if not _bot_right[0]+WORLD_INFO['chunk_size'] >= MAP_SIZE[1]-1:
-						if not numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+						if not bad_numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
 							create_tile(map_gen, _bot_right[0]+WORLD_INFO['chunk_size'], y, 2, random.choice(_building['flags']['yard']['fence']))
 	
 	#Spawn positions
@@ -1690,8 +1690,8 @@ def generate_noise_map(map_gen):
 				_chance = random.uniform(0, 1)
 				
 				if _chance<.75:
-					_x = numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
-					_y = numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+					_x = bad_numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+					_y = bad_numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 					
 					if not map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
 						continue
@@ -1705,8 +1705,8 @@ def generate_noise_map(map_gen):
 						if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 							continue
 						
-						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
-						_y = numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+						_x = bad_numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+						_y = bad_numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 						
 						if not map_gen['map'][_x][_y][2]['id'] in BUSH_EXCLUDE_TILES:
 							continue
@@ -1767,7 +1767,7 @@ def generate_noise_map(map_gen):
 			if _chunk_pos[1]>_bot_left[1]:
 				_bot_left[1] = _chunk_pos[1]
 		
-		_center_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
+		_center_pos = bad_numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
 		_center_pos[0] = int(_center_pos[0])
 		_center_pos[1] = int(_center_pos[1])
 		_cells.append({'size': len(_connected_chunk_keys),
@@ -1879,7 +1879,7 @@ def generate_noise_map(map_gen):
 						continue
 					
 					for pos in _occupied_cells[avoid_cell_type]:
-						if numbers.distance(cell['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
+						if bad_numbers.distance(cell['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
 							_continue = True
 							
 							break
@@ -1945,7 +1945,7 @@ def generate_noise_map(map_gen):
 				_cell_2 = _empty_cells[empty_cell_2]
 				
 				for pos_2 in [_cell_2['cell']['top_left'], _cell_2['cell']['top_right'], _cell_2['cell']['bot_left'], _cell_2['cell']['bot_right']]:
-					if numbers.distance(pos_1, pos_2)<100:
+					if bad_numbers.distance(pos_1, pos_2)<100:
 						if not empty_cell_2 in _cell_1['neighbors']:
 							_cell_1['neighbors'].append(empty_cell_2)
 						
@@ -1989,7 +1989,7 @@ def generate_noise_map(map_gen):
 								continue
 							
 							for pos in _occupied_cells[avoid_cell_type]:
-								if numbers.distance(_cell['cell']['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
+								if bad_numbers.distance(_cell['cell']['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
 									_continue = True
 									
 									break
@@ -2221,7 +2221,7 @@ def generate_farm(map_gen, cell):
 		_continue = False
 		for farmhouse_chunk_key in _building_chunks:
 			_farmhouse_chunk = map_gen['chunk_map'][farmhouse_chunk_key]
-			_dist = numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
+			_dist = bad_numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
 			
 			if not _min_farmhouse_distance < _dist <= _max_farmhouse_distance:
 				_continue = True
@@ -2263,18 +2263,18 @@ def generate_farm(map_gen, cell):
 				create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
 			else:
 				_breaks.append({'pos': (pos[0], pos[1], 2+z),
-			                    'distance': numbers.distance(_center, pos),
-			                    'direction': numbers.direction_to(_center, pos)})
+			                    'distance': bad_numbers.distance(_center, pos),
+			                    'direction': bad_numbers.direction_to(_center, pos)})
 	
 	for break_pos in _breaks:
-		_velocity = numbers.velocity(break_pos['direction'], numbers.clip(break_pos['distance']/5, 0.5, 1))
+		_velocity = bad_numbers.velocity(break_pos['direction'], bad_numbers.clip(break_pos['distance']/5, 0.5, 1))
 		_velocity[0] = break_pos['pos'][0]+_velocity[0]
 		_velocity[1] = break_pos['pos'][1]+_velocity[1]
 		
 		for z in range(1, break_pos['pos'][2]):
-			_i = z/numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
+			_i = z/bad_numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
 
-			_center_pos = numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
+			_center_pos = bad_numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
 			_center_pos = (int(round(_center_pos[0])), int(round(_center_pos[1])))
 			for pos in drawing.draw_circle(_center_pos, 4):
 				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
@@ -2359,7 +2359,7 @@ def generate_town(map_gen, cell, road_scale=1, road_type='paved'):
 	_starting_road_seed = {'road_seed': None, 'road_chunk_key': None, 'distance': 0}
 	for road_seed in _road_seeds:
 		_road_chunk_key = alife.chunks.get_nearest_chunk_in_list(map_gen['chunk_map'][road_seed]['pos'], map_gen['refs']['roads'])
-		_distance = numbers.distance(map_gen['chunk_map'][_road_chunk_key]['pos'], map_gen['chunk_map'][road_seed]['pos'])
+		_distance = bad_numbers.distance(map_gen['chunk_map'][_road_chunk_key]['pos'], map_gen['chunk_map'][road_seed]['pos'])
 		
 		if not _starting_road_seed['road_seed'] or _distance<_starting_road_seed['distance']:
 			_starting_road_seed['distance'] = _distance
@@ -2375,7 +2375,7 @@ def generate_town(map_gen, cell, road_scale=1, road_type='paved'):
 			_last_seed = _path[len(_path)-1]
 			
 			for road_seed in _road_seeds:
-				_distance = numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
+				_distance = bad_numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
 				
 				if not _closest_road_seed['road_seed'] or _distance<_closest_road_seed['distance']:
 					_closest_road_seed['road_seed'] = road_seed
@@ -2713,7 +2713,7 @@ def create_tree(map_gen, position, height):
 				if pos[0]<0 or pos[0]>=map_gen['size'][0]-1 or pos[1]<0 or pos[1]>=map_gen['size'][1]-1:
 					continue
 					
-				_dist = _size-numbers.clip(numbers.distance(position, pos), 1, height-map_gen['size'][2])
+				_dist = _size-bad_numbers.clip(bad_numbers.distance(position, pos), 1, height-map_gen['size'][2])
 				for _z in range(_dist/2, _dist):
 					if map_gen['map'][pos[0]][pos[1]][2+_z]:
 						continue
@@ -2727,7 +2727,7 @@ def create_bush(map_gen, position, size, dither=False):
 		if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 			continue
 		
-		if dither and random.uniform(0, 1)>numbers.distance(position, pos)/float(size):
+		if dither and random.uniform(0, 1)>bad_numbers.distance(position, pos)/float(size):
 			continue
 		
 		create_tile(map_gen, pos[0], pos[1], position[2], random.choice(tiles.BUSH_TILES))

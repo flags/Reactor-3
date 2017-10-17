@@ -4,7 +4,7 @@ import life as lfe
 
 import language
 import graphics
-import numbers
+import bad_numbers
 import timers
 import items
 import alife
@@ -16,7 +16,7 @@ import random
 def get_puncture_value(item, target_structure, target_structure_name='object', debug=True):
 	_damage = (((item['speed']/float(item['max_speed']))*item['damage']['sharp'])*\
 	           (target_structure['max_thickness']/float(target_structure['thickness'])))*\
-	           (item['size']/float(numbers.get_surface_area(target_structure)))
+	           (item['size']/float(bad_numbers.get_surface_area(target_structure)))
 	if debug:
 		logging.debug('%s is pucturing %s.' % (item['name'], target_structure_name))
 		logging.debug('%s\'s max speed is %s and is currently traveling at speed %s.' % (item['name'], item['max_speed'], item['speed']))
@@ -81,7 +81,7 @@ def bullet_hit(life, bullet, limb):
 	for entry in _items_to_check:
 		_item = items.get_item_from_uid(entry['item'])
 		_item_damage = get_puncture_value(bullet, _item, target_structure_name=_item['name'])
-		_item['thickness'] = numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
+		_item['thickness'] = bad_numbers.clip(_item['thickness']-_item_damage, 0, _item['max_thickness'])
 		
 		if 'material' in _item and not _item['material'] == 'cloth':
 			_speed_mod = _item_damage
@@ -120,7 +120,7 @@ def bullet_hit(life, bullet, limb):
 		#	#			_msg.append(', ripping through the %s' % _item['name'])
 	
 	_damage = get_puncture_value(bullet, _actual_limb, target_structure_name=limb)
-	_actual_limb['thickness'] = numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
+	_actual_limb['thickness'] = bad_numbers.clip(_actual_limb['thickness']-_damage, 0, _actual_limb['max_thickness'])
 
 	if not _actual_limb['thickness']:
 		lfe.sever_limb(life, limb, (0, 0, 0))
@@ -145,7 +145,7 @@ def bite(life, target_id, limb):
 	
 	_bite_strength = random.randint(1, 3)
 	
-	if numbers.distance(life['pos'], target['pos'])>1:
+	if bad_numbers.distance(life['pos'], target['pos'])>1:
 		_msg.append('bites the air')
 		
 		return ' '.join(_msg)+'.'
@@ -168,7 +168,7 @@ def bite(life, target_id, limb):
 			_item['thickness'] = _item['size']/2
 		
 		_thickness = _item['thickness']
-		_item['thickness'] = numbers.clip(_item['thickness']-_bite_strength, 0, 100)
+		_item['thickness'] = bad_numbers.clip(_item['thickness']-_bite_strength, 0, 100)
 		_bite_strength -= _thickness
 		_tear = _item['thickness']-_thickness
 		_limb_in_context = False

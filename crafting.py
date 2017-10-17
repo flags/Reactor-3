@@ -2,7 +2,7 @@ import graphics as gfx
 import life as lfe
 
 import scripting
-import numbers
+import bad_numbers
 import items
 
 
@@ -31,7 +31,7 @@ def perform_recipe(life, item, recipe):
 
 def execute_recipe(life, item, recipe):
 	_difficulty = get_recipe_difficulty(life, item, recipe)
-	_dice_percentage = numbers.roll(2, 5)/(10.0+_difficulty)
+	_dice_percentage = bad_numbers.roll(2, 5)/(10.0+_difficulty)
 	
 	if _dice_percentage >= .75:
 		_recipe_quality = 'success'

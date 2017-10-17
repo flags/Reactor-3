@@ -3,7 +3,7 @@ from globals import *
 import life as lfe
 
 import judgement
-import numbers
+import bad_numbers
 import speech
 import brain
 import stats

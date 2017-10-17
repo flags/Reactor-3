@@ -18,7 +18,7 @@ import logic
 import jobs
 
 import logging
-import numbers
+import bad_numbers
 import random
 import maps
 import time
@@ -98,7 +98,7 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	if consider_target_id:
 		_target = brain.knows_alife_by_id(life, consider_target_id)
 		#TODO: Judge proper distance based on weapon equip time
-		if numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)/2:
+		if bad_numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)/2:
 			if lfe.get_held_items(life, matches=[{'type': 'gun'}]):
 				_score += 1
 		elif lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
@@ -118,7 +118,7 @@ def get_ranged_combat_rating_of_target(life, life_id, inventory_check=True):
 		_score_mod = .5
 	
 	for item in _items:
-		if numbers.distance(life['pos'], target['pos']) > combat.get_engage_distance(target):
+		if bad_numbers.distance(life['pos'], target['pos']) > combat.get_engage_distance(target):
 			_score += item['accuracy']/2
 		else:
 			_score += item['accuracy']
@@ -145,7 +145,7 @@ def _calculate_trust(life, target_id):
 	_total_trust = _hard_trust+_soft_trust	
 	
 	if _hard_trust:
-		_total_trust = numbers.clip(_total_trust, _hard_trust, 10)
+		_total_trust = bad_numbers.clip(_total_trust, _hard_trust, 10)
 	
 	return _total_trust
 
@@ -196,10 +196,10 @@ def get_tension_with(life, life_id):
 	if not _target['last_seen_time'] and _target['dead']:
 		return 0
 	
-	_distance = numbers.clip(numbers.distance(life['pos'], _target['last_seen_at']), 0, sight.get_vision(life))
+	_distance = bad_numbers.clip(bad_numbers.distance(life['pos'], _target['last_seen_at']), 0, sight.get_vision(life))
 	_tension = get_ranged_combat_rating_of_target(life, life_id)/float(get_ranged_combat_rating_of_self(life))
 	
-	return abs(((sight.get_vision(life)-_distance)/float(sight.get_vision(life)))*_tension)*(100-numbers.clip(_target['last_seen_time'], 0, 100))/100.0
+	return abs(((sight.get_vision(life)-_distance)/float(sight.get_vision(life)))*_tension)*(100-bad_numbers.clip(_target['last_seen_time'], 0, 100))/100.0
 
 def get_max_tension_with(life, life_id):
 	_target = brain.knows_alife_by_id(life, life_id)
@@ -219,7 +219,7 @@ def parse_raw_judgements(life, target_id):
 	lfe.execute_raw(life, 'judge', 'trust', break_on_false=False, life_id=target_id)
 	
 	if lfe.execute_raw(life, 'judge', 'break_trust', life_id=target_id):
-		brain.knows_alife_by_id(life, target_id)['trust'] = numbers.clip(brain.knows_alife_by_id(life, target_id)['trust'], -1000, -1)
+		brain.knows_alife_by_id(life, target_id)['trust'] = bad_numbers.clip(brain.knows_alife_by_id(life, target_id)['trust'], -1000, -1)
 		return True
 	
 	return False
@@ -379,7 +379,7 @@ def _target_filter(life, target_list, escaped_only, ignore_escaped, recent_only=
 		if recent_only and _knows['last_seen_time'] >= 95:
 			continue
 		
-		if not limit_distance == -1 and _knows['last_seen_at'] and numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
+		if not limit_distance == -1 and _knows['last_seen_at'] and bad_numbers.distance(life['pos'], _knows['last_seen_at'])>limit_distance:
 			continue
 		
 		if filter_func and not filter_func(life, target):
@@ -447,7 +447,7 @@ def get_nearest_threat(life):
 	#	return False
 	
 	for target in [brain.knows_alife_by_id(life, t) for t in get_combat_targets(life)]:
-		_score = numbers.distance(life['pos'], target['last_seen_at'])
+		_score = bad_numbers.distance(life['pos'], target['last_seen_at'])
 		
 		if not _target['target'] or _score<_target['score']:
 			_target['target'] = target['life']['id']
@@ -732,7 +732,7 @@ def judge_reference(life, reference_id, known_penalty=False):
 		_chunk = maps.get_chunk(key)
 		_chunk_center = (_chunk['pos'][0]+(WORLD_INFO['chunk_size']/2),
 			_chunk['pos'][1]+(WORLD_INFO['chunk_size']/2))
-		_distance = numbers.distance(life['pos'], _chunk_center)
+		_distance = bad_numbers.distance(life['pos'], _chunk_center)
 		
 		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
 			_closest_chunk_key['key'] = key
@@ -752,7 +752,7 @@ def judge_reference(life, reference_id, known_penalty=False):
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:
-		#	_last_visit = numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
+		#	_last_visit = bad_numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
 		#	_score += _last_visit
 		#else:
 		#	_score += WORLD_INFO['ticks']/FPS
@@ -793,7 +793,7 @@ def judge_camp(life, camp, for_founding=False):
 				pos1 = [int(i) for i in _pos1.split(',')]
 				for _pos2 in camp:
 					pos2 = [int(i) for i in _pos2.split(',')]
-					_dist = numbers.distance(pos1, pos2) / WORLD_INFO['chunk_size']
+					_dist = bad_numbers.distance(pos1, pos2) / WORLD_INFO['chunk_size']
 					
 					if _dist <= 15:
 						return 0
@@ -987,7 +987,7 @@ def get_best_shelter(life):
 		if _shelter:
 			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
 			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
-			_dist = numbers.distance(life['pos'], _shelter_center)
+			_dist = bad_numbers.distance(life['pos'], _shelter_center)
 			
 			judge_chunk(life, _nearest_chunk_key)
 			
@@ -999,7 +999,7 @@ def get_best_shelter(life):
 	
 	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
 		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-		_score = numbers.distance(life['pos'], chunk_center)
+		_score = bad_numbers.distance(life['pos'], chunk_center)
 		
 		if not _best_shelter['shelter'] or _score<_best_shelter['distance']:
 			_best_shelter['shelter'] = chunk_key

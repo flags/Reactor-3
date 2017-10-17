@@ -12,7 +12,7 @@ import survival
 import movement
 import factions
 import planner
-import numbers
+import bad_numbers
 import memory
 import speech
 import combat
@@ -303,7 +303,7 @@ def remember_known_item(life, item_id):
 
 def understand(life):
 	if SETTINGS['controlling'] and not life['missions']:
-		_dist_to_player = numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
+		_dist_to_player = bad_numbers.distance(life['pos'], LIFE[SETTINGS['controlling']]['pos'])
 		
 		if _dist_to_player < 100:
 			if life['think_rate_max']>=30:
@@ -324,7 +324,7 @@ def understand(life):
 				
 				logging.debug('[Agent] %s went passive (Reason: Away from viewer)' % ' '.join(life['name']))
 			
-			life['think_rate_max'] = numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
+			life['think_rate_max'] = bad_numbers.clip(15*(((_dist_to_player-100)+30)/30), 30, 60)
 	else:
 		life['online'] = True
 		life['think_rate_max'] = 5

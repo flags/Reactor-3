@@ -8,7 +8,7 @@ import judgement
 import movement
 import survival
 import factions
-import numbers
+import bad_numbers
 import memory
 import action
 import combat
@@ -511,7 +511,7 @@ def manage_jobs(life, group_id):
 			_shelter_chunks.remove(chunk_key)
 			continue
 		
-		if numbers.distance(life['pos'], chunks.get_chunk(chunk_key)['pos'])>50:
+		if bad_numbers.distance(life['pos'], chunks.get_chunk(chunk_key)['pos'])>50:
 			continue
 		
 		_potential_guard_chunk_keys.append(chunk_key)
@@ -611,7 +611,7 @@ def manage_combat(life, group_id):
 		if not _enemy_focal_pos:
 			_enemy_focal_pos = _existing_targets[target_id]['pos'][:]
 		else:
-			_enemy_focal_pos = numbers.lerp_velocity(_enemy_focal_pos, _existing_targets[target_id]['pos'], 0.5)
+			_enemy_focal_pos = bad_numbers.lerp_velocity(_enemy_focal_pos, _existing_targets[target_id]['pos'], 0.5)
 		
 		if target_id in _checked_targets:
 			continue
@@ -637,7 +637,7 @@ def manage_combat(life, group_id):
 	if _enemy_focal_pos:
 		lfe.clear_ticker(life, 'group_command_reset')
 		
-		if not _last_focal_point or numbers.distance(_enemy_focal_pos, _last_focal_point)>30:
+		if not _last_focal_point or bad_numbers.distance(_enemy_focal_pos, _last_focal_point)>30:
 			_hostile_chunks = chunks.get_visible_chunks_from((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1])), 2), life['vision_max']*1.5)
 			
 			flag(life, group_id, 'hostile_chunks', _hostile_chunks)
@@ -680,8 +680,8 @@ def manage_combat(life, group_id):
 		_unchecked_members = get_group(life, group_id)['members'][:]
 		
 		for chunk_key in _orig_visible_chunks:
-			_distance = numbers.distance((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1]))), chunks.get_chunk(chunk_key)['pos'])
-			_distance *= numbers.clip(numbers.distance(life['pos'], _enemy_focal_pos), 1, 35)/35.0
+			_distance = bad_numbers.distance((int(round(_enemy_focal_pos[0])), int(round(_enemy_focal_pos[1]))), chunks.get_chunk(chunk_key)['pos'])
+			_distance *= bad_numbers.clip(bad_numbers.distance(life['pos'], _enemy_focal_pos), 1, 35)/35.0
 			
 			if chunk_key in _visible_chunks:
 				_distance *= 2
@@ -693,7 +693,7 @@ def manage_combat(life, group_id):
 				_target = brain.knows_alife_by_id(life, member_id)
 				
 				if _target['last_seen_time'] <= 25 and chunks.get_chunk_key_at(_target['last_seen_at']) == chunk_key:
-					_distance *= (2.5*(1-(numbers.clip(_target['last_seen_time'], 0, 25)/25.0)))
+					_distance *= (2.5*(1-(bad_numbers.clip(_target['last_seen_time'], 0, 25)/25.0)))
 			
 			if _distance>_distant_chunk['distance']:
 				_distant_chunk['distance'] = _distance

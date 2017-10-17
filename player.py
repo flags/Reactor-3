@@ -7,7 +7,7 @@ import graphics as gfx
 
 import crafting
 import worldgen
-import numbers
+import bad_numbers
 import weapons
 import dialog
 import timers
@@ -199,7 +199,7 @@ def handle_input():
 			if not 'ON_ACTIVATE' in ITEMS[item_uid]['flags']:
 				continue
 			
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], ITEMS[item_uid]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], ITEMS[item_uid]['pos'])>1:
 				continue
 			
 			_nearby_items.append(menus.create_item('single', _item['name'], None, icon=_item['icon'], id=item_uid))
@@ -711,7 +711,7 @@ def handle_input():
 			
 		#Sue me.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
 			_items.append(menus.create_item('single', ' '.join(LIFE[life_id]['name']), None, target=life_id))
@@ -794,7 +794,7 @@ def handle_input():
 			
 		#Sue me again.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
 			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
@@ -1275,7 +1275,7 @@ def inventory_fire_action(entry):
 		    'target_id': entry['target']['id'],
 		    'limb': entry['limb']},
 			5000-i,
-		     delay=numbers.clip(i, 0, 1)*3)
+		     delay=bad_numbers.clip(i, 0, 1)*3)
 		
 	LIFE[SETTINGS['controlling']]['targeting'] = None
 	life.focus_on(LIFE[SETTINGS['controlling']])
@@ -2215,8 +2215,8 @@ def create_wound_menu(target):
 				                                  _status,
 				                                  target=target,
 				                                  limb=wound['limb'],
-				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)),
-				                                         tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)/2))))
+				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, bad_numbers.clip(_cut_amount, 0.4, 1)),
+				                                         tcod.color_lerp(tcod.white, tcod.crimson, bad_numbers.clip(_cut_amount, 0.4, 1)/2))))
 				_has_wound = True
 	
 	if not _has_wound:

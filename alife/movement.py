@@ -4,7 +4,7 @@ import life as lfe
 
 import references
 import weapons
-import numbers
+import bad_numbers
 import combat
 import speech
 import chunks
@@ -27,7 +27,7 @@ def position_to_attack(life, target, engage_distance):
 	
 	_target_positions, _zones = combat.get_target_positions_and_zones(life, [target])
 	_can_see = alife.sight.can_see_position(life, _target_positions[0], get_path=True)
-	_distance = numbers.distance(life['pos'], _target_positions[0])
+	_distance = bad_numbers.distance(life['pos'], _target_positions[0])
 	
 	if _can_see and len(_can_see)<engage_distance*.85:
 		if life['path']:
@@ -113,7 +113,7 @@ def position_to_attack(life, target, engage_distance):
 	return True
 
 def travel_to_position(life, pos, stop_on_sight=False, force=False):
-	if not numbers.distance(life['pos'], pos):
+	if not bad_numbers.distance(life['pos'], pos):
 		return True
 	
 	if stop_on_sight and sight.can_see_position(life, pos, get_path=True, ignore_z=True):
@@ -195,8 +195,8 @@ def search_for_target(life, target_id):
 		return False
 	
 	_lowest = {'score': -1, 'pos': None}
-	_x_top_left = numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
-	_y_top_left = numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
+	_x_top_left = bad_numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
+	_y_top_left = bad_numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
 	
 	for x in range(0, _size):
 		_x = _x_top_left+x
@@ -226,7 +226,7 @@ def search_for_target(life, target_id):
 		if travel_to_position(life, (x, y, _know['last_seen_at'][2]), stop_on_sight=False):
 			_search_map[_y, _x] = 0
 		
-		brain.flag(life, 'search_time', numbers.clip(numbers.distance(life['pos'], (x, y))*.75, 5, 16))
+		brain.flag(life, 'search_time', bad_numbers.clip(bad_numbers.distance(life['pos'], (x, y))*.75, 5, 16))
 	else:
 		_know['escaped'] = 2
 
@@ -311,7 +311,7 @@ def hide(life, targets):
 		for target_id in targets:
 			_target = brain.knows_alife_by_id(life, target_id)
 
-			if numbers.distance(_target['last_seen_at'], pos)<4:
+			if bad_numbers.distance(_target['last_seen_at'], pos)<4:
 				_can_see_positions.remove(pos)
 				break
 
@@ -346,7 +346,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	for item in _nearby:
 		_item = brain.get_remembered_item(life, item)
 		_score = _item['score']
-		_score -= numbers.distance(life['pos'], ITEMS[item]['pos'])
+		_score -= bad_numbers.distance(life['pos'], ITEMS[item]['pos'])
 		
 		if not _highest['item'] or _score > _highest['score']:
 			_highest['score'] = _score
@@ -389,7 +389,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 
 def find_target(life, target, distance=5, follow=False, call=True):
 	_target = brain.knows_alife_by_id(life, target)
-	_dist = numbers.distance(life['pos'], _target['last_seen_at'])
+	_dist = bad_numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	_can_see = sight.can_see_target(life, target)
 	if _can_see and _dist<=distance:

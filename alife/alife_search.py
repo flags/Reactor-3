@@ -4,7 +4,7 @@ import life as lfe
 
 import judgement
 import movement
-import numbers
+import bad_numbers
 import speech
 import camps
 import brain

@@ -8,7 +8,7 @@ import sight
 import maps
 
 import logging
-import numbers
+import bad_numbers
 import random
 import time
 
@@ -140,7 +140,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 		
 		if lost_method == 'furthest':
 			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-			_score = numbers.distance(life['pos'], chunk_center)
+			_score = bad_numbers.distance(life['pos'], chunk_center)
 			
 			if ignore_starting and chunk_key == lfe.get_current_chunk_id(life):
 				continue
@@ -161,7 +161,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 #			continue
 #		
 #		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-#		_distance = numbers.distance(life['pos'], chunk_center)
+#		_distance = bad_numbers.distance(life['pos'], chunk_center)
 #		
 #		if not _nearest['key'] or _distance<_nearest['distance']:
 #			_nearest['distance'] = _distance
@@ -210,7 +210,7 @@ def get_nearest_position_in_chunk(position, chunk_id):
 	_closest = {'pos': None, 'score': 0}
 	
 	for pos in get_walkable_areas(chunk_id):
-		_dist = numbers.distance(position, pos)
+		_dist = bad_numbers.distance(position, pos)
 		
 		if not _closest['pos'] or _dist<_closest['score']:
 			_closest['pos'] = pos
@@ -227,7 +227,7 @@ def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 				continue
 			
 			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-			_dist = numbers.distance(pos, chunk_center)
+			_dist = bad_numbers.distance(pos, chunk_center)
 			
 			if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
 				_nearest_chunk['distance'] = _dist
@@ -238,7 +238,7 @@ def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 	
 	for chunk_key in chunks:
 		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
-		_dist = numbers.distance(pos, chunk_center)
+		_dist = bad_numbers.distance(pos, chunk_center)
 		
 		if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
 			_nearest_chunk['distance'] = _dist

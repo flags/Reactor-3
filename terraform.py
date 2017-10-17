@@ -20,7 +20,7 @@ import language
 import maputils
 import profiles
 import weather
-import numbers
+import bad_numbers
 import mapgen
 import items
 import zones
@@ -100,8 +100,8 @@ def regenerate_world(build_test=False):
 
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
-	CAMERA_POS[0] = numbers.clip(pos[0]-(WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
-	CAMERA_POS[1] = numbers.clip(pos[1]-(WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-WINDOW_SIZE[1])
+	CAMERA_POS[0] = bad_numbers.clip(pos[0]-(WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
+	CAMERA_POS[1] = bad_numbers.clip(pos[1]-(WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]
 	
 	if not _orig_pos == CAMERA_POS:

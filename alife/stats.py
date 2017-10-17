@@ -13,7 +13,7 @@ import sight
 import brain
 import zones
 
-import numbers
+import bad_numbers
 import logging
 import random
 
@@ -66,7 +66,7 @@ def desires_first_contact_with(life, life_id):
 		
 		if _leader:
 			#TODO: #judgement Placeholder for future logic.
-			if numbers.distance(life['pos'], _leader['life']['pos']) < 100:
+			if bad_numbers.distance(life['pos'], _leader['life']['pos']) < 100:
 				return False
 	
 	if life['stats']['motive_for_crime']>=4:
@@ -190,13 +190,13 @@ def battle_cry(life):
 		lfe.say(life, _battle_cry_action, action=True)
 
 def get_melee_skill(life):
-	return numbers.clip((life['stats']['melee'])/10.0, 0.1, 1)
+	return bad_numbers.clip((life['stats']['melee'])/10.0, 0.1, 1)
 
 def get_firearm_accuracy(life):
-	return numbers.clip((life['stats']['firearms'])/10.0, 0.35, 1)
+	return bad_numbers.clip((life['stats']['firearms'])/10.0, 0.35, 1)
 
 def get_recoil_recovery_rate(life):
-	return numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.2
+	return bad_numbers.clip(life['stats']['firearms']/10.0, 0.4, 1)*.2
 
 def get_antisocial_percentage(life):
 	return life['stats']['introversion']/float(MAX_INTROVERSION)
@@ -314,7 +314,7 @@ def is_nervous(life, life_id):
 	if not lfe.execute_raw(life, 'judge', 'nervous', life_id=life_id):
 		return False
 	
-	_dist = numbers.distance(life['pos'], LIFE[life_id]['pos'])
+	_dist = bad_numbers.distance(life['pos'], LIFE[life_id]['pos'])
 	
 	if _dist <= sight.get_vision(LIFE[life_id])/2:
 		return True
@@ -375,7 +375,7 @@ def is_confident(life):
 		
 		if _knows['last_seen_time']>30:
 			if brain.get_alife_flag(life, target_id, 'threat_score'):
-				_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
+				_recent_mod = 1-(bad_numbers.clip(_knows['last_seen_time'], 0, 300)/300.0)
 				_score = brain.get_alife_flag(life, target_id, 'threat_score')
 				_friendly_confidence += _score*_recent_mod
 			else:
@@ -396,7 +396,7 @@ def is_confident(life):
 		if _knows['last_seen_time']:
 			if brain.get_alife_flag(life, target_id, 'threat_score'):
 				if _knows['last_seen_time']>50:
-					_recent_mod = 1-(numbers.clip(_knows['last_seen_time'], 0, 600)/600.0)
+					_recent_mod = 1-(bad_numbers.clip(_knows['last_seen_time'], 0, 600)/600.0)
 				else:
 					_recent_mod = 1
 				
@@ -428,7 +428,7 @@ def is_threat_too_close(life):
 		return False
 	
 	_danger_close_range = int(lfe.execute_raw(life, 'safety', 'danger_close_range'))
-	if numbers.distance(life['pos'], _knows['last_seen_at'])<_danger_close_range:
+	if bad_numbers.distance(life['pos'], _knows['last_seen_at'])<_danger_close_range:
 		return True
 	
 	return False
@@ -439,7 +439,7 @@ def has_threat_in_combat_range(life):
 	for target_id in judgement.get_threats(life):
 		_target = brain.knows_alife_by_id(life, target_id)
 		
-		if numbers.distance(life['pos'], _target['last_seen_at']) <= _engage_distance:
+		if bad_numbers.distance(life['pos'], _target['last_seen_at']) <= _engage_distance:
 			return True
 	
 	return False
@@ -601,7 +601,7 @@ def wants_alignment_change(life, life_id):
 	return None
 
 def distance_from_pos_to_pos(life, pos1, pos2):
-	return numbers.distance(pos1, pos2)
+	return bad_numbers.distance(pos1, pos2)
 
 def get_goal_alignment_for_target(life, life_id):
 	_genuine = 100

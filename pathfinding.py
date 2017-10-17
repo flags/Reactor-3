@@ -5,7 +5,7 @@ import zones as zns
 import life as lfe
 
 import render_los
-import numbers
+import bad_numbers
 import zones
 import alife
 import numpy
@@ -206,7 +206,7 @@ def short_path(life, start, end):
 	_s = time.time()
 	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
 	
-	if numbers.distance(start, end)>30:
+	if bad_numbers.distance(start, end)>30:
 		return False
 	
 	if not _line:
@@ -245,7 +245,7 @@ def create_path(life, start, end, zones, ignore_chunk_path=False):
 	if _shortpath:
 		return _shortpath
 	
-	if len(zones) == 1 and (numbers.distance(start, end) >= 100 and not ignore_chunk_path):
+	if len(zones) == 1 and (bad_numbers.distance(start, end) >= 100 and not ignore_chunk_path):
 		_chunk_path = {'path': chunk_path(life, start, end, zones),
 		               'start': start,
 		               'end': end,

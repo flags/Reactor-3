@@ -7,7 +7,7 @@ import judgement
 import language
 import survival
 import movement
-import numbers
+import bad_numbers
 import speech
 import chunks
 import groups
@@ -70,7 +70,7 @@ def _get_nearest_known_camp(life):
 		_key = references.find_nearest_key_in_reference(life, get_camp(camp['id'])['reference'])
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
 		
-		_distance = numbers.distance(life['pos'], _center)
+		_distance = bad_numbers.distance(life['pos'], _center)
 		
 		if not _nearest_camp['camp'] or _distance>_nearest_camp['score']:
 			_nearest_camp['camp'] = camp

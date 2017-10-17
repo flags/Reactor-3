@@ -2,7 +2,7 @@ from globals import MAP_SIZE, MAP_WINDOW_SIZE, WORLD_INFO, SETTINGS, LIFE
 
 import graphics as gfx
 
-import numbers
+import bad_numbers
 import maps
 
 import threading
@@ -25,10 +25,10 @@ class ChunkHandler(threading.Thread):
 		self.last_checked = WORLD_INFO['ticks']
 		
 		for life in [l for l in LIFE.values() if l['online']]:
-			_x_min = numbers.clip(life['pos'][0]-MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1-MAP_WINDOW_SIZE[0])
-			_y_min = numbers.clip(life['pos'][1]-MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]-1-MAP_WINDOW_SIZE[1])
-			_x_max = numbers.clip(life['pos'][0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1)
-			_y_max = numbers.clip(life['pos'][1]+MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]-1)
+			_x_min = bad_numbers.clip(life['pos'][0]-MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1-MAP_WINDOW_SIZE[0])
+			_y_min = bad_numbers.clip(life['pos'][1]-MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]-1-MAP_WINDOW_SIZE[1])
+			_x_max = bad_numbers.clip(life['pos'][0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1)
+			_y_max = bad_numbers.clip(life['pos'][1]+MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]-1)
 			_refresh = False
 			
 			for y in range(_y_min, _y_max, WORLD_INFO['chunk_size']):

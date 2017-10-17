@@ -4,7 +4,7 @@ import libtcodpy as tcod
 import graphics as gfx
 
 import fast_dijkstra
-import numbers
+import bad_numbers
 import alife
 import maps
 import smp

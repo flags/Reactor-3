@@ -1,9 +1,9 @@
 #Accept walls and understand unpassable terrain
 #Easily recalcuate map
 
-from numbers import *
+from bad_numbers import *
 import pathfinding
-import numbers
+import bad_numbers
 import numpy
 import maps
 import cProfile
@@ -11,7 +11,7 @@ import generate_dijkstra_map as fast_gen
 
 def create_dijkstra_map(center,source_map,targets):
 	#Calculate the maximum size of the of the map by testing distances to all targets
-	_farthest_distance = 10#numbers.distance(center,targets[0]['position'])
+	_farthest_distance = 10#bad_numbers.distance(center,targets[0]['position'])
 	
 	print _farthest_distance
 	
@@ -88,7 +88,7 @@ def generate_dijkstra_map(dijkstra):
 						if (x_mod,y_mod) in [(-1,-1),(1,-1),(-1,1),(-1,1)]:
 							continue
 						
-						_dist = 1#numbers.distance((_x,_y),(_xx,_yy))
+						_dist = 1#bad_numbers.distance((_x,_y),(_xx,_yy))
 						
 						_map_y_pos = (_real_y)+y_mod
 						
@@ -144,7 +144,7 @@ def draw_dijkstra(dijkstra,path=None):
 					continue
 				#else:
 				#	print '.',
-				_n = str(numbers.clip(abs(int(dijkstra['map'][y,x])),0,41))
+				_n = str(bad_numbers.clip(abs(int(dijkstra['map'][y,x])),0,41))
 				
 				if len(_n)==1:
 					print '%s ' % _n,
