@@ -1,6 +1,22 @@
 Reactor 3
 =========
 
+Note
+----
+
+Please grab the `unstable` branch of the game when cloning. Some changes to
+Numpy have rendered the game unplayable due to a file conflict and I've renamed
+that file on that branch only. Also, **delete all instances of `numbers.pyc`**.
+
+I stopped working on this in 2014, but a successor is being privately developed
+using a new framework written in C. I will post on Reddit's `roguelike` or
+`roguelikedev` subforums eventually.
+
+Please do not use this game's code as a guide for working with Python / libtcod.
+I had never developed a project this size before and was learning along the way.
+R3 accomplished what it did via brute force and creative engineering. I don't
+recommend that way of working.
+
 What is Reactor 3?
 ------------------
 Reactor 3 is best described as a mix S.T.A.L.K.E.R. and Fallout with the additon of procedurally generated elements.
