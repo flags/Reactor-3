@@ -60,9 +60,6 @@ def get_announce_list(life):
 	return [life['know'][i]['life'] for i in life['know'] if life['know'][i]['score']>0]
 
 def communicate(life, gist, msg=None, radio=False, matches=[], **kvargs):
-	if 'target' in kvargs:
-		logging.warning('Deprecated keyword in speech.communicate(): target')
-	
 	lfe.create_conversation(life, gist, msg=msg, radio=radio, matches=matches, **kvargs)
 	lfe.create_and_update_self_snapshot(life)
 

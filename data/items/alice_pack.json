@@ -6,7 +6,7 @@
 "description": "All-purpose Lightweight Individual Carrying Equipment.",
 "attaches_to": "chest",
 "flags": "CAN_WEAR|CAN_BURN|CAN_SOAK",
-"size": "9x9",
-"capacity": "9x9",
+"size": "7x7",
+"capacity": "7x7",
 "thickness": 3,
 "material": "cloth"}

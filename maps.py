@@ -5,7 +5,7 @@ import graphics as gfx
 import life as lfe
 
 import maputils
-import numbers
+import bad_numbers
 import drawing
 import effects
 import weather
@@ -61,8 +61,8 @@ def reload_slices():
 		#logging.debug('Loading slice: %s' % _slice['id'])
 		
 		_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]		
-		_size[0] = numbers.clip(_size[0], 1, MAP_SIZE[0])
-		_size[1] = numbers.clip(_size[1], 1, MAP_SIZE[1])
+		_size[0] = bad_numbers.clip(_size[0], 1, MAP_SIZE[0])
+		_size[1] = bad_numbers.clip(_size[1], 1, MAP_SIZE[1])
 			
 		_slice['_map'] = zones.create_map_array(size=_size)
 		
@@ -261,6 +261,9 @@ def cache_all_clusters():
 			load_cluster(_cluster_key, base_dir=SETTINGS['base_dir'])
 
 def load_cluster_at_position_if_needed(position):
+	if not 'base_dir' in SETTINGS:
+		return False
+	
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
 	
 	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,
@@ -365,8 +368,8 @@ def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
-		_x = numbers.clip(light['pos'][0]-(size[0]/2),0,MAP_SIZE[0])
-		_y = numbers.clip(light['pos'][1]-(size[1]/2),0,MAP_SIZE[1])
+		_x = bad_numbers.clip(light['pos'][0]-(size[0]/2),0,MAP_SIZE[0])
+		_y = bad_numbers.clip(light['pos'][1]-(size[1]/2),0,MAP_SIZE[1])
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
@@ -399,12 +402,12 @@ def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 		
 		sqr_distance = (x - (_render_x))**2.0 + (y - (_render_y))**2.0
 		
-		brightness = numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
+		brightness = bad_numbers.clip(random.uniform(light['brightness']*light['shake'], light['brightness']), 0.01, 50) / sqr_distance
 		brightness *= los
 		#brightness *= LOS_BUFFER[0]
 		
 		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
-		#_mod = numbers.clip(_mod-1, 0, 1)
+		#_mod = bad_numbers.clip(_mod-1, 0, 1)
 		#(255*_mod, 165*_mod, 0*_mod)
 		#print brightness
 		#light['brightness'] = 25
@@ -466,8 +469,8 @@ def render_map_slices():
 				gfx.blit_tile_to_console(SETTINGS['map_slices'][z], x, y, WORLD_INFO['map'][x][y][z])
 
 def fast_draw_map():
-	_CAM_X = numbers.clip(CAMERA_POS[0], 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
-	_CAM_Y = numbers.clip(CAMERA_POS[1], 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
+	_CAM_X = bad_numbers.clip(CAMERA_POS[0], 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])
+	_CAM_Y = bad_numbers.clip(CAMERA_POS[1], 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])
 	
 	tcod.console_blit(SETTINGS['map_slices'][2], _CAM_X, _CAM_Y, MAP_WINDOW_SIZE[0], MAP_WINDOW_SIZE[1], MAP_WINDOW, 0, 0)
 
@@ -606,8 +609,8 @@ def create_position_maps():
 def create_search_map(life, pos, size):
 	_map = numpy.ones((size, size))
 	
-	_x_top_left = numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
-	_y_top_left = numbers.clip(pos[1]-(size/2), 0, MAP_SIZE[1])
+	_x_top_left = bad_numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
+	_y_top_left = bad_numbers.clip(pos[1]-(size/2), 0, MAP_SIZE[1])
 	
 	for x in range(0, size):
 		_x = _x_top_left+x
@@ -693,10 +696,10 @@ def update_chunk_map():
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 
 def draw_chunk_map(life=None, show_faction_ownership=False):
-	_x_min = numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
-	_y_min = numbers.clip(CAMERA_POS[1]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
-	_x_max = numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
-	_y_max = numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
+	_x_min = bad_numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_min = bad_numbers.clip(CAMERA_POS[1]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
+	_x_max = bad_numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
+	_y_max = bad_numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
 	
 	_life_chunk_key = None
 	

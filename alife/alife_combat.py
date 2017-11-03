@@ -4,7 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import judgement
-import numbers
+import bad_numbers
 import combat
 import speech
 import sight

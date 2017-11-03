@@ -1,6 +1,6 @@
 from globals import *
 
-import numbers
+import bad_numbers
 
 import random
 
@@ -30,7 +30,7 @@ def create_background(life):
 	WAS_ADOPTED = ((random.randint(0, 1) * (not HAS_BIRTH_PARENTS)) == 1)
 	
 	#1 - 6 (ABSENT - STRICT)
-	PARENTING_QUALITY = numbers.roll(2, 3) * (HAS_BIRTH_PARENTS or WAS_ADOPTED)
+	PARENTING_QUALITY = bad_numbers.roll(2, 3) * (HAS_BIRTH_PARENTS or WAS_ADOPTED)
 	
 	#BOOL (WAS BULLIED)
 	BULLIED = (random.randint(0, 1) == 1)
@@ -39,7 +39,7 @@ def create_background(life):
 	FOUGHT_BACK = (random.randint(0, 1) == 1)
 	
 	#1 - 10 (DROP OUT < 5, GRADUATED)
-	GRADUATED = (numbers.roll(HAS_BIRTH_PARENTS+WAS_ADOPTED, 5)>=5)
+	GRADUATED = (bad_numbers.roll(HAS_BIRTH_PARENTS+WAS_ADOPTED, 5)>=5)
 	
 	#BOOL (STREET SMART)
 	STREET_SMART = ((random.randint(0, 1) * (not GRADUATED)) == 1)
@@ -48,53 +48,53 @@ def create_background(life):
 	MAX_STREET_SMARTS = 1 + STREET_SMART
 	
 	#1 - 10 (NUMBERS??? - MATHEMATICIAN)
-	MATHEMATICS = numbers.roll(MAX_BOOK_SMART, 5)
+	MATHEMATICS = bad_numbers.roll(MAX_BOOK_SMART, 5)
 	
 	#1 - 10 (CAN'T READ - SPEEDREADER)
-	READING = numbers.roll(MAX_BOOK_SMART, 5)
+	READING = bad_numbers.roll(MAX_BOOK_SMART, 5)
 	
 	#1 - 10 (CLUELESS - DIY MASTER)
-	ENGINEERING = numbers.roll(MAX_BOOK_SMART, 5)
+	ENGINEERING = bad_numbers.roll(MAX_BOOK_SMART, 5)
 	
 	#1 - 10 (SCARY GUNS - I LOVE GUNS)
-	FIREARMS = numbers.roll(MAX_STREET_SMARTS, 5)
+	FIREARMS = bad_numbers.clip(bad_numbers.roll(MAX_STREET_SMARTS, 5), 5, 10)
 	
 	#1 - 10 (SLAPPER - MMA CHAMPION)
-	MELEE = numbers.roll(FOUGHT_BACK+STREET_SMART, 5)
+	MELEE = bad_numbers.roll(FOUGHT_BACK+STREET_SMART, 5)
 	
 	#1 - 10 (CLUELESS - WALL STREET)
-	TRADING = numbers.roll((MAX_STREET_SMARTS+MAX_BOOK_SMART) - (MATHEMATICS<5), 2)
+	TRADING = bad_numbers.roll((MAX_STREET_SMARTS+MAX_BOOK_SMART) - (MATHEMATICS<5), 2)
 	
 	#BOOL (IS LEADER)
-	IS_LEADER = (numbers.roll((2<PARENTING_QUALITY<=4 or FOUGHT_BACK)+(GRADUATED or STREET_SMART), 4)>=4)
+	IS_LEADER = (bad_numbers.roll((2<PARENTING_QUALITY<=4 or FOUGHT_BACK)+(GRADUATED or STREET_SMART), 4)>=4)
 	
 	#BOOL (SELF ABSORBED)
-	SELF_ABSORBED = (numbers.roll((PARENTING_QUALITY>=5)+(MAX_BOOK_SMART==1), 5)>=7)
+	SELF_ABSORBED = (bad_numbers.roll((PARENTING_QUALITY>=5)+(MAX_BOOK_SMART==1), 5)>=7)
 	
 	#BOOL (LONE WOLF)
-	LONE_WOLF = ((numbers.roll(SELF_ABSORBED+STREET_SMART, 5) * (not IS_LEADER))>=5)
+	LONE_WOLF = ((bad_numbers.roll(SELF_ABSORBED+STREET_SMART, 5) * (not IS_LEADER))>=5)
 	
 	#1 - 10 (ADHD - PATIENCE OF A SAINT)
-	PATIENCE = numbers.roll((GRADUATED or STREET_SMART)+(READING>=5 or PARENTING_QUALITY>=3), 5)
+	PATIENCE = bad_numbers.roll((GRADUATED or STREET_SMART)+(READING>=5 or PARENTING_QUALITY>=3), 5)
 
 	#0 - 3 (PERSONALITY TOTALS)
 	INTROVERSION = LONE_WOLF+(not HAS_BIRTH_PARENTS and not WAS_ADOPTED)+(not STREET_SMART)+(BULLIED and not FOUGHT_BACK)
 	EXTROVERSION = 3-INTROVERSION
 	
 	#1 - 10 (INNOCENT - GANG LEADER)
-	MOTIVE_FOR_CRIME = numbers.roll((READING<7)+(FIREARMS>6 or MELEE>5)+(TRADING>5 or SELF_ABSORBED)+(not LONE_WOLF)+(BULLIED or IS_LEADER), 2)
+	MOTIVE_FOR_CRIME = bad_numbers.roll((READING<7)+(FIREARMS>6 or MELEE>5)+(TRADING>5 or SELF_ABSORBED)+(not LONE_WOLF)+(BULLIED or IS_LEADER), 2)
 	
 	#1 - 9 (BARRY - DAVE)
-	MOTIVE_FOR_WEALTH = numbers.roll((TRADING>4)+(MATHEMATICS>4)+(PATIENCE>5 or IS_LEADER), 3)
+	MOTIVE_FOR_WEALTH = bad_numbers.roll((TRADING>4)+(MATHEMATICS>4)+(PATIENCE>5 or IS_LEADER), 3)
 	
 	#1 - 9 (BARRY - DAVE)
-	MOTIVE_FOR_SURVIVAL = numbers.roll((FIREARMS>5 or MOTIVE_FOR_WEALTH<5)+(MELEE>5 or PATIENCE>5)+(ENGINEERING>5 or IS_LEADER), 3)
+	MOTIVE_FOR_SURVIVAL = bad_numbers.roll((FIREARMS>5 or MOTIVE_FOR_WEALTH<5)+(MELEE>5 or PATIENCE>5)+(ENGINEERING>5 or IS_LEADER), 3)
 	
 	#1 - 10 (ANTISOCIAL FREAK - "A REAL RAGER")
-	SOCIABILITY = numbers.roll((not SELF_ABSORBED) + (not LONE_WOLF)+(EXTROVERSION>0)+(IS_LEADER*2), 2)
+	SOCIABILITY = bad_numbers.roll((not SELF_ABSORBED) + (not LONE_WOLF)+(EXTROVERSION>0)+(IS_LEADER*2), 2)
 	
 	#1 - 10 (TALKS TO STRANGERS - FORT KNOX)
-	TRUSTINESS = numbers.roll((LONE_WOLF)+(TRADING>4)+(MOTIVE_FOR_WEALTH>4)+(not SELF_ABSORBED)+(EXTROVERSION>1), 2)
+	TRUSTINESS = bad_numbers.roll((LONE_WOLF)+(TRADING>4)+(MOTIVE_FOR_WEALTH>4)+(not SELF_ABSORBED)+(EXTROVERSION>1), 2)
 	
 	#STRING (INTENTION)
 	# FORTUNE
@@ -158,7 +158,7 @@ def create_background(life):
 	if MATHEMATICS>=5:
 		HISTORY.append('Is good at math')
 	elif MATHEMATICS <= 2:
-		HISTORY.append('Is bad with numbers')
+		HISTORY.append('Is bad with bad_numbers')
 	
 	if READING>=5:
 		HISTORY.append('Can read very well')

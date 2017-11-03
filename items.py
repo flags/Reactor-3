@@ -5,7 +5,7 @@ import graphics as gfx
 import scripting
 import maputils
 import drawing
-import numbers
+import bad_numbers
 import effects
 import timers
 import alife
@@ -189,6 +189,7 @@ def create_item(name, position=[0,0,2], item=None):
 	item['speed'] = 0
 	
 	add_to_chunk(item)
+	maps.load_cluster_at_position_if_needed(position)
 	ITEMS[item['uid']] = item
 	ACTIVE_ITEMS.add(item['uid'])
 	
@@ -309,9 +310,12 @@ def get_items_at(position, check_bodies=False):
 	
 	for _item in _chunk['items']:
 		if not _item in ITEMS:
-			continue
+			continue		
 		
 		item = ITEMS[_item]
+		
+		if item['name'] == 'gib':
+			continue
 		
 		if is_item_owned(_item):
 			continue
@@ -327,7 +331,7 @@ def get_items_at(position, check_bodies=False):
 			
 		#Sue me again.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
 			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
@@ -361,7 +365,7 @@ def get_name(item):
 
 def move(item, direction, speed, friction=0.05, _velocity=0):
 	"""Sets new velocity for an item. Returns nothing."""
-	velocity = numbers.velocity(direction, speed)
+	velocity = bad_numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
 	item['speed'] = speed
@@ -531,7 +535,7 @@ def explode(item):
 		gfx.message('%s explodes!' % get_name(item))
 		logic.show_event('%s explodes!' % get_name(item), item=item, delay=0)
 		
-	#elif numbers.distance(
+	#elif bad_numbers.distance(
 	
 	#TODO: Dirty hack
 	for life_id in LIFE:
@@ -540,16 +544,16 @@ def explode(item):
 		if not _limbs:
 			continue
 		
-		_force = numbers.clip((item['damage']['force']*2)-numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
+		_force = bad_numbers.clip((item['damage']['force']*2)-bad_numbers.distance(LIFE[life_id]['pos'], item['pos']), 0, 100)
 		
 		if not _force:
 			continue
 		
 		_known_item = alife.brain.remembers_item(LIFE[life_id], item)
-		_direction = numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
+		_direction = bad_numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
 		
 		#TODO: Intelligent(?) limb groups?
-		_distance = numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
+		_distance = bad_numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
 		
 		for i in range(_force-_distance):
 			_limb = random.choice(_limbs)
@@ -564,7 +568,7 @@ def explode(item):
 				life.memory(LIFE[life_id], 'blown_up_by', target=_known_item['last_owned_by'])
 			
 			#for _limb in _limbs:
-			life.add_wound(LIFE[life_id], _limb, force_velocity=numbers.velocity(_direction, _force*2))
+			life.add_wound(LIFE[life_id], _limb, force_velocity=bad_numbers.velocity(_direction, _force*2))
 			
 			if not _limbs:
 				break
@@ -599,7 +603,7 @@ def explode(item):
 					effects.create_fire((pos[0], pos[1], item['pos'][2]),
 					                    intensity=item['damage']['fire']/2)
 			
-				_dist = numbers.distance(item['pos'], pos)/2
+				_dist = bad_numbers.distance(item['pos'], pos)/2
 				if not random.randint(0, _dist) or not _dist:
 					effects.create_ash(pos)
 		
@@ -611,8 +615,8 @@ def explode(item):
 	delete_item(item)
 
 def collision_with_solid(item, pos):
-	_x_diff = numbers.clip(item['pos'][0]-pos[0], -1, 1)
-	_y_diff = numbers.clip(item['pos'][1]-pos[1], -1, 1)
+	_x_diff = bad_numbers.clip(item['pos'][0]-pos[0], -1, 1)
+	_y_diff = bad_numbers.clip(item['pos'][1]-pos[1], -1, 1)
 	
 	if maps.is_solid(pos) and item['velocity'][2]<0:
 		#TODO: Bounce
@@ -690,7 +694,7 @@ def collision_with_solid(item, pos):
 
 def create_effects(item, pos, real_z_pos, z_min):
 	for _z in range(0, 2):
-		_z_level = numbers.clip(z_min-_z, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
+		_z_level = bad_numbers.clip(z_min-_z, 0, maputils.get_map_size(WORLD_INFO['map'])[2]-1)
 		
 		if WORLD_INFO['map'][pos[0]][pos[1]][_z_level]:
 			if int(round(real_z_pos))-_z_level<=2:
@@ -709,7 +713,7 @@ def create_effects(item, pos, real_z_pos, z_min):
 						                              random.randint(item['size'], (item['size'])+3),
 						                              color=tcod.light_crimson)
 				if 'max_speed' in item and is_moving(item):
-					effects.create_vapor(item['pos'], 5, numbers.clip(item['speed']/20, 0, 1))
+					effects.create_vapor(item['pos'], 5, bad_numbers.clip(item['speed']/20, 0, 1))
 
 def get_min_max_velocity(item):
 	if item['velocity'][0]>0:
@@ -742,7 +746,7 @@ def tick_effects(item):
 	create_effects(item, item['pos'], item['pos'][2], 2)
 
 def tick_item(item):
-	_z_max = numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
+	_z_max = bad_numbers.clip(item['pos'][2], 0, MAP_SIZE[2]-1)
 	
 	if item['type'] == 'bullet':
 		_gravity = 0
@@ -775,7 +779,7 @@ def tick_item(item):
 			
 			return False
 		
-		_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
+		_z_min = bad_numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
 		
 		collision_with_solid(item, [int(round(item['realpos'][0])), int(round(item['realpos'][1])), _z_min])
 	
@@ -804,9 +808,9 @@ def tick_item(item):
 				delete_item(item)
 				return False
 		
-		item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
-		item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
-		item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
+		item['velocity'][0] -= bad_numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
+		item['velocity'][1] -= bad_numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+		item['speed'] -= bad_numbers.clip(item['speed']*_drag, 0, 100)
 		
 		if maps.is_oob((pos[0], pos[1], int(round(item['realpos'][2])))) or maps.is_oob(item['realpos']):
 			delete_item(item)
@@ -840,7 +844,7 @@ def tick_item(item):
 		#if _break:
 		#	break
 	
-		#_z_min = numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
+		#_z_min = bad_numbers.clip(int(round(item['realpos'][2])), 0, MAP_SIZE[2]-1)
 		#if collision_with_solid(item, [pos[0], pos[1], _z_min]):
 		#	#_break = True
 		#	break
@@ -886,15 +890,15 @@ def tick_item(item):
 		_drag = item['gravity']
 		logging.warning('Improper use of gravity.')
 	
-	item['velocity'][0] -= numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
-	item['velocity'][1] -= numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
-	item['speed'] -= numbers.clip(item['speed']*_drag, 0, 100)
+	item['velocity'][0] -= bad_numbers.clip(item['velocity'][0]*_drag, _min_x_vel, _max_x_vel)
+	item['velocity'][1] -= bad_numbers.clip(item['velocity'][1]*_drag, _min_y_vel, _max_y_vel)
+	item['speed'] -= bad_numbers.clip(item['speed']*_drag, 0, 100)
 
 def tick_all_items():
 	if not WORLD_INFO['ticks'] % 16 or not ACTIVE_ITEMS:
 		if SETTINGS['controlling']:
 			for item in ITEMS.values():
-				if numbers.distance(item['pos'], LIFE[SETTINGS['controlling']]['pos'])>=OFFLINE_ALIFE_DISTANCE:
+				if bad_numbers.distance(item['pos'], LIFE[SETTINGS['controlling']]['pos'])>=OFFLINE_ALIFE_DISTANCE:
 					if item['uid'] in ACTIVE_ITEMS:
 						ACTIVE_ITEMS.remove(item['uid'])
 				elif not item['uid'] in ACTIVE_ITEMS:
@@ -903,5 +907,7 @@ def tick_all_items():
 			ACTIVE_ITEMS.update(ITEMS.keys())
 		
 	for item in ACTIVE_ITEMS.copy():
-		tick_effects(ITEMS[item])
+		if is_moving(ITEMS[item]):
+			tick_effects(ITEMS[item])
+		
 		tick_item(ITEMS[item])

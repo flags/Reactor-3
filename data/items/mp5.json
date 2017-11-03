@@ -4,7 +4,7 @@
 "icon": "m",
 "description": "A submachine gun. Effective at mid-range.",
 "flags": "",
-"size": "3x2",
+"size": "7x2",
 "feed": "magazine",
 "ammotype": "9x19mm",
 "recoil": 0.25,

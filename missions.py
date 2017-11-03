@@ -1,6 +1,7 @@
 from globals import MISSION_DIR, MISSIONS, FUNCTION_MAP, LIFE
 
 import graphics as gfx
+import life as lfe
 
 import copy
 import json
@@ -38,7 +39,7 @@ def load_mission(mission_file):
 				
 				_current_stage = int(line.split('=')[1])
 				_mission['stages'][str(_current_stage)] = {'steps': {},
-				                                      'step_index': 1}
+				                                           'step_index': 1}
 				continue
 			
 			#elif line.startswith('COMPLETE'):
@@ -111,10 +112,10 @@ def create_mission(mission_name, **kwargs):
 def create_mission_and_give(life, mission_name, target_id, **kwargs):
 	_mission = create_mission(mission_name, **kwargs)
 	
-	remember_mission(LIFE[target_id], _mission)
+	return remember_mission(LIFE[target_id], _mission)
 
 def create_mission_for_self(life, mission_name, **kwargs):
-	create_mission_and_give(life, mission_name, life['id'], **kwargs)
+	return create_mission_and_give(life, mission_name, life['id'], **kwargs)
 
 def remember_mission(life, mission):
 	_id = str(len(life['missions'])+1)
@@ -143,6 +144,13 @@ def get_active_task(life, mission_id):
 	
 	return [t for t in _mission['tasks'] if not _mission['tasks'][t]['completed']][0]
 
+def has_mission_with_name(life, mission_name):
+	for mission in life['missions'].values():
+		if mission['name'] == mission_name:
+			return True
+	
+	return False
+
 def change_task_description(life, mission_id, task_number, description):
 	_mission = life['missions'][mission_id]
 	_mission['tasks'][str(task_number)]['description'] = description
@@ -158,7 +166,7 @@ def complete_mission(life, mission_id):
 
 def exec_func(life, func, *args, **kwargs):
 	if func[0] == '!':
-		return FUNCTION_MAP[func[1:]](life, *args, **kwargs) == False
+		return not FUNCTION_MAP[func[1:]](life, *args, **kwargs)
 	
 	#try:
 	return FUNCTION_MAP[func](life, *args, **kwargs)
@@ -177,7 +185,7 @@ def do_mission(life, mission_id):
 		if _step['mode'] == 'complete':
 			complete_mission(life, mission_id)
 			
-			break
+			return False
 		
 		elif _step['mode'] in ['jump', 'loop']:
 			_stage['step_index'] = 1
@@ -187,7 +195,8 @@ def do_mission(life, mission_id):
 				
 				continue
 			else:
-				break
+				return False
+		
 		elif _step['mode'] == 'finish':
 			_mission['tasks'][_step['task']]['completed'] = True
 			_stage['step_index'] += 1
@@ -211,7 +220,6 @@ def do_mission(life, mission_id):
 				_args.append(arg)
 		
 		if _kwargs:
-			print _kwargs
 			_func = exec_func(life, _step['func'], *_args, **_kwargs)
 		else:
 			_func = exec_func(life, _step['func'], *_args)
@@ -229,8 +237,8 @@ def do_mission(life, mission_id):
 				_stage['step_index'] += 1
 				
 				continue
-			else:
-				break
+			else: #Wait
+				return True
 		
 		elif _step['mode'] == 'set':
 			_mission['flags'][_step['flag']] = _func
@@ -240,4 +248,4 @@ def do_mission(life, mission_id):
 			_stage['step_index'] += 1
 		
 		else:
-			break
+			return False

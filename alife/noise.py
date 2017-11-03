@@ -9,7 +9,7 @@ import graphics as gfx
 
 import language
 import judgement
-import numbers
+import bad_numbers
 import sight
 import brain
 
@@ -31,8 +31,8 @@ def update_targets_around_noise(life, noise):
 	_most_likely_target = {'target': None, 'last_seen_time': 0}
 	
 	if 'target' in noise and not life['id'] == noise['target']:
-		_visiblity = numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
-		_visiblity = numbers.clip(_visiblity+(numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
+		_visiblity = bad_numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
+		_visiblity = bad_numbers.clip(_visiblity+(bad_numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
 		
 		if _visiblity >= sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos']):
 			brain.meet_alife(life, LIFE[noise['target']])
@@ -45,7 +45,7 @@ def update_targets_around_noise(life, noise):
 		if not target['escaped'] or not target['last_seen_at'] or target['dead']:
 			continue
 		
-		if numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:
+		if bad_numbers.distance(target['last_seen_at'], noise['pos']) > noise['volume']:
 			continue
 		
 		if judgement.is_target_threat(life, target['life']['id']):
@@ -69,14 +69,14 @@ def _spread(noise):
 		if sight.can_see_position(alife, noise['pos']):
 			_can_see = True
 		
-		_dist = numbers.distance(noise['pos'], alife['pos'])
+		_dist = bad_numbers.distance(noise['pos'], alife['pos'])
 		
 		if _dist>noise['volume']:
 			continue
 		
 		update_targets_around_noise(alife, noise)		
 		
-		_direction_to = numbers.direction_to(alife['pos'], noise['pos'])
+		_direction_to = bad_numbers.direction_to(alife['pos'], noise['pos'])
 		_direction_string = language.get_real_direction(_direction_to)
 		
 		#TODO: Check walls between positions

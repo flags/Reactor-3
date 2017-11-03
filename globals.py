@@ -55,8 +55,8 @@ WORLD_INFO = {'map': [],
 	'chunk_map': {},
 	'camps': {},
 	'groups': {},
-    'factions': {},
-    'territories': {},
+	'factions': {},
+	'territories': {},
 	'jobs': {},
 	'references': {},
 	'reference_map': {'roads': [], 'buildings': []},
@@ -75,7 +75,7 @@ WORLD_INFO = {'map': [],
                   'rest_level': .7,
                   'last_updated': 0,
                   'tracked_alife': []},
-	'last_scheme_time': 0}
+	'next_scheme_timer': 1000}
 
 LOCKS = {}
 
@@ -201,7 +201,7 @@ SETTINGS = {'running': True,
 	'viewid': 1,
 	'active_view': 0,
 	'refresh_los': False,
-    'loading': False,
+	'loading': False,
 	'glitch_text': '',
 	'glitch_text_fade': False,
 	'glitch_text_time': 0,

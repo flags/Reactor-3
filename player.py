@@ -7,7 +7,7 @@ import graphics as gfx
 
 import crafting
 import worldgen
-import numbers
+import bad_numbers
 import weapons
 import dialog
 import timers
@@ -199,7 +199,7 @@ def handle_input():
 			if not 'ON_ACTIVATE' in ITEMS[item_uid]['flags']:
 				continue
 			
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], ITEMS[item_uid]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], ITEMS[item_uid]['pos'])>1:
 				continue
 			
 			_nearby_items.append(menus.create_item('single', _item['name'], None, icon=_item['icon'], id=item_uid))
@@ -711,7 +711,7 @@ def handle_input():
 			
 		#Sue me.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
 			_items.append(menus.create_item('single', ' '.join(LIFE[life_id]['name']), None, target=life_id))
@@ -794,7 +794,7 @@ def handle_input():
 			
 		#Sue me again.
 		for life_id in LIFE[SETTINGS['controlling']]['seen']:
-			if numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
+			if bad_numbers.distance(LIFE[SETTINGS['controlling']]['pos'], LIFE[life_id]['pos'])>1:
 				continue
 			
 			for item_uid in life.get_all_equipped_items(LIFE[life_id]):
@@ -819,18 +819,16 @@ def handle_input():
 			WORLD_INFO['time_scale'] = 12
 	
 	if INPUT['n']:
-		import missions
+		import pathfinding
 		
-		_player = LIFE[SETTINGS['controlling']]
-		
-		if _player['mission_id']:
-			missions.do_mission(_player, _player['mission_id'])
-		
-		else:
-			_mission = missions.create_mission('fetch_item', item={'type': 'gun'})
-			
-			missions.remember_mission(_player, _mission)
-			missions.activate_mission(_player, _player['missions'].keys()[0])
+		for pos in pathfinding.create_path(LIFE[SETTINGS['controlling']],
+		                        LIFE[SETTINGS['controlling']]['pos'],
+		                        (LIFE[SETTINGS['controlling']]['pos'][0]-5,
+		                         LIFE[SETTINGS['controlling']]['pos'][1]-5,
+		                         LIFE[SETTINGS['controlling']]['pos'][2]-5),
+		                        [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])]):
+			print pos
+			SELECTED_TILES[0].append((pos[0], pos[1], 2))
 	
 	#if INPUT['N']:
 	#	if not SETTINGS['kill threads']:
@@ -1277,7 +1275,7 @@ def inventory_fire_action(entry):
 		    'target_id': entry['target']['id'],
 		    'limb': entry['limb']},
 			5000-i,
-		     delay=numbers.clip(i, 0, 1)*3)
+		     delay=bad_numbers.clip(i, 0, 1)*3)
 		
 	LIFE[SETTINGS['controlling']]['targeting'] = None
 	life.focus_on(LIFE[SETTINGS['controlling']])
@@ -2217,8 +2215,8 @@ def create_wound_menu(target):
 				                                  _status,
 				                                  target=target,
 				                                  limb=wound['limb'],
-				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)),
-				                                         tcod.color_lerp(tcod.white, tcod.crimson, numbers.clip(_cut_amount, 0.4, 1)/2))))
+				                                  color=(tcod.color_lerp(tcod.white, tcod.crimson, bad_numbers.clip(_cut_amount, 0.4, 1)),
+				                                         tcod.color_lerp(tcod.white, tcod.crimson, bad_numbers.clip(_cut_amount, 0.4, 1)/2))))
 				_has_wound = True
 	
 	if not _has_wound:
@@ -2274,7 +2272,7 @@ def wound_examine(entry):
 	
 	menus.activate_menu(_menu)
 
-def create_tracking_menu():
+def create_tracking_menu(start_index=-1):
 	_player = LIFE[SETTINGS['controlling']]
 	_targets = []
 	
@@ -2284,16 +2282,20 @@ def create_tracking_menu():
 		if _target['dead']:
 			continue
 		
+		_color = life.draw_life_icon(_target['life'])
+		_tracking_color = _color[1]
+		
 		if judgement.is_tracking(_player, target_id):
-			_tracking_color = tcod.red
+			_tracking = 'x'
 		else:
-			_tracking_color = tcod.gray
+			_tracking = ' '
 		
 		_targets.append(menus.create_item('single',
-	                                       ' '.join(_target['life']['name']),
-	                                       None,
-	                                       color=(_tracking_color, tcod.color_lerp(_tracking_color, tcod.lightest_red, .85)),
-	                                       target_id=target_id))
+		                                  _tracking,
+		                                  ' '.join(_target['life']['name']),
+		                                  color=(_tracking_color, tcod.color_lerp(_tracking_color, tcod.white, .8)),
+		                                  target_id=target_id,
+		                                  menu_index=len(_targets)+1))
 	
 	if not _targets:
 		gfx.message('There is nobody to track.')
@@ -2301,11 +2303,16 @@ def create_tracking_menu():
 		return False
 	
 	_i = menus.create_menu(title='Track',
-                            menu=_targets,
-                            format_str='$k',
-                            on_select=toggle_tracking)
+	                       menu=_targets,
+	                       format_str='[$k] $v',
+	                       on_select=toggle_tracking)
 	
 	menus.activate_menu(_i)
+	
+	if start_index>=len(_targets):
+		menus.get_menu(_i)['index'] = 1
+	else:
+		menus.get_menu(_i)['index'] = start_index
 
 def toggle_tracking(entry):
 	menus.delete_active_menu()

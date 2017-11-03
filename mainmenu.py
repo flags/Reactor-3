@@ -4,7 +4,7 @@ from libtcodpy import *
 import graphics
 import worldgen
 import profiles
-import numbers
+import bad_numbers
 import mapgen
 import menus
 import maps
@@ -53,7 +53,7 @@ def draw_intro():
 			
 			_text = INTRO
 		
-		_mod = int(round(255*numbers.clip(time.time()-_title_time, 0, 1)))
+		_mod = int(round(255*bad_numbers.clip(time.time()-_title_time, 0, 1)))
 		
 		console_set_default_foreground(0, Color(_mod, _mod, _mod))
 		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, (WINDOW_SIZE[1]/2)-2, _text)
@@ -62,7 +62,7 @@ def draw_intro():
 			if not _warning_time:
 				_warning_time = time.time()
 			
-			_mod = int(round(255*numbers.clip(time.time()-_warning_time, 0, 1)))
+			_mod = int(round(255*bad_numbers.clip(time.time()-_warning_time, 0, 1)))
 		
 			console_set_default_foreground(0, Color(_mod/2, _mod/2, _mod/2))
 			console_print(0, 0, WINDOW_SIZE[1]-1, _warning_message)
@@ -71,10 +71,10 @@ def draw_intro():
 			_i = 0
 			for c in SUB_LINE:
 				_c_mod = _char_alpha[c]
-				_mod = numbers.clip(time.time()-_warning_time, 0, 1)
+				_mod = bad_numbers.clip(time.time()-_warning_time, 0, 1)
 				console_set_default_foreground(0, Color(int(round((200*_mod)*_c_mod)), 0, 0))
 				console_print(0, _i+(WINDOW_SIZE[0]/2)-len(SUB_LINE)/2, (WINDOW_SIZE[1]/2), c)
-				_char_alpha[c] = numbers.clip(_char_alpha[c]*1.015, 0, 1)
+				_char_alpha[c] = bad_numbers.clip(_char_alpha[c]*1.015, 0, 1)
 				_i += 1
 		
 		console_flush()
@@ -92,9 +92,9 @@ def clear(*args):
 			
 			_mod = random.randint(0, 10)
 			tcod.console_put_char_ex(0, x, y, chr(random.randint(0, 125)),
-			                         tcod.Color(numbers.clip(_c.r+_mod, 0, 255),
-			                                    numbers.clip(_c.g+_mod, 0, 255),
-			                                    numbers.clip(_c.b+_mod, 0, 255)),
+			                         tcod.Color(bad_numbers.clip(_c.r+_mod, 0, 255),
+			                                    bad_numbers.clip(_c.g+_mod, 0, 255),
+			                                    bad_numbers.clip(_c.b+_mod, 0, 255)),
 			                         tcod.Color(_c.r+_mod, _c.g+_mod, _c.b+_mod))
 	
 	console_flush()

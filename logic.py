@@ -6,9 +6,10 @@ import graphics as gfx
 import alife as alfe
 
 import encounters
+import artifacts
 import worldgen
 import effects
-import numbers
+import bad_numbers
 import weather
 import timers
 import dialog
@@ -120,8 +121,9 @@ def tick_world():
 		
 		logging.info('Reset wildlife spawn clock: %s' % WORLD_INFO['wildlife_spawn_interval'][0])
 	
-	#situations.form_scheme()
-	#situations.execute_scheme()
+	situations.form_scheme()
+	situations.execute_scheme()
+	artifacts.tick_fields()
 	alfe.factions.direct()
 	core.evaluate_overwatch_mood()
 	
@@ -182,7 +184,7 @@ def draw_event():
 	_i = 0
 	for line in _lines:
 		_half = len(line)/2
-		_x = numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
+		_x = bad_numbers.clip((MAP_WINDOW_SIZE[0]/2)-_half, 0, MAP_WINDOW_SIZE[0]-len(line)-1)
 		
 		gfx.blit_string(_x,
 			10+_i,

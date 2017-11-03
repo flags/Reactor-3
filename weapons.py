@@ -3,7 +3,7 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import numbers
+import bad_numbers
 import effects
 import alife
 import items
@@ -125,7 +125,7 @@ def get_accuracy(life, weapon_uid, limb=None):
 def get_bullet_scatter_to(life, position, bullet_uid):
 	bullet = ITEMS[bullet_uid]
 	
-	_travel_distance = numbers.distance(bullet['pos'], position)
+	_travel_distance = bad_numbers.distance(bullet['pos'], position)
 	
 	if _travel_distance <= 2:
 		return 0
@@ -167,9 +167,9 @@ def fire(life, target, limb=None):
 	_deviation_mod = SETTINGS['aim_difficulty']*(1-((life['stats']['firearms']/10.0)*SETTINGS['firearms_skill_mod']))
 	_direction_deviation = (_bullet_deviation*SETTINGS['aim_difficulty'])*_deviation_mod
 	
-	life['recoil'] = numbers.clip(life['recoil']+(weapon['recoil']*get_stance_recoil_mod(life)), 0.0, 1.0)
+	life['recoil'] = bad_numbers.clip(life['recoil']+(weapon['recoil']*get_stance_recoil_mod(life)), 0.0, 1.0)
 	
-	_bullet_direction = numbers.direction_to(life['pos'], target)+(random.uniform(-_direction_deviation, _direction_deviation))
+	_bullet_direction = bad_numbers.direction_to(life['pos'], target)+(random.uniform(-_direction_deviation, _direction_deviation))
 	
 	alife.noise.create(life['pos'], 120, '%s fire' % weapon['name'], 'something discharge', target=life['id'])
 	

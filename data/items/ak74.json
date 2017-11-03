@@ -4,7 +4,7 @@
 "icon": "m",
 "description": "Kalashnikov automatic. Good for long-range engagements.",
 "flags": "",
-"size": "5x2",
+"size": "9x2",
 "feed": "magazine",
 "ammotype": "5.45x39mm",
 "recoil": 0.35,

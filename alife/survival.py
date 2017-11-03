@@ -17,7 +17,7 @@ import stats
 import maps
 
 import logging
-import numbers
+import bad_numbers
 import random
 import time
 
@@ -423,7 +423,7 @@ def explore_unknown_chunks(life):
 	
 	_closest_pos = {'pos': None, 'distance': -1}
 	for pos in _walkable_area:
-		_distance = numbers.distance(life['pos'], pos)
+		_distance = bad_numbers.distance(life['pos'], pos)
 				
 		if _distance <= 1:
 			_closest_pos['pos'] = pos

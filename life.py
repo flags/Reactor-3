@@ -13,7 +13,7 @@ import contexts
 import drawing
 import logging
 import weapons
-import numbers
+import bad_numbers
 import effects
 import weather
 import random
@@ -73,7 +73,7 @@ def calculate_base_stats(life):
 	
 	life['life_flags'] = life['flags']
 	
-	stats['base_speed'] = numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
+	stats['base_speed'] = bad_numbers.clip(LIFE_MAX_SPEED-len(stats['legs']), 0, LIFE_MAX_SPEED)
 	stats['speed_max'] = stats['base_speed']
 	
 	for var in life['vars'].split('|'):
@@ -119,7 +119,7 @@ def get_max_speed(life):
 	
 	_speed += len(_legs)*2
 	
-	return numbers.clip(_speed, 0, 255)
+	return bad_numbers.clip(_speed, 0, 255)
 
 def initiate_raw(life):
 	"""Loads rawscript file for `life` from disk.""" 
@@ -450,7 +450,6 @@ def create_life(type, position=(0,0,2), name=None, map=None):
 	_life['know_items'] = {}
 	_life['known_items_type_cache'] = {}
 	_life['memory'] = []
-	_life['unchecked_memories'] = []
 	_life['known_chunks'] = {}
 	_life['known_camps'] = {}
 	_life['known_groups'] = {}
@@ -534,9 +533,6 @@ def post_save(life):
 	life['heard'] = []
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
-	
-	if not 'unchecked_memories' in life:
-		life['unchecked_memories'] = []
 	
 	for entry in life['know'].values():
 		entry['life'] = LIFE[entry['life']]
@@ -826,7 +822,7 @@ def say(life, text, action=False, volume=30, context=False, event=True):
 		_style = 'speech'
 	
 	if SETTINGS['following']:
-		#if numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
+		#if bad_numbers.distance(LIFE[SETTINGS['following']]['pos'],life['pos'])<=volume:
 		if alife.sound.can_hear(life, SETTINGS['following']):
 			if context:
 				_style = 'important'
@@ -847,7 +843,6 @@ def memory(life, gist, *args, **kvargs):
 	_entry.update(kvargs)
 	
 	life['memory'].append(_entry)
-	life['unchecked_memories'].append(_entry['id'])
 	#logging.debug('%s added a new memory: %s' % (' '.join(life['name']), gist))
 	
 	if 'target' in kvargs:
@@ -1025,7 +1020,7 @@ def can_walk_to(life, pos):
 
 def push(life, direction, speed, friction=0.05, _velocity=0):
 	"""Sets new velocity for an entity. Returns nothing."""
-	velocity = numbers.velocity(direction, speed)
+	velocity = bad_numbers.velocity(direction, speed)
 	velocity[2] = _velocity
 	
 	life['friction'] = friction
@@ -1060,8 +1055,8 @@ def calculate_velocity(life):
 		if 0<life['velocity'][1]<1 or -1<life['velocity'][1]<0:
 			life['velocity'][1] = 0
 		
-		life['velocity'][0] -= numbers.clip(life['velocity'][0]*0.2, _min_x_vel, _max_x_vel)
-		life['velocity'][1] -= numbers.clip(life['velocity'][1]*0.2, _min_y_vel, _max_y_vel)
+		life['velocity'][0] -= bad_numbers.clip(life['velocity'][0]*0.2, _min_x_vel, _max_x_vel)
+		life['velocity'][1] -= bad_numbers.clip(life['velocity'][1]*0.2, _min_y_vel, _max_y_vel)
 		
 		if not sum([abs(i) for i in life['velocity']]):
 			return False
@@ -1070,7 +1065,7 @@ def calculate_velocity(life):
 
 def walk_to(life, position):
 	clear_actions(life)
-	_pos = position[:]
+	_pos = list(position)
 	
 	if not len(position) == 3:
 		_pos.append(life['pos'][2])
@@ -1315,7 +1310,7 @@ def perform_action(life):
 					_pos = _action['goals'][0][:]
 					
 					if len(_pos)<3:
-						_pos = _action['goals'][0][:]
+						_pos = list(_action['goals'][0])
 						_pos.append(life['pos'][2])
 					
 					walk_to(life, _action['goals'][0])
@@ -1771,7 +1766,7 @@ def kill(life, injury):
 	
 	life['actions'] = []
 	if not life['pos'] == life['prev_pos'] and life['path']:
-		_walk_direction = numbers.direction_to(life['prev_pos'], life['pos'])
+		_walk_direction = bad_numbers.direction_to(life['prev_pos'], life['pos'])
 		push(life, _walk_direction, 2)
 	
 	#drop_all_items(life)
@@ -1837,14 +1832,14 @@ def tick(life):
 		if not thirst(life):
 			return False
 
-	life['recoil'] = numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0.0, 1.0)
+	life['recoil'] = bad_numbers.clip(life['recoil']-alife.stats.get_recoil_recovery_rate(life), 0.0, 1.0)
 	
 	natural_healing(life)
 	_bleeding_limbs = get_bleeding_limbs(life)
 	if _bleeding_limbs:
 		_bleed_score = sum([get_limb(life, l)['bleeding'] for l in _bleeding_limbs])*3
 		
-		if random.randint(0,50)<numbers.clip(_bleed_score, 0, 50):
+		if random.randint(0,50)<bad_numbers.clip(_bleed_score, 0, 50):
 			effects.create_splatter('blood', life['pos'])
 	
 	if life['asleep']:
@@ -1870,7 +1865,7 @@ def tick(life):
 		return True
 	
 	if get_total_pain(life)>life['pain_threshold']:
-		life['consciousness'] = numbers.clip(life['consciousness']-get_total_pain(life), 0, 100)
+		life['consciousness'] = bad_numbers.clip(life['consciousness']-get_total_pain(life), 0, 100)
 		
 		if life['consciousness'] <= 0:
 			life['consciousness'] = 0
@@ -1975,8 +1970,8 @@ def throw_item(life, item_uid, target):
 	else:
 		_drag = _item['gravity']	
 	
-	_direction = numbers.direction_to(life['pos'], target)
-	_distance = numbers.distance(_item['pos'], target)
+	_direction = bad_numbers.direction_to(life['pos'], target)
+	_distance = bad_numbers.distance(_item['pos'], target)
 	
 	#TODO: TOSS OVER WALL? THROW FASTER?
 	#_z_velocity = _distance/_distance*(1-_item['gravity'])
@@ -2187,7 +2182,7 @@ def get_item_access_time(life, item_uid):
 	if 'attaches_to' in _item:
 		_size = _size/len(_item['attaches_to'])
 	
-	_size = numbers.clip(_size, 0, 6)	
+	_size = bad_numbers.clip(_size, 0, 6)	
 	
 	if 'owner' in _item:
 		_owner = _item['owner']
@@ -2338,6 +2333,12 @@ def remove_item_from_inventory(life, item_id):
 			
 			#item['storing'].remove(_item)
 			#item['storing'].append(get_inventory_item(life,_item)['uid'])
+			if ITEMS[_item]['owner']:
+				ITEMS[_item]['owner'] = None
+			
+			ITEMS[_item]['pos'] = life['pos'][:]
+			
+			items.add_to_chunk(ITEMS[_item])
 			
 			life['inventory'].remove(_item)
 	
@@ -2738,7 +2739,7 @@ def draw_life():
 			
 			_view_list[member_id] = {'pos': _member['last_seen_at'],
 			                         'icon': '?',
-			                         'blink_rate': numbers.clip(_member['last_seen_time']/50.0, 0, 1)}
+			                         'blink_rate': bad_numbers.clip(_member['last_seen_time']/50.0, 0, 1)}
 	
 	for entry in _view_list:
 		_target = entry
@@ -3039,18 +3040,18 @@ def draw_life_info():
 		
 		if ai['id'] in _tracking_targets and alife.brain.knows_alife(life, ai)['last_seen_at']:
 			_pos = alife.brain.knows_alife(life, ai)['last_seen_at']
-			_distance = numbers.distance(life['pos'], _pos)
-			_direction = numbers.direction_to(life['pos'], _pos)
+			_distance = bad_numbers.distance(life['pos'], _pos)
+			_direction = bad_numbers.direction_to(life['pos'], _pos)
 		else:
-			_distance = numbers.distance(life['pos'], ai['pos'])
-			_direction = numbers.direction_to(life['pos'], ai['pos'])
+			_distance = bad_numbers.distance(life['pos'], ai['pos'])
+			_direction = bad_numbers.direction_to(life['pos'], ai['pos'])
 		
 		if _state == 'combat':
 			tcod.console_set_default_foreground(0, tcod.red)
 		else:
 			tcod.console_set_default_foreground(0, tcod.gray)
 		
-		_character_string = '%s %s@%s)' % (' '.join(ai['name']),
+		_character_string = '%s %s@%s' % (' '.join(ai['name']),
 		                                   language.get_real_direction(_direction, short=True).upper(),
 		                                   language.get_real_distance_string(_distance, round_up=True))
 		
@@ -3345,7 +3346,7 @@ def calculate_blood(life):
 			continue
 		
 		limb['bleeding'] = .5*(limb['bleed_mod']*float(limb['cut']))
-		limb['bleeding'] = numbers.clip(limb['bleeding'], 0, 255)
+		limb['bleeding'] = bad_numbers.clip(limb['bleeding'], 0, 255)
 		_blood += limb['bleeding']
 	
 	if _blood:
@@ -3487,17 +3488,15 @@ def sever_limb(life, limb, impact_velocity):
 	
 	if 'parent' in life['body'][limb] and 'children' in life['body'][life['body'][limb]['parent']]:
 		life['body'][life['body'][limb]['parent']]['children'].remove(limb)
-		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']
+		life['body'][life['body'][limb]['parent']]['bleeding'] += life['body'][limb]['size']*10
 		add_pain_to_limb(life, life['body'][limb]['parent'], amount=life['body'][limb]['size']*5)
 	
 	if limb in get_legs(life):
 		crawl(life, force=True)
-		say(life, 'falls over!', action=True, event=True)
+		say(life, '@n falls over!', action=True, event=True)
 	
 	set_animation(life, ['X', '!'], speed=5)
-	
-	effects.create_gib(life, '-', life['body'][limb]['size'], limb, impact_velocity)
-	
+	effects.create_gib(life, random.choice(['\\', '/', ',', '-']), life['body'][limb]['size'], limb, impact_velocity)
 	remove_limb(life, limb)
 	
 	_total_blood = calculate_max_blood(life)
@@ -3508,41 +3507,49 @@ def cut_limb(life, limb, amount=2, impact_velocity=[0, 0, 0]):
 	_limb = life['body'][limb]
 	_limb['bleeding'] += amount*float(_limb['bleed_mod'])
 	_limb['cut'] += amount
-	
 	_cut_amount = amount/float(_limb['size'])
 	_current_limb_condition = get_limb_condition(life, limb)
 	
+	if SETTINGS['controlling']:
+		_target_visibility = sight.get_visiblity_of_position(LIFE[SETTINGS['controlling']], life['pos'])
+	else:
+		_target_visibility = 1
+	
 	if not _current_limb_condition:
 		if 'CRUCIAL' in life['body'][limb]['flags']:
+			if 'player' in life:
+				return 'You are fatally wounded in the %s.' % limb
+			
 			kill(life, 'a critical blow to the %s' % limb)
 			
-			if 'player' in life:
-				return 'killing you'
-			
-			return 'killing %s' % ' '.join(life['name'])
+			return '%s is fatally wounded in the %s.' % (' '.join(life['name']), limb)
 		
 		sever_limb(life, limb, impact_velocity)
-		return 'severing it!'
+		
+		return random.choice(['%s\'s %s is destroyed!' % (life['name'][0], limb),
+		                      '%s\'s %s is completely removed!' % (life['name'][0], limb)])
 	
 	effects.create_splatter('blood', life['pos'], velocity=impact_velocity, intensity=amount)
 	
-	if 'player' in life:
-		_name = 'your'
-	else:
-		_name = ' '.join(life['name'])+'\'s'
-	
 	if _cut_amount>=.75:
-		return '%s %s %s!' % (random.choice(['devastating', 'taking a slice out of', 'ripping apart']),
-		                         _name,
-		                         limb)
-	elif _cut_amount>=.50:
-		return '%s %s %s!' % (random.choice(['cutting open', 'wounding', 'opening']),
-		                        _name,
-		                         limb)
-	else:
-		return '%s %s %s!' % (random.choice(['grazing', 'scraping']),
-		                        _name,
-		                         limb)
+		if 'player' in life:
+			return random.choice(['Your %s bleeds considerably.' % limb,
+			                      'Your %s is nearly destroyed.' % limb])
+		else:
+			return '%s\'s %s is devastated.' % (life['name'][0], limb)
+	else:# _cut_amount>=.50:
+		if 'player' in life:
+			return random.choice(['Your %s is bleeding.' % limb,
+			                      'You feel warm blood on your %s.' % limb])
+		else:
+			if _target_visibility>.8:
+				return '%s\'s %s is cut open.' % (life['name'][0], limb)
+			
+			if _target_visibility>.6:
+				return 'Blood forms on %s\'s %s.' % (life['name'][0], limb)
+			
+			return random.choice(['%s\'s grasps their %s.' % (life['name'][0], limb),
+			                      'Blood sprays from %s\'s %s.' % (life['name'][0], limb)])
 	
 	#if life.has_key('player'):
 	#	gfx.message('Your %s is severely cut!' % limb,style='damage')
@@ -3604,8 +3611,6 @@ def add_pain_to_limb(life, limb, amount=1):
 	if amount>=1.2:
 		pass_out(life, length=25*amount, reason='Unconscious')
 		
-		if not 'player' in life:
-			say(life, '@n is knocked out!', action=True, event=False)
 	elif amount>=.3:
 		noise.create(life['pos'], 30, '%s cry out in pain' % ' '.join(life['name']), 'shouting', target=life['id'], skip_on_visual=False)
 	
@@ -3656,10 +3661,9 @@ def add_wound(life, limb, cut=0, pain=0, force_velocity=[0, 0, 0], artery_ruptur
 		'cut': cut,
 		'artery_ruptured': artery_ruptured,
 		'lodged_item': lodged_item}
-	
 	_limb['wounds'].append(_injury)
 	
-	return ', '.join(_msg)
+	return ' '.join(_msg)
 
 def get_limb_stability(life, limb):
 	_limb = get_limb(life, limb)
@@ -3670,12 +3674,12 @@ def get_limb_stability(life, limb):
 	_stability = 10
 	_stability -= limb_is_cut(life, limb)
 	
-	return numbers.clip(_stability, 0, 10)/10.0
+	return bad_numbers.clip(_stability, 0, 10)/10.0
 
 def get_limb_condition(life, limb):
 	_limb = get_limb(life, limb)
 	
-	return numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/float(_limb['max_thickness']))
+	return bad_numbers.clip(1-_limb['cut']/float(_limb['size']), 0, 1)*(_limb['thickness']/float(_limb['max_thickness']))
 
 def get_all_attached_limbs(life,limb):
 	_limb = life['body'][limb]
@@ -3739,7 +3743,7 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 		return 9999
 	
 	_scatter = weapons.get_bullet_scatter_to(life, life['pos'], item_uid)
-	_scatter *= 1+((10-numbers.clip(get_limb(life, limb)['size'], 1, 10))/10)
+	_scatter *= 1+((10-bad_numbers.clip(get_limb(life, limb)['size'], 1, 10))/10)
 	
 	return _scatter
 
@@ -3747,8 +3751,6 @@ def damage_from_item(life, item):
 	#TODO: #combat Reaction times?
 	life['think_rate'] = 0
 	
-	print '*' * 10
-	print item['accuracy'], difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid'])
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
 		_rand_limb.append(random.choice(life['body'].keys()))
@@ -3779,14 +3781,6 @@ def damage_from_item(life, item):
 			_cover_exposed_at.append(life['pos'][:])
 	else:
 		brain.flag(life, 'cover_exposed_at', value=[life['pos'][:]])
-	
-	#Useful, but unused
-	#for ai in [LIFE[i] for i in LIFE if not i == life['id']]:
-	#	if not sight.can_see_position(ai, life['pos']):
-	#		continue
-	#	
-	#	if sight.can_see_position(ai, LIFE[item['shot_by']]['pos']):
-	#		memory(ai, 'saw_attack', victim=life['id'], target=item['shot_by'])
 	
 	create_and_update_self_snapshot(LIFE[item['shot_by']])
 	effects.create_splatter('blood', life['pos'], velocity=item['velocity'])
@@ -3825,7 +3819,7 @@ def natural_healing(life):
 			continue
 		
 		_limb = get_limb(life, limb)	
-		_limb['pain'] = numbers.clip(_limb['pain']-get_pain_tolerance(life), 0, 100)
+		_limb['pain'] = bad_numbers.clip(_limb['pain']-get_pain_tolerance(life), 0, 100)
 		
 		if not _limb['pain']:
 			logging.debug('%s\'s %s has healed!' % (life['name'], limb))

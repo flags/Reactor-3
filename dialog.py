@@ -4,7 +4,7 @@ import graphics as gfx
 import life as lfe
 
 import language
-import numbers
+import bad_numbers
 import drawing
 import locks
 import menus
@@ -392,7 +392,7 @@ def process(life, dialog_id):
 def draw_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	_last_message = get_last_message(dialog_id)
-	_x = numbers.clip(MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2, 3, 100)
+	_x = bad_numbers.clip(MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2, 3, 100)
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
 	

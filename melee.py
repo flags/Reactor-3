@@ -5,7 +5,7 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import numbers
+import bad_numbers
 import alife
 import menus
 
@@ -162,7 +162,7 @@ def react_to_attack(life, target_id, stance):
 		_force = 0
 	
 	if _force >= life['stances'][life['stance']]:
-		lfe.push(life, numbers.direction_to(LIFE[target_id]['pos'], life['pos']), _attack['damage']['force'])
+		lfe.push(life, bad_numbers.direction_to(LIFE[target_id]['pos'], life['pos']), _attack['damage']['force'])
 		force_stance(life, target_id, 'crawling')
 	elif life['stances'][life['stance']]<=life['stances']['crouching']:
 		force_stance(life, target_id, 'off-balance')
@@ -233,7 +233,7 @@ def process_fights():
 					life['next_stance']['towards'] = None
 					continue
 				
-				if numbers.distance(life['pos'], LIFE[life['next_stance']['towards']]['pos'])>1:
+				if bad_numbers.distance(life['pos'], LIFE[life['next_stance']['towards']]['pos'])>1:
 					life['next_stance']['stance'] = None
 					life['next_stance']['towards'] = None
 					continue

@@ -14,7 +14,7 @@ import stats
 import brain
 import jobs
 
-import numbers
+import bad_numbers
 import logging
 import random
 
@@ -23,7 +23,7 @@ def get_engage_distance(life):
 	_weapons = get_equipped_weapons(life)
 	
 	if _weapons:
-		return numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*27)), 3, sight.get_vision(life))
+		return bad_numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*29)), 3, sight.get_vision(life))
 	else:
 		return sight.get_vision(life)/2
 
@@ -145,7 +145,7 @@ def _refill_feed(life, feed):
 	
 	_ammo_count = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))
 	_ammo_count += len(feed['rounds'])
-	_rounds_to_load = numbers.clip(_ammo_count,0,feed['maxrounds'])
+	_rounds_to_load = bad_numbers.clip(_ammo_count,0,feed['maxrounds'])
 	for ammo in lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}])[:_rounds_to_load]:		
 		lfe.add_action(life,{'action': 'refillammo',
 			'ammo': feed,
@@ -295,7 +295,7 @@ def get_closest_target(life, targets):
 	
 	_closest_target = {'target_id': None, 'score': 9999}
 	for t in [brain.knows_alife_by_id(life, t_id) for t_id in targets]:
-		_distance = numbers.distance(life['pos'], t['last_seen_at'])
+		_distance = bad_numbers.distance(life['pos'], t['last_seen_at'])
 		
 		if _distance < _closest_target['score']:
 			_closest_target['score'] = _distance
@@ -323,7 +323,7 @@ def ranged_combat(life, targets):
 	if not _path_dest:
 		_path_dest = life['pos'][:]
 	
-	_target_distance = numbers.distance(life['pos'], _target['last_seen_at'])
+	_target_distance = bad_numbers.distance(life['pos'], _target['last_seen_at'])
 	
 	#Get us near the target
 	#if _target['last_seen_at']:
@@ -335,14 +335,14 @@ def ranged_combat(life, targets):
 				if not sight.view_blocked_by_life(life, _target['life']['pos'], allow=[_target['life']['id']]):
 					lfe.clear_actions(life)
 					
-					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>8:
+					if not len(lfe.find_action(life, matches=[{'action': 'shoot'}])) and _target['time_visible']>2:
 						for i in range(weapons.get_rounds_to_fire(weapons.get_weapon_to_fire(life))):
-							lfe.add_action(life,{'action': 'shoot',
-								                 'target': _target['last_seen_at'],
-								                 'target_id': _target['life']['id'],
-								                 'limb': 'chest'},
-								                 300,
-								                 delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
+							lfe.add_action(life, {'action': 'shoot',
+							                      'target': _target['last_seen_at'],
+							                      'target_id': _target['life']['id'],
+							                      'limb': 'chest'},
+							               300,
+							               delay=int(round(life['recoil']-stats.get_recoil_recovery_rate(life))))
 				else:
 					_friendly_positions, _friendly_zones = get_target_positions_and_zones(life, judgement.get_trusted(life))
 					_friendly_zones.append(zones.get_zone_at_coords(life['pos']))
@@ -350,13 +350,13 @@ def ranged_combat(life, targets):
 					
 					if not lfe.find_action(life, [{'action': 'dijkstra_move', 'orig_goals': [_target['life']['pos'][:]], 'avoid_positions': _friendly_positions}]):
 						lfe.add_action(life, {'action': 'dijkstra_move',
-							                    'rolldown': True,
-							                    'zones': _friendly_zones,
-							                    'goals': [_target['life']['pos'][:]],
-							                    'orig_goals': [_target['life']['pos'][:]],
-							                    'avoid_positions': _friendly_positions,
-							                    'reason': 'combat_position'},
-							             100)
+						                      'rolldown': True,
+						                      'zones': _friendly_zones,
+						                      'goals': [_target['life']['pos'][:]],
+						                      'orig_goals': [_target['life']['pos'][:]],
+						                      'avoid_positions': _friendly_positions,
+						                      'reason': 'combat_position'},
+						               100)
 			else:
 				lfe.memory(life,'lost sight of %s' % (' '.join(_target['life']['name'])), target=_target['life']['id'])
 				

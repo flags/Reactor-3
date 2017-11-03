@@ -4,7 +4,7 @@ import libtcodpy as tcod
 import graphics as gfx
 
 import effects
-import numbers
+import bad_numbers
 import alife
 import logic
 import maps
@@ -64,17 +64,17 @@ def change_weather():
 
 def get_current_weather():
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
+	_current_weather = bad_numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
 	
 	return WORLD_INFO['weather']['colors'][_current_weather]
 
 def get_lighting():
-	_time = numbers.clip(WORLD_INFO['real_time_of_day'], 0, len(WORLD_INFO['weather']['light_map'])-1)
+	_time = bad_numbers.clip(WORLD_INFO['real_time_of_day'], 0, len(WORLD_INFO['weather']['light_map'])-1)
 	return WORLD_INFO['weather']['light_map'][_time]
 
 def get_wind_velocity():
 	#return get_current_weather()['name']
-	return numbers.velocity(175+random.randint(-15, 15), .8)
+	return bad_numbers.velocity(175+random.randint(-15, 15), .8)
 
 def create_light_map(weather):
 	weather['light_map'] = tcod.color_gen_map([tcod.Color(c['colors'][0], c['colors'][1], c['colors'][2]) for c in weather['colors']], weather['color_indexes'])
@@ -84,7 +84,7 @@ def get_weather_status():
 
 def generate_effects(size):
 	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
-	_current_weather = numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
+	_current_weather = bad_numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
 	
 	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather]['effects']:
 		rain(size)

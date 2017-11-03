@@ -4,7 +4,7 @@
 "icon": "P",
 "description": "A pistol",
 "flags": "",
-"size": "2x2",
+"size": "4x2",
 "feed": "magazine",
 "ammotype": "9x19mm",
 "recoil": 0.4,

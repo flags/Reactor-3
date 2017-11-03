@@ -2,7 +2,7 @@ from globals import WORLD_INFO, MAP_SIZE
 
 import worldgen
 import drawing
-import numbers
+import bad_numbers
 import items
 import alife
 import life
@@ -229,7 +229,7 @@ def get_spawn_point_around(pos, area=5, min_area=0, chunk_key=False):
 	_positions = []
 	
 	for next_pos in drawing.draw_circle(pos, area):
-		if numbers.distance(pos, next_pos, old=True) < min_area:
+		if bad_numbers.distance(pos, next_pos, old=True) < min_area:
 			continue
 		
 		if next_pos[0]>=MAP_SIZE[0]-1 or next_pos[1]>=MAP_SIZE[1]-1 or next_pos[0]<0 or next_pos[1]<0:

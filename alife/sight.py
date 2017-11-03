@@ -18,7 +18,7 @@ import fov
 
 import render_fast_los
 import render_los
-import numbers
+import bad_numbers
 import logging
 import time
 
@@ -63,7 +63,7 @@ def look(life):
 				if alife['id'] == life['id']:
 					continue
 				
-				if numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
+				if bad_numbers.distance(life['pos'], alife['pos'])<=get_vision(life) and can_see_position(life, alife['pos']):
 					_nearby_alife[alife['id']] = {'pos': alife['pos'][:], 'stance': alife['stance']}
 			
 			_last_nearby_alife = brain.get_flag(life, '_nearby_alife')
@@ -126,7 +126,7 @@ def look(life):
 				judgement.judge_life(life, ai['id'])
 			
 			if ai['dead']:
-				if 'player' in life and not life['know'][ai['id']]['dead']:
+				if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>25:
 					logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
 				
 				if life['know'][ai['id']]['group']:
@@ -180,10 +180,10 @@ def quick_look(life):
 	_items = []
 	_current_chunk = lfe.get_current_chunk_id(life)
 	_current_chunk_pos = chunks.get_chunk(_current_chunk)['pos']
-	_x_chunk_min = numbers.clip(_current_chunk_pos[0]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
-	_y_chunk_min = numbers.clip(_current_chunk_pos[1]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
-	_x_chunk_max = numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
-	_y_chunk_max = numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_x_chunk_min = bad_numbers.clip(_current_chunk_pos[0]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_min = bad_numbers.clip(_current_chunk_pos[1]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_x_chunk_max = bad_numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_max = bad_numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
 	_has_ready_weapon = combat.has_ready_weapon(life)
 	
 	for y in range(_y_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
@@ -219,9 +219,6 @@ def quick_look(life):
 					judgement.judge_life(life, ai['id'])
 				
 				if ai['dead']:
-					if 'player' in life and not life['know'][ai['id']]['dead'] and life['know'][ai['id']]['last_seen_time']>10:
-						logic.show_event('You discover the body of %s.' % ' '.join(ai['name']), life=ai)
-					
 					if life['know'][ai['id']]['group']:
 						groups.remove_member(life, life['know'][ai['id']]['group'], ai['id'])
 						life['know'][ai['id']]['group'] = None
@@ -288,10 +285,10 @@ def get_vision(life):
 	#if 'player' in life:
 	_fov_mod = 1
 	#else:
-	#	_fov_mod = numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
+	#	_fov_mod = bad_numbers.clip(1-(life['think_rate']/float(life['think_rate_max'])), 0.5, 1)
 	
 	_world_light = tcod.white-weather.get_lighting()
-	_light_percentage = numbers.clip(((_world_light.r+_world_light.g+_world_light.b)*.30)/200.0, 0, 1)
+	_light_percentage = bad_numbers.clip(((_world_light.r+_world_light.g+_world_light.b)*.30)/200.0, 0, 1)
 	
 	return int(round((life['vision_max']*_light_percentage)*_fov_mod))
 
@@ -385,7 +382,7 @@ def can_see_target(life, target_id):
 		return False
 		
 	_knows = LIFE[target_id]
-	_dist = numbers.distance(life['pos'], _knows['pos'])
+	_dist = bad_numbers.distance(life['pos'], _knows['pos'])
 	
 	if _dist >= get_vision(life):
 		return False
@@ -418,9 +415,9 @@ def view_blocked_by_life(life, position, allow=[]):
 	return False
 
 def get_visiblity_of_position(life, pos):
-	_distance = numbers.distance(life['pos'], pos)
+	_distance = bad_numbers.distance(life['pos'], pos)
 	
-	return 1-numbers.clip((_distance/float(get_vision(life))), 0, 1)
+	return 1-bad_numbers.clip((_distance/float(get_vision(life))), 0, 1)
 
 def get_stealth_coverage(life):
 	_coverage = 1.0
@@ -439,20 +436,20 @@ def get_stealth_coverage(life):
 	else:
 		_visible_chunks = 100
 	
-	_stealth_mod *= numbers.clip(_visible_chunks/100.0, 0, 1.0)
+	_stealth_mod *= bad_numbers.clip(_visible_chunks/100.0, 0, 1.0)
 	
 	for z in range(1, 6):
 		if WORLD_INFO['map'][life['pos'][0]][life['pos'][1]][life['pos'][2]+z]:
 			_coverage *= _stealth_mod
 	
-	return numbers.clip(_coverage, 0.0, 1.0)
+	return bad_numbers.clip(_coverage, 0.0, 1.0)
 
 def generate_los(life, target, at, source_map, score_callback, invert=False, ignore_starting=False):
 	_stime = time.time()
 	_cover = {'pos': None,'score': 9000}
 	
-	_x = numbers.clip(at[0]-(SETTINGS['los']/2),0,MAP_SIZE[0]-(SETTINGS['los']/2))
-	_y = numbers.clip(at[1]-(SETTINGS['los']/2),0,MAP_SIZE[1]-(SETTINGS['los']/2))
+	_x = bad_numbers.clip(at[0]-(SETTINGS['los']/2),0,MAP_SIZE[0]-(SETTINGS['los']/2))
+	_y = bad_numbers.clip(at[1]-(SETTINGS['los']/2),0,MAP_SIZE[1]-(SETTINGS['los']/2))
 	_top_left = (_x,_y,at[2])
 	
 	target_los = render_fast_los.render_fast_los(at,
@@ -500,8 +497,8 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Unchecked Cython flag
-	_x = numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-	_y = numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_x = bad_numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
+	_y = bad_numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
 	_top_left = (_x,_y,at[2])
 	target_los = render_los.render_los(source_map,at,top_left=_top_left,no_edge=False)
 	

@@ -4,7 +4,7 @@ import life as lfe
 
 import judgement
 import movement
-import numbers
+import bad_numbers
 import sight
 import brain
 
@@ -17,7 +17,7 @@ def tick(life):
 		return True
 	
 	for target in [LIFE[t] for t in _threats]:
-		if numbers.distance(life['pos'], brain.knows_alife(life, target)['last_seen_at']) >= sight.get_vision(life):
+		if bad_numbers.distance(life['pos'], brain.knows_alife(life, target)['last_seen_at']) >= sight.get_vision(life):
 			_threats.remove(target['id'])
 	
 	return movement.hide(life, _threats)

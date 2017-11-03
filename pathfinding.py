@@ -5,7 +5,7 @@ import zones as zns
 import life as lfe
 
 import render_los
-import numbers
+import bad_numbers
 import zones
 import alife
 import numpy
@@ -16,7 +16,8 @@ import logging
 import time
 import sys
 
-def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles=[], avoid_chunk_types=[], map_size=MAP_SIZE):
+
+def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles=[], avoid_chunk_types=[], map_size=MAP_SIZE):	
 	_stime = time.time()
 	
 	_path = {'start': tuple(start),
@@ -86,20 +87,21 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 						_path['map'][y, x] = 1
 		
 	else:
-		for zone in [zns.get_slice(z) for z in zones]:
-			for y in range(zone['top_left'][1], zone['bot_right'][1]):
-				for x in range(zone['top_left'][0], zone['bot_right'][0]):
-					#maps.load_cluster_at_position_if_needed((x, y))
+		if chunk_mode:
+			for y in range(MAP_SIZE[1]/WORLD_INFO['chunk_size']):
+				for x in range(MAP_SIZE[0]/WORLD_INFO['chunk_size']):
+					_chunk_key = '%s,%s' % (x*WORLD_INFO['chunk_size'],
+				                            y*WORLD_INFO['chunk_size'])
 					
-					_map_pos = WORLD_INFO['map'][x][y][zone['z']]
-					
-					if not _map_pos or not 'z_id' in _map_pos or not _map_pos['z_id'] == zone['id']:
-						continue
+					_path['map'][y, x] = 1
+		else:
+			_path['map'] = numpy.zeros((_path['map_size'][1], _path['map_size'][0]))
 			
-					if chunk_mode:
-						_path['map'][y/WORLD_INFO['chunk_size'], x/WORLD_INFO['chunk_size']] = 1
-					else:
-						_path['map'][y, x] = 1
+			for z in zones:
+				_slice_map = WORLD_INFO['path_map'][str(z)]
+				_path['map'] += _slice_map
+			
+			_path['map'] = _path['map'].clip(-2, 1)
 	
 	_path['hmap'][_path['start'][1], _path['start'][0]] = (abs(_path['start'][0]-_path['end'][0])+abs(_path['start'][1]-_path['end'][1]))*10
 	_path['fmap'][_path['start'][1], _path['start'][0]] = _path['hmap'][_path['start'][1],_path['start'][0]]
@@ -204,7 +206,7 @@ def short_path(life, start, end):
 	_s = time.time()
 	_line = render_los.draw_line(start[0], start[1], end[0], end[1])
 	
-	if numbers.distance(start, end)>30:
+	if bad_numbers.distance(start, end)>30:
 		return False
 	
 	if not _line:
@@ -243,7 +245,7 @@ def create_path(life, start, end, zones, ignore_chunk_path=False):
 	if _shortpath:
 		return _shortpath
 	
-	if len(zones) == 1 and (numbers.distance(start, end) >= 100 and not ignore_chunk_path):
+	if len(zones) == 1 and (bad_numbers.distance(start, end) >= 100 and not ignore_chunk_path):
 		_chunk_path = {'path': chunk_path(life, start, end, zones),
 		               'start': start,
 		               'end': end,

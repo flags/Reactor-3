@@ -8,7 +8,7 @@ import chunks
 import alife
 import maps
 
-import numbers
+import bad_numbers
 
 def get_reference(reference_id):
 	return WORLD_INFO['references'][reference_id]
@@ -32,7 +32,7 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 			continue
 
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
-		_distance = numbers.distance(life['pos'], _center)
+		_distance = bad_numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
@@ -50,7 +50,7 @@ def _find_nearest_reference_exact(position, ref_type=None):
 		
 		for reference in WORLD_INFO['reference_map'][_r_type]:
 			_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
-			_distance = numbers.distance(position, _center)
+			_distance = bad_numbers.distance(position, _center)
 			_nearest_key = find_nearest_key_in_reference_exact(position, reference)
 			
 			if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -66,7 +66,7 @@ def _find_nearest_reference_type_exact(position, ref_type=None):
 	for chunk_keys in WORLD_INFO['refs'][ref_type]:
 		_nearest_chunk_key = chunks.get_nearest_chunk_in_list(position, chunk_keys)
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
-		_distance = numbers.distance(position, _center)
+		_distance = bad_numbers.distance(position, _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
@@ -86,7 +86,7 @@ def _find_best_unknown_reference(life, ref_type):
 		
 		_chunk_key = find_nearest_key_in_reference(life, reference)
 		
-		if numbers.distance(life['pos'], maps.get_chunk(_chunk_key)['pos'])/WORLD_INFO['chunk_size']>10:
+		if bad_numbers.distance(life['pos'], maps.get_chunk(_chunk_key)['pos'])/WORLD_INFO['chunk_size']>10:
 			continue
 		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
@@ -124,7 +124,7 @@ def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_curr
 			continue
 		
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
-		_distance = numbers.distance(life['pos'], _center)
+		_distance = bad_numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
@@ -143,7 +143,7 @@ def find_nearest_key_in_reference_exact(position, reference):
 			continue
 		
 		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
-		_distance = numbers.distance(position, _center)
+		_distance = bad_numbers.distance(position, _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
 			_lowest['distance'] = _distance
@@ -184,7 +184,7 @@ def path_along_reference(life, ref_type):
 		_neighbor_pos = [int(val)+(WORLD_INFO['chunk_size']/2) for val in neighbor_key.split(',')]
 		_cent = (lfe.get_current_chunk(life)['pos'][0]+(WORLD_INFO['chunk_size']/2),
 			lfe.get_current_chunk(life)['pos'][1]+(WORLD_INFO['chunk_size']/2))
-		_neighbor_direction = numbers.direction_to(_cent, _neighbor_pos)
+		_neighbor_direction = bad_numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
 	
 	_best_dir = {'dir': -1, 'score': 0}

@@ -114,7 +114,13 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 def _create_building(chunk_key, design, building_chunks):
 	_pos = chunk_key
 	_rooms = {}
-	_building = {}
+	_building = {'rooms': {}}
+	
+	if 'flags' in design:
+		_building['flags'] = design['flags']
+	else:
+		_building['flags'] = {}
+	
 	_building_chunk_keys = []
 	_build_queue = [design['build_order']]
 	_to_build = design['chunks'].keys()
@@ -122,7 +128,7 @@ def _create_building(chunk_key, design, building_chunks):
 	while _build_queue:
 		_room_name = _build_queue.pop(0)
 		_to_build.remove(_room_name)
-		_building[_room_name] = {'chunk_keys': []}
+		_building['rooms'][_room_name] = {'chunk_keys': []}
 		_room = design['chunks'][_room_name]
 		
 		if 'flags' in _room:
@@ -131,7 +137,7 @@ def _create_building(chunk_key, design, building_chunks):
 			_flags = {}
 		
 		if _rooms:
-			_start_chunk = connect_to_chunks(_room['doors'], _building, _room['chunks'], building_chunks)
+			_start_chunk = connect_to_chunks(_room['doors'], _building['rooms'], _room['chunks'], building_chunks)
 			
 			if not _start_chunk:
 				return False
@@ -141,7 +147,7 @@ def _create_building(chunk_key, design, building_chunks):
 			
 			_path = walker(_start_chunk, _room['chunks'], building_chunks, avoid_chunk_keys=_building_chunk_keys, add_first=True)
 			_rooms[_room_name] = _path[:]
-			_building[_room_name] = {'chunk_keys': _rooms[_room_name],
+			_building['rooms'][_room_name] = {'chunk_keys': _rooms[_room_name],
 			                         'type': _room['type'],
 			                         'floor': _room['floor'],
 			                         'walls': _room['walls'],
@@ -158,7 +164,7 @@ def _create_building(chunk_key, design, building_chunks):
 		else:
 			_rooms[_room_name] = walker(_pos, _room['chunks'], building_chunks, avoid_chunk_keys=_building_chunk_keys, add_first=True)
 			_building_chunk_keys.extend(_rooms[_room_name])
-			_building[_room_name] = {'chunk_keys': _rooms[_room_name],
+			_building['rooms'][_room_name] = {'chunk_keys': _rooms[_room_name],
 			                         'type': _room['type'],
 			                         'floor': _room['floor'],
 			                         'walls': _room['walls'],

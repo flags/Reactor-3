@@ -31,7 +31,7 @@ import network
 import drawing
 import weapons
 import effects
-import numbers
+import bad_numbers
 import dialog
 import random
 import numpy
@@ -80,8 +80,8 @@ def move_camera(pos, scroll=False):
 			if LIFE[life_id]['pos'][1] > _bot_right[1]:
 				_bot_right[1] = LIFE[life_id]['pos'][1]
 			
-			_target_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)
-			pos = numbers.lerp_velocity(pos, _target_pos, .35)[:2]
+			_target_pos = bad_numbers.lerp_velocity(_top_left, _bot_right, 0.5)
+			pos = bad_numbers.lerp_velocity(pos, _target_pos, .35)[:2]
 			pos.append(2)
 			
 			brain.flag(_life, 'camera_lean', value=_target_pos[:])
@@ -95,21 +95,21 @@ def move_camera(pos, scroll=False):
 			if _seen:
 				_st = WORLD_INFO['ticks']-(brain.get_flag(_life, 'camera_lean_time_future')-30)
 				_et = brain.get_flag(_life, 'camera_lean_time_future')-(brain.get_flag(_life, 'camera_lean_time_future')-30)
-				_lerp = 1-numbers.clip(_st/float(_et), 0, 1.0)
+				_lerp = 1-bad_numbers.clip(_st/float(_et), 0, 1.0)
 				
-				pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+				pos = bad_numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
 				pos.append(2)
 			else:
 				if WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time')<=20:
-					_lerp = .45-numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .45)
-					pos = numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
+					_lerp = .45-bad_numbers.clip((WORLD_INFO['ticks']-brain.get_flag(_life, 'camera_lean_time'))/30.0, 0, .45)
+					pos = bad_numbers.lerp_velocity(pos, brain.get_flag(_life, 'camera_lean'), _lerp)[:2]
 					pos.append(2)
 				else:
 					brain.unflag(_life, 'camera_lean')
 					brain.unflag(_life, 'camera_lean_time')
 	
-	CAMERA_POS[0] = int(round(numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
-	CAMERA_POS[1] = int(round(numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
+	CAMERA_POS[0] = int(round(bad_numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
+	CAMERA_POS[1] = int(round(bad_numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
 	CAMERA_POS[2] = int(round(pos[2]))
 	
 	if not _orig_pos == CAMERA_POS:
@@ -137,10 +137,10 @@ def death():
 	FADE_TO_WHITE[0] += .5
 	
 	_time_since_death = FADE_TO_WHITE[0]
-	_time_alive = round(numbers.clip((_player['time_of_death']-_player['created'])/float(WORLD_INFO['length_of_day']), 0.1, 9999), 2)
+	_time_alive = round(bad_numbers.clip((_player['time_of_death']-_player['created'])/float(WORLD_INFO['length_of_day']), 0.1, 9999), 2)
 	_string = 'You die.'
 	_sub_string = _player['cause_of_death']
-	_col = int(round(255*numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
+	_col = int(round(255*bad_numbers.clip((_time_since_death/100.0)-random.uniform(0, 0.15), 0, 1)))
 	
 	
 	if _time_alive == 1:
@@ -229,8 +229,8 @@ def main():
 			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
 			alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
 	
-			_cam_x = numbers.clip(LIFE[SETTINGS['following']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
-			_cam_y = numbers.clip(LIFE[SETTINGS['following']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+			_cam_x = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
+			_cam_y = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 			
 		else:
 			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['controlling']], judge=False, get_chunks=True)
@@ -238,8 +238,8 @@ def main():
 			
 		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
-	_cam_x = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
-	_cam_y = numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+	_cam_x = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
+	_cam_y = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
 	
 	maps.render_lights()
 	
@@ -373,8 +373,9 @@ if __name__ == '__main__':
 		loop()
 	except KeyboardInterrupt:
 		SETTINGS['running'] = False
+		traceback.print_exc()
 	except Exception, e:
-		traceback.print_exc(file=sys.stdout)
+		traceback.print_exc()
 		SETTINGS['running'] = False
 		
 		if 'debug' in WORLD_INFO:

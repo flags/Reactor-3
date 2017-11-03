@@ -8,7 +8,7 @@ import render_los
 import maputils
 import language
 import drawing
-import numbers
+import bad_numbers
 import effects
 import items
 import alife
@@ -46,7 +46,7 @@ BUILDINGS = {}
 
 def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1, outposts=3, underground=True, skip_zoning=False, skip_chunking=False, hotload=False, build_test=False):
 	""" Size: Both width and height must be divisible by DETAIL.
-	Detail: Determines the chunk size. Smaller numbers will generate more elaborate designs.
+	Detail: Determines the chunk size. Smaller bad_numbers will generate more elaborate designs.
 	towns: Number of towns.
 	factories: Decides the amount of factories generated.
 	Forests: Number of large forested areas.
@@ -73,6 +73,7 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	           'refs': {'factories': [],
 	                    'towns': [],
 	                    'farms': [],
+	                    'ruins': [],
 	                    'buildings': [],
 	                    'forests': [],
 	                    'roads': [],
@@ -127,6 +128,7 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 		
 		logging.debug('Connecting zone ramps...')
 		zones.connect_ramps()
+		create_path_map(map_gen)
 	
 	if not skip_chunking:
 		maps.update_chunk_map()
@@ -142,6 +144,38 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	logging.debug('Map generation complete.')	
 	
 	return map_gen
+
+def create_path_map():
+	WORLD_INFO['path_map'] = {}
+	
+	for slice_id in WORLD_INFO['slices']:
+		_slice = WORLD_INFO['slices'][slice_id]
+		
+		if not _slice['z'] == 2:
+			continue
+		
+		_y = []
+		
+		for y in range(0, MAP_SIZE[1]):
+			_x = []
+		
+			for x in range(0, MAP_SIZE[0]):
+				_x.append(0)
+			
+			_y.append(_x)
+		
+		WORLD_INFO['path_map'][slice_id] = copy.deepcopy(_y)
+		
+		for y in range(_slice['top_left'][1], _slice['bot_right'][1]):
+			for x in range(_slice['top_left'][0], _slice['bot_right'][0]):
+				_map_pos = WORLD_INFO['map'][x][y][_slice['z']]
+				
+				if not _map_pos or maps.is_solid((x, y, _slice['z']+1)):
+					WORLD_INFO['path_map'][slice_id][y][x] = -2
+					
+					continue
+				
+				WORLD_INFO['path_map'][slice_id][y][x] = 1
 
 def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False, diag=False):
 	_pos = pos[:]
@@ -176,7 +210,7 @@ def building_test(map_gen, building_type):
 def create_buildings():
 	BUILDINGS['supermarket'] = {'chunks': {'shopping': {'type': 'interior',
 	                                                  'chunks': 3,
-	                                                  'doors': ['office', 'checkout'],
+	                                                  'doors': ['office', 'checkout', 'checkout 2'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
@@ -208,10 +242,23 @@ def create_buildings():
 	                                                             'height': 1,
 	                                                             'tiles': tiles.SEA_CARPET_TILES}],
 	                                                  'items': [{'item': 'desk', 'location': 'middle', 'spawn_chance': 1, 'amount': 2}],
-	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]},
+	                                                  'flags': {'doorways': True}},
 	                                     'checkout': {'type': 'interior',
 	                                                  'chunks': 1,
-	                                                  'doors': ['shopping', 'parking lot'],
+	                                                  'doors': ['shopping', 'parking lot', 'checkout 2'],
+	                                                  'floor': [{'x_mod_min': 0,
+	                                                             'x_mod_max': 1,
+	                                                             'y_mod_min': 0,
+	                                                             'y_mod_max': 1,
+	                                                             'height': 1,
+	                                                             'tiles': tiles.WHITE_TILE_TILES}],
+	                                                  'items': [],
+	                                                  'flags': {'doorways': True},
+	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                     'checkout 2': {'type': 'interior',
+	                                                  'chunks': 1,
+	                                                  'doors': ['checkout', 'shopping'],
 	                                                  'floor': [{'x_mod_min': 0,
 	                                                             'x_mod_max': 1,
 	                                                             'y_mod_min': 0,
@@ -267,7 +314,13 @@ def create_buildings():
 	                                                             'tiles': [tiles.WALL_TILE]}],
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}}},
-	                          'build_order': 'shopping'}
+	                            'flags': {'yard': {'type': 'square',
+	                                               'interior_only': True,
+	                                               'splatter': 0.65,
+	                                               'splatter_tiles': tiles.BROKEN_CONCRETE_FLOOR_TILES,
+	                                               'tiles': tiles.CONCRETE_FLOOR_TILES,
+	                                               'fence': [tiles.WALL_TILE]}},
+	                            'build_order': 'shopping'}
 	
 	BUILDINGS['office_1'] = {'chunks': {'parking lot 1': {'type': 'exterior',
 	                                                  'chunks': 1,
@@ -326,7 +379,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.BLUE_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [{'item': 'office chair', 'location': 'edge', 'spawn_chance': .5, 'amount': 32}],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'hall': {'type': 'interior',
@@ -374,7 +427,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.BLUE_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [{'item': 'desk', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'office 5b': {'type': 'interior',
@@ -413,18 +466,6 @@ def create_buildings():
 	                                                  'flags': {'road_seed': False},
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
-	                                    'office 5d': {'type': 'interior',
-	                                                  'chunks': 1,
-	                                                  'doors': ['office 5a', 'office 5c'],
-	                                                  'floor': [{'x_mod_min': 0,
-	                                                             'x_mod_max': 1,
-	                                                             'y_mod_min': 0,
-	                                                             'y_mod_max': 1,
-	                                                             'height': 1,
-	                                                             'tiles': tiles.BLUE_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
-	                                                  'items': [],
-	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'conference room': {'type': 'interior',
 	                                                  'chunks': 2,
 	                                                  'doors': ['hall 2a'],
@@ -434,7 +475,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [{'item': 'desk', 'location': 'middle', 'spawn_chance': 1, 'amount': 12}],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'office 6b': {'type': 'interior',
@@ -446,7 +487,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.RED_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'office 2': {'type': 'interior',
@@ -458,7 +499,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.RED_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'office 3': {'type': 'interior',
@@ -470,7 +511,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.RED_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
 	                                    'office 4': {'type': 'interior',
@@ -482,7 +523,7 @@ def create_buildings():
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
 	                                                             'tiles': tiles.RED_CARPET_TILES}],
-	                                                  'flags': {'road_seed': False},
+	                                                  'flags': {'road_seed': False, 'doorways': True},
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},},
 	                         'build_order': 'parking lot 1'}
@@ -509,6 +550,7 @@ def create_buildings():
 	                                                        'height': 1,
 	                                                        'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                             'items': [],
+	                                             'flags': {'doorways': True},
 	                                             'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'kitchen': {'type': 'interior',
 	                                             'chunks': 2,
@@ -581,7 +623,9 @@ def create_buildings():
 	                                                                    {'item': 'glock',
 	                                                                     'spawn_chance': .45, 'amount': 1}]},
 	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
-	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                               'walls': {'tiles': [tiles.WALL_TILE]},
+	                                               'flags': {'doorways': True},
+	                                               'flags': {'doorways': True}},
 	                                 'bedroom 2': {'type': 'interior',
 	                                               'chunks': 1,
 	                                               'doors': ['living room'],
@@ -621,7 +665,9 @@ def create_buildings():
 	                                                                      {'item': 'glock',
 	                                                                       'spawn_chance': .45, 'amount': 1}]},
 	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
-	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                               'walls': {'tiles': [tiles.WALL_TILE]},
+	                                               'flags': {'doorways': True},
+	                                               'flags': {'doorways': True}},
 	                                 'living room': {'type': 'interior',
 	                                                 'chunks': 2,
 	                                                 'doors': ['landing', 'bedroom 1', 'bedroom 2'],
@@ -633,6 +679,7 @@ def create_buildings():
 	                                                            'tiles': tiles.BLUE_CARPET_TILES}],
 	                                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 3}],
 	                                                 'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                      'flags': {'yard': {'type': 'square', 'interior_only': True, 'tiles': tiles.GRASS_TILES, 'splatter_tiles': tiles.GRASS_TILES, 'fence': tiles.WOOD_TILES}},
 	                      'build_order': 'landing'}
 	
 	BUILDINGS['house_2'] = {'chunks': {'sidewalk': {'type': 'exterior',
@@ -657,10 +704,11 @@ def create_buildings():
 	                                                        'height': 1,
 	                                                        'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                             'items': [],
+	                                             'flags': {'doorways': True},
 	                                             'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'kitchen': {'type': 'interior',
 	                                             'chunks': 2,
-	                                             'doors': ['landing', 'pantry'],
+	                                             'doors': ['landing', 'pantry', 'living room'],
 	                                             'floor': [{'x_mod_min': 0,
 	                                                        'x_mod_max': 1,
 	                                                        'y_mod_min': 0,
@@ -690,6 +738,7 @@ def create_buildings():
 	                                                        'height': 1,
 	                                                        'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                             'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 5}],
+	                                             'flags': {'doorways': True},
 	                                             'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'bedroom 1': {'type': 'interior',
 	                                               'chunks': 1,
@@ -730,6 +779,7 @@ def create_buildings():
 	                                                                    {'item': 'glock',
 	                                                                     'spawn_chance': .45, 'amount': 1}]},
 	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
+	                                               'flags': {'doorways': True},
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'bedroom 2': {'type': 'interior',
 	                                               'chunks': 2,
@@ -740,36 +790,37 @@ def create_buildings():
 	                                                          'y_mod_max': 1,
 	                                                          'height': 1,
 	                                                          'tiles': tiles.BROWN_FLOOR_TILES}],
-	                                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1,
-	                                                          'items': [{'item': 'trenchcoat',
-	                                                                     'spawn_chance': .2, 'amount': 1},
-	                                                                    {'item': 'fall camo pants',
-	                                                                     'spawn_chance': .35, 'amount': 1},
-	                                                                    {'item': 'brown hoodie',
-	                                                                     'spawn_chance': .4, 'amount': 1},
-	                                                                    {'item': 'glock',
-	                                                                     'spawn_chance': .2, 'amount': 1},
+	                                               'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 1,
+	                                                        'items': [{'item': 'trenchcoat',
+	                                                                   'spawn_chance': .2, 'amount': 1},
+	                                                                  {'item': 'fall camo pants',
+	                                                                   'spawn_chance': .35, 'amount': 1},
+	                                                                  {'item': 'brown hoodie',
+	                                                                   'spawn_chance': .4, 'amount': 1},
+	                                                                  {'item': 'glock',
+	                                                                   'spawn_chance': .2, 'amount': 1},
+	                                                                  {'item': '9x19mm magazine',
+	                                                                   'spawn_chance': .2, 'amount': 1},
+	                                                                  {'item': '9x19mm round',
+	                                                                   'spawn_chance': .15, 'amount': 9},
+	                                                                  {'item': 'scout pack',
+	                                                                   'spawn_chance': .2, 'amount': 1}]},
+	                                                         {'item': 'wooden dresser',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .45,
+	                                                          'amount': 1,
+	                                                          'items': [{'item': '9x19mm magazine',
+	                                                                     'spawn_chance': 1,
+	                                                                     'amount': 1},
 	                                                                    {'item': '9x19mm magazine',
-	                                                                     'spawn_chance': .2, 'amount': 1},
+	                                                                     'spawn_chance': 0.3,
+	                                                                     'amount': 1},
 	                                                                    {'item': '9x19mm round',
-	                                                                     'spawn_chance': .15, 'amount': 9},
-	                                                                    {'item': 'scout pack',
-	                                                                     'spawn_chance': .2, 'amount': 1}]},
-	                                                           {'item': 'wooden dresser',
-	                                                            'location': 'edge',
-	                                                            'spawn_chance': .45,
-	                                                            'amount': 1,
-	                                                            'items': [{'item': '9x19mm magazine',
-	                                                                       'spawn_chance': 1,
-	                                                                       'amount': 1},
-	                                                                      {'item': '9x19mm magazine',
-	                                                                       'spawn_chance': 0.3,
-	                                                                       'amount': 1},
-	                                                                      {'item': '9x19mm round',
-	                                                                       'spawn_chance': .35, 'amount': 15},
-	                                                                      {'item': 'glock',
-	                                                                       'spawn_chance': .45, 'amount': 1}]},
-	                                                         {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
+	                                                                     'spawn_chance': .35, 'amount': 15},
+	                                                                    {'item': 'glock',
+	                                                                     'spawn_chance': .45, 'amount': 1}]},
+	                                                       {'item': 'bed', 'location': 'edge', 'spawn_chance': 1, 'amount': 1}],
+	                                               'flags': {'doorways': True},
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                 'living room': {'type': 'interior',
 	                                                 'chunks': 2,
@@ -782,7 +833,8 @@ def create_buildings():
 	                                                            'tiles': tiles.BLUE_CARPET_TILES}],
 	                                                 'items': [{'item': 'wooden dresser', 'location': 'edge', 'spawn_chance': 1, 'amount': 3}],
 	                                                 'walls': {'tiles': [tiles.WALL_TILE]}}},
-	                      'build_order': 'landing'}
+	                        'flags': {'yard': {'type': 'square', 'interior_only': True, 'tiles': tiles.GRASS_TILES, 'splatter_tiles': tiles.GRASS_TILES, 'fence': tiles.WOOD_TILES}},
+	                        'build_order': 'landing'}
 	
 	BUILDINGS['factory_1'] = {'chunks': {'sidewalk': {'type': 'exterior',
 	                                                  'chunks': 1,
@@ -806,6 +858,7 @@ def create_buildings():
 	                                                             'height': 1,
 	                                                             'tiles': tiles.WHITE_TILE_TILES}],
 	                                                  'items': [],
+	                                                  'flags': {'doorways': True},
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'office': {'type': 'interior',
 	                                                  'chunks': 1,
@@ -817,6 +870,7 @@ def create_buildings():
 	                                                             'height': 1,
 	                                                             'tiles': tiles.SEA_CARPET_TILES}],
 	                                                  'items': [],
+	                                                  'flags': {'doorways': True},
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'hall to shop': {'type': 'interior',
 	                                                  'chunks': 3,
@@ -828,6 +882,7 @@ def create_buildings():
 	                                                             'height': 1,
 	                                                             'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                                  'items': [],
+	                                                  'flags': {'doorways': True},
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'shop': {'type': 'interior',
 	                                                  'chunks': 4,
@@ -837,7 +892,7 @@ def create_buildings():
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                             'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                     'ramp': {'type': 'exterior',
@@ -859,9 +914,10 @@ def create_buildings():
 	                                                             'y_mod_min': 0,
 	                                                             'y_mod_max': 1,
 	                                                             'height': 1,
-	                                                             'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                                             'tiles': tiles.RED_CARPET_TILES}],
 	                                                  'items': [],
 	                                                  'walls': {'tiles': [tiles.WALL_TILE]}},},
+	                          'flags': {'yard': {'type': 'square', 'interior_only': True, 'tiles': tiles.CONCRETE_FLOOR_TILES, 'splatter_tiles': tiles.GRASS_TILES, 'fence': [tiles.WALL_TILE]}},
 	                          'build_order': 'sidewalk'}
 	
 	BUILDINGS['barracks_1'] = {'chunks': {'wall': {'type': 'exterior',
@@ -879,7 +935,7 @@ def create_buildings():
 	                                      'desk': {'type': 'interior',
 	                                               'chunks': 1,
 	                                               'doors': ['bedroom 1', 'wall'],
-	                                               'flags': {'road_seed': False},
+	                                               'flags': {'road_seed': False, 'doorways': True},
 	                                               'floor': [{'x_mod_min': 0,
 	                                                          'x_mod_max': 1,
 	                                                          'y_mod_min': 0,
@@ -887,11 +943,12 @@ def create_buildings():
 	                                                          'height': 1,
 	                                                          'tiles': tiles.BROWN_FLOOR_TILES}],
 	                                               'items': [],
+	                                               'flags': {'doorways': True},
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}},
 	                                      'bedroom 1': {'type': 'interior',
 	                                               'chunks': 1,
 	                                               'doors': ['desk', 'bedroom 2'],
-	                                               'flags': {'road_seed': False},
+	                                               'flags': {'road_seed': False, 'doorways': True},
 	                                               'floor': [{'x_mod_min': 0,
 	                                                          'x_mod_max': 1,
 	                                                          'y_mod_min': 0,
@@ -929,7 +986,7 @@ def create_buildings():
 	                                      'bedroom 2': {'type': 'interior',
 	                                               'chunks': 1,
 	                                               'doors': ['bedroom 1', 'bedroom 3'],
-	                                               'flags': {'road_seed': False},
+	                                               'flags': {'road_seed': False, 'doorways': True},
 	                                               'floor': [{'x_mod_min': 0,
 	                                                          'x_mod_max': 1,
 	                                                          'y_mod_min': 0,
@@ -967,7 +1024,7 @@ def create_buildings():
 	                                      'bedroom 3': {'type': 'interior',
 	                                               'chunks': 1,
 	                                               'doors': ['bedroom 2'],
-	                                               'flags': {'road_seed': False},
+	                                               'flags': {'road_seed': False, 'doorways': True},
 	                                               'floor': [{'x_mod_min': 0,
 	                                                          'x_mod_max': 1,
 	                                                          'y_mod_min': 0,
@@ -993,6 +1050,202 @@ def create_buildings():
 	                                                                     'amount': 2}]}],
 	                                               'walls': {'tiles': [tiles.WALL_TILE]}}},
 	                           'build_order': 'wall'}
+	
+	BUILDINGS['storage_1'] = {'chunks': {'wall': {'type': 'exterior',
+	                                              'chunks': 1,
+	                                              'doors': ['ground_1', 'ground_2'],
+	                                              'flags': {'road_seed': True},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                                        {'x_mod_min': .12,
+	                                                         'x_mod_max': .7,
+	                                                         'y_mod_min': .12,
+	                                                         'y_mod_max': .7,
+	                                                         'height': 3,
+	                                                         'tiles': [tiles.WHITE_WALL_TILE]}],
+	                                              'items': [],
+	                                              'walls': {}},
+	                                  'ground_1': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['wall', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_2': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['wall', 'ground_3'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_3': {'type': 'interior',
+	                                              'chunks': 1,
+	                                              'doors': ['ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}}},
+	                      'build_order': 'wall'}
+	
+	BUILDINGS['storage_2'] = {'chunks': {'wall': {'type': 'exterior',
+	                                              'chunks': 2,
+	                                              'doors': ['ground_1', 'ground_2'],
+	                                              'flags': {'road_seed': True},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES},
+	                                                        {'x_mod_min': .12,
+	                                                         'x_mod_max': .7,
+	                                                         'y_mod_min': .12,
+	                                                         'y_mod_max': .7,
+	                                                         'height': 3,
+	                                                         'tiles': [tiles.WHITE_WALL_TILE]}],
+	                                              'items': [],
+	                                              'walls': {}},
+	                                  'ground_1': {'type': 'interior',
+	                                              'chunks': 2,
+	                                              'doors': ['wall', 'ground_2'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}},
+	                                  'ground_2': {'type': 'interior',
+	                                              'chunks': 2,
+	                                              'doors': ['wall', 'ground_1'],
+	                                              'flags': {},
+	                                              'floor': [{'x_mod_min': 0,
+	                                                         'x_mod_max': 1,
+	                                                         'y_mod_min': 0,
+	                                                         'y_mod_max': 1,
+	                                                         'height': 1,
+	                                                         'tiles': tiles.CONCRETE_FLOOR_TILES}],
+	                                              'items': [],
+	                                              'walls': {'tiles': [tiles.WHITE_WALL_TILE]}}},
+	                      'build_order': 'wall'}
+	
+	BUILDINGS['workshop_1'] = {'chunks': {'porch': {'type': 'exterior',
+	                                                'chunks': 1,
+	                                                'doors': ['lobby'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.BROKEN_CONCRETE_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'lobby': {'type': 'interior',
+	                                                'chunks': 2,
+	                                                'doors': ['shop_1', 'porch'],
+	                                                'flags': {'doorways': True},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.BROWN_FLOOR_TILES}],
+	                                                'items': [{'item': 'wooden door',
+	                                                          'location': 'door',
+	                                                          'spawn_chance': 1,
+	                                                          'amount': 3},
+	                                                          {'item': 'wooden display case',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .7,
+	                                                          'amount': 8}],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_1': {'type': 'interior',
+	                                                'chunks': 2,
+	                                                'doors': ['lobby', 'shop_2', 'shop_4'],
+	                                                'flags': {},
+	                                                'items': [],
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_2': {'type': 'interior',
+	                                                'chunks': 1,
+	                                                'doors': ['shop_1'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'items': [{'item': 'metal shelving',
+	                                                          'location': 'edge',
+	                                                          'spawn_chance': .9,
+	                                                          'amount': 12,
+	                                                          'items': [{'item': 'radio',
+	                                                                     'spawn_chance': .15,
+	                                                                     'amount': 1},
+	                                                                    {'item': 'gas mask',
+	                                                                     'spawn_chance': .15,
+	                                                                     'amount': 1},
+	                                                                    {'item': 'utility backpack',
+	                                                                     'spawn_chance': .2,
+	                                                                     'amount': 1},
+	                                                                     {'item': 'white cloth',
+	                                                                     'spawn_chance': .2,
+	                                                                     'amount': 3}]}],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_3': {'type': 'interior',
+	                                                'chunks': 1,
+	                                                'doors': ['shop_2', 'shop_4'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}},
+	                                      'shop_4': {'type': 'interior',
+	                                                'chunks': 1,
+	                                                'doors': ['shop_1', 'shop_3'],
+	                                                'flags': {},
+	                                                'floor': [{'x_mod_min': 0,
+	                                                           'x_mod_max': 1,
+	                                                           'y_mod_min': 0,
+	                                                           'y_mod_max': 1,
+	                                                           'height': 1,
+	                                                           'tiles': tiles.DARK_BROWN_FLOOR_TILES}],
+	                                                'items': [],
+	                                                'walls': {'tiles': [tiles.WALL_TILE]}}},
+	                      'build_order': 'lobby'}
 
 def generate_building(map_gen, chunk_key, building_type, possible_building_chunks, only_chunk_keys=[]):
 	_building = buildinggen.create_building(chunk_key, copy.deepcopy(BUILDINGS[building_type]), possible_building_chunks)
@@ -1001,11 +1254,11 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 	if not _building:
 		return False
 	
-	if not sum([len(r['chunk_keys']) for r in _building.values()])==sum([r['chunks'] for r in BUILDINGS[building_type]['chunks'].values()]):
+	if not sum([len(r['chunk_keys']) for r in _building['rooms'].values()])==sum([r['chunks'] for r in BUILDINGS[building_type]['chunks'].values()]):
 		return False
 	
-	for room_name in _building:
-		_room = _building[room_name]
+	for room_name in _building['rooms']:
+		_room = _building['rooms'][room_name]
 		
 		for chunk_key in _room['chunk_keys']:
 			for y in range(0, WORLD_INFO['chunk_size']):
@@ -1016,8 +1269,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					if not 0<_x<=map_gen['size'][0]-1 or not 0<_y<=map_gen['size'][1]-1:
 						return False
 	
-	for room_name in _building:
-		_room = _building[room_name]
+	for room_name in _building['rooms']:
+		_room = _building['rooms'][room_name]
 		
 		for chunk_key in _room['chunk_keys']:
 			_built_chunk_keys.append(chunk_key)
@@ -1033,29 +1286,32 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 				return False
 					
 			for neighbor_chunk_key in _neighbors:
-				for neighbor_room_name in _building:
-					if neighbor_chunk_key in _building[neighbor_room_name]['chunk_keys']:						
+				for neighbor_room_name in _building['rooms']:
+					if neighbor_chunk_key in _building['rooms'][neighbor_room_name]['chunk_keys']:						
 						if neighbor_room_name in _room['doors'] or neighbor_room_name == room_name:
-							_direction_mod = (numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
-							                  numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
+							_direction_mod = (bad_numbers.clip(int(neighbor_chunk_key.split(',')[0])-int(chunk_key.split(',')[0]), -1, 1),
+							                  bad_numbers.clip(int(neighbor_chunk_key.split(',')[1])-int(chunk_key.split(',')[1]), -1, 1))
 							
 							if neighbor_room_name in _possible_doors:
 								_possible_doors[neighbor_room_name].append(_direction_mod)
 							else:
 								_possible_doors[neighbor_room_name] = [_direction_mod]
 							
-							if room_name in _building[neighbor_room_name]['doors']:
-								_building[neighbor_room_name]['no_doors'].append(room_name)
-				
+							#if room_name in _building[neighbor_room_name]['doors']:
+							#	_building[neighbor_room_name]['no_doors'].append(room_name)
+			
 			for possible_room_name in _possible_doors:
-				if possible_room_name == room_name or possible_room_name in _building[room_name]['no_doors']:
+				if possible_room_name == room_name or possible_room_name in _building['rooms'][room_name]['no_doors']:
 					_doors_in.extend(_possible_doors[possible_room_name])
 					_skip_doors.extend(_possible_doors[possible_room_name])
+				elif possible_room_name in _building['rooms'][room_name]['doors']:
+					_doors_in.extend(_possible_doors[possible_room_name])
+					#continue
 				else:
 					_doors_in.append(random.choice(_possible_doors[possible_room_name]))
 					
-					if not room_name in _building[possible_room_name]['no_doors']:
-						_building[possible_room_name]['no_doors'].append(room_name)
+					if not room_name in _building['rooms'][possible_room_name]['no_doors']:
+						_building['rooms'][possible_room_name]['no_doors'].append(room_name)
 			
 			for y in range(0, WORLD_INFO['chunk_size']):
 				for x in range(0, WORLD_INFO['chunk_size']):
@@ -1072,6 +1328,9 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 								_wall = True
 						elif (not x and (y<=1 or y >= 3) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y<=1 or y >= 3) and not (1, 0) in _skip_doors) or (not y and (x<=1 or x >= 3) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x<=1 or x >= 3) and not (0, 1) in _skip_doors):
 							for z in range(4):
+								if not 'doorways' in _room['flags'] or not _room['flags']['doorways']:
+									break
+							
 								create_tile(map_gen, _x, _y, 2+z, random.choice(_room['walls']['tiles']))
 								_wall = True
 						elif (not x and (y==2) and not (-1, 0) in _skip_doors) or (x == WORLD_INFO['chunk_size']-1 and (y==2) and not (1, 0) in _skip_doors) or (not y and (x==2) and not (0, -1) in _skip_doors) or (y == WORLD_INFO['chunk_size']-1 and (x==2) and not (0, 1) in _skip_doors):
@@ -1096,8 +1355,9 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 						for z in range(tile_design['height']):
 							create_tile(map_gen, _x, _y, 2+z, random.choice(tile_design['tiles']))
 	
-	for room_name in _building:
-		_room = _building[room_name]
+	#Post-processing
+	for room_name in _building['rooms']:
+		_room = _building['rooms'][room_name]
 		
 		if not _room['type'] == 'interior':
 			continue
@@ -1106,15 +1366,143 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 			_x = int(chunk_key.split(',')[0])
 			_y = int(chunk_key.split(',')[1])
 			
-			for mod in [(0, 0), (1, 0), (0, 1), (1, 1)]:
-				__x = _x+numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
-				__y = _y+numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
+			for mod in [(-1, -1), (1, -1), (1, 1), (-1, 1)]:
+				#break
+				__x = _x+bad_numbers.clip((mod[0]*WORLD_INFO['chunk_size']), -1, 5)
+				__y = _y+bad_numbers.clip((mod[1]*WORLD_INFO['chunk_size']), -1, 5)
+				___x = _x+bad_numbers.clip((mod[0]*WORLD_INFO['chunk_size']), 0, 4)
+				___y = _y+bad_numbers.clip((mod[1]*WORLD_INFO['chunk_size']), 0, 4)
 				
-				if not map_gen['map'][__x][__y][2] or not map_gen['map'][__x][__y][2]['id'] in tiles.WALL_TILES:
-					create_tile(map_gen, __x, __y, 2, random.choice(_room['walls']['tiles']))
+				if __x >= MAP_SIZE[0]-1 or __y >= MAP_SIZE[1]-1 or __x < 0 or __y < 0:
+					continue
+				
+				if not map_gen['map'][__x][__y][2] or map_gen['map'][__x][__y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
+					create_tile(map_gen, ___x, ___y, 2, random.choice(_room['walls']['tiles']))
 	
-	for room_name in _building:
-		_room = _building[room_name]
+	#Decorating
+	if 'yard' in _building['flags']:
+		_top_left = MAP_SIZE[:2]
+		_bot_right = [0, 0]
+		_closest_fence_chunk = {'chunk_pos': None, 'distance': 0}
+		_exterior_pos = None
+		
+		for room_name in _building['rooms']:
+			_room = _building['rooms'][room_name]
+			
+			if 'interior_only' in _building['flags']['yard'] and _building['flags']['yard']['interior_only'] and not _room['type'] == 'interior':
+				_exterior_pos = [int(i) for i in _room['chunk_keys'][0].split(',')]
+				
+				continue
+			elif not _exterior_pos:
+				_exterior_pos = [int(i) for i in _room['chunk_keys'][0].split(',')]
+			
+			for chunk_key in _room['chunk_keys']:
+				for neighbor_chunk_key in get_neighbors_of_type(map_gen, chunk_key, 'other', diagonal=True):
+					_pos = [int(i) for i in neighbor_chunk_key.split(',')]
+					
+					if _building['flags']['yard'] == 'outline':
+						if not neighbor_chunk_key in _built_chunk_keys:
+							for y in range(WORLD_INFO['chunk_size']):
+								_y = _pos[1] + y
+								for x in range(WORLD_INFO['chunk_size']):
+									_x = _pos[0] + x
+									
+									if 'splatter' in _building['flags']['yard'] and random.uniform(0, 1)<_building['flags']['yard']['splatter']:
+										continue
+									
+									create_tile(map_gen, _x, _y, 2, random.choice(_building['flags']['yard']['tiles']))
+				
+				_pos = [int(i) for i in chunk_key.split(',')]
+				
+				if _building['flags']['yard']['type'] == 'square':
+					if _pos[0] <= _top_left[0]:
+						_top_left[0] = bad_numbers.clip(_pos[0]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
+					
+					if _pos[1] <= _top_left[1]:
+						_top_left[1] = bad_numbers.clip(_pos[1]-WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
+					
+					if _pos[0] >= _bot_right[0]:
+						_bot_right[0] = bad_numbers.clip(_pos[0]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]-1)
+					
+					if _pos[1] >= _bot_right[1]:
+						_bot_right[1] = bad_numbers.clip(_pos[1]+WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]-1)
+			
+		if _building['flags']['yard']['type'] == 'square':
+			for y in range(_top_left[1], _bot_right[1]+1, WORLD_INFO['chunk_size']):
+				for x in range(_top_left[0], _bot_right[0]+1, WORLD_INFO['chunk_size']):					
+					_chunk_key = '%s,%s' % (x, y)
+					
+					if _chunk_key in _built_chunk_keys:
+						continue
+					
+					_distance = bad_numbers.distance((x, y), _exterior_pos)
+					
+					if not _closest_fence_chunk['distance'] or _distance>_closest_fence_chunk['distance']:
+						_closest_fence_chunk['distance'] = _distance
+						_closest_fence_chunk['chunk_pos'] = (x, y)
+						
+					for _y in range(y, y+WORLD_INFO['chunk_size']):
+						for _x in range(x, x+WORLD_INFO['chunk_size']):
+							if 'splatter' in _building['flags']['yard'] and random.uniform(0, 1)<_building['flags']['yard']['splatter']:
+								if 'splatter_tiles' in _building['flags']['yard']:
+									create_tile(map_gen, _x, _y, 2, random.choice(_building['flags']['yard']['splatter_tiles']))
+								
+								continue
+							
+							create_tile(map_gen, _x, _y, 2, random.choice(_building['flags']['yard']['tiles']))
+			
+			_max_chunk_distance = _closest_fence_chunk['distance']/3
+			
+			if 'fence' in _building['flags']['yard']:
+				for x in range(_top_left[0], _bot_right[0]+WORLD_INFO['chunk_size']+1):
+					if x >= MAP_SIZE[0]-1:
+						continue
+					
+					_chunk_key_1 = [(x/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _top_left[1]]
+					_chunk_key_2 = [(x/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _bot_right[1]]
+					_pos_1_open = map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
+					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
+					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
+					_pos_2_open = map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
+					    map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
+					    map_gen['map'][x][_bot_right[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
+					
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
+					
+					if not bad_numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
+						create_tile(map_gen, x, _top_left[1], 2, random.choice(_building['flags']['yard']['fence']))
+					
+					if not x+_bot_right[1]+WORLD_INFO['chunk_size'] >= MAP_SIZE[0]-1:
+						if not bad_numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+							create_tile(map_gen, x, _bot_right[1]+WORLD_INFO['chunk_size'], 2, random.choice(_building['flags']['yard']['fence']))
+			
+				for y in range(_top_left[1], _bot_right[1]+WORLD_INFO['chunk_size']):
+					if y >= MAP_SIZE[1]-1:
+						continue
+					
+					_chunk_key_1 = [_top_left[0], (y/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
+					_chunk_key_2 = [_bot_right[0], (y/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
+					_pos_1_open = map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
+					    map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
+					    map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
+					_pos_2_open = map_gen['map'][_bot_right[0]][y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
+					    map_gen['map'][_bot_right[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
+					    map_gen['map'][_bot_right[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
+					
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_1[0], _chunk_key_1[1])]['type'] = 'town'
+					#WORLD_INFO['chunk_map']['%s,%s' % (_chunk_key_2[0], _chunk_key_2[1])]['type'] = 'town'
+					
+					if not bad_numbers.distance(_chunk_key_1, _exterior_pos) <= _max_chunk_distance and _pos_1_open:
+						create_tile(map_gen, _top_left[0], y, 2, random.choice(_building['flags']['yard']['fence']))
+					
+					if not _bot_right[0]+WORLD_INFO['chunk_size'] >= MAP_SIZE[1]-1:
+						if not bad_numbers.distance(_chunk_key_2, _exterior_pos) <= _max_chunk_distance and _pos_2_open:
+							create_tile(map_gen, _bot_right[0]+WORLD_INFO['chunk_size'], y, 2, random.choice(_building['flags']['yard']['fence']))
+	
+	#Spawn positions
+	for room_name in _building['rooms']:
+		_room = _building['rooms'][room_name]
 		
 		for chunk_key in _room['chunk_keys']:
 			for y in range(0, WORLD_INFO['chunk_size']):
@@ -1162,6 +1550,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 						elif y==WORLD_INFO['chunk_size']-2:
 							_room['spawns']['edge'].append((_x, _y))
 		
+		#Items
 		for item in _room['items']:
 			for i in range(item['amount']):
 				if random.uniform(0, 1)<1-item['spawn_chance']:
@@ -1188,7 +1577,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 								items.delete_item(ITEMS[_child_item])
 							
 	
-	return _building
+	return _building['rooms']
 
 def create_tile(map_gen, x, y, z, tile):
 	map_gen['map'][x][y][z] = tiles.create_tile(tile)
@@ -1301,8 +1690,8 @@ def generate_noise_map(map_gen):
 				_chance = random.uniform(0, 1)
 				
 				if _chance<.75:
-					_x = numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
-					_y = numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+					_x = bad_numbers.clip(x+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+					_y = bad_numbers.clip(y+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 					
 					if not map_gen['map'][_x][_y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES]:
 						continue
@@ -1316,8 +1705,8 @@ def generate_noise_map(map_gen):
 						if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 							continue
 						
-						_x = numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
-						_y = numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
+						_x = bad_numbers.clip(pos[0]+random.randint(0, 5), 0, MAP_SIZE[0]-1)
+						_y = bad_numbers.clip(pos[1]+random.randint(0, 5), 0, MAP_SIZE[1]-1)
 						
 						if not map_gen['map'][_x][_y][2]['id'] in BUSH_EXCLUDE_TILES:
 							continue
@@ -1378,7 +1767,7 @@ def generate_noise_map(map_gen):
 			if _chunk_pos[1]>_bot_left[1]:
 				_bot_left[1] = _chunk_pos[1]
 		
-		_center_pos = numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
+		_center_pos = bad_numbers.lerp_velocity(_top_left, _bot_right, 0.5)[:2]
 		_center_pos[0] = int(_center_pos[0])
 		_center_pos[1] = int(_center_pos[1])
 		_cells.append({'size': len(_connected_chunk_keys),
@@ -1413,7 +1802,7 @@ def generate_noise_map(map_gen):
 	                           'can_combine': False,
 	                           'avoid_types': {'Farm': 250}},
 	               'Village': {'callback': generate_town,
-	                           'min_cells': 150,
+	                           'min_cells': 100,
 	                           'max_cells': 300,
 	                           'x_mod_min': .1,
 	                           'x_mod_max': .9,
@@ -1426,12 +1815,12 @@ def generate_noise_map(map_gen):
 	                           'refs': 'towns',
 	                           'can_combine': True},
 	               'Town': {'callback': generate_town,
-	                           'min_cells': 301,
-	                           'max_cells': 550,
+	                           'min_cells': 101,
+	                           'max_cells': 750,
 	                           'x_mod_min': .1,
 	                           'x_mod_max': .9,
 	                           'y_mod_min': .45,
-	                           'y_mod_max': .75,
+	                           'y_mod_max': .8,
 	                           'amount': 0,
 	                           'min_amount': 1,
 	                           'max_amount': 3,
@@ -1452,7 +1841,14 @@ def generate_noise_map(map_gen):
 	                                'y_mod_max': .6},
 	                     'Field': {'callback': generate_field,
 	                                'y_mod_min': .6,
-	                                'y_mod_max': 1.0}}
+	                                'y_mod_max': 1.0},
+	                     'Ruins': {'callback': generate_town,
+	                               'building_types': ['storage_1', 'storage_1', 'storage_2'],
+	                               'y_mod_min': .3,
+	                               'y_mod_max': .8,
+	                               'refs': 'ruins',
+	                               'road_scale': 0.5,
+	                               'road_type': 'dirt'}}
 	_occupied_cells = {}
 	_empty_cells = {}
 	
@@ -1483,7 +1879,7 @@ def generate_noise_map(map_gen):
 						continue
 					
 					for pos in _occupied_cells[avoid_cell_type]:
-						if numbers.distance(cell['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
+						if bad_numbers.distance(cell['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
 							_continue = True
 							
 							break
@@ -1505,8 +1901,14 @@ def generate_noise_map(map_gen):
 				_cell_types[_cell_type]['amount'] += 1
 				
 				if 'building_types' in _cell_types[_cell_type]:
-					cell['building_types'] = _cell_types[_cell_type]['building_types']
+					cell['building_types'] = _cell_types[_cell_type]['building_types'][:]
 					cell['refs'] = _cell_types[_cell_type]['refs']
+				
+				if 'road_scale' in _cell_types[_cell_type]:
+					cell['road_scale'] = _cell_types[_cell_type]['road_scale']
+				
+				if 'road_type' in _cell_types[_cell_type]:
+					cell['road_type'] = _cell_types[_cell_type]['road_type']
 				
 				_cell_types[_cell_type]['callback'](map_gen, cell)
 				
@@ -1543,7 +1945,7 @@ def generate_noise_map(map_gen):
 				_cell_2 = _empty_cells[empty_cell_2]
 				
 				for pos_2 in [_cell_2['cell']['top_left'], _cell_2['cell']['top_right'], _cell_2['cell']['bot_left'], _cell_2['cell']['bot_right']]:
-					if numbers.distance(pos_1, pos_2)<100:
+					if bad_numbers.distance(pos_1, pos_2)<100:
 						if not empty_cell_2 in _cell_1['neighbors']:
 							_cell_1['neighbors'].append(empty_cell_2)
 						
@@ -1587,7 +1989,7 @@ def generate_noise_map(map_gen):
 								continue
 							
 							for pos in _occupied_cells[avoid_cell_type]:
-								if numbers.distance(_cell['cell']['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
+								if bad_numbers.distance(_cell['cell']['center_pos'], pos) < _cell_type['avoid_types'][avoid_cell_type]:
 									_continue = True
 									
 									break
@@ -1640,12 +2042,24 @@ def generate_noise_map(map_gen):
 	for empty_cell in _empty_cells:
 		_cell = _empty_cells[empty_cell]['cell']
 		
-		for empty_cell_type in _empty_cell_types.values():
+		for empty_cell_type in _empty_cell_types:
 			if random.randint(0, 1):
 				continue
 			
-			if map_gen['size'][1]*empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*empty_cell_type['y_mod_max']:
-				empty_cell_type['callback'](map_gen, _cell)
+			_empty_cell_type = _empty_cell_types[empty_cell_type]
+			
+			if 'building_types' in _empty_cell_type:
+				_cell['building_types'] = _empty_cell_type['building_types']
+				_cell['refs'] = _empty_cell_type['refs']
+			
+			if 'road_scale' in _empty_cell_type:
+				_cell['road_scale'] = _empty_cell_type['road_scale']
+			
+			if 'road_type' in _empty_cell_type:
+				_cell['road_type'] = _empty_cell_type['road_type']
+			
+			if map_gen['size'][1]*_empty_cell_type['y_mod_min'] <= _cell['center_pos'][1] <= map_gen['size'][1]*_empty_cell_type['y_mod_max']:
+				_empty_cell_type['callback'](map_gen, _cell)
 	
 	logging.debug('%s empty cells remain.' % len(_empty_cells))
 
@@ -1807,7 +2221,7 @@ def generate_farm(map_gen, cell):
 		_continue = False
 		for farmhouse_chunk_key in _building_chunks:
 			_farmhouse_chunk = map_gen['chunk_map'][farmhouse_chunk_key]
-			_dist = numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
+			_dist = bad_numbers.distance(_potential_silo_chunk['pos'], _farmhouse_chunk['pos'])
 			
 			if not _min_farmhouse_distance < _dist <= _max_farmhouse_distance:
 				_continue = True
@@ -1849,18 +2263,18 @@ def generate_farm(map_gen, cell):
 				create_tile(map_gen, pos[0], pos[1], 2+z, random.choice(tiles.WHITE_TILE_TILES))
 			else:
 				_breaks.append({'pos': (pos[0], pos[1], 2+z),
-			                    'distance': numbers.distance(_center, pos),
-			                    'direction': numbers.direction_to(_center, pos)})
+			                    'distance': bad_numbers.distance(_center, pos),
+			                    'direction': bad_numbers.direction_to(_center, pos)})
 	
 	for break_pos in _breaks:
-		_velocity = numbers.velocity(break_pos['direction'], numbers.clip(break_pos['distance']/5, 0.5, 1))
+		_velocity = bad_numbers.velocity(break_pos['direction'], bad_numbers.clip(break_pos['distance']/5, 0.5, 1))
 		_velocity[0] = break_pos['pos'][0]+_velocity[0]
 		_velocity[1] = break_pos['pos'][1]+_velocity[1]
 		
 		for z in range(1, break_pos['pos'][2]):
-			_i = z/numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
+			_i = z/bad_numbers.clip(z/float(MAP_SIZE[2]), 0, 5)
 
-			_center_pos = numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
+			_center_pos = bad_numbers.lerp_velocity(break_pos['pos'], _velocity, _i)
 			_center_pos = (int(round(_center_pos[0])), int(round(_center_pos[1])))
 			for pos in drawing.draw_circle(_center_pos, 4):
 				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
@@ -1890,7 +2304,7 @@ def generate_factory(map_gen, cell):
 		
 		break
 
-def generate_town(map_gen, cell):
+def generate_town(map_gen, cell, road_scale=1, road_type='paved'):
 	_min_building_size = 4
 	_max_building_size = 6
 	_potential_building_chunks = cell['chunk_keys'][:]
@@ -1901,6 +2315,12 @@ def generate_town(map_gen, cell):
 	_tries = 0
 	_buildings = cell['building_types'][:]
 	_road_seeds = []
+	
+	if 'road_scale' in cell:
+		road_scale = cell['road_scale']
+	
+	if 'road_type' in cell:
+		road_type = cell['road_type']
 	
 	map_gen['refs'][cell['refs']].append(cell['chunk_keys'][:])
 	
@@ -1939,7 +2359,7 @@ def generate_town(map_gen, cell):
 	_starting_road_seed = {'road_seed': None, 'road_chunk_key': None, 'distance': 0}
 	for road_seed in _road_seeds:
 		_road_chunk_key = alife.chunks.get_nearest_chunk_in_list(map_gen['chunk_map'][road_seed]['pos'], map_gen['refs']['roads'])
-		_distance = numbers.distance(map_gen['chunk_map'][_road_chunk_key]['pos'], map_gen['chunk_map'][road_seed]['pos'])
+		_distance = bad_numbers.distance(map_gen['chunk_map'][_road_chunk_key]['pos'], map_gen['chunk_map'][road_seed]['pos'])
 		
 		if not _starting_road_seed['road_seed'] or _distance<_starting_road_seed['distance']:
 			_starting_road_seed['distance'] = _distance
@@ -1955,7 +2375,7 @@ def generate_town(map_gen, cell):
 			_last_seed = _path[len(_path)-1]
 			
 			for road_seed in _road_seeds:
-				_distance = numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
+				_distance = bad_numbers.distance(map_gen['chunk_map'][road_seed]['pos'], map_gen['chunk_map'][_last_seed]['pos'])
 				
 				if not _closest_road_seed['road_seed'] or _distance<_closest_road_seed['distance']:
 					_closest_road_seed['road_seed'] = road_seed
@@ -1974,15 +2394,17 @@ def generate_town(map_gen, cell):
 		_ok_tiles_1.extend(tiles.DIRT_TILES)
 		_ok_tiles_1.extend(tiles.BROKEN_CONCRETE_TILES)
 		_ok_tiles_1.extend(tiles.GRASS_TILES)
+		_ok_tiles_1.extend(tiles.WOOD_TILES)
 		
 		_ok_tiles_2 = []
 		_ok_tiles_2.extend(tiles.DIRT_TILES)
 		_ok_tiles_2.extend(tiles.GRASS_TILES)
+		_ok_tiles_2.extend(tiles.WOOD_TILES)
 		
 		while _path:
 			_last_path = _start
-			
 			_start = _path.pop(0)
+			_last_pos = None
 			
 			if _path:
 				_end = _path[0]
@@ -1996,31 +2418,43 @@ def generate_town(map_gen, cell):
 				
 				continue
 			
-			for pos in _astar:
-				_chunk_key = '%s,%s' % (pos[0]*map_gen['chunk_size'], pos[1]*map_gen['chunk_size'])
+			for s_pos in _astar:
+				_s_pos = (s_pos[0]*map_gen['chunk_size'], s_pos[1]*map_gen['chunk_size'])
+				_chunk_key = '%s,%s' % _s_pos
 				map_gen['chunk_map'][_chunk_key]['type'] = 'road'
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(10, 12),
-					           tiles.DIRT_TILES,
-					           only_tiles=_ok_tiles_2,
-					           pos_is_chunk_key=True)
+				if not _last_pos:
+					_last_pos = _s_pos
+					
+					continue
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(8, 10),
-					           tiles.BROKEN_CONCRETE_TILES,
-					           only_tiles=_ok_tiles_1,
-					           pos_is_chunk_key=True)
+				for pos in drawing.diag_line(_last_pos, _s_pos):
+					create_splotch(map_gen,
+						           pos,
+						           random.randint(int(round(10*road_scale)), int(round(12*road_scale))),
+						           tiles.DIRT_TILES,
+						           only_tiles=_ok_tiles_2,
+						           pos_is_chunk_key=True)
+					
+					if road_type == 'paved':
+						create_splotch(map_gen,
+							           pos,
+							           random.randint(int(round(8*road_scale)), int(round(10*road_scale))),
+							           tiles.BROKEN_CONCRETE_TILES,
+							           only_tiles=_ok_tiles_1,
+							           pos_is_chunk_key=True)
+						
+						create_splotch(map_gen,
+							           pos,
+							           random.randint(int(round(6*road_scale)), int(round(8*road_scale))),
+							           tiles.CONCRETE_TILES,
+							           only_tiles=_ok_tiles_1,
+							           pos_is_chunk_key=True)
 				
-				create_splotch(map_gen,
-					           map_gen['chunk_map'][_chunk_key]['pos'],
-					           random.randint(6, 8),
-					           tiles.CONCRETE_TILES,
-					           only_tiles=_ok_tiles_1,
-					           pos_is_chunk_key=True)
-		
+					if road_scale == 1:
+						break
+				
+				_last_pos = _s_pos
 	
 	if random.randint(0, 1):
 		return False
@@ -2279,7 +2713,7 @@ def create_tree(map_gen, position, height):
 				if pos[0]<0 or pos[0]>=map_gen['size'][0]-1 or pos[1]<0 or pos[1]>=map_gen['size'][1]-1:
 					continue
 					
-				_dist = _size-numbers.clip(numbers.distance(position, pos), 1, height-map_gen['size'][2])
+				_dist = _size-bad_numbers.clip(bad_numbers.distance(position, pos), 1, height-map_gen['size'][2])
 				for _z in range(_dist/2, _dist):
 					if map_gen['map'][pos[0]][pos[1]][2+_z]:
 						continue
@@ -2293,7 +2727,7 @@ def create_bush(map_gen, position, size, dither=False):
 		if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
 			continue
 		
-		if dither and random.uniform(0, 1)>numbers.distance(position, pos)/float(size):
+		if dither and random.uniform(0, 1)>bad_numbers.distance(position, pos)/float(size):
 			continue
 		
 		create_tile(map_gen, pos[0], pos[1], position[2], random.choice(tiles.BUSH_TILES))

@@ -18,8 +18,8 @@ import judgement
 import missions
 import survival
 import movement
-import logging
-import numbers
+import factions
+import bad_numbers
 import memory
 import groups
 import combat
@@ -33,9 +33,12 @@ import logic
 import sight
 import jobs
 
+import logging
 import re
 
+
 CURLY_BRACE_MATCH = '{[\w+-=\.,]*}'
+
 
 def create_function_map():
 	FUNCTION_MAP.update({'is_family': stats.is_family,
@@ -216,6 +219,7 @@ def create_function_map():
 		'has_high_recoil': lambda life: life['recoil']>=.75,
 		'has_focus_point': lambda life: len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))>0,
 		'walk_to': lambda life: movement.travel_to_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[len(lfe.get_memory(life, matches={'text': 'focus_on_chunk'}))-1]['chunk_key']),
+		'travel_to_chunk': movement.travel_to_chunk,
 		'follow_target': alife_follow.tick,
 		'guard_focus_point': lambda life: movement.guard_chunk(life, lfe.get_memory(life, matches={'text': 'focus_on_chunk'})[0]['chunk_key']),
 		'disarm': lambda life, life_id: brain.flag_alife(life, life_id, 'disarm', value=WORLD_INFO['ticks']),
@@ -232,7 +236,7 @@ def create_function_map():
 		'find_nearest_chunk_in_reference': references.find_nearest_chunk_key_in_reference_of_type,
 		'has_item_type': lambda life, item_match: not lfe.get_inventory_item_matching(life, item_match) == None,
 		'move_to_target': lambda life, target_id: movement.travel_to_position(life, LIFE[target_id]['pos']),
-		'is_in_range_of_target': lambda life, target_id, distance: numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
+		'is_in_range_of_target': lambda life, target_id, distance: bad_numbers.distance(life['pos'], LIFE[target_id]['pos'])<=int(distance),
 		'track_target': lambda life, target_id: brain.meet_alife(life, LIFE[target_id]) and judgement.track_target(life, target_id),
 		'untrack_target': judgement.untrack_target,
 		'clear_tracking': lambda life: brain.flag(life, 'tracking_targets', []),
@@ -243,6 +247,9 @@ def create_function_map():
 		'give_mission': missions.create_mission_and_give,
 		'do_mission': alife_work.tick,
 		'has_mission': lambda life: len(life['missions'])>0,
+		'has_dialog': lambda life: lfe.has_dialog(life)>0,
+		'is_in_territory': lambda life, territory_id: lfe.get_current_chunk_id(life) in WORLD_INFO['territories'][territory_id]['chunk_keys'],
+		'capture_territory': lambda life, territory_id: factions.claim_existing_territory(life['faction'], territory_id),
 		'drop_item': lfe.drop_item,
 		'get_id': lambda life: life['id'],
 		'always': lambda life: 1==1,

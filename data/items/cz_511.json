@@ -4,7 +4,7 @@
 "icon": "/",
 "description": ".22 rifle",
 "flags": "",
-"size": "3x2",
+"size": "18x1",
 "feed": "magazine",
 "ammotype": ".22 LR",
 "recoil": 0.5,
