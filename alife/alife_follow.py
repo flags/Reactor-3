@@ -2,9 +2,9 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
-import sight
+from . import judgement
+from . import movement
+from . import sight
 
 
 def tick(life):

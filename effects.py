@@ -332,7 +332,7 @@ def draw_vapor(pos, vapor):
 def calculate_all_effects():
 	_remove_lights = []
 	
-	for effect in EFFECTS.values():
+	for effect in list(EFFECTS.values()):
 		effect['callback'](effect)
 	
 	for light in WORLD_INFO['lights']:

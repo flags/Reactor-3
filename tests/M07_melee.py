@@ -108,7 +108,7 @@ def enter_stance(life, stance, forced=False, **kwargs):
 	if forced:
 		life['stance_flags']['forced'] = True
 	
-	print life['name'], '->', stance, _time
+	print(life['name'], '->', stance, _time)
 
 def stun(life, force=0):
 	_current_stance = get_current_stance(life)
@@ -121,7 +121,7 @@ def stun(life, force=0):
 	return enter_stance(life, _next_stance, forced=True)
 
 def attack(life, target_id, stance):
-	print life['name'], 'hit', LIFE[target_id]['name']+':', stance
+	print(life['name'], 'hit', LIFE[target_id]['name']+':', stance)
 	
 	_attack = get_stance(life, stance)['attack']
 	
@@ -132,7 +132,7 @@ def attack(life, target_id, stance):
 			life['score'] += 1
 			stun(LIFE[target_id], force=_attack['force'])
 		else:
-			print LIFE[target_id]['name'], 'blocked', life['name']
+			print(LIFE[target_id]['name'], 'blocked', life['name'])
 			stun(life)
 
 def think(life):
@@ -156,7 +156,7 @@ def think(life):
 			_incoming.append({'target_id': life_id, 'time': _target['stance_ticks']})
 		elif not 'defend' in _current_target_stance or not random.randint(0, life['stats']['melee']):
 			if 'defend' in _current_target_stance:
-				print life['name'], 'tries to break', LIFE[life_id]['name'] 
+				print(life['name'], 'tries to break', LIFE[life_id]['name']) 
 			
 			_targets.append({'target_id': life_id})
 	
@@ -172,14 +172,14 @@ def think(life):
 				_has_counter_attack = get_quickest_attack(life, incoming_attack['target_id'], limit=incoming_attack['time'])
 				
 				if _has_counter_attack:
-					print life['name'], 'is countering', LIFE[incoming_attack['target_id']]['name']
+					print(life['name'], 'is countering', LIFE[incoming_attack['target_id']]['name'])
 					return enter_stance(life, _has_counter_attack, target_id=incoming_attack['target_id'])
 			else:
 				_has_defend = get_quickest_defend(life, limit=incoming_attack['time'])
 				
 				if _has_defend:
 					if not 'defend' in get_current_stance(life) and not (life['next_stance'] and 'defend' in get_stance(life, life['next_stance'])):
-						print life['name'], 'is defending against', LIFE[incoming_attack['target_id']]['name']
+						print(life['name'], 'is defending against', LIFE[incoming_attack['target_id']]['name'])
 						return enter_stance(life, _has_defend, target_id=incoming_attack['target_id'])
 		
 		if life['next_stance']:
@@ -194,7 +194,7 @@ def think(life):
 			life['stance'] = life['next_stance']
 			life['next_stance'] = None
 			
-			print life['name'], '=', life['stance'], life['stance_flags']
+			print(life['name'], '=', life['stance'], life['stance_flags'])
 			
 			_stance = get_current_stance(life)
 			_flags = life['stance_flags'].copy()
@@ -211,7 +211,7 @@ def think(life):
 			_stance = get_current_stance(life)
 			
 			if 'defend' in _stance and random.randint(0, life['stats']['melee']):
-				print life['name'], 'holds'
+				print(life['name'], 'holds')
 				return True
 			
 			#Stand back up
@@ -225,5 +225,5 @@ for i in range(24):
 	think(p1)
 	think(p2)
 
-print p1['score']
-print p2['score']
+print(p1['score'])
+print(p2['score'])

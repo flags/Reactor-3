@@ -145,7 +145,7 @@ def generate_map(size=(400, 1000, 10), detail=5, towns=2, factories=1, forests=1
 	
 	return map_gen
 
-def create_path_map():
+def create_path_map(map_gen):
 	WORLD_INFO['path_map'] = {}
 	
 	for slice_id in WORLD_INFO['slices']:
@@ -204,7 +204,7 @@ def get_neighboring_tiles(map_gen, pos, tiles, vert_only=False, horiz_only=False
 	return _neighbor_tiles
 
 def building_test(map_gen, building_type):
-	while not generate_building(map_gen, '45,30', building_type, map_gen['chunk_map'].keys()):
+	while not generate_building(map_gen, '45,30', building_type, list(map_gen['chunk_map'].keys())):
 		continue
 
 def create_buildings():
@@ -1254,7 +1254,7 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 	if not _building:
 		return False
 	
-	if not sum([len(r['chunk_keys']) for r in _building['rooms'].values()])==sum([r['chunks'] for r in BUILDINGS[building_type]['chunks'].values()]):
+	if not sum([len(r['chunk_keys']) for r in list(_building['rooms'].values())])==sum([r['chunks'] for r in list(BUILDINGS[building_type]['chunks'].values())]):
 		return False
 	
 	for room_name in _building['rooms']:
@@ -1451,15 +1451,15 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 							
 							create_tile(map_gen, _x, _y, 2, random.choice(_building['flags']['yard']['tiles']))
 			
-			_max_chunk_distance = _closest_fence_chunk['distance']/3
+			_max_chunk_distance = _closest_fence_chunk['distance']//3
 			
 			if 'fence' in _building['flags']['yard']:
 				for x in range(_top_left[0], _bot_right[0]+WORLD_INFO['chunk_size']+1):
 					if x >= MAP_SIZE[0]-1:
 						continue
 					
-					_chunk_key_1 = [(x/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _top_left[1]]
-					_chunk_key_2 = [(x/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _bot_right[1]]
+					_chunk_key_1 = [(x//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _top_left[1]]
+					_chunk_key_2 = [(x//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], _bot_right[1]]
 					_pos_1_open = map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
 					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
 					    map_gen['map'][x][_top_left[1]][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
@@ -1481,8 +1481,8 @@ def generate_building(map_gen, chunk_key, building_type, possible_building_chunk
 					if y >= MAP_SIZE[1]-1:
 						continue
 					
-					_chunk_key_1 = [_top_left[0], (y/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
-					_chunk_key_2 = [_bot_right[0], (y/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
+					_chunk_key_1 = [_top_left[0], (y//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
+					_chunk_key_2 = [_bot_right[0], (y//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']]
 					_pos_1_open = map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in tiles.GRASS_TILES] or \
 					    map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['splatter_tiles']] or \
 					    map_gen['map'][_top_left[0]][y][2]['id'] in [t['id'] for t in _building['flags']['yard']['tiles']]
@@ -1591,8 +1591,8 @@ def create_tile(map_gen, x, y, z, tile):
 		_chunk['max_z'] = z
 
 def generate_chunk_map(map_gen):
-	for y1 in xrange(0, map_gen['size'][1], map_gen['chunk_size']):
-		for x1 in xrange(0, map_gen['size'][0], map_gen['chunk_size']):
+	for y1 in range(0, map_gen['size'][1], map_gen['chunk_size']):
+		for x1 in range(0, map_gen['size'][0], map_gen['chunk_size']):
 			_chunk_key = '%s,%s' % (x1, y1)
 			
 			map_gen['chunk_map'][_chunk_key] = {'pos': (x1, y1),
@@ -1952,8 +1952,8 @@ def generate_noise_map(map_gen):
 						if not empty_cell_1 in _cell_2['neighbors']:
 							_cell_2['neighbors'].append(empty_cell_1)
 		
-	for empty_cell in _empty_cells.keys():
-		if not empty_cell in _empty_cells.keys():
+	for empty_cell in list(_empty_cells.keys()):
+		if not empty_cell in list(_empty_cells.keys()):
 			continue
 		
 		_cell = _empty_cells[empty_cell]
@@ -2021,7 +2021,7 @@ def generate_noise_map(map_gen):
 					del _empty_cells[empty_cell]
 					del _empty_cells[neighbor]
 					
-					for __cell in _empty_cells.values():
+					for __cell in list(_empty_cells.values()):
 						if empty_cell in __cell['neighbors']:
 							__cell['neighbors'].remove(empty_cell)
 						
@@ -2114,8 +2114,8 @@ def generate_field(map_gen, cell):
 	for chunk_key in cell['chunk_keys']:
 		map_gen['chunk_map'][chunk_key]['type'] = 'field'
 		
-		_x = map_gen['chunk_map'][chunk_key]['pos'][0]+(map_gen['chunk_size']/2)
-		_y = map_gen['chunk_map'][chunk_key]['pos'][1]+(map_gen['chunk_size']/2)
+		_x = map_gen['chunk_map'][chunk_key]['pos'][0]+(map_gen['chunk_size']//2)
+		_y = map_gen['chunk_map'][chunk_key]['pos'][1]+(map_gen['chunk_size']//2)
 			
 		if _x<0 or _x>=MAP_SIZE[0] or _y<0 or _y>=MAP_SIZE[1]:
 			continue
@@ -2165,8 +2165,8 @@ def generate_farm(map_gen, cell):
 			
 			_yard_chunks.append(neighbor_chunk_key)
 			_center_pos = list(map_gen['chunk_map'][neighbor_chunk_key]['pos'][:2])
-			_center_pos[0] += map_gen['chunk_size']/2
-			_center_pos[1] += map_gen['chunk_size']/2
+			_center_pos[0] += map_gen['chunk_size']//2
+			_center_pos[1] += map_gen['chunk_size']//2
 			
 			for pos in drawing.draw_circle(_center_pos, random.randint(6, 8)):
 				if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
@@ -2208,7 +2208,7 @@ def generate_farm(map_gen, cell):
 			_x = x-_top_left[0]
 		
 			if not _x or not _y or x == _bot_right[0] or y == _bot_right[1]:
-				create_tile(map_gen, x+map_gen['chunk_size']/2, y+map_gen['chunk_size']/2, 2, random.choice(tiles.WOOD_TILES))
+				create_tile(map_gen, x+map_gen['chunk_size']//2, y+map_gen['chunk_size']//2, 2, random.choice(tiles.WOOD_TILES))
 	
 	#Silos
 	_potential_silo_chunks = []
@@ -2253,7 +2253,7 @@ def generate_farm(map_gen, cell):
 				create_tile(map_gen, x, y, 2, random.choice(tiles.CONCRETE_FLOOR_TILES))
 	
 	_breaks = []
-	_center = (_silo_chunk['pos'][0]+map_gen['chunk_size']/2, _silo_chunk['pos'][1]+map_gen['chunk_size']/2)
+	_center = (_silo_chunk['pos'][0]+map_gen['chunk_size']//2, _silo_chunk['pos'][1]+map_gen['chunk_size']//2)
 	for z in range(1, 4):
 		for pos in drawing.draw_circle(_center, 10):
 			if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
@@ -2267,7 +2267,7 @@ def generate_farm(map_gen, cell):
 			                    'direction': bad_numbers.direction_to(_center, pos)})
 	
 	for break_pos in _breaks:
-		_velocity = bad_numbers.velocity(break_pos['direction'], bad_numbers.clip(break_pos['distance']/5, 0.5, 1))
+		_velocity = bad_numbers.velocity(break_pos['direction'], bad_numbers.clip(break_pos['distance']//5, 0.5, 1))
 		_velocity[0] = break_pos['pos'][0]+_velocity[0]
 		_velocity[1] = break_pos['pos'][1]+_velocity[1]
 		
@@ -2490,8 +2490,8 @@ def generate_town(map_gen, cell, road_scale=1, road_type='paved'):
 def create_splotch(map_gen, position, size, tiles, avoid_tiles=[], z=2, only_tiles=[], avoid_chunks=[], avoid_positions=[], pos_is_chunk_key=False):
 	if pos_is_chunk_key:
 		position = list(position)
-		position[0] += map_gen['chunk_size']/2
-		position[1] += map_gen['chunk_size']/2
+		position[0] += map_gen['chunk_size']//2
+		position[1] += map_gen['chunk_size']//2
 	
 	for pos in drawing.draw_circle(position, size):
 		if pos[0]<0 or pos[0]>=MAP_SIZE[0] or pos[1]<0 or pos[1]>=MAP_SIZE[1]:
@@ -2557,11 +2557,11 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 	else:
 		_max_turns = turns
 	
-	_road_segments = range(random.randint(length[0], length[1]))
+	_road_segments = list(range(random.randint(length[0], length[1])))
 	_town_segments = []
 	for i in range(turnoffs):
 		if i:
-			_segment = len(_road_segments)/(turnoffs-i)
+			_segment = len(_road_segments)//(turnoffs-i)
 			_segment -= 10
 		else:
 			_segment = first_segment
@@ -2573,26 +2573,26 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 	_next_dir = next_dir
 	
 	if start_pos:
-		_chunk_key = '%s,%s' % ((start_pos[0]/map_gen['chunk_size'])*map_gen['chunk_size'],
-		                        (start_pos[1]/map_gen['chunk_size'])*map_gen['chunk_size'])
+		_chunk_key = '%s,%s' % ((start_pos[0]//map_gen['chunk_size'])*map_gen['chunk_size'],
+		                        (start_pos[1]//map_gen['chunk_size'])*map_gen['chunk_size'])
 	
 	if not _pos:
 		_prev_dir = _next_dir
 		
 		if not _start_edge:
-			_pos = [random.randint(0, map_gen['size'][0])/map_gen['chunk_size'], 0]
+			_pos = [random.randint(0, map_gen['size'][0])//map_gen['chunk_size'], 0]
 			_prev_dir = (0, -1)
 			_next_dir = (0, 1)
 		elif _start_edge == 1:
-			_pos = [map_gen['size'][0]/map_gen['chunk_size'], random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
+			_pos = [map_gen['size'][0]//map_gen['chunk_size'], random.randint(0, map_gen['size'][1])//map_gen['chunk_size']]
 			_prev_dir = (1, 0)
 			_next_dir = (-1, 0)
 		elif _start_edge == 2:
-			_pos = [random.randint(10*map_gen['chunk_size'], (map_gen['size'][0])/map_gen['chunk_size'])-(6*map_gen['chunk_size']), map_gen['size'][1]/map_gen['chunk_size']]
+			_pos = [random.randint(10*map_gen['chunk_size'], (map_gen['size'][0])//map_gen['chunk_size'])-(6*map_gen['chunk_size']), map_gen['size'][1]//map_gen['chunk_size']]
 			_prev_dir = (0, 1)
 			_next_dir = (0, -1)
 		elif _start_edge == 3:
-			_pos = [-1, random.randint(0, map_gen['size'][1])/map_gen['chunk_size']]
+			_pos = [-1, random.randint(0, map_gen['size'][1])//map_gen['chunk_size']]
 			_prev_dir = (-1, 0)
 			_next_dir = (1, 0)
 	
@@ -2601,10 +2601,10 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 			_pos[0] += _next_dir[0]
 			_pos[1] += _next_dir[1]
 			
-			if _pos[0] >= map_gen['size'][0]/map_gen['chunk_size']:
+			if _pos[0] >= map_gen['size'][0]//map_gen['chunk_size']:
 				return False
 			
-			if _pos[1] >= map_gen['size'][1]/map_gen['chunk_size']:
+			if _pos[1] >= map_gen['size'][1]//map_gen['chunk_size']:
 				return False
 			
 			if _pos[0] < 0:
@@ -2650,13 +2650,13 @@ def place_road(map_gen, length=(15, 25), start_pos=None, next_dir=None, turnoffs
 		
 		if _max_turns:
 			_possible_next_dirs = []
-			if _pos[0]+len(_road_segments)+1<map_gen['size'][0]/map_gen['chunk_size']:
+			if _pos[0]+len(_road_segments)+1<map_gen['size'][0]//map_gen['chunk_size']:
 				_possible_next_dirs.append((1, 0))
 			
 			if _pos[0]-len(_road_segments)-1>0:
 				_possible_next_dirs.append((-1, 0))
 			
-			if _pos[1]+len(_road_segments)+1<map_gen['size'][1]/map_gen['chunk_size']:
+			if _pos[1]+len(_road_segments)+1<map_gen['size'][1]//map_gen['chunk_size']:
 				_possible_next_dirs.append((0, 1))
 			
 			if _pos[1]-len(_road_segments)-1>0:
@@ -2714,7 +2714,7 @@ def create_tree(map_gen, position, height):
 					continue
 					
 				_dist = _size-bad_numbers.clip(bad_numbers.distance(position, pos), 1, height-map_gen['size'][2])
-				for _z in range(_dist/2, _dist):
+				for _z in range(_dist//2, _dist):
 					if map_gen['map'][pos[0]][pos[1]][2+_z]:
 						continue
 					
@@ -2975,4 +2975,4 @@ if __name__ == '__main__':
 	else:
 		generate_map(size=(400, 1000, 10), skip_zoning=(not '--zone' in sys.argv), skip_chunking=(not '--chunk' in sys.argv))
 	
-	print 'Total mapgen time:', time.time()-_t
+	print('Total mapgen time:', time.time()-_t)

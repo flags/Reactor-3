@@ -2,12 +2,12 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import rawparse
-import action
-import speech
-import brain
-import jobs
+from . import judgement
+from . import rawparse
+from . import action
+from . import speech
+from . import brain
+from . import jobs
 
 import logging
 
@@ -43,11 +43,11 @@ def create_order(life, life_id, order, message, **kwargs):
 		logging.critical('%s does not know %s but is giving orders to them.' % (' '.join(life['name']), ' '.join(LIFE[life_id]['name'])))
 		return False
 	
-	if _order in _target['orders'].values():
+	if _order in list(_target['orders'].values()):
 		return False
 	
 	_order['active'] = False
-	if _order in _target['orders'].values():
+	if _order in list(_target['orders'].values()):
 		return False
 	
 	_order['active'] = True
@@ -63,7 +63,7 @@ def get_questions_for_target(life, life_id):
 
 def get_orders_for_target(life, life_id, active_only=True):
 	_active_orders = []
-	for order in brain.knows_alife_by_id(life, life_id)['orders'].values():
+	for order in list(brain.knows_alife_by_id(life, life_id)['orders'].values()):
 		if active_only and not order['active']:
 			continue
 		
@@ -107,7 +107,7 @@ def reject_order(life, life_id):
 
 def give_target_order_message(life, life_id):
 	_orders = get_orders_for_target(life, life_id)
-	print life['name'], LIFE[life_id]['name'], 'ORDER MESSAGE', _orders[0]['message']
+	print(life['name'], LIFE[life_id]['name'], 'ORDER MESSAGE', _orders[0]['message'])
 	return _orders[0]['message']
 
 def rescore_history(life):

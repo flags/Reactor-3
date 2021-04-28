@@ -10,7 +10,7 @@ import alife
 import items
 import maps
 
-import cPickle
+import pickle as cPickle
 import cython
 import numpy
 import time
@@ -76,7 +76,7 @@ def light(los_map, world_pos, size, row, _start_slope, _end_slope, xx, xy, yx, y
 					callback((_a_x, _a_y))
 			
 			if not _solid:
-				_chunk_key = '%s,%s' % ((_a_x/5)*5, (_a_y/5)*5)
+				_chunk_key = '%s,%s' % ((_a_x//5)*5, (_a_y//5)*5)
 				_chunk = chunk_map[_chunk_key]
 				
 				for item_uid in _chunk['items'][:]:
@@ -125,7 +125,7 @@ def fov(start_position, distance, get_chunks=False, life_id=None, callback=None)
 				if x<0 or x>=MAP_SIZE[0]-1 or y<0 or y>=MAP_SIZE[1]-1:
 					continue
 				
-				_chunk_key = '%s,%s' % ((x/5)*5, (y/5)*5)
+				_chunk_key = '%s,%s' % ((x//5)*5, (y//5)*5)
 				
 				for item_uid in maps.get_chunk(_chunk_key)['items']:
 					if items.is_blocking(item_uid) and ITEMS[item_uid]['pos'][:2] == [x, y]:
@@ -173,7 +173,7 @@ def fov(start_position, distance, get_chunks=False, life_id=None, callback=None)
 			_map, _keys = light(_los, start_position, _distance, 1, 1.0, 0.0, MULT[0][i],
 				MULT[1][i], MULT[2][i], MULT[3][i], WORLD_INFO['map'], MAP_SIZE, WORLD_INFO['chunk_map'], callback=callback)
 
-	_los[_los.shape[0]/2,_los.shape[1]/2] = 1
+	_los[_los.shape[0]//2,_los.shape[1]//2] = 1
 
 	if get_chunks:
 		return False

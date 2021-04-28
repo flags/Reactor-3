@@ -47,7 +47,7 @@ def draw(los_map):
 				else:
 					_x+=' '
 
-		print _x
+		print(_x)
 
 def light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx, yy):
 	if start_slope < end_slope:
@@ -132,6 +132,6 @@ def los(start_position, distance):
 
 _start_time = time.time()
 _los = los((20, 20), 20)
-print time.time()-_start_time
+print(time.time()-_start_time)
 
 draw(_los)

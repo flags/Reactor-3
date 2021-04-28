@@ -2,19 +2,19 @@ from globals import *
 
 import life as lfe
 
-import action
+from . import action
 
 import traceback
 import logging
 import sys
 
 def has_goal(life, name):
-	return [g for g in life['goals'].values() if g['name'] == name]
+	return [g for g in list(life['goals'].values()) if g['name'] == name]
 
 def get_active_goals(life):
 	_active = []
 	
-	for goal in [g for g in life['goals'].values() if not g['complete']]:
+	for goal in [g for g in list(life['goals'].values()) if not g['complete']]:
 		if perform_goal(life, goal['id'], only_required=True):
 			_active.append(goal['id'])
 
@@ -140,21 +140,21 @@ def check_for_goal_finish(life, goal_id, passed=False):
 	
 	for question in _goal['complete_on_answer']:
 		if lfe.get_memory_via_id(life, question)['answered']:
-			print 'DELETED GOAL!' * 100
+			print('DELETED GOAL!' * 100)
 			_goal['complete'] = True
 			break
 	
 	if passed:
-		print 'DELETED GOAL!' * 100
+		print('DELETED GOAL!' * 100)
 		_goal['complete'] = True
 		
-		print 'FINISHED GOAL' * 50
+		print('FINISHED GOAL' * 50)
 
 def perform_goal(life, goal_id, only_required=False):
 	_goal = get_goal_via_id(life, goal_id)
 	_passed = True
 	
-	for criteria in _goal['criteria'].values():
+	for criteria in list(_goal['criteria'].values()):
 		if only_required and not criteria['required']:
 			continue
 		
@@ -171,7 +171,7 @@ def perform_goal(life, goal_id, only_required=False):
 			criteria['result'] = _process
 			
 			if not criteria['result']:
-				print 'Goal not met', life['name'], criteria				
+				print('Goal not met', life['name'], criteria)				
 				_passed = False
 				continue
 		else:
@@ -217,9 +217,9 @@ def process_criteria(life, goal_id, criteria_id, result):
 			_criteria['result'] = action.execute(sub_criteria['filter_action'])
 		
 		if _criteria['result']:
-			print 'Sub-criteria passed:', sub_criteria
+			print('Sub-criteria passed:', sub_criteria)
 		else:
-			print 'Sub-criteria failed:', sub_criteria
+			print('Sub-criteria failed:', sub_criteria)
 			break
 	
 	return _criteria['result']

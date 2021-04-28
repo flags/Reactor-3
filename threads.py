@@ -24,7 +24,7 @@ class ChunkHandler(threading.Thread):
 		
 		self.last_checked = WORLD_INFO['ticks']
 		
-		for life in [l for l in LIFE.values() if l['online']]:
+		for life in [l for l in list(LIFE.values()) if l['online']]:
 			_x_min = bad_numbers.clip(life['pos'][0]-MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1-MAP_WINDOW_SIZE[0])
 			_y_min = bad_numbers.clip(life['pos'][1]-MAP_WINDOW_SIZE[1], 0, MAP_SIZE[1]-1-MAP_WINDOW_SIZE[1])
 			_x_max = bad_numbers.clip(life['pos'][0]+MAP_WINDOW_SIZE[0], 0, MAP_SIZE[0]-1)

@@ -139,11 +139,8 @@ def _load_strings(a, directory, filenames):
 
 def load_strings():
 	#TODO: Use better walk, like one in profiles.py
-	try:
-		os.path.walk(TEXT_DIR, _load_strings, None)
-		load_dialog()
-	except Exception, e:
-		raise Exception(e)
+    for directory, _, filenames in os.walk("."):
+        _load_strings(None, directory, filenames)
 
 def load_dialog():
 	with open(os.path.join(TEXT_DIR, 'dialog.txt')) as f:
@@ -202,11 +199,11 @@ def format_injury(injury):
 	return 'nothing in particular.'
 
 def generate_memory_phrase(memory):
-	_details = [key for key in memory.keys() if not key == 'text']
+	_details = [key for key in list(memory.keys()) if not key == 'text']
 	_memory_age = WORLD_INFO['ticks']-memory['time_created']
 	_topic = memory['text']
 	
 	if _topic == 'friendly':
 		return '%s seems like a good guy.' % (' '.join(LIFE[memory['target']]['name']))
 	else:
-		print 'DIDNT HAVE A PHRASE FOR',_topic
+		print('DIDNT HAVE A PHRASE FOR',_topic)

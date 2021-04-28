@@ -1,10 +1,10 @@
 from globals import *
 import life as lfe
 
-import references
-import judgement
+from . import references
+from . import judgement
 import logic
-import sight
+from . import sight
 import maps
 
 import logging
@@ -45,22 +45,22 @@ def get_chunk(chunk_key):
 	return maps.get_chunk(chunk_key)
 
 def get_chunk_from_cache(pos):
-	_chunk_key = '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+	_chunk_key = '%s,%s' % ((pos[0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	
 	return WORLD_INFO['chunk_map'][_chunk_key]
 
 def get_chunk_pos(chunk_id, center=False):
 	if center:
-		return [int(val)+(map_gen['chunk_size']/2) for val in chunk_id.split(',')]
+		return [int(val)+(map_gen['chunk_size']//2) for val in chunk_id.split(',')]
 	
 	return [int(val) for val in chunk_id.split(',')]
 
 def get_chunks_in_range(x_mod_min, x_mod_max, y_mod_min, y_mod_max, x_buffer=0, y_buffer=0):
 	_chunk_keys = []
 	
-	print int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer
-	print range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size'])
-	print range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size'])
+	print(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer)
+	print(list(range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size'])))
+	print(list(range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size'])))
 	
 	for y in range(int(round(MAP_SIZE[1]*y_mod_min))+y_buffer, int(round(MAP_SIZE[1]*y_mod_max))-y_buffer, WORLD_INFO['chunk_size']):
 		for x in range(int(round(MAP_SIZE[0]*x_mod_min))+x_buffer, int(round(MAP_SIZE[0]*x_mod_max))-x_buffer, WORLD_INFO['chunk_size']):
@@ -72,7 +72,7 @@ def get_visible_chunks_from(pos, vision, center=True):
 	_center_chunk_key = get_chunk_key_at(pos)
 	
 	if center:
-		_pos = [int(i)+WORLD_INFO['chunk_size']/2 for i in _center_chunk_key.split(',')]
+		_pos = [int(i)+WORLD_INFO['chunk_size']//2 for i in _center_chunk_key.split(',')]
 		_pos.append(pos[2])
 		pos = _pos[:]
 	
@@ -89,7 +89,7 @@ def get_visible_chunks_from(pos, vision, center=True):
 	return _chunk_keys
 
 def get_chunk_key_at(pos):
-	return '%s,%s' % ((pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+	return '%s,%s' % ((pos[0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (pos[1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
 def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=None, only_unvisted=False, only_unseen=False, only_recent=False):
 	_interesting_chunks = {}
@@ -123,7 +123,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 	
 	if only_recent:
 		_recent = -1
-		for chunk_key in _interesting_chunks.keys():
+		for chunk_key in list(_interesting_chunks.keys()):
 			chunk = _interesting_chunks[chunk_key]
 			
 			if chunk['discovered_at']>_recent:
@@ -139,7 +139,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 				continue
 		
 		if lost_method == 'furthest':
-			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+			chunk_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in chunk_key.split(',')]
 			_score = bad_numbers.distance(life['pos'], chunk_center)
 			
 			if ignore_starting and chunk_key == lfe.get_current_chunk_id(life):
@@ -160,7 +160,7 @@ def find_best_chunk(life, ignore_starting=False, ignore_time=False, lost_method=
 #		if chunk_key in life['known_chunks']:
 #			continue
 #		
-#		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+#		chunk_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in chunk_key.split(',')]
 #		_distance = bad_numbers.distance(life['pos'], chunk_center)
 #		
 #		if not _nearest['key'] or _distance<_nearest['distance']:
@@ -226,7 +226,7 @@ def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 			if not chunk_key in chunks:
 				continue
 			
-			chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+			chunk_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in chunk_key.split(',')]
 			_dist = bad_numbers.distance(pos, chunk_center)
 			
 			if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
@@ -237,7 +237,7 @@ def _get_nearest_chunk_in_list(pos, chunks, check_these_chunks_first=[]):
 		return _nearest_chunk
 	
 	for chunk_key in chunks:
-		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+		chunk_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in chunk_key.split(',')]
 		_dist = bad_numbers.distance(pos, chunk_center)
 		
 		if not _nearest_chunk['chunk_key'] or _dist < _nearest_chunk['distance']:
@@ -283,8 +283,8 @@ def can_see_chunk(life, chunk_key, distance=True, center_chunk=False):
 	_pos = life['pos'][:]
 	
 	if center_chunk:
-		_pos[0] = ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
-		_pos[1] = ((_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']/2
+		_pos[0] = ((_pos[0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']//2
+		_pos[1] = ((_pos[1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])+WORLD_INFO['chunk_size']//2
 	
 	return can_see_chunk_from_pos(_pos, chunk_key, distance=distance, vision=sight.get_vision(life))
 

@@ -18,8 +18,8 @@ def parse_packet(packet):
 	
 	if _packet['type'] == 'get':
 		if _packet['what'] == 'stats':
-			_stats = {'total_memories': sum([len(l['memory']) for l in LIFE.values()]),
-				'active_life': len([l for l in LIFE.values() if not l['dead']])}
+			_stats = {'total_memories': sum([len(l['memory']) for l in list(LIFE.values())]),
+				'active_life': len([l for l in list(LIFE.values()) if not l['dead']])}
 			
 			return json.dumps(_stats)
 		elif _packet['what'] == 'groups':
@@ -28,7 +28,7 @@ def parse_packet(packet):
 			_life = LIFE[_packet['value']]
 			
 			_knows = {}
-			for entry in _life['know'].values():
+			for entry in list(_life['know'].values()):
 				_knows[entry['life']['id']] = {}
 				for key in entry:
 					if key == 'heard':
@@ -68,9 +68,9 @@ def parse_packet(packet):
 			
 			return json.dumps(_memory)
 		elif _packet['what'] == 'life_list':
-			return json.dumps(LIFE.keys())
+			return json.dumps(list(LIFE.keys()))
 		elif _packet['what'] == 'camp_list':
-			return json.dumps(CAMPS.keys())
+			return json.dumps(list(CAMPS.keys()))
 		elif _packet['what'] == 'camp':
 			if not _packet['value'] in CAMPS:
 				return json.dumps({})

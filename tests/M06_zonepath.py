@@ -44,37 +44,37 @@ def draw_map(source_map, z):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
 			if source_map[x][y][z]:
-				print '#',
+				print('#', end=' ')
 			else:
-				print '.',
-		print
+				print('.', end=' ')
+		print()
 
 def draw_slice(slice_map):
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
 			if slice_map[x][y] == -1:
-				print '^',
+				print('^', end=' ')
 			elif slice_map[x][y] == -2:
-				print '#',
+				print('#', end=' ')
 			elif slice_map[x][y] == -3:
-				print ' '
+				print(' ')
 			elif not slice_map[x][y]:
-				print '.',
+				print('.', end=' ')
 			else:
-				print slice_map[x][y],
+				print(slice_map[x][y], end=' ')
 		
-		print
+		print()
 
 def draw_ramps(ramps):
 	_ramps = [r[:2] for r in ramps]
 	for x in range(MAP_SIZE[0]):
 		for y in range(MAP_SIZE[1]):
 			if (x, y) in _ramps:
-				print '^',
+				print('^', end=' ')
 			else:
-				print '.',
+				print('.', end=' ')
 		
-		print
+		print()
 
 def get_unzoned(slice_map, z):
 	for x in range(MAP_SIZE[0]):
@@ -91,7 +91,7 @@ def get_unzoned(slice_map, z):
 	return None
 
 def process_slice(z):
-	print 'Processing:',z
+	print('Processing:',z)
 	_runs = 0
 	_slice = create_map_array(flat=True)
 	
@@ -108,7 +108,7 @@ def process_slice(z):
 			if 'map' in sys.argv:
 				draw_map(MAP, z)
 			
-			print '\tRuns:',_runs,'Time:',
+			print('\tRuns:',_runs,'Time:', end=' ')
 			break
 		
 		_slice[_start_pos[0]][_start_pos[1]] = _z_id
@@ -155,10 +155,10 @@ def process_slice(z):
 		
 		if 'ramp' in sys.argv:
 			draw_ramps(_ramps)
-			print
+			print()
 
 def get_slices_at_z(z):
-	return [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
+	return [s for s in list(WORLD_INFO['slices'].values()) if s['z'] == z]
 
 def can_path_to_zone(z1, z2):
 	if z1 == z2:
@@ -175,7 +175,7 @@ def can_path_to_zone(z1, z2):
 		
 		if z2 in _to_check:
 			_checked.append(z2)
-			print _checked
+			print(_checked)
 			return True
 	
 	return False
@@ -184,7 +184,7 @@ def create_zone_map():
 	for z in range(MAP_SIZE[2]):
 		_stime = time.time()
 		process_slice(z)
-		print time.time()-_stime
+		print(time.time()-_stime)
 
 def connect_ramps():
 	for _slice in WORLD_INFO['slices']:
@@ -197,17 +197,17 @@ def connect_ramps():
 						WORLD_INFO['slices'][_slice]['neighbors'][_matched_slice['map'][x][y]].append((x, y))
 						
 	for _slice in WORLD_INFO['slices']:
-		print 'Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z']
+		print('Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'])
 		for neighbor in WORLD_INFO['slices'][_slice]['neighbors']:
-			print '\tNeighbor:', neighbor, '(%s ramps)' % len(WORLD_INFO['slices'][_slice]['neighbors'][neighbor])
+			print('\tNeighbor:', neighbor, '(%s ramps)' % len(WORLD_INFO['slices'][_slice]['neighbors'][neighbor]))
 		
 		#print WORLD_INFO['slices'][_slice]['neighbors'].keys()
 		
 		if not WORLD_INFO['slices'][_slice]['neighbors']:
-			print '\tNo neighbors.'
+			print('\tNo neighbors.')
 
 if __name__ == '__main__':
 	create_zone_map()
-	print
+	print()
 	connect_ramps()
-	print can_path_to_zone(1, 1)
+	print(can_path_to_zone(1, 1))

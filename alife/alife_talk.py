@@ -1,18 +1,18 @@
 from globals import *
 import life as lfe
 
-import judgement
-import movement
+from . import judgement
+from . import movement
 import bad_numbers
 import dialog
-import speech
-import groups
-import memory
-import stats
-import raids
-import brain
-import camps
-import jobs
+from . import speech
+from . import groups
+from . import memory
+from . import stats
+from . import raids
+from . import brain
+from . import camps
+from . import jobs
 
 import logging
 import random

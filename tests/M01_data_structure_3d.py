@@ -59,7 +59,7 @@ for x in range(MAP_SIZE[0]):
 		_y.append(_z)
 	MAP.append(_y)
 
-print 'Printing map'
+print('Printing map')
 for x in range(MAP_SIZE[0]):
 	for y in range(MAP_SIZE[1]):
 		_top_tile = None
@@ -67,11 +67,11 @@ for x in range(MAP_SIZE[0]):
 			if MAP[x][y][z]:
 				_top_tile = MAP[x][y][z]
 		
-		print get_raw_tile(_top_tile)['icon'],
+		print(get_raw_tile(_top_tile)['icon'], end=' ')
 	
-	print
+	print()
 
-print 'Timing map fetching'
+print('Timing map fetching')
 import time
 _stime = time.time()
 for x in range(MAP_SIZE[0]):
@@ -79,6 +79,6 @@ for x in range(MAP_SIZE[0]):
 		for z in range(MAP_SIZE[2]):
 			if MAP[x][y][z]:
 				get_raw_tile(MAP[x][y][z])
-print time.time()-_stime
+print(time.time()-_stime)
 
-print MAP[3][3]
+print(MAP[3][3])

@@ -2,18 +2,18 @@ from globals import *
 
 import life as lfe
 
-import references
-import judgement
+from . import references
+from . import judgement
 import language
-import survival
-import movement
+from . import survival
+from . import movement
 import bad_numbers
-import speech
-import chunks
-import groups
-import brain
-import stats
-import jobs
+from . import speech
+from . import chunks
+from . import groups
+from . import brain
+from . import stats
+from . import jobs
 
 import logging
 import random
@@ -68,7 +68,7 @@ def _get_nearest_known_camp(life):
 	
 	for camp in [life['known_camps'][i] for i in life['known_camps']]:
 		_key = references.find_nearest_key_in_reference(life, get_camp(camp['id'])['reference'])
-		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _key.split(',')]
 		
 		_distance = bad_numbers.distance(life['pos'], _center)
 		
@@ -85,7 +85,7 @@ def get_distance_to_nearest_known_camp(life):
 	return _get_nearest_known_camp(life)['score']
 
 def get_camp_via_reference(reference):
-	for camp in CAMPS.values():
+	for camp in list(CAMPS.values()):
 		if camp['reference'] == reference:
 			return camp['id']
 	
@@ -107,7 +107,7 @@ def get_controlling_groups(camp_id):
 
 def get_controlling_group_global(camp_id):
 	_groups = get_controlling_groups(camp_id)
-	_groups_controlling = [_grp['id'] for _grp in _groups.values() if _grp['score'] == max([_grp['score'] for _grp in _groups.values()])]
+	_groups_controlling = [_grp['id'] for _grp in list(_groups.values()) if _grp['score'] == max([_grp['score'] for _grp in list(_groups.values())])]
 	if _groups_controlling:
 		return _groups_controlling[0]
 	
@@ -125,13 +125,13 @@ def get_controlling_group_according_to(life, camp_id):
 	return _best_group['group']		
 
 def get_all_alife_in_camp(camp_id):
-	return [life['id'] for life in LIFE.values() if is_in_camp(life, WORLD_INFO['camps'][camp_id])]
+	return [life['id'] for life in list(LIFE.values()) if is_in_camp(life, WORLD_INFO['camps'][camp_id])]
 
 def is_in_camp(life, camp):
 	return references.life_is_in_reference(life, camp['reference'])
 
 def is_in_any_camp(position):
-	for camp in WORLD_INFO['camps'].values():
+	for camp in list(WORLD_INFO['camps'].values()):
 		if references.is_in_reference(position, camp['reference']):
 			return camp['id']
 	
@@ -164,9 +164,9 @@ def debug_camps():
 		if not _group:
 			continue
 		
-		print camp_id, 'is controlled by', _group
+		print(camp_id, 'is controlled by', _group)
 		_actual_group = groups.get_group(life, _group)
-		print '\t%s member(s)' % len(_actual_group['members'])
+		print('\t%s member(s)' % len(_actual_group['members']))
 
 #def get_camp_jobs(camp_id):
 #	_jobs = []

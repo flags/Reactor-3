@@ -4,9 +4,9 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
-import combat
+from . import judgement
+from . import movement
+from . import combat
 
 import logging
 

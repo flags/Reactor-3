@@ -2,8 +2,8 @@ from globals import *
 
 import life as lfe
 
-import camps
-import brain
+from . import camps
+from . import brain
 
 import logging
 

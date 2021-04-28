@@ -3,14 +3,14 @@ from globals import *
 import life as lfe
 
 import historygen
-import judgement
-import survival
-import speech
-import groups
-import combat
-import camps
-import sight
-import brain
+from . import judgement
+from . import survival
+from . import speech
+from . import groups
+from . import combat
+from . import camps
+from . import sight
+from . import brain
 import zones
 
 import bad_numbers
@@ -155,7 +155,7 @@ def desires_to_join_camp(life, camp_id):
 		return False
 	
 	if life['camp']:
-		print life['name'],'already has camp',camps.knows_founder(life, life['camp'])
+		print(life['name'],'already has camp',camps.knows_founder(life, life['camp']))
 		return False
 	
 	if life['stats']['lone_wolf']:
@@ -166,7 +166,7 @@ def desires_to_join_camp(life, camp_id):
 		_memory = _memories.pop()
 		
 		if not judgement.can_trust(life, _memory['founder']):
-			print life['name'],'Cant trust founder' * 10
+			print(life['name'],'Cant trust founder' * 10)
 			return False
 		
 	if lfe.get_memory(life, matches={'text': 'ask_to_join_camp', 'camp': camp_id}):
@@ -299,14 +299,14 @@ def can_scratch(life):
 	_melee_limbs = lfe.get_melee_limbs(life)
 	
 	if not _melee_limbs:
-		print life['name'],'no melee limbs'
+		print(life['name'],'no melee limbs')
 		return False
 	
 	for limb in _melee_limbs:
 		if 'SHARP' in lfe.get_limb(life, limb)['flags']:
 			return limb
 	
-	print life['name'],'cant scratch'
+	print(life['name'],'cant scratch')
 	
 	return None
 
@@ -316,7 +316,7 @@ def is_nervous(life, life_id):
 	
 	_dist = bad_numbers.distance(life['pos'], LIFE[life_id]['pos'])
 	
-	if _dist <= sight.get_vision(LIFE[life_id])/2:
+	if _dist <= sight.get_vision(LIFE[life_id])//2:
 		return True
 	
 	return False
@@ -490,14 +490,14 @@ def is_parent_of(life, life_id):
 	return False
 
 def has_parent(life):
-	for life_id in life['know'].keys():
+	for life_id in list(life['know'].keys()):
 		if is_child_of(life, life_id):
 			return True
 	
 	return False
 
 def has_child(life):
-	for life_id in life['know'].keys():
+	for life_id in list(life['know'].keys()):
 		if is_parent_of(life, life_id):
 			return True
 	

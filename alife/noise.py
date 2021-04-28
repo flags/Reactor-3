@@ -8,10 +8,10 @@ from globals import *
 import graphics as gfx
 
 import language
-import judgement
+from . import judgement
 import bad_numbers
-import sight
-import brain
+from . import sight
+from . import brain
 
 import logging
 import random
@@ -32,7 +32,7 @@ def update_targets_around_noise(life, noise):
 	
 	if 'target' in noise and not life['id'] == noise['target']:
 		_visiblity = bad_numbers.clip(sight.get_stealth_coverage(LIFE[noise['target']]), 0.0, 1.0)
-		_visiblity = bad_numbers.clip(_visiblity+(bad_numbers.distance(life['pos'], LIFE[noise['target']]['pos']))/(sight.get_vision(life)/2), 0, 1.0)
+		_visiblity = bad_numbers.clip(_visiblity+(bad_numbers.distance(life['pos'], LIFE[noise['target']]['pos']))//(sight.get_vision(life)//2), 0, 1.0)
 		
 		if _visiblity >= sight.get_visiblity_of_position(life, LIFE[noise['target']]['pos']):
 			brain.meet_alife(life, LIFE[noise['target']])
@@ -41,7 +41,7 @@ def update_targets_around_noise(life, noise):
 			life['know'][noise['target']]['last_seen_at'] = noise['pos'][:]
 			life['know'][noise['target']]['last_seen_time'] = 0
 	
-	for target in life['know'].values():
+	for target in list(life['know'].values()):
 		if not target['escaped'] or not target['last_seen_at'] or target['dead']:
 			continue
 		
@@ -61,7 +61,7 @@ def update_targets_around_noise(life, noise):
 		logging.debug('%s heard a noise, attributing it to %s.' % (' '.join(life['name']), ' '.join(_most_likely_target['target']['life']['name'])))
 
 def _spread(noise):
-	for alife in LIFE.values():
+	for alife in list(LIFE.values()):
 		if alife['dead']:
 			continue
 		
@@ -82,7 +82,7 @@ def _spread(noise):
 		#TODO: Check walls between positions
 		#TODO: Add memory
 		if not _can_see or not noise['skip_on_visual']:
-			if _dist >=noise['volume']/2:
+			if _dist >=noise['volume']//2:
 				if 'player' in alife:
 					gfx.message(random.choice(FAR_TEXT).replace('@t', noise['text'][1]).replace('@d', _direction_string), style='sound')
 			else:

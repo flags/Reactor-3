@@ -14,7 +14,7 @@ def clip(number,start,end):
 	return max(start, min(number, end))
 
 def roll(dice, sides):
-	return sum([random.choice(range(sides))+1 for d in range(dice)])
+	return sum([random.choice(list(range(sides)))+1 for d in range(dice)])
 
 def lerp(n1, n2, t):
 	return n1 + (n2-n1) * t
@@ -155,7 +155,7 @@ def _create_dijkstra_map(center,source_map,targets,size=(50,50),flee=False,**kva
 		calculate_dijkstra_map(_dijkstra)
 	
 	logging.info('Dijkstra map took: %s, size %s,%s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y)))
-	print 'Dijkstra map took: %s, size %s,%s, %s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y),0)
+	print('Dijkstra map took: %s, size %s,%s, %s' % (str(time.time()-_stime),(_max_x-_min_x),(_max_y-_min_y),0))
 	
 	return _dijkstra
 
@@ -181,9 +181,9 @@ def draw_dijkstra(dijkstra,path):
 				_score = '. '
 				#_score = _score
 			
-			print '%s' % _score,
+			print('%s' % _score, end=' ')
 		
-		print
+		print()
 
 def create_dijkstra_map(center,source_map,targets,flee=False):
 	_farthest_distance = 0

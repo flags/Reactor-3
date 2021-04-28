@@ -2,17 +2,17 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
+from . import judgement
+from . import movement
 import weapons
-import speech
+from . import speech
 import melee
 import zones
 import items
-import sight
-import stats
-import brain
-import jobs
+from . import sight
+from . import stats
+from . import brain
+from . import jobs
 
 import bad_numbers
 import logging
@@ -25,7 +25,7 @@ def get_engage_distance(life):
 	if _weapons:
 		return bad_numbers.clip(int(round(ITEMS[_weapons[0]]['accuracy']*29)), 3, sight.get_vision(life))
 	else:
-		return sight.get_vision(life)/2
+		return sight.get_vision(life)//2
 
 def weapon_is_working(life, item_uid):
 	_weapon = ITEMS[item_uid]
@@ -140,7 +140,7 @@ def _refill_feed(life, feed):
 	_rounds = len(feed['rounds'])
 	
 	if _rounds>=feed['maxrounds'] or (not _bullets_in_inventory and _rounds):
-		print 'Full?'
+		print('Full?')
 		return True
 	
 	_ammo_count = len(lfe.get_all_inventory_items(life,matches=[{'type': 'bullet', 'ammotype': feed['ammotype']}]))
@@ -168,13 +168,13 @@ def _equip_weapon(life, weapon_uid, feed_uid):
 		if _refill_feed(life, _feed):
 			load_feed(life, _weapon['uid'], _feed['uid'])
 	else:
-		print 'should be equippan?'
+		print('should be equippan?')
 		lfe.add_action(life,{'action': 'equipitem',
 			'item': weapon_uid},
 			300,
 			delay=0)
 		
-		print 'Loaded!'
+		print('Loaded!')
 		return True
 	
 	return True

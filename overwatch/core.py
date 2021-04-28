@@ -16,9 +16,9 @@ def get_player_situation():
 	
 	_situation = {}
 	_situation['armed'] = alife.combat.has_potentially_usable_weapon(_life)
-	_situation['friends'] = len([l for l in _life['know'].values() if l['alignment'] in ['trust', 'feign_trust']])
+	_situation['friends'] = len([l for l in list(_life['know'].values()) if l['alignment'] in ['trust', 'feign_trust']])
 	_situation['group'] = _life['group']
-	_situation['online_alife'] = [l for l in LIFE.values() if l['online'] and not l['dead'] and not l['id'] == _life['id']]
+	_situation['online_alife'] = [l for l in list(LIFE.values()) if l['online'] and not l['dead'] and not l['id'] == _life['id']]
 	_situation['trusted_online_alife'] = [l for l in _situation['online_alife'] if alife.judgement.can_trust(_life, l['id'])]
 	_situation['has_radio'] = len(lfe.get_all_inventory_items(_life, matches=[{'type': 'radio'}]))>0
 	_situation['weapons'] = alife.combat.get_weapons(_life)
@@ -41,7 +41,7 @@ def get_player_situation():
 	return _situation
 
 def get_group_leader_with_motive(group_motive, online=False):
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		if not (life['online'] or not online) or not life['group'] or not alife.groups.is_leader(life, life['group'], life['id']) or SETTINGS['controlling'] == life['id']:
 			continue
 		

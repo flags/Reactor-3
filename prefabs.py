@@ -125,7 +125,7 @@ def draw_prefab_thumbnail(entry):
 				if not _prefab['map'][x][y][z]:
 					continue
 			
-				print _prefab['map'][x][y][z]
+				print(_prefab['map'][x][y][z])
 			#tcod.console_put_char_(0, PREFAB_TOP_VIEW_POS[0]+x, PREFAB_TOP_VIEW_POS[1]+y, 
 
 def prefab_selected(entry):
@@ -135,7 +135,7 @@ def create_prefab_list():
 	tcod.console_clear(0)
 	tcod.console_clear(MAP_WINDOW)
 	_prefabs = []
-	for prefab in PREFABS.values():
+	for prefab in list(PREFABS.values()):
 		_prefabs.append(menus.create_item('single', prefab['name'], None))
 	
 	return menus.create_menu(title='Prefabs',

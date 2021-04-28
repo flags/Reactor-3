@@ -156,7 +156,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 					
 					raise Exception('Crash.')
 				
-				_chunk_key = '%s,%s' % ((x/_chunk_size)*_chunk_size, (y/_chunk_size)*_chunk_size)
+				_chunk_key = '%s,%s' % ((x//_chunk_size)*_chunk_size, (y//_chunk_size)*_chunk_size)
 				
 				if avoid_chunks and _chunk_key in avoid_chunks:
 					_avoid_goals.append((x, y))
@@ -167,10 +167,10 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 				
 				_pass = False
 				for i in range(0, _number_of_goals):
-					_goal_chunk_key = '%s,%s' % ((_goals_x[i]/_chunk_size)*_chunk_size, (_goals_y[i]/_chunk_size)*_chunk_size)
+					_goal_chunk_key = '%s,%s' % ((_goals_x[i]//_chunk_size)*_chunk_size, (_goals_y[i]//_chunk_size)*_chunk_size)
 					_goal_chunk = WORLD_INFO['chunk_map'][_goal_chunk_key]
 					
-					if distance(_chunk['pos'], _goal_chunk['pos'])/_chunk_size<=max_chunk_distance:
+					if distance(_chunk['pos'], _goal_chunk['pos'])//_chunk_size<=max_chunk_distance:
 						_pass = True
 						break
 				

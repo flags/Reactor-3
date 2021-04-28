@@ -2,24 +2,24 @@ from globals import *
 
 import life as lfe
 
-import alife_group
-import alife_needs
-import alife_talk
+from . import alife_group
+from . import alife_needs
+from . import alife_talk
 
-import snapshots
-import judgement
-import survival
-import movement
-import factions
-import planner
+from . import snapshots
+from . import judgement
+from . import survival
+from . import movement
+from . import factions
+from . import planner
 import bad_numbers
-import memory
-import speech
-import combat
-import stats
+from . import memory
+from . import speech
+from . import combat
+from . import stats
 import logic
-import sight
-import sound
+from . import sight
+from . import sound
 
 import logging
 import time
@@ -99,7 +99,7 @@ def flag_item(life, item, flag, value=True):
 		remember_item(life, item)
 	
 	if not flag in life['know_items'][item['uid']]['flags']:
-		print life['know_items'][item['uid']]
+		print(life['know_items'][item['uid']])
 		life['know_items'][item['uid']]['flags'][flag] = value
 		logging.debug('%s flagged item %s with %s' % (' '.join(life['name']),item['uid'],flag))
 		
@@ -242,7 +242,7 @@ def get_matching_remembered_items(life, matches, no_owner=False, active=True, on
 	if 'type' in matches and matches['type'] in life['known_items_type_cache']:
 		_remembered_items = [life['know_items'][i] for i in life['known_items_type_cache'][matches['type']]]
 	else:
-		_remembered_items = life['know_items'].values()
+		_remembered_items = list(life['know_items'].values())
 	
 	for item in _remembered_items:
 		_item = ITEMS[item['item']]

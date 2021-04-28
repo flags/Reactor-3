@@ -2,8 +2,8 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import survival
+from . import judgement
+from . import survival
 
 import logging
 

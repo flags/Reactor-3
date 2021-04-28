@@ -7,7 +7,7 @@ import life as lfe
 #import dialog
 #import speech
 #import brain
-import action
+from . import action
 
 import logging
 
@@ -82,7 +82,7 @@ def reset_job(job_id):
 	_job['workers'] = []
 	_job['completed'] = False
 	
-	for task in _job['tasks'].values():
+	for task in list(_job['tasks'].values()):
 		task['completed'] = False
 		task['requires'] = _task['_required'][:]
 		

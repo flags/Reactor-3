@@ -3,16 +3,16 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import judgement
+from . import judgement
 import bad_numbers
-import combat
-import speech
-import sight
-import camps
-import brain
-import stats
+from . import combat
+from . import speech
+from . import sight
+from . import camps
+from . import brain
+from . import stats
 import logic
-import jobs
+from . import jobs
 
 import logging
 

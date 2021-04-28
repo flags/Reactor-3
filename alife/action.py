@@ -2,10 +2,10 @@ from globals import LIFE
 
 import life as lfe
 
-import judgement
-import movement
-import rawparse
-import goals
+from . import judgement
+from . import movement
+from . import rawparse
+from . import goals
 
 import logging
 
@@ -17,7 +17,7 @@ def retrieve(match, **kwargs):
 	if 'list' in match:
 		return match['list']
 	
-	print 'Match returned nothing!'*25
+	print('Match returned nothing!'*25)
 	#if 'criteria_id' in kwargs:
 	#	_criteria = goals.get_criteria(life, )
 
@@ -112,7 +112,7 @@ def _execute(action):
 		if 'add_to' in _struct:
 			if not _struct['list'][0] in _struct['list']:
 				_struct['add_to'].append(_struct['list'][0])
-				print 'LOOK OUT!' * 55, _struct['add_to']
+				print('LOOK OUT!' * 55, _struct['add_to'])
 		
 		return True
 	
@@ -138,7 +138,7 @@ def _execute(action):
 		if 'filter' in action['args']:
 			_ret_list = []
 			
-			for key in _arguments.keys():
+			for key in list(_arguments.keys()):
 				if not key in action['kwargs']['arguments']['kwargs']:
 					if 'include' in action['kwargs']['arguments']['kwargs'] and key in action['kwargs']['arguments']['kwargs']['include']:
 						continue
@@ -154,11 +154,11 @@ def _execute(action):
 			for entry in _ret_list:
 				_struct['list'].remove(entry)
 			
-			print 'filter function',_struct['list']
+			print('filter function',_struct['list'])
 			return _struct['list']
 	
 	if 'get_known_alife' in action['args']:
-		return _struct['life']['know'].keys()
+		return list(_struct['life']['know'].keys())
 	
 	if 'track_alife' in action['args']:
 		if not _struct['list']:
@@ -167,11 +167,11 @@ def _execute(action):
 		if movement._find_alife(_struct['life'], target=_struct['list'][0]):
 			if not _struct['list'][0] in _struct['add_to']:
 				_struct['add_to'].append(_struct['list'][0])
-				print 'FOUND HIM!!!!!!!!!!!' * 50
+				print('FOUND HIM!!!!!!!!!!!' * 50)
 		
 		lfe.focus_on(_struct['life'])
-		print _struct['life']['name'],'Tracking',LIFE[_struct['list'][0]]['name']
-		print judgement.can_trust(_struct['life'], _struct['list'][0])
+		print(_struct['life']['name'],'Tracking',LIFE[_struct['list'][0]]['name'])
+		print(judgement.can_trust(_struct['life'], _struct['list'][0]))
 		
 		return True
 

@@ -145,7 +145,7 @@ def get_active_task(life, mission_id):
 	return [t for t in _mission['tasks'] if not _mission['tasks'][t]['completed']][0]
 
 def has_mission_with_name(life, mission_name):
-	for mission in life['missions'].values():
+	for mission in list(life['missions'].values()):
 		if mission['name'] == mission_name:
 			return True
 	

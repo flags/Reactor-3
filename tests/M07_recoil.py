@@ -79,13 +79,13 @@ load_weapon(_path)
 _accuracies = []
 	
 for i in range(1, 10+1):
-	print 'Skill: %s\t' % i
+	print('Skill: %s\t' % i)
 	
 	for r in range(0, 5):
 		recoil = r/5.0
 		_accuracy, _deviations = simulate(i, recoil=recoil)
 		_accuracies.append(_accuracy)
 	
-		print '\trecoil=%0.4f, accuracy=%0.4f, avg. deviation=%0.4f' % (recoil, _accuracy, sum(_deviations)/float(len(_deviations)))
+		print('\trecoil=%0.4f, accuracy=%0.4f, avg. deviation=%0.4f' % (recoil, _accuracy, sum(_deviations)/float(len(_deviations))))
 
-print _weapon['name'], 'accuracy:', sum(_accuracies)/float(len(_accuracies))
+print(_weapon['name'], 'accuracy:', sum(_accuracies)/float(len(_accuracies)))

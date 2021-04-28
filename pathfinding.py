@@ -35,8 +35,8 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 		maps.load_cluster_at_position_if_needed(end)
 	
 	if chunk_mode:
-		_path['start'] = (_path['start'][0]/WORLD_INFO['chunk_size'], _path['start'][1]/WORLD_INFO['chunk_size'])
-		_path['end'] = (_path['end'][0]/WORLD_INFO['chunk_size'], _path['end'][1]/WORLD_INFO['chunk_size'])
+		_path['start'] = (_path['start'][0]//WORLD_INFO['chunk_size'], _path['start'][1]//WORLD_INFO['chunk_size'])
+		_path['end'] = (_path['end'][0]//WORLD_INFO['chunk_size'], _path['end'][1]//WORLD_INFO['chunk_size'])
 		_path['olist'][0] = (_path['start'][0], _path['start'][1])
 
 	_path['fmap'] = numpy.zeros((_path['map_size'][1], _path['map_size'][0]), dtype=numpy.int16)
@@ -56,10 +56,10 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 	#1: Walkable
 	
 	if terraform:
-		_start_chunk_key = '%s,%s' % ((start[0]/terraform['chunk_size'])*terraform['chunk_size'],
-		                            (start[1]/terraform['chunk_size'])*terraform['chunk_size'])
-		_end_chunk_key = '%s,%s' % ((end[0]/terraform['chunk_size'])*terraform['chunk_size'],
-		                            (end[1]/terraform['chunk_size'])*terraform['chunk_size'])
+		_start_chunk_key = '%s,%s' % ((start[0]//terraform['chunk_size'])*terraform['chunk_size'],
+		                            (start[1]//terraform['chunk_size'])*terraform['chunk_size'])
+		_end_chunk_key = '%s,%s' % ((end[0]//terraform['chunk_size'])*terraform['chunk_size'],
+		                            (end[1]//terraform['chunk_size'])*terraform['chunk_size'])
 		
 		if chunk_mode:
 			_increment = terraform['chunk_size']
@@ -69,14 +69,14 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 		for y in range(0, terraform['size'][1], _increment):
 			for x in range(0, terraform['size'][0], _increment):
 				if chunk_mode:
-					_chunk_key = '%s,%s' % ((x/terraform['chunk_size'])*terraform['chunk_size'],
-						                    (y/terraform['chunk_size'])*terraform['chunk_size'])
+					_chunk_key = '%s,%s' % ((x//terraform['chunk_size'])*terraform['chunk_size'],
+						                    (y//terraform['chunk_size'])*terraform['chunk_size'])
 					
 					if not _chunk_key in [_start_chunk_key, _end_chunk_key]:
 						if terraform['chunk_map'][_chunk_key]['type'] in avoid_chunk_types:
 							continue
 		
-					_path['map'][y/terraform['chunk_size'], x/terraform['chunk_size']] = 1
+					_path['map'][y//terraform['chunk_size'], x//terraform['chunk_size']] = 1
 				else:
 					_map_pos = terraform['map'][x][y][2]
 				
@@ -88,8 +88,8 @@ def astar(life, start, end, zones, chunk_mode=False, terraform=None, avoid_tiles
 		
 	else:
 		if chunk_mode:
-			for y in range(MAP_SIZE[1]/WORLD_INFO['chunk_size']):
-				for x in range(MAP_SIZE[0]/WORLD_INFO['chunk_size']):
+			for y in range(MAP_SIZE[1]//WORLD_INFO['chunk_size']):
+				for x in range(MAP_SIZE[0]//WORLD_INFO['chunk_size']):
 					_chunk_key = '%s,%s' % (x*WORLD_INFO['chunk_size'],
 				                            y*WORLD_INFO['chunk_size'])
 					
@@ -221,7 +221,7 @@ def short_path(life, start, end):
 	return _line
 
 def chunk_path(life, start, end, zones):
-	return astar(life, start, end, zones, map_size=(MAP_SIZE[0]/WORLD_INFO['chunk_size'], MAP_SIZE[1]/WORLD_INFO['chunk_size']), chunk_mode=True)
+	return astar(life, start, end, zones, map_size=(MAP_SIZE[0]//WORLD_INFO['chunk_size'], MAP_SIZE[1]//WORLD_INFO['chunk_size']), chunk_mode=True)
 
 def walk_chunk_path(life):
 	_existing_chunk_path = alife.brain.get_flag(life, 'chunk_path')

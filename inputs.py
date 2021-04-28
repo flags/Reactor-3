@@ -1,4 +1,4 @@
-from cStringIO import StringIO
+from io import StringIO
 from globals import *
 
 from debug import *
@@ -63,7 +63,7 @@ def get_keyboard_input():
 		if _item and KEY.pressed:
 			_item['values'][0] += _key
 	
-	if not INPUT.has_key(_key):
+	if _key not in INPUT:
 		INPUT[_key] = False
 	
 	if not INPUT[_key] and KEY.pressed:

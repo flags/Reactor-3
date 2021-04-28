@@ -1,6 +1,6 @@
-import brain
+from . import brain
 
-import judgement
+from . import judgement
 
 import logging
 

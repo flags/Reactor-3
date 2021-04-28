@@ -17,7 +17,7 @@ def stop():
 	LIFE[SETTINGS['following']]['path'] = []
 
 def clean_slate():
-	for alife in LIFE.values():
+	for alife in list(LIFE.values()):
 		if alife['id'] == SETTINGS['controlling'] or alife['dead']:
 			continue
 		
@@ -27,7 +27,7 @@ def make_hungry(life_id):
 	LIFE[life_id]['hunger'] = 500
 	
 def world_hunger():
-	for l in LIFE.values():
+	for l in list(LIFE.values()):
 		l['hunger'] = 500
 
 def make_thirsty(life_id):

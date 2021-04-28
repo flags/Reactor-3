@@ -49,7 +49,6 @@ def init_libtcod(terraform=False, window_size=WINDOW_SIZE, map_view_size=MAP_WIN
 		Y_CUTOUT_CHAR_BUFFER[0] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 		Y_CUTOUT_CHAR_BUFFER[1] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
-	tcod.console_set_keyboard_repeat(200, 0)
 	tcod.sys_set_fps(FPS)
 
 	for i in range(3):
@@ -61,7 +60,7 @@ def init_libtcod(terraform=False, window_size=WINDOW_SIZE, map_view_size=MAP_WIN
 			Y_CUTOUT_RGB_BACK_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 			Y_CUTOUT_RGB_FORE_BUFFER[i] = numpy.zeros((Y_CUTOUT_WINDOW_SIZE[1], Y_CUTOUT_WINDOW_SIZE[0]), dtype=numpy.int8)
 	
-	SETTINGS['light mesh grid'] = numpy.meshgrid(range(map_view_size[0]), range(map_view_size[1]))
+	SETTINGS['light mesh grid'] = numpy.meshgrid(list(range(map_view_size[0])), list(range(map_view_size[1])))
 
 def create_view(x, y, w, h, dw, dh, alpha, name, lighting=False, layer=0, fore_opacity=1, back_opacity=1, transparent=False, require_refresh=False):
 	if get_view_by_name(name):
@@ -122,7 +121,7 @@ def clear_view(view_name, color=tcod.black):
 		col_buffer[2] = col_buffer[2].clip(color.b)
 
 def clear_views():
-	for key in VIEWS.keys():
+	for key in list(VIEWS.keys()):
 		del VIEWS[key]
 	
 	logging.debug('Cleared views.')
@@ -134,7 +133,7 @@ def clear_views():
 	SETTINGS['active_view'] = None
 
 def clear_scene():
-	for key in VIEW_SCENE.keys():
+	for key in list(VIEW_SCENE.keys()):
 		del VIEW_SCENE[key]
 	
 	for entry in VIEW_SCENE_CACHE.copy():
@@ -262,12 +261,12 @@ def draw_view(view_name):
 	_draw_view(_view)
 
 def draw_scene():
-	for layer in VIEW_SCENE.values():
+	for layer in list(VIEW_SCENE.values()):
 		for view in layer:
 			_draw_view(view)
 
 def render_scene():
-	for layer in VIEW_SCENE.values():
+	for layer in list(VIEW_SCENE.values()):
 		for view in layer:
 			tcod.console_blit(view['console'],
 				             0,
@@ -613,7 +612,7 @@ def draw_status_line():
 		            'map')
 	
 	if SETTINGS['glitch_text']:
-		_max_glitch_progress = SETTINGS['glitch_text_time_max']/2
+		_max_glitch_progress = SETTINGS['glitch_text_time_max']//2
 		_glitch_progress = SETTINGS['glitch_text_time']/float(_max_glitch_progress)
 		_i = 0
 		
@@ -650,9 +649,9 @@ def draw_selected_tile_in_item_window(pos):
 
 def draw_all_tiles():
 	for tile in TILES:
-		tcod.console_set_char_foreground(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][0])
-		tcod.console_set_char_background(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['color'][1])
-		tcod.console_set_char(ITEM_WINDOW, TILES.keys().index(tile), 0, TILES[tile]['icon'])
+		tcod.console_set_char_foreground(ITEM_WINDOW, list(TILES.keys()).index(tile), 0, TILES[tile]['color'][0])
+		tcod.console_set_char_background(ITEM_WINDOW, list(TILES.keys()).index(tile), 0, TILES[tile]['color'][1])
+		tcod.console_set_char(ITEM_WINDOW, list(TILES.keys()).index(tile), 0, TILES[tile]['icon'])
 
 def draw_dijkstra_heatmap():
 	if not SETTINGS['heatmap']:
@@ -672,7 +671,7 @@ def draw_dijkstra_heatmap():
 			if y<CAMERA_POS[1] or y>=MAP_WINDOW_SIZE[1]:
 				continue
 			
-			_score = abs(SETTINGS['heatmap']['map'][_x][_y])/8
+			_score = abs(SETTINGS['heatmap']['map'][_x][_y])//8
 			_light = bad_numbers.clip(_score,0,150)
 			lighten_tile(x,y,_light)
 
@@ -696,12 +695,12 @@ def draw_chunk_map():
 			else:
 				_fore_color = tcod.white
 			
-			if MAP_CURSOR[0]/WORLD_INFO['chunk_size'] == x/WORLD_INFO['chunk_size'] and MAP_CURSOR[1]/WORLD_INFO['chunk_size'] == y/WORLD_INFO['chunk_size']:
+			if MAP_CURSOR[0]//WORLD_INFO['chunk_size'] == x//WORLD_INFO['chunk_size'] and MAP_CURSOR[1]//WORLD_INFO['chunk_size'] == y//WORLD_INFO['chunk_size']:
 				_fore_color = tcod.white
 				_tile = 'x'
 			
-			blit_char(x/WORLD_INFO['chunk_size'],
-			          y/WORLD_INFO['chunk_size'],
+			blit_char(x//WORLD_INFO['chunk_size'],
+			          y//WORLD_INFO['chunk_size'],
 			          _tile,
 			          char_buffer=MAP_CHAR_BUFFER,
 			          fore_color=_fore_color,
@@ -751,8 +750,8 @@ def title(text, padding=2, text_color=tcod.white, background_color=tcod.black):
 	if not SETTINGS['running']:
 		return False
 	
-	_center_x = (WINDOW_SIZE[0]/2)-len(text)/2
-	_center_y = WINDOW_SIZE[1]/2
+	_center_x = (WINDOW_SIZE[0]//2)-len(text)//2
+	_center_y = WINDOW_SIZE[1]//2
 	tcod.console_set_default_background(0, background_color)
 	tcod.console_set_default_foreground(0, text_color)
 	tcod.console_print_frame(0,
@@ -775,8 +774,8 @@ def glitch_text(text, change_text_only=False):
 		if SETTINGS['glitch_text_fade']:
 			SETTINGS['glitch_text_fade'] = False
 		
-		if SETTINGS['glitch_text_time'] > SETTINGS['glitch_text_time_max']/2:
-			SETTINGS['glitch_text_time'] = SETTINGS['glitch_text_time_max']/2
+		if SETTINGS['glitch_text_time'] > SETTINGS['glitch_text_time_max']//2:
+			SETTINGS['glitch_text_time'] = SETTINGS['glitch_text_time_max']//2
 		
 		if SETTINGS['glitch_text_time']:
 			return True
