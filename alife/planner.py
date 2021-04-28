@@ -249,7 +249,7 @@ def execute_plan(life, plan):
 		#	raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
 
 def get_next_goal(life, debug=False):
-	_next_goal = {'highest': None, 'goal': None, 'plan': None}
+	_next_goal = {'highest': float("-inf"), 'goal': None, 'plan': None}
 	
 	for goal in life['goap_goals']:
 		_break = False

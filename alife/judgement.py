@@ -404,7 +404,7 @@ def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True,
 	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 
 def get_target_to_follow(life):
-	_highest = {'id': None, 'score': 0}
+	_highest = {'id': 0, 'score': 0}
 	
 	for target_id in get_trusted(life, visible=False, only_recent=False):
 		if not lfe.execute_raw(life, 'follow', 'follow_target_if', life_id=target_id):
@@ -437,10 +437,10 @@ def get_target_to_guard(life):
 		
 		return target_id
 	
-	return None
+	return 0
 
 def get_nearest_threat(life):
-	_target = {'target': None, 'score': 9999}
+	_target = {'target': 0, 'score': 9999}
 
 	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	#if not _combat_targets:
