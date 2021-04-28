@@ -34,13 +34,12 @@ Join a faction and take over the Zone, or simply exist on your own.
 
 Installing
 ==========
-Reactor 3 requires Python 2.7, Cython, Numpy, and [libtcod](http://doryen.eptalys.net/libtcod/download/).
+Reactor 3 requires Python 3.6+ on a platform which can compile Python extensions.
 
     git clone https://github.com/flags/Reactor-3.git
     cd Reactor-3
+    python -m pip install -r requirements.txt
     python compile_cython_modules.py build_ext --inplace
-    
-Next, download the libtcod library and move the `.so` (Windows: `.dll`) files from the archive to the Reactor 3 directory.
 
 Run `python reactor-3.py` to play.
 
