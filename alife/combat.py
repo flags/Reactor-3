@@ -104,9 +104,9 @@ def load_feed(life, weapon_uid, feed_uid):
 def _get_feed(life, weapon):
 	_feeds = lfe.get_all_inventory_items(life, matches=[{'type': weapon['feed'], 'ammotype': weapon['ammotype']}], ignore_actions=False)
 
-	_highest_feed = {'rounds': -1, 'feed': None}
+	_highest_feed = {'rounds': [], 'feed': None}
 	for feed in [lfe.get_inventory_item(life, _feed['uid']) for _feed in _feeds]:
-		if feed['rounds']>_highest_feed['rounds']:
+		if len(feed['rounds']) > len(_highest_feed['rounds']):
 			_highest_feed['rounds'] = feed['rounds']
 			_highest_feed['feed'] = feed
 	
