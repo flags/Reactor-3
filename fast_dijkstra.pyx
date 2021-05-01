@@ -3,7 +3,7 @@ from libc.stdlib cimport malloc, free
 
 import zones as zon
 
-import numbers
+import bad_numbers as numbers
 
 import time
 import copy
