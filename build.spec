@@ -7,7 +7,7 @@ import tempfile
 # Create a temporary file with version info.
 version_file = os.path.join(tempfile.gettempdir(), "git-version.txt")
 with open(version_file, "w") as f:
-    f.write(subprocess.check_output(["git", "describe"], text=True).strip())
+    f.write(subprocess.check_output(["git", "describe", "--tags"], text=True).strip())
 
 block_cipher = None
 

@@ -1,3 +1,4 @@
 Cython
 numpy
 tcod
+pyinstaller==4.3
