@@ -14,6 +14,8 @@ import numpy
 import copy
 import time
 
+logger = logging.getLogger(__name__)
+
 def cache_zones():
 	for z in range(0, MAP_SIZE[2]):
 		ZONE_CACHE[z] = [s for s in list(WORLD_INFO['slices'].values()) if s['z'] == z]
@@ -165,8 +167,12 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
-	_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
-	
+	try:
+		_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
+	except IndexError:
+		logger.exception("Attempted to go out-of-bounds.", stack_info=True)
+		return None
+
 	if not _map_pos or not 'z_id' in _map_pos:
 		return None
 	
