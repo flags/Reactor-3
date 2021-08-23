@@ -108,8 +108,8 @@ def move_camera(pos, scroll=False):
 					brain.unflag(_life, 'camera_lean')
 					brain.unflag(_life, 'camera_lean_time')
 	
-	CAMERA_POS[0] = int(round(bad_numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]/2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
-	CAMERA_POS[1] = int(round(bad_numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]/2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
+	CAMERA_POS[0] = int(round(bad_numbers.clip(pos[0]-(MAP_WINDOW_SIZE[0]//2), 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0])))
+	CAMERA_POS[1] = int(round(bad_numbers.clip(pos[1]-(MAP_WINDOW_SIZE[1]//2), 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1])))
 	CAMERA_POS[2] = int(round(pos[2]))
 	
 	if not _orig_pos == CAMERA_POS:
@@ -153,22 +153,22 @@ def death():
 	
 	gfx.fade_to_black(1)	
 	
-	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_string)/2,
-	                MAP_WINDOW_SIZE[1]/2,
+	gfx.blit_string((MAP_WINDOW_SIZE[0]//2)-len(_string)//2,
+	                MAP_WINDOW_SIZE[1]//2,
 	                _string,
 	                'map',
 	                fore_color=tcod.Color(_col, 0, 0),
 	                back_color=tcod.Color(0, 0, 0))
 	
-	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_sub_string)/2,
-	                (MAP_WINDOW_SIZE[1]/2)+2,
+	gfx.blit_string((MAP_WINDOW_SIZE[0]//2)-len(_sub_string)//2,
+	                (MAP_WINDOW_SIZE[1]//2)+2,
 	                _sub_string,
 	                'map',
 	                fore_color=tcod.Color(int(round(_col*.75)), int(round(_col*.75)), int(round(_col*.75))),
 	                back_color=tcod.Color(0, 0, 0))
 	
-	gfx.blit_string((MAP_WINDOW_SIZE[0]/2)-len(_sub_sub_string)/2,
-	                (MAP_WINDOW_SIZE[1]/2)+4,
+	gfx.blit_string((MAP_WINDOW_SIZE[0]//2)-len(_sub_sub_string)//2,
+	                (MAP_WINDOW_SIZE[1]//2)+4,
 	                _sub_sub_string,
 	                'map',
 	                fore_color=tcod.Color(int(round(_col*.75)), int(round(_col*.75)), int(round(_col*.75))),
@@ -229,8 +229,8 @@ def main():
 			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['following']], judge=False, get_chunks=True)
 			alife.brain.flag(LIFE[SETTINGS['following']], 'visible_chunks', value=_visible_chunks)
 	
-			_cam_x = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
-			_cam_y = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+			_cam_x = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][0]-MAP_WINDOW_SIZE[0]//2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]//2)
+			_cam_y = bad_numbers.clip(LIFE[SETTINGS['following']]['pos'][1]-MAP_WINDOW_SIZE[1]//2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]//2)
 			
 		else:
 			_visible_chunks = sight.scan_surroundings(LIFE[SETTINGS['controlling']], judge=False, get_chunks=True)
@@ -238,8 +238,8 @@ def main():
 			
 		SETTINGS['last_camera_pos'] = SETTINGS['camera_track'][:]
 	
-	_cam_x = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]/2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]/2)
-	_cam_y = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]/2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]/2)
+	_cam_x = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][0]-MAP_WINDOW_SIZE[0]//2, 0, MAP_SIZE[0]-MAP_WINDOW_SIZE[0]//2)
+	_cam_y = bad_numbers.clip(LIFE[SETTINGS['controlling']]['pos'][1]-MAP_WINDOW_SIZE[1]//2, 0, MAP_SIZE[1]-MAP_WINDOW_SIZE[1]//2)
 	
 	maps.render_lights()
 	
@@ -269,7 +269,7 @@ def main():
 	gfx.end_of_frame()
 	
 	if '--fps' in sys.argv:
-		print tcod.sys_get_fps()
+		print(tcod.sys_get_fps())
 	
 	if (SETTINGS['recording'] and _player_moved and not EVENTS and not MENUS) or '--worldmap' in sys.argv:
 		gfx.screenshot()
@@ -309,7 +309,7 @@ if __name__ == '__main__':
 			logging.error('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 			sys.exit(1)
 		
-	except ImportError, e:
+	except ImportError as e:
 		CYTHON_ENABLED = False
 		logging.warning('[Cython] ImportError with module: %s' % e)
 		logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
@@ -326,6 +326,7 @@ if __name__ == '__main__':
 	
 	tiles.create_all_tiles()
 	language.load_strings()
+	language.load_dialog()
 	missions.load_all_missions()
 	alife.rawparse.create_function_map()
 	locks.create_lock('camera_free', locked=True)
@@ -374,7 +375,7 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		SETTINGS['running'] = False
 		traceback.print_exc()
-	except Exception, e:
+	except Exception as e:
 		traceback.print_exc()
 		SETTINGS['running'] = False
 		

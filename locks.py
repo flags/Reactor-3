@@ -22,10 +22,10 @@ def lock(lock_name, reason=''):
 	get_lock(lock_name)['locked'] = True
 	
 	if reason:
-		print '%s: %s' % (lock_name, reason)
+		print('%s: %s' % (lock_name, reason))
 
 def unlock(lock_name, reason=''):
 	get_lock(lock_name)['locked'] = False
 	
 	if reason:
-		print '%s: %s' % (lock_name, reason)
+		print('%s: %s' % (lock_name, reason))

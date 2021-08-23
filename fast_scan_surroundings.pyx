@@ -38,7 +38,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 			chunk_key = _chunks[i]
 			
 			_current_chunk = maps.get_chunk(chunk_key)
-			_dist = numbers.distance(life['pos'], (_current_chunk['pos'][0]+CHUNK_SIZE/2, _current_chunk['pos'][1]+CHUNK_SIZE/2))
+			_dist = numbers.distance(life['pos'], (_current_chunk['pos'][0]+CHUNK_SIZE//2, _current_chunk['pos'][1]+CHUNK_SIZE//2))
 			
 			if _dist>_outline_chunks['distance']+CHUNK_SIZE:
 				_outline_chunks['distance'] = _dist
@@ -52,7 +52,7 @@ def scan_surroundings(life, initial=False, _chunks=[], ignore_chunks=[], judge=T
 			
 			_outline_chunk = WORLD_INFO['chunk_map'][outline_chunk_key]
 			if _outline_chunk['max_z'] <= life['pos'][2]:
-				_can_see = drawing.diag_line(life['pos'], (_outline_chunk['pos'][0]+CHUNK_SIZE/2, _outline_chunk['pos'][1]+CHUNK_SIZE/2))
+				_can_see = drawing.diag_line(life['pos'], (_outline_chunk['pos'][0]+CHUNK_SIZE//2, _outline_chunk['pos'][1]+CHUNK_SIZE//2))
 			else:
 				_can_see = alife.chunks.can_see_chunk(life, outline_chunk_key)
 			

@@ -152,15 +152,15 @@ def execute_function(life, target, dialog_id, function):
 				_pass = False
 	
 	#print _function, _flags, _func
-	except Exception, e:
+	except Exception as e:
 		logging.critical('Function \'%s\' failed to execute. See exception below.' % _function)
 		logging.debug('Argument dump...')
-		print _flags
+		print(_flags)
 		
 		if _flags['pass_flags']:
-			print 'Dialog flags:', _dialog['flags']
+			print('Dialog flags:', _dialog['flags'])
 		
-		print json.dumps(_dialog)
+		print(json.dumps(_dialog))
 		
 		import traceback
 		traceback.print_exc()
@@ -252,9 +252,9 @@ def add_message(life, dialog_id, gist, action, result, loop=False):
 	            'loop': loop}
 	
 	if _dialog['remote'] and not alife.sight.can_see_target(life, _target):
-		print ' '.join(life['name'])+'(%s) (radio):' % life['group'], _text
+		print(' '.join(life['name'])+'(%s) (radio):' % life['group'], _text)
 	else:
-		print ' '.join(life['name'])+'(%s):' % life['group'], _text
+		print(' '.join(life['name'])+'(%s):' % life['group'], _text)
 	
 	_dialog['messages'].append(_message)
 	
@@ -330,7 +330,7 @@ def select_choice(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	
 	if not _dialog['choices']:
-		print 'No choice'
+		print('No choice')
 		return False
 	
 	_choice = _dialog['choices'][_dialog['cursor_index']]
@@ -392,7 +392,7 @@ def process(life, dialog_id):
 def draw_dialog(dialog_id):
 	_dialog = get_dialog(dialog_id)
 	_last_message = get_last_message(dialog_id)
-	_x = bad_numbers.clip(MAP_WINDOW_SIZE[0]/2-len(_last_message['text'])/2, 3, 100)
+	_x = bad_numbers.clip(MAP_WINDOW_SIZE[0]//2-len(_last_message['text'])//2, 3, 100)
 	_y = 10
 	_line_of_sight = drawing.diag_line(LIFE[_dialog['started_by']]['pos'], LIFE[_dialog['target']]['pos'])
 	
@@ -401,7 +401,7 @@ def draw_dialog(dialog_id):
 	if len(_line_of_sight)<=1:
 		_center_pos = LIFE[_dialog['started_by']]['pos']
 	else:
-		_center_pos = list(_line_of_sight[len(_line_of_sight)/2])
+		_center_pos = list(_line_of_sight[len(_line_of_sight)//2])
 		_center_pos.append(2)
 	
 	if SETTINGS['controlling'] == _dialog['started_by']:
@@ -419,7 +419,7 @@ def draw_dialog(dialog_id):
 	_text = _last_message['text']
 	_y_mod = 0
 	while _text:
-		_x = MAP_WINDOW_SIZE[0]/2-len(_text[:MAP_WINDOW_SIZE[0]-4])/2
+		_x = MAP_WINDOW_SIZE[0]//2-len(_text[:MAP_WINDOW_SIZE[0]-4])//2
 		
 		gfx.blit_string(_x, _y+_y_mod, _text[:MAP_WINDOW_SIZE[0]-4], 'overlay')
 		_text = _text[MAP_WINDOW_SIZE[0]-4:]
@@ -431,7 +431,7 @@ def draw_dialog(dialog_id):
 		if not _text.startswith('>'):
 			_text = '> '+_text
 		
-		_n_x = MAP_WINDOW_SIZE[0]/2-len(_text)/2
+		_n_x = MAP_WINDOW_SIZE[0]//2-len(_text)//2
 		
 		if _n_x < _x:
 			_x = _n_x

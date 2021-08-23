@@ -3,15 +3,15 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import judgement
+from . import judgement
 import language
 import dialog
-import groups
-import memory
-import brain
+from . import groups
+from . import memory
+from . import brain
 import menus
-import sight
-import stats
+from . import sight
+from . import stats
 
 import logging
 import random
@@ -371,7 +371,7 @@ def update_location_of_target_from_target(life, life_id, target_id):
 		
 		logging.debug('%s updated location of %s: %s' % (' '.join(life['name']), ' '.join(LIFE[target_id]['name']), _known['last_seen_at']))
 	else:
-		print 'Got out of date info!' * 20
+		print('Got out of date info!' * 20)
 
 def change_alignment(life, life_id, alignment):
 	_alignment = '%s_to_%s' % (brain.knows_alife_by_id(life, life_id)['alignment'], alignment)

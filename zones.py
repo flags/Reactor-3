@@ -14,9 +14,11 @@ import numpy
 import copy
 import time
 
+logger = logging.getLogger(__name__)
+
 def cache_zones():
 	for z in range(0, MAP_SIZE[2]):
-		ZONE_CACHE[z] = [s for s in WORLD_INFO['slices'].values() if s['z'] == z]
+		ZONE_CACHE[z] = [s for s in list(WORLD_INFO['slices'].values()) if s['z'] == z]
 
 def create_map_array(val=0, size=MAP_SIZE):
 	_map = numpy.zeros((size[0], size[1]))
@@ -165,8 +167,12 @@ def process_slice(z, world_info=None, start_id=0, map_size=MAP_SIZE):
 			WORLD_INFO['slices'][_z_id] = {'z': z, 'top_left': _top_left, 'bot_right': _bot_right, 'id': _z_id, 'ramps': list(_ramps), 'neighbors': {}}
 
 def get_zone_at_coords(pos):
-	_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
-	
+	try:
+		_map_pos = WORLD_INFO['map'][pos[0]][pos[1]][pos[2]]
+	except IndexError:
+		logger.exception("Attempted to go out-of-bounds.", stack_info=True)
+		return None
+
 	if not _map_pos or not 'z_id' in _map_pos:
 		return None
 	
@@ -228,14 +234,14 @@ def create_zone_map():
 		if SETTINGS['running']:
 			tcod.console_print(0, 0, 0, '              ')
 	
-	print 'Zone gen took',time.time()-_t
+	print('Zone gen took',time.time()-_t)
 
 def connect_ramps():
 	_i = 1
 	
 	for _slice in WORLD_INFO['slices']:
 		#print 'Connecting:','Zone %s' % _slice, '@ z-level',WORLD_INFO['slices'][_slice]['z'], '(%s ramp(s))' % len(WORLD_INFO['slices'][_slice]['ramps'])
-		gfx.title('Connecting: %s\%s' % (_i, len(WORLD_INFO['slices'].keys())))
+		gfx.title('Connecting: %s\%s' % (_i, len(list(WORLD_INFO['slices'].keys()))))
 		
 		_i += 1
 		
@@ -268,7 +274,7 @@ def dijkstra_map(start_pos, goals, zones, max_chunk_distance=5, rolldown=True, a
 	        'return_score_in_range': return_score_in_range}
 	
 	_map_string = ''
-	for key in _map.keys():
+	for key in list(_map.keys()):
 		_map_string += '%s:%s' % (key, _map[key])
 	
 	if _map_string in DIJKSTRA_CACHE:

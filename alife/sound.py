@@ -3,22 +3,22 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import judgement
+from . import judgement
 import dialog
-import action
-import groups
-import chunks
-import speech
-import combat
+from . import action
+from . import groups
+from . import chunks
+from . import speech
+from . import combat
 import events
 import logic
-import sight
-import raids
-import brain
-import camps
-import stats
+from . import sight
+from . import raids
+from . import brain
+from . import camps
+from . import stats
 import maps
-import jobs
+from . import jobs
 
 import logging
 
@@ -41,9 +41,9 @@ def listen(life):
 			pass
 		
 		elif event['gist'] == 'camp_raid':
-			print '*' * 10
-			print 'RAID IN EFFECT!!!!!!!!!!'
-			print '*' * 10
+			print('*' * 10)
+			print('RAID IN EFFECT!!!!!!!!!!')
+			print('*' * 10)
 			_knows = brain.knows_alife(life, event['from'])
 			_raid = raids.defend_camp(event['camp']['id'], life['id'])
 			
@@ -53,7 +53,7 @@ def listen(life):
 				speech.announce(life, 'raid_score', raid_score=_raid_score)
 		
 		elif event['gist'] == 'raid_score':
-			print life['name'],'Got friendly raid score:', event['raid_score'] 
+			print(life['name'],'Got friendly raid score:', event['raid_score']) 
 
 		elif event['gist'] == 'share_item_info':
 			if event['item'] in ITEMS:
@@ -69,7 +69,7 @@ def listen(life):
 				target=event['founder'],
 				founder=event['founder'])
 			
-			print 'Thanks for the camp founder info!'
+			print('Thanks for the camp founder info!')
 		
 		elif event['gist'] == 'under_attack':
 			_knows_attacker = True
@@ -77,7 +77,7 @@ def listen(life):
 			if life['id'] == event['attacker']:
 				pass
 			else:
-				print life['name'], 'HEARD CALL FOR HELP FROM', event['from']['name']
+				print(life['name'], 'HEARD CALL FOR HELP FROM', event['from']['name'])
 				if not brain.knows_alife_by_id(life, event['attacker']):
 					brain.meet_alife(life, LIFE[event['attacker']])
 					_knows_attacker = False
@@ -135,7 +135,7 @@ def listen(life):
 			           target=event['target'])
 		
 		elif event['gist'] == 'threw_an_item':
-			print 'CHECK THIS HERE' * 100
+			print('CHECK THIS HERE' * 100)
 			pass
 		
 		elif event['gist'] == '_group_leader_state_change':

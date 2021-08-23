@@ -420,7 +420,7 @@ def handle_input():
 		_player = LIFE[SETTINGS['controlling']]
 		_menu_items = []
 		
-		for mission in _player['missions'].values():
+		for mission in list(_player['missions'].values()):
 			if not mission['tasks']:
 				continue
 			
@@ -646,10 +646,10 @@ def handle_input():
 	if INPUT['s']:
 		if LIFE[SETTINGS['controlling']]['strafing']:
 			LIFE[SETTINGS['controlling']]['strafing'] = False
-			print 'Not strafing'
+			print('Not strafing')
 		else:
 			LIFE[SETTINGS['controlling']]['strafing'] = True
-			print 'Strafing'
+			print('Strafing')
 	
 	if INPUT['S']:
 		#if not LIFE[SETTINGS['controlling']]['encounters']:
@@ -735,9 +735,9 @@ def handle_input():
 			menus.delete_menu(menus.get_menu_by_name('Debug (Developer)'))
 			return False
 		
-		_online_alife = len([l['id'] for l in LIFE.values() if l['online'] and not l['dead'] and l['think_rate_max']<30])
-		_online_alife_in_passive = len([l['id'] for l in LIFE.values() if l['online'] and not l['dead'] and l['think_rate_max']>=30])
-		_offline_alife = len([l['id'] for l in LIFE.values() if not l['online'] and not l['dead']])
+		_online_alife = len([l['id'] for l in list(LIFE.values()) if l['online'] and not l['dead'] and l['think_rate_max']<30])
+		_online_alife_in_passive = len([l['id'] for l in list(LIFE.values()) if l['online'] and not l['dead'] and l['think_rate_max']>=30])
+		_offline_alife = len([l['id'] for l in list(LIFE.values()) if not l['online'] and not l['dead']])
 		
 		_options = []
 		_options.append(menus.create_item('title', 'Testing', None))
@@ -751,7 +751,7 @@ def handle_input():
 		_options.append(menus.create_item('single', 'Update chunk map', 'Generates chunk map'))
 		_options.append(menus.create_item('title', 'World Info', None))
 		_options.append(menus.create_item('single', 'ALife (%s)' % len(LIFE), 'Online: %s (%s), Offline: %s' % (_online_alife, _online_alife_in_passive, _offline_alife)))
-		_options.append(menus.create_item('single', 'ALife memories', sum([len(l['memory']) for l in LIFE.values() if not l['dead']])))
+		_options.append(menus.create_item('single', 'ALife memories', sum([len(l['memory']) for l in list(LIFE.values()) if not l['dead']])))
 		_options.append(menus.create_item('single', 'Groups', len(WORLD_INFO['groups'])))
 		_options.append(menus.create_item('single', 'Seed', WORLD_INFO['seed']))
 		
@@ -827,7 +827,7 @@ def handle_input():
 		                         LIFE[SETTINGS['controlling']]['pos'][1]-5,
 		                         LIFE[SETTINGS['controlling']]['pos'][2]-5),
 		                        [zones.get_zone_at_coords(LIFE[SETTINGS['controlling']]['pos'])]):
-			print pos
+			print(pos)
 			SELECTED_TILES[0].append((pos[0], pos[1], 2))
 	
 	#if INPUT['N']:
@@ -1351,13 +1351,13 @@ def create_look_list():
 		return False
 	
 	_menu_items = []
-	for item in [l for l in ITEMS.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+	for item in [l for l in list(ITEMS.values()) if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		if items.is_item_owned(item['uid']):
 			continue
 		
 		_menu_items.append(menus.create_item('single', item['name'], None, item=item['uid'], icon=item['icon']))
 	
-	for target in [l for l in LIFE.values() if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
+	for target in [l for l in list(LIFE.values()) if sight.can_see_position(LIFE[SETTINGS['controlling']], l['pos']) and not l == LIFE[SETTINGS['controlling']]]:
 		_menu_items.append(menus.create_item('single', ' '.join(target['name']), None, target=target['id'], icon=target['icon']))
 	
 	if not _menu_items:
@@ -1819,7 +1819,7 @@ def create_tasks_menu():
 	_life = LIFE[SETTINGS['controlling']]
 	_tasks = []
 	
-	for task_id in jobs.get_job(_life['job'])['tasks'].keys():
+	for task_id in list(jobs.get_job(_life['job'])['tasks'].keys()):
 		task = jobs.get_task(_life['job'], task_id)
 		
 		_tasks.append(menus.create_item('single',
@@ -1844,7 +1844,7 @@ def create_tasks_menu():
 
 def announce_to(entry):
 	if entry['who'] == 'public':
-		_announce_to = LIFE.keys()
+		_announce_to = list(LIFE.keys())
 		_announce_to.remove(SETTINGS['controlling'])
 	elif entry['who'] == 'trusted':
 		_announce_to = judgement.get_trusted(LIFE[SETTINGS['controlling']], visible=False)
@@ -1881,7 +1881,7 @@ def create_announce_group_menu(**kwargs):
 def handle_create_job(entry):
 	for entry in entry['workers']:
 		_assigned = entry['values'][entry['value']]=='Assigned'
-		print entry['key'], _assigned
+		print(entry['key'], _assigned)
 
 def handle_select_workers(entry):
 	job = entry['key']
@@ -2188,7 +2188,7 @@ def create_wound_menu(target):
 	_has_wound = False
 	_entries = []
 	
-	for limb in LIFE[target]['body'].values():
+	for limb in list(LIFE[target]['body'].values()):
 		_title = False
 		
 		for wound in limb['wounds']:

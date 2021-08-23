@@ -17,14 +17,14 @@ except ImportError:
 
 SCREEN_W = 80
 SCREEN_H = 50
-HALF_W = SCREEN_W / 2
-HALF_H = SCREEN_H / 2
+HALF_W = SCREEN_W // 2
+HALF_H = SCREEN_H // 2
 
 libtcod.console_set_custom_font(os.path.join('arial10x10.png'),
 	libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
 libtcod.console_init_root(SCREEN_W, SCREEN_H, 'libtcod sample', False)
 
-(x, y) = meshgrid(range(SCREEN_W), range(SCREEN_H))
+(x, y) = meshgrid(list(range(SCREEN_W)), list(range(SCREEN_H)))
 
 lights = []
 lights.append({'x': 40,'y': 20,'brightness': 4.0})
@@ -67,6 +67,6 @@ while not libtcod.console_is_window_closed():
 	
 	libtcod.console_fill_background(0, _R, _G, _B)
 	libtcod.console_fill_foreground(0, _R, _G, _B)
-	print libtcod.sys_get_fps()
+	print(libtcod.sys_get_fps())
 	libtcod.console_flush()
 

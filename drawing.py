@@ -197,7 +197,7 @@ def draw_circle(at, size):
 		for j in range(width+1):
 			Circle = (((i-CenterY)*(i-CenterY))/((float(height)/2)*(float(height)/2)))+((((j-CenterX)*(j-CenterX))/((float(width)/2)*(float(width)/2))));
 			if Circle>0 and Circle<1.1:
-				circle.append((at[0]+(j-(width/2)),at[1]+(i-(height/2))))
+				circle.append((at[0]+(j-(width//2)),at[1]+(i-(height//2))))
 	
 	if not at in circle:
 		circle.append(at)

@@ -1,4 +1,4 @@
-from cStringIO import StringIO
+from io import StringIO
 from globals import *
 
 from debug import *
@@ -21,6 +21,23 @@ def get_input():
 	get_keyboard_input()
 	get_mouse_input()
 
+VK_MAPPINGS = {
+	tcod.KEY_RIGHT: "right",
+	tcod.KEY_LEFT: "left",
+	tcod.KEY_DOWN: "down",
+	tcod.KEY_UP: "up",
+	tcod.KEY_KP0: "0",
+	tcod.KEY_KP1: "1",
+	tcod.KEY_KP2: "2",
+	tcod.KEY_KP3: "3",
+	tcod.KEY_KP4: "4",
+	tcod.KEY_KP5: "5",
+	tcod.KEY_KP6: "6",
+	tcod.KEY_KP7: "7",
+	tcod.KEY_KP8: "8",
+	tcod.KEY_KP9: "9",
+}
+
 def get_keyboard_input():
 	global KEYBOARD_STRING
 	
@@ -29,16 +46,13 @@ def get_keyboard_input():
 
 	if KEY.c:
 		_key = chr(KEY.c)
+		if KEY.shift:
+			_key = _key.upper()
+			if _key == "/":
+				_key = "?"
 	else:
-		if KEY.pressed:
-			if KEY.vk == tcod.KEY_RIGHT:
-				INPUT['right'] = True
-			elif KEY.vk == tcod.KEY_LEFT:
-				INPUT['left'] = True
-			elif KEY.vk == tcod.KEY_DOWN:
-				INPUT['down'] = True
-			elif KEY.vk == tcod.KEY_UP:
-				INPUT['up'] = True
+		if KEY.pressed and KEY.vk in VK_MAPPINGS:
+			INPUT[VK_MAPPINGS[KEY.vk]] = True
 		
 		return True
 	
@@ -63,7 +77,7 @@ def get_keyboard_input():
 		if _item and KEY.pressed:
 			_item['values'][0] += _key
 	
-	if not INPUT.has_key(_key):
+	if _key not in INPUT:
 		INPUT[_key] = False
 	
 	if not INPUT[_key] and KEY.pressed:

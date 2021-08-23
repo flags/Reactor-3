@@ -2,11 +2,11 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
+from . import judgement
+from . import movement
 import bad_numbers
-import sight
-import brain
+from . import sight
+from . import brain
 
 import logging
 

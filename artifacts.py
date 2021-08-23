@@ -44,7 +44,7 @@ def create_field(y_min=0):
 	return _territory_key
 
 def get_active_fields():
-	return [t for t in WORLD_INFO['territories'].values() if t['danger']]
+	return [t for t in list(WORLD_INFO['territories'].values()) if t['danger']]
 
 def tick_fields():
 	for territory in get_active_fields():
@@ -83,4 +83,4 @@ def create_burner(chunk_key):
 	effects.create_fire(_pos, intensity=8)
 	effects.create_explosion(_pos, 4)
 	
-	print 'MAN CHECK THIS OUT!!!!!', chunk_key
+	print('MAN CHECK THIS OUT!!!!!', chunk_key)

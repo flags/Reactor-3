@@ -11,6 +11,7 @@ import maps
 
 import random
 import time
+import sys
 
 INTRO = 'flagsdev presents'
 SUB_LINE = 'Reactor 3'
@@ -56,7 +57,7 @@ def draw_intro():
 		_mod = int(round(255*bad_numbers.clip(time.time()-_title_time, 0, 1)))
 		
 		console_set_default_foreground(0, Color(_mod, _mod, _mod))
-		console_print(0, (WINDOW_SIZE[0]/2)-len(_text)/2, (WINDOW_SIZE[1]/2)-2, _text)
+		console_print(0, (WINDOW_SIZE[0]//2)-len(_text)//2, (WINDOW_SIZE[1]//2)-2, _text)
 		
 		if time.time()-_stime>=1:
 			if not _warning_time:
@@ -64,7 +65,7 @@ def draw_intro():
 			
 			_mod = int(round(255*bad_numbers.clip(time.time()-_warning_time, 0, 1)))
 		
-			console_set_default_foreground(0, Color(_mod/2, _mod/2, _mod/2))
+			console_set_default_foreground(0, Color(_mod//2, _mod//2, _mod//2))
 			console_print(0, 0, WINDOW_SIZE[1]-1, _warning_message)
 		
 		if time.time()-_stime>=1.2:
@@ -73,7 +74,7 @@ def draw_intro():
 				_c_mod = _char_alpha[c]
 				_mod = bad_numbers.clip(time.time()-_warning_time, 0, 1)
 				console_set_default_foreground(0, Color(int(round((200*_mod)*_c_mod)), 0, 0))
-				console_print(0, _i+(WINDOW_SIZE[0]/2)-len(SUB_LINE)/2, (WINDOW_SIZE[1]/2), c)
+				console_print(0, _i+(WINDOW_SIZE[0]//2)-len(SUB_LINE)//2, (WINDOW_SIZE[1]//2), c)
 				_char_alpha[c] = bad_numbers.clip(_char_alpha[c]*1.015, 0, 1)
 				_i += 1
 		

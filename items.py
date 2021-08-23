@@ -29,7 +29,7 @@ def load_item(item):
 		try:
 			logging.debug('Caching item: %s' % item)
 			return json.loads(''.join(e.readlines()))
-		except ValueError,e:
+		except ValueError as e:
 			raise Exception('Failed to load item: %s' % e)
 
 def initiate_all_items():
@@ -147,12 +147,12 @@ def initiate_item(name):
 	item['marked_for_reint'] = _marked_for_reint.copy()
 	
 	#Unicode isn't handled all that well on Windows for some reason...
-	for key in item:
+	for key in list(item):
 		_value = item[key]
 		del item[key]
 		item[str(key)] = _value
 		
-		if isinstance(item[key],unicode):
+		if isinstance(item[key],str):
 			item[key] = str(item[key])
 	
 	ITEM_TYPES[item['name']] = item
@@ -247,7 +247,7 @@ def remove_from_chunk(item):
 	return False
 
 def clean_item_for_save(item):
-	if isinstance(item['icon'], unicode) or isinstance(item['icon'], str):
+	if isinstance(item['icon'], str) or isinstance(item['icon'], str):
 			item['icon'] = ord(item['icon'][0])
 		
 	_fore = None
@@ -262,11 +262,11 @@ def clean_item_for_save(item):
 	item['color'] = (_fore, _back)
 
 def save_all_items():
-	for item in ITEMS.values():
+	for item in list(ITEMS.values()):
 		clean_item_for_save(item)
 
 def reload_all_items():
-	for item in ITEMS.values():
+	for item in list(ITEMS.values()):
 		if isinstance(item['icon'], int):
 			item['icon'] = chr(item['icon'])
 		
@@ -378,13 +378,13 @@ def move(item, direction, speed, friction=0.05, _velocity=0):
 def is_item_owned(item_uid):
 	_item = get_item_from_uid(item_uid)
 	
-	if _item.has_key('parent_id'):
+	if 'parent_id' in _item:
 		return True
 	
-	if _item.has_key('parent'):
+	if 'parent' in _item:
 		return True
 	
-	if _item.has_key('stored_in'):
+	if 'stored_in' in _item:
 		return True
 	
 	return False
@@ -460,7 +460,7 @@ def can_store_item_in(item_uid, container_uid):
 
 def store_item_in(item_uid, container_uid):
 	if not can_store_item_in(item_uid, container_uid):
-		print 'cannot store in'
+		print('cannot store in')
 		raise Exception('Cant store item %s in container %s: %s is full.' % (item_uid, container_uid, ITEMS[container_uid]['name']))
 	
 	_item = get_item_from_uid(item_uid)
@@ -539,7 +539,7 @@ def explode(item):
 	
 	#TODO: Dirty hack
 	for life_id in LIFE:
-		_limbs = LIFE[life_id]['body'].keys()
+		_limbs = list(LIFE[life_id]['body'].keys())
 		
 		if not _limbs:
 			continue
@@ -553,7 +553,7 @@ def explode(item):
 		_direction = bad_numbers.direction_to(item['pos'], LIFE[life_id]['pos'])
 		
 		#TODO: Intelligent(?) limb groups?
-		_distance = bad_numbers.distance(LIFE[life_id]['pos'], item['pos'])/2
+		_distance = bad_numbers.distance(LIFE[life_id]['pos'], item['pos'])//2
 		
 		for i in range(_force-_distance):
 			_limb = random.choice(_limbs)
@@ -601,9 +601,9 @@ def explode(item):
 				
 				if not random.randint(0, 4):
 					effects.create_fire((pos[0], pos[1], item['pos'][2]),
-					                    intensity=item['damage']['fire']/2)
+					                    intensity=item['damage']['fire']//2)
 			
-				_dist = bad_numbers.distance(item['pos'], pos)/2
+				_dist = bad_numbers.distance(item['pos'], pos)//2
 				if not random.randint(0, _dist) or not _dist:
 					effects.create_ash(pos)
 		
@@ -628,7 +628,7 @@ def collision_with_solid(item, pos):
 		item['realpos'][0] = float(pos[0])+_x_diff
 		item['realpos'][1] = float(pos[1])+_y_diff
 		
-		print '*** STOP ***'
+		print('*** STOP ***')
 		
 		process_event(item, 'stop')
 			
@@ -705,7 +705,7 @@ def create_effects(item, pos, real_z_pos, z_min):
 				if 'SMOKING' in item['flags']:
 					if random.randint(0, 50)<=25:
 						effects.create_smoke_streamer([pos[0]+random.randint(-item['size'], item['size']), pos[1]+random.randint(-item['size'], item['size']), _z_level],
-						                              item['size']/2,
+						                              item['size']//2,
 						                              random.randint(item['size']*2, (item['size']*2)+5))
 				if 'BURNING' in item['flags']:
 					if random.randint(0, 50)<=25:
@@ -713,7 +713,7 @@ def create_effects(item, pos, real_z_pos, z_min):
 						                              random.randint(item['size'], (item['size'])+3),
 						                              color=tcod.light_crimson)
 				if 'max_speed' in item and is_moving(item):
-					effects.create_vapor(item['pos'], 5, bad_numbers.clip(item['speed']/20, 0, 1))
+					effects.create_vapor(item['pos'], 5, bad_numbers.clip(item['speed']//20, 0, 1))
 
 def get_min_max_velocity(item):
 	if item['velocity'][0]>0:
@@ -897,14 +897,14 @@ def tick_item(item):
 def tick_all_items():
 	if not WORLD_INFO['ticks'] % 16 or not ACTIVE_ITEMS:
 		if SETTINGS['controlling']:
-			for item in ITEMS.values():
+			for item in list(ITEMS.values()):
 				if bad_numbers.distance(item['pos'], LIFE[SETTINGS['controlling']]['pos'])>=OFFLINE_ALIFE_DISTANCE:
 					if item['uid'] in ACTIVE_ITEMS:
 						ACTIVE_ITEMS.remove(item['uid'])
 				elif not item['uid'] in ACTIVE_ITEMS:
 					ACTIVE_ITEMS.add(item['uid'])
 		elif not ACTIVE_ITEMS:
-			ACTIVE_ITEMS.update(ITEMS.keys())
+			ACTIVE_ITEMS.update(list(ITEMS.keys()))
 		
 	for item in ACTIVE_ITEMS.copy():
 		if is_moving(ITEMS[item]):

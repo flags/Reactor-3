@@ -2,9 +2,9 @@ from globals import *
 
 import life as lfe
 
-import judgement
+from . import judgement
 import mapgen
-import chunks
+from . import chunks
 import alife
 import maps
 
@@ -31,7 +31,7 @@ def _find_nearest_reference(life, ref_type, skip_current=False, skip_known=False
 		if skip_unknown and not _nearest_key in life['known_chunks']:
 			continue
 
-		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _nearest_key.split(',')]
 		_distance = bad_numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -49,7 +49,7 @@ def _find_nearest_reference_exact(position, ref_type=None):
 			continue
 		
 		for reference in WORLD_INFO['reference_map'][_r_type]:
-			_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_key.split(',')]
+			_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _nearest_key.split(',')]
 			_distance = bad_numbers.distance(position, _center)
 			_nearest_key = find_nearest_key_in_reference_exact(position, reference)
 			
@@ -65,7 +65,7 @@ def _find_nearest_reference_type_exact(position, ref_type=None):
 	
 	for chunk_keys in WORLD_INFO['refs'][ref_type]:
 		_nearest_chunk_key = chunks.get_nearest_chunk_in_list(position, chunk_keys)
-		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _nearest_chunk_key.split(',')]
 		_distance = bad_numbers.distance(position, _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -86,7 +86,7 @@ def _find_best_unknown_reference(life, ref_type):
 		
 		_chunk_key = find_nearest_key_in_reference(life, reference)
 		
-		if bad_numbers.distance(life['pos'], maps.get_chunk(_chunk_key)['pos'])/WORLD_INFO['chunk_size']>10:
+		if bad_numbers.distance(life['pos'], maps.get_chunk(_chunk_key)['pos'])//WORLD_INFO['chunk_size']>10:
 			continue
 		
 		if not _best_reference['reference'] or _score>_best_reference['score']:
@@ -117,13 +117,13 @@ def find_nearest_key_in_reference(life, reference_id, unknown=False, ignore_curr
 			continue
 		
 		if ignore_current and lfe.get_current_chunk_id(life) == _key:
-			print 'ignoring current'
+			print('ignoring current')
 			continue
 		
 		if not maps.get_chunk(_key)['ground']:
 			continue
 		
-		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _key.split(',')]
 		_distance = bad_numbers.distance(life['pos'], _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -142,7 +142,7 @@ def find_nearest_key_in_reference_exact(position, reference):
 		if not maps.get_chunk(_key)['ground']:
 			continue
 		
-		_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _key.split(',')]
+		_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _key.split(',')]
 		_distance = bad_numbers.distance(position, _center)
 		
 		if not _lowest['chunk_key'] or _distance<_lowest['distance']:
@@ -181,9 +181,9 @@ def path_along_reference(life, ref_type):
 		if maps.get_chunk(neighbor_key) == lfe.get_current_chunk(life):
 			continue
 		
-		_neighbor_pos = [int(val)+(WORLD_INFO['chunk_size']/2) for val in neighbor_key.split(',')]
-		_cent = (lfe.get_current_chunk(life)['pos'][0]+(WORLD_INFO['chunk_size']/2),
-			lfe.get_current_chunk(life)['pos'][1]+(WORLD_INFO['chunk_size']/2))
+		_neighbor_pos = [int(val)+(WORLD_INFO['chunk_size']//2) for val in neighbor_key.split(',')]
+		_cent = (lfe.get_current_chunk(life)['pos'][0]+(WORLD_INFO['chunk_size']//2),
+			lfe.get_current_chunk(life)['pos'][1]+(WORLD_INFO['chunk_size']//2))
 		_neighbor_direction = bad_numbers.direction_to(_cent, _neighbor_pos)
 		_directions[_neighbor_direction] = {'key': neighbor_key, 'score': 9999}
 	
@@ -200,7 +200,7 @@ def path_along_reference(life, ref_type):
 			if _directions[_new_dir]['key'] in life['known_chunks']:
 				continue
 			
-			_score += (180-(abs(_new_dir-life['discover_direction'])))/45
+			_score += (180-(abs(_new_dir-life['discover_direction'])))//45
 			_score += life['discover_direction_history'].count(_new_dir)
 			
 			if _score>=_best_dir['score']:

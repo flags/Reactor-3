@@ -2,36 +2,36 @@ from globals import *
 
 import life as lfe
 
-import alife_manage_items
-import alife_discover
-import alife_shelter
-import alife_escape
-import alife_search
-import alife_combat
-import alife_follow
-import alife_cover
-import alife_needs
-import alife_work
+from . import alife_manage_items
+from . import alife_discover
+from . import alife_shelter
+from . import alife_escape
+from . import alife_search
+from . import alife_combat
+from . import alife_follow
+from . import alife_cover
+from . import alife_needs
+from . import alife_work
 
-import references
-import judgement
+from . import references
+from . import judgement
 import missions
-import survival
-import movement
-import factions
+from . import survival
+from . import movement
+from . import factions
 import bad_numbers
-import memory
-import groups
-import combat
-import chunks
-import speech
+from . import memory
+from . import groups
+from . import combat
+from . import chunks
+from . import speech
 import dialog
-import brain
+from . import brain
 import items
-import stats
+from . import stats
 import logic
-import sight
-import jobs
+from . import sight
+from . import jobs
 
 import logging
 import re
@@ -397,10 +397,10 @@ def raw_section_has_identifier(life, section, identifier):
 	return False
 
 def get_raw_sections(life):
-	return life['raw']['sections'].keys()
+	return list(life['raw']['sections'].keys())
 
 def get_raw_identifiers(life, section):
-	return life['raw']['sections'][section].keys()
+	return list(life['raw']['sections'][section].keys())
 
 def get_arguments(life, section, identifier):
 	return life['raw']['sections'][section][identifier]

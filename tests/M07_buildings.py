@@ -26,7 +26,7 @@ def walker(chunk_key, steps, add_first=False, chunk_keys=True, avoid_chunk_keys=
 			_valid_directions.append(mod[:])
 		
 		if not _valid_directions:
-			print 'Take a break...'
+			print('Take a break...')
 			
 			break
 		
@@ -75,7 +75,7 @@ def connect_to_chunks(connect_to, existing_connections, steps):
 	
 	_common_neighbors = {}
 	_highest = 0
-	for layer in _connect_layers.values():
+	for layer in list(_connect_layers.values()):
 		for chunk_key in layer['neighbors']:
 			if chunk_key in _common_neighbors:
 				_common_neighbors[chunk_key] += 1
@@ -85,7 +85,7 @@ def connect_to_chunks(connect_to, existing_connections, steps):
 			if _common_neighbors[chunk_key]>_highest:
 				_highest = _common_neighbors[chunk_key]
 
-	for chunk_key in _common_neighbors.keys():
+	for chunk_key in list(_common_neighbors.keys()):
 		if _common_neighbors[chunk_key]<_highest:
 			del _common_neighbors[chunk_key]
 	
@@ -95,7 +95,7 @@ def connect_to_chunks(connect_to, existing_connections, steps):
 	if _highest<len(_connect_layers):
 		return False
 	
-	return random.choice(_common_neighbors.keys())
+	return random.choice(list(_common_neighbors.keys()))
 
 def _create_building(chunk_key, design):
 	_pos = chunk_key
@@ -103,7 +103,7 @@ def _create_building(chunk_key, design):
 	_building = {}
 	_building_chunk_keys = []
 	_build_queue = [design['build_order']]
-	_to_build = design['chunks'].keys()
+	_to_build = list(design['chunks'].keys())
 	
 	while _build_queue:
 		_room_name = _build_queue.pop(0)
@@ -163,11 +163,11 @@ for y in range(5, 80, WORLD_INFO['chunk_size']):
 		for room in _building:
 			if _chunk_key in _building[room]:
 				_rooms += 1
-				print room[0],
+				print(room[0], end=' ')
 				break
 		else:
-			print '.',
+			print('.', end=' ')
 	
-	print
+	print()
 
-print _rooms
+print(_rooms)

@@ -2,7 +2,7 @@ from globals import *
 import life as lfe
 
 import alife
-import raids
+from . import raids
 
 TIER = TIER_PASSIVE
 

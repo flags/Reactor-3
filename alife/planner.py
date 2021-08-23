@@ -131,7 +131,7 @@ def find_actions_that_satisfy(life, desires, debug=False):
 					continue
 				else:
 					if debug:
-						print 'action %s failed to meet the desires of %s' % (action, _desire)
+						print('action %s failed to meet the desires of %s' % (action, _desire))
 					
 					_break = True
 					break
@@ -151,12 +151,12 @@ def find_actions_that_satisfy(life, desires, debug=False):
 				
 				if not FUNCTION_MAP[_requirement](life) == _true:
 					if debug:
-						print '\tFailed at:%s' % _requirement
+						print('\tFailed at:%s' % _requirement)
 					
 					_break = True
 					break
 				elif debug:
-					print '\tPassed:%s' % _requirement
+					print('\tPassed:%s' % _requirement)
 			
 			if _break:
 				continue
@@ -224,7 +224,7 @@ def execute(life, func):
 			break
 	
 	if func == 'set_raid_location':
-		print 'CHECKS OUT' * 100
+		print('CHECKS OUT' * 100)
 	if _self_call:
 		if FUNCTION_MAP[func]() == _true:
 			return True
@@ -249,14 +249,14 @@ def execute_plan(life, plan):
 		#	raise Exception('Invalid function in life type \'%s\' for action \'%s\': %s' % (life['species'], action, life['goap_actions'][action]['execute']))
 
 def get_next_goal(life, debug=False):
-	_next_goal = {'highest': None, 'goal': None, 'plan': None}
+	_next_goal = {'highest': float("-inf"), 'goal': None, 'plan': None}
 	
 	for goal in life['goap_goals']:
 		_break = False
 		
 		if debug == goal:
-			print
-			print goal
+			print()
+			print(goal)
 		
 		if len(life['goap_goals'][goal]['require'][0]):
 			for requirement in life['goap_goals'][goal]['require']:
@@ -279,12 +279,12 @@ def get_next_goal(life, debug=False):
 					_func = FUNCTION_MAP[_requirement](life)
 				if not _func == _true:
 					if debug == goal:
-						print '\tFailed at:%s' % _requirement
+						print('\tFailed at:%s' % _requirement)
 					
 					_break = True
 					break
 				elif debug == goal:
-					print '\tPassed:%s' % _requirement
+					print('\tPassed:%s' % _requirement)
 				#elif SETTINGS['following'] == life['id']:
 				#	print '[state_%s] Requirement passed: %s (wanted %s)' % (goal, _requirement, _true)
 				#	print FUNCTION_MAP[_requirement](life)

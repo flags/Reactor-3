@@ -165,7 +165,7 @@ def bite(life, target_id, limb):
 
 		if not 'thickness' in _item:
 			logging.warning('Item \'%s\' has no set thickness. Guessing...' % _item['name'])
-			_item['thickness'] = _item['size']/2
+			_item['thickness'] = _item['size']//2
 		
 		_thickness = _item['thickness']
 		_item['thickness'] = bad_numbers.clip(_item['thickness']-_bite_strength, 0, 100)

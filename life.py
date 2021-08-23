@@ -169,7 +169,7 @@ def initiate_life(name):
 	#except:
 	#	print 'FIXME: Exception on no .dat for life'
 	
-	print 'MOVE GOAP INIT. HERE' * 50
+	print('MOVE GOAP INIT. HERE' * 50)
 	
 	if not 'icon' in life:
 		logging.warning('No icon set for life type \'%s\'. Using default (%s).' % (name,DEFAULT_LIFE_ICON))
@@ -179,7 +179,7 @@ def initiate_life(name):
 		logging.error('No flags set for life type \'%s\'. Errors may occur.' % name)
 	
 	for key in life:
-		if isinstance(life[key],unicode):
+		if isinstance(life[key],str):
 			life[key] = str(life[key])	
 	
 	life.update(calculate_base_stats(life))
@@ -192,7 +192,7 @@ def initiate_limbs(life):
 	"""Creates skeleton of a character and all related variables. Returns nothing."""
 	body = life['body']
 	
-	for limb in body:
+	for limb in list(body):
 		#Unicode fix:
 		_val = body[limb].copy()
 		del body[limb]
@@ -250,7 +250,7 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	_broke_on_false = 0
 	
 	if debug and not dialog:
-		print 'Grabbing raw: %s, %s' % (section, identifier)
+		print('Grabbing raw: %s, %s' % (section, identifier))
 	
 	if dialog:
 		_raw = dialog
@@ -262,7 +262,7 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 	
 	for rule_group in _raw:
 		if debug:
-			print 'Function group:', rule_group
+			print('Function group:', rule_group)
 		
 		for rule in rule_group:
 			if rule['string']:
@@ -288,14 +288,14 @@ def execute_raw(life, section, identifier, break_on_true=False, break_on_false=T
 					_func = rule['function'](life, **kwargs)
 				except Exception as e:
 					logging.critical('Function \'%s\' got invalid argument.' % rule['function'])
-					print rule
+					print(rule)
 					import traceback
 					traceback.print_exc()
 					sys.exit(1)
 			
 			if debug:
-				print 'Function:', _func
-				print 'Function arguments:', _func_args
+				print('Function:', _func)
+				print('Function arguments:', _func_args)
 			
 			if rule['true'] == '*' or _func == rule['true']:
 				for value in rule['values']:
@@ -508,7 +508,7 @@ def sanitize_heard(life):
 	del life['heard']
 
 def sanitize_know(life):
-	for entry in life['know'].values():
+	for entry in list(life['know'].values()):
 		entry['life'] = entry['life']['id']
 		
 		if alife.brain.alife_has_flag(life, entry['life'], 'search_map'):
@@ -519,7 +519,7 @@ def prepare_for_save(life):
 	_sanitize_keys = {'heard': sanitize_heard,
 		'know': sanitize_know}
 	
-	for key in life.keys():#_delete_keys:
+	for key in list(life.keys()):#_delete_keys:
 		if key in _sanitize_keys:
 			_sanitize_keys[key](life)
 		elif key in _delete_keys:
@@ -534,7 +534,7 @@ def post_save(life):
 	life['dialogs'] = []
 	life['fov'] = fov.fov(life['pos'], sight.get_vision(life))
 	
-	for entry in life['know'].values():
+	for entry in list(life['know'].values()):
 		entry['life'] = LIFE[entry['life']]
 	
 	#NOTE: This section is for updating life entities after keys have been added
@@ -542,35 +542,35 @@ def post_save(life):
 	initiate_raw(life)
 
 def load_all_life():
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		post_save(life)
 
 def save_all_life():
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		prepare_for_save(life)
 		
-		for key in life.keys():
+		for key in list(life.keys()):
 			try:
 				json.dumps(life[key])
 			except:
-				print life[key]
+				print(life[key])
 				logging.critical('Life key cannot be offloaded: %s' % key)
 				raise Exception(key)
 	
 	_life = json.dumps(LIFE)
 	
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		post_save(life)
 	
 	return _life
 
 def show_debug_info(life):
-	print ' '.join(life['name'])
-	print '*'*10
-	print 'Dumping memory'
-	print '*'*10
+	print(' '.join(life['name']))
+	print('*'*10)
+	print('Dumping memory')
+	print('*'*10)
 	for memory in life['memory']:
-		print memory['target'], memory['text']
+		print(memory['target'], memory['text'])
 
 def get_engage_distance(life):
 	return 0
@@ -646,7 +646,7 @@ def get_current_known_chunk(life):
 	return False
 
 def get_current_known_chunk_id(life):
-	_chunk_key = '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+	_chunk_key = '%s,%s' % ((life['pos'][0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 	
 	if _chunk_key in life['known_chunks']:
 		return _chunk_key
@@ -659,7 +659,7 @@ def get_current_chunk(life):
 	return maps.get_chunk(_chunk_id)
 
 def get_current_chunk_id(life):
-	return '%s,%s' % ((life['pos'][0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+	return '%s,%s' % ((life['pos'][0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'], (life['pos'][1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 
 def get_known_life(life, id):
 	if id in life['know']:
@@ -926,7 +926,7 @@ def crouch(life):
 	else:
 		_delay = melee.get_stance_score(life, 'crouching')
 	
-	set_animation(life, ['n', '@'], speed=_delay/2)
+	set_animation(life, ['n', '@'], speed=_delay//2)
 	add_action(life,{'action': 'crouch'},
 		200,
 		delay=_delay)
@@ -939,7 +939,7 @@ def stand(life):
 	else:
 		_delay = melee.get_stance_score(life, 'standing')
 	
-	set_animation(life, ['^', '@'], speed=_delay/2)
+	set_animation(life, ['^', '@'], speed=_delay//2)
 	add_action(life,{'action': 'stand'},
 		200,
 		delay=_delay)
@@ -957,7 +957,7 @@ def crawl(life, force=False):
 	else:
 		_delay = melee.get_stance_score(life, 'crawling')
 	
-	set_animation(life, ['v', '@'], speed=_delay/2)
+	set_animation(life, ['v', '@'], speed=_delay//2)
 	add_action(life,{'action': 'crawl'},
 		200,
 		delay=_delay)
@@ -1174,7 +1174,7 @@ def perform_collisions(life):
 		if not life['gravity']:
 			life['falling_startzpos'] = life['pos'][2]
 			
-			if life.has_key('player'):
+			if 'player' in life:
 				gfx.message('You begin to fall...')
 		
 		life['gravity'] = WORLD_INFO['world_gravity']
@@ -1252,14 +1252,14 @@ def add_action(life, action, score, delay=0):
 	_tmp_action = {'action': action,'score': score}
 	
 	if _tmp_action in life['actions']:
-		print 'Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action'])
+		print('Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action']))
 		return False
 	
 	_tmp_action['delay'] = delay
 	_tmp_action['delay_max'] = delay
 	
 	if _tmp_action in life['actions']:
-		print 'Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action'])
+		print('Action already exists in queue for %s: %s' % (' '.join(life['name']), action['action']))
 		return False
 	
 	_index = 0
@@ -1356,7 +1356,7 @@ def perform_action(life):
 				
 				if 'debug' in _action and _action['debug']:
 					SETTINGS['print dijkstra maps'] = False
-					print _path
+					print(_path)
 		
 		if not 'failed_dijkstra' in life['state_flags'] and walk(life, path=_path):
 			delete_action(life, action)
@@ -1455,8 +1455,8 @@ def perform_action(life):
 		delete_action(life, action)
 		set_animation(life, [',', 'x'], speed=6)
 		
-		if life.has_key('player'):
-			if _action.has_key('container'):
+		if 'player' in life:
+			if 'container' in _action:
 				_item = items.get_item_from_uid(_action['item'])
 				_container = items.get_item_from_uid(_action['container'])
 				gfx.message('You store %s in %s.'
@@ -1489,12 +1489,12 @@ def perform_action(life):
 		if _stored:
 			_item = get_inventory_item(life,_action['item'])
 			
-			if life.has_key('player'):
+			if 'player' in life:
 				gfx.message('You remove %s from %s.' % (_name,_stored['name']))
 			else:
 				say(life,'@n takes off %s.' % _name,action=True)
 		
-		if life.has_key('player'):
+		if 'player' in life:
 			gfx.message('You drop %s.' % _name)
 		else:
 			say(life,'@n drops %s.' % _name,action=True)
@@ -1548,7 +1548,7 @@ def perform_action(life):
 		remove_item_from_inventory(life,_action['item'])
 		direct_add_item_to_inventory(life,_action['item'],container=_action['container'])
 		
-		if life.has_key('player'):
+		if 'player' in life:
 			gfx.message('You put %s into %s.' % (_item_to_store_name,_container_name))
 		else:
 			say(life,'@n stores %s in %s.' % (_item_to_store_name,_container_name), action=True, event=False)
@@ -1568,7 +1568,7 @@ def perform_action(life):
 	
 	elif _action['action'] == 'pickupequipitem':
 		if not can_wear_item(life,_action['item']):
-			if life.has_key('player'):
+			if 'player' in life:
 				gfx.message('You can\'t equip this item!')
 			
 			delete_action(life,action)
@@ -1577,7 +1577,7 @@ def perform_action(life):
 		
 		item = items.get_item_from_uid(_action['item'])
 		
-		if life.has_key('player'):
+		if 'player' in life:
 			gfx.message('You equip %s from the ground.' % items.get_name(item))
 		else:
 			say(life,'@n puts on %s from the ground.' % _name,action=True)
@@ -1603,7 +1603,7 @@ def perform_action(life):
 			_item['owner'] = None
 		
 		if _hand['holding']:
-			if life.has_key('player'):
+			if 'player' in life:
 				gfx.message('You\'re already holding something in your %s!' % _action['hand'])
 		
 			delete_action(life, action)
@@ -1656,7 +1656,7 @@ def perform_action(life):
 		_ammo = remove_item_from_inventory(life, _action['ammo']['uid'])
 		_action['ammo']['parent'] = _action['weapon']['uid']
 		
-		if life.has_key('player'):
+		if 'player' in life:
 			gfx.message('You load a new %s into your %s.' % (_action['weapon']['feed'],_action['weapon']['name']))
 		else:
 			say(life, '@n reloads %s.' % items.get_name(_action['weapon']), action=True, event=False)
@@ -1692,7 +1692,7 @@ def perform_action(life):
 		_action['round']['parent'] = _action['ammo']['uid']
 		_round = remove_item_from_inventory(life, _action['round']['uid'])
 		
-		if life.has_key('player') and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
+		if 'player' in life and len(_action['ammo']['rounds'])>=_action['ammo']['maxrounds']:
 			gfx.message('The magazine is full.')
 		
 		delete_action(life,action)
@@ -1739,7 +1739,7 @@ def perform_action(life):
 	return True
 
 def kill(life, injury):
-	if isinstance(injury, str) or isinstance(injury, unicode):
+	if isinstance(injury, str) or isinstance(injury, str):
 		life['cause_of_death'] = injury
 		
 		if 'player' in life:
@@ -1900,7 +1900,7 @@ def tick_all_life(setup=False):
 			brain.sight.look(life)
 			brain.sound.listen(life)
 			
-			for mission_id in life['missions'].keys():
+			for mission_id in list(life['missions'].keys()):
 				missions.do_mission(life, mission_id)
 			
 			perform_action(life)
@@ -1974,11 +1974,11 @@ def throw_item(life, item_uid, target):
 	_distance = bad_numbers.distance(_item['pos'], target)
 	
 	#TODO: TOSS OVER WALL? THROW FASTER?
-	#_z_velocity = _distance/_distance*(1-_item['gravity'])
+	#_z_velocity = _distance//_distance*(1-_item['gravity'])
 	_z_velocity = 0
 	
 	#TODO: The following works:
-	#_speed = _distance/_distance*(1-_drag)
+	#_speed = _distance//_distance*(1-_drag)
 	_speed = 2
 	
 	items.move(_item, _direction, _speed, _velocity=_z_velocity)
@@ -2024,7 +2024,7 @@ def add_item_to_storage(life, item_uid, container=None):
 		container = can_put_item_in_storage(life, item_uid)
 	
 	if not container:
-		print 'cannot store',_item['name']
+		print('cannot store',_item['name'])
 		return False
 	
 	#_container = items.get_item_from_uid(container)
@@ -2039,7 +2039,7 @@ def remove_item_in_storage(life, item_uid):
 	if 'stored_in' in items.get_item_from_uid(item_uid):
 		items.remove_item_from_any_storage(item_uid)
 	else:
-		print 'incorrect: item not stored'
+		print('incorrect: item not stored')
 	
 	#for _container in [items.get_item_from_uid(_container) for _container in life['inventory']]:
 	#	if not 'max_capacity' in _container:
@@ -2166,7 +2166,7 @@ def get_all_equipped_items(life, check_hands=True, matches=[]):
 def get_all_known_camps(life, matches={}):
 	_camps = []
 	
-	for camp in life['known_camps'].values():
+	for camp in list(life['known_camps'].values()):
 		for key in matches:
 			if not key in camp or not camp[key] == matches[key]:
 				break
@@ -2180,7 +2180,7 @@ def get_item_access_time(life, item_uid):
 	_size = _item['size']
 	
 	if 'attaches_to' in _item:
-		_size = _size/len(_item['attaches_to'])
+		_size = _size//len(_item['attaches_to'])
 	
 	_size = bad_numbers.clip(_size, 0, 6)	
 	
@@ -2221,7 +2221,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 	
 	""" 
 	#Warning: Only use this if you know what you're doing!
-	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+	if not isinstance(item_uid, str) and not isinstance(item_uid, str):
 		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
@@ -2259,7 +2259,7 @@ def direct_add_item_to_inventory(life, item_uid, container=None):
 
 def add_item_to_inventory(life, item_uid, equip=False):
 	"""Helper function. Adds item to inventory. Returns inventory ID."""
-	if not isinstance(item_uid, str) and not isinstance(item_uid, unicode):
+	if not isinstance(item_uid, str) and not isinstance(item_uid, str):
 		raise Exception('Deprecated: String not passed as item UID')
 	
 	item = items.get_item_from_uid(item_uid)
@@ -2323,7 +2323,7 @@ def remove_item_from_inventory(life, item_id):
 		item['pos'] = life['pos'][:]
 		remove_item_in_storage(life, item_id)
 	elif not item_is_stored(life, item_id):
-		print 'item is NOT stored'
+		print('item is NOT stored')
 	
 	if 'max_capacity' in item:
 		logging.debug('Dropping container storing:')
@@ -2900,10 +2900,10 @@ def draw_visual_inventory(life):
 		if _limbs[limb]['holding']:
 			_item = get_inventory_item(life,_limbs[limb]['holding'][0])
 			console_set_default_foreground(0,white)
-			console_print(0,MAP_WINDOW_SIZE[0]+1,_limbs.keys().index(limb)+1,'%s: %s' % (limb,_item['name']))
+			console_print(0,MAP_WINDOW_SIZE[0]+1,list(_limbs.keys()).index(limb)+1,'%s: %s' % (limb,_item['name']))
 		else:
 			console_set_default_foreground(0,Color(125,125,125))
-			console_print(0,MAP_WINDOW_SIZE[0]+1,_limbs.keys().index(limb)+1,'%s: None' % limb)
+			console_print(0,MAP_WINDOW_SIZE[0]+1,list(_limbs.keys()).index(limb)+1,'%s: None' % limb)
 	
 	console_set_default_foreground(0,white)
 
@@ -3204,7 +3204,7 @@ def collapse(life):
 
 def get_damage(life):
 	_damage = 0
-	for limb in life['body'].values():
+	for limb in list(life['body'].values()):
 		_damage += limb['cut']
 		_damage += limb['bleeding']
 	
@@ -3341,7 +3341,7 @@ def calculate_blood(life):
 	if life['blood']<=0:
 		return 0
 	
-	for limb in life['body'].values():
+	for limb in list(life['body'].values()):
 		if not limb['bleeding']:
 			continue
 		
@@ -3360,7 +3360,7 @@ def calculate_blood(life):
 	return life['blood']
 
 def calculate_max_blood(life):
-	return sum([l['size']*10 for l in life['body'].values()])
+	return sum([l['size']*10 for l in list(life['body'].values())])
 
 def get_bleeding_limbs(life):
 	"""Returns list of bleeding limbs."""
@@ -3577,9 +3577,9 @@ def burn(life, intensity):
 	if life['stance'] == 'standing' and intensity>=3:
 		_limbs.extend(get_legs(life))
 	elif life['stance'] == 'crouching' and intensity>=3:
-		_limbs.extend(life['body'].keys())
+		_limbs.extend(list(life['body'].keys()))
 	elif life['stance'] == 'crawling':
-		_limbs.extend(life['body'].keys())
+		_limbs.extend(list(life['body'].keys()))
 	else:
 		return False
 	
@@ -3743,7 +3743,7 @@ def difficulty_of_hitting_limb(life, limb, item_uid):
 		return 9999
 	
 	_scatter = weapons.get_bullet_scatter_to(life, life['pos'], item_uid)
-	_scatter *= 1+((10-bad_numbers.clip(get_limb(life, limb)['size'], 1, 10))/10)
+	_scatter *= 1+((10-bad_numbers.clip(get_limb(life, limb)['size'], 1, 10))//10)
 	
 	return _scatter
 
@@ -3753,9 +3753,9 @@ def damage_from_item(life, item):
 	
 	if item['aim_at_limb'] and item['accuracy']>=difficulty_of_hitting_limb(life, item['aim_at_limb'], item['uid']):
 		_rand_limb = [item['aim_at_limb'] for i in range(item['accuracy'])]
-		_rand_limb.append(random.choice(life['body'].keys()))
+		_rand_limb.append(random.choice(list(life['body'].keys())))
 	else:
-		_rand_limb = [random.choice(life['body'].keys())]
+		_rand_limb = [random.choice(list(life['body'].keys()))]
 	
 	_poss_limbs = _rand_limb
 	_shot_by_alife = LIFE[item['shot_by']]
@@ -3830,29 +3830,29 @@ def generate_life_info(life):
 	
 	for key in _stats_for:
 		if isinstance(life[key], list):
-			print '\n',key,'\t-',
+			print('\n',key,'\t-', end=' ')
 			for value in life[key]:
 				if isinstance(value, dict):
-					print '\n'
+					print('\n')
 					for _key in value:
-						print '\t',_key,'\t' * (2-(len(_key)/8)),value[_key]
+						print('\t',_key,'\t' * (2-(len(_key)//8)),value[_key])
 				else:
-					print value,
-			print '\t\t',
+					print(value, end=' ')
+			print('\t\t', end=' ')
 		elif isinstance(life[key], dict):
 			for _key in life[key]:
-				print '\t',_key,'\t' * (2-(len(_key)/8)),life[key][_key]
+				print('\t',_key,'\t' * (2-(len(_key)//8)),life[key][_key])
 		
 		else:
-			print '\n',key,'\t-',life[key],
+			print('\n',key,'\t-',life[key], end=' ')
 		
 	return _lines
 
 def print_life_table():
-	print '%' * 16
-	print '^ Life (Table) ^'
-	print '%' * 16,'\n'
+	print('%' * 16)
+	print('^ Life (Table) ^')
+	print('%' * 16,'\n')
 	
 	for life in [LIFE[i] for i in LIFE]:
 		generate_life_info(life)
-		print '\n','%' * 16,'\n'
+		print('\n','%' * 16,'\n')

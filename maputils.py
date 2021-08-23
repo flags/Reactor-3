@@ -15,7 +15,7 @@ def resize_map(map,size):
 	_old_size = get_map_size(map)
 	
 	if _old_size[0]>size[0] or _old_size[1]>size[1] or _old_size[2]>size[2]:
-		print 'Warning: Attempting to shink the map! Data will be lost.'
+		print('Warning: Attempting to shink the map! Data will be lost.')
 	
 	_new_map = copy.deepcopy(map)
 	
@@ -89,4 +89,4 @@ if __name__ == '__main__':
 		
 		maps.save_map('temp_map')
 		
-		print 'Created map: temp_map.dat'
+		print('Created map: temp_map.dat')

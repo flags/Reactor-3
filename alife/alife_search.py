@@ -2,13 +2,13 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
+from . import judgement
+from . import movement
 import bad_numbers
-import speech
-import camps
-import brain
-import jobs
+from . import speech
+from . import camps
+from . import brain
+from . import jobs
 
 import logging
 
@@ -27,7 +27,7 @@ def conditions(life, alife_seen, alife_not_seen, targets_seen, targets_not_seen,
 	if not _lost_targets:
 		return False
 	else:
-		print life['name'], _lost_targets
+		print(life['name'], _lost_targets)
 	
 	return RETURN_VALUE
 

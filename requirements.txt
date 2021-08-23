@@ -1,0 +1,4 @@
+Cython
+numpy
+tcod>=12.6.1
+pyinstaller==4.3

@@ -1,19 +1,19 @@
 from globals import *
 import life as lfe
 
-import references
-import judgement
-import movement
-import rawparse
+from . import references
+from . import judgement
+from . import movement
+from . import rawparse
 import weapons
-import action
-import chunks
-import speech
-import combat
-import brain
+from . import action
+from . import chunks
+from . import speech
+from . import combat
+from . import brain
 import items
-import sight
-import stats
+from . import sight
+from . import stats
 import maps
 
 import logging
@@ -50,7 +50,7 @@ def delete_needed_item(life, need_id):
 	logging.debug('Remove item need: %s' % need_id)
 
 def remove_item_from_needs(life, item_uid):
-	for need in life['needs'].values():
+	for need in list(life['needs'].values()):
 		if item_uid in need['meet_with']:
 			need['meet_with'].remove(item_uid)
 		
@@ -59,7 +59,7 @@ def remove_item_from_needs(life, item_uid):
 
 #@profile
 def process(life):
-	for need in life['needs'].values():
+	for need in list(life['needs'].values()):
 		if need['type'] == 'item':
 			_has_items = []
 			_potential_items = []
@@ -418,7 +418,7 @@ def explore_unknown_chunks(life):
 	
 	_walkable_area = chunks.get_walkable_areas(_chunk_key)
 	if not _walkable_area:
-		print 'no walkable area'
+		print('no walkable area')
 		return False
 	
 	_closest_pos = {'pos': None, 'distance': -1}

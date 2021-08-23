@@ -3,25 +3,25 @@ from globals import *
 import graphics as gfx
 import life as lfe
 
-import references
-import judgement
-import movement
-import survival
-import factions
+from . import references
+from . import judgement
+from . import movement
+from . import survival
+from . import factions
 import bad_numbers
-import memory
-import action
-import combat
-import speech
+from . import memory
+from . import action
+from . import combat
+from . import speech
 import events
-import chunks
+from . import chunks
 import logic
-import sight
-import camps
-import brain
-import stats
-import raids
-import jobs
+from . import sight
+from . import camps
+from . import brain
+from . import stats
+from . import raids
+from . import jobs
 
 import logging
 import random
@@ -215,7 +215,7 @@ def get_event(life, group_id, event_id):
 def process_events(life, group_id):
 	_group = get_group(life, group_id)
 	
-	for event in _group['events'].values():
+	for event in list(_group['events'].values()):
 		events.process_event(event)
 
 def announce(life, _group_id, gist, message='', order=False, consider_motive=False, filter_if=None, **kwargs):
@@ -225,7 +225,7 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 		if _group['claimed_motive'] == 'wealth':
 			_announce_to = []
 			
-			for life_id in LIFE.keys():
+			for life_id in list(LIFE.keys()):
 				if life_id == life['id']:
 					continue
 				
@@ -241,7 +241,7 @@ def announce(life, _group_id, gist, message='', order=False, consider_motive=Fal
 		elif _group['claimed_motive'] == 'survival':
 			_announce_to = []
 			
-			for life_id in LIFE.keys():
+			for life_id in list(LIFE.keys()):
 				if life_id == life['id']:
 					continue
 				
@@ -460,9 +460,9 @@ def get_jobs(life, group_id):
 				_lowest['group'] = group_id
 			
 		
-		print 'RAID', _lowest
+		print('RAID', _lowest)
 	else:
-		print 'ony one'
+		print('ony one')
 	
 	return _jobs
 
@@ -554,7 +554,7 @@ def manage_territory(life, group_id):
 		_distance = chunks.get_distance_to_nearest_chunk_in_list(WORLD_INFO['chunk_map'][_shelter_chunk]['pos'], factions.get_territory(_opposing_shelter)['chunk_keys'])
 		
 		if _distance<=30:
-			print '2 CLOSE 2 HANDLE'
+			print('2 CLOSE 2 HANDLE')
 
 def manage_raid(life, group_id):
 	if not get_stage(life, group_id) in [STAGE_RAIDING, STAGE_ATTACKING]:
@@ -569,7 +569,7 @@ def manage_raid(life, group_id):
 	flag(life, group_id, 'announced_raid_location', _raid_chunk_key)
 	lfe.memory(life, 'focus_on_chunk', chunk_key=_raid_chunk_key)
 	
-	print 'RAID LOCATION SET' * 100
+	print('RAID LOCATION SET' * 100)
 
 def manage_combat(life, group_id):
 	if has_flag(life, group_id, 'confident'):
@@ -773,7 +773,7 @@ def get_possible_group_location(life, group_id):
 			_most_recent['time'] = _target['last_seen_time']
 	
 	if not _most_recent['shelter']:
-		print 'STILL DO NOT HAVE TARGET GROUP LOCATION'
+		print('STILL DO NOT HAVE TARGET GROUP LOCATION')
 	
 	return _most_recent['shelter']
 

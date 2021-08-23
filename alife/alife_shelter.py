@@ -2,10 +2,10 @@ from globals import *
 
 import life as lfe
 
-import references
-import judgement
-import chunks
-import goals
+from . import references
+from . import judgement
+from . import chunks
+from . import goals
 import maps
 
 import random

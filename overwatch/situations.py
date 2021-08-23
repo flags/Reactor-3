@@ -8,19 +8,19 @@ import language
 import drawing
 import bad_numbers
 import effects
-import events
+from . import events
 import spawns
 import alife
 import items
 import maps
-import core
+from . import core
 
 import logging
 import random
 
 
 def form_scheme(force=False):
-	print WORLD_INFO['next_scheme_timer']
+	print(WORLD_INFO['next_scheme_timer'])
 	if WORLD_INFO['next_scheme_timer']:
 		WORLD_INFO['next_scheme_timer'] -= 1
 		
@@ -53,7 +53,7 @@ def form_scheme(force=False):
 	
 	_event_name = random.choice(_event_names)
 	
-	print _event_name
+	print(_event_name)
 	
 	if _event_name == 'attract':
 		if _player_situation['enemy_factions'] and not _player_situation['friendly_factions']:

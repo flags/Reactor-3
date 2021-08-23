@@ -27,7 +27,7 @@ def memory(life_id):
 @app.route('/life/<life_id>')
 def life(life_id):
 	life = request('life', value=int(life_id))
-	knows = life['know'].values()
+	knows = list(life['know'].values())
 	
 	return render_template('life.html', life=life, knows=knows)
 

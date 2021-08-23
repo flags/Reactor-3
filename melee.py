@@ -27,7 +27,7 @@ def assume_stance(p, stance, towards=None):
 		if not p['next_stance']['delay']:
 			p['next_stance']['forced'] = False
 		else:
-			print p['name'], 'cannot move (forced)'
+			print(p['name'], 'cannot move (forced)')
 			return False
 
 	p['next_stance']['delay'] = get_stance_score(p, stance)
@@ -39,7 +39,7 @@ def assume_stance(p, stance, towards=None):
 		gfx.message('You start to %s.' % stance)
 	elif 'player' in LIFE[towards]:
 		gfx.message('%s begins to %s.' % (' '.join(p['name']), stance))
-	print p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
+	print(p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')')
 	return True
 
 def force_stance(p, target_id, stance):
@@ -56,7 +56,7 @@ def force_stance(p, target_id, stance):
 	p['next_stance']['stance'] = 'standing'
 	p['next_stance']['forced'] = True
 	
-	print p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')'
+	print(p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')')
 
 def examine_possible_moves(p, targets):
 	#TODO: Cancel move?
@@ -98,9 +98,9 @@ def examine_possible_moves(p, targets):
 				return True
 		
 		if 'player' in p:
-			_moves[_target]['moves'].extend(p['moves'].keys())
+			_moves[_target]['moves'].extend(list(p['moves'].keys()))
 		else:
-			assume_stance(p, random.choice(p['moves'].keys()), towards=_target)
+			assume_stance(p, random.choice(list(p['moves'].keys())), towards=_target)
 			return True
 		
 		#if _next_stance and _next_stance in p['moves'] and not p['stance'] in p['moves'][_next_stance]['counters']:
@@ -141,11 +141,11 @@ def tick(p):
 		p['next_stance']['delay'] -= 1
 		
 		if p['next_stance']['delay']:
-			print p['name'], 'waiting:', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
+			print(p['name'], 'waiting:', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')')
 			return False
 	
 	if p['next_stance']['stance']:
-		print p['name'], p['stance'], '->', p['next_stance']['stance']
+		print(p['name'], p['stance'], '->', p['next_stance']['stance'])
 		
 		p['stance'] = p['next_stance']['stance']
 		p['next_stance']['stance'] = None
@@ -167,7 +167,7 @@ def react_to_attack(life, target_id, stance):
 	elif life['stances'][life['stance']]<=life['stances']['crouching']:
 		force_stance(life, target_id, 'off-balance')
 	
-	lfe.add_wound(life, random.choice(life['body'].keys()), pain=_attack['damage']['force'])
+	lfe.add_wound(life, random.choice(list(life['body'].keys())), pain=_attack['damage']['force'])
 
 def perform_moves(people):
 	for life_id in people:
@@ -184,7 +184,7 @@ def perform_moves(people):
 				elif 'player' in _life:
 					gfx.message('%s counters your %s.' % (' '.join(_target['name']), _life['stance']), style='player_combat_bad')
 				
-				print '%s counters %s\'s %s!' % (_target['name'], _life['name'], _life['stance'])
+				print('%s counters %s\'s %s!' % (_target['name'], _life['name'], _life['stance']))
 				
 				#react_to_attack(_life, _target['id'], _target['stance'])
 			else:
@@ -197,7 +197,7 @@ def perform_moves(people):
 				elif 'player' in _target:
 					gfx.message('%s lands a %s.' % (' '.join(_life['name']), _life['stance']), style='player_combat_bad')
 				
-				print '%s\'s %s hits %s!' % (_life['name'], _life['stance'], _target['name'])
+				print('%s\'s %s hits %s!' % (_life['name'], _life['stance'], _target['name']))
 				react_to_attack(_target, _life['id'], _life['stance'])
 			
 			_life['next_stance']['towards'] = None
@@ -219,7 +219,7 @@ def fight(life, target):
 
 def process_fights():
 	_fighters = []
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		if life['next_stance']['stance']:
 			if sum([abs(i) for i in life['velocity']]):
 				continue

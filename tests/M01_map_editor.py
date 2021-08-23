@@ -89,7 +89,7 @@ def get_mouse_input():
 	else:
 		MOUSE_1_DOWN = False
 
-	MOUSE_POS = MOUSE.x/16,MOUSE.y/16
+	MOUSE_POS = MOUSE.x//16,MOUSE.y//16
 
 def get_input():
 	global KEY,MOUSE,CURSOR_POS
@@ -114,7 +114,7 @@ def get_input():
 def handle_input():
 	global MOUSE_POS
 	if MOUSE_1_DOWN:
-		print MOUSE_POS
+		print(MOUSE_POS)
 		MAP[MOUSE_POS[0]][MOUSE_POS[1]][2] = create_tile(WALL_TILE)
 
 TIME_OF_DAY = 6

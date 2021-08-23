@@ -36,7 +36,7 @@ for x in range(400):
 	
 	MAP.append(_y)
 
-print MAP[3][3],get_raw_tile(MAP[3][3])['cost']
+print(MAP[3][3],get_raw_tile(MAP[3][3])['cost'])
 
 import sys
-print 'Map size (bytes):',sys.getsizeof(MAP)
+print('Map size (bytes):',sys.getsizeof(MAP))

@@ -3,7 +3,7 @@ import time
 import sys
 
 if not len(sys.argv)==3:
-	print 'Expects: python gas_mode.py <width> <height>'
+	print('Expects: python gas_mode.py <width> <height>')
 	sys.exit(1)
 
 X_SIZE = int(sys.argv[1])
@@ -50,7 +50,7 @@ def simulate(MAP):
 		draw_map(NEXT_MAP)
 		
 		if numpy.array_equal(MAP,NEXT_MAP):
-			print 'Took: ',_i
+			print('Took: ',_i)
 			return NEXT_MAP
 		
 		MAP = NEXT_MAP.copy()
@@ -69,11 +69,11 @@ def draw_map(MAP):
 			NEIGHBOR_COUNT = 0
 			LARGEST_SCORE = 0
 			if MAP[MOD_X,MOD_Y] == -1:
-				print 'x',
+				print('x', end=' ')
 			else:
-				print MAP[MOD_X,MOD_Y],
+				print(MAP[MOD_X,MOD_Y], end=' ')
 		
-		print ''
+		print('')
 
 
 SOURCE_MAP[5,5]=8
@@ -87,6 +87,6 @@ for x in range(3):
 START_TIME = time.time()
 SOURCE_MAP = simulate(SOURCE_MAP)
 
-print time.time()-START_TIME
+print(time.time()-START_TIME)
 
 draw_map(SOURCE_MAP)

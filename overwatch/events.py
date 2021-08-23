@@ -12,7 +12,7 @@ import spawns
 import items
 import alife
 import maps
-import core
+from . import core
 
 import logging
 import random

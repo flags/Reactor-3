@@ -1,6 +1,7 @@
 """Terraform - World editor for Reactor 3"""
 
 import logging
+import importlib
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -46,7 +47,7 @@ try:
 		logging.warning('[Cython] render_map is out of date!')
 		logging.warning('[Cython] Run \'python compile_cython_modules.py build_ext --inplace\'')
 	
-except ImportError, e:
+except ImportError as e:
 	CYTHON_ENABLED = False
 	logging.warning('[Cython] ImportError with module: %s' % e)
 	logging.warning('[Cython] Certain functions can run faster if compiled with Cython.')
@@ -57,7 +58,7 @@ def pre_setup_world():
 	create_all_tiles()
 	WORLD_INFO['lights'] = []
 
-	for key in ITEMS.keys():
+	for key in list(ITEMS.keys()):
 		del ITEMS[key]
 
 def post_setup_world():
@@ -65,12 +66,12 @@ def post_setup_world():
 	weather.change_weather()
 	maps.create_position_maps()
 	
-	WORLD_INFO['real_time_of_day'] = WORLD_INFO['length_of_day']/2
+	WORLD_INFO['real_time_of_day'] = WORLD_INFO['length_of_day']//2
 
 def regenerate_world(build_test=False):
 	gfx.title('Generating...')
 	
-	reload(mapgen)
+	importlib.reload(mapgen)
 	
 	if build_test:
 		mapgen.create_buildings()
@@ -100,8 +101,8 @@ def regenerate_world(build_test=False):
 
 def move_camera(pos, scroll=False):
 	_orig_pos = CAMERA_POS[:]
-	CAMERA_POS[0] = bad_numbers.clip(pos[0]-(WINDOW_SIZE[0]/2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
-	CAMERA_POS[1] = bad_numbers.clip(pos[1]-(WINDOW_SIZE[1]/2),0,MAP_SIZE[1]-WINDOW_SIZE[1])
+	CAMERA_POS[0] = bad_numbers.clip(pos[0]-(WINDOW_SIZE[0]//2),0,MAP_SIZE[0]-WINDOW_SIZE[0])
+	CAMERA_POS[1] = bad_numbers.clip(pos[1]-(WINDOW_SIZE[1]//2),0,MAP_SIZE[1]-WINDOW_SIZE[1])
 	CAMERA_POS[2] = pos[2]
 	
 	if not _orig_pos == CAMERA_POS:
@@ -180,8 +181,8 @@ def handle_input():
 		pass
 
 	elif INPUT['c']:
-		CURSOR_POS[0] = MAP_SIZE[0]/2
-		CURSOR_POS[1] = MAP_SIZE[1]/2
+		CURSOR_POS[0] = MAP_SIZE[0]//2
+		CURSOR_POS[1] = MAP_SIZE[1]//2
 
 	elif INPUT['m']:
 		if SETTINGS['running'] == 2:
@@ -377,7 +378,6 @@ if __name__ == '__main__':
 	gfx.log(WINDOW_TITLE)
 	
 	sys_set_fps(FPS_TERRAFORM)
-	console_set_keyboard_repeat(200, 30)
 	
 	mapgen.create_buildings()
 	

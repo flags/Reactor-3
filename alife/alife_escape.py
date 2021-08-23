@@ -2,10 +2,10 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
-import sight
-import brain
+from . import judgement
+from . import movement
+from . import sight
+from . import brain
 
 import logging
 

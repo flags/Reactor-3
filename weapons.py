@@ -191,7 +191,7 @@ def fire(life, target, limb=None):
 	
 	_bullet['accuracy'] = int(round(get_accuracy(life, weapon['uid'], limb=_aim_with_limb)))
 
-	print 'ACCURACY', _bullet['accuracy']
+	print('ACCURACY', _bullet['accuracy'])
 	
 	del _bullet['parent']
 	items.move(_bullet, _bullet_direction, _bullet['max_speed'])

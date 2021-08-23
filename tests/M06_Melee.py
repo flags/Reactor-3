@@ -44,7 +44,7 @@ def assume_stance(p, stance, towards=None):
 	p['next_stance']['towards'] = towards
 	p['next_stance']['forced'] = False
 	
-	print p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
+	print(p['name'], 'begins', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')')
 	return True
 
 def force_stance(p, stance):
@@ -56,7 +56,7 @@ def force_stance(p, stance):
 	
 	p['next_stance']['forced'] = True
 	
-	print p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')'
+	print(p['name'], 'forced into', p['stance'], '(%s' % p['next_stance']['delay']+')')
 
 def examine_possible_moves(p, targets):
 	#TODO: Cancel move?
@@ -72,7 +72,7 @@ def examine_possible_moves(p, targets):
 			assume_stance(p, COMBAT_MOVES[_next_stance]['counters'][0], towards=target)
 			return False
 		elif not _next_stance or not target['stance'] in COMBAT_MOVES:
-			assume_stance(p, random.choice(COMBAT_MOVES.keys()), towards=target)
+			assume_stance(p, random.choice(list(COMBAT_MOVES.keys())), towards=target)
 			return True
 
 def tick(p):
@@ -80,11 +80,11 @@ def tick(p):
 		p['next_stance']['delay'] -= 1
 		
 		if p['next_stance']['delay']:
-			print p['name'], 'waiting:', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')'
+			print(p['name'], 'waiting:', p['next_stance']['stance'], '(%s' % p['next_stance']['delay']+')')
 			return False
 	
 	if p['next_stance']['stance']:
-		print p['name'], p['stance'], '->', p['next_stance']['stance']
+		print(p['name'], p['stance'], '->', p['next_stance']['stance'])
 		
 		p['stance'] = p['next_stance']['stance']
 		p['next_stance']['stance'] = None
@@ -100,18 +100,18 @@ def perform_moves(people):
 			_target = life['next_stance']['towards']
 			
 			if life['stance'] in COMBAT_MOVES and _target['stance'] in COMBAT_MOVES[life['stance']]['counters']:
-				print '%s counters %s\'s %s!' % (_target['name'], life['name'], life['stance'])
+				print('%s counters %s\'s %s!' % (_target['name'], life['name'], life['stance']))
 				
 				force_stance(life, 'off-balance')
 			else:
 				if _target['stance'] in 'off-balance':
 					force_stance(_target, 'prone')
 				
-				print '%s\'s %s hits %s!' % (life['name'], life['stance'], _target['name'])
+				print('%s\'s %s hits %s!' % (life['name'], life['stance'], _target['name']))
 			
 			life['next_stance']['towards'] = None
 		else:
-			print '%s\'s %s does nothing!' % (life['name'], life['stance'])
+			print('%s\'s %s does nothing!' % (life['name'], life['stance']))
 		
 		#TODO: React...
 		#life['stance'] = 'stand'

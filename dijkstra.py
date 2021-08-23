@@ -13,7 +13,7 @@ def create_dijkstra_map(center,source_map,targets):
 	#Calculate the maximum size of the of the map by testing distances to all targets
 	_farthest_distance = 10#bad_numbers.distance(center,targets[0]['position'])
 	
-	print _farthest_distance
+	print(_farthest_distance)
 	
 	_min_x = clip(center[0]-(_farthest_distance),0,MAP_SIZE[0])
 	_max_x = clip(center[0]+(_farthest_distance),0,MAP_SIZE[0])
@@ -140,25 +140,25 @@ def draw_dijkstra(dijkstra,path=None):
 			
 			if not path:
 				if (_x,_y) in dijkstra['ignore']:
-					print '# ',
+					print('# ', end=' ')
 					continue
 				#else:
 				#	print '.',
 				_n = str(bad_numbers.clip(abs(int(dijkstra['map'][y,x])),0,41))
 				
 				if len(_n)==1:
-					print '%s ' % _n,
+					print('%s ' % _n, end=' ')
 				else:
-					print _n,
+					print(_n, end=' ')
 			else:
 				#print path
 				if (_x,_y,0) in path:
-					print 'o',
+					print('o', end=' ')
 				elif (_x,_y) in dijkstra['ignore']:
-					print '#',
+					print('#', end=' ')
 				else:
-					print ' ',
-		print
+					print(' ', end=' ')
+		print()
 
 def _main():
 	_targets = [{'position': (40,30),'score': 50}]
@@ -167,7 +167,7 @@ def _main():
 	_stime = time.time()
 	generate_dijkstra_map(_a)
 	invert_dijkstra_map(_a)
-	print time.time()-_stime
+	print(time.time()-_stime)
 	draw_dijkstra(_a)
 	
 	_path = pathfinding.path_from_dijkstra((43,30,2),_a,downhill=False)

@@ -2,20 +2,20 @@ from globals import SELECTED_TILES, WORLD_INFO, SETTINGS, MAP_SIZE, ITEMS, LIFE
 
 import life as lfe
 
-import references
+from . import references
 import weapons
 import bad_numbers
-import combat
-import speech
-import chunks
-import memory
+from . import combat
+from . import speech
+from . import chunks
+from . import memory
 import logic
 import alife
 import zones
-import sight
-import brain
+from . import sight
+from . import brain
 import maps
-import jobs
+from . import jobs
 import fov
 
 import random
@@ -59,7 +59,7 @@ def position_to_attack(life, target, engage_distance):
 			
 			lfe.add_action(life, {'action': 'dijkstra_move',
 		                          'rolldown': True,
-		                          'goals': [list(p) for p in random.sample(_attack_positions, len(_attack_positions)/2)],
+		                          'goals': [list(p) for p in random.sample(_attack_positions, len(_attack_positions)//2)],
 		                          'orig_goals': list(_attack_positions),
 		                          'avoid_positions': list(_avoid_positions),
 		                          'reason': 'positioning for attack'},
@@ -132,7 +132,7 @@ def travel_to_position(life, pos, stop_on_sight=False, force=False):
 def travel_to_chunk(life, chunk_key):
 	_chunk_pos = maps.get_chunk(chunk_key)['pos']
 	
-	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']/2, _chunk_pos[1]+WORLD_INFO['chunk_size']/2, 2])
+	return travel_to_position(life, [_chunk_pos[0]+WORLD_INFO['chunk_size']//2, _chunk_pos[1]+WORLD_INFO['chunk_size']//2, 2])
 
 def guard_chunk(life, chunk_key):
 	if 'guard_time' in life['state_flags'] and life['state_flags']['guard_time']:
@@ -195,8 +195,8 @@ def search_for_target(life, target_id):
 		return False
 	
 	_lowest = {'score': -1, 'pos': None}
-	_x_top_left = bad_numbers.clip(_know['last_seen_at'][0]-(_size/2), 0, MAP_SIZE[0])
-	_y_top_left = bad_numbers.clip(_know['last_seen_at'][1]-(_size/2), 0, MAP_SIZE[1])
+	_x_top_left = bad_numbers.clip(_know['last_seen_at'][0]-(_size//2), 0, MAP_SIZE[0])
+	_y_top_left = bad_numbers.clip(_know['last_seen_at'][1]-(_size//2), 0, MAP_SIZE[1])
 	
 	for x in range(0, _size):
 		_x = _x_top_left+x
@@ -297,7 +297,7 @@ def hide(life, targets):
 			if not pos in _avoid_positions:
 				_avoid_positions.append(pos)
 	else:
-		print 'Something went wrong'
+		print('Something went wrong')
 
 		return False
 
@@ -358,7 +358,7 @@ def collect_nearby_wanted_items(life, only_visible=True, matches={'type': 'gun'}
 	_empty_hand = lfe.get_open_hands(life)
 	
 	if not _empty_hand:
-		print 'No open hands, managing....'
+		print('No open hands, managing....')
 		for item_uid in lfe.get_held_items(life):
 			_container = lfe.can_put_item_in_storage(life, item_uid)
 			

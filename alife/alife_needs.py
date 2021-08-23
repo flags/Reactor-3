@@ -2,10 +2,10 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
-import survival
-import brain
+from . import judgement
+from . import movement
+from . import survival
+from . import brain
 
 
 def setup(life):
@@ -13,7 +13,7 @@ def setup(life):
 	_needs_to_satisfy = []
 	_needs_unmet = []
 	
-	for need in life['needs'].values():
+	for need in list(life['needs'].values()):
 		if not survival.needs_to_satisfy(life, need):
 			continue
 		

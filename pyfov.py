@@ -44,7 +44,7 @@ def old_light(los_map, world_pos, size, row, start_slope, end_slope, xx, xy, yx,
 				los_map[_sax+size, _say+size] = 1
 		
 			if not _solid:
-				_chunk_key = '%s,%s' % ((_a_x/5)*5, (_a_y/5)*5)
+				_chunk_key = '%s,%s' % ((_a_x//5)*5, (_a_y//5)*5)
 		
 				if not _chunk_key in _return_chunks:
 					_return_chunks.add(_chunk_key)

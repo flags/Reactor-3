@@ -99,7 +99,7 @@ def get_input():
 
 def handle_input():
 	if MOUSE_1_DOWN:
-		print MOUSE_POS
+		print(MOUSE_POS)
 		MAP[MOUSE_POS[0]][MOUSE_POS[1]][2] = create_tile(WALL_TILE)
 
 

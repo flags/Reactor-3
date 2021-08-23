@@ -5,12 +5,12 @@ import numpy as np
 import life as lfe
 
 from overwatch import core
-import judgement
+from . import judgement
 import weather
-import groups
-import chunks
-import combat
-import brain
+from . import groups
+from . import chunks
+from . import combat
+from . import brain
 import logic
 import items
 import maps
@@ -59,7 +59,7 @@ def look(life):
 			#This is for optimizing. Be careful if you mess with this...
 			_nearby_alife = {}
 			
-			for alife in LIFE.values():
+			for alife in list(LIFE.values()):
 				if alife['id'] == life['id']:
 					continue
 				
@@ -180,10 +180,10 @@ def quick_look(life):
 	_items = []
 	_current_chunk = lfe.get_current_chunk_id(life)
 	_current_chunk_pos = chunks.get_chunk(_current_chunk)['pos']
-	_x_chunk_min = bad_numbers.clip(_current_chunk_pos[0]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
-	_y_chunk_min = bad_numbers.clip(_current_chunk_pos[1]-((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
-	_x_chunk_max = bad_numbers.clip(_current_chunk_pos[0]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
-	_y_chunk_max = bad_numbers.clip(_current_chunk_pos[1]+((get_vision(life)/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_x_chunk_min = bad_numbers.clip(_current_chunk_pos[0]-((get_vision(life)//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_min = bad_numbers.clip(_current_chunk_pos[1]-((get_vision(life)//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
+	_x_chunk_max = bad_numbers.clip(_current_chunk_pos[0]+((get_vision(life)//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[0]-WORLD_INFO['chunk_size'])
+	_y_chunk_max = bad_numbers.clip(_current_chunk_pos[1]+((get_vision(life)//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size']), 0, MAP_SIZE[1]-WORLD_INFO['chunk_size'])
 	_has_ready_weapon = combat.has_ready_weapon(life)
 	
 	for y in range(_y_chunk_min, _y_chunk_max, WORLD_INFO['chunk_size']):
@@ -347,13 +347,13 @@ def is_in_fov(life, pos, view_size=MAP_WINDOW_SIZE):
 	if not isinstance(life['fov'], np.ndarray):
 		return False
 	
-	_min_los_x = ((life['fov'].shape[0]/2)-view_size[0]/2)
+	_min_los_x = ((life['fov'].shape[0]//2)-view_size[0]//2)
 	_max_los_x = life['fov'].shape[0]
-	_min_los_y = ((life['fov'].shape[1]/2)-view_size[1]/2)
+	_min_los_y = ((life['fov'].shape[1]//2)-view_size[1]//2)
 	_max_los_y = life['fov'].shape[1]
 	
-	_x = pos[0]-(life['pos'][0]-life['fov'].shape[0])-life['fov'].shape[0]/2
-	_y = pos[1]-(life['pos'][1]-life['fov'].shape[1])-life['fov'].shape[0]/2
+	_x = pos[0]-(life['pos'][0]-life['fov'].shape[0])-life['fov'].shape[0]//2
+	_y = pos[1]-(life['pos'][1]-life['fov'].shape[1])-life['fov'].shape[0]//2
 	
 	if _x<_min_los_x or _x>=_max_los_x or _y<_min_los_y or _y>=_max_los_y:
 		return False
@@ -448,8 +448,8 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	_stime = time.time()
 	_cover = {'pos': None,'score': 9000}
 	
-	_x = bad_numbers.clip(at[0]-(SETTINGS['los']/2),0,MAP_SIZE[0]-(SETTINGS['los']/2))
-	_y = bad_numbers.clip(at[1]-(SETTINGS['los']/2),0,MAP_SIZE[1]-(SETTINGS['los']/2))
+	_x = bad_numbers.clip(at[0]-(SETTINGS['los']//2),0,MAP_SIZE[0]-(SETTINGS['los']//2))
+	_y = bad_numbers.clip(at[1]-(SETTINGS['los']//2),0,MAP_SIZE[1]-(SETTINGS['los']//2))
 	_top_left = (_x,_y,at[2])
 	
 	target_los = render_fast_los.render_fast_los(at,
@@ -486,7 +486,7 @@ def generate_los(life, target, at, source_map, score_callback, invert=False, ign
 	
 	#print time.time()-_stime
 	if not _cover['pos']:
-		print 'Nowhere to hide', target['life']['name'], _top_left
+		print('Nowhere to hide', target['life']['name'], _top_left)
 				
 		return False
 	
@@ -497,8 +497,8 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 	_cover = {'pos': None,'score': 9000}
 	
 	#TODO: Unchecked Cython flag
-	_x = bad_numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]/2),0,MAP_SIZE[0])
-	_y = bad_numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]/2),0,MAP_SIZE[1])
+	_x = bad_numbers.clip(at[0]-(MAP_WINDOW_SIZE[0]//2),0,MAP_SIZE[0])
+	_y = bad_numbers.clip(at[1]-(MAP_WINDOW_SIZE[1]//2),0,MAP_SIZE[1])
 	_top_left = (_x,_y,at[2])
 	target_los = render_los.render_los(source_map,at,top_left=_top_left,no_edge=False)
 	
@@ -531,13 +531,13 @@ def _generate_los(life,target,at,source_map,score_callback,invert=False,ignore_s
 				_cover['pos'] = list(pos)
 	
 	if not _cover['pos']:
-		print 'Nowhere to hide'		
+		print('Nowhere to hide')		
 		return False
 	
 	return _cover
 
 def find_visible_items(life):
-	return [item for item in life['know_items'].values() if not item['last_seen_time'] and not 'parent_id' in item['item']]
+	return [item for item in list(life['know_items'].values()) if not item['last_seen_time'] and not 'parent_id' in item['item']]
 
 def find_known_items(life, matches={}, only_visible=True):
 	_match = []
@@ -556,13 +556,13 @@ def find_known_items(life, matches={}, only_visible=True):
 
 def _scan_surroundings(center_chunk_key, chunk_size, vision, ignore_chunks=[], chunk_map=WORLD_INFO['chunk_map']):
 	_center_chunk_pos = maps.get_chunk(center_chunk_key)['pos']
-	#_center_chunk_pos[0] = ((_center_chunk_pos[0]/chunk_size)*chunk_size)+(chunk_size/2)
-	#_center_chunk_pos[1] = ((_center_chunk_pos[1]/chunk_size)*chunk_size)+(chunk_size/2)
+	#_center_chunk_pos[0] = ((_center_chunk_pos[0]//chunk_size)*chunk_size)+(chunk_size//2)
+	#_center_chunk_pos[1] = ((_center_chunk_pos[1]//chunk_size)*chunk_size)+(chunk_size//2)
 	_chunks = set()
 	_chunk_map = set(chunk_map.keys())
 	
-	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*2)/chunk_size)):
-		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod/chunk_size)*chunk_size
+	for _x_mod, _y_mod in render_los.draw_circle(0, 0, ((vision*2)//chunk_size)):
+		x_mod = _center_chunk_pos[0]+(_x_mod*chunk_size) #(_x_mod//chunk_size)*chunk_size
 		y_mod = _center_chunk_pos[1]+(_y_mod*chunk_size)
 		#print x_mod, y_mod, _center_chunk_pos
 		

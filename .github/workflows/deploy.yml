@@ -1,0 +1,71 @@
+name: Test Deployment
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  bundle:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-10.15, windows-2019]
+      fail-fast: false
+    steps:
+    # Must checkout with v1 so that git describe will work correctly.
+    # https://github.com/actions/checkout/issues/290
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v2
+      with:
+        # Python 3.8 is the last version with Windows 7 support.
+        python-version: "3.8"
+    - name: Install APT dependencies
+      # python-tcod needs libsdl2-dev to build on Linux.
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install libsdl2-dev
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+    - name: pip cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install Pip packages
+      run: |
+        python -m pip install -U pip wheel
+        pip install -r requirements.txt
+    - name: Compile Cython modules
+      run: |
+        python compile_cython_modules.py build_ext --inplace
+    - name: Run PyInstaller
+      env:
+        PYTHONOPTIMIZE: 1  # Enable optimizations as if the -O flag is given.
+        PYTHONHASHSEED: 42  # Try to ensure deterministic results.
+      run: |
+        pyinstaller build.spec
+    - name: List files
+      shell: bash
+      run: |
+        find dist
+    - name: Tar files
+      if: runner.os != 'Windows'
+      run: |
+        tar --format=ustar -czvf ${{matrix.os}}.tar.gz dist/reactor-3
+    - name: Archive files
+      if: runner.os == 'Windows'
+      run: |
+        Compress-Archive dist/reactor-3 ${{matrix.os}}.zip
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: ${{matrix.os}}.*
+        retention-days: 30

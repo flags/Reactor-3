@@ -89,7 +89,7 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 	
 	_common_neighbors = {}
 	_highest = 0
-	for layer in _connect_layers.values():
+	for layer in list(_connect_layers.values()):
 		for chunk_key in layer['neighbors']:
 			if chunk_key in _common_neighbors:
 				_common_neighbors[chunk_key] += 1
@@ -99,7 +99,7 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 			if _common_neighbors[chunk_key]>_highest:
 				_highest = _common_neighbors[chunk_key]
 
-	for chunk_key in _common_neighbors.keys():
+	for chunk_key in list(_common_neighbors.keys()):
 		if _common_neighbors[chunk_key]<_highest:
 			del _common_neighbors[chunk_key]
 	
@@ -109,7 +109,7 @@ def connect_to_chunks(connect_to, existing_connections, steps, building_chunks):
 	if _highest<len(_connect_layers):
 		return -1
 	
-	return random.choice(_common_neighbors.keys())
+	return random.choice(list(_common_neighbors.keys()))
 
 def _create_building(chunk_key, design, building_chunks):
 	_pos = chunk_key
@@ -123,7 +123,7 @@ def _create_building(chunk_key, design, building_chunks):
 	
 	_building_chunk_keys = []
 	_build_queue = [design['build_order']]
-	_to_build = design['chunks'].keys()
+	_to_build = list(design['chunks'].keys())
 	
 	while _build_queue:
 		_room_name = _build_queue.pop(0)

@@ -29,7 +29,7 @@ def change_weather():
 	_indexes = []
 	_i = 0
 	for light_type in _weather['light_types']:
-		_weather['color_indexes'].append((WORLD_INFO['length_of_day']/_weather['events'])*_i)
+		_weather['color_indexes'].append((WORLD_INFO['length_of_day']//_weather['events'])*_i)
 		_i += 1
 		
 		if 'dark_night' in light_type:
@@ -63,7 +63,7 @@ def change_weather():
 	WORLD_INFO['weather'].update(_weather)
 
 def get_current_weather():
-	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = WORLD_INFO['real_time_of_day']//(WORLD_INFO['length_of_day']//len(WORLD_INFO['weather']['colors']))
 	_current_weather = bad_numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
 	
 	return WORLD_INFO['weather']['colors'][_current_weather]
@@ -83,7 +83,7 @@ def get_weather_status():
 	return get_current_weather()['name']
 
 def generate_effects(size):
-	_current_weather = WORLD_INFO['real_time_of_day']/(WORLD_INFO['length_of_day']/len(WORLD_INFO['weather']['colors']))
+	_current_weather = WORLD_INFO['real_time_of_day']//(WORLD_INFO['length_of_day']//len(WORLD_INFO['weather']['colors']))
 	_current_weather = bad_numbers.clip(_current_weather, 0, len(WORLD_INFO['weather']['colors'])-1)
 	
 	if 'raining' in WORLD_INFO['weather']['colors'][_current_weather]['effects']:

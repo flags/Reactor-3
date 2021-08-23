@@ -30,7 +30,7 @@ try:
 	
 	CYTHON_ENABLED = True
 
-except ImportError, e:
+except ImportError as e:
 	CYTHON_ENABLED = False
 	
 	logging.warning('[Cython] ImportError with module: %s' % e)
@@ -57,7 +57,7 @@ def create_map(size=MAP_SIZE, blank=False):
 	return _map
 
 def reload_slices():
-	for _slice in WORLD_INFO['slices'].values():
+	for _slice in list(WORLD_INFO['slices'].values()):
 		#logging.debug('Loading slice: %s' % _slice['id'])
 		
 		_size = [_slice['bot_right'][0]-_slice['top_left'][0], _slice['bot_right'][1]-_slice['top_left'][1]]		
@@ -114,7 +114,7 @@ def save_map(map_name, base_dir=MAP_DIR, only_cached=True):
 			
 			_map_file.write('world_info:%s\n' % json.dumps(WORLD_INFO))
 			
-			for _slice in _slices.keys():
+			for _slice in list(_slices.keys()):
 				if '_map' in _slices[_slice]:
 					del _slices[_slice]['_map']
 				
@@ -266,8 +266,8 @@ def load_cluster_at_position_if_needed(position):
 	
 	_chunk_cluster_size = WORLD_INFO['chunk_size']*10
 	
-	_cluster_key = '%s,%s' % ((position[0]/_chunk_cluster_size)*_chunk_cluster_size,
-	                          (position[1]/_chunk_cluster_size)*_chunk_cluster_size)
+	_cluster_key = '%s,%s' % ((position[0]//_chunk_cluster_size)*_chunk_cluster_size,
+	                          (position[1]//_chunk_cluster_size)*_chunk_cluster_size)
 	
 	if _cluster_key in LOADED_CHUNKS:
 		return False
@@ -368,8 +368,8 @@ def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 		
 		_render_x = light['pos'][0]-CAMERA_POS[0]
 		_render_y = light['pos'][1]-CAMERA_POS[1]
-		_x = bad_numbers.clip(light['pos'][0]-(size[0]/2),0,MAP_SIZE[0])
-		_y = bad_numbers.clip(light['pos'][1]-(size[1]/2),0,MAP_SIZE[1])
+		_x = bad_numbers.clip(light['pos'][0]-(size[0]//2),0,MAP_SIZE[0])
+		_y = bad_numbers.clip(light['pos'][1]-(size[1]//2),0,MAP_SIZE[1])
 		_top_left = (_x,_y,light['pos'][2])
 		
 		#TODO: Render only on move
@@ -406,7 +406,7 @@ def render_lights(size=MAP_WINDOW_SIZE, show_weather=True):
 		brightness *= los
 		#brightness *= LOS_BUFFER[0]
 		
-		#_mod = (abs((WORLD_INFO['length_of_day']/2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
+		#_mod = (abs((WORLD_INFO['length_of_day']//2)-WORLD_INFO['real_time_of_day'])/float(WORLD_INFO['length_of_day']))*5.0	
 		#_mod = bad_numbers.clip(_mod-1, 0, 1)
 		#(255*_mod, 165*_mod, 0*_mod)
 		#print brightness
@@ -452,7 +452,7 @@ def _render_los(map, pos, size, cython=False, life=None):
 	
 	_start_time = time.time()
 	_fov = fov.fov(pos, size)
-	print time.time()-_start_time
+	print(time.time()-_start_time)
 	
 	return _fov
 
@@ -609,8 +609,8 @@ def create_position_maps():
 def create_search_map(life, pos, size):
 	_map = numpy.ones((size, size))
 	
-	_x_top_left = bad_numbers.clip(pos[0]-(size/2), 0, MAP_SIZE[0])
-	_y_top_left = bad_numbers.clip(pos[1]-(size/2), 0, MAP_SIZE[1])
+	_x_top_left = bad_numbers.clip(pos[0]-(size//2), 0, MAP_SIZE[0])
+	_y_top_left = bad_numbers.clip(pos[1]-(size//2), 0, MAP_SIZE[1])
 	
 	for x in range(0, size):
 		_x = _x_top_left+x
@@ -696,10 +696,10 @@ def update_chunk_map():
 	logging.info('Chunk map updated in %.2f seconds.' % (time.time()-_stime))
 
 def draw_chunk_map(life=None, show_faction_ownership=False):
-	_x_min = bad_numbers.clip(CAMERA_POS[0]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
-	_y_min = bad_numbers.clip(CAMERA_POS[1]/WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
-	_x_max = bad_numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]/WORLD_INFO['chunk_size'])
-	_y_max = bad_numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]/WORLD_INFO['chunk_size'])
+	_x_min = bad_numbers.clip(CAMERA_POS[0]//WORLD_INFO['chunk_size'], 0, MAP_SIZE[0]//WORLD_INFO['chunk_size'])
+	_y_min = bad_numbers.clip(CAMERA_POS[1]//WORLD_INFO['chunk_size'], 0, MAP_SIZE[1]//WORLD_INFO['chunk_size'])
+	_x_max = bad_numbers.clip(_x_min+WINDOW_SIZE[0], 0, MAP_SIZE[0]//WORLD_INFO['chunk_size'])
+	_y_max = bad_numbers.clip(_y_min+WINDOW_SIZE[1], 0, MAP_SIZE[1]//WORLD_INFO['chunk_size'])
 	
 	_life_chunk_key = None
 	
@@ -707,13 +707,13 @@ def draw_chunk_map(life=None, show_faction_ownership=False):
 		_life_chunk_key = lfe.get_current_chunk_id(life)
 	
 	for x in range(_x_min, _x_max):
-		_d_x = x-(CAMERA_POS[0]/WORLD_INFO['chunk_size'])
+		_d_x = x-(CAMERA_POS[0]//WORLD_INFO['chunk_size'])
 		
 		if 0>_d_x >= WINDOW_SIZE[0]:
 			continue
 		
 		for y in range(_y_min, _y_max):
-			_d_y = y-(CAMERA_POS[1]/WORLD_INFO['chunk_size'])
+			_d_y = y-(CAMERA_POS[1]//WORLD_INFO['chunk_size'])
 			_draw = True
 			_fore_color = tcod.darker_gray
 			_back_color = tcod.darkest_gray

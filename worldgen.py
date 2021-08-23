@@ -161,7 +161,7 @@ def load_world(world):
 	
 	SETTINGS['controlling'] = None
 	SETTINGS['following'] = None
-	for life in LIFE.values():
+	for life in list(LIFE.values()):
 		if life['dead']:
 			continue
 		

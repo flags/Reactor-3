@@ -2,20 +2,20 @@ from globals import *
 
 import life as lfe
 
-import references
-import factions
+from . import references
+from . import factions
 import weapons
-import chunks
-import combat
-import groups
+from . import chunks
+from . import combat
+from . import groups
 import zones
-import stats
-import brain
-import raids
-import sight
-import camps
+from . import stats
+from . import brain
+from . import raids
+from . import sight
+from . import camps
 import logic
-import jobs
+from . import jobs
 
 import logging
 import bad_numbers
@@ -98,7 +98,7 @@ def get_ranged_combat_ready_score(life, consider_target_id=None):
 	if consider_target_id:
 		_target = brain.knows_alife_by_id(life, consider_target_id)
 		#TODO: Judge proper distance based on weapon equip time
-		if bad_numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)/2:
+		if bad_numbers.distance(life['pos'], _target['last_seen_at'])<sight.get_vision(life)//2:
 			if lfe.get_held_items(life, matches=[{'type': 'gun'}]):
 				_score += 1
 		elif lfe.get_all_inventory_items(life, matches=[{'type': 'gun'}]):
@@ -119,7 +119,7 @@ def get_ranged_combat_rating_of_target(life, life_id, inventory_check=True):
 	
 	for item in _items:
 		if bad_numbers.distance(life['pos'], target['pos']) > combat.get_engage_distance(target):
-			_score += item['accuracy']/2
+			_score += item['accuracy']//2
 		else:
 			_score += item['accuracy']
 	
@@ -303,7 +303,7 @@ def is_scared(life):
 			continue
 		
 		if _knows['alignment'] == 'scared' and not _knows['asleep'] and not _knows['dead']:
-			print life['name'], 'is scared'
+			print(life['name'], 'is scared')
 			return True
 	
 	return False
@@ -311,7 +311,7 @@ def is_scared(life):
 def get_trusted(life, visible=True, only_recent=False):
 	_trusted = []
 	
-	for target in life['know'].values():
+	for target in list(life['know'].values()):
 		if can_trust(life, target['life']['id']):
 			if only_recent and target['last_seen_time']>=150:
 				continue
@@ -404,7 +404,7 @@ def get_threats(life, escaped_only=False, ignore_lost=True, ignore_escaped=True,
 	return _target_filter(life, brain.retrieve_from_memory(life, 'threats'), escaped_only, ignore_escaped, ignore_lost=ignore_lost, recent_only=recent_only, limit_distance=limit_distance, filter_func=filter_func)
 
 def get_target_to_follow(life):
-	_highest = {'id': None, 'score': 0}
+	_highest = {'id': 0, 'score': 0}
 	
 	for target_id in get_trusted(life, visible=False, only_recent=False):
 		if not lfe.execute_raw(life, 'follow', 'follow_target_if', life_id=target_id):
@@ -437,10 +437,10 @@ def get_target_to_guard(life):
 		
 		return target_id
 	
-	return None
+	return 0
 
 def get_nearest_threat(life):
-	_target = {'target': None, 'score': 9999}
+	_target = {'target': 0, 'score': 9999}
 
 	#_combat_targets = brain.retrieve_from_memory(life, 'combat_targets')
 	#if not _combat_targets:
@@ -550,7 +550,7 @@ def judge_life(life, target_id):
 	#	print '%s danger in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_danger, target['danger'])
 	
 	if not _old_trust == target['trust']:
-		print '%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust'])
+		print('%s trust in %s: %s -> %s' % (' '.join(life['name']), ' '.join(target['life']['name']), _old_trust, target['trust']))
 
 def judge_search_pos(life, pos):
 	return lfe.execute_raw(life, 'search', 'judge', break_on_true=True, pos1=life['pos'], pos2=pos)
@@ -645,7 +645,7 @@ def judge_chunk(life, chunk_id, visited=False, seen=False, checked=True, investi
 		_known_chunk['last_checked'] = WORLD_INFO['ticks']
 	
 	_trusted = 0
-	for _target in life['know'].values():
+	for _target in list(life['know'].values()):
 		if not _target['last_seen_at']:
 			continue
 		
@@ -730,8 +730,8 @@ def judge_reference(life, reference_id, known_penalty=False):
 		
 		_count += 1
 		_chunk = maps.get_chunk(key)
-		_chunk_center = (_chunk['pos'][0]+(WORLD_INFO['chunk_size']/2),
-			_chunk['pos'][1]+(WORLD_INFO['chunk_size']/2))
+		_chunk_center = (_chunk['pos'][0]+(WORLD_INFO['chunk_size']//2),
+			_chunk['pos'][1]+(WORLD_INFO['chunk_size']//2))
 		_distance = bad_numbers.distance(life['pos'], _chunk_center)
 		
 		if not _closest_chunk_key['key'] or _distance<_closest_chunk_key['distance']:
@@ -752,16 +752,16 @@ def judge_reference(life, reference_id, known_penalty=False):
 		
 		#How long since we've been here?
 		#if key in life['known_chunks']:
-		#	_last_visit = bad_numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])/FPS), 2, 99999)
+		#	_last_visit = bad_numbers.clip(abs((life['known_chunks'][key]['last_visited']-WORLD_INFO['ticks'])//FPS), 2, 99999)
 		#	_score += _last_visit
 		#else:
-		#	_score += WORLD_INFO['ticks']/FPS
+		#	_score += WORLD_INFO['ticks']//FPS
 		
 	#Take length into account
 	_score += _count
 	
 	#Subtract distance in chunks
-	_score -= _closest_chunk_key['distance']/WORLD_INFO['chunk_size']
+	_score -= _closest_chunk_key['distance']//WORLD_INFO['chunk_size']
 	
 	#TODO: Average time since last visit (check every key in reference)
 	#TODO: For tracking last visit use world ticks
@@ -788,12 +788,12 @@ def judge_camp(life, camp, for_founding=False):
 	#to other camps. This is hardcoded (can't think of a reason why the ALife would want this)
 	
 	if for_founding:
-		for _known_camp in [c['reference'] for c in life['known_camps'].values()]:
+		for _known_camp in [c['reference'] for c in list(life['known_camps'].values())]:
 			for _pos1 in _known_camp:
 				pos1 = [int(i) for i in _pos1.split(',')]
 				for _pos2 in camp:
 					pos2 = [int(i) for i in _pos2.split(',')]
-					_dist = bad_numbers.distance(pos1, pos2) / WORLD_INFO['chunk_size']
+					_dist = bad_numbers.distance(pos1, pos2) // WORLD_INFO['chunk_size']
 					
 					if _dist <= 15:
 						return 0
@@ -802,7 +802,7 @@ def judge_camp(life, camp, for_founding=False):
 	
 	_current_population = 0
 	_current_trust = 0
-	for _target in life['know'].values():
+	for _target in list(life['know'].values()):
 		if not references.is_in_reference(_target['last_seen_at'], camp):
 			continue
 		
@@ -821,7 +821,7 @@ def judge_camp(life, camp, for_founding=False):
 		_score += judge_group(life, camps.get_controlling_group(_camp))
 	
 	if stats.desires_to_create_camp(life):
-		_score += len(groups.get_group(life, life['group'])['members'])/2<=len(_known_chunks_of_camp)
+		_score += len(groups.get_group(life, life['group'])['members'])//2<=len(_known_chunks_of_camp)
 	
 	#TODO: Why does this cause a crash?
 	#return int(round(_percent_known*10))
@@ -986,19 +986,19 @@ def get_best_shelter(life):
 		
 		if _shelter:
 			_nearest_chunk_key = references.find_nearest_key_in_reference(life, _shelter)
-			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in _nearest_chunk_key.split(',')]
+			_shelter_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in _nearest_chunk_key.split(',')]
 			_dist = bad_numbers.distance(life['pos'], _shelter_center)
 			
 			judge_chunk(life, _nearest_chunk_key)
 			
 			if _dist <= logic.time_until_midnight()*life['speed_max']:
-				print life['name'],'can get to shelter in time'
+				print(life['name'],'can get to shelter in time')
 				return _nearest_chunk_key
 			else:
-				print life['name'],'cant get to shelter in time'
+				print(life['name'],'cant get to shelter in time')
 	
 	for chunk_key in [chunk_id for chunk_id in life['known_chunks'] if chunks.get_flag(life, chunk_id, 'shelter')]:
-		chunk_center = [int(val)+(WORLD_INFO['chunk_size']/2) for val in chunk_key.split(',')]
+		chunk_center = [int(val)+(WORLD_INFO['chunk_size']//2) for val in chunk_key.split(',')]
 		_score = bad_numbers.distance(life['pos'], chunk_center)
 		
 		if not _best_shelter['shelter'] or _score<_best_shelter['distance']:
@@ -1008,15 +1008,15 @@ def get_best_shelter(life):
 	return _best_shelter['shelter']
 
 def update_camps(life):
-	for camp in life['known_camps'].values():
+	for camp in list(life['known_camps'].values()):
 		camp['snapshot']['life'] = []
 		camp['snapshot']['groups'] = {}
 	
-	for _target in life['know'].values():
+	for _target in list(life['know'].values()):
 		if not _target['last_seen_at']:
 			continue
 		
-		for camp in life['known_camps'].values():
+		for camp in list(life['known_camps'].values()):
 			if not camps.position_is_in_camp(_target['last_seen_at'], camp['id']):
 				continue
 			

@@ -27,13 +27,13 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 	cdef int Y_MAP_SIZE = MAP_SIZE[1]
 	
 	_check_dirs = already_checked
-	_checked_quads = [deg/90 for deg in already_checked]
+	_checked_quads = [deg//90 for deg in already_checked]
 	start_point[0] = at[0]
 	start_point[1] = at[1]
 	start_point[2] = at[2]
 	
 	for deg in range(scan[0], scan[1], intensity):
-		if quad_check and deg/90 in _checked_quads:
+		if quad_check and deg//90 in _checked_quads:
 			continue
 		
 		_end_x,_end_y = velocity(deg, sight)[:2]
@@ -42,8 +42,8 @@ def check_dirs(at, sight, source_map, los, intensity=45, already_checked={}, sca
 		_line = render_los.draw_line(start_point[0], start_point[1], end_point[0], end_point[1])
 		_i = 0
 		_wall = 0
-		__x = clip(start_point[0]-(los.shape[1]/2),0,X_MAP_SIZE-(los.shape[1]/2))
-		__y = clip(start_point[1]-(los.shape[0]/2),0,Y_MAP_SIZE-(los.shape[0]/2))
+		__x = clip(start_point[0]-(los.shape[1]//2),0,X_MAP_SIZE-(los.shape[1]//2))
+		__y = clip(start_point[1]-(los.shape[0]//2),0,Y_MAP_SIZE-(los.shape[0]//2))
 		
 		for pos in _line:
 			_x,_y = pos
@@ -81,11 +81,11 @@ def render_fast_los(at, sight_length, source_map, no_edge=False):
 		_check_dirs = check_dirs(at, sight, source_map, los, intensity=intensity, already_checked=_check_dirs, no_edge=no_edge)
 		quads_to_check = []
 		
-		for deg in [entry/90 for entry in _check_dirs if _check_dirs[entry]]:
+		for deg in [entry//90 for entry in _check_dirs if _check_dirs[entry]]:
 			if not deg in quads_to_check:
 				quads_to_check.append(deg)
 		
-		intensity /= 2
+		intensity //= 2
 		
 		if intensity<=6:
 			break

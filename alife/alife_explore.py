@@ -4,11 +4,11 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import survival
-import chunks
-import sight
-import brain
+from . import judgement
+from . import survival
+from . import chunks
+from . import sight
+from . import brain
 
 import logging
 

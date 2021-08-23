@@ -2,15 +2,15 @@ from globals import *
 
 import life as lfe
 
-import judgement
-import movement
-import groups
-import speech
-import action
+from . import judgement
+from . import movement
+from . import groups
+from . import speech
+from . import action
 import events
-import brain
-import stats
-import jobs
+from . import brain
+from . import stats
+from . import jobs
 
 
 def setup(life):

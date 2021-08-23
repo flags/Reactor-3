@@ -110,12 +110,12 @@ def get_children_of_tag(taglist):
 	return _limbs
 
 def build(file):
-	print 'Reading file \'%s\'...' % file
+	print('Reading file \'%s\'...' % file)
 	
 	try:
 		_data = read_xml_file(file)
-	except Exception, e:
-		print 'Failed to read file:',e
+	except Exception as e:
+		print('Failed to read file:',e)
 		return False
 	
 	life = {}
@@ -126,21 +126,21 @@ def build(file):
 	life['vars'] = get_value(_data, 'vars')
 	life['icon'] = get_value(_data, 'icon')
 
-	print 'Creating new life: %s' % life['species']
-	print 'Parsing and connecting limbs...',
+	print('Creating new life: %s' % life['species'])
+	print('Parsing and connecting limbs...', end=' ')
 	
 	life['body'] = get_tag(_data,'body')
 	
-	print 'Done!'
-	print 'Offloading to disk...',
+	print('Done!')
+	print('Offloading to disk...', end=' ')
 	save_json_file('%s.json' % life['species'],life)
-	print 'Done!'
+	print('Done!')
 	
 	return True
 
-print '*'*10
-print 'Build Life'
-print '*'*10
+print('*'*10)
+print('Build Life')
+print('*'*10)
 
 if len(sys.argv) == 1:
 	for (dirpath, dirname, filenames) in os.walk(LIFE_DIR):

@@ -28,7 +28,7 @@ def draw_circle(x,y,size):
 		for j in range(width+1):
 			circle = (((i-center_y)*(i-center_y))/((float(height)/2)*(float(height)/2)))+((((j-center_x)*(j-center_x))/((float(width)/2)*(float(width)/2))));
 			if circle>0 and circle<1.1:
-				_circle.append((x+(j-(width/2)),y+(i-(height/2))))
+				_circle.append((x+(j-(width//2)),y+(i-(height//2))))
 	
 	if not (x, y) in _circle:
 		_circle.append((x, y))
@@ -120,8 +120,8 @@ def render_los(position, size, view_size=MAP_WINDOW_SIZE, top_left=CAMERA_POS, n
 	for _pos in draw_circle(POS_X, POS_Y, size):
 		_dark = 0
 		
-		_chunk_key = '%s,%s' % ((_pos[0]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
-			(_pos[1]/WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
+		_chunk_key = '%s,%s' % ((_pos[0]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'],
+			(_pos[1]//WORLD_INFO['chunk_size'])*WORLD_INFO['chunk_size'])
 			
 		#if _chunk_key in HIDDEN_CHUNKS:
 		#	continue
